@@ -53,13 +53,13 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
-import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -102,19 +102,20 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private String getNextVariableType(final String variableName) {
         int offset = request.getComponent().getCaretPosition();
-
-        ModelScope modelScope = ModelFactory.getModel(info).getModelScope();
+        Model model = ModelFactory.getModel(info);
+        VariableScope varScope = model.getVariableScope(offset);
         String varName = variableName;
         if (varName == null) {
             varName = getNextVariableName();
         }
-        if (varName == null) {
+        if (varName == null ||  varScope == null) {
             return null;
         }
         if (varName.charAt(0) != '$') {
             varName = "$" + varName; //NOI18N
         }
-        List<? extends VariableName> variables = modelScope.getVariables(varName);
+
+        List<? extends VariableName> variables = varScope.getVariables(varName);
         VariableName first = ModelUtils.getFirst(variables);
         if (first != null) {
             ArrayList<String> uniqueTypeNames = new ArrayList<String>();
@@ -127,7 +128,11 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             for(String typeName : uniqueTypeNames) {
                 typeNames =  typeNames + "|" + typeName;
             }
-            typeNames = typeNames.substring(1);
+            if (typeNames.length() > 0) {
+                typeNames = typeNames.substring(1);
+            } else {
+                typeNames = "type";//NOI18N
+            }
             return typeNames;
         }
         return null;
@@ -157,19 +162,25 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             return null;
         }
         final int caretOffset = request.getComponent().getCaretPosition();
-        ASTNode node = Utils.getNodeAtOffset(info, caretOffset);
-        Assignment assignment = new AssignmentLocator().locate(node, caretOffset);
-        if (assignment != null) {
-            ASTNode leftHandSide = assignment.getLeftHandSide();
-
-            if (leftHandSide != null && leftHandSide instanceof Variable ) {
-                if (((Variable)leftHandSide).getName() instanceof Identifier) {
-                    Identifier identifier = (Identifier)((Variable)leftHandSide).getName();
-                    return identifier.getName();
+        VariableName var = null;
+        Model model = ModelFactory.getModel(info);
+        VariableScope varScope = model.getVariableScope(caretOffset);
+        if (varScope != null) {
+            List<? extends VariableName> allVariables = varScope.getAllVariables();
+            for (VariableName variableName : allVariables) {
+                if (var == null) {
+                    var = variableName;
+                } else {
+                    int newDiff = Math.abs(variableName.getNameRange().getStart() - caretOffset);
+                    int oldDiff = Math.abs(var.getNameRange().getStart() - caretOffset);
+                    if (newDiff < oldDiff) {
+                        var = variableName;
+                    }
                 }
             }
         }
-        return null;
+
+        return var != null ? var.getName().substring(1) : null;
     }
 
     private String newVarName(final String proposed) {

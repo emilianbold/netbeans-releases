@@ -31,11 +31,11 @@ pack_all_components()
     find netbeans | egrep -v "netbeans/(extra|testtools|uml|maven)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
 
     #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|maven)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php|maven)" | zip -q $DIST_DIR/zip/$NAME-java.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|maven)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|maven)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|maven)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
 
     mkdir $DIST_DIR/zip/moduleclusters
 
@@ -95,6 +95,9 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME enterprise "enterprise*"
     rm -rf enterprise*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME enterprise "ergonomics*"
+    rm -rf ergonomics*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
     rm -rf soa*

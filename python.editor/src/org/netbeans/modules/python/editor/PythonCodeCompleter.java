@@ -252,6 +252,10 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 request.node = closest;
             }
 
+            if (completeContextual(proposals, request)) {
+                return completionResult;
+            }
+
             // See if we should do a simple override completion
             AstPath path = request.path;
             if (path != null && prefix.length() == 0) {
@@ -278,10 +282,6 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                         }
                     }
                 }
-            }
-
-            if (completeContextual(proposals, request)) {
-                return completionResult;
             }
 
             // Don't do empty-completion for parameters
@@ -809,6 +809,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         //    return false;
         //}
 
+        if (id == PythonTokenId.DECORATOR) {
+            completeDecorators(proposals, request);
+            return true;
+        }
+
         if (id != PythonTokenId.ERROR && id != PythonTokenId.NEWLINE &&
                 id != PythonTokenId.WHITESPACE) {
             return false;
@@ -1324,6 +1329,73 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         return true;
     }
 
+    /**
+     * Complete decorators. These are functions that (a) take a function as an argument, and
+     * (b) return a function. Some may even take additional arguments.
+     * See http://www.python.org/dev/peps/pep-0318
+     */
+    private boolean completeDecorators(List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
+        PythonIndex index = request.index;
+        String prefix = request.prefix;
+        NameKind kind = request.kind;
+
+        boolean found = false;
+        Set<IndexedElement> elements = index.getAllElements(prefix, kind, PythonIndex.ALL_SCOPE, request.result, false);
+        for (IndexedElement element : elements) {
+            if (element.isNoDoc()) {
+                continue;
+            }
+            if (!(element instanceof IndexedMethod)) {
+                continue;
+            }
+            // Filter out anything that doesn't take at least one argument
+            IndexedMethod method = (IndexedMethod)element;
+            String[] params = method.getParams();
+            if (params == null || params.length != 1) {
+                continue;
+            }
+            String name = params[0];
+            if (!name.startsWith("func")) { // NOI18N
+                continue;
+            }
+
+            // TODO - filter out anything that doesn't return a method
+            PythonCompletionItem item = new PythonCompletionItem(request, element);
+            item.setSmart(true);
+
+            proposals.add(item);
+            found = true;
+        }
+
+        if (!found) {
+            // No matches - add all functions regardless of argument names
+            for (IndexedElement element : elements) {
+                if (element.isNoDoc()) {
+                    continue;
+                }
+                if (!(element instanceof IndexedMethod)) {
+                    continue;
+                }
+                // Filter out anything that doesn't take at least one argument
+                IndexedMethod method = (IndexedMethod)element;
+                String[] params = method.getParams();
+                if (params == null || params.length < 1) {
+                    continue;
+                }
+
+                // TODO - filter out anything that doesn't return a method
+
+                PythonCompletionItem item = createItem(element, request);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+
+        request.completionResult.setFilterable(false);
+
+        return true;
+    }
+
     private void completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
         // No keywords possible in the RHS of a call (except for "this"?)
 //        if (request.call.getLhs() != null) {
@@ -1818,7 +1890,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             formatter.appendText(getName());
             formatter.name(kind, false);
 
-            assert element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR : element; // Should be in a PythonMethodItem
+            // For decorators we use completion items
+            //assert element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR : element; // Should be in a PythonMethodItem
 
             if (strike) {
                 formatter.deprecated(false);

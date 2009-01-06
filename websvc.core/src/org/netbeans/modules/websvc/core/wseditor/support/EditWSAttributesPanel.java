@@ -81,11 +81,13 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         for(String title : titles){
             WSEditor editor = treeMap.get(title);
             Component c = editor.createWSEditorComponent(node, jaxWsModel);
-            jTabbedPane1.addTab(title, c);
-            String desc = editor.getDescription();
-            if(desc != null && !desc.trim().equals("")){
-                c.getAccessibleContext().setAccessibleDescription(desc);
-                description.append(desc);
+            if (c != null) {
+                jTabbedPane1.addTab(title, c);
+                String desc = editor.getDescription();
+                if(desc != null && !desc.trim().equals("")){
+                    c.getAccessibleContext().setAccessibleDescription(desc);
+                    description.append(desc);
+                }
             }
         }
         String descText = description.toString();
@@ -95,6 +97,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
             descLabel.setText(descText);
         }
     }
+    
     class AlphabeticalComparator implements Comparator<String> {
         public int compare(String str1, String str2) {
             return str1.toLowerCase().compareTo(str2.toLowerCase());
@@ -140,7 +143,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 621, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

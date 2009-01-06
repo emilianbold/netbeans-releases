@@ -183,7 +183,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                         alreadyWarnedAboutDupes.add(clazz);
 
                         Exception e = new IllegalStateException(
-                                "Warning: multiple instances of shared class " + clazz + " created."
+                                        "Warning: multiple instances of shared class " + clazz + " created."
                             ); // NOI18N
 
                         if (first.firstTrace != null) {

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.dataview.table;
@@ -74,7 +74,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
  * The class {@code JXTableRowHeader} is used to create a column which contains
  * row header cells. By default a table will not show a row header. The user may
  * manually add a row header to the {@code JScrollPane} row header view port.
- * 
+ *
  * @see javax.swing.JScrollPane
  * @author Ahimanikya Satapathy
  */
@@ -161,7 +161,7 @@ public class JXTableRowHeader extends JComponent {
      * Create a row header from the given {@code JTable}. This row header will
      * have the same {@code TableModel} and {@code ListSelectionModel} as the
      * incoming table.
-     * 
+     *
      * @param table
      *            the table for which to produce a row header.
      */
@@ -200,7 +200,7 @@ public class JXTableRowHeader extends JComponent {
         this.headerTable.setShowGrid(true, true);
         this.headerTable.setGridColor(ResultSetJXTable.GRID_COLOR);
         this.headerTable.setHighlighters(HighlighterFactory.createAlternateStriping(Color.WHITE, ResultSetJXTable.ALTERNATE_ROW_COLOR));
-        
+
         JXTable jxTable = (JXTable) table;
         jxTable.getFilters().addPipelineListener(new PipelineListener() {
 
@@ -218,7 +218,7 @@ public class JXTableRowHeader extends JComponent {
     /**
      * Returns a default renderer to be used when no row header renderer is
      * defined by the constructor.
-     * 
+     *
      * @return the default row header renderer
      */
     protected TableCellRenderer createDefaultRenderer() {
@@ -230,7 +230,7 @@ public class JXTableRowHeader extends JComponent {
     /**
      * Sets the default renderer to be used when no <code>headerRenderer</code>
      * is defined by a <code>TableColumn</code>.
-     * 
+     *
      * @param defaultRenderer
      *            the default renderer
      */
@@ -241,7 +241,7 @@ public class JXTableRowHeader extends JComponent {
     /**
      * Returns the default renderer used when no <code>headerRenderer</code>
      * is defined by a <code>TableColumn</code>.
-     * 
+     *
      * @return the default renderer
      */
     public TableCellRenderer getDefaultRenderer() {
@@ -253,7 +253,7 @@ public class JXTableRowHeader extends JComponent {
      * When the <code>row</code> parameter is out of bounds this method uses
      * the same conventions as the <code>JTable</code> method
      * <code>getCellRect</code>.
-     * 
+     *
      * @return the rectangle containing the header tile at <code>row</code>
      * @see JTable#getCellRect
      */
@@ -282,7 +282,7 @@ public class JXTableRowHeader extends JComponent {
     /**
      * Returns the index of the row that <code>point</code> lies in, or -1 if
      * the result is not in the range [0, <code>getRowCount()</code>-1].
-     * 
+     *
      * @param point
      *            the location of interest
      * @return the index of the row that <code>point</code> lies in, or -1 if
@@ -297,7 +297,7 @@ public class JXTableRowHeader extends JComponent {
      * Returns the row name for this row.
      * <p>
      * This implementation returns the row as a counting number ({@code row + 1}).
-     * 
+     *
      * @param row
      *            the row in the view being required.
      * @return the name of the row at position {@code row} in the view where the

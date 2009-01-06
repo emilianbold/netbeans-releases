@@ -52,10 +52,16 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -334,6 +340,18 @@ public final class VarTypeResolver {
             retval = null;
         }
         // next attempt to resolve type
+        if (retval == null) {
+            Model model = ModelFactory.getModel(info);
+            VariableScope varScope = model.getVariableScope(anchor);
+            List<? extends VariableName> variables = varScope.getVariables(varName);
+            VariableName var = ModelUtils.getFirst(variables);
+            if (var != null) {
+                TypeScope typeScope = ModelUtils.getFirst(var.getTypes(anchor));
+                if (typeScope != null) {
+                    retval = typeScope.getName();
+                }
+            }
+        }
         if (retval == null && !memberNames.isEmpty()) {
             Set<String> typeNames = null;
             for (Entry<String, ElementKind> entrySet : memberNames.entrySet()) {
@@ -351,6 +369,7 @@ public final class VarTypeResolver {
                 retval = typeNames.iterator().next();
             }
         }
+
         return retval;
     }
 
