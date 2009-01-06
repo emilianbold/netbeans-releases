@@ -56,6 +56,7 @@ public class CreateViewAction extends DatabaseAction {
     static final long serialVersionUID =-1640355770860785644L;
 
     public void performAction(Node[] activatedNodes) {
+        /*
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];
@@ -82,5 +83,6 @@ public class CreateViewAction extends DatabaseAction {
         } catch(Exception exc) {
             DbUtilities.reportError(bundle().getString("ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
         }
+        */
     }
 }
