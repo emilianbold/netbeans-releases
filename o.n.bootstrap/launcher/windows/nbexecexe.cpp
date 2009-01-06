@@ -41,35 +41,11 @@
  * Author: Tomas Holy
  */
 
-#include "platformlauncher.h"
-#include "utilsfuncs.h"
+#include <windows.h>
+#include "nbexecloader.h"
 
-PlatformLauncher launcher;
-
-extern "C" BOOL APIENTRY DllMain(HANDLE hModule,
-        DWORD ul_reason_for_call,
-        LPVOID lpReserved
-        ) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH:
-            break;
-        case DLL_THREAD_ATTACH:
-            break;
-        case DLL_THREAD_DETACH:
-            break;
-        case DLL_PROCESS_DETACH:
-            launcher.onExit();
-            break;
-    }
-    return TRUE;
-}
-
-#define NBEXEC_EXPORT extern "C" __declspec(dllexport)
-
-NBEXEC_EXPORT int startPlatform(int argc, char *argv[]) {
-    DWORD retCode = 0;
-    if (!launcher.start(argv, argc, &retCode)) {
-        return -1;
-    }
-    return retCode;
+int main(int argc, char *argv[]) {
+    checkLoggingArg(argc, argv, true);
+    NBExecLoader loader;
+    return loader.start("nbexec.dll", argc - 1, argv + 1);
 }

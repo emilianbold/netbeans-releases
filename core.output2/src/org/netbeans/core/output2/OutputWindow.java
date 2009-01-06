@@ -191,23 +191,8 @@ public class OutputWindow extends AbstractOutputWindow {
         }
         super.requestVisible();
     }
-    
-    void requestVisibleForNewTab() {
-        if (Controller.LOG) Controller.log("Request visible for new tab");
-        if (isOpened() && isShowing()) {
-            if (!isActivated()) {
-                super.requestVisible();
-            }
-        } else {
-            if (Controller.LOG) Controller.log ("CALLING OPEN() ON OUTPUT WINDOW!");
-            open();
-            super.requestVisible();
-            if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
-                requestActiveForNewTab();
-            } 
-        }
-    }
-    
+
+    @Override
     public void processFocusEvent (FocusEvent fe) {
         super.processFocusEvent (fe);
         if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
@@ -215,6 +200,7 @@ public class OutputWindow extends AbstractOutputWindow {
         }
     }
     
+    @Override
     public void paintComponent (Graphics g) {
         super.paintComponent (g);
         if (hasFocus()) {
@@ -231,10 +217,6 @@ public class OutputWindow extends AbstractOutputWindow {
                 getWidth() - (ins.left + ins.right + 4),
                 getHeight() - (ins.top + ins.bottom + 4));
         }
-    }
-    
-    void requestActiveForNewTab() {
-        requestActive();
     }
     
     @Override

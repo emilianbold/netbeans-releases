@@ -41,35 +41,41 @@
  * Author: Tomas Holy
  */
 
-#include "platformlauncher.h"
-#include "utilsfuncs.h"
+#ifndef _APPLAUNCHER_H
+#define	_APPLAUNCHER_H
 
-PlatformLauncher launcher;
+#include <string>
+#include <windows.h>
 
-extern "C" BOOL APIENTRY DllMain(HANDLE hModule,
-        DWORD ul_reason_for_call,
-        LPVOID lpReserved
-        ) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH:
-            break;
-        case DLL_THREAD_ATTACH:
-            break;
-        case DLL_THREAD_DETACH:
-            break;
-        case DLL_PROCESS_DETACH:
-            launcher.onExit();
-            break;
-    }
-    return TRUE;
-}
+#include "../../ide/launcher/windows/nblauncher.h"
 
-#define NBEXEC_EXPORT extern "C" __declspec(dllexport)
+class AppLauncher : public NbLauncher {
 
-NBEXEC_EXPORT int startPlatform(int argc, char *argv[]) {
-    DWORD retCode = 0;
-    if (!launcher.start(argv, argc, &retCode)) {
-        return -1;
-    }
-    return retCode;
-}
+    static const char *OPT_DEFAULT_USER_DIR;
+    static const char *OPT_DEFAULT_OPTIONS;
+    static const char *OPT_EXTRA_CLUSTERS;
+    static const char *OPT_JDK_HOME;
+    static const char *APPNAME_TOKEN;
+    static const char *REG_APPDATA_NAME;
+
+public:
+    AppLauncher();
+    virtual ~AppLauncher();
+
+protected:
+    virtual bool initBaseNames();
+    virtual const char * getAppName();
+    virtual void addSpecificOptions(CmdArgs &args);
+    virtual void adjustHeapSize();
+    virtual bool findUserDir(const char *str);
+    virtual const char * getDefUserDirOptName();
+    virtual const char * getDefOptionsOptName();
+    virtual const char * getExtraClustersOptName();
+    virtual const char * getJdkHomeOptName();
+
+private:
+    AppLauncher(const AppLauncher& orig);
+};
+
+#endif	/* _NBLAUNCHER_H */
+
