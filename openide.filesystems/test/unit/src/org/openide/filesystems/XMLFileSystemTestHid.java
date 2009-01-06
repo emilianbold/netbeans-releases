@@ -491,13 +491,16 @@ public class XMLFileSystemTestHid extends TestBaseHid {
       URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
       assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);
       FileSystem fs = FileSystemFactoryHid.createXMLSystem(getName(), this, fsURLDef);
-      FileObject fo = fs.findResource("testMethodValue");
-      FileObject peer = fs.findResource("peer");
+      root = fs.getRoot();
+      FileObject fo = fs.findResource("peer/base");
+      FileObject peer = fs.findResource("peer/snd");
       assertTrue ("Cannot acces  FileObject named testMethodValue", fo != null);
 
       Object obj = fo.getAttribute("testPeer");
-      assertTrue ("methodValue failed", obj != null);
-      assertEquals("it is the top most fileobject", peer, obj);
+      assertNotNull("methodValue failed", obj);
+      assertEquals(Data.class, obj.getClass());
+      Data data = (Data)obj;
+      assertEquals("it is the top most fileobject", peer, data.peer);
 
     }
 
@@ -732,7 +735,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return attrs.get("value1");
     }
     private static Object getObjectViaMethodValue7 (Map<String,Object> attrs, String attrName) {
-        assertEquals(10, attrs.keySet().size());
+        assertEquals(9, attrs.keySet().size());
         try {
             attrs.entrySet().remove(null);
             return "UnsupportedOperationException";
@@ -743,10 +746,13 @@ public class XMLFileSystemTestHid extends TestBaseHid {
 
         return attrs.get("value1") + attrName;
     }
-    private static Object getReadOtherFileObjectAttribute(FileObject fo) {
-        FileObject peer = fo.getParent().getFileObject("peer");
-        assertNotNull("Peer exists", peer);
-        return peer.getAttribute("testPeer");
+    private static FileObject root;
+    public static final class Data {
+        Object peer;
+        public Data() {
+            FileObject fo = root.getFileObject("peer/snd");
+            peer = fo.getAttribute("testPeer");
+        }
     }
     private static Object getFO(FileObject fo) {
         return fo;

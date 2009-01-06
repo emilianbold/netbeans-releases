@@ -830,7 +830,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             }
         } finally {
             attrAskedFileObject.set(previousFO);
-        }
+            }
 
         if (o != null) {
             getAttributeCache().setDelegate(fo);
