@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby;
 
@@ -183,7 +183,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             } else { // try method chaining
                 if (target.nodeId == NodeType.CALLNODE) {
                     Node receiver = ((CallNode) target).getReceiverNode();
-                    type = RubyTypeInferencer.inferTypes(receiver, request.createContextKnowledge());
+                    type = new RubyTypeInferencer(request.createContextKnowledge()).inferType(receiver);
                 }
             }
         }
