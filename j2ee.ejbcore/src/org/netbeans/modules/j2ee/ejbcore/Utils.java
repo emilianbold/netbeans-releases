@@ -257,12 +257,13 @@ public class Utils {
 
     // TODO: dongmei More check needed
     public static boolean isEE6WebProject(Project enterpriseProject) {
-        J2eeModule module = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
+        /*J2eeModule module = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
         if (module.getModuleType().equals(J2eeModule.WAR)) { // TODO: dongmei: check EE platform version too
             return true;
         } else {
             return false;
-        }
+        }*/
+        return false; 
     }
     
 //TODO: this method should be removed and org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(Project project)
