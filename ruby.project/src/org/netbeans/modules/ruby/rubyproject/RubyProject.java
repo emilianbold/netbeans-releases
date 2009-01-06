@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
@@ -118,6 +119,7 @@ public final class RubyProject extends RubyBaseProject {
             new RubyProjectEncodingQueryImpl(evaluator()),
             evaluator(),
             new RubyFileLocator(null, this),
+            new RubyCoverageProvider(this),
             new RubyPlatformProvider(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N

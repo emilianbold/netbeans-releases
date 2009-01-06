@@ -59,7 +59,6 @@ public class ProcedureListNodeProvider extends ConnectedNodeProvider {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ProcedureListNodeProvider createInstance(Lookup lookup) {
                 ProcedureListNodeProvider provider = new ProcedureListNodeProvider(lookup);
-                provider.setup();
                 return provider;
             }
         };
@@ -71,7 +70,7 @@ public class ProcedureListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return ProcedureListNode.create(lookup);
+        return ProcedureListNode.create(lookup, this);
     }
     
 }

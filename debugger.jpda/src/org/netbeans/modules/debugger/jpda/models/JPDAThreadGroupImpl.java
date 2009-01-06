@@ -51,6 +51,11 @@ import java.util.List;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -67,9 +72,10 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         this.debugger = debugger;
         name = "";
         try {
-            name = tgr.name();
-        } catch (VMDisconnectedException de) {
-        } catch (ObjectCollectedException ex) {
+            name = ThreadGroupReferenceWrapper.name(tgr);
+        } catch (InternalExceptionWrapper de) {
+        } catch (VMDisconnectedExceptionWrapper de) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
         }
     }
 
@@ -81,8 +87,11 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     public JPDAThreadGroup getParentThreadGroup () {
         ThreadGroupReference ptgr = null;
         try {
-            ptgr = tgr.parent();
-        } catch (VMDisconnectedException e) {
+            ptgr = ThreadGroupReferenceWrapper.parent(tgr);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (VMDisconnectedExceptionWrapper e) {
         }
         if (ptgr == null) return null;
         return debugger.getThreadGroup(ptgr);
@@ -127,7 +136,13 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
             return ;
         }
         notifyToBeResumed(tc);
-        tgr.resume ();
+        try {
+            ThreadGroupReferenceWrapper.resume(tgr);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     // XXX Add some synchronization
@@ -136,7 +151,16 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         if (tc == null) {
             return ;
         }
-        tgr.suspend ();
+        try {
+            ThreadGroupReferenceWrapper.suspend(tgr);
+        } catch (InternalExceptionWrapper ex) {
+            return ;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            return ;
+        }
         notifySuspended(tc);
     }
     

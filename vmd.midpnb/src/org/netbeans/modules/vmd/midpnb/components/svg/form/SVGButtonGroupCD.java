@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
@@ -99,8 +100,35 @@ public class SVGButtonGroupCD extends ComponentDescriptor {
                 MidpCustomCodePresenterSupport.createSVGButtonGroupCodePresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 //delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter( 
-                        SVGRadioButtonCD.PROP_BUTTON_GROUP )
+                new DeleteDependencyPresenter(){
+
+                    @Override
+                    protected void componentsDeleting(Collection<DesignComponent> 
+                        collection )
+                    {
+                        for (DesignComponent designComponent : collection) {
+                            if ( designComponent.getType().equals( 
+                                    SVGRadioButtonCD.TYPEID))
+                            {
+                                DesignComponent component = designComponent.readProperty( 
+                                        SVGRadioButtonCD.PROP_BUTTON_GROUP).getComponent();
+                                if ( collection.contains(component)){
+                                    designComponent.writeProperty( 
+                                            SVGRadioButtonCD.PROP_BUTTON_GROUP , 
+                                            PropertyValue.createNull());
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    protected boolean requiresToLive(Collection<DesignComponent> 
+                        collection)
+                    {
+                        return false;
+                    }
+                    
+                }
         );
     }
 

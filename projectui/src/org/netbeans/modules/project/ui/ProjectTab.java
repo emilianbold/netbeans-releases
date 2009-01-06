@@ -163,6 +163,14 @@ public class ProjectTab extends TopComponent
         
         initComponents();
 
+        btv = new ProjectTreeView();    // Add the BeanTreeView
+        
+        btv.setDragSource (true);
+        btv.setUseSubstringInQuickSearch(true);
+        btv.setRootVisible(false);
+        
+        add( btv, BorderLayout.CENTER ); 
+
         OpenProjects.getDefault().addPropertyChangeListener(this);
 
         noProjectsLabel.addMouseListener(new LabelPopupDisplayer(noProjectsLabel));
@@ -172,14 +180,6 @@ public class ProjectTab extends TopComponent
         noProjectsLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         noProjectsLabel.setOpaque(true);
 
-        btv = new ProjectTreeView();    // Add the BeanTreeView
-        
-        btv.setDragSource (true);
-        btv.setUseSubstringInQuickSearch(true);
-        btv.setRootVisible(false);
-        
-        add( btv, BorderLayout.CENTER ); 
-        
         associateLookup( ExplorerUtils.createLookup(manager, map) );
 
         selectionTask = createSelectionTask();

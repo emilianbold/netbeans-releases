@@ -1,3 +1,4 @@
 Code completion result for source line:
 * print $test3|;
 (QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $test3                                   issue136744.php

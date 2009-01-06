@@ -200,7 +200,9 @@ public class SwitchToAction extends ContextAction {
             // the cache fires status change events to trigger the annotation refresh
             // unfortunatelly - we have to call the refresh explicitly for each file also 
             // from this place as the branch label was changed evern if the files status didn't
-            Subversion.getInstance().refreshAnnotations(fileArray); 
+            Subversion.getInstance().refreshAnnotations(fileArray);
+            // refresh the inline diff
+            Subversion.getInstance().versionedFilesChanged();
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }

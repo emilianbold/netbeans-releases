@@ -78,7 +78,7 @@ public class RSpecSupport {
         this.project = project;
     }
 
-    static boolean hasRSpecInstalled(final RubyPlatform platform) {
+    public static boolean hasRSpecInstalled(final RubyPlatform platform) {
         return getLatestVersion(platform.getGemManager()) != null;
     }
     

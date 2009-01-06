@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-python">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
        
     <folder name="Projects">
         <folder name="Actions"/>
@@ -37,6 +51,14 @@
         </folder>
 
     </folder>
+
+    <folder name="ProjectsTabActions">
+        <file name="org-netbeans-modules-python-project-ui-ChangePackageViewTypeAction.instance">
+            <attr name="position" intvalue="1603"/>
+        </file>
+    </folder>
+
+
     <folder name="Templates">
         <folder name="Project">
             <folder name="Python">

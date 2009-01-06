@@ -230,6 +230,10 @@ public final class Unresolved implements Disposable {
         public boolean isHeaderFile() {
             return true;
         }
+
+        public Collection<CsmErrorDirective> getErrors() {
+            return Collections.<CsmErrorDirective>emptyList();
+        }
     };
     
     // only one of projectRef/projectUID must be used (based on USE_UID_TO_CONTAINER)

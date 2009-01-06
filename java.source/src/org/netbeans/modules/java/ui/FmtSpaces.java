@@ -179,7 +179,6 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         if ( path != null ) {
             Rectangle r = cfgTree.getPathBounds(path);
             if (r != null) {
-                r.width = r.height;
                 if ( r.contains(p)) {
                     toggle( path );
                 }

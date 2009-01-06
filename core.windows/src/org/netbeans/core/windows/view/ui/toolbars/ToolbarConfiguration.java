@@ -87,7 +87,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */
-    private static JMenu toolbarMenu;
+    private JMenu toolbarMenu;
     
     /** Name of configuration. */
     private final String configName;
@@ -133,9 +133,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
     
     public void rebuildMenu() {
-        if (toolbarMenu != null) {
-            toolbarMenu.removeAll();
-            fillToolbarsMenu(toolbarMenu, false);
+        synchronized( ToolbarConfiguration.class ) {
+            if (toolbarMenu != null) {
+                toolbarMenu.removeAll();
+                fillToolbarsMenu(toolbarMenu, false);
+            }
         }
     }
 
@@ -612,10 +614,14 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                 }
             } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 //No border
-                toolbarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+                toolbarPanel.setBorder(BorderFactory.createEmptyBorder());
             }
         } else {
-            toolbarPanel.setBorder(lowerBorder);
+            if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
+                toolbarPanel.setBorder(BorderFactory.createEmptyBorder());
+            } else {
+                toolbarPanel.setBorder(lowerBorder);
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -968,14 +968,29 @@ public class SvnUtils {
     public static ISVNLogMessage[] getLogMessages(ISVNClientAdapter client, SVNUrl rootUrl, String[] paths, SVNRevision fromRevision, SVNRevision toRevision, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
         Set<Long> alreadyHere = new HashSet<Long>();
         List<ISVNLogMessage> ret = new ArrayList<ISVNLogMessage>();
+        boolean sorted = true;
+        long lastRevNum = -1;
         for (String path : paths) {
             ISVNLogMessage[] logs = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, stopOnCopy, fetchChangePath, 0);
             for (ISVNLogMessage log : logs) {
-                if(!alreadyHere.contains(log.getRevision().getNumber())) {
+                long revNum = log.getRevision().getNumber();
+                if(!alreadyHere.contains(revNum)) {
                     ret.add(log);
-                    alreadyHere.add(log.getRevision().getNumber());
+                    alreadyHere.add(revNum);
+                    sorted &= (revNum > lastRevNum);
+                    lastRevNum = revNum;
                 }
             }
+        }
+        if (!sorted) {
+            Collections.sort(ret, new Comparator<ISVNLogMessage>() {
+                public int compare(ISVNLogMessage m1, ISVNLogMessage m2) {
+                    long revNum1 = m1.getRevision().getNumber();
+                    long revNum2 = m2.getRevision().getNumber();
+                    return (revNum1 == revNum2) ? 0
+                                                : (revNum1 > revNum2) ? 1 : -1;
+                }
+            });
         }
         return ret.toArray(new ISVNLogMessage[ret.size()]);
     }

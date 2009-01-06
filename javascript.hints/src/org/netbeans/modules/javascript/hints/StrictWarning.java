@@ -346,8 +346,12 @@ public class StrictWarning extends JsErrorRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(StrictWarning.class, key + ".desc"); // NOI18N
-
+        //try {
+        //    return NbBundle.getMessage(StrictWarning.class, key + ".desc"); // NOI18N
+        //} catch (Throwable t) {
+        //    return getDisplayName();
+        //}
+        return "";
     }
 
     public boolean getDefaultEnabled() {

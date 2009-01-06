@@ -63,7 +63,7 @@ public class AddWSOpeartion implements Fix {
     
     public ChangeInfo implement(){
         AddOperationCookie cookie = WebServiceActionProvider.getAddOperationAction(fileObject);
-        if(cookie !=null) cookie.addOperation(fileObject);
+        if(cookie !=null) cookie.addOperation();
         return null;
     }
     

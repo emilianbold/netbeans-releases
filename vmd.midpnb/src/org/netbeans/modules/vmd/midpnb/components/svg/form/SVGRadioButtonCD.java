@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -170,7 +171,10 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID )
+                new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID ),
+                //delete
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter( 
+                        SVGRadioButtonCD.PROP_BUTTON_GROUP )
         );
     }
 

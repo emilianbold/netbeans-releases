@@ -44,6 +44,8 @@ package org.netbeans.lib.cvsclient;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Unit testing CVS server implementation that provides
@@ -94,6 +96,19 @@ public final class PseudoCvsServer implements Runnable {
     private boolean stopped;
     private boolean running;
     private boolean ignoreProbe;
+
+    public PseudoCvsServer(String name) throws IOException {
+        ZipInputStream zis = new ZipInputStream(PseudoCvsServer.class.getResourceAsStream("protocol.zip"));
+        for (ZipEntry entry = zis.getNextEntry(); entry != null; entry = zis.getNextEntry()) {
+            if (name.equals(entry.getName())) {
+                fakeDataStream = zis;
+                serverSocket = new ServerSocket();
+                serverSocket.bind(null, 2);
+                return;
+            }
+        }
+        throw new FileNotFoundException(name);
+    }
 
     /**
      * Creates new server that replies with given data.

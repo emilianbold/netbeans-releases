@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import javax.swing.JPanel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -96,6 +97,9 @@ public class PanelConfigureProjectVisual extends JPanel {
             return false;
         }
 
+        if (!checkWarbler(wizardDescriptor)) {
+            return false;
+        }
         // Temporary workaround
         // Spaces in paths won't work for now with Rails
         //if (Utilities.isWindows()) {
@@ -109,7 +113,25 @@ public class PanelConfigureProjectVisual extends JPanel {
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
-    
+
+    private boolean checkWarbler(WizardDescriptor descriptor) {
+        // see #152726
+        if (!(projectLocationPanel instanceof PanelProjectLocationExtSrc)) {
+            return true;
+        }
+        if (!needWarSupport()) {
+            return true;
+        }
+        RubyPlatform platform = getPlatform();
+        GemManager gemManager = platform.getGemManager();
+        if (gemManager != null && gemManager.isGemInstalled("warbler")) { //NOI18N
+            return true;
+        }
+        descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelConfigureProjectVisual.class, "MSG_InstallWarbler"));
+        return false;
+
+    }
+
     void read (WizardDescriptor d) {
         Integer lastType = (Integer) d.getProperty("rails-wizard-type");  //NOI18N        
         if (lastType == null || lastType.intValue() != this.type) {

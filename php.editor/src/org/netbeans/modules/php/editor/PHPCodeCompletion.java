@@ -82,8 +82,10 @@ import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -246,6 +248,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
 
             switch(context){
+                case GLOBAL:
+                    autoCompleteGlobals(proposals, request);
+                break;
                 case EXPRESSION:
                     autoCompleteExpression(proposals, request);
                     break;
@@ -1035,6 +1040,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
+    private void autoCompleteGlobals(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+        PHPIndex index = request.index;
+        Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
+        for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
+            if (element instanceof IndexedVariable) {
+                IndexedConstant topLevelVar = (IndexedConstant) element;
+                allVars.put(topLevelVar.getName(), topLevelVar);
+            }
+        }
+        Collection<IndexedConstant> values = allVars.values();
+        for (IndexedConstant idxConstant : values) {
+            String tName = idxConstant.getTypeName();
+            //TODO: just impl. as hotfix - should be reviewed
+            if (idxConstant.isResolved() && (tName == null || !tName.startsWith("@"))) {//NOI18N
+                proposals.add(new PHPCompletionItem.VariableItem(idxConstant, request));
+            } else {
+                proposals.add(new PHPCompletionItem.UnUniqueVaraibaleItems(idxConstant, request));
+            }
+        }
+    }
 
     private Collection<CompletionProposal> getVariableProposals(Program program,
             PHPCompletionItem.CompletionRequest request){
@@ -1124,7 +1149,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableType(assignment);
 
                 getLocalVariables_indexVariable(variable, localVars, namePrefix,
                         localFileURL, varType);
@@ -1276,6 +1301,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
+        if (element instanceof ModelElement) {
+            ModelElement mElem = (ModelElement) element;
+            ModelElement parentElem = mElem.getInScope();
+            String fName = mElem.getFileObject().getNameExt();
+            String tooltip = null;
+            if (parentElem instanceof TypeScope) {
+                 tooltip = mElem.getPhpKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            } else {
+                tooltip = mElem.getPhpKind()+":<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            }
+            return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
+        }
+            
         return (element instanceof MagicIndexedFunction) ? null :
             DocRenderer.document(info, element);
     }

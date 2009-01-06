@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import com.sun.source.tree.AnnotationTree;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -69,6 +70,8 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -818,8 +821,19 @@ public class EditorContextImpl extends EditorContext {
                                 if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = ci.getTrees().getTree(elm);
+                                    
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
                                     { // Find the method name
+                                        if (tree.getKind() == Tree.Kind.METHOD) {
+                                            MethodTree mt = (MethodTree) tree;
+                                            ModifiersTree modt = mt.getModifiers();
+                                            if (modt != null) {
+                                                List<? extends AnnotationTree> annotations = modt.getAnnotations();
+                                                if (annotations != null && annotations.size() > 0) {
+                                                    pos = (int) positions.getEndPosition(ci.getCompilationUnit(), annotations.get(annotations.size() - 1));
+                                                }
+                                            }
+                                        }
                                         String text = ci.getText();
                                         int l = text.length();
                                         char c = 0;

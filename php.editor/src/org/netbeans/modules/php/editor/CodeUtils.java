@@ -268,12 +268,12 @@ public class CodeUtils {
         }
     }
 
-    public static String extractVariableTypeFromAssignment(Assignment assignment) {
+    public static String extractVariableType(Assignment assignment) {
         Expression rightSideExpression = assignment.getRightHandSide();
 
         if (rightSideExpression instanceof Assignment) {
             // handle nested assignments, e.g. $l = $m = new ObjectName;
-            return extractVariableTypeFromAssignment((Assignment) assignment.getRightHandSide());
+            return extractVariableType((Assignment) assignment.getRightHandSide());
         } else if (rightSideExpression instanceof Reference) {
             Reference ref = (Reference) rightSideExpression;
             rightSideExpression = ref.getExpression();

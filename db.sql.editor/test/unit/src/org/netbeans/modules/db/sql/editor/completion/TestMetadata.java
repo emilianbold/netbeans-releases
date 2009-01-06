@@ -48,8 +48,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -237,6 +240,11 @@ public class TestMetadata extends MetadataImplementation {
         public Schema getDefaultSchema() {
             return defaultSchema;
         }
+
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     static final class TestSchema extends SchemaImplementation {
@@ -297,6 +305,11 @@ public class TestMetadata extends MetadataImplementation {
         public Collection<Procedure> getProcedures() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     static final class TestTable extends TableImplementation {
@@ -330,6 +343,31 @@ public class TestMetadata extends MetadataImplementation {
         public void refresh() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public PrimaryKey getPrimaryKey() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Index getIndex(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<Index> getIndexes() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<ForeignKey> getForeignKeys() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ForeignKey getForeignKeyByInternalName(String internalName) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     static final class TestColumn extends ColumnImplementation {
@@ -351,7 +389,7 @@ public class TestMetadata extends MetadataImplementation {
         }
 
         @Override
-        public int getOrdinalPosition() {
+        public int getPosition() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

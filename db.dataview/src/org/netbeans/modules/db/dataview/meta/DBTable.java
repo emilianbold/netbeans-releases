@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
  * Represent Database Table
@@ -184,36 +185,36 @@ public final class DBTable extends DBObject<DBModel> {
 
     @Override
     public String getDisplayName() {
-        return this.getFullyQualifiedName();
+        return this.getFullyQualifiedName(false);
     }
 
     public List<DBForeignKey> getForeignKeys() {
         return new ArrayList<DBForeignKey>(foreignKeys.values());
     }
 
-    public String getFullyQualifiedName() {
+    public String getFullyQualifiedName(boolean quoteAlways) {
         StringBuilder buf = new StringBuilder(50);
 
-        if (catalog != null && catalog.trim().length() != 0) {
-            buf.append(quoter.quoteIfNeeded(catalog.trim()));
+        if (!DataViewUtils.isNullString(catalog)) {
+            buf.append(quoteAlways ? quoter.quoteAlways(catalog.trim()) : quoter.quoteIfNeeded(catalog.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
 
-        if (schema != null && schema.trim().length() != 0) {
-            buf.append(quoter.quoteIfNeeded(schema.trim()));
+        if (!DataViewUtils.isNullString(schema)) {
+            buf.append(quoteAlways ? quoter.quoteAlways(schema.trim()) : quoter.quoteIfNeeded(schema.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
         if (quoter != null) {
-            buf.append(quoter.quoteIfNeeded(name.trim()));
+            buf.append(quoteAlways ? quoter.quoteAlways(name.trim()) : quoter.quoteIfNeeded(name.trim()));
         } else {
             buf.append(name);
         }
         return buf.toString();
     }
 
-    public String getQualifiedName() {
+    public String getQualifiedName(boolean quoteAlways) {
         if (quoter != null) {
-            return quoter.quoteIfNeeded(name.trim());
+            return quoteAlways ? quoter.quoteAlways(name.trim()) : quoter.quoteIfNeeded(name.trim());
         } else {
             return name.trim();
         }
@@ -283,7 +284,7 @@ public final class DBTable extends DBObject<DBModel> {
 
     @Override
     public String toString() {
-        return getFullyQualifiedName();
+        return getFullyQualifiedName(false);
     }
 
     final class ColumnOrderComparator implements Comparator<DBColumn> {

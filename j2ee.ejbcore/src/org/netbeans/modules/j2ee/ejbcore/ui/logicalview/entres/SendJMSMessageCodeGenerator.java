@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupp
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -154,6 +155,8 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     DialogDescriptor.DEFAULT_ALIGN,
                     new HelpCtx(SendJMSMessageCodeGenerator.class),
                     null);
+            NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
+            sendJmsMessagePanel.setNotificationLine(statusLine);
             
             sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
                     new PropertyChangeListener() {

@@ -90,8 +90,8 @@ public class ProxyDiagramImpl implements IProxyDiagram,
             diagramDetails.setNamespace(diagram.getNamespace());
             diagramDetails.setToplevelXMIID(diagram.getTopLevelId());
             diagramDetails.setDiagramProjectXMIID(diagram.getTopLevelId());
+            diagramDetails.setDocumentation(diagram.getDocumentation());
         }
-
         // This occurs when diagram has not yet been loaded in memory; 
         // thus, reading the diagram info from its file.
         else 
@@ -150,41 +150,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
         {
             diagram.setName(validDiagramName);   
         }
-//        else  // diagram is not open
-//        {      
-//            // TODO: rewrite for meteora - this is the case when a diagram has
-//            // not yet opened.
-//            
-//            // Since we are a proxy to the real diagram we have to send the event
-//            // ourself.  The process will be to first send a pre event to allow
-//            // listeners to reject the change.  If the name change is excepted
-//            // then we make the change and sent the post event.
-//            // If we can not obtain a product archive do not even bother sending the
-//            // pre event because we will not be able to store the value.
-//            IProductArchive productArchive = getArchive();
-//            if (productArchive != null)
-//            {
-//                boolean proceed = true;
-//                try
-//                {
-//                    //proceed = dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_NAME, prePayload);
-//                    IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher(); 
-//                    IEventPayload postPayload = dispatcher.createPayload("FireDrawingAreaPostPropertyChange");
-//                    if (proceed == true)
-//                    {
-//                        // The diagram is closed, go into the xml file and set it
-//                        IProductArchiveElement element = productArchive.getElement(DIAGRAMINFO_STRING);
-//                        element.addAttributeString(DIAGRAMNAME_STRING, validDiagramName);
-//                        saveArchive(productArchive);
-//                        dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_NAME, postPayload);
-//                    }
-//                }
-//                catch (NullPointerException e)
-//                {
-//                    // Ignore I just want to stop processing.
-//                }
-//            }
-//        }
     }
 
     // TODO: meteora
@@ -230,34 +195,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
             {
                 curDiagram.setAlias(value);
             }
-//            else
-//            {
-//                try
-//                {
-//                    IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher();
-//                    IEventPayload payload = dispatcher.createPayload("DrawingAreaPrePropertyChanged");
-//
-//                    if (dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_ALIAS, payload) == true)
-//                    {
-//                        IProductArchive archive = getArchive();
-//                        if (archive != null)
-//                        {
-//                            IProductArchiveElement aElement = archive.getElement(DIAGRAMINFO_STRING);
-//                            if (aElement != null)
-//                            {
-//                                aElement.addAttributeString(DIAGRAMALIAS_STRING, value);
-//                                saveArchive(archive);
-//                                IEventPayload postPayload = dispatcher.createPayload("DrawingAreaPostPropertyChanged");
-//                                dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_ALIAS, postPayload);
-//                            }
-//                        }
-//                    }
-//                }
-//                catch (NullPointerException e)
-//                {
-//                    // Do nothing.  I just want to exit.
-//                }
-//            }
         }
     }
 
@@ -830,55 +767,7 @@ public class ProxyDiagramImpl implements IProxyDiagram,
      */
     public ETList<IProxyDiagram> getAssociatedDiagrams()
     {
-        //ETList<IProxyDiagram> retVal = new ETArrayList<IProxyDiagram>();
         ETList<IProxyDiagram> retVal = null;
-        // TODO: meteora
-        
-//        IDiagram diagram = getDiagram();
-//        ETList<IProxyDiagram> diagrams = null;
-//        if (diagram != null)
-//        {
-//            diagrams = diagram.getAssociatedDiagrams();
-//            int max = diagrams.size();
-//
-//            // HAVE TODO: Really have to stop using Binding IDiagram.
-////         for(int index = 0; index < max; index++)
-////         {
-////            foundDiagrams.add(diagrams.item(index));
-////         }
-//        }
-//        else
-//        {
-//            diagrams = new ETArrayList<IProxyDiagram>();
-//            ProxyDiagramManager manager = ProxyDiagramManager.instance();
-//            IProductArchive archive = getArchive();
-//
-//            if (archive != null)
-//            {
-//                int nKey = 1;
-//                IProductArchiveElement foundElement = archive.getTableEntry(ASSOCIATED_DIAGRAMS_STRING, nKey);
-//                while (foundElement != null)
-//                {
-//                    if (foundElement.isDeleted() == false)
-//                    {
-//                        String xmiID = foundElement.getID();
-//                        if (xmiID.length() > 0)
-//                        {
-//                            IProxyDiagram foundDiagram = manager.getDiagram2(xmiID);
-//                            if (foundDiagram != null)
-//                            {
-//                                retVal.add(foundDiagram);
-//                            }
-//                        }
-//                    }
-//
-//                    nKey++;
-//                    foundElement = null;
-//                    foundElement = archive.getTableEntry(ASSOCIATED_DIAGRAMS_STRING, nKey);
-//                }
-//            }
-//        }
-
         return retVal;
     }
 
@@ -892,31 +781,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
     public boolean isAssociatedDiagram(String sDiagramXMIID)
     {
         boolean retVal = false;
-        // TODO: meteora
-        
-//        if ((sDiagramXMIID != null) && (sDiagramXMIID.length() > 0))
-//        {
-//            IDiagram diagram = getDiagram();
-//            if (diagram != null)
-//            {
-//                retVal = diagram.isAssociatedDiagram(sDiagramXMIID);
-//            }
-//            else
-//            {
-//
-//                DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);
-//
-//                ArrayList<String> associatedDiagrams = details.getAssociatedDiagrams();
-//                for (Iterator<String> iter = associatedDiagrams.iterator(); (iter.hasNext() == true) && (retVal == false);)
-//                {
-//                    if (sDiagramXMIID.equals(iter.next()) == true)
-//                    {
-//                        retVal = true;
-//                    }
-//                }
-//            }
-//        }
-
         return retVal;
     }
 
@@ -930,13 +794,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
     public boolean isAssociatedDiagram(IProxyDiagram pDiagram)
     {
         boolean retVal = false;
-        // TODO: meteora
-        
-//        if (pDiagram != null)
-//        {
-//            retVal = isAssociatedDiagram(pDiagram.getXMIID());
-//        }
-
         return retVal;
     }
 
@@ -1046,44 +903,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
     public ETList<IElement> getAssociatedElements()
     {
         ETList<IElement> elements = null;
-
-        // TODO: meteora
-//        // Get the IDiagram, and route the call to the open diagram
-//        IDiagram diagram = getDiagram();
-//        if (diagram != null)
-//        {
-//            elements = diagram.getAssociatedElements();
-//        }
-//        else
-//        {
-//            ETList<IElement> foundElements = new ETArrayList<IElement>();
-//            if (foundElements != null)
-//            {
-//                // Get the details using the cached diagrams maintained in diagram support
-//                DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);
-//
-//                ElementReloader reloader = new ElementReloader();
-//
-//                if ((details != null) && (reloader != null))
-//                {
-//                    ArrayList<ModelElementXMIIDPair> associatedElements = details.getAssociatedElements();
-//                    if ((associatedElements != null) && (associatedElements.size() > 0))
-//                    {
-//                        for (Iterator iter = associatedElements.iterator(); iter.hasNext();)
-//                        {
-//                            ModelElementXMIIDPair element = (ModelElementXMIIDPair) iter.next();
-//                            IElement foundElement = reloader.getElement(element.getTopLevelID(), element.getModelElementID());
-//                            if (foundElement != null)
-//                            {
-//                                foundElements.add(foundElement);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            elements = foundElements;
-//        }
-
         return elements;
     }
 
@@ -1093,33 +912,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
     public boolean isAssociatedElement(String sModelElementXMIID)
     {
         boolean retVal = false;
-        // TODO: meteora
-        
-//        if ((sModelElementXMIID != null) && (sModelElementXMIID.length() > 0))
-//        {
-//            IDiagram diagram = getDiagram();
-//            if (diagram != null)
-//            {
-//                retVal = diagram.isAssociatedElement(sModelElementXMIID);
-//            }
-//            else
-//            {
-//                DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);
-//
-//                ArrayList<ModelElementXMIIDPair> associatedElements = details.getAssociatedElements();
-//
-//                for (Iterator iter = associatedElements.iterator(); iter.hasNext();)
-//                {
-//                    ModelElementXMIIDPair pair = (ModelElementXMIIDPair) iter.next();
-//                    if (sModelElementXMIID.equals(pair.getModelElementID()))
-//                    {
-//                        retVal = true;
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-
         return retVal;
     }
 
@@ -1148,16 +940,6 @@ public class ProxyDiagramImpl implements IProxyDiagram,
      */
     protected IProductArchive getArchive()
     {
-        // TODO: meteora - N/A with new diagram file
-        
-//        IProductArchive retVal = new ProductArchiveImpl();
-//
-//        if (retVal.load(m_Filename) == false)
-//        {
-//            // Failed to load therefore do not return the product archive.
-//            retVal = null;
-//        }
-//        return retVal;
         return null;
     }
 
@@ -1166,161 +948,4 @@ public class ProxyDiagramImpl implements IProxyDiagram,
     {
         return getName();
     }
-
-//    // IDrawingPropertyProvider
-//    public ETList<IDrawingProperty> getDrawingProperties()
-//    {
-//        ETList<IDrawingProperty> pProperties = null;
-//
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof UIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProperties = pProvider.getDrawingProperties();
-//        }
-//
-//        return pProperties;
-//    }
-//
-//    public void saveColor(String sDrawEngineType, String sResourceName, int nColor)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.saveColor(sDrawEngineType, sResourceName, nColor);
-//        }
-//    }
-//
-//    public void saveColor2(IColorProperty pProperty)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.saveColor2(pProperty);
-//        }
-//    }
-//
-//    public void saveFont(String sDrawEngineName, String sResourceName, String sFaceName, int nHeight, int nWeight, boolean bItalic, int nColor)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.saveFont(sDrawEngineName, sResourceName, sFaceName, nHeight, nWeight, bItalic, nColor);
-//        }
-//    }
-//
-//    public void saveFont2(IFontProperty pProperty)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.saveFont2(pProperty);
-//        }
-//    }
-//
-//    public void resetToDefaultResource(String sDrawEngineName, String sResourceName, String sResourceType)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.resetToDefaultResource(sDrawEngineName, sResourceName, sResourceType);
-//        }
-//    }
-//
-//    public void resetToDefaultResources()
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.resetToDefaultResources();
-//        }
-//    }
-//
-//    public void resetToDefaultResources2(String sDrawEngineName)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.resetToDefaultResources2(sDrawEngineName);
-//        }
-//    }
-//
-//    public void dumpToFile(String sFile, boolean bDumpChildren, boolean bAppendToExistingFile)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.dumpToFile(sFile, bDumpChildren, bAppendToExistingFile);
-//        }
-//    }
-//
-//    public boolean displayFontDialog(IFontProperty pProperty)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            return pProvider.displayFontDialog(pProperty);
-//        }
-//        else
-//        {
-//            return false;
-//        }
-//    }
-//
-//    public boolean displayColorDialog(IColorProperty pProperty)
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            return pProvider.displayColorDialog(pProperty);
-//        }
-//        else
-//        {
-//            return false;
-//        }
-//    }
-////
-//    public void invalidateProvider()
-//    {
-//        IDiagram pDiagram = getDiagram();
-//        if (pDiagram instanceof IUIDiagram)
-//        {
-//            IUIDiagram pAxDiagram = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-//            IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider) pControl;
-//            pProvider.invalidateProvider();
-//        }
-//    }
 }

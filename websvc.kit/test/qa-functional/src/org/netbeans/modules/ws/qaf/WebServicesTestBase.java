@@ -43,6 +43,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -72,6 +73,7 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -407,6 +409,20 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         super.tearDown();
         project = null;
         projectName = null;
+        //save IDE log in workdir
+        FileObject ud = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
+        FileObject log = ud.getFileObject("var/log/messages.log"); //NOI18N
+        FileObject copy = FileUtil.toFileObject(getWorkDir()).createData("messages", "log"); //NOI18N
+        InputStream is = log.getInputStream();
+        FileLock lock = copy.lock();
+        OutputStream os = copy.getOutputStream(lock);
+        try {
+            FileUtil.copy(is, os);
+        } finally {
+            is.close();
+            os.close();
+            lock.releaseLock();
+        }
     }
 
     /**

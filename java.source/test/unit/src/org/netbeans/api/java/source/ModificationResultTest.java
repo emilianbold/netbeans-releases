@@ -253,4 +253,19 @@ public class ModificationResultTest extends NbTestCase {
         performTestToDocument("prepareModificationResult2");
     }
     
+    public void test152941() throws Exception {
+        prepareTest();
+
+        ModificationResult result = new ModificationResult(null);
+
+        result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
+
+        try {
+            result.getResultingSource(testFile);
+            fail("No exception");
+        } catch (IllegalArgumentException ex) {
+            //correct exception
+        }
+    }
+    
 }

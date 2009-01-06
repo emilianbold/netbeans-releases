@@ -63,29 +63,12 @@ public class DiagramDetails implements IDiagramKind
     private String mProjectXMIID = "";
     private String mToplevelXMIID = "";
     private String mZoom = null;
+    private String documentation="";
     private INamespace mNamespace = null;
     private ArrayList<String> mAssociatedDiagrams = null;
     private ArrayList<ModelElementXMIIDPair> mAssociatedElements = null;
     private Date mDateModified = null;
 
-//    /**
-//     * Retrieves the name of the diagram.
-//     *
-//     * @return The name.
-//     */
-//    public String getDiagramAlias()
-//    {
-//        return mDiagramAlias;
-//    }
-//
-//    /**
-//     * Sets the name of the diagram.
-//     * @param value The name.
-//     */
-//    public void setDiagramAlias(String value)
-//    {
-//        mDiagramAlias = value;
-//    }
 
     /**
      * Gets the name of the diagram.
@@ -344,5 +327,19 @@ public class DiagramDetails implements IDiagramKind
     public ArrayList<String> getAssociatedDiagrams()
     {
         return mAssociatedDiagrams;
+    }
+
+    /**
+     * @return the documentation
+     */
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    /**
+     * @param documentation the documentation to set
+     */
+    public void setDocumentation(String documentation) {
+        this.documentation = documentation!=null ? documentation :"";
     }
 }

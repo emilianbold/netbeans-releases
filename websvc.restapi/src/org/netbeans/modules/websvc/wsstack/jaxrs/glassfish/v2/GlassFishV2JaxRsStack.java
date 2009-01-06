@@ -39,9 +39,12 @@
 package org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v2;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -57,15 +60,17 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
 
-    private static final String ASM_31_JAR = "lib/asm-3.1.jar"; //NOI18N
-    private static final String JERSEY_BUNDLE_10_JAR = "lib/jersey-bundle-1.0.jar"; //NOI18N
-    private static final String JETTISON_10_JAR = "lib/jettison-1.0.1.jar"; //NOI18N
-    private static final String JSR311_API_JAR = "lib/jsr311-api-1.0.jar";//NOI18N
+    private static final String[] JAXRS_LIBRARIES =
+        new String[] {"asm", "jersey-bundle", "jettison", "jsr311-api"}; //NOI18N
+    private static final String GFV3_LIB_DIR_NAME = "lib"; // NOI18N
+
+    private String gfRootStr;
     private File root;
     private JaxRs jaxRs;
 
     public GlassFishV2JaxRsStack(File root) {
         this.root = root;
+        this.gfRootStr = root.getAbsolutePath();
         jaxRs = new JaxRs();
     }
 
@@ -74,7 +79,7 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
     }
 
     public WSStackVersion getVersion() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return WSStackVersion.valueOf(2, 1, 3, 0);
     }
 
     public WSTool getWSTool(Tool toolId) {
@@ -85,26 +90,56 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
     }
 
     public boolean isFeatureSupported(Feature feature) {
+        boolean isFeatureSupported = false;
         if (feature == JaxRs.Feature.JAXRS) {
-        WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
-        if (wsTool != null) {
-            URL[] libs = wsTool.getLibraries();
-            try {
-                for (URL lib : libs) {
-                    if (!new File(lib.toURI()).exists()) {
-                        return false;
+            WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
+            if (wsTool != null) {
+                URL[] libs = wsTool.getLibraries();
+                try {
+                    if(libs != null && libs.length == JAXRS_LIBRARIES.length)
+                        isFeatureSupported = true;
+                    for (URL lib : libs) {
+                        if (!new File(lib.toURI()).exists()) {
+                            isFeatureSupported = false;
+                            break;
+                        }
                     }
+                } catch (URISyntaxException e) {
                 }
-            } catch (URISyntaxException e) {
-                return false;
             }
-        } else {
-            return false;
         }
-        } else {
-            return false;
+        return isFeatureSupported;
+    }
+
+    private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_LIB_DIR_NAME);
+        int subindex = jarNamePrefix.lastIndexOf("/");
+        if(subindex != -1) {
+            String subdir = jarNamePrefix.substring(0, subindex);
+            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            modulesDir = new File(modulesDir, subdir);
         }
-        return true;
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+
+        if(candidates != null && candidates.length > 0) {
+            return candidates[0]; // the first one
+        } else {
+            return null;
+        }
+    }
+
+    private static class VersionFilter implements FileFilter {
+
+        private String nameprefix;
+
+        public VersionFilter(String nameprefix) {
+            this.nameprefix = nameprefix;
+        }
+
+        public boolean accept(File file) {
+            return file.getName().startsWith(nameprefix);
+        }
+
     }
 
     private class JaxRsTool implements WSToolImplementation {
@@ -120,16 +155,18 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
         }
 
         public URL[] getLibraries() {
-            try {
-                return new URL[]{
-                            new File(root, ASM_31_JAR).toURI().toURL(), // NOI18N
-                            new File(root, JERSEY_BUNDLE_10_JAR).toURI().toURL(), //NOI18N
-                            new File(root, JETTISON_10_JAR).toURI().toURL(), //NOI18N
-                            new File(root, JSR311_API_JAR).toURI().toURL(), //NOI18N
-                        };
-            } catch (MalformedURLException ex) {
-                return new URL[0];
+            List<URL> cPath = new ArrayList<URL>();
+            for (String entry : JAXRS_LIBRARIES) {
+                File f = getJarName(gfRootStr, entry);
+                if ((f != null) && (f.exists())) {
+                    try {
+                        cPath.add(f.toURI().toURL());
+                    } catch (MalformedURLException ex) {
+
+                    }
+                }
             }
+            return cPath.toArray(new URL[cPath.size()]);
         }
     }
 }

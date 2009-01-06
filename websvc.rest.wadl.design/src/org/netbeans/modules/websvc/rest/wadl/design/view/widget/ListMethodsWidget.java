@@ -92,17 +92,17 @@ public class ListMethodsWidget extends Widget implements PropertyChangeListener 
             getMethodRecursively(model.getApplication(), rList);
         }
         for(Method m:model.getApplication().getMethod()) {
-            rList.add(m);
+                rList.add(m);
         }
         for(ResourceType rType:model.getApplication().getResourceType()) {
             for(Method child:rType.getMethod()) {
-                rList.add(child);
+                    rList.add(child);
             }
         }
         for(Method m:rList) {
             MethodWidget methodWidget = null;
             try {
-                methodWidget = new MethodWidget((ObjectScene) getScene(), this, m, model, true);
+                methodWidget = new MethodWidget((ObjectScene) getScene(), this, m, model);
                 addChild(methodWidget);
                 map.put(m, methodWidget);
             } catch (IOException ex) {
@@ -113,14 +113,14 @@ public class ListMethodsWidget extends Widget implements PropertyChangeListener 
 
     private void getResourceRecursively(Application application, List<Resource> rList) {
         for(Resource child:application.getResources().iterator().next().getResource()) {
-            rList.add(child);
+                rList.add(child);
             getResourceRecursively(child, rList);
         }
     }
     
     private void getResourceRecursively(Resource resource, List<Resource> rList) {
         for(Resource child:resource.getResource()) {
-            rList.add(child);
+                rList.add(child);
             getResourceRecursively(child, rList);
         }
     }
@@ -133,7 +133,7 @@ public class ListMethodsWidget extends Widget implements PropertyChangeListener 
     
     private void getMethodRecursively(Resource resource, List<Method> rList) {
         for(Method child:resource.getMethod()) {
-            rList.add(child);
+                rList.add(child);
         }
         for(Resource child:resource.getResource()) {
             getMethodRecursively(child, rList);
@@ -164,7 +164,7 @@ public class ListMethodsWidget extends Widget implements PropertyChangeListener 
             for(Method m:methods){
                 for(Widget w:childs) {
                     if(w instanceof MethodWidget && 
-                            ((MethodWidget)w).getMethod().getName().equals(m.getName()) &&
+                            ((MethodWidget)w).getMethodName().equals(m.getName()) &&
                             m.getId() != null && ((MethodWidget)w).getMethod().getId().equals(m.getId()))
                         removeList.add(w);
                 }

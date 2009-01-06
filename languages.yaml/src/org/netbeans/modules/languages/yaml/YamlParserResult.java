@@ -54,20 +54,21 @@ import org.netbeans.modules.gsf.api.StructureItem;
  */
 public class YamlParserResult extends ParserResult {
 
-    private Node node;
+    private List<Node> nodes;
     private List<? extends StructureItem> items;
     private int[] byteToUtf8;
     private int[] utf8ToByte;
 
-    public YamlParserResult(Node node, YamlParser parser, ParserFile file, boolean valid, int[] byteToUtf8, int[] utf8ToByte) {
+    public YamlParserResult(List<Node> nodes, YamlParser parser, ParserFile file, boolean valid, int[] byteToUtf8, int[] utf8ToByte) {
         super(parser, file, YamlTokenId.YAML_MIME_TYPE, valid);
-        this.node = node;
+        assert nodes != null;
+        this.nodes = nodes;
         this.byteToUtf8 = byteToUtf8;
         this.utf8ToByte = utf8ToByte;
     }
 
-    public Node getObject() {
-        return node;
+    public List<Node> getRootNodes() {
+        return nodes;
     }
 
     @Override

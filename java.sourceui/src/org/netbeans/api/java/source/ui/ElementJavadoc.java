@@ -47,6 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
+import com.sun.source.util.Trees;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -85,6 +86,8 @@ public class ElementJavadoc {
     }
 
     private ClasspathInfo cpInfo;
+    private ElementUtilities eu;
+    private Trees trees;
     //private Doc doc;
     private String content = null;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
@@ -220,7 +223,8 @@ public class ElementJavadoc {
     }
     
     private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url) {
-        ElementUtilities eu = compilationInfo.getElementUtilities();
+        this.trees = compilationInfo.getTrees();
+        this.eu = compilationInfo.getElementUtilities();
         this.cpInfo = compilationInfo.getClasspathInfo();
         Doc doc = eu.javaDocFor(element);
         boolean localized = false;
@@ -242,7 +246,7 @@ public class ElementJavadoc {
                 }
             }
         }
-        this.content = prepareContent(eu, doc, localized);
+        this.content = prepareContent(doc, localized);
     }
     
     private ElementJavadoc(URL url) {
@@ -294,20 +298,20 @@ public class ElementJavadoc {
      * @param useJavadoc preffer javadoc to sources
      * @return Javadoc content
      */
-    private String prepareContent(ElementUtilities eu, Doc doc, final boolean useJavadoc) {
+    private String prepareContent(Doc doc, final boolean useJavadoc) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
-                sb.append(getContainingClassOrPackageHeader(eu, (ProgramElementDoc)doc));
+                sb.append(getContainingClassOrPackageHeader((ProgramElementDoc)doc));
             }
             if (doc.isMethod() || doc.isConstructor() || doc.isAnnotationTypeElement()) {
-                sb.append(getMethodHeader(eu, (ExecutableMemberDoc)doc));
+                sb.append(getMethodHeader((ExecutableMemberDoc)doc));
             } else if (doc.isField() || doc.isEnumConstant()) {
-                sb.append(getFieldHeader(eu, (FieldDoc)doc));
+                sb.append(getFieldHeader((FieldDoc)doc));
             } else if (doc.isClass() || doc.isInterface() || doc.isAnnotationType()) {
-                sb.append(getClassHeader(eu, (ClassDoc)doc));
+                sb.append(getClassHeader((ClassDoc)doc));
             } else if (doc instanceof PackageDoc) {
-                sb.append(getPackageHeader(eu, (PackageDoc)doc));
+                sb.append(getPackageHeader((PackageDoc)doc));
             }
             sb.append("<p>"); //NOI18N
             if (!useJavadoc) {
@@ -384,9 +388,9 @@ public class ElementJavadoc {
                     Map<String, ThrowsTag> inheritedThrowsTags = null;
                     Map<String, List<Tag>> inheritedThrowsInlineTags = null;
                     for (Type exc : mdoc.thrownExceptionTypes())
-                        throwsTypes.add(exc.typeName());
+                        throwsTypes.add(exc.qualifiedTypeName());
                     for(ThrowsTag tag : mdoc.throwsTags()) {
-                        throwsTypes.remove(tag.exceptionName());
+                        throwsTypes.remove(tag.exceptionType().qualifiedTypeName());
                         List<Tag> tags = new ArrayList<Tag>();
                         throwsTags.add(tag);
                         throwsInlineTags.put(tag.exceptionName(), tags);
@@ -396,7 +400,7 @@ public class ElementJavadoc {
                                     inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
                                 if (inheritedThrowsInlineTags == null)
                                     inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
-                                throwsTypes.add(tag.exceptionName());
+                                throwsTypes.add(tag.exceptionType().qualifiedTypeName());
                             } else {
                                 tags.add(t);
                             }
@@ -492,20 +496,20 @@ public class ElementJavadoc {
                         }
                     }
                     if (inlineTags.length > 0 || doc.tags().length > 0) {
-                        sb.append(getDeprecatedTag(eu, doc));
-                        sb.append(inlineTags(eu, doc, inlineTags));
+                        sb.append(getDeprecatedTag(doc));
+                        sb.append(inlineTags(doc, inlineTags));
                         sb.append("</p><p>"); //NOI18N
-                        sb.append(getMethodTags(eu, mdoc, returnTags, paramTags,
+                        sb.append(getMethodTags(mdoc, returnTags, paramTags,
                                 throwsTags, throwsInlineTags));
                         sb.append("</p>"); //NOI18N
                         return sb.toString();
                     }
                 } else {
                     if (inlineTags.length > 0 || doc.tags().length > 0) {
-                        sb.append(getDeprecatedTag(eu, doc));
-                        sb.append(inlineTags(eu, doc, inlineTags));
+                        sb.append(getDeprecatedTag(doc));
+                        sb.append(inlineTags(doc, inlineTags));
                         sb.append("</p><p>"); //NOI18N
-                        sb.append(getTags(eu, doc));
+                        sb.append(getTags(doc));
                         sb.append("</p>"); //NOI18N
                         return sb.toString();
                     }
@@ -523,7 +527,7 @@ public class ElementJavadoc {
         return sb.toString();
     }
     
-    private CharSequence getContainingClassOrPackageHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private CharSequence getContainingClassOrPackageHeader(ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
@@ -556,10 +560,10 @@ public class ElementJavadoc {
         return name.replace(".", /* ZERO WIDTH SPACE */".&#x200B;");
     }
     
-    private CharSequence getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
+    private CharSequence getMethodHeader(ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, mdoc.annotations()));
+        sb.append(getAnnotations(mdoc.annotations()));
         int len = sb.length();
         sb.append(Modifier.toString(mdoc.modifierSpecifier() &~ Modifier.NATIVE));
         len = sb.length() - len;
@@ -571,7 +575,7 @@ public class ElementJavadoc {
             }
             sb.append("&lt;"); //NOI18N
             for (int i = 0; i < tvars.length; i++) {
-                len += appendType(eu, sb, tvars[i], false, true, false);
+                len += appendType(sb, tvars[i], false, true, false);
                 if (i < tvars.length - 1) {
                     sb.append(","); //NOI18N
                     len++;
@@ -585,7 +589,7 @@ public class ElementJavadoc {
                 sb.append(' '); //NOI18N
                 len++;
             }
-            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false, false, false);
+            len += appendType(sb, ((MethodDoc)mdoc).returnType(), false, false, false);
         }
         String name = mdoc.name();
         len += name.length();
@@ -596,7 +600,7 @@ public class ElementJavadoc {
             Parameter[] params = mdoc.parameters();
             for(int i = 0; i < params.length; i++) {
                 boolean varArg = i == params.length - 1 && mdoc.isVarArgs();
-                appendType(eu, sb, params[i].type(), varArg, false, false);
+                appendType(sb, params[i].type(), varArg, false, false);
                 sb.append(' ').append(params[i].name()); //NOI18N
                 String dim = params[i].type().dimension();
                 if (dim.length() > 0) {
@@ -614,7 +618,7 @@ public class ElementJavadoc {
         if (exs.length > 0) {
             sb.append("\nthrows "); //NOI18N
             for (int i = 0; i < exs.length; i++) {
-                appendType(eu, sb, exs[i], false, false, false);
+                appendType(sb, exs[i], false, false, false);
                 if (i < exs.length - 1)
                     sb.append(", "); //NOI18N
             }
@@ -623,25 +627,25 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
+    private CharSequence getFieldHeader(FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, fdoc.annotations()));
+        sb.append(getAnnotations(fdoc.annotations()));
         int len = sb.length();
         sb.append(fdoc.modifiers());
         len = sb.length() - len;
         if (len > 0)
             sb.append(' '); //NOI18N
-        appendType(eu, sb, fdoc.type(), false, false, false);
+        appendType(sb, fdoc.type(), false, false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
         sb.append("</tt></p>"); //NOI18N
         return sb;
     }
     
-    private CharSequence getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
+    private CharSequence getClassHeader(ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, cdoc.annotations()));
+        sb.append(getAnnotations(cdoc.annotations()));
         int mods = cdoc.modifierSpecifier() & ~Modifier.INTERFACE;
         if (cdoc.isEnum())
             mods &= ~Modifier.FINAL;
@@ -661,7 +665,7 @@ public class ElementJavadoc {
         if (tvars.length > 0) {
             sb.append("&lt;"); //NOI18N
             for (int i = 0; i < tvars.length; i++) {
-                appendType(eu, sb, tvars[i], false, true, false);
+                appendType(sb, tvars[i], false, true, false);
                 if (i < tvars.length - 1)
                     sb.append(","); //NOI18N
             }
@@ -673,15 +677,14 @@ public class ElementJavadoc {
                 Type supercls = cdoc.superclassType();
                 if (supercls != null) {
                     sb.append("\nextends "); //NOI18N
-                    appendType(eu, sb, supercls, false, false, false);
+                    appendType(sb, supercls, false, false, false);
                 }
-                
             }
             Type[] ifaces = cdoc.interfaceTypes();
             if (ifaces.length > 0) {
                 sb.append(cdoc.isInterface() ? "\nextends " : "\nimplements "); //NOI18N
                 for (int i = 0; i < ifaces.length; i++) {
-                    appendType(eu, sb, ifaces[i], false, false, false);
+                    appendType(sb, ifaces[i], false, false, false);
                     if (i < ifaces.length - 1)
                         sb.append(", "); //NOI18N
                 }
@@ -691,21 +694,21 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getPackageHeader(ElementUtilities eu, PackageDoc pdoc) {
+    private CharSequence getPackageHeader(PackageDoc pdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><tt>"); //NOI18N
-        sb.append(getAnnotations(eu, pdoc.annotations()));
+        sb.append(getAnnotations(pdoc.annotations()));
         sb.append("package <b>").append(pdoc.name()).append("</b>"); //NOI18N
         sb.append("</tt></p>"); //NOI18N
         return sb;
     }
     
-    private CharSequence getAnnotations(ElementUtilities eu, AnnotationDesc[] annotations) {
+    private CharSequence getAnnotations(AnnotationDesc[] annotations) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationDesc annotationDesc : annotations) {
             AnnotationTypeDoc annotationType = annotationDesc.annotationType();
             if (annotationType != null) {
-                appendType(eu, sb, annotationType, false, false, true);
+                appendType(sb, annotationType, false, false, true);
                 ElementValuePair[] pairs = annotationDesc.elementValues();
                 if (pairs.length > 0) {
                     sb.append('('); //NOI18N
@@ -713,7 +716,7 @@ public class ElementJavadoc {
                         AnnotationTypeElementDoc ated = pairs[i].element();
                         createLink(sb, eu.elementFor(ated), ated.name());
                         sb.append('='); //NOI18N
-                        appendAnnotationValue(eu, sb, pairs[i].value());
+                        appendAnnotationValue(sb, pairs[i].value());
                         if (i < pairs.length - 1)
                             sb.append(","); //NOI18N
                     }
@@ -725,14 +728,14 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private void appendAnnotationValue(ElementUtilities eu, StringBuilder sb, AnnotationValue av) {
+    private void appendAnnotationValue(StringBuilder sb, AnnotationValue av) {
         Object value = av.value();
         if (value instanceof AnnotationValue[]) {
             int length = ((AnnotationValue[])value).length;
             if (length > 1)
                 sb.append('{'); //NOI18N
             for(int i = 0; i < ((AnnotationValue[])value).length; i++) {
-                appendAnnotationValue(eu, sb, ((AnnotationValue[])value)[i]);
+                appendAnnotationValue(sb, ((AnnotationValue[])value)[i]);
                 if (i < ((AnnotationValue[])value).length - 1)
                     sb.append(","); //NOI18N
             }
@@ -745,11 +748,11 @@ public class ElementJavadoc {
         }
     } 
     
-    private CharSequence getMethodTags(ElementUtilities eu, MethodDoc doc, Tag[] returnTags, Map<Integer, List<Tag>> paramInlineTags,
+    private CharSequence getMethodTags(MethodDoc doc, Tag[] returnTags, Map<Integer, List<Tag>> paramInlineTags,
             List<ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags) {
         StringBuilder ret = new StringBuilder();
         if (returnTags.length > 0) {
-            ret.append(inlineTags(eu, doc, returnTags));
+            ret.append(inlineTags(doc, returnTags));
             ret.append("<br>"); //NOI18N
         }
         StringBuilder par = new StringBuilder();
@@ -760,7 +763,7 @@ public class ElementJavadoc {
                 List<Tag> tags = paramInlineTags.get(pos);
                 Tag[] its = tags.toArray(new Tag[tags.size()]);                
                 if (its.length > 0) {
-                    CharSequence cs = inlineTags(eu, doc, its);
+                    CharSequence cs = inlineTags(doc, its);
                     if (cs.length() > 0) {
                         par.append(" - "); //NOI18N
                         par.append(cs);
@@ -776,7 +779,7 @@ public class ElementJavadoc {
                 tpar.append("<code>").append(pTag.parameterName()).append("</code>"); //NOI18N
                 Tag[] its = pTag.inlineTags();
                 if (its.length > 0) {
-                    CharSequence cs = inlineTags(eu, doc, its);
+                    CharSequence cs = inlineTags(doc, its);
                     if (cs.length() > 0) {
                         tpar.append(" - "); //NOI18N
                         tpar.append(cs);
@@ -799,7 +802,7 @@ public class ElementJavadoc {
                 List<Tag> tags = throwsInlineTags.get(throwsTag.exceptionName());
                 Tag[] its = tags == null ? throwsTag.inlineTags() : tags.toArray(new Tag[tags.size()]);                
                 if (its.length > 0) {
-                    CharSequence cs = inlineTags(eu, doc, its);
+                    CharSequence cs = inlineTags(doc, its);
                     if (cs.length() > 0) {
                         thr.append(" - "); //NOI18N
                         thr.append(cs);
@@ -863,7 +866,7 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getTags(ElementUtilities eu, Doc doc) {
+    private CharSequence getTags(Doc doc) {
         StringBuilder see = new StringBuilder();
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
@@ -875,7 +878,7 @@ public class ElementJavadoc {
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     par.append(" - "); //NOI18N
-                    par.append(inlineTags(eu, doc, its));
+                    par.append(inlineTags(doc, its));
                 }
                 par.append("<br>"); //NOI18N
             } else if (THROWS_TAG.equals(tag.kind()) && !doc.isMethod()) {
@@ -889,11 +892,11 @@ public class ElementJavadoc {
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     thr.append(" - "); //NOI18N
-                    thr.append(inlineTags(eu, doc, its));
+                    thr.append(inlineTags(doc, its));
                 }
                 thr.append("<br>"); //NOI18N
             } else if (RETURN_TAG.equals(tag.kind()) && !doc.isMethod()) {
-                ret.append(inlineTags(eu, doc, tag.inlineTags()));
+                ret.append(inlineTags(doc, tag.inlineTags()));
                 ret.append("<br>"); //NOI18N
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
@@ -944,18 +947,18 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getDeprecatedTag(ElementUtilities eu, Doc doc) {
+    private CharSequence getDeprecatedTag(Doc doc) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : doc.tags()) {
             if (DEPRECATED_TAG.equals(tag.kind())) {
-                sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(eu, doc, tag.inlineTags())).append("</i></p><p>"); //NOI18N
+                sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(doc, tag.inlineTags())).append("</i></p><p>"); //NOI18N
                 break;
             }
         }
         return sb;
     }
     
-    private CharSequence inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
+    private CharSequence inlineTags(Doc doc, Tag[] tags) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
@@ -995,7 +998,7 @@ public class ElementJavadoc {
                 if (doc.isMethod()) {
                     MethodDoc mdoc = ((MethodDoc)doc).overriddenMethod();
                     if (mdoc != null)
-                        sb.append(inlineTags(eu, mdoc, mdoc.inlineTags()));
+                        sb.append(inlineTags(mdoc, mdoc.inlineTags()));
                 }
             } else if (LITERAL_TAG.equals(tag.kind())) {
                 try {
@@ -1056,7 +1059,7 @@ public class ElementJavadoc {
             sb.append(' '); //NOI18N            
     }
     
-    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg, boolean typeVar, boolean annotation) {
+    private int appendType(StringBuilder sb, Type type, boolean varArg, boolean typeVar, boolean annotation) {
         int len = 0;
         WildcardType wt = type.asWildcardType();
         if (wt != null) {
@@ -1066,13 +1069,13 @@ public class ElementJavadoc {
             if (bounds != null && bounds.length > 0) {
                 sb.append(" extends "); //NOI18N
                 len += 9;
-                len += appendType(eu, sb, bounds[0], false, false, false);
+                len += appendType(sb, bounds[0], false, false, false);
             }
             bounds = wt.superBounds();
             if (bounds != null && bounds.length > 0) {
                 sb.append(" super "); //NOI18N
                 len += 7;
-                len += appendType(eu, sb, bounds[0], false, false, false);
+                len += appendType(sb, bounds[0], false, false, false);
             }
         } else {
             TypeVariable tv = type.asTypeVariable();
@@ -1083,7 +1086,7 @@ public class ElementJavadoc {
                     sb.append(" extends "); //NOI18N
                     len += 9;
                     for (int i = 0; i < bounds.length; i++) {
-                        len += appendType(eu, sb, bounds[i], false, false, false);
+                        len += appendType(sb, bounds[i], false, false, false);
                         if (i < bounds.length - 1) {
                             sb.append(" & "); //NOI18N
                             len += 3;
@@ -1102,7 +1105,7 @@ public class ElementJavadoc {
                     if (targs.length > 0) {
                         sb.append("&lt;"); //NOI18N
                         for (int j = 0; j < targs.length; j++) {
-                            len += appendType(eu, sb, targs[j], false, false, false);
+                            len += appendType(sb, targs[j], false, false, false);
                             if (j < targs.length - 1) {
                                 sb.append(","); //NOI18N
                                 len++;
@@ -1142,6 +1145,9 @@ public class ElementJavadoc {
         for (ClassDoc ifaceDoc : cdoc.interfaces()) {
             for (MethodDoc methodDoc : ifaceDoc.methods(false)) {
                 if (mdoc.overrides(methodDoc)) {
+                    Element e = eu.elementFor(ifaceDoc);
+                    if (e != null)
+                        trees.getTree(e);
                     List<Tag> inheritedInlineTags = null;
                     if (inlineTags != null && inlineTags.isEmpty()) {
                         for (Tag tag : methodDoc.inlineTags()) {
@@ -1197,7 +1203,7 @@ public class ElementJavadoc {
                     Map<String, List<Tag>> inheritedThrowsInlineTags = null;
                     if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
                         for(ThrowsTag tag : methodDoc.throwsTags()) {
-                            if (throwsTypes.remove(tag.exceptionName())) {
+                            if (throwsTypes.remove(tag.exceptionType().qualifiedTypeName())) {
                                 List<Tag> tags = new ArrayList<Tag>();
                                 throwsTags.put(tag.exceptionName(), tag);
                                 throwsInlineTags.put(tag.exceptionName(), tags);
@@ -1285,9 +1291,13 @@ public class ElementJavadoc {
                     (throwsTypes == null || throwsTypes.isEmpty()))
                 return;
         }
-        if (cdoc.superclass() != null) { //NOI18N
-            for (MethodDoc methodDoc : cdoc.superclass().methods(false)) {
+        ClassDoc superclass = cdoc.superclass();
+        if (superclass != null) { //NOI18N
+            for (MethodDoc methodDoc : superclass.methods(false)) {
                 if (mdoc.overrides(methodDoc)) {
+                    Element e = eu.elementFor(superclass);
+                    if (e != null)
+                        trees.getTree(e);
                     List<Tag> inheritedInlineTags = null;
                     if (inlineTags != null && inlineTags.isEmpty()) {
                         for (Tag tag : methodDoc.inlineTags()) {
@@ -1343,7 +1353,7 @@ public class ElementJavadoc {
                     Map<String, List<Tag>> inheritedThrowsInlineTags = null;
                     if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
                         for(ThrowsTag tag : methodDoc.throwsTags()) {
-                            if (throwsTypes.remove(tag.exceptionName())) {
+                            if (throwsTypes.remove(tag.exceptionType().qualifiedTypeName())) {
                                 List<Tag> tags = new ArrayList<Tag>();
                                 throwsTags.put(tag.exceptionName(), tag);
                                 throwsInlineTags.put(tag.exceptionName(), tags);
@@ -1365,9 +1375,9 @@ public class ElementJavadoc {
                     }
                     if (inheritedInlineTags != null || inheritedReturnTags != null ||
                             inheritedParamNames != null && inheritedParamTags != null)
-                        inheritedDocFor(mdoc, cdoc.superclass(), inheritedInlineTags, inheritedReturnTags,
-                                inheritedParamNames, inheritedParamTags, inheritedParamInlineTags,
-                                inheritedThrowsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
+                        inheritedDocFor(mdoc, superclass, inheritedInlineTags,
+                                inheritedReturnTags, inheritedParamNames, inheritedParamTags,
+                                inheritedParamInlineTags, inheritedThrowsTypes, inheritedThrowsTags,inheritedThrowsInlineTags);
                     if (inheritedInlineTags != null && !inheritedInlineTags.isEmpty()) {
                         inlineTags.clear();
                         for (Tag tag : methodDoc.inlineTags()) {
@@ -1419,9 +1429,9 @@ public class ElementJavadoc {
                     returnTags != null && returnTags.isEmpty() ||
                     paramPos != null && !paramPos.isEmpty() ||
                     throwsTypes != null && !throwsTypes.isEmpty())
-                inheritedDocFor(mdoc, cdoc.superclass(), inlineTags, returnTags,
-                        paramPos, paramTags, paramInlineTags,
-                        throwsTypes, throwsTags, throwsInlineTags);
+                inheritedDocFor(mdoc, superclass, inlineTags,
+                        returnTags, paramPos, paramTags,
+                        paramInlineTags, throwsTypes, throwsTags,throwsInlineTags);
         }
     }
     

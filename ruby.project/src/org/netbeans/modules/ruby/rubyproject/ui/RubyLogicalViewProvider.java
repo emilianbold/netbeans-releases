@@ -71,6 +71,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 
 /**
  * Logical view provider for Ruby project.
@@ -173,6 +174,9 @@ public final class RubyLogicalViewProvider extends RubyBaseLogicalViewProvider {
             if (rspecSupport.isRSpecInstalled()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N
             }
+            actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
+            actions.add(null);
+
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());

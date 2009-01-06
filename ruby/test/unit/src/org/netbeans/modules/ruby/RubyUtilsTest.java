@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Arrays;
+import java.util.Collections;
 import junit.framework.TestCase;
 
 /**
@@ -169,7 +170,50 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isValidRubyLocalVarName("abcDef"));
     
     }
-    
+
+    public void testNumericIdentifiers() {
+        assertFalse(RubyUtils.isSafeIdentifierName("1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("@1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("@@1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("$1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$1a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName(":1", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(":1a", 0));
+
+        assertTrue(RubyUtils.isSafeIdentifierName("a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@@a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName(":a1", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("$a1", 0));
+    }
+
+    public void testVariableNameAndKind() {
+        assertTrue(RubyUtils.isSafeIdentifierName("a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("@@a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName(":a", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("$a", 0));
+
+        assertFalse(RubyUtils.isSafeIdentifierName("", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(" ", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName(":", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@@", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("@@@a", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$$", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("$$a", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("::", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("::a", 0));
+    }
+
     private static final String[] RUBY_BUILTINS =
         new String[] {
             // Keywords
@@ -219,5 +263,10 @@ public class RubyUtilsTest extends TestCase {
         assertEquals(Arrays.asList("Kernel", "RED"), Arrays.asList(RubyUtils.parseConstantName("RED")));
         assertEquals(Arrays.asList("Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("Colors::RED")));
         assertEquals(Arrays.asList("HTML::Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("HTML::Colors::RED")));
+    }
+
+    public void testJoin() {
+        assertEquals("one, two, three", RubyUtils.join(new String[]{"one", "two", "three"}, ", "));
+        assertEquals("", RubyUtils.join(Collections.<String>emptySet(), ", "));
     }
 }

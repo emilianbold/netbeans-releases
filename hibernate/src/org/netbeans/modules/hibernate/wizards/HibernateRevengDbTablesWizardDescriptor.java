@@ -38,11 +38,15 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.netbeans.modules.hibernate.wizards.support.SelectedTables;
+import org.netbeans.modules.hibernate.wizards.support.Table;
+import org.netbeans.modules.hibernate.wizards.support.TableClosure;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -55,10 +59,10 @@ import org.openide.util.NbBundle;
  *
  * @author gowri
  */
-public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private HibernateRevengDatabaseTablesPanel component;
+    private HibernateRevengDatabaseTablesPanel panel;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
     private Project project;
@@ -70,11 +74,11 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     }
 
     public HibernateRevengDatabaseTablesPanel getComponent() {
-        if (component == null) {
-            component = new HibernateRevengDatabaseTablesPanel(project);
-            component.addChangeListener(this);
+        if (panel == null) {
+            panel = new HibernateRevengDatabaseTablesPanel(project);
+            panel.addChangeListener(this);
         }
-        return component;
+        return panel;
     }
 
     public HelpCtx getHelp() {
@@ -89,18 +93,6 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
         changeSupport.removeChangeListener(listener);
     }
 
-    public void readSettings(WizardDescriptor settings) {
-        wizardDescriptor = settings;
-        wizardDescriptor.putProperty("NewFileWizard_Title", title);
-        
-        if (!componentInitialized) {
-            componentInitialized = true;
-            project = Templates.getProject(wizardDescriptor);
-            FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-            getComponent().initialize(project);
-        }
-    }
-
     public boolean isValid() {
         if (getComponent().getConfigurationFile() != null) {
             try {
@@ -111,31 +103,24 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
                 if (!value) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                     return false;
-                }               
+                }
+                value = env.canDirectlyConnectToDB(hco.getHibernateConfiguration());
+                if (!value) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_No_DB_Connection", //NOI18N
+                            getComponent().getConfigurationFile().getNameExt()));
+                    return false;
+                }
             } catch (Exception e) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                 return false;
             }
-        }        
-       
+        }
+
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
 
-    public void storeSettings(WizardDescriptor settings) {
-        WizardDescriptor wiz = settings;
-        Object buttonPressed = wiz.getValue();
-        if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-            HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
 
-            helper.setTableClosure(getComponent().getTableClosure());
-            helper.setConfigurationFile(getComponent().getConfigurationFile());
-            helper.setSchemaName(getComponent().getSchemaName());
-            helper.setCatalogName(getComponent().getCatalogName());
-        }
-
-    }
 
     public void stateChanged(ChangeEvent event) {
         changeSupport.fireChange();
@@ -143,6 +128,54 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
 
     private void setErrorMessage(String errorMessage) {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+
+    }
+
+    public boolean isFinishPanel() {
+        return isValid();
+    }
+
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        wizardDescriptor.putProperty("NewFileWizard_Title", title);
+
+
+        if (!componentInitialized) {
+            componentInitialized = true;
+            project = Templates.getProject(wizardDescriptor);
+            FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
+            getComponent().initialize(project);
+        }        
+    }
+
+    public void storeSettings(Object settings) {
+        WizardDescriptor wiz = (WizardDescriptor) settings;
+        wizardDescriptor = (WizardDescriptor) settings;
+        panel = (HibernateRevengDatabaseTablesPanel) getComponent();
+        if (WizardDescriptor.PREVIOUS_OPTION.equals(wizardDescriptor.getValue())) {
+            return;
+        }
+        getComponent().update(this.getTableClosure());
+    }
+
+    public TableClosure getTableClosure() {
+        return getComponent().getTableClosure();
+    }
+
+    public FileObject getConfigurationFile() {
+        return getComponent().getConfigurationFile();
+    }
+
+    public String getSchemaName() {
+        return getComponent().getSchemaName();
+    }
+
+    public String getCatalogName() {
+        return getComponent().getCatalogName();
+    }
+
+    public Set<Table> getSelectedTables() {
+        return getComponent().getTableClosure().getSelectedTables();
 
     }
 }

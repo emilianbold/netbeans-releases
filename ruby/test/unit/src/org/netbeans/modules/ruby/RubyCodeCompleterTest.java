@@ -343,7 +343,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     }
 
     public void testConstantMethods() throws Exception {
-        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^");
+        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^s");
+    }
+
+    public void testConstantAssignedToVariableMethods() throws Exception {
+        checkCompletion("testfiles/constants.rb", "puts b.down^case");
     }
 
     public void testConstants() throws Exception {
@@ -360,7 +364,27 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     }
 
     public void testConstantsForDotAreNotOffered() throws Exception {
-        checkCompletion("testfiles/core_methods.rb", "File.S^");
+        checkCompletion("testfiles/constants1.rb", "File.S^");
+    }
+
+    public void testCoreMethodWithMultiTypes() throws Exception {
+        checkCompletion("testfiles/core_methods.rb", "puts has_one.t^");
+    }
+
+    public void testMethodsChainingAssignment() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
+    }
+
+    public void testMethodsChainingDirect() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.empty?.to_^s");
+    }
+
+    public void testMethodsChainingDirectLiterals() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts 1.even?.to^_s");
+    }
+
+    public void testMethodsChainingParenthesised() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
     }
 
     // TODO uncomment when reindexed

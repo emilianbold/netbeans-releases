@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class Util {
+    private static final String DERBY_CLIENT = "derbyclient.jar"; // NOI18N
 
     private Util() {
     }
@@ -122,7 +123,12 @@ public class Util {
         if (libs == null || libs.length <= 0) {
             return false;
         }
-        return true;
+        for (File lib : libs) {
+            if (lib.getName().equals(DERBY_CLIENT)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void extractZip(File source, FileObject target) throws IOException {

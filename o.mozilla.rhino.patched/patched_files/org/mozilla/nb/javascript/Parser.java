@@ -2875,7 +2875,10 @@ Node pn = null;
                                             // </netbeans>
                                               );
                         pn = propertyName(pn, "@", memberTypeFlags); // NOI18N
-                        pn.getFirstChild().getNext().setType(Token.MISSING_DOT);
+                        Node nextChild = pn.getFirstChild().getNext();
+                        if (nextChild != null) {
+                            nextChild.setType(Token.MISSING_DOT);
+                        }
                         setSourceOffsets(pn.getLastChild(), getStartOffset());
                         break;
                           // </netbeans>

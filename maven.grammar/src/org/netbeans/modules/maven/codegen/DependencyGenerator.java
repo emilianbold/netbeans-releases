@@ -85,7 +85,7 @@ public class DependencyGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return "Dependency...";
+        return NbBundle.getMessage(DependencyGenerator.class, "NAME_Dependency");
     }
 
     public void invoke() {

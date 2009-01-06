@@ -47,13 +47,15 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
-import org.netbeans.modules.ruby.testrunner.ui.Manager;
+//import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
+//import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.openide.LifecycleManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -135,11 +137,15 @@ public final class TestExecutionManager {
 
         RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
 
+        final Runnable oldPostExecutionHook = rubyDescriptor.getPostBuild();
         ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor()
                 .postExecution(new Runnable() {
 
             public void run() {
                 refresh();
+                if (oldPostExecutionHook != null) {
+                    oldPostExecutionHook.run();
+                }
             }
         });
         execution = ExecutionService.newService(rpc, descriptor, rubyDescriptor.getDisplayName());

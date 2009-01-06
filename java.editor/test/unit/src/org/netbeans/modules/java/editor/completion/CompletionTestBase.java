@@ -225,6 +225,7 @@ public class CompletionTestBase extends NbTestCase {
         final Document doc = ec.openDocument();
         assertNotNull(doc);
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);

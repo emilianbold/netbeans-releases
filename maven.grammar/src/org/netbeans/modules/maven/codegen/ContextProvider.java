@@ -64,7 +64,7 @@ public class ContextProvider implements CodeGeneratorContextProvider {
             DataObject dobj = NbEditorUtilities.getDataObject(component.getDocument());
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
-                ModelSource ms = Utilities.createModelSource(fo, true);
+                ModelSource ms = Utilities.createModelSource(fo);
                 if (ms.isEditable()) {
                     POMModel model = POMModelFactory.getDefault().getModel(ms);
                     if (model != null) {

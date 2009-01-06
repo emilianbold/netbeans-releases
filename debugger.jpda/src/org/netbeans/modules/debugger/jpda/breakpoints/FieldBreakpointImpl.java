@@ -64,6 +64,18 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.ModificationWatchpointEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.WatchpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
 import org.openide.util.NbBundle;
@@ -88,113 +100,138 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     protected void setRequests () {
         boolean access = (breakpoint.getBreakpointType () & 
                           FieldBreakpoint.TYPE_ACCESS) != 0;
-        if (access && !getVirtualMachine().canWatchFieldAccess()) {
-            setValidity(VALIDITY.INVALID,
-                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldAccess"));
-            return ;
+        try {
+            if (access && !VirtualMachineWrapper.canWatchFieldAccess(getVirtualMachine())) {
+                setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldAccess"));
+                return ;
+            }
+            boolean modification = (breakpoint.getBreakpointType () &
+                                    FieldBreakpoint.TYPE_MODIFICATION) != 0;
+            if (modification && !VirtualMachineWrapper.canWatchFieldModification(getVirtualMachine())) {
+                setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldModification"));
+                return ;
+            }
+            setClassRequests (
+                new String[] {breakpoint.getClassName ()},
+                new String[0],
+                ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+            );
+            checkLoadedClasses (breakpoint.getClassName (), null);
+        } catch (InternalExceptionWrapper e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
         }
-        boolean modification = (breakpoint.getBreakpointType () & 
-                                FieldBreakpoint.TYPE_MODIFICATION) != 0;
-        if (modification && !getVirtualMachine().canWatchFieldModification()) {
-            setValidity(VALIDITY.INVALID,
-                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldModification"));
-            return ;
-        }
-        setClassRequests (
-            new String[] {breakpoint.getClassName ()},
-            new String[0],
-            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
-        );
-        checkLoadedClasses (breakpoint.getClassName (), null);
     }
     
+    @Override
     protected void classLoaded (ReferenceType referenceType) {
-        Field f = referenceType.fieldByName (breakpoint.getFieldName ());
-        if (f == null) {
-            setValidity(VALIDITY.INVALID,
-                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", referenceType.name(), breakpoint.getFieldName ()));
-            return ;
-        }
         try {
+            Field f = ReferenceTypeWrapper.fieldByName (referenceType, breakpoint.getFieldName ());
+            if (f == null) {
+                setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", ReferenceTypeWrapper.name(referenceType), breakpoint.getFieldName ()));
+                return ;
+            }
             if ( (breakpoint.getBreakpointType () & 
                   FieldBreakpoint.TYPE_ACCESS) != 0
             ) {
-                AccessWatchpointRequest awr = getEventRequestManager ().
-                    createAccessWatchpointRequest (f);
+                AccessWatchpointRequest awr = EventRequestManagerWrapper.
+                    createAccessWatchpointRequest (getEventRequestManager (), f);
                 setFilters(awr);
                 addEventRequest (awr);
             }
             if ( (breakpoint.getBreakpointType () & 
                   FieldBreakpoint.TYPE_MODIFICATION) != 0
             ) {
-                ModificationWatchpointRequest mwr = getEventRequestManager ().
-                    createModificationWatchpointRequest (f);
+                ModificationWatchpointRequest mwr = EventRequestManagerWrapper.
+                    createModificationWatchpointRequest (getEventRequestManager (), f);
                 setFilters(mwr);
                 addEventRequest (mwr);
             }
             setValidity(VALIDITY.VALID, null);
-        } catch (VMDisconnectedException e) {
+        } catch (InternalExceptionWrapper e) {
+        } catch (ClassNotPreparedExceptionWrapper e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
         }
     }
     
-    protected EventRequest createEventRequest(EventRequest oldRequest) {
+    protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof AccessWatchpointRequest) {
-            Field field = ((AccessWatchpointRequest) oldRequest).field();
-            WatchpointRequest awr = getEventRequestManager ().createAccessWatchpointRequest (field);
+            Field field = WatchpointRequestWrapper.field((AccessWatchpointRequest) oldRequest);
+            WatchpointRequest awr = EventRequestManagerWrapper.
+                    createAccessWatchpointRequest (getEventRequestManager (), field);
             setFilters(awr);
             return awr;
         }
         if (oldRequest instanceof ModificationWatchpointRequest) {
-            Field field = ((ModificationWatchpointRequest) oldRequest).field();
-            WatchpointRequest mwr = getEventRequestManager ().createModificationWatchpointRequest (field);
+            Field field = WatchpointRequestWrapper.field((ModificationWatchpointRequest) oldRequest);
+            WatchpointRequest mwr = EventRequestManagerWrapper.
+                    createModificationWatchpointRequest (getEventRequestManager (), field);
             setFilters(mwr);
             return mwr;
         }
         return null;
     }
 
-    private void setFilters(WatchpointRequest wr) {
+    private void setFilters(WatchpointRequest wr) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
         if (threadFilters != null && threadFilters.length > 0) {
             for (JPDAThread t : threadFilters) {
-                wr.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                WatchpointRequestWrapper.addThreadFilter(wr, ((JPDAThreadImpl) t).getThreadReference());
             }
         }
         ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
         if (varFilters != null && varFilters.length > 0) {
             for (ObjectVariable v : varFilters) {
-                wr.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                WatchpointRequestWrapper.addInstanceFilter(wr, (ObjectReference) ((JDIVariable) v).getJDIValue());
             }
         }
     }
     
     public boolean processCondition(Event event) {
         ThreadReference thread;
-        if (event instanceof ModificationWatchpointEvent) {
-            thread = ((ModificationWatchpointEvent) event).thread();
-        } else if (event instanceof AccessWatchpointEvent) {
-            thread = ((AccessWatchpointEvent) event).thread();
-        } else {
-            return true; // Empty condition, always satisfied.
+        try {
+            if (event instanceof ModificationWatchpointEvent) {
+                thread = LocatableEventWrapper.thread((ModificationWatchpointEvent) event);
+            } else if (event instanceof AccessWatchpointEvent) {
+                thread = LocatableEventWrapper.thread((AccessWatchpointEvent) event);
+            } else {
+                return true; // Empty condition, always satisfied.
+            }
+        } catch (InternalExceptionWrapper ex) {
+            return true;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
         }
         return processCondition(event, breakpoint.getCondition (), thread, null);
     }
 
     public boolean exec (Event event) {
-        if (event instanceof ModificationWatchpointEvent)
-            return perform (
-                event,
-                ((WatchpointEvent) event).thread (),
-                ((LocatableEvent) event).location ().declaringType (),
-                ((ModificationWatchpointEvent) event).valueToBe ()
-            );
-        if (event instanceof AccessWatchpointEvent)
-            return perform (
-                event,
-                ((WatchpointEvent) event).thread (),
-                ((LocatableEvent) event).location ().declaringType (),
-                ((AccessWatchpointEvent) event).valueCurrent ()
-            );
+        try {
+            if (event instanceof ModificationWatchpointEvent) {
+                ModificationWatchpointEvent me = (ModificationWatchpointEvent) event;
+                return perform (
+                    event,
+                    LocatableEventWrapper.thread(me),
+                    LocationWrapper.declaringType(LocatableWrapper.location(me)),
+                    ModificationWatchpointEventWrapper.valueToBe(me)
+                );
+            }
+            if (event instanceof AccessWatchpointEvent) {
+                AccessWatchpointEvent ae = (AccessWatchpointEvent) event;
+                return perform (
+                    event,
+                    LocatableEventWrapper.thread((WatchpointEvent) event),
+                    LocationWrapper.declaringType(LocatableWrapper.location((LocatableEvent) event)),
+                    WatchpointEventWrapper.valueCurrent(ae)
+                );
+            }
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
         return super.exec (event);
     }
 }

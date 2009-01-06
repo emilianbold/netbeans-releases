@@ -15,7 +15,7 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.FunctionDef;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  *
@@ -80,8 +80,8 @@ public class PythonAstUtilsTest extends PythonTestBase {
                 }
                 PythonAstUtils.getDocumentation(node);
                 PythonAstUtils.getDocumentationNode(node);
-                if (node instanceof exprType) {
-                    PythonAstUtils.getExprName((exprType)node);
+                if (node instanceof expr) {
+                    PythonAstUtils.getExprName((expr)node);
                 }
                 PythonAstUtils.getName(node);
                 PythonAstUtils.isNameNode(node);

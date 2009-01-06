@@ -119,6 +119,11 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                         String s = getProviderURL ();
                         try {
                             new URI (s).toURL ();
+                            //#132506
+                            if(s.startsWith("http:") && !s.startsWith("http://")) {
+                                isOk = false;
+                            }
+
                         } catch (MalformedURLException x) {
                             isOk = false;
                         } catch (URISyntaxException x) {

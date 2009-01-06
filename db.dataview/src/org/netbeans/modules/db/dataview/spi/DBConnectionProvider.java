@@ -44,8 +44,8 @@ import java.sql.Connection;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
- * An SPI for which different provider are available
- * registered via standard META-INF/services
+ * An SPI for which different providers are available.
+ * Registered via {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @author Ahimanikya Satapathy
  */

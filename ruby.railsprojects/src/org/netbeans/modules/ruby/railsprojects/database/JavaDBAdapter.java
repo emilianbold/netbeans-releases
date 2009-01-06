@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-class JavaDBAdapter implements RailsDatabaseConfiguration {
+class JavaDBAdapter extends RailsDatabaseConfiguration {
 
     JavaDBAdapter() {
     }

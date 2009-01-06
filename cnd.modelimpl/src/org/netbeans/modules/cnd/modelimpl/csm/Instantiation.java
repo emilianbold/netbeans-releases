@@ -381,7 +381,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
     }
     
-    private static class Function extends Instantiation implements CsmFunction {
+    private static class Function extends Instantiation<CsmFunction> implements CsmFunction<CsmFunction> {
         private final CsmType retType;
         
         public Function(CsmFunction function, CsmType instantiation) {
@@ -576,7 +576,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
     }
 
-    private static class Method extends Instantiation implements CsmMethod, CsmFunctionDefinition {
+    private static class Method extends Instantiation<CsmMethod> implements CsmMethod<CsmMethod>, CsmFunctionDefinition<CsmMethod> {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
 

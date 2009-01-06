@@ -82,7 +82,9 @@ public class CommentImpl extends SyntaxNode implements Comment {
      */
     public String getData() {
         String data = first().getImage();  //??? it is always one image
-        return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N        
+        if(data.startsWith("<!--") && data.endsWith("-->"))
+            return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N
+        return data;
     }
 
     public void setData(String data) {

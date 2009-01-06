@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-public class RailsJdbcConnection implements RailsDatabaseConfiguration {
+public class RailsJdbcConnection extends RailsDatabaseConfiguration {
 
     private final DatabaseConnection development;
     private final DatabaseConnection test;

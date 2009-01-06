@@ -156,11 +156,21 @@ made subject to such option by the copyright holder.
 
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
-    	<format property="buildnumber" pattern="yyMMdd"/>
+    	<format property="buildstamp" pattern="yyMMdd"/>
     </tstamp>
     <tstamp>
     	<format property="buildday" pattern="d MMM yyyy" locale="en" />
     </tstamp>
+
+    <property environment="hudson"/>
+    <condition property="buildnumber" value="${hudson.JOB_NAME}-${hudson.BUILD_NUMBER}-on-${buildstamp}">
+      <and>
+        <isset property="hudson.JOB_NAME"/>
+        <isset property="hudson.BUILD_NUMBER"/>
+      </and>
+    </condition>
+    <property name="buildnumber" value="${buildstamp}"/>
+    <echo message="${buildnumber}"/>
   </target>
 
   <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
@@ -1668,18 +1678,20 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="test.type" value="test"/>
     <delete dir="${build.test.results.dir}"/>
     <mkdir dir="${build.test.results.dir}"/>
+
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist list="${nb.clusters.list}" name="nb.clusters.validation.list">
+       <mapper type="regexp" from="(.*)" to="validation.\1"/>
+    </resolvelist>
+    
     <subant target="${test.type}" >
         <property name="test.config" value="commit"/>
         <property name="continue.after.failing.tests" value="true"/>
         <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
         <property name="build.test.qa-functional.results.dir" location="${build.test.results.dir}"/>
-        <dirset dir="..">
-            <include name="o.n.core"/>
-            <include name="core.windows"/>
-            <include name="javahelp"/>
-            <include name="ide.kit"/>
-        </dirset>
+        <dirset dir=".." includes="${nb.clusters.validation.list}"/>
     </subant>
+    
     <pathconvert property="failed.tests" pathsep="${line.separator}">
         <fileset dir="${build.test.results.dir}">
             <include name="TEST-*.xml"/>
@@ -1697,6 +1709,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </fileset>
             <report format="frames" todir="${build.test.results.dir}/html"/>
     </junitreport>
+    <echo message="Report generated to ${build.test.results.dir}/html/index.html"/>
     <fail message="There were failed tests:${line.separator}${failed.tests} ${line.separator}${line.separator}Test report html: ${build.test.results.dir}/html/index.html">
         <condition>
             <not>

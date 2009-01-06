@@ -57,6 +57,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,6 +81,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private String[] columnNames;
     private String[][] values;
 
+    private Font titleFont;
+    private Font headersFont;
+    private Font valuesFont;
+
     public TableItemDisplayPresenter() {
         tablePanel = new JPanel() {
 
@@ -92,6 +97,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         tablePanel.setOpaque(false);
         tablePanel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
         setContentComponent(tablePanel);
+
+        titleFont = fontLabel.getFont();
+        headersFont = fontLabel.getFont().deriveFont(Font.BOLD);
+        valuesFont = fontLabel.getFont();
     }
 
     /**
@@ -159,15 +168,15 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     }
     
     private Font getTitleFont(){
-        return fontLabel.getFont();
+        return titleFont;
     }
     
     private Font getHeadersFont(){
-        return fontLabel.getFont().deriveFont(Font.BOLD);
+        return headersFont;
     }
     
     private Font getValuesFont(){
-        return fontLabel.getFont();
+        return valuesFont;
     }
     
     private void paintTable(Graphics g) {
@@ -315,6 +324,8 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             hasModel = false;
         }
 
+        setFonts();
+
         tablePanel.setPreferredSize(calculatePrefferedSize());
         tablePanel.repaint();
     }
@@ -387,5 +398,44 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         }
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), tablePanel, tableModelDescriptor));
         return descriptors;
+    }
+
+    private void setFonts() {
+        titleFont = getFont( TableItemCD.PROP_TITLE_FONT );
+        valuesFont = getFont( TableItemCD.PROP_VALUES_FONT);
+        headersFont = doGetFont( TableItemCD.PROP_HEADERS_FONT);
+        if ( headersFont == null ) {
+            headersFont = fontLabel.getFont().deriveFont(Font.BOLD);
+        }
+    }
+
+    private Font getFont( String property ){
+        Font font = doGetFont(property);
+        if ( font == null ){
+            return fontLabel.getFont();
+        }
+        else {
+            return font;
+        }
+    }
+
+    private Font doGetFont( String property ){
+        DesignComponent fontComponent = getComponent().readProperty(
+                property).getComponent();
+        if ( fontComponent != null ){
+            int kindCode = Integer.parseInt( fontComponent.readProperty(
+                    FontCD.PROP_FONT_KIND).getPrimitiveValue().toString());
+            int faceCode = Integer.parseInt( fontComponent.readProperty(
+                    FontCD.PROP_FACE).getPrimitiveValue().toString());
+            int styleCode = Integer.parseInt( fontComponent.readProperty(
+                    FontCD.PROP_STYLE).getPrimitiveValue().toString());
+            int sizeCode = Integer.parseInt( fontComponent.readProperty(
+                    FontCD.PROP_SIZE).getPrimitiveValue().toString());
+            return ScreenSupport.getFont( getComponent().getDocument(),
+                    kindCode, faceCode, styleCode, sizeCode);
+        }
+        else {
+            return null;
+        }
     }
 }

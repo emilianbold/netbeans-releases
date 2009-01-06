@@ -48,7 +48,6 @@ import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
@@ -96,10 +95,12 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         }
         
         if (mutatorModifiers != null){
-            if (!mutatorModifiers.contains(Modifier.PUBLIC)
-                    && !mutatorModifiers.contains(Modifier.PROTECTED)){
+            // See issue 151387
+            //if (!mutatorModifiers.contains(Modifier.PUBLIC)
+            //        && !mutatorModifiers.contains(Modifier.PROTECTED)){
+            if (mutatorModifiers.contains(Modifier.PRIVATE) ) {
                 errors.add(Rule.createProblem(attrib.getMutator(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator")));
+                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator"), Severity.WARNING));
             }
             // see issue #108876
 //            else if (attrib.getModelElement() instanceof Id
