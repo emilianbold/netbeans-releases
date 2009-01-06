@@ -131,21 +131,24 @@ final class StatisticsPanel extends JPanel implements ItemListener {
                     true)));
         rerunButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_RerunButton"));  //NOI18N
-       //XXX disable for now
-        rerunButton.setEnabled(false);
-        //        rerunButton.addActionListener(new ActionListener() {
 
-//            public void actionPerformed(ActionEvent e) {
-//                TestExecutionManager.getInstance().rerun();
-//            }
-//        });
-//        TestExecutionManager.getInstance().addChangeListener(new ChangeListener() {
-//
-//            public void stateChanged(ChangeEvent e) {
-//                rerunButton.setEnabled(TestExecutionManager.getInstance().isFinished());
-//            }
-//        });
-//        rerunButton.setEnabled(TestExecutionManager.getInstance().isFinished());
+        final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
+        if (rerunHandler != null) {
+            rerunButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    rerunHandler.rerun();
+                }
+            });
+            rerunHandler.addChangeListener(new ChangeListener() {
+
+                public void stateChanged(ChangeEvent e) {
+                    rerunButton.setEnabled(rerunHandler.enabled());
+                }
+            });
+            rerunButton.setEnabled(rerunHandler.enabled());
+        }
+
         rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
     }
     
