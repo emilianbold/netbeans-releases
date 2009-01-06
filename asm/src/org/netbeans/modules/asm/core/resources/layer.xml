@@ -141,6 +141,14 @@
                 <attr name="position" intvalue="458"/>
             </file>
         </folder>
+        <folder name="CndExtensions">
+            <file name="Assembler">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
+                <attr name="mimeType" stringvalue="text/x-asm"/>
+                <attr name="default" stringvalue="s"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
     </folder>
 
     <folder name="Templates">
@@ -169,4 +177,5 @@
             </folder>
         </folder>
     </folder>
+
 </filesystem>

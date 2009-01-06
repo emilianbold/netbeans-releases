@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
@@ -62,12 +63,14 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
     
     
     public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
-        Project project = FileOwnerQuery.getOwner(targetSource);
+        //Project project = FileOwnerQuery.getOwner(targetSource);
 //        if(supportsJaxrpcOnly(project, targetSource)){
-            return new JaxRpcInvokeOperation(project);
-//        }
+        if (WebServicesClientSupport.getWebServicesClientSupport(targetSource) != null
+                && isJaxWsLibraryOnClasspath(targetSource)) {
+            return new JaxRpcInvokeOperation(targetSource);
+        }
         
-//        return null;
+        return null;
     }
     
     private boolean supportsJaxrpcOnly(Project project, FileObject targetSource){

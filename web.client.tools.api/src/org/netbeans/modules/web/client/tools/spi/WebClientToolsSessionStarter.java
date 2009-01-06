@@ -48,7 +48,7 @@ import org.openide.util.Lookup;
  * This SPI is used to start the tools such as
  * JavaScript Debugger, Client side HTTP monitor and DOM/CSS inspector. The
  * singleton service implementation should be registered using the standard
- * META-INF/services and is discovred using the default lookup.
+ * {@link org.openide.util.lookup.ServiceProvider} and is discovered using the default lookup.
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */

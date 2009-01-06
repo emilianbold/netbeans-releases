@@ -78,6 +78,19 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
@@ -196,20 +209,20 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return getDebugger ().getVirtualMachine ();
     }
     
-    protected EventRequestManager getEventRequestManager () {
+    protected EventRequestManager getEventRequestManager () throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         VirtualMachine vm = getVirtualMachine();
         if (vm == null) {
             // Already disconnected
-            throw new VMDisconnectedException();
+            throw new VMDisconnectedExceptionWrapper(new VMDisconnectedException());
         }
-        return vm.eventRequestManager ();
+        return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) {
+    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         addEventRequest(r, false);
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) {
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -217,12 +230,12 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         // PATCH #48174
         // if this is breakpoint with SUSPEND_NONE we stop EVENT_THREAD to print output line
         if (getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_ALL)
-            r.setSuspendPolicy (JPDABreakpoint.SUSPEND_ALL);
+            EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_ALL);
         else
-            r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
+            EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_EVENT_THREAD);
         int hitCountFilter = getBreakpoint().getHitCountFilter();
         if (!ignoreHitCount && hitCountFilter > 0) {
-            r.addCountFilter(hitCountFilter);
+            EventRequestWrapper.addCountFilter(r, hitCountFilter);
             switch (getBreakpoint().getHitCountFilteringStyle()) {
                 case MULTIPLE:
                     this.hitCountFilter = hitCountFilter;
@@ -239,7 +252,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         } else {
             this.hitCountFilter = 0;
         }
-        r.enable ();
+        EventRequestWrapper.enable (r);
     }
 
     synchronized private void removeAllEventRequests () {
@@ -251,12 +264,14 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             for (i = 0; i < k; i++) { 
                 EventRequest r = requests.get (i);
                 logger.fine("BreakpointImpl removeEventRequest: " + r);
-                vm.eventRequestManager().deleteEventRequest(r);
+                EventRequestManagerWrapper.deleteEventRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        r);
                 getDebugger ().getOperator ().unregister (r);
             }
             
-        } catch (VMDisconnectedException e) {
-        } catch (com.sun.jdi.InternalException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
         requests = new LinkedList<EventRequest>();
     }
@@ -266,10 +281,12 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (vm == null) return; 
         try {
             logger.fine("BreakpointImpl removeEventRequest: " + r);
-            vm.eventRequestManager().deleteEventRequest(r);
+            EventRequestManagerWrapper.deleteEventRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm),
+                    r);
             getDebugger ().getOperator ().unregister (r);
-        } catch (VMDisconnectedException e) {
-        } catch (com.sun.jdi.InternalException e) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } catch (InternalExceptionWrapper e) {
         }
         requests.remove(r);
     }
@@ -277,7 +294,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     /** Called when a new event request needs to be created, e.g. after hit count
      * was met and hit count style is "greater than".
      */
-    protected abstract EventRequest createEventRequest(EventRequest oldRequest);
+    protected abstract EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper;
 
     private Variable processedReturnVariable;
     private Throwable conditionException;
@@ -288,56 +305,62 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             ThreadReference threadReference,
             Value value) {
 
-        if (hitCountFilter > 0) {
-            event.request().disable();
-            //event.request().addCountFilter(hitCountFilter);
-            // This submits the event with the filter again
-            event.request().enable();
-        }
-        if (hitCountFilter == -1) {
-            event.request().disable();
-            removeEventRequest(event.request());
-            addEventRequest(createEventRequest(event.request()), true);
-        }
+        try {
+            EventRequest request = EventWrapper.request(event);
+            if (hitCountFilter > 0) {
+                EventRequestWrapper.disable(request);
+                //event.request().addCountFilter(hitCountFilter);
+                // This submits the event with the filter again
+                EventRequestWrapper.enable(request);
+            }
+            if (hitCountFilter == -1) {
+                EventRequestWrapper.disable(request);
+                removeEventRequest(request);
+                addEventRequest(createEventRequest(request), true);
+            }
 
-        Variable variable = null;
-        if (getBreakpoint() instanceof MethodBreakpoint &&
-                (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
-                 & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
-            if (value != null) {
-                JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
-                ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
-                jt.setReturnVariable(retVariable);
-                variable = retVariable;
+            Variable variable = null;
+            if (getBreakpoint() instanceof MethodBreakpoint &&
+                    (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
+                     & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
+                if (value != null) {
+                    JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
+                    ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
+                    jt.setReturnVariable(retVariable);
+                    variable = retVariable;
+                }
             }
-        }
-        boolean success;
-        if (condition != null && condition.length() > 0) {
-            //PATCH 48174
-            try {
-                getDebugger().setAltCSF(threadReference.frame(0));
-            } catch (com.sun.jdi.IncompatibleThreadStateException e) {
-                String msg = "Thread '" + threadReference.name() +
-                        "': status = " + threadReference.status() +
-                        ", is suspended = " + threadReference.isSuspended() +
-                        ", suspend count = " + threadReference.suspendCount() +
-                        ", is at breakpoint = " + threadReference.isAtBreakpoint();
-                Logger.getLogger(BreakpointImpl.class.getName()).log(Level.INFO, msg, e);
-            } catch (java.lang.IndexOutOfBoundsException e) {
-                // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
+            boolean success;
+            if (condition != null && condition.length() > 0) {
+                //PATCH 48174
+                try {
+                    getDebugger().setAltCSF(ThreadReferenceWrapper.frame(threadReference, 0));
+                } catch (com.sun.jdi.IncompatibleThreadStateException e) {
+                    String msg = JPDAThreadImpl.getThreadStateLog(threadReference);
+                    Logger.getLogger(BreakpointImpl.class.getName()).log(Level.INFO, msg, e);
+                } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (IllegalThreadStateExceptionWrapper e) {
+                    return false; // Let it go, the thread is dead.
+                } catch (java.lang.IndexOutOfBoundsException e) {
+                    // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
+                }
+                success = evaluateCondition (
+                        condition,
+                        threadReference
+                    );
+                getDebugger().setAltCSF(null);
+            } else {
+                success = true;
             }
-            success = evaluateCondition (
-                    condition,
-                    threadReference
-                );
-            getDebugger().setAltCSF(null);
-        } else {
-            success = true;
+            if (success) { // perform() will be called, store the data
+                processedReturnVariable = variable;
+            }
+            return success;
+        } catch (InternalExceptionWrapper iex) {
+            return true; // Stop here
+        } catch (VMDisconnectedExceptionWrapper iex) {
+            return false; // Let it go
         }
-        if (success) { // perform() will be called, store the data
-            processedReturnVariable = variable;
-        }
-        return success;
     }
 
     protected boolean perform (
@@ -382,7 +405,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
         logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
         if (!resume) {
-            resume = checkWhetherResumeToFinishStep(threadReference);
+            try {
+                resume = checkWhetherResumeToFinishStep(threadReference);
+            } catch (InternalExceptionWrapper ex) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
+            }
         }
         if (!resume) {
             ((JPDAThreadImpl) getDebugger().getThread(threadReference)).setCurrentBreakpoint(breakpoint);
@@ -391,8 +420,9 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return resume; 
     }
     
-    private boolean checkWhetherResumeToFinishStep(ThreadReference thread) {
-        List<StepRequest> stepRequests = thread.virtualMachine().eventRequestManager().stepRequests();
+    private boolean checkWhetherResumeToFinishStep(ThreadReference thread) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        List<StepRequest> stepRequests = EventRequestManagerWrapper.stepRequests(
+                VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)));
         if (stepRequests.size() > 0) {
             int suspendState = breakpoint.getSuspend();
             if (suspendState == JPDABreakpoint.SUSPEND_ALL ||
@@ -402,19 +432,23 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 List<StepRequest> activeStepRequests = new ArrayList<StepRequest>(stepRequests);
                 for (int i = 0; i < activeStepRequests.size(); i++) {
                     StepRequest step = activeStepRequests.get(i);
-                    ThreadReference stepThread = step.thread();
-                    if (!step.isEnabled()) {
+                    ThreadReference stepThread = StepRequestWrapper.thread(step);
+                    if (!EventRequestWrapper.isEnabled(step)) {
                         activeStepRequests.remove(i);
                         continue;
                     }
                     int stepThreadStatus;
                     try {
-                        stepThreadStatus = step.thread().status();
-                    } catch (ObjectCollectedException ocex) {
+                        stepThreadStatus = ThreadReferenceWrapper.status(StepRequestWrapper.thread(step));
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                        stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
                         stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
                     }
                     if (stepThreadStatus == ThreadReference.THREAD_STATUS_ZOMBIE) {
-                        thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
+                        EventRequestManagerWrapper.deleteEventRequest(
+                                VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)),
+                                step);
                         debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);
                         continue;
@@ -559,7 +593,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             try {
                 boolean success;
                 synchronized (debugger.LOCK) {
-                    StackFrame sf = thread.frame (0);
+                    StackFrame sf = ThreadReferenceWrapper.frame (thread, 0);
                     success = evaluateConditionIn (condition, sf, 0);
                 }
                 // condition true => stop here (do not resume)
@@ -579,6 +613,14 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             // should not occurre
             Exceptions.printStackTrace(ex);
             return true; // Act as if the condition was satisfied when an error occurs
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            return true;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return true;
+        } catch (InternalExceptionWrapper ex) {
+            return true;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return true;
         }
     }
 
@@ -680,11 +722,23 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             frameDepth
         );
         try {
-            return ((com.sun.jdi.BooleanValue) value).booleanValue ();
+            return PrimitiveValueWrapper.booleanValue((com.sun.jdi.BooleanValue) value);
         } catch (ClassCastException e) {
-            throw new InvalidExpressionException ("Expecting boolean value instead of "+value.type());
+            try {
+                throw new InvalidExpressionException("Expecting boolean value instead of " + ValueWrapper.type(value));
+            } catch (InternalExceptionWrapper ex) {
+                throw new InvalidExpressionException("Expecting boolean value");
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                throw new InvalidExpressionException("Expecting boolean value");
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                throw new InvalidExpressionException("Expecting boolean value");
+            }
         } catch (NullPointerException npe) {
             throw new InvalidExpressionException (npe);
+        } catch (InternalExceptionWrapper ex) {
+            return true;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return true;
         }
     }
     

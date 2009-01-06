@@ -64,7 +64,7 @@ public class SettingsContextProvider implements CodeGeneratorContextProvider {
             DataObject dobj = NbEditorUtilities.getDataObject(component.getDocument());
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
-                ModelSource ms = Utilities.createModelSource(fo, true);
+                ModelSource ms = Utilities.createModelSource(fo);
                 SettingsModel model = SettingsModelFactory.getDefault().getModel(ms);
                 if (model != null) {
                     Lookup newContext = new ProxyLookup(context, Lookups.fixed(model));

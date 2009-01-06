@@ -46,6 +46,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -189,7 +190,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         Collection<CsmObject> out = new LinkedHashSet<CsmObject>();
         if (isFindUsages()) {
             if (CsmKindUtilities.isMethod(referencedObject)) {
-                CsmMethod method = (CsmMethod)referencedObject;
+                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
                 if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
                 }

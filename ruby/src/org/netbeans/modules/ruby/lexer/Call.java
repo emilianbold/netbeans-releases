@@ -63,6 +63,7 @@ public class Call {
     public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
     public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
     public static final Call UNKNOWN = new Call(RubyType.createUnknown(), null, false, false);
+
     private final RubyType type;
     private final String lhs;
     private final boolean isStatic;
@@ -283,7 +284,10 @@ public class Call {
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
             }
-            
+
+            boolean dotted = false; // is this dotted expression? (e.g. foo.boo.)
+            int inParens = 0; // how many unmatched ')' did we encounter
+
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
             while (ts.movePrevious()) {
@@ -295,6 +299,22 @@ public class Call {
                 token = ts.token();
                 id = token.id();
 
+                if ((id == RubyTokenId.LPAREN)) {
+                    if (inParens > 0) {
+                        inParens--;
+                        continue;
+                    } else {
+                        break; // unmatched left parenthesis?
+                    }
+                } else if ((id == RubyTokenId.RPAREN)) {
+                    inParens++;
+                    continue;
+                }
+
+                if (inParens > 0) { // ignore content inside of bracked
+                    continue;
+                }
+
                 String tokenText = null;
                 if (id == RubyTokenId.ANY_KEYWORD) {
                     tokenText = token.text().toString();
@@ -302,45 +322,29 @@ public class Call {
 
                 if (id == RubyTokenId.WHITESPACE) {
                     break;
-                } else if (id == RubyTokenId.RBRACKET) {
-                    // Looks like we're operating on an array, e.g.
-                    //  [1,2,3].each|
-                    return new Call(RubyType.ARRAY, null, false, methodExpected);
-                } else if (id == RubyTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
-                                                       // Looks like we're operating on a hash, e.g.
-                                                       //  {1=>foo,2=>bar}.each|
+                }
 
-                    return new Call(RubyType.HASH, null, false, methodExpected);
-                } else if ((id == RubyTokenId.STRING_END) || (id == RubyTokenId.QUOTED_STRING_END)) {
-                    return new Call(RubyType.STRING, null, false, methodExpected);
-                } else if (id == RubyTokenId.REGEXP_END) {
-                    return new Call(RubyType.REGEXP, null, false, methodExpected);
-                } else if (id == RubyTokenId.INT_LITERAL) {
-                    return new Call(RubyType.FIXNUM, null, false, methodExpected); // Or Bignum?
-                } else if (id == RubyTokenId.FLOAT_LITERAL) {
-                    return new Call(RubyType.FLOAT, null, false, methodExpected);
-                } else if (id == RubyTokenId.TYPE_SYMBOL) {
-                    return new Call(RubyType.SYMBOL, null, false, methodExpected);
-                } else if (id == RubyTokenId.RANGE) {
-                    return new Call(RubyType.RANGE, null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
-                    return new Call(RubyType.NIL_CLASS, null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
-                    return new Call(RubyType.TRUE_CLASS, null, false, methodExpected);
-                } else if ((id == RubyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
-                    return new Call(RubyType.FALSE_CLASS, null, false, methodExpected);
-                } else if (((id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.INSTANCE_VAR) ||
+                // do not evaluate e.g. '1.even?.' expression to Fixnum type
+                if (!dotted) {
+                    Call call = tryLiteral(id, methodExpected, tokenText);
+                    if (call != null) {
+                        return call;
+                    }
+                }
+
+                if (((id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.INSTANCE_VAR) ||
                         (id == RubyTokenId.CLASS_VAR) || (id == RubyTokenId.IDENTIFIER)) ||
                         id.primaryCategory().equals("keyword") || (id == RubyTokenId.DOT) ||
                         (id == RubyTokenId.COLON3) || (id == RubyTokenId.CONSTANT) ||
-                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF)) {
+                        (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF) ||
+                        (isLiteral(id))) {
                     
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();
-
-                    continue;
-                } else if ((id == RubyTokenId.LPAREN) || (id == RubyTokenId.LBRACE) ||
-                        (id == RubyTokenId.LBRACKET)) {
+                    if (id == RubyTokenId.DOT) {
+                        dotted = true;
+                    }
+                } else if ((id == RubyTokenId.LBRACE) || (id == RubyTokenId.LBRACKET)) {
                     // It's an expression for example within a parenthesis, e.g.
                     // yield(^File.join())
                     // in this case we can do top level completion
@@ -358,7 +362,6 @@ public class Call {
                     String lhs = doc.getText(beginOffset, lastSeparatorOffset - beginOffset);
 
                     if (lhs.equals("super") || lhs.equals("self")) { // NOI18N
-
                         return new Call(RubyType.create(lhs), lhs, false, true);
                     } else if (Character.isUpperCase(lhs.charAt(0))) {
                         
@@ -400,5 +403,51 @@ public class Call {
         }
 
         return Call.LOCAL;
+    }
+
+    private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {
+        if (id == RubyTokenId.RBRACKET) {
+            // Looks like we're operating on an array, e.g.
+            //  [1,2,3].each|
+            return new Call(RubyType.ARRAY, null, false, methodExpected);
+        } else if (id == RubyTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
+            // Looks like we're operating on a hash, e.g.
+            //  {1=>foo,2=>bar}.each|
+            return new Call(RubyType.HASH, null, false, methodExpected);
+        } else if ((id == RubyTokenId.STRING_END) || (id == RubyTokenId.QUOTED_STRING_END)) {
+            return new Call(RubyType.STRING, null, false, methodExpected);
+        } else if (id == RubyTokenId.REGEXP_END) {
+            return new Call(RubyType.REGEXP, null, false, methodExpected);
+        } else if (id == RubyTokenId.INT_LITERAL) {
+            return new Call(RubyType.FIXNUM, null, false, methodExpected); // Or Bignum?
+        } else if (id == RubyTokenId.FLOAT_LITERAL) {
+            return new Call(RubyType.FLOAT, null, false, methodExpected);
+        } else if (id == RubyTokenId.TYPE_SYMBOL) {
+            return new Call(RubyType.SYMBOL, null, false, methodExpected);
+        } else if (id == RubyTokenId.RANGE) {
+            return new Call(RubyType.RANGE, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.NIL_CLASS, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.TRUE_CLASS, null, false, methodExpected);
+        } else if ((id == RubyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
+            return new Call(RubyType.FALSE_CLASS, null, false, methodExpected);
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean isLiteral(final TokenId id) {
+        return id == RubyTokenId.RBRACKET ||
+                id == RubyTokenId.RBRACE ||
+                id == RubyTokenId.STRING_END ||
+                id == RubyTokenId.REGEXP_END ||
+                id == RubyTokenId.INT_LITERAL ||
+                id == RubyTokenId.FLOAT_LITERAL ||
+                id == RubyTokenId.TYPE_SYMBOL ||
+                id == RubyTokenId.RANGE ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD ||
+                id == RubyTokenId.ANY_KEYWORD;
     }
 }

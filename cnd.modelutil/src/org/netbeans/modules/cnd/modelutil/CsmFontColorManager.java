@@ -51,6 +51,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -67,11 +68,9 @@ public final class CsmFontColorManager {
         getCreateProvider(mimeType).addListener(listener);
     }
     
-    private static final String DEFAULT_MIME_TYPE = "text/x-c++"; //NOI18N
-    
     /* package */ Color getColor(FontColorProvider.Entity color) {
-        // completion is not aware of document type
-        AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
+        // completion is not aware of document type, use C++
+        AttributeSet as = getCreateProvider(MIMENames.CPLUSPLUS_MIME_TYPE).getColor(color);
         return isUnitTestsMode ? Color.red : (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
     }
 

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -52,9 +53,9 @@ import org.openide.util.NbBundle;
  */
 public class NewCndFileChooserPanel extends CndPanel {
 
-    private final ExtensionsSettings es;
+    private final MIMEExtensions es;
     
-    NewCndFileChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, ExtensionsSettings es) {
+    NewCndFileChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es) {
         super(project, folders, bottomPanel);
         this.es = es;
     }
@@ -95,7 +96,7 @@ public class NewCndFileChooserPanel extends CndPanel {
             return false;
         }
 
-        if (!es.isKnownExtension(getTargetExtension())) {
+        if (!es.getValues().contains(getTargetExtension())) {
             //MSG_new_extension_introduced
             String msg = NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_new_extension_introduced", getTargetExtension()); // NOI18N
 

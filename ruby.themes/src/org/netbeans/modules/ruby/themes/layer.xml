@@ -240,6 +240,40 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
+
+            <folder name="x-python">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-python-token-colorings.xml" url="DarkPastels/Python.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="Aloha">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-token-colorings.xml" url="Aloha/x-python.xml">
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-python-string">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-x-python-string-double-token-colorings.xml" url="DarkPastels/Python-string.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Aloha">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-token-colorings.xml" url="Aloha/x-python-string.xml">
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
             <folder name="x-ruby-string-single">
                 <folder name="FontsColors">
                     <folder name="DarkPastels">
@@ -255,7 +289,7 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
-            
+
             <folder name="xml">
                 <folder name="FontsColors">
                     <folder name="DarkPastels">

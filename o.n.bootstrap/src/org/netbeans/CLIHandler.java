@@ -76,7 +76,7 @@ import org.openide.util.Task;
 /**
  * Command Line Interface and User Directory Locker support class.
  * Subclasses may be registered into the system to handle special command-line options.
- * To be registered, use <samp>META-INF/services/org.netbeans.CLIHandler</code>
+ * To be registered, use {@link org.openide.util.lookup.ServiceProvider}
  * in a JAR file in the startup or dynamic class path (e.g. <samp>lib/ext/</samp>
  * or <samp>lib/</samp>).
  * @author Jaroslav Tulach

@@ -82,7 +82,7 @@ public class Wrapper {
         ServerInstance si = Deployment.getDefault().getServerInstance(id);
         if (si != null) {
             try {
-                return si.getServerDisplayName();
+                return si.getDisplayName();
             } catch (InstanceRemovedException ex) {
                 Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
             }

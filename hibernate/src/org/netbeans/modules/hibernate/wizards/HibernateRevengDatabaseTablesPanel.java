@@ -43,6 +43,7 @@ package org.netbeans.modules.hibernate.wizards;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -76,6 +78,7 @@ import org.netbeans.modules.hibernate.wizards.support.TableUISupport;
 import org.netbeans.modules.hibernate.wizards.support.DBSchemaManager;
 import org.netbeans.modules.hibernate.wizards.support.DBSchemaTableProvider;
 import org.netbeans.modules.hibernate.wizards.support.EmptyTableProvider;
+import org.netbeans.modules.hibernate.wizards.support.SelectedTables;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -97,7 +100,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     List<String> databaseTables;
     private TableClosure tableClosure;
     private SchemaElement sourceSchemaElement;
-
+    private SelectedTables selectedTables;
     private static Logger logger = Logger.getLogger(HibernateRevengDatabaseTablesPanel.class.getName());
 
     public HibernateRevengDatabaseTablesPanel(Project project) {
@@ -129,7 +132,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     private void fillConfiguration() {
         env = project.getLookup().lookup(HibernateEnvironment.class);
-        String[] configFiles = getConfigFilesFromProject(project);
+        String[] configFiles = getConfigFilesFromProject(project);        
         this.cmbDatabaseConn.setModel(new DefaultComboBoxModel(configFiles));
     }
 
@@ -164,7 +167,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         try {
             if (cmbDatabaseConn.getSelectedIndex() != -1) {
                 hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
-                if(!env.canDirectlyConnectToDB(hibConf)) {
+                if (!env.canDirectlyConnectToDB(hibConf)) {
                     logger.info("Not able to connect to the database, aborting table fetching..");
                     return;
                 }
@@ -173,8 +176,9 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
                     sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
                     schemaName = dbconn.getSchema();
                     java.sql.Connection jdbcConnection = dbconn.getJDBCConnection();
-                    if (jdbcConnection != null)
+                    if (jdbcConnection != null) {
                         catalogName = jdbcConnection.getCatalog();
+                    }
                 }
             }
         } catch (DataObjectNotFoundException ex) {
@@ -231,6 +235,29 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         }
     }
 
+        public void update(TableClosure tableClosure) {
+        try {
+            if (selectedTables == null) {
+                try {
+                    selectedTables = new SelectedTables(tableClosure, null, null);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                selectedTables.addChangeListener(new ChangeListener() {
+                    public void stateChanged(ChangeEvent event) {
+                        changeSupport.fireChange();
+                    }
+                });
+            } else {
+                selectedTables.setTableClosureAndTargetFolder(tableClosure, null, null);
+            }
+
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+
     public FileObject getConfigurationFile() {
         if (cmbDatabaseConn.getSelectedIndex() != -1) {
             return configFileObjects.get(cmbDatabaseConn.getSelectedIndex());
@@ -245,9 +272,13 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     public String getSchemaName() {
         return schemaName;
     }
-    
+
     public String getCatalogName() {
         return catalogName;
+    }
+
+    public SelectedTables getSelectedTables() {
+        return selectedTables;
     }
 
     private static void notify(String message) {

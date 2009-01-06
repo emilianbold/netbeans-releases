@@ -73,7 +73,7 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Str;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
 
 /**
  * Computations regarding module imports.
@@ -145,6 +145,10 @@ public final class ImportManager {
         removeDuplicates = codeStyle.removeDuplicates();
         rightMargin = codeStyle.getRightMargin();
 
+    }
+
+    public static boolean isFutureImport(ImportFrom fromStatement) {
+        return "__future__".equals(fromStatement.getInternalModule()); // NOI18N
     }
 
     public void setCleanup(ImportCleanupStyle cleanup) {
@@ -327,8 +331,8 @@ public final class ImportManager {
 //                if (imp.names != null) {
 //                    boolean all = true;
 //                    boolean some = false;
-//                    for (aliasType at : imp.names) {
-//                        if (duplicates.contains(at.name)) {
+//                    for (alias at : imp.getInternalNames()) {
+//                        if (duplicates.contains(at.getInternalName())) {
 //                            if (!foundFirst) {
 //                                foundFirst = true;
 //                            } else {
@@ -338,7 +342,7 @@ public final class ImportManager {
 //                                    nameList = new ArrayList<String>();
 //                                    names.put(imp, nameList);
 //                                }
-//                                nameList.add(at.name);
+//                                nameList.add(at.getInternalName());
 //                            }
 //                            break;
 //                        } else {
@@ -359,13 +363,13 @@ public final class ImportManager {
 //                if (from.names != null) {
 //                    boolean all = true;
 //                    boolean some = false;
-//                    for (aliasType at : from.names) {
-//                        assert at.name != null;
+//                    for (alias at : from.names) {
+//                        assert at.getInternalName() != null;
 //                        String value;
-//                        if (at.asname != null) {
-//                            value = from.module + ":" + at.name + ":" + at.asname;
+//                        if (at.getInternalAsname() != null) {
+//                            value = from.module + ":" + at.getInternalName() + ":" + at.getInternalAsname();
 //                        } else {
-//                            value = from.module + ":" + at.name;
+//                            value = from.module + ":" + at.getInternalName();
 //                        }
 //                        if (duplicates.contains(value)) {
 //                            if (!foundFirst) {
@@ -377,7 +381,7 @@ public final class ImportManager {
 //                                    nameList = new ArrayList<String>();
 //                                    names.put(from, nameList);
 //                                }
-//                                nameList.add(at.name);
+//                                nameList.add(at.getInternalName());
 //                            }
 //                        } else {
 //                            all = false;
@@ -445,18 +449,18 @@ public final class ImportManager {
 //                if (imp.names != null) {
 //                    boolean all = true;
 //                    boolean some = false;
-//                    for (aliasType at : imp.names) {
-//                        if (unused.contains(at.name)) {
+//                    for (alias at : imp.getInternalNames()) {
+//                        if (unused.contains(at.getInternalName())) {
 //                            some = true;
 //                            List<String> nameList = names.get(imp);
 //                            if (nameList == null) {
 //                                nameList = new ArrayList<String>();
 //                                names.put(imp, nameList);
 //                            }
-//                            nameList.add(at.name);
+//                            nameList.add(at.getInternalName());
 //
 //                            boolean isSystem = false; // Don't care what it is for deletion
-//                            removeEntries.add(new ImportEntry(at.name, at.asname, isSystem,
+//                            removeEntries.add(new ImportEntry(at.getInternalName(), at.getInternalAsname(), isSystem,
 //                                    removeDuplicates ? null : imp,
 //                                    sortImports ? 0 : ordinal++));
 //                          break;
@@ -479,18 +483,18 @@ public final class ImportManager {
 //                if (from.names != null) {
 //                    boolean all = true;
 //                    boolean some = false;
-//                    for (aliasType at : from.names) {
+//                    for (alias at : from.names) {
 //                        boolean isSystem = false; // Don't care what it is for deletion
 //
-//                        assert at.name != null;
+//                        assert at.getInternalName() != null;
 //                        String value;
-//                        if (at.asname != null) {
-//                            value = from.module + ":" + at.name + ":" + at.asname;
+//                        if (at.getInternalAsname() != null) {
+//                            value = from.module + ":" + at.getInternalName() + ":" + at.getInternalAsname();
 //                        } else {
-//                            value = from.module + ":" + at.name;
+//                            value = from.module + ":" + at.getInternalName();
 //                        }
 //                        if (unused.contains(value)) {
-//                            removeEntries.add(new ImportEntry(from.module, at.name, at.asname, isSystem,
+//                            removeEntries.add(new ImportEntry(from.module, at.getInternalName(), at.getInternalAsname(), isSystem,
 //                                    removeDuplicates ? null : from,
 //                                    sortImports ? 0 : ordinal++));
 //                            some = true;
@@ -499,7 +503,7 @@ public final class ImportManager {
 //                                nameList = new ArrayList<String>();
 //                                names.put(from, nameList);
 //                            }
-//                            nameList.add(at.name);
+//                            nameList.add(at.getInternalName());
 //                        } else {
 //                            all = false;
 //                        }
@@ -756,10 +760,11 @@ public final class ImportManager {
         for (PythonTree node : mainImports) {
             if (node instanceof Import) {
                 Import imp = (Import)node;
-                if (imp.names != null) {
-                    // TODO - look up for at.name!
-                    for (aliasType at : imp.names) {
-                        ImportEntry importEntry = new ImportEntry(at.name, at.asname, systemLibsFirst && index.isSystemModule(at.name),
+                // TODO - look up for at.getInternalName()!
+                List<alias> names = imp.getInternalNames();
+                if (names != null) {
+                    for (alias at : names) {
+                        ImportEntry importEntry = new ImportEntry(at.getInternalName(), at.getInternalAsname(), systemLibsFirst && index.isSystemModule(at.getInternalName()),
                                 removeDuplicates ? null : imp, sortImports ? 0 : ordinal++);
                         if (!separateFromImps) {
                             importEntry.sortedFrom = false;
@@ -770,11 +775,12 @@ public final class ImportManager {
             } else {
                 assert node instanceof ImportFrom;
                 ImportFrom imp = (ImportFrom)node;
-                if (imp.names != null) {
-                    // TODO - look up for imp.module!
-                    boolean isSystemLibrary = systemLibsFirst && index.isSystemModule(imp.module);
-                    for (aliasType at : imp.names) {
-                        ImportEntry importEntry = new ImportEntry(imp.module, at.name, at.asname, isSystemLibrary,
+                List<alias> names = imp.getInternalNames();
+                if (names != null && names.size() > 0) {
+                    // TODO - look up for imp.getInternalModule()!
+                    boolean isSystemLibrary = systemLibsFirst && index.isSystemModule(imp.getInternalModule());
+                    for (alias at : names) {
+                        ImportEntry importEntry = new ImportEntry(imp.getInternalModule(), at.getInternalName(), at.getInternalAsname(), isSystemLibrary,
                                 removeDuplicates ? null : imp, sortImports ? 0 : ordinal++);
                         if (!separateFromImps) {
                             importEntry.sortedFrom = false;
@@ -919,14 +925,15 @@ public final class ImportManager {
                 boolean stop = false;
                 if (node instanceof Import) {
                     Import imp = (Import)node;
-                    if (imp.names != null && imp.names.length > 0 &&
-                            imp.names[0].name.compareTo(module) >= 0) {
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null && names.size() > 0 &&
+                            names.get(0).getInternalName().compareTo(module) >= 0) {
                         stop = true;
                     }
                 } else {
                     assert node instanceof ImportFrom;
                     ImportFrom imp = (ImportFrom)node;
-                    if (imp.module.compareTo(module) >= 0) {
+                    if (imp.getInternalModule().compareTo(module) >= 0) {
                         stop = true;
                     }
                 }
@@ -970,9 +977,10 @@ public final class ImportManager {
     /** Determine if the given module is imported (for the given symbol) */
     public boolean isImported(String module, String ident) {
         for (Import imp : imports) {
-            if (imp.names != null) {
-                for (aliasType at : imp.names) {
-                    if (module.equals(at.name) && (ident == null || (ident.equals(module) || ident.equals(at.asname)))) {
+            List<alias> names = imp.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if (module.equals(at.getInternalName()) && (ident == null || (ident.equals(module) || ident.equals(at.getInternalAsname())))) {
                         return true;
                     }
                 }
@@ -980,18 +988,19 @@ public final class ImportManager {
         }
 
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                if (module.equals(from.module)) {
-                    // Make sure -this- symbol hasn't been imported!
-                    if (ident != null && from.names != null) {
-                        for (aliasType at : from.names) {
-                            if (at.asname == null) {
+            if (module.equals(from.getInternalModule())) {
+                // Make sure -this- symbol hasn't been imported!
+                if (ident != null) {
+                    List<alias> names = from.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (at.getInternalAsname() == null) {
                                 // If you have "from module1 import Class1 as Class2", then
                                 // "Class1" is not already imported, and "Class2" is.
-                                if (ident.equals(at.name)) {
+                                if (ident.equals(at.getInternalName())) {
                                     return true;
                                 }
-                            } else if (ident.equals(at.asname)) {
+                            } else if (ident.equals(at.getInternalAsname())) {
                                 return true;
                             }
                         }

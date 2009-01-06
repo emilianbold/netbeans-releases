@@ -60,6 +60,14 @@ public final class NotificationLineSupport {
         nd.setInformationMessage (msg);
     }
 
+    /** Gets a information message.
+     * 
+     * @return information message or <code>null</code> if other type of message was set
+     */
+    public final String getInformationMessage () {
+        return nd.getInformationMessage ();
+    }
+
     /** Sets a warning message.
      *
      * @param msg warning message
@@ -68,12 +76,28 @@ public final class NotificationLineSupport {
         nd.setWarningMessage (msg);
     }
 
+    /** Gets a warning message.
+     *
+     * @return warning message or <code>null</code> if other type of message was set
+     */
+    public final String getWarningMessage () {
+        return nd.getWarningMessage ();
+    }
+
     /** Sets a error message.
      *
      * @param msg error message
      */
     public final void setErrorMessage (String msg) {
         nd.setErrorMessage (msg);
+    }
+
+    /** Gets a error message.
+     *
+     * @return error message or <code>null</code> if other type of message was set
+     */
+    public final String getErrorMessage () {
+        return nd.getErrorMessage ();
     }
 
     /** Clears messages.

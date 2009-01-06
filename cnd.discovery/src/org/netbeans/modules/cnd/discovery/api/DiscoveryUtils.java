@@ -390,7 +390,9 @@ public class DiscoveryUtils {
                 }
             // end of generation 2    
             } else if (option.equals("-fopenmp")){ // NOI18N
-                    userMacros.put("_OPENMP", null); // NOI18N
+                userMacros.put("_OPENMP", "200505"); // NOI18N
+            } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
+                userMacros.put("_OPENMP", null); // NOI18N
             } else if (option.startsWith("-")){ // NOI18N
                 // Skip option
             } else if (option.startsWith("ccfe")){ // NOI18N

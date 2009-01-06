@@ -775,4 +775,77 @@ public class IndentTestCase extends EditorBase {
             "      |\n"
             );
     }
+    /**
+     * test IZ:150788 Slight flaw in apache-style indentation
+     */
+    public void testIZ150788() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+                putBoolean(EditorOptions.alignMultilineIfCondition, true);
+        setLoadDocumentText(
+            "if (a &&|)");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "if (a &&\n"+
+            "    )");
+    }
+    /**
+     * test IZ:150788 Slight flaw in apache-style indentation
+     */
+    public void testIZ150788_2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+                putBoolean(EditorOptions.alignMultilineWhileCondition, true);
+        setLoadDocumentText(
+            "while(a &&|)");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "while(a &&\n"+
+            "      )");
+    }
+
+    /**
+     * test IZ:150788 Slight flaw in apache-style indentation
+     */
+    public void testIZ150788_3() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+                putBoolean(EditorOptions.alignMultilineFor, true);
+        setLoadDocumentText(
+            "for  (int a = 0;|)");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "for  (int a = 0;\n"+
+            "      )");
+    }
+
+    /**
+     * test IZ:150788 Slight flaw in apache-style indentation
+     */
+    public void testIZ150788_4() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "for  (int a = 0;|)");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "for  (int a = 0;\n"+
+            "        )");
+    }
+    /**
+     * test IZ:150788 Slight flaw in apache-style indentation
+     */
+    public void testIZ150788_5() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "if (a &&|)");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:150788 Slight flaw in apache-style indentation",
+            "if (a &&\n"+
+            "        )");
+    }
 }

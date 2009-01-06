@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
  */
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
-    private static final boolean USE_SIMPLE_IMPORT_PROJECT = NewMakeProjectWizardIterator.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
+    static final boolean USE_SIMPLE_IMPORT_PROJECT = NewMakeProjectWizardIterator.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
     
     public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
@@ -216,146 +216,153 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         if (isSimple()){
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                ImportProjectDescriptorPanel importPanel = (ImportProjectDescriptorPanel)simplePanels[1];
-                resultSet.addAll(extension.createProject(new ImportProjectDescriptorPanel.WizardDescriptorAdapter(importPanel.getWizardStorage())));
+                SelectModeDescriptorPanel importPanel = (SelectModeDescriptorPanel)simplePanels[0];
+                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(importPanel.getWizardStorage())));
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
-            MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
-            String workingDir = (String)wiz.getProperty("buildCommandWorkingDirTextField"); // NOI18N
-            String workingDirRel;
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                workingDirRel = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
+            if (USE_SIMPLE_IMPORT_PROJECT) {
+                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null) {
+                    resultSet.addAll(extension.createProject(wiz));
+                }
             } else {
-                workingDirRel = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
-            }
-            workingDirRel = FilePathAdaptor.normalize(workingDirRel);
-            extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-            extConf.getMakefileConfiguration().getBuildCommand().setValue((String)wiz.getProperty("buildCommandTextField")); // NOI18N
-            extConf.getMakefileConfiguration().getCleanCommand().setValue((String)wiz.getProperty("cleanCommandTextField")); // NOI18N
-            // Build result
-            String buildResult = (String)wiz.getProperty("outputTextField"); // NOI18N
-            if (buildResult != null && buildResult.length() > 0) {
+                MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+                String workingDir = (String)wiz.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+                String workingDirRel;
                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                    buildResult = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
+                    workingDirRel = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
                 } else if (PathPanel.getMode() == PathPanel.REL) {
-                    buildResult = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
+                    workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
                 } else {
-                    buildResult = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
+                    workingDirRel = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
                 }
-                buildResult = FilePathAdaptor.normalize(buildResult);
-                extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
-            }
-            // Include directories
-            String includeDirectories = (String)wiz.getProperty("includeTextField"); // NOI18N
-            if (includeDirectories != null && includeDirectories.length() > 0) {
-                StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
-                Vector<String> includeDirectoriesVector = new Vector<String>();
-                while (tokenizer.hasMoreTokens()) {
-                    String includeDirectory = tokenizer.nextToken();
-                    includeDirectory = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(includeDirectory));
-                    includeDirectory = FilePathAdaptor.normalize(includeDirectory);
-                    includeDirectoriesVector.add(includeDirectory);
-                }
-                extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
-                extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
-            }
-            // Macros
-            String macros = (String)wiz.getProperty("macroTextField"); // NOI18N
-            if (macros != null && macros.length() > 0) {
-                StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
-                ArrayList<String> list = new ArrayList<String>();
-                while (tokenizer.hasMoreTokens()) {
-                    list.add(tokenizer.nextToken());
-                }
-                // FIXUP
-                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
-                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
-            }
-            // Add makefile and configure script to important files
-            ArrayList<String> importantItems = new ArrayList<String>();
-            String makefilePath = (String)wiz.getProperty("makefileName"); // NOI18N
-            File makefileFile = new File(makefilePath);
-            if (makefilePath != null && makefilePath.length() > 0) {
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                    makefilePath = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
-                } else if (PathPanel.getMode() == PathPanel.REL) {
-                    makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
-                } else {
-                    makefilePath = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
-                }
-                makefilePath = FilePathAdaptor.normalize(makefilePath);
-                importantItems.add(makefilePath);
-            }
-            String configurePath = (String)wiz.getProperty("configureName"); // NOI18N
-            if (configurePath != null && configurePath.length() > 0) {
-                File configureFile = new File(configurePath);
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                    configurePath = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
-                } else if (PathPanel.getMode() == PathPanel.REL) {
-                    configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
-                } else {
-                    configurePath = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
-                }
-                configurePath = FilePathAdaptor.normalize(configurePath);
-                importantItems.add(configurePath);
-                
-                try {
-                    FileObject configureFileObject = FileUtil.toFileObject(configureFile);
-                    DataObject dObj = DataObject.find(configureFileObject);
-                    Node node = dObj.getNodeDelegate();
-
-                    // Add arguments to configure script?
-                    String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
-                    if (configureArguments != null) {
-                        ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                        // Keep user arguments as is in args[0]
-                        ses.setArguments(new String[] {configureArguments});
+                workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+                extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
+                extConf.getMakefileConfiguration().getBuildCommand().setValue((String)wiz.getProperty("buildCommandTextField")); // NOI18N
+                extConf.getMakefileConfiguration().getCleanCommand().setValue((String)wiz.getProperty("cleanCommandTextField")); // NOI18N
+                // Build result
+                String buildResult = (String)wiz.getProperty("outputTextField"); // NOI18N
+                if (buildResult != null && buildResult.length() > 0) {
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                        buildResult = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
+                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                        buildResult = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
+                    } else {
+                        buildResult = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(buildResult));
                     }
+                    buildResult = FilePathAdaptor.normalize(buildResult);
+                    extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
+                }
+                // Include directories
+                String includeDirectories = (String)wiz.getProperty("includeTextField"); // NOI18N
+                if (includeDirectories != null && includeDirectories.length() > 0) {
+                    StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
+                    Vector<String> includeDirectoriesVector = new Vector<String>();
+                    while (tokenizer.hasMoreTokens()) {
+                        String includeDirectory = tokenizer.nextToken();
+                        includeDirectory = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(includeDirectory));
+                        includeDirectory = FilePathAdaptor.normalize(includeDirectory);
+                        includeDirectoriesVector.add(includeDirectory);
+                    }
+                    extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
+                    extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
+                }
+                // Macros
+                String macros = (String)wiz.getProperty("macroTextField"); // NOI18N
+                if (macros != null && macros.length() > 0) {
+                    StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
+                    ArrayList<String> list = new ArrayList<String>();
+                    while (tokenizer.hasMoreTokens()) {
+                        list.add(tokenizer.nextToken());
+                    }
+                    // FIXUP
+                    extConf.getCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
+                    extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
+                }
+                // Add makefile and configure script to important files
+                ArrayList<String> importantItems = new ArrayList<String>();
+                String makefilePath = (String)wiz.getProperty("makefileName"); // NOI18N
+                File makefileFile = new File(makefilePath);
+                if (makefilePath != null && makefilePath.length() > 0) {
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                        makefilePath = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
+                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                        makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
+                    } else {
+                        makefilePath = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
+                    }
+                    makefilePath = FilePathAdaptor.normalize(makefilePath);
+                    importantItems.add(makefilePath);
+                }
+                String configurePath = (String)wiz.getProperty("configureName"); // NOI18N
+                if (configurePath != null && configurePath.length() > 0) {
+                    File configureFile = new File(configurePath);
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                        configurePath = IpeUtils.toAbsoluteOrRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
+                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                        configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
+                    } else {
+                        configurePath = IpeUtils.toAbsolutePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
+                    }
+                    configurePath = FilePathAdaptor.normalize(configurePath);
+                    importantItems.add(configurePath);
 
-                    // Possibly run the configure script
-                    String runConfigure = (String)wiz.getProperty("runConfigure"); // NOI18N
-                    if (runConfigure != null && runConfigure.equals("true")) { // NOI18N
-                        // If no makefile, create empty one so it shows up in Interesting Files
-                        if (!makefileFile.exists()) {
-                            makefileFile.createNewFile();
+                    try {
+                        FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+                        DataObject dObj = DataObject.find(configureFileObject);
+                        Node node = dObj.getNodeDelegate();
+
+                        // Add arguments to configure script?
+                        String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
+                        if (configureArguments != null) {
+                            ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                            // Keep user arguments as is in args[0]
+                            ses.setArguments(new String[] {configureArguments});
                         }
-                            
-                        ShellRunAction.performAction(node);
+
+                        // Possibly run the configure script
+                        String runConfigure = (String)wiz.getProperty("runConfigure"); // NOI18N
+                        if (runConfigure != null && runConfigure.equals("true")) { // NOI18N
+                            // If no makefile, create empty one so it shows up in Interesting Files
+                            if (!makefileFile.exists()) {
+                                makefileFile.createNewFile();
+                            }
+
+                            ShellRunAction.performAction(node);
+                        }
+                    }
+                    catch (DataObjectNotFoundException e) {
                     }
                 }
-                catch (DataObjectNotFoundException e) {
+                Iterator<String> importantItemsIterator = importantItems.iterator();
+                if (!importantItemsIterator.hasNext()) {
+                    importantItemsIterator = null;
                 }
-            }
-            Iterator<String> importantItemsIterator = importantItems.iterator();
-            if (!importantItemsIterator.hasNext()) {
-                importantItemsIterator = null;
-            }
-            @SuppressWarnings("unchecked")
-            Iterator<SourceFolderInfo> it = (Iterator)wiz.getProperty("sourceFolders"); // NOI18N
-            final MakeProject makeProject = MakeProjectGenerator.createProject(dirF, projectName, makefileName, new MakeConfiguration[] {extConf}, it, importantItemsIterator);
-            FileObject dir = FileUtil.toFileObject(dirF);
-            resultSet.add(dir);
-            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-            if (extension != null && makeProject != null) {
-                final Project p = ProjectManager.getDefault().findProject(dir);
-                final Map<String,Object> map = extension.clone(wiz);
-                makeProject.addOpenedTask(new Runnable(){
-                    public void run() {
-                        // Discovery require a fully completed project
-                        // Make sure that descriptor was stored and readed
-                        ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        provider.getConfigurationDescriptor(true);
-                        if (extension.canApply(map, p)){
-                            try {
-                                extension.apply(map, p);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                @SuppressWarnings("unchecked")
+                Iterator<SourceFolderInfo> it = (Iterator)wiz.getProperty("sourceFolders"); // NOI18N
+                final MakeProject makeProject = MakeProjectGenerator.createProject(dirF, projectName, makefileName, new MakeConfiguration[] {extConf}, it, importantItemsIterator);
+                FileObject dir = FileUtil.toFileObject(dirF);
+                resultSet.add(dir);
+                final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null && makeProject != null) {
+                    final Project p = ProjectManager.getDefault().findProject(dir);
+                    final Map<String,Object> map = extension.clone(wiz);
+                    makeProject.addOpenedTask(new Runnable(){
+                        public void run() {
+                            // Discovery require a fully completed project
+                            // Make sure that descriptor was stored and readed
+                            ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            provider.getConfigurationDescriptor(true);
+                            if (extension.canApply(map, p)){
+                                try {
+                                    extension.apply(map, p);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QMAKE_APP) {
             int conftype = -1;
@@ -377,6 +384,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            release.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.RELEASE_FLAG);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
             MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
             FileObject dir = FileUtil.toFileObject(dirF);
@@ -399,8 +407,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         String[] steps = createSteps(panels);
         if (wizardtype == TYPE_MAKEFILE && USE_SIMPLE_IMPORT_PROJECT) {
             simplePanels = new WizardDescriptor.Panel[]{
-                panels[0],
-                new ImportProjectDescriptorPanel()
+                panels[0]
+                //,new ImportProjectDescriptorPanel()
             };
             steps = createSteps(simplePanels);
             String[] advanced = new String[] {steps[0], "..."}; // NOI18N
@@ -463,9 +471,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
     
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
     
     interface Name {
         public String getName();

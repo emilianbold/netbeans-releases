@@ -9,7 +9,6 @@ import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.debugger.DebugPythonSource;
 import org.netbeans.modules.python.debugger.Debuggee;
 import org.netbeans.modules.python.project.PythonProject;
-import org.netbeans.modules.python.project.PythonProjectUtil;
 import org.netbeans.modules.python.project.ui.customizer.PythonProjectProperties;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
@@ -23,15 +22,13 @@ import org.openide.util.Lookup;
  */
 public class DebugCommand extends RunCommand {
 
-    private static final String COMMAND_ID = ActionProvider.COMMAND_DEBUG;
-
     public DebugCommand(PythonProject project) {
-        super(project);
+        super(project, false);
     }
 
     @Override
     public String getCommandId() {
-        return COMMAND_ID;
+        return ActionProvider.COMMAND_DEBUG;
     }
 
 

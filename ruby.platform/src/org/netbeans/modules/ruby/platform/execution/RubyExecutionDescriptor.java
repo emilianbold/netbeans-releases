@@ -178,7 +178,6 @@ public class RubyExecutionDescriptor {
         this.lineBased = template.lineBased;
     }
 
-
     public RubyExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
         assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
@@ -211,6 +210,11 @@ public class RubyExecutionDescriptor {
 
     public RubyExecutionDescriptor allowInput() {
         this.inputVisible = true;
+        return this;
+    }
+
+    public RubyExecutionDescriptor script(String script) {
+        this.script = script;
         return this;
     }
 
@@ -322,6 +326,10 @@ public class RubyExecutionDescriptor {
         return scriptPrefix;
     }
     
+    public Runnable getPostBuild() {
+        return postBuildAction;
+     }
+
     /**
      * Arguments to be appended <em>AFTER</em> the target. Usually arguments and
      * options to the Ruby script (target, application, ..) itself.
@@ -336,6 +344,10 @@ public class RubyExecutionDescriptor {
      */
     public String[] getInitialArgs() {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
+    }
+
+    public String getInitialArgsPlain() {
+        return initialArgs;
     }
     
     /** Arguments to be passed to the JVM running the JRuby process. */

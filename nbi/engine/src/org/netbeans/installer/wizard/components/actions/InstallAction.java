@@ -159,12 +159,20 @@ public class InstallAction extends WizardAction {
                             product.getDisplayName()));
                     product.rollback(currentProgress);                    
                     isProductRolledback = true;
+
+
+                    for (Product toInstall : registry.getProductsToInstall()) {
+                        LogManager.log("... marking to-be-installed product as not-installed : " + toInstall);
+                        toInstall.setStatus(Status.NOT_INSTALLED);
+                    }
                     
                     final RegistryFilter filter = new OrFilter(new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
                             new ProductFilter(DetailedStatus.INSTALLED_WITH_WARNINGS));
-                    for (Product toRollback : registry.queryProducts(filter)) {
-                        toRollback.setStatus(Status.TO_BE_UNINSTALLED);
+                    for (Product installed : registry.queryProducts(filter)) {
+                        LogManager.log("... marking installed product as to-be-uninstalled : " + installed);
+                        installed.setStatus(Status.TO_BE_UNINSTALLED);
                     }
+
 
                     for (Product toRollback : registry.getProductsToUninstall()) {
                         LogManager.log("... also rollbacking " + toRollback.getDisplayName() + 

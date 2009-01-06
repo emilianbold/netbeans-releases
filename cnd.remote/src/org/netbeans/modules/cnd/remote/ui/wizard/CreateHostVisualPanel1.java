@@ -85,7 +85,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
         textHostname = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        tableHostsList = new javax.swing.JTable();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel1.text")); // NOI18N
 
@@ -93,26 +93,16 @@ public final class CreateHostVisualPanel1 extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel2.text")); // NOI18N
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "", "", "" // NOI18N
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, true, true
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+        tableHostsList.setModel(new HostsListTableModel());
+        tableHostsList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableHostsListMouseClicked(evt);
             }
         });
-        jScrollPane2.setViewportView(jTable2);
-        jTable2.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jTable2.columnModel.title0")); // NOI18N
-        jTable2.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jTable2.columnModel.title1")); // NOI18N
-        jTable2.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jTable2.columnModel.title2")); // NOI18N
+        jScrollPane2.setViewportView(tableHostsList);
+        tableHostsList.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title0")); // NOI18N
+        tableHostsList.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title1")); // NOI18N
+        tableHostsList.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title2")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -121,7 +111,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -143,11 +133,19 @@ public final class CreateHostVisualPanel1 extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void tableHostsListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableHostsListMouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            int row = tableHostsList.rowAtPoint(evt.getPoint());
+            textHostname.setText(((HostsListTableModel)tableHostsList.getModel()).getHostName(row));
+        }
+}//GEN-LAST:event_tableHostsListMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable2;
+    private javax.swing.JTable tableHostsList;
     private javax.swing.JTextField textHostname;
     // End of variables declaration//GEN-END:variables
 }

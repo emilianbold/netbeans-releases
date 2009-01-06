@@ -11,7 +11,7 @@ Mercurial      >  Initialize Project     n
                   Clone - <project>      o
                   Clone Other...         h
                   Fetch                  F
-                  Share              >   r
+                  Share              >   e
                   Merge              >   g
                   ====================
                   Show History           H

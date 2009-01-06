@@ -442,4 +442,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         return subComponents.lastIndexOf(comp);
     }
+
+    boolean isLayoutSubcomponent(RADComponent comp) {
+        return (comp != containerMenu);
+    }
+
 }

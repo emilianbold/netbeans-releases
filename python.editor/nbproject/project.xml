@@ -290,10 +290,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -334,7 +330,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.python.project</friend>
-                <friend>org.netbeans.modules.python.tests</friend>
+                <friend>org.netbeans.modules.python.testrunner</friend>
                 <package>org.netbeans.modules.python.editor</package>
                 <package>org.netbeans.modules.python.editor.lexer</package>
                 <package>org.netbeans.modules.python.editor.codecoverage</package>

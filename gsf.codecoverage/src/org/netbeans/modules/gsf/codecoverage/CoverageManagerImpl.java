@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -60,9 +61,10 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
- * @todo Manage enable/disable per mime type!
+ * Manage code coverage collection; delegate to providers, etc.
  *
  * @author Tor Norbye
  */
@@ -70,20 +72,22 @@ public class CoverageManagerImpl implements CoverageManager {
     public static final String COVERAGE_INSTANCE_FILE = "coverage.instance"; // NOI18N
     private static final String MIME_TYPE = "mimeType"; // NOI18N
     private static final String COVERAGE_DOC_PROPERTY = "coverage"; // NOI18N
+    private final static String PREF_EDITOR_BAR = "editorBar"; // NOI18N
     private Set<String> enabledMimeTypes = new HashSet<String>();
     private Map<Project, CoverageReportTopComponent> showingReports = new HashMap<Project, CoverageReportTopComponent>();
+    private Boolean showEditorBar;
 
     static CoverageManagerImpl getInstance() {
         return (CoverageManagerImpl) CoverageManager.INSTANCE;
     }
 
-    public void setEnabled(Project project, boolean enabled) {
-        CoverageProvider provider = getProvider(project);
+    public void setEnabled(final Project project, final boolean enabled) {
+        final CoverageProvider provider = getProvider(project);
         if (provider == null) {
             return;
         }
 
-        Set<String> mimeTypes = provider.getMimeTypes();
+        final Set<String> mimeTypes = provider.getMimeTypes();
         if (enabled) {
             enabledMimeTypes.addAll(mimeTypes);
         } else {
@@ -92,7 +96,22 @@ public class CoverageManagerImpl implements CoverageManager {
 
         provider.setEnabled(enabled);
 
-        resultsUpdated(project, provider);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                resultsUpdated(project, provider);
+
+                if (!enabled) {
+                    for (JTextComponent target : EditorRegistry.componentList()) {
+                        Document document = target.getDocument();
+                        CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+                        if (sb != null) {
+                            sb.showCoveragePanel(false);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public boolean isAggregating(Project project) {
@@ -184,6 +203,15 @@ public class CoverageManagerImpl implements CoverageManager {
                 if (hitCounts == null) {
                     hitCounts = provider.getDetails(fileObject, doc);
                     doc.putProperty(COVERAGE_DOC_PROPERTY, hitCounts);
+
+                    if (getShowEditorBar()) {
+                        CoverageSideBar sb = CoverageSideBar.getSideBar(doc);
+                        if (sb != null) {
+                            sb.showCoveragePanel(true);
+                            sb.setCoverage(hitCounts);
+                        }
+                    }
+
                     return hitCounts;
                 }
 
@@ -204,7 +232,7 @@ public class CoverageManagerImpl implements CoverageManager {
                 if (fo != null && FileOwnerQuery.getOwner(fo) == project) {
                     FileCoverageDetails hitCounts = (FileCoverageDetails) document.getProperty(COVERAGE_DOC_PROPERTY);
                     if (hitCounts == null) {
-                        document.putProperty(COVERAGE_DOC_PROPERTY, null);
+                        document.putProperty(COVERAGE_DOC_PROPERTY, null); // ehh... what?
                     }
                     if (isEnabled(project)) {
                         focused(fo, target);
@@ -252,6 +280,28 @@ public class CoverageManagerImpl implements CoverageManager {
             }
             report.toFront();
             report.requestVisible();
+        }
+    }
+
+    public boolean getShowEditorBar() {
+        if (showEditorBar == null) {
+            showEditorBar = Boolean.valueOf(NbPreferences.forModule(CoverageManager.class).getBoolean(PREF_EDITOR_BAR, true));
+        }
+
+        return showEditorBar == Boolean.TRUE;
+    }
+
+    public void setShowEditorBar(boolean on) {
+        this.showEditorBar = Boolean.valueOf(on);
+        NbPreferences.forModule(CoverageManager.class).putBoolean(PREF_EDITOR_BAR, on);
+
+        // Update existing editors
+        for (JTextComponent target : EditorRegistry.componentList()) {
+            Document document = target.getDocument();
+            CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+            if (sb != null) {
+                sb.showCoveragePanel(on);
+            }
         }
     }
 }

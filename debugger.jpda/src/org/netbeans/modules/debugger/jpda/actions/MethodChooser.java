@@ -87,6 +87,10 @@ import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -245,8 +249,10 @@ public class MethodChooser implements KeyListener, MouseListener,
             String name = operations[selectedIndex].getMethodName();
             RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
         }
-        releaseListener.actionPerformed(null);
-        releaseListener = null;
+        if (releaseListener != null) {
+            releaseListener.actionPerformed(null);
+            releaseListener = null;
+        }
         isInSelectMode = false;
     }
 
@@ -281,9 +287,12 @@ public class MethodChooser implements KeyListener, MouseListener,
         
         List<Location> locs = java.util.Collections.emptyList();
         try {
-            while (methodLine > 0 && (locs = clazzRef.locationsOfLine(methodLine)).isEmpty()) {
+            while (methodLine > 0 && (locs = ReferenceTypeWrapper.locationsOfLine(clazzRef, methodLine)).isEmpty()) {
                 methodLine--;
             }
+        } catch (InternalExceptionWrapper aiex) {
+        } catch (VMDisconnectedExceptionWrapper aiex) {
+        } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }

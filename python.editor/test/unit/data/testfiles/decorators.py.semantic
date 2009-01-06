@@ -1,0 +1,5 @@
+@classmethod
+@synchronized(lock)
+def |>METHOD:foo<|(|>PARAMETER,UNUSED:cls<|):
+    pass
+

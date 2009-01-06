@@ -439,6 +439,7 @@
       <arg value="actionwebservice"/>
       -->
       <arg value="rails"/>
+      <arg value="rcov"/>
       <!-- Ruby Debugger -->
       <arg value="ruby-debug-base"/>
       <arg value="ruby-debug-ide"/>

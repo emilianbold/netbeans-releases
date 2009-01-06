@@ -61,38 +61,6 @@ public class PythonDebugParameters {
   private final static String _JPYDBG_ = "jpydbg.py";
 
 
-  /* PyLint Static Stuff starts here */
-  public static String get_pyLintLocation() {
-    return PythonOptions.getInstance().getPylintLocation();
-  }
-
-  public static String get_pyLintArgs() {
-    return PythonOptions.getInstance().getPylintOptions();
-  }
-
-  public static boolean is_usePyLint() {
-    return PythonOptions.getInstance().getUsePylint();
-  }
-
-  public static boolean is_pyLintFatal() {
-    return PythonOptions.getInstance().getPylintFatal();
-  }
-
-  public static boolean is_pyLintError() {
-    return PythonOptions.getInstance().getPylintError();
-  }
-
-  public static boolean is_pyLintWarning() {
-    return PythonOptions.getInstance().getPylintWarning();
-  }
-
-  public static boolean is_pyLintConvention() {
-    return PythonOptions.getInstance().getPylintConvention();
-  }
-
-  public static boolean is_pyLintRefactor() {
-    return PythonOptions.getInstance().getPylintRefactor();
-  }
   /* PyLint Static Stuff ends here */
   private static boolean _hasInited = false;
   private static String _jpydbgScript = _JPYDBG_;

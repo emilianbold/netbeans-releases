@@ -79,7 +79,7 @@ public class PythonInstantRename implements InstantRenamer {
             PythonTree leaf = path.leaf();
             String name = null;
             if (leaf instanceof Name) {
-                name = ((Name)leaf).id;
+                name = ((Name)leaf).getInternalId();
                 PythonTree scope = PythonAstUtils.getLocalScope(path);
                 List<PythonTree> nodes = symbolTable.getOccurrences(scope, name, true);
                 if (nodes == null) {

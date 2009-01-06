@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -109,8 +110,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	 * while a Java file had focus in the editor) then make the text field empty
 	 * but writable.
 	 */
-	if (url.length() > 0 && mime != null &&
-		    (mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran"))) { // NOI18N
+	if (url.length() > 0 && MIMENames.isFortranOrHeaderOrCppOrC(mime)) {
 	    try {
 		URI uri = new URI(url);
 		String path = uri.getPath();

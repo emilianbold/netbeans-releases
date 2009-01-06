@@ -84,6 +84,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
     private final TableCellRenderer DEFAULT_RENDERER = new SQLConstantsCellRenderer();
     private final TableCellRenderer NUMNBER_RENDERER = new NumberObjectCellRenderer();
     private final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
+    private final TableCellRenderer CELL_FOCUS_RENDERER = new CellFocusCustomRenderer();
 
     public ResultSetCellRenderer() {
         super(FormatStringValue.TO_STRING);
@@ -112,7 +113,8 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         } else if (value instanceof Boolean) {
             return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         } else {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+             Component c = CELL_FOCUS_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            //c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setTableCellToolTip(c, value);
             return c;
         }
@@ -132,7 +134,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
     }
 }
 
-class BooleanCellRenderer extends DefaultTableRenderer {
+class BooleanCellRenderer extends CellFocusCustomRenderer {
 
     JRendererCheckBox cb;
 
@@ -154,7 +156,7 @@ class BooleanCellRenderer extends DefaultTableRenderer {
     }
 }
 
-class NumberObjectCellRenderer extends DefaultTableRenderer {
+class NumberObjectCellRenderer extends CellFocusCustomRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -175,7 +177,7 @@ class NullObjectCellRenderer extends SQLConstantsCellRenderer {
     }
 }
 
-class SQLConstantsCellRenderer extends DefaultTableRenderer {
+class SQLConstantsCellRenderer extends CellFocusCustomRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -189,4 +191,3 @@ class SQLConstantsCellRenderer extends DefaultTableRenderer {
         return c;
     }
 }
-

@@ -38,18 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
-import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
-import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
@@ -63,7 +58,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
  * used to format template files (e.g. substitute values for parameters such as
  * __FILENAME__, __NAME__, __DATE__, __TIME__, __USER__, __GUARD_NAME etc.).
  */
-public abstract class CndAbstractDataLoader extends UniFileLoader implements CndHandlableExtensions {
+public abstract class CndAbstractDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975682L;
@@ -75,23 +70,9 @@ public abstract class CndAbstractDataLoader extends UniFileLoader implements Cnd
     protected abstract String getMimeType();
 
     @Override
-    public ExtensionList getExtensions() {
-        return ExtensionsSettings.getInstance(this).getExtensionList();
-    }
-
-    @Override
-    public void setExtensions(ExtensionList ext) {
-        ExtensionsSettings.getInstance(this).setExtensionList((CndExtensionList)ext);
-    }
-
-    public ExtensionList getDefaultExtensionList() {
-        return ExtensionsSettings.getDefaultExtensionList(getSettingsName());
-    }
-
-    @Override
-    protected void initialize() {
+    protected final void initialize() {
         super.initialize();
-//        getExtensions().addMimeType(getMimeType());
+        getExtensions().addMimeType(getMimeType());
     }
 
     @Override
@@ -107,7 +88,8 @@ public abstract class CndAbstractDataLoader extends UniFileLoader implements Cnd
     }
 
 // Inner class: Substitute important template parameters...
-    /*package*/static class CndFormat extends FileEntry.Format {
+    /*package*/
+    static class CndFormat extends FileEntry.Format {
 
         public CndFormat(MultiDataObject obj, FileObject primaryFile) {
             super(obj, primaryFile);
@@ -130,8 +112,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader implements Cnd
             StringBuilder guardName = new StringBuilder();
             for (int i = 0; i < fullName.length(); i++) {
                 char c = fullName.charAt(i);
-                guardName.append(Character.isJavaIdentifierPart(c) ?
-                        Character.toUpperCase(c) : '_');
+                guardName.append(Character.isJavaIdentifierPart(c) ? Character.toUpperCase(c) : '_');
             }
 
             map.put("GUARD_NAME", guardName.toString()); // NOI18N
@@ -157,11 +138,11 @@ public abstract class CndAbstractDataLoader extends UniFileLoader implements Cnd
             if (crop != -1) {
                 name = name.substring(0, crop);
             }
-	    map.put("CROPPEDNAME", name);  // NOI18N
-	    map.put("DATE", DateFormat.getDateInstance	// NOI18N
-		     (DateFormat.LONG).format(new Date()));
-	    map.put("TIME", DateFormat.getTimeInstance	// NOI18N
-		     (DateFormat.SHORT).format(new Date()));
+            map.put("CROPPEDNAME", name);  // NOI18N
+            map.put("DATE", DateFormat.getDateInstance // NOI18N
+                    (DateFormat.LONG).format(new Date()));
+            map.put("TIME", DateFormat.getTimeInstance // NOI18N
+                    (DateFormat.SHORT).format(new Date()));
             //	    map.put("USER", System.getProperty("user.name"));	// NOI18N
             String nbHome = null; //System.getProperty("netbeans.home");
             File file = InstalledFileLocator.getDefault().locate("lib", null, false); // NOI18N

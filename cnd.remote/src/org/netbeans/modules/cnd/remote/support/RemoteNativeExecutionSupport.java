@@ -46,7 +46,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.openide.util.Exceptions;
 
 /**
  * This support is intended to work with RemoteNativeExecution and provide input (and eventually
@@ -110,6 +115,20 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         }
 
         StringBuilder command = new StringBuilder(); // NOI18N
+
+        // if (enableDisplayVariable) {
+        if (envp == null ) {
+            envp = new String[1];
+            envp[0] = getDisplayString();
+        } else {
+            String[] envp2 = new String[envp.length + 1 ];
+            for (int i = 0; i < envp.length; i++) {
+                envp2[i] = envp[i];
+            }
+            envp2[envp.length] = getDisplayString();
+            envp = envp2;
+        }
+
         if (envp != null) {
             command.append(ShellUtils.prepareExportString(envp));
         }
@@ -121,6 +140,23 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         channel = createChannel();
         log.finest("RNES: running command: " + theCommand);
         ((ChannelExec) channel).setCommand(theCommand);
+    }
+
+    private static String displayString ;
+
+    private static String getDisplayString() {
+        if (displayString == null) {
+            try {
+                String localDisplay = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getEnv().get("DISPLAY"); //NOI18N
+                if (localDisplay == null) {
+                    localDisplay = ":.0"; //NOI18N
+                }
+                displayString = "DISPLAY=" + InetAddress.getLocalHost().getHostAddress() + localDisplay; //NOI18N
+            } catch (UnknownHostException ex) {
+                displayString = "";
+            }
+        }
+        return displayString;
     }
 
     private final static class ReaderInputStream extends InputStream {

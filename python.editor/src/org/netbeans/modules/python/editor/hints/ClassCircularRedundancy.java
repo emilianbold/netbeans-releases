@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.python.editor.hints;
 
 import java.util.Collections;
@@ -64,7 +63,6 @@ import org.python.antlr.ast.Module;
  * @author Jean-Yves Mengant
  */
 public class ClassCircularRedundancy extends PythonAstRule {
-
     private final static String CLASS_CIRCULAR_REDUNDANCY = "ClassCircularRedundancy";
     private final static String CLASS_CIRCULAR_REDUNDANCY_VAR = "ClassCircularRedundancyVariable";
     private final static String CLASS_CIRCULAR_REDUNDANCY_DESC = "ClassCircularRedundancyDesc";
@@ -81,17 +79,17 @@ public class ClassCircularRedundancy extends PythonAstRule {
         SymbolTable symbolTable = pr.getSymbolTable();
 
 
-        HashMap<ClassDef,String> cyclingRedundancies = symbolTable.getClassesCyclingRedundancies(info);
+        HashMap<ClassDef, String> cyclingRedundancies = symbolTable.getClassesCyclingRedundancies(info);
         if (cyclingRedundancies.size() > 0) {
-            Set<Entry<ClassDef,String>> wk = cyclingRedundancies.entrySet() ;
-            for (Entry<ClassDef,String> cur : wk) {
-                ClassDef curClass = cur.getKey() ;
-                String curCyclingMsg = curClass.name+"/"+cur.getValue() ;
-                OffsetRange range = PythonAstUtils.getNameRange(info,curClass);
+            Set<Entry<ClassDef, String>> wk = cyclingRedundancies.entrySet();
+            for (Entry<ClassDef, String> cur : wk) {
+                ClassDef curClass = cur.getKey();
+                String curCyclingMsg = curClass.getInternalName() + "/" + cur.getValue(); // NOI18N
+                OffsetRange range = PythonAstUtils.getNameRange(info, curClass);
                 // range = PythonLexerUtils.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = Collections.emptyList();
-                    String message = NbBundle.getMessage(NameRule.class, CLASS_CIRCULAR_REDUNDANCY_VAR, curCyclingMsg );
+                    String message = NbBundle.getMessage(NameRule.class, CLASS_CIRCULAR_REDUNDANCY_VAR, curCyclingMsg);
                     Hint desc = new Hint(this, message, info.getFileObject(), range, fixList, 2305);
                     result.add(desc);
                 }
@@ -100,7 +98,7 @@ public class ClassCircularRedundancy extends PythonAstRule {
     }
 
     public String getId() {
-      return CLASS_CIRCULAR_REDUNDANCY ;
+        return CLASS_CIRCULAR_REDUNDANCY;
     }
 
     public String getDescription() {
@@ -112,11 +110,11 @@ public class ClassCircularRedundancy extends PythonAstRule {
     }
 
     public JComponent getCustomizer(Preferences node) {
-        return null ;
+        return null;
     }
 
     public boolean appliesTo(RuleContext context) {
-        return true ;
+        return true;
     }
 
     public String getDisplayName() {
@@ -130,5 +128,4 @@ public class ClassCircularRedundancy extends PythonAstRule {
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.ERROR;
     }
-
 }

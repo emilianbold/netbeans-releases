@@ -146,10 +146,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -186,6 +182,8 @@
                 <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.python.project</friend>
                 <friend>org.netbeans.modules.ruby.codecoverage</friend>
+                <friend>org.netbeans.modules.ruby.kit</friend>
+                <friend>org.netbeans.modules.python.kit</friend>
                 <package>org.netbeans.modules.gsf.codecoverage.api</package>
             </friend-packages>
         </data>
