@@ -366,6 +366,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue140633.php", "echo $_COOKI^", false);
     }
 
+    public void test141999() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue141999.php", "echo $test141999->^", false);
+    }
+
     // #136092 Code completion doesn't show reference parameters
     public void test136092_withoutReference() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136092.php", "$source1 = $reques^", false);
