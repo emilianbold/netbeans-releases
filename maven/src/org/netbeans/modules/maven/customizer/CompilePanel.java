@@ -41,8 +41,6 @@ package org.netbeans.modules.maven.customizer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
@@ -50,10 +48,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -114,20 +113,8 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         project = prj;
         ComboBoxModel mdl = new DefaultComboBoxModel(LABELS);
         comCompileOnSave.setModel(mdl);
-        /*ComboBoxModel platformModel = new DefaultComboBoxModel(
-                JavaPlatformManager.getDefault().getInstalledPlatforms());*/
         comJavaPlatform.setModel(new PlatformsModel());
-
-        comJavaPlatform.setRenderer(new DefaultListCellRenderer() {
-
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setText(((JavaPlatform)value).getDisplayName());
-                return this;
-            }
-
-        });
+        comJavaPlatform.setRenderer(new PlatformsRenderer());
 
         origComPlatformFore = comJavaPlatform.getForeground();
 
@@ -316,20 +303,23 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         return BootClassPathImpl.getActivePlatform(platformId);
     }
 
-    private void checkExternalMaven () {
+    private boolean isExternalMaven () {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         String val = props.get(Constants.HINT_USE_EXTERNAL, true);
         boolean useEmbedded = "false".equalsIgnoreCase(val);
-        if (useEmbedded || !MavenExecutionSettings.canFindExternalMaven()) {
-            comJavaPlatform.setEnabled(false);
-            comJavaPlatform.setForeground(java.awt.SystemColor.textInactiveText);
-            lblWarnPlatform.setVisible(true);
-            btnSetupHome.setVisible(true);
-        } else {
+
+        return !useEmbedded && MavenExecutionSettings.canFindExternalMaven();
+    }
+
+    private void checkExternalMaven () {
+        if (isExternalMaven()) {
             lblWarnPlatform.setVisible(false);
             btnSetupHome.setVisible(false);
-            comJavaPlatform.setForeground(origComPlatformFore);
             comJavaPlatform.setEnabled(true);
+        } else {
+            comJavaPlatform.setEnabled(false);
+            lblWarnPlatform.setVisible(true);
+            btnSetupHome.setVisible(true);
         }
 
     }
@@ -575,5 +565,37 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
     }
 
+    private class PlatformsRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public PlatformsRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected,
+                boolean cellHasFocus) {
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            setText(((JavaPlatform)value).getDisplayName());
+
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(isExternalMaven() ? list.getSelectionForeground() : java.awt.SystemColor.textInactiveText);
+            } else {
+                setBackground(list.getBackground());
+                setForeground(isExternalMaven() ? list.getForeground() : java.awt.SystemColor.textInactiveText);
+            }
+
+            return this;
+        }
+
+        // #89393: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    } // end of PlatformsRenderer
 
 }
