@@ -1,5 +1,5 @@
 UserSpecHelper:MODULE:[]:ESCAPED{UserSpecHelper}:
-  valid_user_attributes:METHOD:[PUBLIC]:ESCAPED{valid_user_attributes}:
+  valid_user_attributes:METHOD:[PUBLIC]:ESCAPED{valid_user_attributes}<font color='#777777'> : ESCAPED{Hash}</font>:
 context: A user (in general):TEST:[]:ESCAPED{context: A user (in general)}:
   specify: should be invalid without a password:TEST:[]:ESCAPED{specify: should be invalid without a password}:
   specify: should be invalid without a username:TEST:[]:ESCAPED{specify: should be invalid without a username}:

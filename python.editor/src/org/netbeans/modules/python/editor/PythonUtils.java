@@ -129,6 +129,14 @@ public class PythonUtils {
                                 if (FileUtil.isParentOf(root, fo)) {
                                     for (FileObject r : platform.getLibraryRoots()) {
                                         if (FileUtil.isParentOf(r, fo)) {
+                                            // See if the folder itself contains
+                                            // an __init__.py file - if it does,
+                                            // then include the directory itself
+                                            // in the package name.
+                                            if (r.getFileObject("__init__.py") != null) { // NOI18N
+                                                r = r.getParent();
+                                            }
+
                                             prevRootUrl = r.getURL().toExternalForm();
                                             found = true;
                                             break PlatformSearch;
@@ -149,6 +157,14 @@ public class PythonUtils {
                             for (SourceGroup group : sourceGroups) {
                                 FileObject folder = group.getRootFolder();
                                 if (FileUtil.isParentOf(folder, fo)) {
+                                    // See if the folder itself contains
+                                    // an __init__.py file - if it does,
+                                    // then include the directory itself
+                                    // in the package name.
+                                    if (folder.getFileObject("__init__.py") != null) { // NOI18N
+                                        folder = folder.getParent();
+                                    }
+
                                     prevRootUrl = folder.getURL().toExternalForm();
                                     break;
                                 }

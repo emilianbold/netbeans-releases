@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,9 +43,11 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 
 import org.jruby.nb.ast.AliasNode;
@@ -54,7 +56,6 @@ import org.jruby.nb.ast.ArgumentNode;
 import org.jruby.nb.ast.BackRefNode;
 import org.jruby.nb.ast.BlockArgNode;
 import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.ClassVarAsgnNode;
 import org.jruby.nb.ast.ClassVarDeclNode;
 import org.jruby.nb.ast.ClassVarNode;
@@ -72,13 +73,10 @@ import org.jruby.nb.ast.ListNode;
 import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.NewlineNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.NthRefNode;
 import org.jruby.nb.ast.ReturnNode;
-import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.VCallNode;
 import org.jruby.nb.ast.YieldNode;
@@ -494,81 +492,33 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         }
     }
 
-    private void highlightExits(MethodDefNode node,
-        Map<OffsetRange, ColoringAttributes> highlights, CompilationInfo info) {
-
+    private void highlightExits(
+            final MethodDefNode node,
+            final Map<OffsetRange, ColoringAttributes> highlights,
+            final CompilationInfo info) {
         BaseDocument doc = (BaseDocument)info.getDocument();
         if (doc == null) {
             return;
         }
         try {
             doc.readLock();
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
+            Set<Node> exits = new HashSet<Node>();
+            AstUtilities.findExitPoints(node, exits);
+            for (Node exit : exits) {
+                if (exit.isInvisible()) {
                     continue;
                 }
-                highlightExitPoints(child, highlights, info);
-            }
-
-            // TODO: Find the last statement, and highlight it.
-            // Be careful not to highlight the entire statement (which could be a giant if
-            // statement spanning the whole screen); just pick the first line.
-            Node last = null;
-
-            for (int i = list.size() - 1; i >= 0; i--) {
-                last = list.get(i);
-
-                if (last instanceof ArgsNode || last instanceof ArgumentNode) {
-                    // Done - no valid statement
-                    return;
-                }
-
-                if (last instanceof ListNode) {
-                    last = last.childNodes().get(last.childNodes().size() - 1);
-                }
-
-                if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
-                    last = last.childNodes().get(last.childNodes().size() - 1);
-                    break;
-                }
-
-                break;
-            }
-
-            if (last != null) {
-                try {
-                    ISourcePosition pos = last.getPosition();
-
-                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
-                    if (lexRange != OffsetRange.NONE) {
-                        if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
-                                    lexRange.getEnd())) {
-                            // Highlight the first line - where the nonwhitespace is
-                            int begin = Utilities.getRowFirstNonWhite(doc, lexRange.getStart());
-                            int end = Utilities.getRowLastNonWhite(doc, lexRange.getStart());
-
-                            if ((begin != -1) && (end != -1)) {
-                                OffsetRange range = new OffsetRange(begin, end + 1);
-                                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                            }
-                        } else {
-                            OffsetRange range = AstUtilities.getRange(last);
-                            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                        }
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
+                highlightExitPoint(exit, highlights, info);
             }
         } finally {
             doc.readUnlock();
         }
     }
 
-    private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
-        CompilationInfo info) {
+    private void highlightExitPoint(
+            final Node node,
+            final Map<OffsetRange, ColoringAttributes> highlights,
+            final CompilationInfo info) {
         if (node.nodeId == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
             BaseDocument doc = (BaseDocument)info.getDocument();
@@ -599,26 +549,38 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
              */
             OffsetRange range = AstUtilities.getRange(node);
             highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-        } else if (node instanceof MethodDefNode || node instanceof ClassNode ||
-                node instanceof SClassNode || node instanceof ModuleNode) {
-            // Don't go into sub methods, classes, etc
-            return;
-        } else if (node instanceof FCallNode) {
-            FCallNode fc = (FCallNode)node;
+        } else if (node instanceof FCallNode &&
+                (getFunctionName(node).equals("fail") || getFunctionName(node).equals("raise"))) { // NOI18N
+            OffsetRange range = AstUtilities.getCallRange(node);
+            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        } else { // last node
+            // TODO: Find the last statement, and highlight it.
+            // Be careful not to highlight the entire statement (which could be a giant if
+            // statement spanning the whole screen); just pick the first line.
+            try {
+                ISourcePosition pos = node.getPosition();
 
-            if ("fail".equals(fc.getName()) || "raise".equals(fc.getName())) {
-                OffsetRange range = AstUtilities.getCallRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
+                if (lexRange != OffsetRange.NONE) {
+                    BaseDocument doc = (BaseDocument) info.getDocument();
+                    if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
+                            lexRange.getEnd())) {
+                        // Highlight the first line - where the nonwhitespace is
+                        int begin = Utilities.getRowFirstNonWhite(doc, lexRange.getStart());
+                        int end = Utilities.getRowLastNonWhite(doc, lexRange.getStart());
+
+                        if ((begin != -1) && (end != -1)) {
+                            OffsetRange range = new OffsetRange(begin, end + 1);
+                            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                        }
+                    } else {
+                        OffsetRange range = AstUtilities.getRange(node);
+                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
             }
-        }
-
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            highlightExitPoints(child, highlights, info);
         }
     }
 
@@ -1039,5 +1001,9 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
     public void setCaretPosition(int position) {
         this.caretPosition = position;
+    }
+
+    private String getFunctionName(Node node) {
+        return ((FCallNode) node).getName();
     }
 }

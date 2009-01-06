@@ -68,6 +68,12 @@ WHITESPACE      "    ", la=1, st=INIT
 TRY             "try", la=1, st=INIT
 ----- EOF -----
 
+.t.e.s.t. Decorators
+DECORATOR       "@staticmethod", la=1, st=INIT
+NEWLINE         "\n", st=INIT
+DECORATOR       "@classmethod", la=1, st=INIT
+----- EOF -----
+
 .t.e.s.t. Strings
 STRING_BEGIN    "r'", la=1, st=BEGIN_SHORTSTRING_SINGLE
 STRING_LITERAL  "foo", la=1, st=END_SHORTSTRING_SINGLE
@@ -206,7 +212,7 @@ LBRACE          "{", st=INIT
 WHITESPACE      "       ", la=1, st=INIT
 RBRACE          "}", st=INIT
 WHITESPACE      "      ", la=1, st=INIT
-ANY_OPERATOR    "@", st=INIT
+DECORATOR       "@", la=1, st=INIT
 NEWLINE         "\n", st=INIT
 COMMA           ",", st=INIT
 WHITESPACE      "       ", la=1, st=INIT

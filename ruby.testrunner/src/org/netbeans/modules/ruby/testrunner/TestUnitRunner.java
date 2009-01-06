@@ -230,6 +230,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
             }
         });
         TestExecutionManager.getInstance().init(taskDescriptor);
+        session.setRerunHandler(TestExecutionManager.getInstance());
   }
 
 }

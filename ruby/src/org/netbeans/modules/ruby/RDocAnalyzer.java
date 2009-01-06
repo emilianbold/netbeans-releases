@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
 
 /**
  * Currently serves (mainly) for analyzing RDoc of generated stubs of Ruby core
@@ -55,6 +57,9 @@ import java.util.Map;
 final class RDocAnalyzer {
 
     private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
+
+    static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
+    static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
 
     static {
         COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
@@ -178,5 +183,82 @@ final class RDocAnalyzer {
 //         else {
 //            System.err.println("Unknown real Ruby type for comment type: " + commentType);
 //        }
+    }
+
+    /** Look at type assertions in the document and initialize name context. */
+    static void collectTypeAssertions(final ContextKnowledge knowledge) {
+        if (!knowledge.hasDocument()) {
+            return;
+        }
+        Node root = knowledge.getRoot();
+        if (root instanceof MethodDefNode) {
+            // Look for parameter hints
+            List<String> rdoc = AstUtilities.gatherDocumentation(null, knowledge.getDocument(), root);
+
+            if ((rdoc != null) && (rdoc.size() > 0)) {
+                for (String line : rdoc) {
+                    if (line.startsWith(PARAM_HINT_ARG)) {
+                        StringBuilder sb = new StringBuilder();
+                        String name = null;
+                        int max = line.length();
+                        int i = PARAM_HINT_ARG.length();
+
+                        for (; i < max; i++) {
+                            char c = line.charAt(i);
+
+                            if (c == ' ') {
+                                continue;
+                            } else if (c == '=') {
+                                break;
+                            } else {
+                                sb.append(c);
+                            }
+                        }
+
+                        if ((i == max) || (line.charAt(i) != '=')) {
+                            continue;
+                        }
+
+                        i++;
+
+                        if (sb.length() > 0) {
+                            name = sb.toString();
+                            sb.setLength(0);
+                        } else {
+                            continue;
+                        }
+
+                        if ((i == max) || (line.charAt(i) != '>')) {
+                            continue;
+                        }
+
+                        i++;
+
+                        for (; i < max; i++) {
+                            char c = line.charAt(i);
+
+                            if (c == ' ') {
+                                continue;
+                            }
+
+                            if (!Character.isJavaIdentifierPart(c)) {
+                                break;
+                            } else {
+                                sb.append(c);
+                            }
+                        }
+
+                        if (sb.length() > 0) {
+                            String type = sb.toString();
+                            knowledge.maybePutTypeForSymbol(name, type, true);
+                        }
+                    }
+
+                    //if (line.startsWith(":return:=>")) {
+                    //    // I don't really need the return type yet
+                    //}
+                }
+            }
+        }
     }
 }

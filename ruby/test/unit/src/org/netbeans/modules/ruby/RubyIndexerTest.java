@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,11 +63,13 @@ public class RubyIndexerTest extends RubyTestBase {
         if (RubyIndexer.FIELD_METHOD_NAME.equals(key)) {
             // Decode the attributes
             int attributeIndex = value.indexOf(';');
-            if (attributeIndex != -1) {
-                int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
+            if (attributeIndex != -1 &&
+                    (attributeIndex + 1) < value.length() &&
+                    value.charAt(attributeIndex + 1) != ';') {
+                int flags = IndexedElement.stringToFlag(value, attributeIndex + 1);
                 if (flags != 0) {
                     String desc = IndexedMethod.decodeFlags(flags);
-                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex + 3);
                 }
             }
         } else if (RubyIndexer.FIELD_CLASS_ATTRS.equals(key)) {
@@ -83,10 +85,10 @@ public class RubyIndexerTest extends RubyTestBase {
             // Decode the attributes
             int attributeIndex = value.indexOf(';');
             if (attributeIndex != -1) {
-                int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
+                int flags = IndexedElement.stringToFlag(value, attributeIndex + 1);
                 if (flags != 0) {
                     String desc = IndexedField.decodeFlags(flags);
-                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex + 3);
                 }
             }
         }
@@ -238,6 +240,10 @@ public class RubyIndexerTest extends RubyTestBase {
 
     public void testConstants() throws Exception {
         checkIndexer("testfiles/constants.rb");
+    }
+
+    public void testMethodTypeInference() throws Exception {
+        checkIndexer("testfiles/method_type_inference.rb");
     }
 
     // TODO - test :nodoc: on methods and classes!!!

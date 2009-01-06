@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,12 +57,14 @@ import java.util.regex.Pattern;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.modules.gsf.api.Index.*;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
@@ -108,6 +110,10 @@ public final class RubyIndex {
     private RubyIndex(Index index, FileObject context) {
         this.index = index;
         this.context = context;
+    }
+
+    public static RubyIndex get(final CompilationInfo info) {
+        return RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE));
     }
 
     public static RubyIndex get(Index index) {
