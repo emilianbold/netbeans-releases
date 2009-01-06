@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Contract provided by some project types that don't put the entire application
- * server content on classpath (eg§ Maven) in the project's lookup.
+ * server content on classpath (eg Maven) in the project's lookup.
  * Intended to be called by code that generates content into the project and assumes
  * certain j2ee api binaries to be on the project's classpath.
  *
