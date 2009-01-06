@@ -47,24 +47,19 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import org.netbeans.editor.BaseDocument;
 
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.NbBundle;
-
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
-import org.openide.util.SharedClassObject;
 
 /**
  *  Recognizes single files in the Repository as being of a certain type.
  */
 public class ShellDataLoader extends CndAbstractDataLoaderExt {
 
-    private static ShellDataLoader instance = null;
     /** Serial version number */
     static final long serialVersionUID = -7173746465817543299L;
 
@@ -73,14 +68,6 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
      */
     public ShellDataLoader() {
         super("org.netbeans.modules.cnd.loaders.ShellDataObject"); // NOI18N
-        instance = this;
-    }
-
-    public static ShellDataLoader getInstance() {
-        if (instance == null) {
-            instance = SharedClassObject.findObject(ShellDataLoader.class, true);
-        }
-        return instance;
     }
 
     @Override
@@ -88,14 +75,9 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
         return "Loaders/text/sh/Actions/"; // NOI18N
     }
 
+    @Override
     protected String getMimeType() {
         return MIMENames.SHELL_MIME_TYPE;
-    }
-
-    /** set the default display name */
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(ShellDataLoader.class, "PROP_ShellDataLoader_Name"); // NOI18N
     }
 
     /**
@@ -108,30 +90,6 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return new ShellFormat(obj, primaryFile);
-    }
-
-    /** Call the method we use to find the primary file */
-    @Override
-    protected FileObject findPrimaryFile(FileObject fo) {
-        if (fo.isFolder()) {
-            return null;
-        }
-
-        /* First, look for an extension */
-        if (getExtensions().isRegistered(fo)) {
-            return fo;
-        }
-
-        /*
-         * Now let the mime resolver do it. This could cause bytes to be read in
-         * the mime resolver.
-         */
-        String mime = fo.getMIMEType();
-        if (mime != null && mime.equals(MIMENames.SHELL_MIME_TYPE)) {
-            return fo;
-        }
-
-        return null;
     }
 
     // Inner class: Substitute important template parameters...
@@ -184,13 +142,5 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
                 fo.setAttribute(DataObject.PROP_TEMPLATE, null);
             }
         }
-    }
-
-    public String getDisplayNameForExtensionList() {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getSettingsName() {
-        return ExtensionsSettings.SHELL;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -371,8 +371,24 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/core_methods.rb", "puts has_one.t^");
     }
 
-    public void testMethodsChaining() throws Exception {
+    public void testMethodsChainingAssignment() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
+    }
+
+    public void testMethodsChainingDirect() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.empty?.to_^s");
+    }
+
+    public void testMethodsChainingDirectLiterals() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts 1.even?.to^_s");
+    }
+
+    public void testMethodsChainingParenthesised() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
+    }
+
+    public void testMethodTypeInference() throws Exception {
+        checkCompletion("testfiles/method_type_inference.rb", "puts num.abs^");
     }
 
     // TODO uncomment when reindexed

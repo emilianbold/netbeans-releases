@@ -56,9 +56,6 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.actions.AddToIndexDDL;
 import org.netbeans.modules.db.explorer.dlg.LabeledComboDialog;
 import org.netbeans.modules.db.explorer.node.IndexNode;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -108,17 +105,14 @@ public class AddToIndexAction extends BaseAction {
         DatabaseConnector connector = dbconn.getConnector();
 
         try {
-            Table table = node.getIndex().getParent();
-            final String tablename = table.getName();
-            Schema schema = table.getParent();
-            Catalog catalog = schema.getParent();
-
-            String sname = schema.getName();
-            String catalogName = catalog.getName();
-
+            final String tablename = node.getTableName();
+            String sname = node.getSchemaName();
+            String catalogName = node.getCatalogName();
             if (sname == null) {
-                sname = catalog.getName();
-            } else if (catalogName == null) {
+                sname = catalogName;
+            }
+
+            if (catalogName == null) {
                 catalogName = sname;
             }
 
@@ -127,7 +121,7 @@ public class AddToIndexAction extends BaseAction {
 
             final DriverSpecification drvSpec = connector.getDriverSpecification(catalogName);
 
-            final String index = node.getIndex().getName();
+            final String index = node.getName();
 
             // List columns used in current index (do not show)
             final HashSet ixrm = new HashSet();

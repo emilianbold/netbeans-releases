@@ -64,6 +64,7 @@ public final class CoverageAction extends AbstractAction implements ContextAware
     private static final int ACTION_TOGGLE_AGGREGATION = 2;
     private static final int ACTION_CLEAR_RESULTS = 3;
     private static final int ACTION_SHOW_REPORT = 4;
+    private static final int ACTION_TOGGLE_EDITORBAR = 5;
     private Action configureAction;
     private Action[] extraActions;
 
@@ -105,9 +106,10 @@ public final class CoverageAction extends AbstractAction implements ContextAware
             enabled = false;
 
         }
+        CoverageManagerImpl manager = CoverageManagerImpl.getInstance();
 
 
-        boolean selected = CoverageManagerImpl.getInstance().isEnabled(project);
+        boolean selected = manager.isEnabled(project);
         JMenuItem menuitem = new JCheckBoxMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_CollectCoverageAction"), selected);
         menuitem.addActionListener(new CoverageItemHandler(project, ACTION_TOGGLE_COLLECT));
         if (!enabled) {
@@ -116,21 +118,24 @@ public final class CoverageAction extends AbstractAction implements ContextAware
         menu.add(menuitem);
 
         CoverageProvider provider = CoverageManagerImpl.getProvider(project);
-        if (provider != null && provider.supportsAggregation()) {
+        if (provider == null) {
+            return;
+        }
+        boolean on = provider.isEnabled();
+        if (provider.supportsAggregation()) {
             menu.addSeparator();
-            boolean aggregating = CoverageManagerImpl.getInstance().isAggregating(project);
+            boolean aggregating = manager.isAggregating(project);
             menuitem = new JCheckBoxMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_AggregateResults"), aggregating);
             menuitem.addActionListener(new CoverageItemHandler(project, ACTION_TOGGLE_AGGREGATION));
-            if (!enabled) {
+            if (!enabled || !on) {
                 menuitem.setEnabled(false);
             }
             menu.add(menuitem);
         }
 
-        menuitem =
-                new JMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_ClearResultsAction"));
+        menuitem = new JMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_ClearResultsAction"));
         menuitem.addActionListener(new CoverageItemHandler(project, ACTION_CLEAR_RESULTS));
-        if (!enabled) {
+        if (!enabled || !on) {
             menuitem.setEnabled(false);
         }
         menu.add(menuitem);
@@ -141,9 +146,20 @@ public final class CoverageAction extends AbstractAction implements ContextAware
                 "LBL_ShowReportAction"));
         menuitem.addActionListener(new CoverageItemHandler(project, ACTION_SHOW_REPORT));
         //menuitem.setToolTipText(target.getDescription());
-        if (!enabled) {
+        if (!enabled || !on) {
             menuitem.setEnabled(false);
         }
+        menu.add(menuitem);
+        menu.addSeparator();
+
+        menuitem = new JCheckBoxMenuItem(NbBundle.getMessage(CoverageAction.class, "LBL_ShowEditorBar"),
+                manager.getShowEditorBar());
+        menuitem.addActionListener(new CoverageItemHandler(project, ACTION_TOGGLE_EDITORBAR));
+        if (!enabled || !on) {
+            menuitem.setEnabled(false);
+        }
+        menu.add(menuitem);
+
         menu.add(menuitem);
 
         if (extraActions != null && extraActions.length > 0) {
@@ -160,7 +176,7 @@ public final class CoverageAction extends AbstractAction implements ContextAware
                     menuitem = new JMenuItem(name);
                 }
                 menuitem.addActionListener(configureAction);
-                if (!enabled) {
+                if (!enabled || !on) {
                     menuitem.setEnabled(false);
                 }
                 menu.add(menuitem);
@@ -268,6 +284,12 @@ public final class CoverageAction extends AbstractAction implements ContextAware
 
                 case ACTION_CLEAR_RESULTS: {
                     manager.clear(project);
+                    break;
+                }
+
+                case ACTION_TOGGLE_EDITORBAR: {
+                    boolean enabled = ((JCheckBoxMenuItem) ev.getSource()).isSelected();
+                    manager.setShowEditorBar(enabled);
                     break;
                 }
             }

@@ -41,11 +41,10 @@ package org.netbeans.modules.db.explorer.action;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -77,13 +76,17 @@ public class RefreshAction extends BaseAction {
                 public void run() {
                     MetadataModel model = baseNode.getLookup().lookup(DatabaseConnection.class).getMetadataModel();
                     if (model != null) {
-                        MetadataUtils.readModel(model, null,
-                            new MetadataReadListener() {
-                                public void run(Metadata metaData, DataWrapper wrapper) {
-                                    metaData.refresh();
+                        try {
+                            model.runReadAction(
+                                new Action<Metadata>() {
+                                    public void run(Metadata metaData) {
+                                        metaData.refresh();
+                                    }
                                 }
-                            }
-                        );
+                            );
+                        } catch (MetadataModelException e) {
+                            // TODO report exception
+                        }
                     }
 
                     baseNode.refresh();

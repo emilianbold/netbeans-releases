@@ -190,8 +190,7 @@ public class CatalogModelTest extends TestCase {
                 Document doc = ec.openDocument();
                 if(doc instanceof BaseDocument)
                     return doc;
-                result = new org.netbeans.editor.BaseDocument(
-                        org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
+                result = new org.netbeans.editor.BaseDocument(true, fo.getMIMEType());
                 String str = doc.getText(0, doc.getLength());
                 result.insertString(0,str,null);
                 

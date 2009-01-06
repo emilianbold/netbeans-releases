@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
             
         </subant>
@@ -78,7 +79,7 @@ made subject to such option by the copyright holder.
             <buildpath location="python.project"/>
             <buildpath location="python.help"/>
             <buildpath location="python.options"/>
-            <buildpath location="python.tests"/>
+            <buildpath location="python.testrunner"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>
@@ -93,6 +94,7 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="o.jython.distro"/>
@@ -106,13 +108,13 @@ made subject to such option by the copyright holder.
             <buildpath location="python.platform"/>
             <buildpath location="python.project"/>
             <buildpath location="python.options"/>
-            <buildpath location="python.tests"/>
+            <buildpath location="python.testrunner"/>
             <buildpath location="python.kit"/>
         </subant>
     </target>
     
     <target name="runtests" description="Run Python tests">
-        <subant buildpath="python.editor:python.core:python.debugger"
+        <subant buildpath="python.editor:python.core:python.debugger:python.project:python.testrunner"
             target="test"
             inheritall="false"
             inheritrefs="false">

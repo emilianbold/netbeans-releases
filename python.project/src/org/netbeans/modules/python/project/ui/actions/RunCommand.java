@@ -7,6 +7,8 @@ import org.netbeans.modules.python.project.PythonProject;
 import org.netbeans.modules.python.project.ui.customizer.PythonProjectProperties;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
+import org.netbeans.modules.python.project.PythonActionProvider;
+import org.netbeans.modules.python.project.spi.TestRunner;
 import org.netbeans.modules.python.project.ui.Utils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -18,20 +20,37 @@ import org.openide.util.Lookup;
  * @author alley
  */
 public class RunCommand extends Command {
-    private static final String COMMAND_ID = ActionProvider.COMMAND_RUN;
-    
+    protected final boolean isTest;
 
-    public RunCommand(PythonProject project) {
-        super(project);        
+    public RunCommand(PythonProject project, boolean isTest) {
+        super(project);
+        this.isTest = isTest;
     }
 
     @Override
     public String getCommandId() {
-        return COMMAND_ID;
+        return isTest ? ActionProvider.COMMAND_TEST : ActionProvider.COMMAND_RUN;
     }
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (isTest) {
+            TestRunner testRunner = PythonActionProvider.getTestRunner(TestRunner.TestType.PY_UNIT);
+            //boolean testTaskExist = RakeSupport.getRakeTask(project, TEST_TASK_NAME) != null;
+            //if (testTaskExist) {
+            //    File pwd = FileUtil.toFile(project.getProjectDirectory());
+            //    RakeRunner runner = new RakeRunner(project);
+            //    runner.setPWD(pwd);
+            //    runner.setFileLocator(new RubyFileLocator(context, project));
+            //    runner.showWarnings(true);
+            //    runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            //    runner.run(TEST_TASK_NAME);
+            //} else if (testRunner != null) {
+                testRunner.getInstance().runAllTests(getProject(), false);
+            //}
+            return;
+        }
+
         final PythonProject pyProject = getProject();
         final PythonPlatform platform = checkProjectPythonPlatform(pyProject);
         if ( platform == null )

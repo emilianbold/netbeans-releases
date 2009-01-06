@@ -43,12 +43,11 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
@@ -85,19 +84,16 @@ public class IndexListNode extends BaseNode {
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    public Table getTable() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Table> wrapper = new DataWrapper<Table>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Table table = tableHandle.resolve(metaData);
-                    wrapper.setObject(table);
-                }
-            }
-        );
+    public String getCatalogName() {
+        return getCatalogName(connection, tableHandle);
+    }
 
-        return wrapper.getObject();
+    public String getSchemaName() {
+        return getSchemaName(connection, tableHandle);
+    }
+
+    public String getTableName() {
+        return getTableName(connection, tableHandle);
     }
 
     @Override
@@ -113,5 +109,71 @@ public class IndexListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    public static String getTableName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = { null };
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Table table = handle.resolve(metaData);
+                        if (table != null) {
+                            array[0] = table.getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Table table = handle.resolve(metaData);
+                        if (table != null) {
+                            array[0] = table.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        Table table = handle.resolve(metaData);
+                        if (table != null) {
+                            array[0] = table.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
     }
 }

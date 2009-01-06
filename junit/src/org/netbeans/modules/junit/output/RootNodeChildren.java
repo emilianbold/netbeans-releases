@@ -112,7 +112,7 @@ final class RootNodeChildren extends Children.Array {
         assert EventQueue.isDispatchThread();
         assert (runningSuiteNode != null)
                == (live && (runningSuiteName != null));
-        
+
         TestsuiteNode correspondingNode;
         
         if (reports == null) {
@@ -152,7 +152,8 @@ final class RootNodeChildren extends Children.Array {
         assert runningSuiteName == null;
         assert runningSuiteNode == null;
 
-        reports.add(report);
+        if (!reports.contains(report))
+            reports.add(report);
         
         return correspondingNode;
     }
@@ -165,9 +166,14 @@ final class RootNodeChildren extends Children.Array {
         if (reports == null) {
             reports = new ArrayList<Report>(newReports);
         } else {
-            reports.addAll(newReports);
+            while(newReports.iterator().hasNext()) {
+                Report rep = newReports.iterator().next();
+                if (!reports.contains(rep)) {
+                    reports.add(rep);
+                }
+            }
         }
-        
+
         if (!live) {
             for (Report report : reports) {
                 updateStatistics(report);
@@ -211,10 +217,12 @@ final class RootNodeChildren extends Children.Array {
         /* Called from the EventDispatch thread */
         
         final boolean isPassedSuite = !report.containsFailed();
-        if (isPassedSuite) {
-            passedSuites++;
-        } else {
-            failedSuites++;
+        if (!reports.contains(report)) {
+            if (isPassedSuite) {
+                passedSuites++;
+            } else {
+                failedSuites++;
+            }
         }
         return isPassedSuite;
     }

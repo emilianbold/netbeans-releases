@@ -69,6 +69,10 @@ public class UnusedImportsTest extends PythonTestBase {
         findHints(this, createRule(), "testfiles/unusedimports3.py", null, null);
     }
 
+    public void testNoHints3() throws Exception {
+        findHints(this, createRule(), "testfiles/futureimport.py", null, null);
+    }
+
     public void testFix1() throws Exception {
         applyHint(this, createRule(), "testfiles/unusedimports1.py", "import ur^import", "Remove Unused");
     }

@@ -42,13 +42,12 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
 
 /**
@@ -74,6 +73,7 @@ public class IndexColumnNode extends BaseNode {
 
     private String name = ""; // NOI18N
     private String icon = ""; // NOI18N
+    private int position = 0;
     private MetadataElementHandle<IndexColumn> indexColumnHandle;
     private final DatabaseConnection connection;
 
@@ -87,34 +87,30 @@ public class IndexColumnNode extends BaseNode {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            IndexColumn column = getIndexColumn();
-            name = column.getName();
-            if (column.getOrdering() == Ordering.DESCENDING) {
-                icon = ICONUP;
-            } else {
-                icon = ICONDOWN;
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            IndexColumn column = indexColumnHandle.resolve(metaData);
+                            name = column.getName();
+                            if (column.getOrdering() == Ordering.DESCENDING) {
+                                icon = ICONUP;
+                            } else {
+                                icon = ICONDOWN;
+                            }
+
+                            position = column.getPosition();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
     }
 
-    public IndexColumn getIndexColumn() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<IndexColumn> wrapper = new DataWrapper<IndexColumn>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    IndexColumn column = indexColumnHandle.resolve(metaData);
-                    wrapper.setObject(column);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
     public int getPosition() {
-        IndexColumn column = getIndexColumn();
-        return column.getPosition();
+        return position;
     }
 
     @Override

@@ -56,10 +56,8 @@ import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dataview.DataViewWindow2;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.node.SchemaProvider;
+import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -139,10 +137,13 @@ public class RecreateTableAction extends BaseAction {
                     } else
                         return;
 
-                    SchemaProvider schemaProvider = node.getLookup().lookup(SchemaProvider.class);
-                    Schema schema = schemaProvider.getSchema();
-                    String schemaName = MetadataUtils.getSchemaWorkingName(schema);
-
+                    SchemaNameProvider schemaProvider = node.getLookup().lookup(SchemaNameProvider.class);
+                    String schemaName = schemaProvider.getSchemaName();
+                    String catName = schemaProvider.getCatalogName();
+                    if (schemaName == null) {
+                        schemaName = catName;
+                    }
+                    
                     cmd.setObjectOwner(schemaName);
 
                     String newtab = cmd.getObjectName();

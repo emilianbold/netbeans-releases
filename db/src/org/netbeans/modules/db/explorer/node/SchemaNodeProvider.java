@@ -46,13 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -87,46 +86,40 @@ public class SchemaNodeProvider extends NodeProvider {
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    public Catalog getCatalog() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Catalog> wrapper = new DataWrapper<Catalog>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Catalog catalog = catalogHandle.resolve(metaData);
-                    wrapper.setObject(catalog);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
 
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Catalog cat = getCatalog();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Catalog cat = catalogHandle.resolve(metaData);
+                            if (cat != null) {
+                                Schema syntheticSchema = cat.getSyntheticSchema();
 
-            if (cat != null) {
-                Schema syntheticSchema = cat.getSyntheticSchema();
+                                if (syntheticSchema != null) {
+                                    updateNode(newList, syntheticSchema);
+                                } else {
+                                    Collection<Schema> schemas = cat.getSchemas();
+                                    for (Schema schema : schemas) {
+                                        updateNode(newList, schema);
+                                    }
+                                }
 
-                if (syntheticSchema != null) {
-                    updateNode(newList, syntheticSchema);
-                } else {
-                    Collection<Schema> schemas = cat.getSchemas();
-                    for (Schema schema : schemas) {
-                        updateNode(newList, schema);
+                                if (syntheticSchema != null) {
+                                    setProxyNodes(newList);
+                                } else {
+                                    setNodes(newList);
+                                }
+                            }
+                        }
                     }
-                }
-                
-                if (syntheticSchema != null) {
-                    setProxyNodes(newList);
-                } else {
-                    setNodes(newList);
-                }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         } else {
             setNodes(newList);

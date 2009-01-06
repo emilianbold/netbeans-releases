@@ -139,7 +139,7 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
             //String name = closest.getString();
             //addNodes(scopeNode != null ? scopeNode : root, name, highlights);
             //closest = null;
-            String name = ((Name)closest).id;
+            String name = ((Name)closest).getInternalId();
             offsets = findNames(ppr, path, name, info, offsets);
         } else if (closest instanceof Attribute) {
             Attribute attr = (Attribute)closest;
@@ -151,10 +151,10 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
                 PythonAstUtils.getNameRange(null, closest).containsInclusive(astOffset)) {
             String name;
             if (closest instanceof FunctionDef) {
-                name = ((FunctionDef)closest).name;
+                name = ((FunctionDef)closest).getInternalName();
             } else {
                 assert closest instanceof ClassDef;
-                name = ((ClassDef)closest).name;
+                name = ((ClassDef)closest).getInternalName();
             }
             offsets = findNames(ppr, path, name, info, offsets);
 
@@ -260,7 +260,7 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
             if (call != null) {
                 this.name = PythonAstUtils.getCallName(call);
             } else if (def != null) {
-                this.name = def.name;
+                this.name = def.getInternalName();
             } else {
                 throw new IllegalArgumentException(); // call or def must be nonnull
             }
@@ -281,7 +281,7 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
 
         @Override
         public Object visitFunctionDef(FunctionDef node) throws Exception {
-            if (node == def || node.name.equals(name)) {
+            if (node == def || node.getInternalName().equals(name)) {
                 ranges.add(PythonAstUtils.getNameRange(info, node));
             }
 
@@ -345,26 +345,28 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
 
         Set<OffsetRange> offsets = new HashSet<OffsetRange>();
 
-        String attrName = attr.attr;
-        String name = PythonAstUtils.getName(attr.value);
+        String attrName = attr.getInternalAttr();
+        if (attrName != null) {
+            String name = PythonAstUtils.getName(attr.getInternalValue());
 
-        for (PythonTree node : result) {
-            Attribute a = (Attribute)node;
-            if (attrName.equals(a.attr) && (name == null || name.equals(PythonAstUtils.getName(a.value)))) {
-                OffsetRange astRange = PythonAstUtils.getRange(node);
-                // Adjust to be the -value- part
-                int start = a.value.getCharStopIndex()+1;
-                if (start < astRange.getEnd()) {
-                    astRange = new OffsetRange(start, astRange.getEnd());
-                }
+            for (PythonTree node : result) {
+                Attribute a = (Attribute)node;
+                if (attrName.equals(a.getInternalAttr()) && (name == null || name.equals(PythonAstUtils.getName(a.getInternalValue())))) {
+                    OffsetRange astRange = PythonAstUtils.getRange(node);
+                    // Adjust to be the -value- part
+                    int start = a.getInternalValue().getCharStopIndex()+1;
+                    if (start < astRange.getEnd()) {
+                        astRange = new OffsetRange(start, astRange.getEnd());
+                    }
 
-                OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
-                if (node instanceof Import || node instanceof ImportFrom) {
-                    // Try to find the exact spot
-                    lexRange = PythonLexerUtils.getImportNameOffset((BaseDocument)info.getDocument(), lexRange, node, name);
-                }
-                if (lexRange != OffsetRange.NONE) {
-                    offsets.add(lexRange);
+                    OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
+                    if (name != null && (node instanceof Import || node instanceof ImportFrom)) {
+                        // Try to find the exact spot
+                        lexRange = PythonLexerUtils.getImportNameOffset((BaseDocument)info.getDocument(), lexRange, node, name);
+                    }
+                    if (lexRange != OffsetRange.NONE) {
+                        offsets.add(lexRange);
+                    }
                 }
             }
         }

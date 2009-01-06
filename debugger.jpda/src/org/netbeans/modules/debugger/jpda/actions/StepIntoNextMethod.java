@@ -61,10 +61,27 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -150,11 +167,15 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                     else
                         smartLogger.finer("Add exclusion patterns: "+ev.getNewValue());
                 }
-                addPatternsToRequest ((String[])
-                    ((Set<String>) ev.getNewValue ()).toArray (
+                try {
+                    addPatternsToRequest((String[]) ((Set<String>) ev.getNewValue ()).toArray (
                         new String [((Set) ev.getNewValue ()).size()]
-                    )
-                );
+                    ));
+                } catch (InternalExceptionWrapper ex) {
+                    return ;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                }
             }
         } else
         if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
@@ -177,24 +198,37 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
      * Should be called from Operator only.
      */
     public boolean exec (Event event) {
-        StepRequest sr = (StepRequest) event.request();
-        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
-        st.setInStep(false, null);
+        try {
+            StepRequest sr = (StepRequest) EventWrapper.request(event);
+            JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
+            st.setInStep(false, null);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
         /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
         }*/
         JPDAThread resumeThread = null;
         synchronized (getDebuggerImpl ().LOCK) {
-            if (stepRequest != null) {
-                stepRequest.disable ();
-            }
             LocatableEvent le = (LocatableEvent) event;
-
-            ThreadReference tr = le.thread ();
+            ThreadReference tr;
+            try {
+                if (stepRequest != null) {
+                    EventRequestWrapper.disable (stepRequest);
+                }
+                tr = LocatableEventWrapper.thread(le);
+            } catch (InternalExceptionWrapper ex) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
+            }
 
             try {
-                if (tr.frame(0).location().method().isSynthetic()) {
+                if (TypeComponentWrapper.isSynthetic(
+                        LocationWrapper.method(StackFrameWrapper.location(
+                        ThreadReferenceWrapper.frame(tr, 0))))) {
                     //S ystem.out.println("In synthetic method -> STEP INTO again");
                     resumeThread = setStepRequest (StepRequest.STEP_INTO);
                     return true;
@@ -202,6 +236,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             } catch (IncompatibleThreadStateException e) {
                 //ErrorManager.getDefault().notify(e);
                 // This may happen while debugging a free form project
+            } catch (IllegalThreadStateExceptionWrapper e) {
+            } catch (InvalidStackFrameExceptionWrapper e) {
+            } catch (InternalExceptionWrapper e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return true;
             }
 
             JPDAThread t = getDebuggerImpl ().getThread (tr);
@@ -220,18 +260,28 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             }
             if (stop) {
-                removeStepRequests (le.thread ());
+                removeStepRequests (tr);
             } else {
                 smartLogger.finer(" => do next step.");
                 if (smartSteppingStepOut) {
                     resumeThread = setStepRequest (StepRequest.STEP_OUT);
                 } else if (stepRequest != null) {
                     try {
-                        stepRequest.enable ();
+                        EventRequestWrapper.enable (stepRequest);
                     } catch (IllegalThreadStateException itsex) {
-                        // the thread named in the request has died.
-                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        try {
+                            // the thread named in the request has died.
+                            getDebuggerImpl().getOperator().unregister(stepRequest);
+                        } catch (InternalExceptionWrapper ex) {
+                            return true;
+                        } catch (VMDisconnectedExceptionWrapper ex) {
+                            return true;
+                        }
                         stepRequest = null;
+                        return true;
+                    } catch (VMDisconnectedExceptionWrapper e) {
+                        return true;
+                    } catch (InternalExceptionWrapper e) {
                         return true;
                     }
                 } else {
@@ -244,7 +294,11 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                     smartLogger.finer("FINISH IN CLASS " +
                         t.getClassName () + " ********"
                     );
-                StepActionProvider.setLastOperation(tr, debugger, null);
+                try {
+                    StepActionProvider.setLastOperation(tr, debugger, null);
+                } catch (VMDisconnectedExceptionWrapper e) {
+                    return true;
+                }
             }
             return !stop;
         }
@@ -252,8 +306,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
 
     public void removed(EventRequest eventRequest) {
         StepRequest sr = (StepRequest) eventRequest;
-        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
-        st.setInStep(false, null);
+        try {
+            JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
+            st.setInStep(false, null);
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        }
         /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
@@ -288,28 +346,44 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         removeStepRequests (tr);
         VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
         if (vm == null) return null;
-        stepRequest = vm.eventRequestManager ().createStepRequest (
-            tr,
-            StepRequest.STEP_LINE,
-            step
-        );
-
-        getDebuggerImpl ().getOperator ().register (stepRequest, this);
-        int suspendPolicy = getDebuggerImpl().getSuspend();
-        stepRequest.setSuspendPolicy (suspendPolicy);
+        int suspendPolicy;
+        try {
+            stepRequest = EventRequestManagerWrapper.createStepRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm),
+                    tr,
+                    StepRequest.STEP_LINE,
+                    step);
+            getDebuggerImpl ().getOperator ().register (stepRequest, this);
+            suspendPolicy = getDebuggerImpl().getSuspend();
+            EventRequestWrapper.setSuspendPolicy (stepRequest, suspendPolicy);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        }
 
         if (smartLogger.isLoggable(Level.FINER)) {
             smartLogger.finer("Set step request("+step+") and patterns: ");
         }
-        addPatternsToRequest (
-            getSmartSteppingFilterImpl ().getExclusionPatterns ()
-        );
         try {
-            stepRequest.enable ();
+            addPatternsToRequest (
+                getSmartSteppingFilterImpl ().getExclusionPatterns ()
+            );
+            EventRequestWrapper.enable (stepRequest);
         } catch (IllegalThreadStateException itsex) {
-            // the thread named in the request has died.
-            getDebuggerImpl ().getOperator ().unregister(stepRequest);
+            try {
+                // the thread named in the request has died.
+                getDebuggerImpl().getOperator().unregister(stepRequest);
+            } catch (InternalExceptionWrapper ex) {
+                return null;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return null;
+            }
             stepRequest = null;
+            return null;
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
         }
         if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
@@ -335,11 +409,11 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         return compoundSmartSteppingListener;
     }
 
-    private void addPatternsToRequest (String[] patterns) {
+    private void addPatternsToRequest (String[] patterns) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         if (stepRequest == null) return;
         int i, k = patterns.length;
         for (i = 0; i < k; i++) {
-            stepRequest.addClassExclusionFilter (patterns [i]);
+            StepRequestWrapper.addClassExclusionFilter(stepRequest, patterns [i]);
             smartLogger.finer("   add pattern: "+patterns[i]);
         }
     }

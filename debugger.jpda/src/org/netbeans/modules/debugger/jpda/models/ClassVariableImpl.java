@@ -42,10 +42,14 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ClassObjectReference;
-import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 
 /**
  *
@@ -70,13 +74,36 @@ public class ClassVariableImpl extends AbstractObjectVariable implements ClassVa
     }
     
     public JPDAClassType getClassType() {
-        return getDebugger().getClassType(clazz.referenceType());
+        try {
+            return getDebugger().getClassType(ObjectReferenceWrapper.referenceType(clazz));
+        } catch (InternalExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        }
     }
 
     public JPDAClassType getReflectedType() {
-        return getDebugger().getClassType(clazz.reflectedType());
+        try {
+            return getDebugger().getClassType(ClassObjectReferenceWrapper.reflectedType(clazz));
+        } catch (InternalExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // re-throw, we should not return null and can not throw anything checked.
+            throw ex.getCause();
+        }
     }
 
+    @Override
     public ClassVariableImpl clone() {
         ClassVariableImpl clon = new ClassVariableImpl(getDebugger(), clazz,
                 getID().substring(0, getID().length() - ".class".length()));

@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
-import org.netbeans.modules.cnd.loaders.FortranDataLoader;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 public class FortranSourceFileFilter extends SourceFileFilter{
@@ -62,7 +63,7 @@ public class FortranSourceFileFilter extends SourceFileFilter{
     
     public String[] getSuffixes() {
         if (suffixList == null) {
-            suffixList = getSuffixList(FortranDataLoader.getInstance().getExtensions());
+            suffixList = MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues().toArray(new String[] {});
         }
         return suffixList;
     }

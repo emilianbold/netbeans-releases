@@ -58,7 +58,7 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
     private WizardDescriptor wizardDescriptor;
     private MakefileOrConfigurePanel component;
     private String name;
-    private boolean initialized = false;
+    //private boolean initialized = false;
 
     /** Create the wizard panel descriptor. */
     public MakefileOrConfigureDescriptorPanel() {
@@ -122,12 +122,12 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
     }
 
     public void readSettings(Object settings) {
-        if (initialized) {
-            return;
-        }
+        //if (initialized) {
+        //    return;
+        //}
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
-        initialized = true;
+        //initialized = true;
     }
 
     public void storeSettings(Object settings) {

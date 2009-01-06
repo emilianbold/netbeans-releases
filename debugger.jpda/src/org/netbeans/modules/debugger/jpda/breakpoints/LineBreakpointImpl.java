@@ -73,8 +73,18 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -178,6 +188,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         checkLoadedClasses (className, null);
     }
 
+    @Override
     protected void classLoaded (ReferenceType referenceType) {
         LineBreakpoint breakpoint = getBreakpoint();
         logger.fine("Class "+referenceType+" loaded for breakpoint "+breakpoint);
@@ -201,43 +212,50 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         for (Iterator it = locations.iterator(); it.hasNext();) {
             Location location = (Location)it.next();
             try {           
-                BreakpointRequest br = getEventRequestManager ().
-                    createBreakpointRequest (location);
+                BreakpointRequest br = EventRequestManagerWrapper.
+                    createBreakpointRequest (getEventRequestManager (), location);
                 setFilters(br);
                 addEventRequest (br);
                 setValidity(Breakpoint.VALIDITY.VALID, null);
                 //System.out.println("Breakpoint " + br + location + "created");
-            } catch (VMDisconnectedException e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
+            } catch (InternalExceptionWrapper e) {
             }
         }
     }
     
-    protected EventRequest createEventRequest(EventRequest oldRequest) {
-        Location location = ((BreakpointRequest) oldRequest).location();
-        BreakpointRequest br = getEventRequestManager ().createBreakpointRequest (location);
+    protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        Location location = BreakpointRequestWrapper.location((BreakpointRequest) oldRequest);
+        BreakpointRequest br = EventRequestManagerWrapper.createBreakpointRequest(getEventRequestManager(), location);
         setFilters(br);
         return br;
     }
     
-    private void setFilters(BreakpointRequest br) {
+    private void setFilters(BreakpointRequest br) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         JPDAThread[] threadFilters = getBreakpoint().getThreadFilters(getDebugger());
         if (threadFilters != null && threadFilters.length > 0) {
             for (JPDAThread t : threadFilters) {
-                br.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                BreakpointRequestWrapper.addThreadFilter(br, ((JPDAThreadImpl) t).getThreadReference());
             }
         }
         ObjectVariable[] varFilters = getBreakpoint().getInstanceFilters(getDebugger());
         if (varFilters != null && varFilters.length > 0) {
             for (ObjectVariable v : varFilters) {
-                br.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                BreakpointRequestWrapper.addInstanceFilter(br, (ObjectReference) ((JDIVariable) v).getJDIValue());
             }
         }
     }
 
     public boolean processCondition(Event event) {
         if (event instanceof BreakpointEvent) {
-            return processCondition(event, getBreakpoint().getCondition (),
-                    ((BreakpointEvent) event).thread (), null);
+            try {
+                return processCondition(event, getBreakpoint().getCondition (),
+                        LocatableEventWrapper.thread((BreakpointEvent) event), null);
+            } catch (InternalExceptionWrapper ex) {
+                return true;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return true;
+            }
         } else {
             return true; // Empty condition, always satisfied.
         }
@@ -245,12 +263,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent) {
-            return perform (
-                event,
-                ((BreakpointEvent) event).thread (),
-                ((LocatableEvent) event).location ().declaringType (),
-                null
-            );
+            try {
+                return perform (
+                    event,
+                    LocatableEventWrapper.thread((BreakpointEvent) event),
+                    LocationWrapper.declaringType(LocatableWrapper.location((LocatableEvent) event)),
+                    null
+                );
+            } catch (InternalExceptionWrapper ex) {
+                return false;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
+            }
         }
         return super.exec (event);
     }
@@ -338,11 +362,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         int lineNumber,
         String[] reason) throws AbsentInformationException, ObjectCollectedException,
                                 ClassNotPreparedException, InternalException {
-        List<Location> list = referenceType.locationsOfLine (
-            stratum,
-            sourceName,
-            lineNumber
-        );
+        List<Location> list;
+        try {
+            list = ReferenceTypeWrapper.locationsOfLine0(referenceType, stratum, sourceName, lineNumber);
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            throw ex.getCause();
+        }
 
         if (logger.isLoggable(Level.FINER)) {
             logger.finer("LineBreakpoint: locations for ReferenceType=" +
@@ -358,7 +383,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ArrayList<Location> locations = new ArrayList<Location>(list.size());
             for (Iterator<Location> it = list.iterator(); it.hasNext();) {
                 Location l = it.next();
-                String lSourcePath = l.sourcePath().replace(java.io.File.separatorChar, '/');
+                String lSourcePath;
+                try {
+                    lSourcePath = LocationWrapper.sourcePath(l).replace(java.io.File.separatorChar, '/');
+                } catch (InternalExceptionWrapper ex) {
+                    return Collections.emptyList();
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return Collections.emptyList();
+                }
                 lSourcePath = normalize(lSourcePath);
                 if (lSourcePath.equals(bpSourcePath)) {
                     locations.add(l);

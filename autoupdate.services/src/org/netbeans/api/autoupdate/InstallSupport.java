@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -88,7 +88,6 @@ public final class InstallSupport {
      * @param progress ProgressHandle for notification progress in downloading, can be <code>null</code>
      * @param isGlobal if <code>true</code> then forces download instances into shared directories i.e. installation directory
      * @return <code>Validator</code> an instance of Validator which allows to verify downloaded instances in the next step
-     * Mustn't be null.
      * @throws org.netbeans.api.autoupdate.OperationException
      */
     public Validator doDownload(ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
@@ -101,10 +100,9 @@ public final class InstallSupport {
 
     /** Validates all instances that have been downloaded in the previous step.
      * 
-     * @param validator an instance of <code>Validator</code> that has been returned by {link @doDownload}
+     * @param validator an instance of <code>Validator</code> that has been returned by {link @doDownload}. Mustn't be null.
      * @param progress ProgressHandle for notification progress in validation, can be <code>null</code>
      * @return <code>Installer</code> an instance of Installer which allows to install all verified instances
-     * Mustn't be null.
      * @throws org.netbeans.api.autoupdate.OperationException
      * @see #doDownload
      */
@@ -118,10 +116,9 @@ public final class InstallSupport {
 
     /** Validates all instances that have been verified in the previous step.
      * 
-     * @param installer an instance of <code>Installer</code> that has been returned by InstallSupport#doValidate
+     * @param installer an instance of <code>Installer</code> that has been returned by InstallSupport#doValidate. Mustn't be null.
      * @param progress ProgressHandle for notification progress in installation, can be <code>null</code>
      * @return <code>Restarter</code> an instance of Restart if application restart is required for complete the install operation, or null
-     * Mustn't be null.
      * @throws org.netbeans.api.autoupdate.OperationException
      * @see #doValidate
      */
@@ -148,8 +145,7 @@ public final class InstallSupport {
      * Completes the operation, applies all changes and ensures restart of the application immediately.
      * If method {@link #doInstall} returns non null instance of <code>Restarter</code> then
      * this method must be called to apply all changes.
-     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doInstall}.
-     * Mustn't be null.
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doInstall}. Mustn't be null.
      * @param progress instance of {@link ProgressHandle} or null
      * @throws org.netbeans.api.autoupdate.OperationException
      * @see OperationException

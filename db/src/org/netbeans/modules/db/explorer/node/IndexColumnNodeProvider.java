@@ -46,14 +46,13 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -87,45 +86,39 @@ public class IndexColumnNodeProvider extends NodeProvider {
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    public Index getIndex() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Index> wrapper = new DataWrapper<Index>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Index index = handle.resolve(metaData);
-                    wrapper.setObject(index);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
     @Override
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
 
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Index index = getIndex();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Index index = handle.resolve(metaData);
+                            if (index != null) {
+                                Collection<IndexColumn> columns = index.getColumns();
+                                for (IndexColumn column : columns) {
+                                    MetadataElementHandle<IndexColumn> h = MetadataElementHandle.create(column);
+                                    Collection<Node> matches = getNodes(h);
+                                    if (matches.size() > 0) {
+                                        newList.addAll(matches);
+                                    } else {
+                                        NodeDataLookup lookup = new NodeDataLookup();
+                                        lookup.add(connection);
+                                        lookup.add(h);
 
-            if (index != null) {
-                Collection<IndexColumn> columns = index.getColumns();
-                for (IndexColumn column : columns) {
-                    MetadataElementHandle<IndexColumn> h = MetadataElementHandle.create(column);
-                    Collection<Node> matches = getNodes(h);
-                    if (matches.size() > 0) {
-                        newList.addAll(matches);
-                    } else {
-                        NodeDataLookup lookup = new NodeDataLookup();
-                        lookup.add(connection);
-                        lookup.add(h);
-
-                        newList.add(IndexColumnNode.create(lookup, this));
+                                        newList.add(IndexColumnNode.create(lookup, IndexColumnNodeProvider.this));
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 

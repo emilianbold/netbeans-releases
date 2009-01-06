@@ -43,13 +43,12 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 
 /**
  *
@@ -85,24 +84,19 @@ public class ForeignKeyNode extends BaseNode {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            ForeignKey fk = getForeignKey();
-            name = fk.getName();
-        }
-    }
-
-    public ForeignKey getForeignKey() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<ForeignKey> wrapper = new DataWrapper<ForeignKey>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    ForeignKey fk = fkHandle.resolve(metaData);
-                    wrapper.setObject(fk);
-                }
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            ForeignKey fk = fkHandle.resolve(metaData);
+                            name = fk.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
-        );
-
-        return wrapper.getObject();
+        }
     }
 
     @Override

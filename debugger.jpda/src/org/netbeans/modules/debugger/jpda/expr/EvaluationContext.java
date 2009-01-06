@@ -61,7 +61,14 @@ import com.sun.source.util.Trees;
 
 import java.util.*;
 
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Exceptions;
 
 /**
  * Defines the exection context in which to evaluate a given expression. The context consists of:
@@ -146,8 +153,24 @@ public class EvaluationContext {
     }
 
     void methodInvokeDone() throws IncompatibleThreadStateException {
-        // Refresh the stack frame
-        frame = thread.frame(frameDepth);
+        try {
+            // Refresh the stack frame
+            frame = ThreadReferenceWrapper.frame(thread, frameDepth);
+        } catch (InternalExceptionWrapper ex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
+            throw new IllegalStateException(ieex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            // Ignore
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
+            throw new IllegalStateException(ieex);
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
+            throw new IllegalStateException(ieex);
+        }
     }
 
     JPDADebuggerImpl getDebugger() {
@@ -278,7 +301,9 @@ public class EvaluationContext {
                         ((ClassType) field.declaringType()).setValue(field, value);
                     }
                 } catch (InvalidTypeException itex) {
+                    throw new IllegalStateException(new InvalidExpressionException (itex));
                 } catch (ClassNotLoadedException cnlex) {
+                    throw new IllegalStateException(cnlex);
                 }
             }
         } // FieldI class
@@ -298,7 +323,9 @@ public class EvaluationContext {
                 try {
                     context.getFrame().setValue(var, value);
                 } catch (InvalidTypeException itex) {
+                    throw new IllegalStateException(new InvalidExpressionException (itex));
                 } catch (ClassNotLoadedException cnlex) {
+                    throw new IllegalStateException(cnlex);
                 }
             }
         } // LocalVarI class
@@ -318,7 +345,9 @@ public class EvaluationContext {
                 try {
                     array.setValue(index, value);
                 } catch (ClassNotLoadedException ex) {
+                    throw new IllegalStateException(ex);
                 } catch (InvalidTypeException ex) {
+                    throw new IllegalStateException(new InvalidExpressionException (ex));
                 }
             }
         } // ArrayElementI class

@@ -138,7 +138,7 @@ public class RailsProjectGenerator {
             desc.runThroughRuby(runThroughRuby);
             desc.fileLocator(new DirectoryFileLocator(dirFO));
 
-            LineConvertor convertor = LineConvertors.filePattern(desc.getFileLocator(), RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
+            LineConvertor convertor = LineConvertors.filePattern(desc.getFileLocator(), RAILS_GENERATOR_PATTERN, null, 2, -1);
             desc.addStandardRecognizers();
             desc.addErrConvertor(convertor);
             desc.addOutConvertor(convertor);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.qaf;
@@ -291,7 +291,11 @@ public class GrailsActionsTest extends GrailsTestCase {
         JTextFieldOperator jtfo = new JTextFieldOperator(ndo, DEFAULT_PORT);
         jtfo.clearText();
         jtfo.typeText(port);
-        ndo.ok();
+        ndo.btOK().push();
+        //wait till project data are really saved
+        //Saving Project data
+        String saveDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.uiapi.Bundle", "LBL_Saving_Project_data");
+        waitDialogClosed(saveDlgTitle);
     }
 
     private Node getDomainClassNode(String domainClass) {

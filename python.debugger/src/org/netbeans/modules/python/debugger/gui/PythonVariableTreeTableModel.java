@@ -1,185 +1,182 @@
-/**
-* Copyright (C) 2003,2004,2005 Jean-Yves Mengant
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
-
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.python.debugger.gui;
 
 import org.netbeans.modules.python.debugger.utils.AbstractTreeTableModel;
 import org.netbeans.modules.python.debugger.utils.TreeTableModel;
 
-
-
-
-
-
-
+/**
+ *
+ * @author Jean-Yves Mengant
+ */
 public class PythonVariableTreeTableModel
-extends AbstractTreeTableModel    
-{
+        extends AbstractTreeTableModel {
 
-    // Types of the columns.
-    static protected Class[]  cTypes = { TreeTableModel.class, Object.class };
+  // Types of the columns.
+  static protected Class[] cTypes = {TreeTableModel.class, Object.class};
+  private String[] _columnNames = null;
+  private PythonContainer _parent = null;
+  /** true when table conatins global variables references */
+  private boolean _global = false;
 
-    private String[] _columnNames = null ;
-    private PythonContainer _parent = null ; 
-    /** true when table conatins global variables references */
-    private boolean _global = false ;
+  public PythonVariableTreeTableModel(Object root,
+          String columnNames[],
+          boolean global) {
+    // initiate root Node
+    super(root);
+    _columnNames = columnNames;
+    _global = global;
+  }
 
+  public void set_parent(PythonContainer parent) {
+    _parent = parent;
+  }
 
-    public PythonVariableTreeTableModel( Object root ,
-                                         String columnNames[] ,
-                                         boolean global
-                                       ) 
-    { 
-      // initiate root Node 
-      super( root ) ;
-       _columnNames = columnNames       ; 
-       _global = global ; 
+  //
+  // Some convenience methods.
+  //
+  protected PythonVariableTreeDataNode getDataNode(Object node) {
+    return ((PythonVariableTreeDataNode) node);
+  }
+
+  protected Object[] getChildren(Object node) {
+    PythonVariableTreeDataNode datanode = ((PythonVariableTreeDataNode) node);
+    return datanode.get_children();
+  }
+
+  //
+  // The TreeModel interface
+  //
+  public int getChildCount(Object node) {
+    Object[] children = getChildren(node);
+    return (children == null) ? 0 : children.length;
+  }
+
+  public boolean isCellEditable(Object node, int column) {
+    if (getColumnClass(column) == TreeTableModel.class) {
+      return true;
     }
-    
-
-    public void set_parent( PythonContainer parent )
-    { _parent = parent ; }
-    
-    //
-    // Some convenience methods. 
-    //
-
-    protected PythonVariableTreeDataNode getDataNode(Object node) 
-    {
-     return ((PythonVariableTreeDataNode)node); 
-    }
-
-    protected Object[] getChildren(Object node) 
-    {
-      PythonVariableTreeDataNode datanode = ((PythonVariableTreeDataNode)node); 
-       return datanode.get_children(); 
-    }
-
-    //
-    // The TreeModel interface
-    //
-
-    public int getChildCount(Object node) 
-    { 
-      Object[] children = getChildren(node); 
-      return (children == null) ? 0 : children.length;
-    }
-
-    
-    public boolean isCellEditable(Object node, int column) 
-    {
-      if (  getColumnClass(column) == TreeTableModel.class )
-        return true ; 
-      if ( node instanceof PythonVariableTreeDataNode ) 
-      {
-      PythonVariableTreeDataNode cur =(PythonVariableTreeDataNode)node ; 
-        if ( cur.isLeaf() )
-          return true ; 
-      }  
-      return false ; 
-    }
-
-    
-    public Object getChild(Object node, int i) 
-    {
-      
-   return getChildren(node)[i]; 
-    }
-
-    // The superclass's implementation would work, but this is more efficient. 
-    public boolean isLeaf(Object node) 
-    { 
-    PythonVariableTreeDataNode cur = (PythonVariableTreeDataNode) node ;  
-      return cur.isLeaf() ;
-    }
-
-    //
-    //  The TreeTableNode interface. 
-    //
-
-    public int getColumnCount() 
-    {    
-      return _columnNames.length; 
-    }
-
-    public String getColumnName(int column) 
-    { return _columnNames[column]; }
-
-    public Class getColumnClass(int column) 
-    {return cTypes[column]; }
-
-    /**
-     * Can be invoked when a node has changed, will create the
-     * appropriate event.
-     */
-    protected void nodeChanged( PythonVariableTreeDataNode candidate ) 
-    {
-      PythonVariableTreeDataNode parent = candidate.get_parent();
-      if (parent != null) 
-      {
-        PythonVariableTreeDataNode[]   path = parent.getPath();
-        int[]     index = { getIndexOfChild(parent, candidate) };
-        Object[]     children = { candidate };
-
-        fireTreeNodesChanged( PythonVariableTreeTableModel.this, 
-                              path ,  
-                              index,
-                              children);
+    if (node instanceof PythonVariableTreeDataNode) {
+      PythonVariableTreeDataNode cur = (PythonVariableTreeDataNode) node;
+      if (cur.isLeaf()) {
+        return true;
       }
     }
-    
-    protected void nodeStructureChange( PythonVariableTreeDataNode candidate )
-   {
-     fireTreeStructureChanged( this, candidate.getPath(), null, null);
-   }
-    
-   public Object getValueAt(Object node, int column) 
-   {
-   PythonVariableTreeDataNode dataNode = getDataNode(node) ; 
- 
-     switch(column) 
-     {
-       case 0:
-         return dataNode ;
-       case 1:
-         // populate Variable content value
-         return dataNode.get_varContent() ;
-     }
-     return null; 
-   }
-   
-   
-   public void setValueAt( Object newValue , Object node , int column )
-   {
-     if ( column == 0 ) // tree
-       super.setValueAt(newValue , node , column ) ;
-     else 
-     {
-     PythonVariableTreeDataNode dataNode = getDataNode(node) ; 
-       // Complex names may need to get built from tree path  
-       PythonVariableTreeDataNode path[] = dataNode.getPath() ; 
-       String varName = PythonVariableTreeDataNode.buildPythonName(path) ;
-       dataNode.set_varContent((String)newValue) ; 
-       // populate newDataValue to python side
-       if ( _parent != null )
-         _parent.dbgVariableChanged(varName , (String)newValue ,_global ) ;  
-       
-     }
-   }  
-   
+    return false;
+  }
+
+  public Object getChild(Object node, int i) {
+
+    return getChildren(node)[i];
+  }
+
+  // The superclass's implementation would work, but this is more efficient.
+  public boolean isLeaf(Object node) {
+    PythonVariableTreeDataNode cur = (PythonVariableTreeDataNode) node;
+    return cur.isLeaf();
+  }
+
+  //
+  //  The TreeTableNode interface.
+  //
+  public int getColumnCount() {
+    return _columnNames.length;
+  }
+
+  public String getColumnName(int column) {
+    return _columnNames[column];
+  }
+
+  public Class getColumnClass(int column) {
+    return cTypes[column];
+  }
+
+  /**
+   * Can be invoked when a node has changed, will create the
+   * appropriate event.
+   */
+  protected void nodeChanged(PythonVariableTreeDataNode candidate) {
+    PythonVariableTreeDataNode parent = candidate.get_parent();
+    if (parent != null) {
+      PythonVariableTreeDataNode[] path = parent.getPath();
+      int[] index = {getIndexOfChild(parent, candidate)};
+      Object[] children = {candidate};
+
+      fireTreeNodesChanged(PythonVariableTreeTableModel.this,
+              path,
+              index,
+              children);
+    }
+  }
+
+  protected void nodeStructureChange(PythonVariableTreeDataNode candidate) {
+    fireTreeStructureChanged(this, candidate.getPath(), null, null);
+  }
+
+  public Object getValueAt(Object node, int column) {
+    PythonVariableTreeDataNode dataNode = getDataNode(node);
+
+    switch (column) {
+      case 0:
+        return dataNode;
+      case 1:
+        // populate Variable content value
+        return dataNode.get_varContent();
+    }
+    return null;
+  }
+
+  public void setValueAt(Object newValue, Object node, int column) {
+    if (column == 0) // tree
+    {
+      super.setValueAt(newValue, node, column);
+    } else {
+      PythonVariableTreeDataNode dataNode = getDataNode(node);
+      // Complex names may need to get built from tree path
+      PythonVariableTreeDataNode path[] = dataNode.getPath();
+      String varName = PythonVariableTreeDataNode.buildPythonName(path);
+      dataNode.set_varContent((String) newValue);
+      // populate newDataValue to python side
+      if (_parent != null) {
+        _parent.dbgVariableChanged(varName, (String) newValue, _global);
+      }
+
+    }
+  }
 }

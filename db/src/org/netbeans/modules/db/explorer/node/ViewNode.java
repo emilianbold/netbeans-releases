@@ -50,13 +50,11 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -64,7 +62,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Rob Englander
  */
-public class ViewNode extends BaseNode implements SchemaProvider {
+public class ViewNode extends BaseNode implements SchemaNameProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
     private static final String FOLDER = "View"; //NOI18N
 
@@ -94,24 +92,27 @@ public class ViewNode extends BaseNode implements SchemaProvider {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            View view = getView();
-            name = view.getName();
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            View view = viewHandle.resolve(metaData);
+                            name = view.getName();
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
+            }
         }
     }
 
-    public View getView() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<View> wrapper = new DataWrapper<View>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    View view = viewHandle.resolve(metaData);
-                    wrapper.setObject(view);
-                }
-            }
-        );
+    public String getCatalogName() {
+        return getCatalogName(connection, viewHandle);
+    }
 
-        return wrapper.getObject();
+    public String getSchemaName() {
+        return getSchemaName(connection, viewHandle);
     }
 
     @Override
@@ -131,12 +132,6 @@ public class ViewNode extends BaseNode implements SchemaProvider {
     public boolean canDestroy() {
         DatabaseConnector connector = connection.getConnector();
         return connector.supportsCommand(Specification.DROP_VIEW);
-    }
-
-
-    public Schema getSchema() {
-        View view = getView();
-        return view.getParent();
     }
 
     @Override
@@ -176,4 +171,47 @@ public class ViewNode extends BaseNode implements SchemaProvider {
         return bundle().getString("ND_View"); //NOI18N
     }
 
+    public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        View view = handle.resolve(metaData);
+                        if (view != null) {
+                            array[0] = view.getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
+
+    public static String getCatalogName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
+        MetadataModel metaDataModel = connection.getMetadataModel();
+        final String[] array = new String[1];
+
+        try {
+            metaDataModel.runReadAction(
+                new Action<Metadata>() {
+                    public void run(Metadata metaData) {
+                        View view = handle.resolve(metaData);
+                        if (view != null) {
+                            array[0] = view.getParent().getParent().getName();
+                        }
+                    }
+                }
+            );
+        } catch (MetadataModelException e) {
+            // TODO report exception
+        }
+
+        return array[0];
+    }
 }

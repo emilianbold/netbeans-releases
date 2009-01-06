@@ -46,13 +46,12 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.DataWrapper;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils.MetadataReadListener;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
@@ -88,69 +87,49 @@ public class ColumnNodeProvider extends NodeProvider {
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
-    public Table getTable() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<Table> wrapper = new DataWrapper<Table>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    Table table = (Table)handle.resolve(metaData);
-                    wrapper.setObject(table);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
-    public View getView() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
-        DataWrapper<View> wrapper = new DataWrapper<View>();
-        MetadataUtils.readModel(metaDataModel, wrapper,
-            new MetadataReadListener() {
-                public void run(Metadata metaData, DataWrapper wrapper) {
-                    View view = (View)handle.resolve(metaData);
-                    wrapper.setObject(view);
-                }
-            }
-        );
-
-        return wrapper.getObject();
-    }
-
     @Override
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<Node>();
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            Collection<Column> columns;
-            try {
-                Table table = getTable();
-                if (table == null) {
-                    return;
-                }
-                columns = table.getColumns();
-            } catch (ClassCastException e) {
-                View view = getView();
-                if (view == null) {
-                    return;
-                }
-                columns = view.getColumns();
-            }
+            try { 
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                        public void run(Metadata metaData) {
+                            Collection<Column> columns;
+                            try {
+                                Table table = (Table)handle.resolve(metaData);
+                                if (table == null) {
+                                    return;
+                                }
+                                columns = table.getColumns();
+                            } catch (ClassCastException e) {
+                                View view = (View)handle.resolve(metaData);
+                                if (view == null) {
+                                    return;
+                                }
+                                columns = view.getColumns();
+                            }
 
-            for (Column column : columns) {
-                MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
-                Collection<Node> matches = getNodes(h);
-                if (matches.size() > 0) {
-                    newList.addAll(matches);
-                } else {
-                    NodeDataLookup lookup = new NodeDataLookup();
-                    lookup.add(connection);
-                    lookup.add(h);
+                            for (Column column : columns) {
+                                MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
+                                Collection<Node> matches = getNodes(h);
+                                if (matches.size() > 0) {
+                                    newList.addAll(matches);
+                                } else {
+                                    NodeDataLookup lookup = new NodeDataLookup();
+                                    lookup.add(connection);
+                                    lookup.add(h);
 
-                    newList.add(ColumnNode.create(lookup, this));
-                }
+                                    newList.add(ColumnNode.create(lookup, ColumnNodeProvider.this));
+                                }
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                // TODO report exception
             }
         }
 

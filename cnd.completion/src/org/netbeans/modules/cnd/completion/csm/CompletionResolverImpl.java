@@ -102,6 +102,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
+    private int contextOffset = 0;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
     private final FileReferencesContext fileReferncesContext;
@@ -112,6 +113,10 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     public void setSortNeeded(boolean sort) {
         this.sort = sort;
+    }
+
+    public void setContextOffset(int offset) {
+        this.contextOffset = offset;
     }
 
     public void setResolveScope(QueryScope queryScope) {
@@ -175,6 +180,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     public boolean resolve(int offset, String strPrefix, boolean match) {
+        offset += contextOffset;
         if (file == null) {
             return false;
         }

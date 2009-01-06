@@ -149,6 +149,9 @@ public class YamlParser implements Parser {
             Iterator iterator = composer.eachNode();
             while (iterator.hasNext()) {
                 Node node = (Node) iterator.next();
+                if (node == null) {
+                    break;
+                }
                 nodes.add(node);
             }
 

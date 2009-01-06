@@ -221,8 +221,8 @@ public class DiscoveryExtension implements IteratorExtension {
         }
         SelectConfigurationPanel.buildModel(descriptor);
         return !descriptor.isInvokeProvider()
-        && descriptor.getConfigurations() != null
-                && descriptor.getIncludedFiles() != null;
+            && descriptor.getConfigurations() != null && descriptor.getConfigurations().size() > 0
+            && descriptor.getIncludedFiles() != null;
     }
     
     public boolean canApply(WizardDescriptor wizard, Project project) {

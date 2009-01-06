@@ -456,32 +456,39 @@ class DataViewUI extends JXPanel {
         matchBoxField.addKeyListener(new KeyListener() {
 
             public void keyTyped(KeyEvent e) {
+                processKeyEvents();
             }
 
             public void keyPressed(KeyEvent e) {
-                ResultSetJXTable table = getDataViewTableUI();
-                int[] rows = new int[table.getColumnCount()];
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    rows[i] = i;
-                }
-                {
-                    MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
-                    filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
-                    table.setFilters(new FilterPipeline(new Filter[]{filterP}));
-                }
+                processKeyEvents();
             }
 
             public void keyReleased(KeyEvent e) {
+                processKeyEvents();
             }
         });
         toolbar.add(matchBoxField);
+    }
+
+    private void processKeyEvents() {
+        ResultSetJXTable table = getDataViewTableUI();
+        int[] rows = new int[table.getColumnCount()];
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            rows[i] = i;
+        }
+        {
+            MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
+            filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
+            table.setFilters(new FilterPipeline(new Filter[]{filterP}));
+        }
     }
 
     private void initVerticalToolbar(ActionListener outputListener) {
 
         URL url = getClass().getResource(imgPrefix + "row_add.png"); // NOI18N
         insert = new JXButton(new ImageIcon(url));
-        insert.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_insert"));
+        insert.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_insert")+" (Alt+I)");
+        insert.setMnemonic('I');
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
         processButton(insert);
@@ -514,7 +521,8 @@ class DataViewUI extends JXPanel {
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png"); // NOI18N
         truncateButton = new JXButton(new ImageIcon(url));
-        truncateButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_truncate_table"));
+        truncateButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_truncate_table")+" (Alt+T)");
+        truncateButton.setMnemonic('T');
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
         processButton(truncateButton);

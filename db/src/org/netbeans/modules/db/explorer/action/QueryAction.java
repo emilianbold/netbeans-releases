@@ -44,14 +44,11 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.explorer.node.ColumnNode;
-import org.netbeans.modules.db.explorer.node.ColumnProvider;
-import org.netbeans.modules.db.explorer.node.SchemaProvider;
+import org.netbeans.modules.db.explorer.node.ColumnNameProvider;
+import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.explorer.node.ViewNode;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -104,9 +101,13 @@ public abstract class QueryAction extends BaseAction {
 
         StringBuffer cols = new StringBuffer();
 
-        Schema schema = activatedNodes[0].getLookup().lookup(SchemaProvider.class).getSchema();
+        SchemaNameProvider provider = activatedNodes[0].getLookup().lookup(SchemaNameProvider.class);
 
-        String schemaName = MetadataUtils.getSchemaWorkingName(schema);
+        String schemaName = provider.getSchemaName();
+        String catName = provider.getCatalogName();
+        if (schemaName == null) {
+            schemaName = catName;
+        }
 
         boolean isColumn = activatedNodes[0].getLookup().lookup(ColumnNode.class) != null;
 
@@ -119,8 +120,8 @@ public abstract class QueryAction extends BaseAction {
 
             return "select * from " + onome;
         } else {
-            Column column = activatedNodes[0].getLookup().lookup(ColumnProvider.class).getColumn();
-            onome = quoter.quoteIfNeeded(column.getParent().getName());
+            String parentName = activatedNodes[0].getLookup().lookup(ColumnNameProvider.class).getParentName();
+            onome = quoter.quoteIfNeeded(parentName);
 
             if (!schemaName.equals("")) {
                 onome = quoter.quoteIfNeeded(schemaName) + "." + onome;

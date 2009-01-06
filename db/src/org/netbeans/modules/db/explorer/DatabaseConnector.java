@@ -53,7 +53,6 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.modules.db.explorer.metadata.MetadataUtils;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
@@ -263,8 +262,12 @@ public class DatabaseConnector {
 
             Schema schema = table.getParent();
             Catalog catalog = schema.getParent();
+            String catName = catalog.getName();
+            if (catName == null) {
+                catName = schema.getName();
+            }
 
-            DriverSpecification drvSpec = getDriverSpecification(MetadataUtils.getCatalogWorkingName(schema, catalog));
+            DriverSpecification drvSpec = this.getDriverSpecification(catName);
             drvSpec.getColumns(table.getName(), column.getName());
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
