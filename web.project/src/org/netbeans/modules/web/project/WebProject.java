@@ -591,7 +591,6 @@ public final class WebProject implements Project, AntProjectListener {
     }
 
     public EjbJar getAPIEjbJar() {
-        System.out.println( "##########WebProject.getAPIEjbJar()");
         return apiEjbJar;
     }
     

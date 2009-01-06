@@ -61,7 +61,6 @@ public class WebProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProjec
     }
     
     public EjbJar findEjbJar(FileObject file) {
-        System.out.println( "##########WebProjectEjbJarProvider.findEjbJar()");
         Project owner = FileOwnerQuery.getOwner (file);
         if (owner != null && owner instanceof WebProject) {
             return ((WebProject) owner).getAPIEjbJar();
@@ -70,7 +69,6 @@ public class WebProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProjec
     }
 
     public EjbJar[] getEjbJars() {
-        System.out.println( "##########WebProjectEjbJarProvider.getEjbJars()");
         return new EjbJar [] {project.getAPIEjbJar()};
     }
 
