@@ -42,7 +42,7 @@
 package org.netbeans.modules.refactoring.spi.ui;
 
 /**
- * Register your own TreeElementFactoryImplementation into META-INF/services
+ * Register your own TreeElementFactoryImplementation using {@link org.openide.util.lookup.ServiceProvider}
  * if you want to build your own RefactoringPreview tree.
  * 
  * For instance Java Refactoring understand Java - specific objects e.g. 

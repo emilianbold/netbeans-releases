@@ -46,7 +46,7 @@ import org.openide.util.Lookup;
 /**
  * Implementation of repository indexer (repository manager). Apart from basic
  * indexing features also serves as provider of various index queries.
- * Implementations are expected to be registered in default Lookup (META-INF/services).
+ * Implementations are expected to be registered in default Lookup (see {@link org.openide.util.lookup.ServiceProvider}).
  * 
  * @author Milos Kleint
  */

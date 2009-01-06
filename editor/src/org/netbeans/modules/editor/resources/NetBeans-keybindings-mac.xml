@@ -58,11 +58,23 @@ made subject to such option by the copyright holder.
     <bind key="D-F3" remove="true"/>
     <bind key="CA-G" actionName="find-selection"/> 
     
+    <bind key="D-HOME" remove="true"/>
+    <bind actionName="caret-begin" key="M-UP"/>
+
+    <bind key="D-END" remove="true"/>
+    <bind actionName="caret-end" key="M-DOWN"/>
+
     <bind key="D-LEFT" remove="true"/>
     <bind key="A-LEFT" actionName="caret-previous-word"/> 
     
     <bind key="D-RIGHT" remove="true"/>
     <bind key="A-RIGHT" actionName="caret-next-word"/> 
+
+    <bind key="D-DELETE" remove="true"/>
+    <bind actionName="remove-word-next" key="A-DELETE"/>
+
+    <bind key="D-BACK_SPACE" remove="true"/>
+    <bind actionName="remove-word-previous" key="A-BACK_SPACE"/>
 
     <bind key="DS-LEFT" remove="true"/>
     <bind key="AS-LEFT" actionName="selection-previous-word"/>
@@ -85,16 +97,18 @@ made subject to such option by the copyright holder.
     <bind actionName="scroll-up" key="C-DOWN"/>
 
     <bind key="O-I" actionName="generate-code"/>
-    <!-- remove Ctrl-INSERT on Mac (no INSERT on Mac keyboard)-->
-    <bind key="O-INSERT" remove="true"/>
     
     <!-- Things we add only on the mac -->
     
-    <bind actionName="page-up" key="M-UP"/> 
-    <bind actionName="page-down" key="M-DOWN"/>
     <bind actionName="selection-begin-line" key="MS-LEFT"/>
     <bind actionName="selection-end-line" key="MS-RIGHT"/>
     <bind actionName="caret-end-line" key="M-RIGHT"/>
     <bind actionName="caret-begin-line" key="M-LEFT"/>
+    
+    <!-- Things we remove on Mac -->
+    
+    <bind key="D-Y" remove="true"/>
+    <!-- remove Ctrl-INSERT on Mac (no INSERT on Mac keyboard)-->
+    <bind key="O-INSERT" remove="true"/>
     
 </bindings>

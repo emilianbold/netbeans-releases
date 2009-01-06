@@ -66,8 +66,7 @@ import org.openide.util.RequestProcessor.Task;
 /**
  *  CsmFile analogue of CsmFileTaskFactory
  * 
- * This factory should be registered in the global lookup by listing its fully qualified
- * name in file <code>META-INF/services/org.netbeans.modules.cnd.modelimpl.csm.scheduling.CsmFileTaskFactory</code>.
+ * This factory should be registered in the global lookup using {@link org.openide.util.lookup.ServiceProvider}.
  * 
  * @author Sergey Grinev
  */

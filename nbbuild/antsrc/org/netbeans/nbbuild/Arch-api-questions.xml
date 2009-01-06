@@ -398,7 +398,7 @@ and commits any changes to openide/www/tutorial/questions.html.
         <question id="lookup-register" when="final" >
             Do you register anything into lookup for other code to find?
             <hint>
-            Do you register using layer file or using <code>META-INF/services</code>?
+            Do you register using layer file or using a declarative annotation such as <code>@ServiceProvider</code>?
             Who is supposed to find your component?
             </hint>
         </question>

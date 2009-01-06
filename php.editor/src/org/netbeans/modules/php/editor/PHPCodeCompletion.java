@@ -1149,7 +1149,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableType(assignment);
 
                 getLocalVariables_indexVariable(variable, localVars, namePrefix,
                         localFileURL, varType);
