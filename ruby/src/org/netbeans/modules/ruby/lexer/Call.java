@@ -285,7 +285,9 @@ public class Call {
                 Exceptions.printStackTrace(ble);
             }
 
-            boolean dotted = false;
+            boolean dotted = false; // is this dotted expression? (e.g. foo.boo.)
+            int inParens = 0; // how many unmatched ')' did we encounter
+
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
             while (ts.movePrevious()) {
@@ -296,6 +298,22 @@ public class Call {
 
                 token = ts.token();
                 id = token.id();
+
+                if ((id == RubyTokenId.LPAREN)) {
+                    if (inParens > 0) {
+                        inParens--;
+                        continue;
+                    } else {
+                        break; // unmatched left parenthesis?
+                    }
+                } else if ((id == RubyTokenId.RPAREN)) {
+                    inParens++;
+                    continue;
+                }
+
+                if (inParens > 0) { // ignore content inside of bracked
+                    continue;
+                }
 
                 String tokenText = null;
                 if (id == RubyTokenId.ANY_KEYWORD) {
@@ -326,10 +344,7 @@ public class Call {
                     if (id == RubyTokenId.DOT) {
                         dotted = true;
                     }
-
-                    continue;
-                } else if ((id == RubyTokenId.LPAREN) || (id == RubyTokenId.LBRACE) ||
-                        (id == RubyTokenId.LBRACKET)) {
+                } else if ((id == RubyTokenId.LBRACE) || (id == RubyTokenId.LBRACKET)) {
                     // It's an expression for example within a parenthesis, e.g.
                     // yield(^File.join())
                     // in this case we can do top level completion

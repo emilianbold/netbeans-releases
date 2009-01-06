@@ -45,6 +45,7 @@
         </folder>
         <folder name="PreviewExamples">
             <folder name="text">
+                <file name="x-h" url="resources/cplusplus/CCExample"/>
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>

@@ -49,7 +49,7 @@ import java.io.IOException;
 /**
  * @author Vladimir Kvashin
  */
-public final class DestructorDDImpl extends MethodDDImpl {
+public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
     public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         super(ast, cls, visibility, true);

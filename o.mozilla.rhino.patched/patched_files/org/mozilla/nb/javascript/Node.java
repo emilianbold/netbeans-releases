@@ -1304,6 +1304,8 @@ public class Node
           // not be interpreted as having no side effect - the side effect is that
           // the function is available for later calls!
           case Token.FUNCTION:
+          // See issue 156001
+          case Token.DEFAULTNAMESPACE:
           // </netbeans>
               
             return true;

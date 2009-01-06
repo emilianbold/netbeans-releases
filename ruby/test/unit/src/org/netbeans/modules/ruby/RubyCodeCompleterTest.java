@@ -383,6 +383,10 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/methods_chaining.rb", "puts 1.even?.to^_s");
     }
 
+    public void testMethodsChainingParenthesised() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");

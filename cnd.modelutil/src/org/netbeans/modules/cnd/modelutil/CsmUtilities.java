@@ -78,11 +78,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -272,6 +277,18 @@ public class CsmUtilities {
             }
             if (csmFile == null) {
                 csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+            }
+            if (csmFile == null) {
+                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
+                if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
+                    // this is context from dialog
+                    InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
+                    if (inputAttributes != null) {
+                        LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                        FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                        csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
+                    }
+                }
             }
         } catch (NullPointerException exc) {
             exc.printStackTrace();

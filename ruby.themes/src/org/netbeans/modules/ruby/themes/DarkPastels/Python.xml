@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="number" foreColor="ff00ff99" name="INT_LITERAL"/>
+    <fontcolor default="number" name="FLOAT_LITERAL"/>
+    <fontcolor name="mod-interface"/>
+    <fontcolor foreColor="ffffcc33" name="INSTANCE_VAR">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-public"/>
+    <fontcolor foreColor="ffdbdb93" name="COMMENT_TODO">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-constructor">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-enum"/>
+    <fontcolor default="number" name="DOUBLE_LITERAL"/>
+    <fontcolor default="string" name="STRING_TEXT"/>
+    <fontcolor default="number" name="LONG_LITERAL"/>
+    <fontcolor foreColor="ff99ffcc" name="STRING_ESCAPE">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor name="mod-annotation-type"/>
+    <fontcolor foreColor="ff8aa6c1" name="mod-parameter"/>
+    <fontcolor default="whitespace" name="WHITESPACE"/>
+    <fontcolor default="keyword" foreColor="ff99ccff" name="ANY_KEYWORD"/>
+    <fontcolor foreColor="ff99006b" name="TODO">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor foreColor="ffffff66" name="CLASS_VAR">
+        <font style="bold+italic"/>
+    </fontcolor>
+    <fontcolor bgColor="ff38566f" name="mark-occurrences"/>
+    <fontcolor default="comment" name="COMMENT_TEXT"/>
+    <fontcolor default="8AA6C1" name="ANY_OPERATOR"/>
+    <fontcolor foreColor="ffeddd3d" name="GLOBAL_VAR">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor foreColor="ffeddd3d" name="mod-field">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor foreColor="ff99ccff" name="mod-method"/>
+    <fontcolor name="mod-protected"/>
+    <fontcolor default="string" name="STRING_LITERAL"/>
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor default="error" name="ERROR"/>
+    <fontcolor foreColor="ffffff66" name="REGEXP_LITERAL"/>
+    <fontcolor default="comment" name="LINE_COMMENT"/>
+    <fontcolor name="mod-class"/>
+    <fontcolor foreColor="ff99ccff" name="CONSTANT"/>
+    <fontcolor foreColor="ffccff66" name="TYPE_SYMBOL"/>
+    <fontcolor name="mod-unused" waveUnderlined="orange"/>
+    <fontcolor default="identifier" name="IDENTIFIER"/>
+    <fontcolor foreColor="ffff006b" name="STRING_INVALID" strikeThrough="ffff006b">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="string" foreColor="ffccffcc" name="QUOTED_STRING_LITERAL"/>
+    <fontcolor default="default" name="COMMENT_ITALIC">
+        <font style="italic"/>
+    </fontcolor>
+
+    <!-- Code Coverage -->
+    <fontcolor name="covered" bgColor="ff0d2622"/>
+    <fontcolor name="uncovered" bgColor="ff3b1622"/>
+    <fontcolor name="inferred" bgColor="ff0d1e22"/>
+</fontscolors>

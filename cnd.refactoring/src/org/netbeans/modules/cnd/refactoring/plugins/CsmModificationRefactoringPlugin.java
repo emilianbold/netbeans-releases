@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -120,7 +121,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         }
         if (CsmKindUtilities.isMethod(referencedObject)) {
             fireProgressListenerStep();
-            CsmMethod method = (CsmMethod) ((CsmFunction) referencedObject).getDeclaration();
+            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
             if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                 Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true);
                 if (overridenMethods.size() > 1) {

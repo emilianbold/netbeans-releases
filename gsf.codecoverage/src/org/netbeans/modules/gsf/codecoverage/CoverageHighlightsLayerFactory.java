@@ -58,7 +58,7 @@ public class CoverageHighlightsLayerFactory implements HighlightsLayerFactory {
         CoverageHighlightsContainer container = new CoverageHighlightsContainer(document);
         document.putProperty(CONTAINER_PROP_NAME, container);
         return new HighlightsLayer[]{HighlightsLayer.create(CONTAINER_PROP_NAME,
-                ZOrder.BOTTOM_RACK.forPosition(80),
+                ZOrder.DEFAULT_RACK.forPosition(80),
                 true, container)}; //NOI18N
     }
 

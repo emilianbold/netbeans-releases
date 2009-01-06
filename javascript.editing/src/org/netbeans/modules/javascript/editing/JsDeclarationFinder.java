@@ -239,26 +239,28 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 path = new AstPath(root, astOffset);
                 node = path.leaf();
             }
-            
-            // TODO search for local variables
-            Call call = Call.getCallType(doc, th, lexOffset);
-            if (call.getLhs() == null && AstUtilities.isNameNode(node)) {
-                // Local reference -- is it a local var?
 
-                VariableVisitor v = parseResult.getVariableVisitor();
-                List<Node> nodes = v.getVarOccurrences(node);
-                if (nodes != null && nodes.size() > 0) { // Should always be true
-                    Map<Integer,Node> posToNode = new  HashMap<Integer, Node>();
-                    for (Node n : nodes) {
-                        posToNode.put(n.getSourceStart(), n);
+            if (node != null) {
+                // TODO search for local variables
+                Call call = Call.getCallType(doc, th, lexOffset);
+                if (call.getLhs() == null && AstUtilities.isNameNode(node)) {
+                    // Local reference -- is it a local var?
+
+                    VariableVisitor v = parseResult.getVariableVisitor();
+                    List<Node> nodes = v.getVarOccurrences(node);
+                    if (nodes != null && nodes.size() > 0) { // Should always be true
+                        Map<Integer,Node> posToNode = new  HashMap<Integer, Node>();
+                        for (Node n : nodes) {
+                            posToNode.put(n.getSourceStart(), n);
+                        }
+                        List<Integer> starts = new ArrayList<Integer>(posToNode.keySet());
+                        Collections.sort(starts);
+                        Node first = posToNode.get(starts.get(0));
+                        return getLocation(info, first);
+                    } else {
+                        // Probably a global variable.
+                        // TODO - perform global variable search here.
                     }
-                    List<Integer> starts = new ArrayList<Integer>(posToNode.keySet());
-                    Collections.sort(starts);
-                    Node first = posToNode.get(starts.get(0));
-                    return getLocation(info, first);
-                } else {
-                    // Probably a global variable.
-                    // TODO - perform global variable search here.
                 }
             }
             

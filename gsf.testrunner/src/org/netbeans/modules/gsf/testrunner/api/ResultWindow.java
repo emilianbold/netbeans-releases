@@ -79,7 +79,7 @@ final class ResultWindow extends TopComponent {
      *
      * @return  singleton of this class
      */
-    public static synchronized ResultWindow getInstance() {
+    public static ResultWindow getInstance() {
         final ResultWindow[] result = new ResultWindow[1];
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
@@ -101,7 +101,7 @@ final class ResultWindow extends TopComponent {
     }
 
 
-    private static ResultWindow getResultWindow() {
+    private static synchronized ResultWindow getResultWindow() {
         ResultWindow result = (ResultWindow) WindowManager.getDefault().findTopComponent(ID);
         if (result == null) {
             result = getDefault();
