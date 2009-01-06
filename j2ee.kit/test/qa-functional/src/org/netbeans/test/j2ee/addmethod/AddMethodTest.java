@@ -225,7 +225,8 @@ public class AddMethodTest extends AddMethodBase {
         new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(methodName);
         
         if (returnType != null) {
-            new JTextFieldOperator(dialog,1).setText(returnType);        
+            JLabelOperator lblOperForReturnType = new JLabelOperator(dialog, "Return Type:");
+            new JTextFieldOperator((JTextField)lblOperForReturnType.getLabelFor()).setText(returnType);
         }
         fillParameters(dialog);
         fillExceptions(dialog);
