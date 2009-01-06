@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -104,6 +105,11 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         public int getIndexVersion() {
             return 0;
         }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            //todo
+        }
     };
 
     private final String mimeType;
@@ -131,5 +137,10 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         }
 
         return realFactory;
+    }
+
+    @Override
+    public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        //todo:
     }
 }

@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -1040,6 +1041,11 @@ public class JsIndexer extends EmbeddingIndexer {
             }
 
             return true;
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            //todo:
         }
     } // End of Factory class
 }

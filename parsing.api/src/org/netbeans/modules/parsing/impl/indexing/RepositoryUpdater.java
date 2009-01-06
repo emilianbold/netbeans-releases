@@ -422,9 +422,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
                         if (factory != null) {
                             try {
-                                factory.filesDeleted(deleted);
-                                final CustomIndexer indexer = factory.createIndexer();
                                 final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
+                                factory.filesDeleted(deleted, ctx);
+                                final CustomIndexer indexer = factory.createIndexer();                                
                                 SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
                             } finally {
                                 it.remove();

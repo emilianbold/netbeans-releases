@@ -61,7 +61,6 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Indexer of {@link Source} with possible embeddings
@@ -80,7 +79,7 @@ public class SourceIndexer {
         this.cache = cache;
     }
 
-    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) {
+    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) throws IOException {
         //todo: Replace with multi source when done
         deleted (deleted);
         for (final Indexable dirty : files) {
@@ -123,13 +122,14 @@ public class SourceIndexer {
         }        
     }
 
-    private void deleted (final Collection<? extends Indexable> deleted) {
+    private void deleted (final Collection<? extends Indexable> deleted) throws IOException {
         final Set<String> allMimeTypes = getAllMimeTypes();
         for (String mimeType : allMimeTypes) {
             final EmbeddingIndexerFactory factory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
             if (factory != null) {
                 embeddedIndexers.put(mimeType, factory);
-                factory.filesDeleted(deleted);
+                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, factory.getIndexerName(), factory.getIndexVersion(), null);
+                factory.filesDeleted(deleted, context);
             }
         }
     }

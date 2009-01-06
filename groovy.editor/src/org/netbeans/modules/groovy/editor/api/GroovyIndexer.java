@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
@@ -211,6 +212,11 @@ public class GroovyIndexer extends EmbeddingIndexer {
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            //todo: Implement me
         }
     }
     

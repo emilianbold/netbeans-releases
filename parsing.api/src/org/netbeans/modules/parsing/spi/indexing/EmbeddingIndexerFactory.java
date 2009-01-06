@@ -60,8 +60,9 @@ public abstract class EmbeddingIndexerFactory {
     /**
      * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
      * @param deleted the collection of deleted {@link Indexable}s
+     * @param contents an indexing context
      */
-    public abstract void filesDeleted (Collection<? extends Indexable> deleted);
+    public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
     
 
     /**

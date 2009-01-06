@@ -58,8 +58,9 @@ public abstract class CustomIndexerFactory {
     /**
      * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
      * @param deleted the collection of deleted {@link Indexable}s
+     * @param context an indexing context
      */
-    public abstract void filesDeleted (Collection<? extends Indexable> deleted);
+    public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
 
     
     /**
