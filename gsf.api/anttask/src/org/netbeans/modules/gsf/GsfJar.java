@@ -497,6 +497,11 @@ public class GsfJar extends JarWithModuleAttributes {
     private void registerCodeCoverage(Document doc, String mimeType) {
         Element factoryFolder = mkdirs(doc, "Editors/" + mimeType + ""); // NOI18N
         Element file = createFile(doc, factoryFolder, "org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance"); // NOI18N
+        Element sideBarFolder = mkdirs(doc, "Editors/" + mimeType + "/SideBar"); // NOI18N
+        Element sideBar = createFile(doc, sideBarFolder, "org-netbeans-modules-gsf-codecoverage-CoverageSideBar$Factory.instance"); // NOI18N
+        setFileAttribute(doc, sideBar, "position", "intvalue", "1308"); // NOI18N
+        setFileAttribute(doc, sideBar, "location", "stringvalue", "South"); // NOI18N
+        setFileAttribute(doc, sideBar, "scrollable", "boolvalue", "false"); // NOI18N
     }
 
     private List<Element> getAttributeElements(Document doc, String path) {

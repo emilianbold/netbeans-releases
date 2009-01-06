@@ -56,13 +56,15 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
 
@@ -322,9 +324,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
         String mimeType = "";
         if (fo == null) {
-            mimeType = MIMEExtensions.getFileMIMEType(new File(getPath()));
+            mimeType = MIMESupport.getFileMIMEType(new File(getPath()));
         } else {
-            mimeType = FileUtil.getMIMEType(fo, MIMENames.SOURCE_MIME_TYPES);
+            mimeType = MIMESupport.getFileMIMEType(fo);
         }
         return mimeType;
     }
@@ -411,6 +413,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
@@ -430,6 +433,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             Iterator iter = vec2.iterator();
             while (iter.hasNext()) {
                 vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String) iter.next()));
+            }
+            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
+                vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
             }
         }
         return vec;
@@ -470,6 +476,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
@@ -483,6 +490,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 }
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
+                vec = SPI_ACCESSOR.getItemUserMacros(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
+            }
         }
         return vec;
     }
@@ -548,5 +558,38 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     @Override
     public String toString() {
         return path;
+    }
+
+    private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
+    private static final class SpiAccessor {
+        private UserOptionsProvider provider;
+
+        private synchronized UserOptionsProvider getProvider() {
+            if (provider == null) {
+                provider = Lookup.getDefault().lookup(UserOptionsProvider.class);
+            }
+            return provider;
+        }
+
+        private SpiAccessor() {
+            
+        }
+
+        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+            if (getProvider() != null) {
+                return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+            } else {
+                return includes;
+            }
+        }
+
+        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+            if (getProvider() != null) {
+                return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
+            } else {
+                return macros;
+            }
+        }
+       
     }
 }

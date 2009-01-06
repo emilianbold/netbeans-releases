@@ -96,11 +96,11 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
             Project project = Templates.getProject(wiz);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) { //NOI18N
+            if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) { 
                 // this is the only place where we want to differ c headers from cpp headers (creation of new one)
                 if (dobj.getPrimaryFile().getAttribute(C_HEADER_MIME_TYPE) != null) {
-                    MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE); // NOI18N
-                    if (!"text/x-c/text/x-h".equals(extensions.getMIMEType())) {
+                    MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE); 
+                    if ((cHeaderExtensions == null) || !C_HEADER_MIME_TYPE.equals(extensions.getMIMEType())) {
                         System.err.println("not found extensions for C Headers"); // NOI18N
                     } else {
                         extensions = cHeaderExtensions;

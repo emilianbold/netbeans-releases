@@ -63,10 +63,18 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
  */
 public class StringItemDisplayPresenter extends ItemDisplayPresenter {
 
-    private JLabel label;
+    private WrappedLabel label;
+    private int preferedHeight =-1;
 
     public StringItemDisplayPresenter() {
-        label = new JLabel();
+        label = label = new WrappedLabel(){
+
+            @Override
+            protected int getLabelWidth() {
+                return (int)getView().getSize().getWidth();
+            }
+
+        };
         setContentComponent(label);
     }
 
@@ -93,6 +101,31 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
             DesignComponent font = value.getComponent();
             label.setFont(ScreenSupport.getFont(deviceInfo, font));
         }
+
+        int width = Integer.parseInt( getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_WIDTH).getPrimitiveValue().toString());
+        label.setPreferedWidth(width);
+
+        label.repaint();
+        label.revalidate();
+
+        int prefHeight = Integer.parseInt(getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_HEIGHT).getPrimitiveValue().toString());
+        if ( prefHeight != -1 ){
+            Dimension dimension = getView().getPreferredSize();
+            if ( preferedHeight == -1){
+                preferedHeight = (int)dimension.getHeight();
+            }
+            getView().setPreferredSize( new Dimension ((int)dimension.getWidth(),
+                    prefHeight));
+        }
+        else if (preferedHeight != -1) {
+            Dimension dimension = getView().getPreferredSize();
+            getView().setPreferredSize(new Dimension((int) dimension.getWidth(),
+                    preferedHeight));
+        }
+        getView().revalidate();
+        getView().invalidate();
     }
 
     @Override

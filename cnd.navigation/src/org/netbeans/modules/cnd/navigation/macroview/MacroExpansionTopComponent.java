@@ -87,37 +87,12 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
         // setDeclaration("");
     }
 
-    void setDeclaration(String declaration) {
+    MacroExpansionPanel panel = null;
 
-        MacroExpansionPanel panel = new MacroExpansionPanel(true);
-        panel.setMacroExpansionText(declaration);
-        removeAll();
-        add(panel, BorderLayout.CENTER);
-        validate();
-
-        last = panel;
-
-
-//        panel.setClass(decl);
-
-
-//        if (declaration == null) {
-//            declarationEditorPane.setText("");
-//        } else {
-//            declarationEditorPane.setText(declaration);
-//        }
-//        declarationEditorPane.setCaretPosition(0);
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                declarationEditorPane.scrollRectToVisible(ZERO);
-//            }
-//        });
-    }
-    
-    void setDocument(Document doc, String text) {
-        MacroExpansionPanel panel = new MacroExpansionPanel(true);
-        panel.setCodeExpansionDocument(doc);
-        panel.setMacroExpansionText(text);
+    void setDocuments(Document expandedContextDoc, Document expandedMacroDoc) {
+        panel = new MacroExpansionPanel(true);
+        panel.setContextExpansionDocument(expandedContextDoc);
+        panel.setMacroExpansionDocument(expandedMacroDoc);
         removeAll();
         add(panel, BorderLayout.CENTER);
         validate();

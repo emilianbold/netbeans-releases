@@ -44,6 +44,7 @@ package org.netbeans.modules.form.project;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -187,4 +188,23 @@ class ProjectClassLoader extends ClassLoader {
         }
         return projectClassLoaderDelegate.getResource(name);
     }
+
+    @Override
+    protected Enumeration<URL> findResources(String name) throws IOException {
+        Set<URL> urls = new HashSet<URL>();
+        List<FileObject> fos = sources.findAllResources(name);
+        for (FileObject fo : fos) {
+            try {
+                urls.add(fo.getURL());
+            } catch (FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        Enumeration<URL> e = projectClassLoaderDelegate.getResources(name);
+        while (e.hasMoreElements()) {
+            urls.add(e.nextElement());
+        }
+        return Collections.enumeration(urls);
+    }
+
 }

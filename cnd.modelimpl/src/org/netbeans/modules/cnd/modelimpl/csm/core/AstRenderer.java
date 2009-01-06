@@ -676,7 +676,9 @@ public class AstRenderer {
         if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
 
             AST classNode = typedefNode.getNextSibling();
-
+            if (isVolatileQualifier(classNode.getType())) {
+                classNode = classNode.getNextSibling();
+            }
             switch (classNode.getType()) {
 
                 case CPPTokenTypes.LITERAL_class:

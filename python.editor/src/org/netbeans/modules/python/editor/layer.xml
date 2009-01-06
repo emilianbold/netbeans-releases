@@ -76,13 +76,27 @@
                         <attr name="position" intvalue="400"/>
                     </file>
                 </folder>
-                <!-- TODO - this should not be necessary; I'm doing this now to work around
-                    bugs in color initialization -->
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="resources/fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="python-colorings.xml" url="resources/BlueTheme-Python-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <!-- This is just the bluetheme again - not right, but it's better
+                                 to use a dark theme than the light theme a a backup. -->
+                            <file name="python-colorings.xml" url="resources/BlueTheme-Python-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.resources.Bundle"/>
                             </file>
                         </folder>
                     </folder>
@@ -110,6 +124,22 @@
                         <folder name="Defaults">
                             <file name="coloring.xml" url="stringColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="python-colorings.xml" url="resources/BlueTheme-Python-Strings.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <!-- This is just the bluetheme again - not right, but it's better
+                                 to use a dark theme than the light theme a a backup. -->
+                            <file name="python-colorings.xml" url="resources/BlueTheme-Python-Strings.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.resources.Bundle"/>
                             </file>
                         </folder>
                     </folder>

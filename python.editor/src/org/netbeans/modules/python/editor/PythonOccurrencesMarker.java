@@ -346,25 +346,27 @@ public class PythonOccurrencesMarker implements OccurrencesFinder {
         Set<OffsetRange> offsets = new HashSet<OffsetRange>();
 
         String attrName = attr.getInternalAttr();
-        String name = PythonAstUtils.getName(attr.getInternalValue());
+        if (attrName != null) {
+            String name = PythonAstUtils.getName(attr.getInternalValue());
 
-        for (PythonTree node : result) {
-            Attribute a = (Attribute)node;
-            if (attrName.equals(a.getInternalAttr()) && (name == null || name.equals(PythonAstUtils.getName(a.getInternalValue())))) {
-                OffsetRange astRange = PythonAstUtils.getRange(node);
-                // Adjust to be the -value- part
-                int start = a.getInternalValue().getCharStopIndex()+1;
-                if (start < astRange.getEnd()) {
-                    astRange = new OffsetRange(start, astRange.getEnd());
-                }
+            for (PythonTree node : result) {
+                Attribute a = (Attribute)node;
+                if (attrName.equals(a.getInternalAttr()) && (name == null || name.equals(PythonAstUtils.getName(a.getInternalValue())))) {
+                    OffsetRange astRange = PythonAstUtils.getRange(node);
+                    // Adjust to be the -value- part
+                    int start = a.getInternalValue().getCharStopIndex()+1;
+                    if (start < astRange.getEnd()) {
+                        astRange = new OffsetRange(start, astRange.getEnd());
+                    }
 
-                OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
-                if (node instanceof Import || node instanceof ImportFrom) {
-                    // Try to find the exact spot
-                    lexRange = PythonLexerUtils.getImportNameOffset((BaseDocument)info.getDocument(), lexRange, node, name);
-                }
-                if (lexRange != OffsetRange.NONE) {
-                    offsets.add(lexRange);
+                    OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
+                    if (name != null && (node instanceof Import || node instanceof ImportFrom)) {
+                        // Try to find the exact spot
+                        lexRange = PythonLexerUtils.getImportNameOffset((BaseDocument)info.getDocument(), lexRange, node, name);
+                    }
+                    if (lexRange != OffsetRange.NONE) {
+                        offsets.add(lexRange);
+                    }
                 }
             }
         }

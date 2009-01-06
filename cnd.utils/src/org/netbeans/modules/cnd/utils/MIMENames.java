@@ -113,9 +113,6 @@ public final class MIMENames {
     // special mime type for C Headers extensions
     /*package*/ static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
-    public static final String[] SOURCE_MIME_TYPES = new String[] {
-        CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, HEADER_MIME_TYPE, FORTRAN_MIME_TYPE, ASM_MIME_TYPE,
-    };
     public static boolean isCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;

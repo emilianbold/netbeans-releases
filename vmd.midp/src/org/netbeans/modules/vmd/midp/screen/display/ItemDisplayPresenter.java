@@ -57,9 +57,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,7 +68,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     
     private JPanel panel;
-    private JLabel label;
+    private WrappedLabel label;
     private JComponent contentComponent;
     
     public ItemDisplayPresenter() {
@@ -87,7 +84,13 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         // Fix for #79636 - Screen designer tab traversal
         ScreenSupport.addKeyboardSupport(this);
         
-        label = new JLabel();
+        label = new WrappedLabel(){
+
+            @Override
+            protected int getLabelWidth() {
+                return (int)panel.getSize().getWidth();
+            }
+        };
         Font bold = label.getFont().deriveFont(Font.BOLD);
         label.setFont(bold);
         
@@ -150,6 +153,13 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
             text = text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ItemCD.PROP_LABEL));
         }
         label.setText(text);
+
+        int width = Integer.parseInt( getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_WIDTH).getPrimitiveValue().toString());
+        label.setPreferedWidth(width);
+
+        label.repaint();
+        label.revalidate();
     }
     
     public Shape getSelectionShape() {

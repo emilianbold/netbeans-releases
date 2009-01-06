@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -174,19 +175,20 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         boolean _needVirtualMethodPanel = false;
         boolean _needClassPanel = false;
         if (CsmKindUtilities.isMethod(refObject)) {
+            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) refObject);
 //            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
-            String functionDisplayName = ((CsmMethod)refObject).getSignature().toString();
-            methodDeclaringClass = ((CsmMember)refObject).getContainingClass();
+            String functionDisplayName = method.getSignature().toString();
+            methodDeclaringClass = method.getContainingClass();
             String displayClassName = methodDeclaringClass.getName().toString();
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
             CsmVirtualInfoQuery query = CsmVirtualInfoQuery.getDefault();
-            if (query.isVirtual((CsmMethod)refObject)) {
-                Collection<CsmMethod> baseMethods = query.getBaseDeclaration((CsmMethod)refObject);
+            if (query.isVirtual(method)) {
+                Collection<CsmMethod> baseMethods = query.getBaseDeclaration(method);
                 // use only the first for now
                 baseVirtualMethod = baseMethods.isEmpty() ? null : baseMethods.iterator().next();
                 assert baseVirtualMethod != null : "virtual method must have start virtual declaration";
                 methodDeclaringSuperClass = baseVirtualMethod.getContainingClass();
-                if (!refObject.equals(baseVirtualMethod)) {
+                if (!method.equals(baseVirtualMethod)) {
                     _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName().toString()); // NOI18N
                 }
                 _needVirtualMethodPanel = true;

@@ -39,12 +39,17 @@
 
 package org.netbeans.modules.gsf.codecoverage.api;
 
+import org.openide.filesystems.FileObject;
+
 /**
  * Specific information about coverage of a certain file
  *
  * @author Tor Norbye
  */
 public interface FileCoverageDetails {
+
+    public FileObject getFile();
+    
     /**
      * Get the total line count for this file 
      */
@@ -55,6 +60,13 @@ public interface FileCoverageDetails {
      * just yes/no answers for each line?
      */
     boolean hasHitCounts();
+
+    /**
+     * Timestamp (similar and comparable to File.lastModified) when the
+     * code coverage results were last updated. Return 0 or -1 if you cannot
+     * obtain this information.
+     */
+    long lastUpdated();
 
     /**
      * Return a summary of the file coverage

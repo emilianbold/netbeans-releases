@@ -76,7 +76,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible) {
         this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
-    private VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
+    VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
         this.globallyVisible = globallyVisible;
     }
@@ -118,7 +118,9 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             for (VarAssignmentImpl varAssignmentImpl : assignments) {
                 if (varAssignmentImpl.getBlockRange().containsInclusive(offset)) {
                     if (retval == null || retval.getOffset() <= varAssignmentImpl.getOffset()) {
-                        retval = varAssignmentImpl;
+                         if (varAssignmentImpl.getOffset() < offset) {
+                            retval = varAssignmentImpl;
+                         }
                     }
                 }
             }

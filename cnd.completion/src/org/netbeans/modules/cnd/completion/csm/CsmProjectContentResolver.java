@@ -1186,19 +1186,18 @@ public final class CsmProjectContentResolver {
         return getNamespaceMembers(ns, new CsmDeclaration.Kind[]{kind}, strPrefix, match, searchNested, returnUnnamedMembers);
     }
 
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
-        List res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet(), searchNested, returnUnnamedMembers);
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
+        List<CsmDeclaration> res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet<CsmNamespace>(), searchNested, returnUnnamedMembers);
         return res;
     }
 
-    @SuppressWarnings("unchecked")
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set handledNS, boolean searchNested, boolean returnUnnamedMembers) {
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set<CsmNamespace> handledNS, boolean searchNested, boolean returnUnnamedMembers) {
         if (handledNS.contains(ns)) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmDeclaration>emptyList();
         }
 
         handledNS.add(ns);
-        List res = new ArrayList();
+        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         Iterator it;
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);

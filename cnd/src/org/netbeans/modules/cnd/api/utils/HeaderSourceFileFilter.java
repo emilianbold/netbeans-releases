@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.utils;
 import java.io.File;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -66,7 +67,7 @@ public class HeaderSourceFileFilter extends SourceFileFilter {
             }
             // headers could be without extensions
             if (FileUtil.getExtension(f.getPath()).length() == 0) {
-                return MIMENames.HEADER_MIME_TYPE.equals(MIMEExtensions.getFileMIMEType(f));
+                return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(f));
             } else {
                 return super.accept(f);
             }
