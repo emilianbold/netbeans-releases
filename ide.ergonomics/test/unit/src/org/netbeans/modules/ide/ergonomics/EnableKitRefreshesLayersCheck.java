@@ -124,6 +124,13 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
             for (FileObject fo : root.getChildren()) {
                 sb.append(fo.getPath()).append('\n');
             }
+
+            FileObject fodRoot = FoDFileSystem.getInstance().findResource("Menu");
+            sb.append("\nContent of FOD:\n");
+            for (FileObject fo : fodRoot.getChildren()) {
+                sb.append(fo.getPath()).append('\n');
+            }
+
             fail(sb.toString());
         }
     }
