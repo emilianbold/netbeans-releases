@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
         
-        <clusterpathset id="jnlp.included.modules" >
+        <pathfileset id="jnlp.included.modules" >
             <path refid="cluster.path.id"/>
             <and>
                 <or>
@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
                     <param name="excludeClusters" value="${disabled.clusters}"/>
                 </custom>
             </and>
-        </clusterpathset>
+        </pathfileset>
         <property name="jnlp.sign.jars" value="true"/>
         <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
         <property name="jnlp.signjar.alias" value="jnlp"/>
@@ -414,10 +414,10 @@ made subject to such option by the copyright holder.
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
-                <clusterpathset>
+                <pathfileset>
                     <path refid="cluster.path.id"/>
                     <filename name="**/*.jar"/>
-                </clusterpathset>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>

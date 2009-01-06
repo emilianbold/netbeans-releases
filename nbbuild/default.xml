@@ -108,13 +108,10 @@ made subject to such option by the copyright holder.
     <taskdef name="convertimport"
          classname="org.netbeans.nbbuild.ConvertImport"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="pathfileset"
-         classname="org.netbeans.nbbuild.PathFileSet"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="convertclusterpath"
          classname="org.netbeans.nbbuild.ConvertClusterPath"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <typedef name="clusterpathset" classname="org.netbeans.nbbuild.ClusterPathSet"
+    <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>

@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <target name="taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${harness.file}"/>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <typedef name="clusterpathset" classname="org.netbeans.nbbuild.ClusterPathSet"
+        <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
     </target>
@@ -152,13 +152,12 @@ made subject to such option by the copyright holder.
                 <include name="build/cluster/config/Modules/*.xml_hidden"/>
             </fileset>
         </delete>
-        <pathfileset property="junit.jars.in.clusters" include="modules/ext/junit-*.jar">
-            <path refid="cluster.path.id"/>
-        </pathfileset>
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <!-- As a fallback for old platforms which do not include the right modules: -->
-            <path path="${junit.jars.in.clusters}"/>
+            <pathfileset include="modules/ext/junit-*.jar">
+                <path refid="cluster.path.id"/>
+            </pathfileset>
             <fileset dir="${netbeans.home}/..">
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>

@@ -178,12 +178,11 @@ You must shut it down before trying to run it again.
 
     <target name="debug">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
-        <pathfileset property="cluster.path.jars" include="**/*.jar">
-            <path refid="cluster.path.id"/>
-        </pathfileset>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
-                <path path="${cluster.path.jars}"/>
+                <pathfileset include="**/*.jar">
+                    <path refid="cluster.path.id"/>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -199,16 +198,15 @@ You must shut it down before trying to run it again.
     
     <target name="profile" description="Profile a project in the IDE.">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
-        <pathfileset property="cluster.path.jars" include="**/*.jar">
-            <path refid="cluster.path.id"/>
-        </pathfileset>
         <nbprofiledirect 
             jvmargsprefix="-J" 
             jvmargsproperty="profiler.jvmargs" 
             mainclass="org.netbeans.Main"
         >
             <classpath>
-                <path path="${cluster.path.jars}"/>
+                <pathfileset include="**/*.jar">
+                    <path refid="cluster.path.id"/>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>

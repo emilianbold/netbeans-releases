@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <dirname property="harness.dir" file="${suite.file}"/>
         <echo level="verbose">Using build harness in ${harness.dir}</echo>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <typedef name="clusterpathset" classname="org.netbeans.nbbuild.ClusterPathSet"
+        <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
     </target>
@@ -108,13 +108,15 @@ made subject to such option by the copyright holder.
     <target name="build" depends="-init,branding,release" description="Build all modules in the suite.">
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <mkdir dir="${cluster}/config/Modules"/>
-        <pathfileset pathsep="," property="disabled.modules.paths.list">
-            <path refid="cluster.path.id"/>
-            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
-                <param name="excludeModules" value="${disabled.modules}"/>
-                <param name="excluded" value="true"/>
-            </custom>
-        </pathfileset>
+        <pathconvert pathsep="," property="disabled.modules.paths.list">
+            <pathfileset>
+                <path refid="cluster.path.id"/>
+                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                    <param name="excludeModules" value="${disabled.modules}"/>
+                    <param name="excluded" value="true"/>
+                </custom>
+            </pathfileset>
+        </pathconvert>
         <createmodulexml xmldir="${cluster}/config/Modules" hidden="${disabled.modules.paths.list}"/>
     </target>
 
@@ -124,17 +126,19 @@ made subject to such option by the copyright holder.
         <condition property="help.target.cluster" value="${nbm.target.cluster}" >
             <isset property="nbm.target.cluster"/>
         </condition>
-        <pathfileset property="updater.jar">
+        <!-- reads app.name if exists -->
+        <pathfileset id="updater.jar">
             <path refid="cluster.path.id"/>
             <filename name="modules/ext/updater.jar"/>
         </pathfileset>
-        <!-- reads app.name if exists -->
         <condition property="help.target.cluster" value="${app.name}" >
             <and>
                 <isset property="app.name"/>
                 <!-- #74866: only works for 6.0+ platforms. -->
                 <available resource="org/netbeans/updater/resources/autoupdate-info-2_4.dtd">
-                    <classpath path="${updater.jar}"/>
+                    <classpath>
+                        <resources refid="updater.jar"/>
+                    </classpath>
                 </available>
             </and>
         </condition>
@@ -152,17 +156,21 @@ made subject to such option by the copyright holder.
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
             </fileset>
-            <updaterjar path="${updater.jar}"/>
+            <updaterjar>
+                <resources refid="updater.jar"/>
+            </updaterjar>
         </makeupdatedesc>
     </target>
     
     <target name="build-launchers" depends="-init">
         <fail unless="app.name">Must have set at least an application name ('app.name')</fail>
         
-        <pathfileset property="zip.platform.update.tracking">
-            <path refid="cluster.path.id"/>
-            <filename name="**/update_tracking/*.xml"/>
-        </pathfileset>
+        <pathconvert property="zip.platform.update.tracking">
+            <pathfileset>
+                <path refid="cluster.path.id"/>
+                <filename name="**/update_tracking/*.xml"/>
+            </pathfileset>
+        </pathconvert>
 
         <selector id="zip.platform.included.files">
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
@@ -175,10 +183,10 @@ made subject to such option by the copyright holder.
         </selector>
 
         <pathconvert property="zip.platform.clusters.duplicates" pathsep="&#10;">
-            <clusterpathset>
+            <pathfileset>
                 <path refid="cluster.path.id"/>
                 <selector refid="zip.platform.included.files"/>
-            </clusterpathset>
+            </pathfileset>
             <chainedmapper>
                 <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
                 <filtermapper>
@@ -228,7 +236,7 @@ made subject to such option by the copyright holder.
     
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <mkdir dir="${dist.dir}"/>
-        <!-- clusterpathset does not support 'prefix' and 'filemode' parameters,
+        <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
              we have to copy them to temp location -->
         <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true"/>
         <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete"/>
