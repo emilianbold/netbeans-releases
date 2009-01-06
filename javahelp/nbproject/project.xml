@@ -162,10 +162,6 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jh-2.0_05.jar</runtime-relative-path>
                 <binary-origin>external/jh-2.0_05.jar</binary-origin>
             </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>../apisupport.harness/ext/jsearch-2.0_05.jar</runtime-relative-path>
-                <binary-origin>../apisupport.harness/external/jsearch-2.0_05.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

@@ -448,7 +448,6 @@ CLASS      Invert
 CLASS      IsqlCmd                                    
 CLASS      IsqlExit                                   
 CLASS      IterableUserDict                           
-CLASS      ItimerError                                
 CLASS      JSONDecoder                                
 CLASS      JSONEncoder                                
 CLASS      JavaSAXParser                              
@@ -458,6 +457,7 @@ CLASS      JyEntityResolverWrapper
 CLASS      JyErrorHandlerWrapper                      
 CLASS      JyInputSourceWrapper                       
 CLASS      JythonCompiler                             
+CLASS      JythonSignalHandler                        
 CLASS      KeyError                                   
 CLASS      KeyError                                   
 CLASS      KeyboardInterrupt                          
@@ -485,7 +485,6 @@ CLASS      ListNoteBook
 CLASS      Listener                                   
 CLASS      LittleEndianStructure                      
 CLASS      LoadError                                  
-CLASS      LoadSet                                    
 CLASS      LocalNameFinder                            
 CLASS      Location                                   
 CLASS      Locator                                    
@@ -681,6 +680,7 @@ CLASS      Random
 CLASS      Range                                      
 CLASS      RangeException                             
 CLASS      Rational                                   
+CLASS      RawConfigParser                            
 CLASS      RawIOBase                                  
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
@@ -728,7 +728,6 @@ CLASS      SQLTestCase
 CLASS      SSLError                                   
 CLASS      SafeConfigParser                           
 CLASS      SafeTransport                              
-CLASS      Scanner                                    
 CLASS      Schema                                     
 CLASS      Scope                                      
 CLASS      Screen                                     
@@ -1006,6 +1005,8 @@ CLASS      dispatcher
 CLASS      dispatcher_with_send                       
 CLASS      error                                      
 CLASS      error_data                                 
+CLASS      error_perm                                 
+CLASS      error_proto                                
 CLASS      error_temp                                 
 CLASS      excel                                      
 CLASS      excel_tab                                  

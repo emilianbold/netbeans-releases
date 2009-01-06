@@ -40,7 +40,17 @@
  */
 package org.netbeans.modules.maven.jaxws.actions;
 
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -60,7 +70,7 @@ public class AddOperationAction extends NodeAction  {
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        return implClassFo != null;
+        return implClassFo != null && !isFromWsdl(implClassFo);
     }
 
     protected void performAction(Node[] activatedNodes) {
@@ -68,6 +78,48 @@ public class AddOperationAction extends NodeAction  {
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
         AddOperationCookie addOperationCookie = new JaxWsAddOperation(implClassFo);
         addOperationCookie.addOperation();
+    }
+
+    private boolean isFromWsdl(FileObject inplClass) {
+        final boolean[] fromWsdl = new boolean[1];
+        JavaSource javaSource = JavaSource.forFileObject(inplClass);
+        if (javaSource != null) {
+
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+                public void run(CompilationController controller) throws java.io.IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    if (typeElement != null && wsElement != null) {
+                        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : annotations) {
+                            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                                    if (entry.getKey().getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                                        fromWsdl[0] = true;
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                public void cancel() {
+                }
+
+            };
+
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return fromWsdl[0];
     }
 }
 

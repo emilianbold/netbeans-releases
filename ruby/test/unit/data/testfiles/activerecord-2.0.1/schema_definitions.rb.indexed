@@ -7,7 +7,7 @@ Searchable Keys:
   class-ig : tabledefinition
   field : base
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
-  method : [](name)|DOCUMENTED|
+  method : [](name)|DOCUMENTED|;;NilClass|Object;
   method : column(name,type,options)|DOCUMENTED|
   method : initialize(base)|PRIVATE|
   method : native|PRIVATE|
@@ -15,7 +15,7 @@ Searchable Keys:
   method : primary_key(name)|DOCUMENTED|
   method : references(*args)
   method : timestamps|DOCUMENTED|
-  method : to_sql|DOCUMENTED|
+  method : to_sql|DOCUMENTED|;;Array;
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;113
@@ -52,15 +52,15 @@ Searchable Keys:
   method : microseconds(time)|DOCUMENTED|PROTECTED|STATIC|
   method : new(name,default,sql_type,null)|DOCUMENTED|PRIVATE|STATIC|
   method : new_date(year,mon,mday)|PROTECTED|STATIC|
-  method : new_time(year,mon,mday,hour,min,sec,microsec)|PROTECTED|STATIC|
-  method : number?
+  method : new_time(year,mon,mday,hour,min,sec,microsec)|PROTECTED|STATIC|;;NilClass|Object;
+  method : number?;;TrueClass|FalseClass;
   method : simplified_type(field_type)|PRIVATE|
   method : string_to_binary(value)|DOCUMENTED|STATIC|
-  method : string_to_date(string)|STATIC|
-  method : string_to_dummy_time(string)|STATIC|
-  method : string_to_time(string)|STATIC|
-  method : text?
-  method : type_cast(value)|DOCUMENTED|
+  method : string_to_date(string)|STATIC|;;NilClass;
+  method : string_to_dummy_time(string)|STATIC|;;NilClass;
+  method : string_to_time(string)|STATIC|;;NilClass;
+  method : text?;;TrueClass|FalseClass;
+  method : type_cast(value)|DOCUMENTED|;;NilClass;
   method : type_cast_code(var_name)
   method : value_to_boolean(value)|DOCUMENTED|STATIC|
   method : value_to_decimal(value)|DOCUMENTED|STATIC|
@@ -90,7 +90,7 @@ Searchable Keys:
   fqn : ActiveRecord::ConnectionAdapters::ColumnDefinition
   method : add_column_options!(sql,options)|PRIVATE|
   method : sql_type
-  method : to_sql
+  method : to_sql;;String;
 
 Not Searchable Keys:
   attrs : |CLASS|

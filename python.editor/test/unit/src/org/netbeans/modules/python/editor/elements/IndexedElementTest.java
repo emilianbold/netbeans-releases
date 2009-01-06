@@ -397,6 +397,14 @@ public class IndexedElementTest extends PythonTestBase {
         checkCreate("testfiles/unittest.py");
     }
 
+    public void testIndex14() throws Exception {
+        checkCreate("testfiles/properties.py");
+    }
+
+    public void testIndex15() throws Exception {
+        checkCreate("testfiles/tarfile.py");
+    }
+
     public void testRstIndex1() throws Exception {
         checkCreate("testfiles/rst/zipfile.rst.indexed");
     }

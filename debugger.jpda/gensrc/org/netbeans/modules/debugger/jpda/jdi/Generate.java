@@ -163,6 +163,11 @@ public class Generate {
         Map<String, Set<Class>> MonitorInfoExceptions = new LinkedHashMap<String, Set<Class>>();
         MonitorInfoExceptions.put("*", Collections.singleton((Class) com.sun.jdi.InvalidStackFrameException.class));
         EXCEPTIONS_BY_METHODS.put("com.sun.jdi.MonitorInfo", MonitorInfoExceptions);
+
+        Map<String, Set<Class>> VirtualMachineExceptions = new LinkedHashMap<String, Set<Class>>();
+        // UnsupportedOperationException can be thrown on J2ME:
+        VirtualMachineExceptions.put("mirrorOf(java.lang.String)", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.VirtualMachine.class.getName(), VirtualMachineExceptions);
     }
 
 
@@ -436,13 +441,18 @@ public class Generate {
                                     String rType, String defaultReturn) throws IOException {
         w.write("    public static "+rType+" "+mGenName+"("+className+" a");
         String[] paramNames = new String[paramTypes.length];
+        StringBuilder paramTypesList = new StringBuilder("(");
         for (int i = 0; i < paramTypes.length; i++) {
             //Class t = paramTypes[i];
             paramNames[i] = Character.toString((char) ('a'+(i+1)));
             String paramType = translateType(paramTypes[i]);
             w.write(", "+paramType+" "+paramNames[i]);
+            if (i > 0) paramTypesList.append(", ");
+            paramTypesList.append(paramType);
         }
         w.write(")");
+        paramTypesList.append(")");
+        String mNameWithParamTypes = mName + paramTypesList.toString();
 
         // Add wrappers of JDI runtime exceptions...
         Set<Class> thrownExceptions = new LinkedHashSet<Class>();
@@ -458,7 +468,10 @@ public class Generate {
             if (excs != null) {
                 thrownExceptions.addAll(excs);
             }
-            excs = excByMethods.get(mName);
+            excs = excByMethods.get(mNameWithParamTypes);
+            if (excs == null) {
+                excs = excByMethods.get(mName);
+            }
             if (excs != null) {
                 thrownExceptions.addAll(excs);
             }
@@ -639,6 +652,7 @@ public class Generate {
         if (index2 > index) {
             paramTypes.add(substituteHigherClasses(methodLine.substring(index, index2), higherVersionClasses));
         }
+        String mNameWithParamTypes = methodLine.substring(0, index2 + 1);
         index = index2 + 2; // "):"
         index2 = methodLine.indexOf(":", index);
         String rType = methodLine.substring(index, index2);
@@ -678,7 +692,10 @@ public class Generate {
             if (excs != null) {
                 thrownExceptions.addAll(excs);
             }
-            excs = excByMethods.get(mName);
+            excs = excByMethods.get(mNameWithParamTypes);
+            if (excs == null) {
+                excs = excByMethods.get(mName);
+            }
             if (excs != null) {
                 thrownExceptions.addAll(excs);
             }

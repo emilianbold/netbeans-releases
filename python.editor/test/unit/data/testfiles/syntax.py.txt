@@ -8,6 +8,11 @@ continue  finally   is        return
 def       for       lambda    try
 .e.o.f.
 
+.t.e.s.t. Decorators
+@staticmethod
+@classmethod
+.e.o.f.
+
 .t.e.s.t. Strings
 r'foo'
 UR'foo'

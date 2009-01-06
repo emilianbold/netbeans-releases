@@ -5,13 +5,13 @@ Searchable Keys:
   class : Date
   class-ig : date
   constant : ABBR_DAYNAMES;Array
-  constant : ABBR_MONTHNAMES;
+  constant : ABBR_MONTHNAMES;Array
   constant : DAYNAMES;Array
   constant : ENGLAND;Fixnum
   constant : GREGORIAN;TrueClass
   constant : ITALY;Fixnum
   constant : JULIAN;FalseClass
-  constant : MONTHNAMES;
+  constant : MONTHNAMES;Array
   field : ajd
   field : of
   field : sg
@@ -19,10 +19,10 @@ Searchable Keys:
   method : +(n)|DOCUMENTED|
   method : -(x)|DOCUMENTED|
   method : <<(n)|DOCUMENTED|
-  method : <=>(other)|DOCUMENTED|
-  method : ===(other)|DOCUMENTED|
+  method : <=>(other)|DOCUMENTED|;;NilClass;
+  method : ===(other)|DOCUMENTED|;;FalseClass;
   method : >>(n)|DOCUMENTED|
-  method : _dump(limit)|DOCUMENTED|
+  method : _dump(limit)|DOCUMENTED|;;IO;
   method : _load(str)|DOCUMENTED|STATIC|
   method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
   method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|

@@ -12,7 +12,7 @@ Subversion     >  Checkout...                         k
                   Export Diff Patch...                x
                   Apply Diff Patch...                 y
                   =================================
-                  Copy to...                          y
+                  Copy to...                          C
                   Switch to...                        t
                   Merge to...                         M
                   =================================

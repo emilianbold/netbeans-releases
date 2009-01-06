@@ -104,6 +104,7 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
@@ -140,6 +141,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -188,6 +190,8 @@ public final class WebProject implements Project, AntProjectListener {
     private final CopyOnSaveSupport css;
     private final ArtifactCopyOnSaveSupport artifactSupport;
     private final DeployOnSaveSupport deployOnSaveSupport;
+    private final EjbJarProvider webEjbJarProvider;
+    private final EjbJar apiEjbJar;
     private WebModule apiWebModule;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
@@ -345,6 +349,8 @@ public final class WebProject implements Project, AntProjectListener {
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
+        webEjbJarProvider = new EjbJarProvider(webModule, cpProvider);
+        apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarProvider);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         WebProjectJAXWSSupport jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
         WebProjectJAXWSClientSupport jaxWsClientSupport = new WebProjectJAXWSClientSupport(this);
@@ -477,6 +483,7 @@ public final class WebProject implements Project, AntProjectListener {
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
+            new WebProjectEjbJarProvider(this), // TODO: dongmei: register it only for Java EE 6 web project
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
@@ -581,6 +588,10 @@ public final class WebProject implements Project, AntProjectListener {
 
     public WebModule getAPIWebModule () {
         return apiWebModule;
+    }
+
+    public EjbJar getAPIEjbJar() {
+        return apiEjbJar;
     }
     
     WebServicesSupport getAPIWebServicesSupport () {
@@ -815,6 +826,8 @@ public final class WebProject implements Project, AntProjectListener {
             
             try {
                 //DDDataObject initialization to be ready to listen on changes (#45771)
+
+                // web.xml
                 try {
                     FileObject ddFO = webModule.getDeploymentDescriptor();
                     if (ddFO != null) {
@@ -822,6 +835,16 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                     //PENDING
+                }
+
+                // ejb-jar.xml
+                try {
+                    FileObject ejbDdFO = webEjbJarProvider.getDeploymentDescriptor();
+                    if (ejbDdFO != null) {
+                        DataObject ejbdobj = DataObject.find(ejbDdFO);
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    //PENDING`
                 }
                 
                 // Register copy on save support
@@ -923,10 +946,12 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
+            // TODO: dongmei Anything for EJBs???????
             
             if (Boolean.parseBoolean(evaluator().getProperty(
                     WebProjectProperties.J2EE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
+                // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
             
@@ -1117,6 +1142,7 @@ public final class WebProject implements Project, AntProjectListener {
             
             artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(webModule);
+            // TODO: dongmei: anything for EJBs???????
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
