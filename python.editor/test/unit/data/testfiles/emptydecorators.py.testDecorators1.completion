@@ -1,0 +1,11 @@
+Code completion result for source line:
+@|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     abstractmethod                             
+METHOD     classmethod                                
+METHOD     contextmanager                             
+METHOD     getargspec                                 
+METHOD     setprofile                                 
+METHOD     settrace                                   
+METHOD     staticmethod                               
+METHOD     wrapper                                    

@@ -191,7 +191,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.115"; // NOI18N
+        return "0.116"; // NOI18N
     }
 
     public String getIndexerName() {
