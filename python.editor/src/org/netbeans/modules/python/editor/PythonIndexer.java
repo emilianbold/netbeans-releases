@@ -235,13 +235,13 @@ public class PythonIndexer implements Indexer {
             this.factory = factory;
 
             module = PythonUtils.getModuleName(null, file);
-        //PythonTree root = PythonAstUtils.getRoot(result);
-        //if (root instanceof Module) {
-        //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
-        //    if (moduleDoc != null) {
-        //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
-        //    }
-        //}
+            //PythonTree root = PythonAstUtils.getRoot(result);
+            //if (root instanceof Module) {
+            //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
+            //    if (moduleDoc != null) {
+            //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
+            //    }
+            //}
         }
 
         private IndexTask(PythonParserResult result, IndexDocumentFactory factory, String overrideUrl) {
@@ -477,12 +477,29 @@ public class PythonIndexer implements Indexer {
         StringBuilder sb = new StringBuilder();
         sb.append(name);
         char type;
+        int flags = 0;
         if ("__init__".equals(name)) { // NOI18N
             type = 'c';
         } else {
             type = 'F';
+
+            List<expr> decorators = def.getInternalDecorator_list();
+            if (decorators != null && decorators.size() > 0) {
+                for (expr decorator : decorators) {
+                    String decoratorName = PythonAstUtils.getExprName(decorator);
+                    if ("property".equals(decoratorName)) { // NOI18N
+                        type = 'A';
+                    } else if ("classmethod".equals(decoratorName)) { // NOI18N
+                        // Classmethods seem to be used mostly for constructors/inherited factories
+                        type = 'c';
+                        flags |= IndexedElement.CONSTRUCTOR|IndexedElement.STATIC;
+                    } else if ("staticmethod".equals(decoratorName)) { // NOI18N
+                        flags |= IndexedElement.STATIC;
+                    }
+                }
+            }
         }
-        appendFlags(sb, type, sym, 0);
+        appendFlags(sb, type, sym, flags);
 
         List<String> params = PythonAstUtils.getParameters(def);
         boolean first = true;
