@@ -350,7 +350,6 @@ public class LuceneIndex implements IndexImpl {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        assert fieldsToLoad != null;
         final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
         final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
         final IndexReader in = getReader();
