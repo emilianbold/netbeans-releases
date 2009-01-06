@@ -441,19 +441,21 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      */
     private boolean mightHaveFields() {
         String rt = getTypeInfo().getResolvedType(this);
-        if (GdbUtils.isArray(rt) && !isCharString(rt)) {
-            return true;
-        } else if (rt != null && rt.length() > 0) {
-            if (isValidPointerAddress()) {
-                if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
-                        (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
-                    return false;
-                } else {
+        if (rt != null && rt.length() > 0) {
+            if (GdbUtils.isArray(rt) && !isCharString(rt)) {
+                return true;
+            } else if (rt != null && rt.length() > 0) {
+                if (isValidPointerAddress()) {
+                    if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
+                            (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else if (value != null && value.length() > 0 &&
+                        (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
                     return true;
                 }
-            } else if (value != null && value.length() > 0 &&
-                    (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
-                return true;
             }
         }
         return false;
