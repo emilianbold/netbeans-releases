@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.modules.xml.spi.dom.*;
 

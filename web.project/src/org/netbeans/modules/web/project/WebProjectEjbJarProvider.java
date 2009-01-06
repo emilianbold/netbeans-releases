@@ -36,31 +36,40 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.editor.suites;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.editor.shortcuts.BasicShortcuts;
-import org.netbeans.test.editor.suites.keybindings.KeyMapTest;
+package org.netbeans.modules.web.project;
+
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * Implementing project EjbJar provider/finder. It finds the EjbJars in the
+ * given web project.
+ * 
+ * @author Dongmei Cao
  */
-public class KeyMapSuite {
+public class WebProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(BasicShortcuts.class)
-                    .addTest(KeyMapTest.class, "prepareFileInEditor")
-                    .addTest(KeyMapTest.class, "testVerify")
-                    .addTest(KeyMapTest.class, "testAddDuplicateCancel")
-                    .addTest(KeyMapTest.class, "testAddShortcut")
-                    .addTest(KeyMapTest.class, "testUnassign")
-                    .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
-                    //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
-                    .addTest(KeyMapTest.class, "testProfileDuplicte")
-                    .addTest(KeyMapTest.class, "testHelp")
-                    .addTest(KeyMapTest.class, "closeProject").clusters(".*").enableModules(".*"));
+    private WebProject project;
+    
+    public WebProjectEjbJarProvider (WebProject project) {
+        this.project = project;
     }
+    
+    public EjbJar findEjbJar(FileObject file) {
+        Project owner = FileOwnerQuery.getOwner (file);
+        if (owner != null && owner instanceof WebProject) {
+            return ((WebProject) owner).getAPIEjbJar();
+        }
+        return null;
+    }
+
+    public EjbJar[] getEjbJars() {
+        return new EjbJar [] {project.getAPIEjbJar()};
+    }
+
 }

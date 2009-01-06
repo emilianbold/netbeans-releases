@@ -48,6 +48,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
@@ -68,7 +69,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Erno Mononen
  */
-public final class TestExecutionManager {
+public final class TestExecutionManager implements RerunHandler {
 
     private final static Logger LOGGER = Logger.getLogger(TestExecutionManager.class.getName());
     
@@ -125,6 +126,7 @@ public final class TestExecutionManager {
             TestHandlerFactory handlerFactory, TestSession session) {
 
         setFinished(false);
+        session.setRerunHandler(this);
         final Manager manager = Manager.getInstance();
         outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
         errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
@@ -176,7 +178,7 @@ public final class TestExecutionManager {
      * @return true if the current execution has finished, 
      * false otherwise.
      */
-    public synchronized boolean isFinished() {
+    public synchronized boolean enabled() {
         return finished || (result != null && result.isDone());
     }
     
@@ -188,7 +190,7 @@ public final class TestExecutionManager {
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
-        assert isFinished();
+        assert enabled();
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Re-running: " + execution);
         }

@@ -39,15 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
-import java.util.*;
-
-import java.util.logging.ErrorManager;
-import javax.swing.text.*;
+import java.util.WeakHashMap;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.openide.util.WeakListeners;

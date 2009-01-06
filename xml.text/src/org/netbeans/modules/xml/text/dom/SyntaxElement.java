@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import java.lang.ref.WeakReference;
 
@@ -111,7 +111,7 @@ public abstract class SyntaxElement {
         return null;
     }
     
-    public int getElementOffset() {        
+    public int getElementOffset() {
         return offset;
     }
     

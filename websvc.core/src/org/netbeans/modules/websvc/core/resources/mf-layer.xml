@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="WebServiceFromWSDL.java">
+            <file name="WebServiceFromWSDL.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

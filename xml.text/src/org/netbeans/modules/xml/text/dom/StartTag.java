@@ -39,38 +39,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.xml.spi.dom.NodeListImpl;
 import org.w3c.dom.*;
-import org.netbeans.modules.xml.spi.dom.*;
 
-public class EmptyTag extends Tag {
+public class StartTag extends Tag {
 
-    public EmptyTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
+    public StartTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
         super( support, from, to, name, attribs );
     }
 
     public boolean hasChildNodes() {
-        return false;
-    }
-
-    public NodeList getChildNodes() {
-        return NodeListImpl.EMPTY;
+        SyntaxElement next = getNext();
+        if (next == null) return false;
+        // if not well-formed
+        if (next instanceof StartTag && ((StartTag)next).getEndTag() == null) return false;
+        if (next instanceof EndTag) return false;
+        return true;
     }
     
-    protected Tag getEndTag() {
-        return this;
+    public NodeList getChildNodes() {
+        
+        List list = new ArrayList();
+        Node next = hasChildNodes() ? findNext(this) : null;
+        
+        while (next != null) {
+            list.add(next);
+            next = next.getNextSibling();
+        }
+        
+        return new NodeListImpl(list);
     }
     
     protected Tag getStartTag() {
         return this;
     }
     
+    protected Tag getEndTag() {
+        
+        SyntaxNode next = findNext();
+        
+        while (next != null) {
+            if (next instanceof EndTag) {
+                // check well-formedness
+                EndTag endTag = (EndTag) next;
+                if (endTag.getTagName().equals(getTagName())) {
+                    return endTag;
+                } else {
+                    return null;
+                }
+            } else if (next instanceof StartTag) {
+                Tag startTag = (Tag) next;
+                next = startTag.getEndTag();
+                if (next == null) return null;
+                next = next.findNext();
+            } else {
+                next = next.findNext();
+            }
+        }
+        
+        return null;
+    }
+    
     public String toString() {
-        StringBuffer ret = new StringBuffer( "EmptyTag(\"" + name + "\" " );
+        StringBuffer ret = new StringBuffer( "StartTag(\"" + name + "\" " );
         ret.append(getAttributes().toString());
         return ret.toString() + " " + first() + ")";
     }

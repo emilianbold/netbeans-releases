@@ -39,82 +39,84 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.xml.spi.dom.ROException;
+
+import org.netbeans.modules.xml.spi.dom.*;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
- * Read-only DOM Comment node.
+ * Read-only PI DOM node.
  *
- * @author Petr Kuzel
+ * @author  Petr Kuzel
  */
-public class Comment extends SyntaxNode implements org.w3c.dom.Comment {
-
-    public Comment(XMLSyntaxSupport support, Token from, int to) {
-        super( support, from, to );
-    }
-
-    public String toString() {
-        return "Comment" + super.toString() + "<!--" + getData() + "-->";
+public final class ProcessingInstruction extends SyntaxNode {
+    
+    
+    /** Creates a new instance of ProcessingInstructionImpl */
+    public ProcessingInstruction(XMLSyntaxSupport syntax, Token from, int to) {
+        super(syntax, from, to);
     }
     
-    public String getNodeValue() throws org.w3c.dom.DOMException {
-        return getData();  
+    /**
+     * A code representing the type of the underlying object, as defined above.
+     */
+    public short getNodeType() {
+        return Node.PROCESSING_INSTRUCTION_NODE;
+    }
+    
+    /**
+     * The target of this processing instruction. XML defines this as being
+     * the first token following the markup that begins the processing
+     * instruction.
+     * @return implementation may return "xml" as it consider it a PI
+     */
+    public String getTarget() {
+//        TokenItem target = first().getNext();
+//        if (target != null) {
+//            return target.getImage();
+//        } else {
+//            return "";  //??? or null
+//        }
+        return null;
     }
     
     public String getNodeName() {
-        return "#comment";  //NOI18N
+        return getTarget();
     }
     
-    public short getNodeType() {
-        return Node.COMMENT_NODE;
-    }
-    
-    public Text splitText(int offset) {
-        throw new ROException();
-    }
- 
     /**
-     * @return data without delimiters
+     * The content of this processing instruction. This is from the first non
+     * white space character after the target to the character immediately
+     * preceding the <code>?&gt;</code>.
+     * @return may return ""
      */
     public String getData() {
-//        String data = first().getImage();  //??? it is always one image
-//        return data.substring(("<!--".length() - 1) , (data.length() - "-->".length() -1 ));  //NOI18N
+//        StringBuffer buf = new StringBuffer();
+//        TokenItem next = first().getNext();
+//        while (next != null && next.getTokenID() != XMLDefaultTokenContext.PI_CONTENT) {
+//            next = next.getNext();
+//        }
+//        if (next == null) return "";  //??? or null
+//        do {
+//            buf.append(next.getImage());
+//            next = next.getNext();
+//        } while (next != null && next.getTokenID() == XMLDefaultTokenContext.PI_CONTENT);
+//        return buf.toString();
         return null;
     }
-
-    public void setData(String data) {
-        throw new ROException();
+    
+    public String getNodeValue() {
+        return getData();
     }
     
-    public int getLength() {
-        return getData().length();
-    }
-    
-    public String substringData(int offset, int count) {
-        return getData().substring(offset, offset + count + 1);
-    }
-
-    public void appendData(String arg) {
+    /**
+     * Once again we are read-only implemetation!
+     */
+    public void setData(String data) throws DOMException {
         throw new ROException();
     }
-    
-    public void insertData(int offset, String arg) {
-        throw new ROException();
-    }
-
-
-    public void deleteData(int offset, int count) {
-        throw new ROException();
-    }                           
-
-    public void replaceData(int offset, int count, String arg) {
-        throw new ROException();
-    }
-
     
 }
-

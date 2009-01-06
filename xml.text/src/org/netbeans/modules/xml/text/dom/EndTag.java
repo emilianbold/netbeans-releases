@@ -39,76 +39,90 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.dom;
 
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.xml.spi.dom.NodeListImpl;
 import org.w3c.dom.*;
+import org.netbeans.modules.xml.spi.dom.*;
 
-public class StartTag extends Tag {
+/**
+ * End element of ELEMENT_NODE.
+ * //??? should it be implementing Node?
+ */
+public class EndTag extends Tag {
 
-    public StartTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
-        super( support, from, to, name, attribs );
+    public EndTag(XMLSyntaxSupport support, Token from, int to, String name) {
+        super( support, from, to, name, null );
+        this.name = name;
     }
 
+    /**
+     * Create properly bound attributes
+     */
+    public synchronized org.w3c.dom.NamedNodeMap getAttributes() {
+        Tag start = getStartTag();
+        if (start != null) {
+            return start.getAttributes();
+        } else {
+            return NamedNodeMapImpl.EMPTY;
+        }
+    }
+    
     public boolean hasChildNodes() {
-        SyntaxElement next = getNext();
-        if (next == null) return false;
-        // if not well-formed
-        if (next instanceof StartTag && ((StartTag)next).getEndTag() == null) return false;
-        if (next instanceof EndTag) return false;
+        SyntaxElement prev = getPrevious();
+        if (prev == null) return false;
+        if (prev instanceof EndTag && ((EndTag)prev).getStartTag() == null) return false;
+        if (prev instanceof StartTag) return false;
         return true;
     }
     
     public NodeList getChildNodes() {
         
         List list = new ArrayList();
-        Node next = hasChildNodes() ? findNext(this) : null;
+        Node prev = hasChildNodes() ? findPrevious(this) : null;
         
-        while (next != null) {
-            list.add(next);
-            next = next.getNextSibling();
+        while (prev != null) {
+            list.add(0, prev);
+            prev = prev.getPreviousSibling();
         }
         
         return new NodeListImpl(list);
     }
     
     protected Tag getStartTag() {
-        return this;
-    }
-    
-    protected Tag getEndTag() {
         
-        SyntaxNode next = findNext();
+        SyntaxNode prev = findPrevious();
         
-        while (next != null) {
-            if (next instanceof EndTag) {
+        while (prev != null) {
+            if (prev instanceof StartTag) {
                 // check well-formedness
-                EndTag endTag = (EndTag) next;
-                if (endTag.getTagName().equals(getTagName())) {
-                    return endTag;
+                StartTag startTag = (StartTag) prev;
+                if (startTag.getNodeName().equals(getNodeName())) {
+                    return startTag;
                 } else {
                     return null;
                 }
-            } else if (next instanceof StartTag) {
-                Tag startTag = (Tag) next;
-                next = startTag.getEndTag();
-                if (next == null) return null;
-                next = next.findNext();
+            } else if (prev instanceof EndTag) {
+                EndTag endTag = (EndTag) prev;
+                prev = endTag.getStartTag();
+                if (prev == null) return null;
+                prev = prev.findPrevious();
             } else {
-                next = next.findNext();
+                prev = prev.findPrevious();
             }
         }
         
         return null;
     }
     
+    protected Tag getEndTag() {
+        return this;
+    }
+    
     public String toString() {
-        StringBuffer ret = new StringBuffer( "StartTag(\"" + name + "\" " );
-        ret.append(getAttributes().toString());
-        return ret.toString() + " " + first() + ")";
+        return "EndTag(\"" + name + "\") " + first();
     }
     
 }
