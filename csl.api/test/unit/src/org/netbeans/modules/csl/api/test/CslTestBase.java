@@ -2063,12 +2063,17 @@ public abstract class CslTestBase extends NbTestCase {
         if (s.length() == 0) {
             return s;
         }
-        s.charAt(offset);
-        int end = s.indexOf('\n', offset);
+//        s.charAt(offset);
+        int end = s.indexOf('\n', begin);
         if (end == -1) {
             end = s.length();
         }
-        return (s.substring(begin, offset)+"|"+s.substring(offset, end)).trim();
+
+        if (offset < end) {
+            return (s.substring(begin, offset)+"|"+s.substring(offset,end)).trim();
+        } else {
+            return (s.substring(begin, end) + "|").trim();
+        }
     }
 
     protected String getSourceWindow(String s, int offset) {
