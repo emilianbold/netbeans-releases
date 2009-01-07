@@ -30,6 +30,11 @@ import java.util.Properties;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface ConvertAsProperties {
+    /** constant to return from {@link #ignoreChanges()} to signal that all
+     * property changes shall be ignored.
+     */
+    public static final String IGNORE_ALL_CHANGES = "all";
+
     /** Public ID of the XML file that results in creation of the
      * annotated type and to which the annotated type can be converted.
      * @return public ID of the file's DTD
@@ -41,7 +46,7 @@ public @interface ConvertAsProperties {
     boolean autostore() default true;
     /** An array of properties that are ignored without marking the object
      * as dirty or saving it.
-     * @return array of property names or "all" to ignore all properties
+     * @return array of property names or {@link #IGNORE_ALL_CHANGES} to ignore all properties
      */
     String[] ignoreChanges() default {};
 }
