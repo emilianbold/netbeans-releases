@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
 import org.netbeans.modules.python.api.PythonPlatform;
@@ -140,11 +141,10 @@ public final class PythonTestMethodNode extends TestMethodNode {
         }
         List<Action> actions = new ArrayList<Action>();
         actions.add(getPreferredAction());
+        actions.add(new DiffViewAction(testcase));
         actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(PythonTestMethodNode.class, "LBL_RerunTest"), false));
         actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(PythonTestMethodNode.class, "LBL_DebugTest"), true));
 //        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
         return actions.toArray(new Action[actions.size()]);
     }
-    
-    
 }

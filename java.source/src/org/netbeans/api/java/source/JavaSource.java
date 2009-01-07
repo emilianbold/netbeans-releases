@@ -84,6 +84,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.PatchedPublic;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -514,6 +515,7 @@ public final class JavaSource {
         }
     }
 
+    @PatchedPublic
     private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
         final Task<CompilationController> _task = task;
         this.runUserActionTask (_task, shared);
@@ -605,6 +607,7 @@ public final class JavaSource {
         }
     }
 
+    @PatchedPublic
     private Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
         final Task<CompilationController> _task = task;
         return this.runWhenScanFinished (_task, shared);
@@ -682,7 +685,7 @@ public final class JavaSource {
         }        
     }
 
-
+    @PatchedPublic
     private ModificationResult runModificationTask(CancellableTask<WorkingCopy> task) throws IOException { 
         final Task<WorkingCopy> _task = task;
         return this.runModificationTask (_task);
