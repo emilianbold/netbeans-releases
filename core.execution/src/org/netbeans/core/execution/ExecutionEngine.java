@@ -175,7 +175,7 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        @SuppressWarnings("unchecked") List<File> l = NbTopManager.getModuleJars();
+        List<File> l = NbTopManager.getModuleJars();
         return new NbClassPath (l.toArray (new File[l.size ()]));
     }
 

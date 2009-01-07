@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.openide.modules.PatchedPublic;
 import org.openide.util.WeakListeners;
 
 /**
@@ -255,6 +256,7 @@ public final class JumpList {
     }
 
     /** Just to prevent instantialization. */
+    @PatchedPublic
     private JumpList() {
     }
     
