@@ -217,8 +217,8 @@ public final class Source {
      */
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
-    public Document getDocument () {
-        return _getDocument(false);
+    public Document getDocument (boolean forceOpen) {
+        return _getDocument (forceOpen);
     }
     
     /**
@@ -509,6 +509,13 @@ public final class Source {
         }
 
         @Override
+        public void parsed (Source source) {
+            synchronized (source) {
+                source.sourceModificationEvent = null;
+            }
+        }
+
+        @Override
         public SourceModificationEvent getSourceModificationEvent (Source source) {
             assert source != null;
             SourceModificationEvent event = source.sourceModificationEvent;
@@ -594,7 +601,7 @@ public final class Source {
 
         @Override
         public String toString () {
-            return "ASourceModificationEvent " + startOffset + ":" + endOffset;
+            return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }
 }
