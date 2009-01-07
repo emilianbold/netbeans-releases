@@ -46,13 +46,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -72,6 +78,8 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 public class PluginIndexManager {
+
+    private static final String ZIP_LOCATION = "org/netbeans/modules/maven/indexer/pluginz.zip"; //NOI18N
 
     private static final String INDEX_PATH = "maven-plugins-index"; //NOI18N
     private static IndexReader indexReader;
@@ -239,6 +247,83 @@ public class PluginIndexManager {
         return toRet;
     }
 
+    /**
+     * find the plugins which are behind the given goal prefix.
+     * @param prefix
+     * @return A string composed of groupId and artifactId separated by "|"
+     * @throws java.lang.Exception
+     */
+    public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
+        assert prefix != null;
+        IndexSearcher searcher = getIndexSearcher();
+        TermQuery tq = new TermQuery(new Term(FIELD_PREFIX, prefix));
+        Hits hits = searcher.search(tq);
+        if (hits.length() == 0) {
+            return null;
+        }
+        Iterator it = hits.iterator();
+        TreeSet<String> toRet = new TreeSet<String>();
+        while (it.hasNext()) { //well should be just one anyway..
+            Hit hit = (Hit) it.next();
+            Document doc = hit.getDocument();
+            String id = doc.getField(FIELD_ID).stringValue();
+            toRet.add(id.substring(0, id.lastIndexOf('|') - 1)); //NOI18N
+        }
+        return toRet;
+    }
+
+    /**
+     * find the phase associations for the given packaging
+     * @param packaging
+     * @param mvnVersion
+     * @param extensionPlugins
+     * @return key= phase name, value - Set of Strings, where Strings are in format groupId:artifactId:mojo
+     * @throws java.lang.Exception
+     */
+    public static Map<String, List<String>> getLifecyclePlugins(String packaging, String mvnVersion, String[] extensionPlugins) throws Exception {
+        assert packaging != null;
+        IndexSearcher searcher = getIndexSearcher();
+        BooleanQuery bq = new BooleanQuery();
+        TermQuery tq = new TermQuery(new Term(FIELD_CYCLES, packaging));
+        bq.add(tq, BooleanClause.Occur.MUST);
+        if (mvnVersion == null) {
+            mvnVersion = "2.0.9"; //oh well we need something..
+        }
+        BooleanQuery bq2 = new BooleanQuery();
+        tq = new TermQuery(new Term(FIELD_MVN_VERSION, mvnVersion));
+        bq2.add(tq, BooleanClause.Occur.SHOULD);
+
+        for (String ext : extensionPlugins) {
+            tq = new TermQuery(new Term(FIELD_ID, ext));
+            bq2.add(tq, BooleanClause.Occur.SHOULD);
+        }
+        bq.add(bq2, BooleanClause.Occur.SHOULD); //why doesn't MUST work?
+
+        Hits hits = searcher.search(bq);
+        if (hits.length() == 0) {
+            return null;
+        }
+        Iterator it = hits.iterator();
+        LinkedHashMap<String, List<String>> toRet = new LinkedHashMap<String, List<String>>();
+        while (it.hasNext()) { //well should be just one anyway..
+            Hit hit = (Hit) it.next();
+            Document doc = hit.getDocument();
+            Field prefixed = doc.getField(PREFIX_FIELD_CYCLE + packaging);
+            if (prefixed != null) {
+                String mapping = prefixed.stringValue();
+                String[] phases = StringUtils.split(mapping, "\n"); //NOI18N
+                for (String phase : phases) {
+                    String[] ph = StringUtils.split(phase, "="); //NOI18N
+                    String[] plugins = StringUtils.split(ph[1], ","); //NOI18N
+                    List<String> plgs = new ArrayList<String>(Arrays.asList(plugins));
+                    toRet.put(ph[0], plgs);
+                }
+            }
+        }
+        return toRet;
+    }
+
+
     private static int checkLocalVersion(File[] fls) {
         for (File fl : fls) {
             try {
@@ -256,7 +341,7 @@ public class PluginIndexManager {
     private static int checkZipVersion(File cacheDir) {
         InputStream is = null;
         try {
-            is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/grammar/pluginz.zip"); //NOI18N
+            is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
             ZipInputStream zis = new ZipInputStream(is);
             ZipEntry entry = zis.getNextEntry();
             if (entry != null) {
@@ -294,7 +379,7 @@ public class PluginIndexManager {
             //copy the preexisting index in module into place..
             InputStream is = null;
             try {
-                is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/indexer/pluginz.zip"); //NOI18N
+                is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
                 ZipInputStream zis = new ZipInputStream(is);
                 unzip(zis, cacheDir);
             } finally {
@@ -309,7 +394,7 @@ public class PluginIndexManager {
                     //copy the preexisting index in module into place..
                     InputStream is = null;
                     try {
-                        is = PluginIndexManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/maven/indexer/pluginz.zip"); //NOI18N
+                        is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
                         ZipInputStream zis = new ZipInputStream(is);
                         unzip(zis, cacheDir);
                     } finally {
