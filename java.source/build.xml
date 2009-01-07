@@ -44,23 +44,7 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     <property name="nb.modules.dir" value="modules"/>
     
-    <target name="compile" depends="build-init,-compile-default-platform,-compile-explicit-platform,-bincomp"/>
-
-    <target name="-bincomp">
-        <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <enhanceclass basedir="${build.classes.dir}" >
-            <classpath>
-                <pathelement location="${o.n.bootstrap.dir}/lib/boot.jar"/>
-                <pathelement location="${nb_all}/nbbuild/build/public-package-jars/org-openide-util.jar"/>
-            </classpath>
-             
-            <patch class="org/netbeans/api/java/source/JavaSource" >
-                <member name="runUserActionTask" />
-                <member name="runWhenScanFinished"/>
-                <member name="runModificationTask"/>
-            </patch>
-        </enhanceclass>
-    </target>
+    <target name="compile" depends="build-init,-compile-default-platform,-compile-explicit-platform"/>
 
     <target name="-compile-default-platform" unless="nbjdk.bootclasspath">
 	<mkdir dir="${build.classes.dir}"/>
