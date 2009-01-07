@@ -20,12 +20,8 @@
 package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -48,8 +44,8 @@ class ProjectHIP extends HudsonInstanceProperties {
         }
         ProjectHudsonProvider p = prov.getLookup().lookup(ProjectHudsonProvider.class);
         if (p != null) {
-            setProperty(HUDSON_INSTANCE_URL, p.getServerUrl());
-            setProperty(HUDSON_INSTANCE_NAME, p.getName());
+            put(HUDSON_INSTANCE_URL, p.getServerUrl());
+            put(HUDSON_INSTANCE_NAME, p.getName());
             setPreferredJobs();
         }
         //TODO listen on changes from the provider and refire them as changed properties.
@@ -66,27 +62,6 @@ class ProjectHIP extends HudsonInstanceProperties {
         synchronized (providers) {
             return new HashSet<Project>(providers);
         }
-    }
-
-
-    @Override
-    public synchronized void load(InputStream inStream) throws IOException {
-    }
-
-    @Override
-    public synchronized void loadFromXML(InputStream in) throws IOException, InvalidPropertiesFormatException {
-    }
-
-    @Override
-    public synchronized void store(OutputStream out, String comments) throws IOException {
-    }
-
-    @Override
-    public synchronized void storeToXML(OutputStream os, String comment) throws IOException {
-    }
-
-    @Override
-    public synchronized void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
     }
 
     public List<PropertyChangeListener> getCurrentListeners() {

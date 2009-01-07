@@ -66,7 +66,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private boolean terminated;
     
     private final Synchronization synchronization;
-    private Semaphore sync;
+    private Semaphore semaphore;
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
@@ -81,7 +81,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.properties = properties;
         this.connector = new HudsonConnector(this);
         this.synchronization = new Synchronization();
-        this.sync = new Semaphore(1, true);
+        this.semaphore = new Semaphore(1, true);
         this.terminated = false;
         
         // Start synchronization
@@ -153,13 +153,13 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         if (isPersisted()) {
             return;
         }
-        String name = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
-        String url = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
-        String sync = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
+        String name = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
+        String url = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
+        String sync = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
 
         HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
         //just in case there are also other properties.
-        for (Map.Entry<Object, Object> ent : properties.entrySet()) {
+        for (Map.Entry<String,String> ent : properties.entrySet()) {
             newProps.put(ent.getKey(), ent.getValue());
         }
         
@@ -242,11 +242,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public String getName() {
-        return getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
+        return getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
     }
     
     public String getUrl() {
-        return getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
+        return getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
     }
     
     public synchronized Collection<HudsonJob> getJobs() {
@@ -256,7 +256,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public synchronized Collection<HudsonJob> getPreferredJobs() {
         Collection<HudsonJob> prefs = new ArrayList<HudsonJob>();
         Collection<HudsonJob> all = getJobs();
-        String prop = getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_PREF_JOBS);
+        String prop = getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_PREF_JOBS);
         if (prop != null && prop.trim().length() > 0) {
             String[] ids = prop.trim().split("\\|");
             List<String> idsList = Arrays.asList(ids);
@@ -278,7 +278,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public synchronized void synchronize() {
-        if (sync.tryAcquire()) {
+        if (semaphore.tryAcquire()) {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
             
@@ -324,7 +324,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         handle.finish();
                         
                         // Release synchronization lock
-                        sync.release();
+                        semaphore.release();
                     }
                 }
             });
@@ -363,11 +363,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         }
     }
     
-    /**
-     *
-     * @param obj
-     * @return
-     */
+    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof HudsonInstance))
             return false;
@@ -379,7 +375,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             return false;
         return true;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return getUrl() == null ? 445 : getUrl().hashCode();
+    }
+
     public int compareTo(HudsonInstance o) {
         return getName().compareTo(o.getName());
     }
@@ -432,7 +433,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     synchronize();
                     
                     // Refresh wait time
-                    String s = getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
+                    String s = getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
                     milis = Integer.parseInt(s) * 60 * 1000;
                     
                     // Wait for the specified amount of time

@@ -21,15 +21,13 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,7 +35,7 @@ import org.openide.util.NbBundle;
  *
  * @author Michal Mocnak
  */
-public class HudsonInstanceProperties extends Properties
+public class HudsonInstanceProperties extends HashMap<String,String>
         implements HudsonInstanceConstants {
     
     private Sheet.Set set;
@@ -54,27 +52,22 @@ public class HudsonInstanceProperties extends Properties
         put(HUDSON_INSTANCE_SYNC, sync);
     }
     
-    public HudsonInstanceProperties(FileObject properties) {
-        try {
-            // Load data from file
-            loadFromXML(properties.getInputStream());
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
+    public HudsonInstanceProperties(Map<String,String> properties) {
+        super(properties);
     }
-    
+
     @Override
-    public synchronized Object put(Object key, Object value) {
-        Object o = super.put(key, value);
+    public synchronized String put(String key, String value) {
+        String o = super.put(key, value);
         
-        firePropertyChangeListeners((String) key, value);
+        firePropertyChangeListeners( key, value);
         
         return o;
     }
     
     @Override
-    public synchronized Object remove(Object key) {
-        Object o = super.remove(key);
+    public synchronized String remove(Object key) {
+        String o = super.remove(key);
         
         firePropertyChangeListeners((String) key, null);
         
@@ -86,7 +79,7 @@ public class HudsonInstanceProperties extends Properties
             set = Sheet.createPropertiesSet();
             
             // Set display name
-            set.setDisplayName(getProperty(HUDSON_INSTANCE_NAME));
+            set.setDisplayName(get(HUDSON_INSTANCE_NAME));
             
             // Put properties in
             set.put(new PropertySupport[] {
@@ -146,7 +139,7 @@ public class HudsonInstanceProperties extends Properties
         
         @Override
         public String getValue() {
-            return getProperty(key);
+            return get(key);
         }
     }
 }

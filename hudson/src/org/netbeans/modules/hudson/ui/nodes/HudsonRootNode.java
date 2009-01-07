@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
-import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
@@ -33,7 +32,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -117,8 +115,7 @@ public class HudsonRootNode extends AbstractNode {
         private void refreshKeys() {
             Collection<HudsonInstanceImpl> keys = getKeys();
             
-            if (keys.size() == 0 && !NbPreferences.forModule(
-                    HudsonManager.class).getBoolean(HudsonManagerImpl.STARTUP_PROP, false))
+            if (keys.size() == 0 && !HudsonManagerImpl.getInstance().isStarting())
                 setKeys(new Object[] {tooltip});
             else
                 setKeys(keys);

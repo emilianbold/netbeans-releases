@@ -21,8 +21,6 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,16 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -55,14 +51,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=HudsonManager.class)
 public class HudsonManagerImpl extends HudsonManager {
     
-    /** Startup flag property */
-    public static final String STARTUP_PROP = "startup";
-    
     /** Init lock */
     private static final Object LOCK_INIT = new Object();
-    
-    /** Directory where instances are stored */
-    private static final String DIR_INSTANCES = "/Hudson/Instances"; //NOI18N
     
     /** The only instance of the hudson manager implementation in the system */
     private static HudsonManagerImpl defaultInstance;
@@ -71,7 +61,6 @@ public class HudsonManagerImpl extends HudsonManager {
     private final List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     private PropertyChangeListener projectsListener;
     private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
-    private Map<Project, Lookup.Result<ProjectHudsonProvider>> projectLookupInstances = new HashMap<Project, Lookup.Result<ProjectHudsonProvider>>();
     
     public HudsonManagerImpl() {
         synchronized(LOCK_INIT) {
@@ -119,12 +108,12 @@ public class HudsonManagerImpl extends HudsonManager {
         fireChangeListeners();
         
         // Strore instance file
-        storeInstanceFile(instance);
+        storeInstanceDefinition(instance);
         
         // Add property change listener
         instance.getProperties().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                storeInstanceFile(instance);
+                storeInstanceDefinition(instance);
             }
         });
         
@@ -145,7 +134,7 @@ public class HudsonManagerImpl extends HudsonManager {
         fireChangeListeners();
         
         // Remove instance file
-        removeInstanceFile(instance);
+        removeInstanceDefinition(instance);
         
         return instance;
     }
@@ -211,53 +200,31 @@ public class HudsonManagerImpl extends HudsonManager {
         for (HudsonInstance instance : getInstances())
             ((HudsonInstanceImpl) instance).terminate();
     }
+
+    private Preferences instancePrefs() {
+        return NbPreferences.forModule(HudsonManagerImpl.class).node("instances"); // NOI18N
+    }
     
-    private void storeInstanceFile(HudsonInstanceImpl instance) {
+    private void storeInstanceDefinition(HudsonInstanceImpl instance) {
         if (!instance.isPersisted()) {
             return;
         }
-        Repository repository = Lookup.getDefault().lookup(Repository.class);
-        FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
-
-        String fileName = getFileName(instance.getName());
-        try {
-            FileObject file = directory.getFileObject(fileName);
-            
-            if (null == file)
-                file = directory.createData(fileName);
-            
-            // Write data to the file
-            instance.getProperties().storeToXML(new FileOutputStream(FileUtil.toFile(file)), instance.getName());
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        Preferences node = instancePrefs().node(keyName(instance.getName()));
+        for (Map.Entry<String,String> entry : instance.getProperties().entrySet()) {
+            node.put(entry.getKey(), entry.getValue());
         }
     }
 
-    private String getFileName(String name) {
-        // sort of defend against names like http://deadlock.netbeans.org/hudson
-        String fileName = name.replace(" ", "_");
-        fileName = fileName.replace(":", "_");
-        fileName = fileName.replace("/", "_");
-        fileName = fileName.replace(".", "_");
-        fileName = fileName.toLowerCase() + ".xml";
-        return fileName;
+    private String keyName(String name) {
+        // http://deadlock.netbeans.org/hudson/ => deadlock.netbeans.org_hudson
+        return name.replaceFirst("http://", "").replaceFirst("/$", "").replace('/', '_');
     }
     
-    private void removeInstanceFile(HudsonInstanceImpl instance) {
-        Repository repository = Lookup.getDefault().lookup(Repository.class);
-        FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
-        
-        String fileName = getFileName(instance.getName());
-        
+    private void removeInstanceDefinition(HudsonInstanceImpl instance) {
         try {
-            FileObject file = directory.getFileObject(fileName);
-            
-            if (null == file)
-                return;
-            
-            file.delete();
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            instancePrefs().node(keyName(instance.getName())).removeNode();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -271,22 +238,30 @@ public class HudsonManagerImpl extends HudsonManager {
         
         return instances;
     }
-    
+
+    private boolean starting;
+    /** True if manager is starting up at the moment. */
+    public boolean isStarting() {return starting;}
+
     private void init() {
-        // activate startup flag
-        NbPreferences.forModule(HudsonManager.class).putBoolean(STARTUP_PROP, true);
-        
-        Repository repository = Lookup.getDefault().lookup(Repository.class);
-        final FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
-        
+        starting = true;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    for (FileObject f : directory.getChildren())
-                        HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(f));
+                    try {
+                        for (String kid : instancePrefs().childrenNames()) {
+                            Preferences node = instancePrefs().node(kid);
+                            Map<String, String> m = new HashMap<String, String>();
+                            for (String k : node.keys()) {
+                                m.put(k, node.get(k, null));
+                            }
+                            HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(m));
+                        }
+                    } catch (BackingStoreException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 } finally {
-                    // Deactivate startup flag
-                    NbPreferences.forModule(HudsonManager.class).putBoolean(STARTUP_PROP, false);
+                    starting = false;
                     checkOpenProjects();
                     OpenProjects.getDefault().addPropertyChangeListener(projectsListener);
                     // Fire changes
@@ -318,7 +293,7 @@ public class HudsonManagerImpl extends HudsonManager {
                         ProjectHIP props = new ProjectHIP();
                         props.addProvider(project);
                         addInstance(HudsonInstanceImpl.createHudsonInstance(props));
-                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_URL));
+                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }
                 } else if (prov == null && exists) {
@@ -350,4 +325,5 @@ public class HudsonManagerImpl extends HudsonManager {
             Exceptions.printStackTrace(ex);
         }
     }
+
 }
