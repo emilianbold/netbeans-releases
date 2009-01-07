@@ -55,7 +55,7 @@ import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
  */
 public final class Kenai {
 
-    private static final Map<Object, Kenai> instances = new HashMap<Object, Kenai>(1);
+    private static final Map<URL,Kenai> instances = new HashMap<URL,Kenai>(1);
 
     public static synchronized Kenai getDefault() {
         try {
@@ -70,6 +70,7 @@ public final class Kenai {
         if (kenai == null) {
             KenaiImpl impl = new KenaiREST(location);
             kenai = new Kenai(impl);
+            instances.put(location, kenai);
         }
         return kenai;
     }
