@@ -416,22 +416,26 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     final Collection<Indexable> deleted = crawler.getDeletedResources();
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                    //First use custom indexers
+                    //First use all custom indexers
                     for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
                         final Map.Entry<String,Collection<Indexable>> entry = it.next();
-                        final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
-                        if (factory != null) {
-                            try {
+                        final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
+                        boolean supportsEmbeddings = true;
+                        try {
+                            for (CustomIndexerFactory factory : factories) {
+                                supportsEmbeddings &= factory.supportsEmbeddedIndexers();
                                 final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
                                 factory.filesDeleted(deleted, ctx);
-                                final CustomIndexer indexer = factory.createIndexer();                                
-                                SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
-                            } finally {
+                                final CustomIndexer indexer = factory.createIndexer();
+                                SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(entry.getValue()), ctx);
+                            }
+                        } finally {
+                            if (!supportsEmbeddings) {
                                 it.remove();
                             }
                         }
                     }
-                    //For rest use slow gsf like indexers
+                    //Then use slow gsf like indexers
                     final List<Indexable> toIndex = new LinkedList<Indexable>();
                     for (Collection<Indexable> data : resources.values()) {
                         toIndex.addAll(data);

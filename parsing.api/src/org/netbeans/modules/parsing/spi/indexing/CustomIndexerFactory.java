@@ -74,6 +74,8 @@ public abstract class CustomIndexerFactory {
     public abstract String getIndexerName ();
 
 
+    public abstract boolean supportsEmbeddedIndexers ();
+
     /**
      * Return the version stamp of the schema that is currently being stored
      * by this indexer. Along with the index name this string will be used to
