@@ -58,7 +58,7 @@ public class HudsonProviderImpl implements ProjectHudsonProvider {
     }
 
     public String getName() {
-        return getServerUrl();
+        return getServerUrl().replaceFirst("https?://", "");
     }
 
     public String getJobName() {
