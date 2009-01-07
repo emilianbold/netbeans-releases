@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
     <target name="libs" depends="felix" description="Download necessary external libraries" />
     
     <target name="felix" depends="-init-proxy" unless="felix.downloaded">
-        <property name="felix" value="felix-1.4.0"/>
-        <get dest="${felix}.zip" src="http://apache.mirror.superhosting.cz/felix/${felix}.zip"/>
+        <property name="felix" value="felix-1.4.1"/>
+        <get dest="${felix}.zip" src="http://www.ibiblio.org/pub/mirrors/apache/felix/${felix}.zip"/>
         <unzip src="${felix}.zip" dest=".">
             <patternset>
                 <include name="${felix}/**/bin/felix.jar"/>
