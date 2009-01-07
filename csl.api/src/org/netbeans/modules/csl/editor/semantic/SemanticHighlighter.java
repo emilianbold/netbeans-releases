@@ -116,7 +116,7 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
     public @Override void run(ParserResult info, SchedulerEvent event) {
         resume();
         
-        Document doc = info.getSnapshot().getSource().getDocument();
+        Document doc = info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return;
         }

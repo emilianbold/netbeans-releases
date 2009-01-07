@@ -57,7 +57,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileUtil;
@@ -100,11 +99,9 @@ public class LexUtilities {
         
         if (info != null) {
             Source source = info.getSnapshot().getSource();
-            Document doc = source.getDocument();
+            Document doc = source.getDocument(forceOpen);
             if (doc instanceof BaseDocument) {
                 bdoc = (BaseDocument) doc;
-            } else if (forceOpen) {
-                bdoc = GsfUtilities.getDocument(source.getFileObject(), true);
             }
         }
 

@@ -157,7 +157,7 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
-            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 // Document was just closed
                 return;
@@ -342,7 +342,7 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
                 // function) - these have zero size, and we skip these for occurrence highlighting
                 (type == Token.RETURN && node.getSourceEnd() > node.getSourceStart())) {
             OffsetRange astRange = AstUtilities.getRange(node);
-            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
             if (doc != null) {
                 try {
                     doc.readLock();

@@ -156,7 +156,7 @@ public class CSSStructureScanner implements StructureScanner {
 //    }
     
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return Collections.emptyMap();
         }

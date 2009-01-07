@@ -108,7 +108,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public synchronized void run (ResultIterator resultIterator) throws IOException, ParseException {
         ParserResult parserResult = (ParserResult) resultIterator.getParserResult (startOffset);
         Snapshot snapshot = parserResult.getSnapshot ();
-        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (),  startOffset);
+        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (true),  startOffset);
             
         if (completer != null) {
             templates = completer.getApplicableTemplates(parserResult, startOffset, endOffset);

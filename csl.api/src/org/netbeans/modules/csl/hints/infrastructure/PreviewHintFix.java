@@ -92,7 +92,7 @@ final class PreviewHintFix implements EnhancedFix {
     public ChangeInfo implement() throws Exception {
         EditList edits = fix.getEditList();
 
-        Document oldDoc = info.getSnapshot().getSource().getDocument();
+        Document oldDoc = info.getSnapshot().getSource().getDocument(true);
         //OffsetRange range = edits.getRange();
         OffsetRange range = new OffsetRange(0, oldDoc.getLength());
         String oldSource = oldDoc.getText(range.getStart(), range.getEnd());

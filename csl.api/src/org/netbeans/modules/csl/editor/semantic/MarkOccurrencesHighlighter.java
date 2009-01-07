@@ -93,14 +93,14 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
     
-    public Document getDocument() {
-        return snapshot.getSource().getDocument();
-    }
-    
+//    public Document getDocument() {
+//        return snapshot.getSource().getDocument(false);
+//    }
+//
     public void run(ParserResult info, SchedulerEvent event) {
         resume();
         
-        Document doc = getDocument();
+        Document doc = snapshot.getSource().getDocument(false);
         
         if (doc == null) {
             Logger.global.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!");

@@ -381,7 +381,7 @@ public class StructureAnalyzer implements StructureScanner {
             this.node = node;
             this.kind = node.getKind();
             this.info = info;
-            this.doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+            this.doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         }
 
         public String getName() {

@@ -588,7 +588,7 @@ public final class GsfUtilities {
         }
 
         // Then look through all existing editor pane
-        Document snapshotDoc = snapshot.getSource().getDocument();
+        Document snapshotDoc = snapshot.getSource().getDocument(false);
         if (snapshotDoc != null) {
             for(JTextComponent jtc : EditorRegistry.componentList()) {
                 if (snapshotDoc == jtc.getDocument()) {

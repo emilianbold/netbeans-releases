@@ -556,7 +556,7 @@ public class JsTypeAnalyzer {
             startTime = System.currentTimeMillis();
             types = new HashMap<String, String>();
 
-            if (info.getSnapshot().getSource().getDocument() != null) {
+            if (info.getSnapshot().getSource().getDocument(false) != null) {
                 initTypeAssertions();
             }
 

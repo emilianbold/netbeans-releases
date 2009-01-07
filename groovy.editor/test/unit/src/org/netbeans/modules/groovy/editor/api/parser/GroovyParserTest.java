@@ -170,7 +170,7 @@ public class GroovyParserTest extends GroovyTestBase {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
                 ASTNode root = AstUtilities.getRoot(result);
-                AstPath path = new AstPath(root ,1, (BaseDocument) result.getSnapshot().getSource().getDocument());
+                AstPath path = new AstPath(root ,1, (BaseDocument) result.getSnapshot().getSource().getDocument(true));
                 assertNotNull("new AstPath() failed", path);
             }
         });

@@ -94,7 +94,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
-        TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument());
+        TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
             Token token = ts.token();
@@ -155,7 +155,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //the bottom most element represents the whole parse tree, replace it by the document
         //range since they doesn't need to be the same
         if(!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getSnapshot().getSource().getDocument().getLength()));
+            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength()));
         }
 
         return ranges;

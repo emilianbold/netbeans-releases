@@ -1560,7 +1560,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            BaseDocument doc = (BaseDocument)jspr.getSnapshot().getSource().getDocument();
+            BaseDocument doc = (BaseDocument)jspr.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return ranges;
             }

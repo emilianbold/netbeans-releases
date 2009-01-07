@@ -45,9 +45,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.annotations.NonNull;
@@ -344,24 +342,6 @@ public final class ElementUtilities {
             assert false : element;
         }
         return node;
-    }
-    
-    private static BaseDocument getBaseDocument(JsParseResult info, Element element) {
-        Document doc = null;
-        BaseDocument baseDoc = null;
-
-        if (element instanceof IndexedFunction) {
-            doc = ((IndexedFunction)element).getDocument();
-            info = null;
-        } else if (info != null) {
-            doc = info.getSnapshot().getSource().getDocument();
-        }
-
-        if (doc instanceof BaseDocument) {
-            baseDoc = (BaseDocument)doc;
-        }
-
-        return baseDoc;
     }
     
     /**

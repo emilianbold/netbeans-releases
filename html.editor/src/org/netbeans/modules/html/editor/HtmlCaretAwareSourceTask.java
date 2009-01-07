@@ -108,7 +108,7 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
             return ;
         }
 
-        forDocument(result.getSnapshot().getSource().getDocument()).parsed(result, event);
+        forDocument(result.getSnapshot().getSource().getDocument(true)).parsed(result, event);
     }
 
     public static class Source {

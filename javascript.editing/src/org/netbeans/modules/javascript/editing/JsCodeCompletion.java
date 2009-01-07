@@ -317,7 +317,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             prefix = ""; //NOI18N
         }
 
-        final Document document = info.getSnapshot().getSource().getDocument();
+        final Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -918,7 +918,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
      */
     public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
         try {
-            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return null;
             }
@@ -2125,7 +2125,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             int originalAstOffset = astOffset;
 
             // Adjust offset to the left
-            BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+            BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return false;
             }

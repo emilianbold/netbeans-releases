@@ -745,7 +745,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
         // FIXME parsing API
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
 
         return new AstPath(root, caretOffset, doc);
 
@@ -1204,7 +1204,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             return null;
         }
 
-        BaseDocument document = (BaseDocument) request.info.getSnapshot().getSource().getDocument();
+        BaseDocument document = (BaseDocument) request.info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             LOG.log(Level.FINEST, "Could not get BaseDocument. It's null"); //NOI18N
             return null;
@@ -2530,7 +2530,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final Document document = info.getSnapshot().getSource().getDocument();
+        final Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -2906,7 +2906,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         AstPath path = getPathFromInfo(caretOffset, info);
 
         // FIXME parsing API
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
 
         if (path != null) {
 

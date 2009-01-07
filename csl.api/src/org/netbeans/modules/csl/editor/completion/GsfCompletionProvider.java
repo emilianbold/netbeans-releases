@@ -674,7 +674,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             // completion job (which stores the caret offset) will be delayed until
             // indexing is complete - potentially minutes later. When the job
             // is finally run we need to make sure the caret position is still valid. (93017)
-            Document doc = controller.getSnapshot ().getSource ().getDocument ();
+            Document doc = controller.getSnapshot ().getSource ().getDocument (false);
             int length = doc != null ? doc.getLength() : (int)controller.getSnapshot ().getSource ().getFileObject().getSize();
             if (caretOffset > length) {
                 caretOffset = length;

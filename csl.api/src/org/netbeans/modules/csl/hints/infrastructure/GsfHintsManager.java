@@ -602,7 +602,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         context.caretOffset = caretOffset;
         context.selectionStart = selectionStart;
         context.selectionEnd = selectionEnd;
-        context.doc = (BaseDocument) parserResult.getSnapshot().getSource().getDocument();
+        context.doc = (BaseDocument) parserResult.getSnapshot().getSource().getDocument(false);
         if (context.doc == null) {
             // Document closed
             return null;
