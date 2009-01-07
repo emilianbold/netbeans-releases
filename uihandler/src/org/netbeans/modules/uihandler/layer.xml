@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-exceptions-ReporterResultAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uihandler.Bundle"/>
+                <attr name="component" methodvalue="org.netbeans.modules.exceptions.ReporterResultTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.exceptions.Bundle#CTL_ReporterResultAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <folder name="Other">
+                <file name="ReporterResultAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-exceptions-ReporterResultAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="ReporterResultTopComponent.settings" url="ReporterResultTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="ReporterResultTopComponent.wstcref" url="ReporterResultTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
