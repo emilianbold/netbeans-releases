@@ -179,6 +179,10 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/org.py", "from or^", true);
     }
 
+    public void testProperties() throws Exception {
+        checkCompletion("testfiles/properties.py", "x.ba^", true);
+    }
+
     public void testParameters1() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(foo^, bar)", true);
     }
