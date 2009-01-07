@@ -52,7 +52,6 @@ import java.util.List;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
-import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -82,19 +81,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
-    private final PhpSources sourceRoots;
 
     // GuardedBy(dirCache)
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, PhpSources sources) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
+        assert helper != null;
+        assert evaluator != null;
+
         this.helper = helper;
         projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert projectDirectory != null;
         this.evaluator = evaluator;
-        this.sourceRoots = sources;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 

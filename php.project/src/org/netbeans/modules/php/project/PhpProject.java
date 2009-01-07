@@ -59,10 +59,9 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -88,7 +87,7 @@ import org.w3c.dom.Text;
 /**
  * @author ads, Tomas Mysik
  */
-public class PhpProject implements Project, AntProjectListener {
+public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
 
@@ -96,22 +95,28 @@ public class PhpProject implements Project, AntProjectListener {
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
     final AntProjectHelper helper;
+    final UpdateHelper updateHelper;
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
+    private final Lookup lookup;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
+
     // @GuardedBy(this)
     private FileObject sourcesDirectory;
     // @GuardedBy(this)
     private FileObject testsDirectory;
-    private final Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
         this.helper = helper;
+        updateHelper = new UpdateHelper(UpdateImplementation.NULL, helper);
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
-        helper.addAntProjectListener(this);
+        sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, false);
+        testRoots = SourceRoots.create(updateHelper, eval, refHelper, true);
         lookup = createLookup(configuration);
     }
 
@@ -150,6 +155,14 @@ public class PhpProject implements Project, AntProjectListener {
 
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
+    }
+
+    public SourceRoots getSourceRoots() {
+        return sourceRoots;
+    }
+
+    public SourceRoots getTestRoots() {
+        return testRoots;
     }
 
     synchronized FileObject getSourcesDirectory() {
@@ -225,27 +238,6 @@ public class PhpProject implements Project, AntProjectListener {
                 NotifyDescriptor.OK_OPTION));
     }
 
-    public void configurationXmlChanged(AntProjectEvent event) {
-        /*
-         *  The code below is standart and copied f.e. from MakeProject
-         */
-        if (event.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info) getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-        // We are interested only to listen to changes in sources.
-        // PhpSources will do it itself
-        /*
-         * Also copied from  MakeProject
-         */
-        //  currently ignored (probably better to listen to evaluator() if you need to)
-    }
-
     /*
      * Copied from MakeProject.
      */
@@ -301,27 +293,27 @@ public class PhpProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
-        PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
-
         return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
+                new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
+                new ClassPathProviderImpl(getHelper(), getEvaluator()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                getHelper().createSharabilityQuery(getEvaluator(),
-                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
+//                getHelper().createSharabilityQuery(getEvaluator(),
+//                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
+                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()), // XXX
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
-                phpSources,
+                new PhpSources(getHelper(), getEvaluator(), sourceRoots, testRoots),
                 getHelper(),
                 getEvaluator()
                 // ?? getRefHelper()
@@ -425,6 +417,18 @@ public class PhpProject implements Project, AntProjectListener {
                 return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
             }
             return PropertyUtils.fixedPropertyProvider(Collections.<String, String>emptyMap());
+        }
+    }
+
+    public final class PhpProjectXmlSavedHook extends ProjectXmlSavedHook {
+
+       public PhpProjectXmlSavedHook() {}
+
+        protected void projectXmlSaved() throws IOException {
+            Info info = getLookup().lookup(Info.class);
+            assert info != null;
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
 }

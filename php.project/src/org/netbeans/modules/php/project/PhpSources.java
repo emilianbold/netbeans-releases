@@ -29,23 +29,17 @@ package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 
 /**
  * Php Sources class.
@@ -61,6 +55,8 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
 
     private SourcesHelper sourcesHelper;
     private Sources delegate;
@@ -70,14 +66,20 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private volatile boolean externalRootsRegistered;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots) {
         assert helper != null;
         assert evaluator != null;
+        assert sourceRoots != null;
+        assert testRoots != null;
 
         this.helper = helper;
         this.evaluator = evaluator;
+        this.sourceRoots = sourceRoots;
+        this.testRoots = testRoots;
 
-        evaluator.addPropertyChangeListener(this);
+        this.evaluator.addPropertyChangeListener(this);
+        this.sourceRoots.addPropertyChangeListener(this);
+        this.testRoots.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
@@ -106,23 +108,9 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(helper, evaluator);
-
-        // main source root config.
-        String label = NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources");
-        sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.SRC_DIR + "}", label, null, null); // NOI18N
-
-        // roots
-        label = NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests");
-        sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.TEST_SRC_DIR + "}", label, null, null); // NOI18N
-
-        List<String> labels = new ArrayList<String>(2);
-        List<String> roots = new ArrayList<String>(2);
-        readSources(labels, roots);
-        for (int i = 0; i < labels.size(); i++) {
-            sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
-            sourcesHelper.addTypedSourceRoot(roots.get(i), SOURCES_TYPE_PHP, labels.get(i), null, null);
-        }
+        sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH
+        register(sourceRoots);
+        register(testRoots);
 
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
@@ -136,55 +124,17 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         return sourcesHelper.createSources();
     }
 
-    private void readSources(final List<String> labels, final List<String> roots) {
-        ProjectManager.mutex().readAccess(new Runnable() {
-            public void run() {
-                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                // sources
-                for (Entry<String, String> entry : props.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    // XXX really needed?
-                    if (key.equals("${" + PhpProjectProperties.SRC_DIR + "}") // NOI18N
-                            || key.equals("${" + PhpProjectProperties.TEST_SRC_DIR + "}")) { // NOI18N
-                        continue;
-                    }
-                    if (PhpProjectProperties.SRC_DIR.equals(key)) {
-                        labels.add(0, NbBundle.getMessage(PhpSources.class, "LBL_Node_Sources"));
-                        roots.add(0, value);
-                    }
-                    if (PhpProjectProperties.TEST_SRC_DIR.equals(key)) {
-                        labels.add(1, NbBundle.getMessage(PhpSources.class, "LBL_Node_Tests"));
-                        roots.add(1, value);
-                    }
-                    if (roots.size() == 2) {
-                        break;
-                    }
-                }
-            }
-        });
-    }
-
-    /** impl of PropertyChangeListener.
-     * Is used to listen updates in project properties file
-     * (e.g. if customizer updates this file)
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-        String property = evt.getPropertyName();
-        if (PhpProjectProperties.SRC_DIR.equals(property)
-                || PhpProjectProperties.TEST_SRC_DIR.equals(property)) {
-           fireChange();
-        }
-    }
-
-    /*
-     * implementation of ChangetListener.
-     * Is used to listen for changes in the real Sources object,
-     * wrapped by this one.
-     */
-    public void stateChanged(ChangeEvent e) {
-        fireChange();
-    }
+    private void register(SourceRoots roots) {
+        String[] propNames = roots.getRootProperties();
+        String[] rootNames = roots.getRootNames();
+        for (int i = 0; i < propNames.length; i++) {
+            String prop = propNames[i];
+            String displayName = roots.getRootDisplayName(rootNames[i], prop);
+            String loc = "${" + prop + "}"; // NOI18N
+            sourcesHelper.addPrincipalSourceRoot(loc, displayName, null, null); // NOI18N
+            sourcesHelper.addTypedSourceRoot(loc, SOURCES_TYPE_PHP, displayName, null, null);
+         }
+     }
 
     private void fireChange() {
         synchronized (this) {
@@ -194,5 +144,16 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             }
         }
         changeSupport.fireChange();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propName = evt.getPropertyName();
+        if (SourceRoots.PROP_ROOTS.equals(propName)) {
+            fireChange();
+        }
+    }
+
+    public void stateChanged(ChangeEvent event) {
+        fireChange();
     }
 }
