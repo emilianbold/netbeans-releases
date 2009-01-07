@@ -133,4 +133,9 @@ public class DriverNode extends BaseNode {
     public String getIconBase() {
         return PREFERREDICONBASE;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Driver"); //NOI18N
+    }
 }

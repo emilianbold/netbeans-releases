@@ -63,7 +63,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class ViewNode extends BaseNode implements SchemaNameProvider {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif"; // NOI18N
     private static final String FOLDER = "View"; //NOI18N
 
     /**

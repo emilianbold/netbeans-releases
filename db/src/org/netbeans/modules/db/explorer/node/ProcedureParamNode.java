@@ -54,10 +54,9 @@ import org.netbeans.modules.db.metadata.model.api.Parameter;
  * @author Rob Englander
  */
 public class ProcedureParamNode  extends BaseNode {
-    private static final String RETURN = "org/netbeans/modules/db/resources/paramReturn.gif";
-    private static final String IN = "org/netbeans/modules/db/resources/paramIn.gif";
-    private static final String OUT = "org/netbeans/modules/db/resources/paramOut.gif";
-    private static final String INOUT = "org/netbeans/modules/db/resources/paramInOut.gif";
+    private static final String IN = "org/netbeans/modules/db/resources/paramIn.gif"; // NOI18N
+    private static final String OUT = "org/netbeans/modules/db/resources/paramOut.gif"; // NOI18N
+    private static final String INOUT = "org/netbeans/modules/db/resources/paramInOut.gif"; // NOI18N
     private static final String FOLDER = "ProcedureParam"; //NOI18N
 
     /**
@@ -156,4 +155,8 @@ public class ProcedureParamNode  extends BaseNode {
         return name;
     }
 
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ProcedureParam"); //NOI18N
+    }
 }

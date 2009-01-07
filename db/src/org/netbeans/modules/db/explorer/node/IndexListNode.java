@@ -111,6 +111,11 @@ public class IndexListNode extends BaseNode {
         return ICONBASE;
     }
 
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_IndexList"); //NOI18N
+    }
+
     public static String getTableName(DatabaseConnection connection, final MetadataElementHandle<Table> handle) {
         MetadataModel metaDataModel = connection.getMetadataModel();
         final String[] array = { null };

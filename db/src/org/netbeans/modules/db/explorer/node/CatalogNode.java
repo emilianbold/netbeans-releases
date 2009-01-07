@@ -124,4 +124,9 @@ public class CatalogNode extends BaseNode {
     public String getIconBase() {
         return ICONBASE;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Catalog"); //NOI18N
+    }
 }

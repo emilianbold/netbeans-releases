@@ -93,6 +93,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private String icon;
     private final MetadataElementHandle<Column> columnHandle;
     private final DatabaseConnection connection;
+    private boolean isTableColumn = true;
 
     private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
@@ -153,6 +154,8 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                             }
                                         }
                                     }
+                                } else {
+                                    isTableColumn = false;
                                 }
                             }
                         }
@@ -224,8 +227,12 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = connection.getConnector();
-        return connector.supportsCommand(Specification.REMOVE_COLUMN);
+        if (isTableColumn) {
+            DatabaseConnector connector = connection.getConnector();
+            return connector.supportsCommand(Specification.REMOVE_COLUMN);
+        } else {
+            return false;
+        }
     }
 
     @Override

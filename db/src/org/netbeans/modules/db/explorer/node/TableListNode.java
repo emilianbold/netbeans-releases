@@ -57,7 +57,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 public class TableListNode extends BaseNode implements SchemaNameProvider {
     private static final String NAME = "Tables"; // NOI18N
     private static final String DISPLAYNAME = "Tables"; // NOI18N
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "TableList"; //NOI18N
 
     private MetadataElementHandle<Schema> schemaHandle;
@@ -97,6 +97,11 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_TableList"); //NOI18N
     }
 
     public String getSchemaName() {

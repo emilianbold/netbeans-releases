@@ -137,4 +137,9 @@ public class SchemaNode extends BaseNode {
     public String getIconBase() {
         return ICONBASE;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Schema"); //NOI18N
+    }
 }

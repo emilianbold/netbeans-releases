@@ -120,4 +120,8 @@ public class ReturnValueNode  extends BaseNode {
         return name;
     }
 
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ProcedureParam"); //NOI18N
+    }
 }

@@ -134,4 +134,9 @@ public class ForeignKeyColumnNode extends BaseNode {
     public String getIconBase() {
         return ICON;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Column"); //NOI18N
+    }
 }

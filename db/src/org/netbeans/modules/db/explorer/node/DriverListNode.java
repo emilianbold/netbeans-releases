@@ -135,4 +135,9 @@ public class DriverListNode extends BaseNode {
     public String getIconBase() {
         return ICONBASE;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_DriverList"); //NOI18N
+    }
 }

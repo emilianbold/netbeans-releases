@@ -124,6 +124,11 @@ public class IndexNode extends BaseNode {
     }
 
     @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Index"); //NOI18N
+    }
+
+    @Override
     public void destroy() {
         DatabaseConnector connector = connection.getConnector();
 

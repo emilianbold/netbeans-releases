@@ -66,7 +66,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class TableNode extends BaseNode implements SchemaNameProvider {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif"; // NOI18N
     private static final String FOLDER = "Table"; //NOI18N
 
     /**

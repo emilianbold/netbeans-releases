@@ -127,4 +127,9 @@ public class IndexColumnNode extends BaseNode {
     public String getIconBase() {
         return icon;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Column"); //NOI18N
+    }
 }

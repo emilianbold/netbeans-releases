@@ -85,4 +85,8 @@ public class ProcedureListNode extends BaseNode {
         return ICONBASE;
     }
 
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ProcedureList"); //NOI18N
+    }
 }

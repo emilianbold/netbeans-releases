@@ -113,4 +113,9 @@ public class ForeignKeyNode extends BaseNode {
     public String getIconBase() {
         return ICONBASE;
     }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ForeignKey"); //NOI18N
+    }
 }
