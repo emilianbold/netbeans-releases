@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,14 +40,13 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
-    <name>exceptionhandler-runtime</name>
-    <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/errorhandler.jar!/</resource>
-    </volume>
-</library>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <!-- Deprecated libraries below for backward compatible -->
+            <file name="jdbcsupport-designtime.xml" url="/org/netbeans/modules/visualweb/rowset/resources/jdbcsupport-designtime.xml"/>
+            <file name="jdbcsupport-runtime.xml" url="/org/netbeans/modules/visualweb/rowset/resources/jdbcsupport-runtime.xml"/>
+        </folder>
+    </folder>
+</filesystem>

@@ -43,26 +43,15 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>jsfsupport-designtime</name>
-    <type>complib</type>
-    <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
+    <name>theme-default-gray</name>
+    <type>theme</type>
+    <localizing-bundle>org.netbeans.modules.visualweb.webui.themes.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jsfcl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/appbase.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/dataprovider.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/defaulttheme-gray.jar!/</resource>
     </volume>
     <volume>
-        <type>src</type>
-        <resource>jar:nbinst:///docs/appbase-src.zip!/</resource>
-        <resource>jar:nbinst:///docs/dataprovider-src.zip!/</resource>
-        <resource>jar:nbinst:///docs/jsfcl-src.zip!/</resource>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst:///docs/appbase-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/dataprovider-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/jsfcl-doc.zip!/</resource>
+        <type>runtime</type>
+        <resource>jar:nbinst:///modules/ext/defaulttheme-gray.jar!/</resource>
     </volume>
 </library>

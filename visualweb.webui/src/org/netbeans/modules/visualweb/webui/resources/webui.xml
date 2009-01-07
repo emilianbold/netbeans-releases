@@ -43,15 +43,20 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>theme-default-gray</name>
-    <type>theme</type>
-    <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
+    <name>webui</name>
+    <type>complib</type>
+    <localizing-bundle>org.netbeans.modules.visualweb.webui.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/defaulttheme-gray.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/webui.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/commons-fileupload-1.0.jar!/</resource>
     </volume>
     <volume>
-        <type>runtime</type>
-        <resource>jar:nbinst:///modules/ext/defaulttheme-gray.jar!/</resource>
+        <type>src</type>
+        <resource>jar:nbinst:///docs/webui-src.zip!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/webui-doc.zip!/</resource>
     </volume>
 </library>
