@@ -603,7 +603,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            FileObject srcRoot = this.map.get(binaryRoot);
+            FileObject srcRoot = map.get(binaryRoot);
             if (srcRoot == null) {
                 return null;
             }
@@ -783,7 +783,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted) {
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
             
         }
 
@@ -843,7 +843,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted) {
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
             for (Indexable i : deleted) {
                 indexer.expectedDeleted.remove(i.getURL());
             }
