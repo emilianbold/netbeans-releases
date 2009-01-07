@@ -396,7 +396,7 @@ public class TaskProcessor {
         Parameters.notNull("remove", remove);
         Parameters.notNull("source", source);
         Parameters.notNull("cache", cache);
-        Parameters.notNull("schedulerType", schedulerType);
+       // Parameters.notNull("schedulerType", schedulerType);
         synchronized (source) {
             synchronized (INTERNAL_LOCK) {
                 removePhaseCompletionTasks(remove, source);
@@ -524,17 +524,17 @@ public class TaskProcessor {
             final Thread currentThread = Thread.currentThread();
             for (Source source : sources) {
                 try {
-                    Document doc = source.getDocument();
-                    if (doc == null) {
-                        final FileObject file = source.getFileObject();
-                        if (file != null) {
-                            final DataObject dobj = DataObject.find(file);
-                            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                            if (ec != null) {
-                                doc = ec.getDocument();
-                            }
-                        }
-                    }                
+                    Document doc = source.getDocument (true);
+//                    if (doc == null) {
+//                        final FileObject file = source.getFileObject();
+//                        if (file != null) {
+//                            final DataObject dobj = DataObject.find(file);
+//                            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+//                            if (ec != null) {
+//                                doc = ec.getDocument();
+//                            }
+//                        }
+//                    }                
                     if (doc instanceof AbstractDocument) {
                         Object result = method.invoke(doc);
                         if (result == currentThread) {
