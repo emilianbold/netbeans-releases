@@ -308,9 +308,7 @@ public class PhpProject implements Project {
                 new ClassPathProviderImpl(getHelper(), getEvaluator()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-//                getHelper().createSharabilityQuery(getEvaluator(),
-//                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
-                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()), // XXX
+                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
