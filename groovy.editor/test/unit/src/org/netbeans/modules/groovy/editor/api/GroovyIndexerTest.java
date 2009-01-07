@@ -43,16 +43,9 @@ package org.netbeans.modules.groovy.editor.api;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -91,41 +84,61 @@ public class GroovyIndexerTest extends GroovyTestBase {
     }
 
     public void testMethods1() throws Exception {
-        final FileObject fo = getTestFile("testfiles/GroovyClass1.groovy");
-        Source source = Source.create(fo);
+        indexFile("testfiles/GroovyClass1.groovy");
+        FileObject fo = getTestFile("testfiles/GroovyClass1.groovy");
+        GroovyIndex index = GroovyIndex.get(Collections.singleton(fo.getParent()));
 
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet()));
+        // get methods starting with 'm'
+        Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", QuerySupport.Kind.PREFIX);
+        assertEquals(3, methods.size());
 
-                // get methods starting with 'm'
-                Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", QuerySupport.Kind.PREFIX);
-                assertEquals(3, methods.size());
+        // get all methods from class
+        methods = index.getMethods(".*", "demo.GroovyClass1", QuerySupport.Kind.REGEXP);
+        assertEquals(4, methods.size());
 
-                // get all methods from class
-                methods = index.getMethods(".*", "demo.GroovyClass1", QuerySupport.Kind.REGEXP);
-                assertEquals(4, methods.size());
-            }
-        });
+//        final FileObject fo = getTestFile("testfiles/GroovyClass1.groovy");
+//        Source source = Source.create(fo);
+//
+//        ParserManager.parse(Collections.singleton(source), new UserTask() {
+//            public @Override void run(ResultIterator resultIterator) throws Exception {
+//                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+//                Collection<FileObject> roots = GsfUtilities.getRoots(fo, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet());
+//                GroovyIndex index = GroovyIndex.get(roots);
+//
+//                // get methods starting with 'm'
+//                Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", QuerySupport.Kind.PREFIX);
+//                assertEquals(3, methods.size());
+//
+//                // get all methods from class
+//                methods = index.getMethods(".*", "demo.GroovyClass1", QuerySupport.Kind.REGEXP);
+//                assertEquals(4, methods.size());
+//            }
+//        });
     }
 
     public void testClasses() throws Exception {
-        final FileObject fo = getTestFile("testfiles/Hello.groovy");
-        Source source = Source.create(fo);
+        indexFile("testfiles/Hello.groovy");
+        FileObject fo = getTestFile("testfiles/Hello.groovy");
+        GroovyIndex index = GroovyIndex.get(Collections.singleton(fo.getParent()));
 
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet()));
+        // get all classes
+        Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP, true, false, false);
+        assertEquals(6, classes.size());
 
-                // get all classes
-                Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP, true, false, false);
-                assertEquals(6, classes.size());
-            }
-        });
+//        final FileObject fo = getTestFile("testfiles/Hello.groovy");
+//        Source source = Source.create(fo);
+//
+//        ParserManager.parse(Collections.singleton(source), new UserTask() {
+//            public @Override void run(ResultIterator resultIterator) throws Exception {
+//                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+//                GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+//                        Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet()));
+//
+//                // get all classes
+//                Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP, true, false, false);
+//                assertEquals(6, classes.size());
+//            }
+//        });
     }
 
 }
