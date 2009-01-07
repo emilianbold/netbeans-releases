@@ -104,7 +104,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
                 HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
-                (!pers ? "<i>(from open project)" : "");
+                (!pers ? " <font color='!controlShadow'>(from open project)</font>" : ""); // XXX I18N
     }
     
     @Override
