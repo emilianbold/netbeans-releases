@@ -59,6 +59,7 @@ import org.netbeans.modules.db.explorer.node.IndexNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
@@ -86,6 +87,11 @@ public class AddToIndexAction extends BaseAction {
         }
 
         return enabled;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddToIndexAction.class);
     }
 
     @Override

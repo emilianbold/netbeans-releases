@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.action;
 
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -49,6 +50,11 @@ public class EnableDebugAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("EnableDebug"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(EnableDebugAction.class);
     }
 
     protected boolean enable(Node[] activatedNodes) {

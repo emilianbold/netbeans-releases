@@ -48,7 +48,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -68,11 +67,6 @@ public abstract class BaseAction extends NodeAction {
         return false;
     }
     
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("dbexpovew");
-    }
-
     protected static String findSchemaWorkingName(Lookup lookup) {
         DatabaseConnection conn = lookup.lookup(DatabaseConnection.class);
         MetadataModel model = conn.getMetadataModel();

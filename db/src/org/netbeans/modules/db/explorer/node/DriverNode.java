@@ -48,6 +48,7 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -137,5 +138,10 @@ public class DriverNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Driver"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverNode.class);
     }
 }

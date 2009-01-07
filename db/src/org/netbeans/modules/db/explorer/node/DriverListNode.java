@@ -46,6 +46,7 @@ import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -139,5 +140,10 @@ public class DriverListNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_DriverList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverListNode.class);
     }
 }

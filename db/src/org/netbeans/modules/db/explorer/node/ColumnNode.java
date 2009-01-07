@@ -64,6 +64,7 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -277,6 +278,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Column"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ColumnNode.class);
     }
 
     public static String getColumnName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {

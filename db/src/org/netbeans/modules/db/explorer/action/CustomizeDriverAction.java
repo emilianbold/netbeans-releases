@@ -55,8 +55,8 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.node.DriverNode;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 public class CustomizeDriverAction extends BaseAction {
@@ -65,6 +65,11 @@ public class CustomizeDriverAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("Customize"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizeDriverAction.class);
     }
     
     protected boolean enable(Node[] activatedNodes) {

@@ -79,7 +79,6 @@ import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.node.DriverNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
@@ -90,6 +89,11 @@ public class ConnectUsingDriverAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("ConnectUsing"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectUsingDriverAction.class);
     }
 
     @Override

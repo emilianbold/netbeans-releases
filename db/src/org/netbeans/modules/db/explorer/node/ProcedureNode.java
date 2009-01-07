@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -117,5 +118,10 @@ public class ProcedureNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Procedure"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProcedureNode.class);
     }
 }

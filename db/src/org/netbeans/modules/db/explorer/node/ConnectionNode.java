@@ -55,6 +55,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -213,6 +214,11 @@ public class ConnectionNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Connection"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectionNode.class);
     }
 
 }

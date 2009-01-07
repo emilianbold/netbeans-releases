@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -128,5 +129,10 @@ public class CatalogNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Catalog"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CatalogNode.class);
     }
 }

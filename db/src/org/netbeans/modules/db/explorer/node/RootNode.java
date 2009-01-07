@@ -42,6 +42,8 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseOption;
+import org.openide.util.HelpCtx;
 
 /**
  * This is the root node for the database explorer.  This is a singleton
@@ -58,6 +60,8 @@ public class RootNode extends BaseNode {
     /** the singleton instance */
     private static RootNode instance = null;
     
+    private static DatabaseOption option = null;
+
     /**
      * Gets the singleton instance.
      * 
@@ -109,5 +113,10 @@ public class RootNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Root"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RootNode.class);
     }
 }

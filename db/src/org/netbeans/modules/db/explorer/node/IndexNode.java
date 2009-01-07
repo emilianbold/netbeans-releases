@@ -59,6 +59,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -126,6 +127,11 @@ public class IndexNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Index"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(IndexNode.class);
     }
 
     @Override

@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -131,5 +132,10 @@ public class IndexColumnNode extends BaseNode {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Column"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(IndexColumnNode.class);
     }
 }

@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -262,5 +263,10 @@ public class RecreateTableAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("RecreateTable"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RecreateTableAction.class);
     }
 }

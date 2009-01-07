@@ -56,6 +56,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.util.HelpCtx;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -169,6 +170,11 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_View"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewNode.class);
     }
 
     public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
