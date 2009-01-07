@@ -36,6 +36,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
+import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -293,7 +294,7 @@ public class HudsonManagerImpl extends HudsonManager {
                         ProjectHIP props = new ProjectHIP();
                         props.addProvider(project);
                         addInstance(HudsonInstanceImpl.createHudsonInstance(props));
-                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL));
+                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(HudsonInstanceConstants.INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }
                 } else if (prov == null && exists) {

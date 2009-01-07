@@ -40,6 +40,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.HudsonNotificationController;
@@ -90,7 +91,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         // Add property listener for synchronization
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC))
+                if (evt.getPropertyName().equals(INSTANCE_SYNC))
                     if (!synchronization.isRunning())
                         synchronization.start();
             }
@@ -153,9 +154,9 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         if (isPersisted()) {
             return;
         }
-        String name = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
-        String url = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
-        String sync = properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
+        String name = properties.get(INSTANCE_NAME);
+        String url = properties.get(INSTANCE_URL);
+        String sync = properties.get(INSTANCE_SYNC);
 
         HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
         //just in case there are also other properties.
@@ -172,7 +173,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         properties = newProps;
 
         //will this make the propes to get persisted reliably?
-        properties.put(HudsonInstanceProperties.HUDSON_INSTANCE_URL, url);
+        properties.put(INSTANCE_URL, url);
         fireContentChanges();
     }
     
@@ -242,11 +243,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public String getName() {
-        return getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
+        return getProperties().get(INSTANCE_NAME);
     }
     
     public String getUrl() {
-        return getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
+        return getProperties().get(INSTANCE_URL);
     }
     
     public synchronized Collection<HudsonJob> getJobs() {
@@ -256,7 +257,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public synchronized Collection<HudsonJob> getPreferredJobs() {
         Collection<HudsonJob> prefs = new ArrayList<HudsonJob>();
         Collection<HudsonJob> all = getJobs();
-        String prop = getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_PREF_JOBS);
+        String prop = getProperties().get(INSTANCE_PREF_JOBS);
         if (prop != null && prop.trim().length() > 0) {
             String[] ids = prop.trim().split("\\|");
             List<String> idsList = Arrays.asList(ids);
@@ -433,7 +434,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     synchronize();
                     
                     // Refresh wait time
-                    String s = getProperties().get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
+                    String s = getProperties().get(INSTANCE_SYNC);
                     milis = Integer.parseInt(s) * 60 * 1000;
                     
                     // Wait for the specified amount of time

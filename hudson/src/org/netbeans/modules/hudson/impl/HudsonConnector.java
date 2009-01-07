@@ -38,11 +38,11 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.constants.HudsonJobBuildConstants;
-import org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants;
-import org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants;
-import org.netbeans.modules.hudson.constants.HudsonJobConstants;
-import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
+import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
@@ -62,8 +62,7 @@ import org.xml.sax.SAXException;
  *
  * @author Michal Mocnak
  */
-public class HudsonConnector implements HudsonXmlApiConstants,
-        HudsonJobConstants, HudsonJobBuildConstants, HudsonJobChangeFileConstants, HudsonJobChangeItemConstants {
+public class HudsonConnector {
     
     private DocumentBuilder builder;
     private HudsonInstanceImpl instance;
@@ -169,13 +168,13 @@ public class HudsonConnector implements HudsonXmlApiConstants,
             
             if (n.getNodeType() == Node.ELEMENT_NODE) {
                 if (n.getNodeName().equals(XML_API_BUILDING_ELEMENT)) {
-                    result.putProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.parseBoolean(n.getFirstChild().getTextContent()));
+                    result.putProperty(JOB_BUILD_BUILDING, Boolean.parseBoolean(n.getFirstChild().getTextContent()));
                 } else if (n.getNodeName().equals(XML_API_DURATION_ELEMENT)) {
-                    result.putProperty(HUDSON_JOB_BUILD_DURATION, Long.parseLong(n.getFirstChild().getTextContent()));
+                    result.putProperty(JOB_BUILD_DURATION, Long.parseLong(n.getFirstChild().getTextContent()));
                 } else if (n.getNodeName().equals(XML_API_TIMESTAMP_ELEMENT)) {
-                    result.putProperty(HUDSON_JOB_BUILD_TIMESTAMP, Long.parseLong(n.getFirstChild().getTextContent()));
+                    result.putProperty(JOB_BUILD_TIMESTAMP, Long.parseLong(n.getFirstChild().getTextContent()));
                 } else if (!result.isBuilding() && n.getNodeName().equals(XML_API_RESULT_ELEMENT)) {
-                    result.putProperty(HUDSON_JOB_BUILD_RESULT, (n.getFirstChild().getTextContent().
+                    result.putProperty(JOB_BUILD_RESULT, (n.getFirstChild().getTextContent().
                             equals("SUCCESS")) ? Result.SUCCESS : Result.FAILURE);
                 }
             }
@@ -204,15 +203,15 @@ public class HudsonConnector implements HudsonXmlApiConstants,
                                 
                                 if (d.getNodeType() == Node.ELEMENT_NODE) {
                                     if (d.getNodeName().equals(XML_API_EDIT_TYPE_ELEMENT)) {
-                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_EDIT_TYPE,
+                                        file.putProperty(JOB_CHANGE_FILE_EDIT_TYPE,
                                                 EditType.valueOf(d.getFirstChild().getTextContent()));
                                     } else if (d.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_NAME, d.getFirstChild().getTextContent());
+                                        file.putProperty(JOB_CHANGE_FILE_NAME, d.getFirstChild().getTextContent());
                                     } else if (d.getNodeName().equals(XML_API_PREV_REVISION_ELEMENT)) {
-                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_PREVIOUS_REVISION,
+                                        file.putProperty(JOB_CHANGE_FILE_PREVIOUS_REVISION,
                                                 d.getFirstChild().getTextContent());
                                     } else if (d.getNodeName().equals(XML_API_REVISION_ELEMENT)) {
-                                        file.putProperty(HUDSON_JOB_CHANGE_FILE_REVISION,
+                                        file.putProperty(JOB_CHANGE_FILE_REVISION,
                                                 d.getFirstChild().getTextContent());
                                     }
                                 }
@@ -220,9 +219,9 @@ public class HudsonConnector implements HudsonXmlApiConstants,
                             
                             item.addFile(file);
                         } else if (o.getNodeName().equals(XML_API_MSG_ELEMENT)) {
-                            item.putProperty(HUDSON_JOB_CHANGE_ITEM_MESSAGE, o.getFirstChild().getTextContent());
+                            item.putProperty(JOB_CHANGE_ITEM_MESSAGE, o.getFirstChild().getTextContent());
                         } else if (o.getNodeName().equals(XML_API_USER_ELEMENT)) {
-                            item.putProperty(HUDSON_JOB_CHANGE_ITEM_USER, o.getFirstChild().getTextContent());
+                            item.putProperty(JOB_CHANGE_ITEM_USER, o.getFirstChild().getTextContent());
                         }
                     }
                 }
@@ -329,19 +328,19 @@ public class HudsonConnector implements HudsonXmlApiConstants,
                 
                 if (o.getNodeType() == Node.ELEMENT_NODE) {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                        job.putProperty(HUDSON_JOB_NAME, o.getFirstChild().getTextContent());
+                        job.putProperty(JOB_NAME, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        job.putProperty(HUDSON_JOB_URL, o.getFirstChild().getTextContent());
+                        job.putProperty(JOB_URL, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
                         String color = o.getFirstChild().getTextContent().trim();
                         try {
-                            job.putProperty(HUDSON_JOB_COLOR, Color.valueOf(color));
+                            job.putProperty(JOB_COLOR, Color.valueOf(color));
                         } catch (IllegalArgumentException x) {
                             Exceptions.attachMessage(x,
                                     "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
                                     color + "' among " + Arrays.toString(Color.values()));
                             Exceptions.printStackTrace(x);
-                            job.putProperty(HUDSON_JOB_COLOR, Color.red_anime);
+                            job.putProperty(JOB_COLOR, Color.red_anime);
                         }
                     }
                 }
@@ -361,22 +360,22 @@ public class HudsonConnector implements HudsonXmlApiConstants,
                     if (d.getNodeType() == Node.ELEMENT_NODE) {
                         if (d.getNodeName().equals(XML_API_DESCRIPTION_ELEMENT)) {
                             try {
-                                job.putProperty(HUDSON_JOB_DESCRIPTION, d.getFirstChild().getTextContent());
+                                job.putProperty(JOB_DESCRIPTION, d.getFirstChild().getTextContent());
                             } catch (NullPointerException e) {}
                         } else if (d.getNodeName().equals(XML_API_DISPLAY_NAME_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
+                            job.putProperty(JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
                         } else if (d.getNodeName().equals(XML_API_BUILDABLE_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                            job.putProperty(JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_INQUEUE_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                            job.putProperty(JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_BUILD_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                            job.putProperty(JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_FAILED_BUILD_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                            job.putProperty(JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_STABLE_BUILD_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                            job.putProperty(JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT)) {
-                            job.putProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                            job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         }
                     }
                 }

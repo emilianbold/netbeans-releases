@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 
 /**
@@ -44,8 +45,8 @@ class ProjectHIP extends HudsonInstanceProperties {
         }
         ProjectHudsonProvider p = prov.getLookup().lookup(ProjectHudsonProvider.class);
         if (p != null) {
-            put(HUDSON_INSTANCE_URL, p.getServerUrl());
-            put(HUDSON_INSTANCE_NAME, p.getName());
+            put(INSTANCE_URL, p.getServerUrl());
+            put(INSTANCE_NAME, p.getName());
             setPreferredJobs();
         }
         //TODO listen on changes from the provider and refire them as changed properties.
@@ -83,7 +84,7 @@ class ProjectHIP extends HudsonInstanceProperties {
                 }
             }
         }
-        put(HUDSON_INSTANCE_PREF_JOBS, list);
+        put(INSTANCE_PREF_JOBS, list);
     }
 
 }

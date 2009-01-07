@@ -24,9 +24,12 @@ package org.netbeans.modules.hudson.constants;
  * 
  * @author Michal Mocnak
  */
-public interface HudsonJobChangeItemConstants {
+public class HudsonJobChangeItemConstants {
+
+    private HudsonJobChangeItemConstants() {}
     
-    public static final String HUDSON_JOB_CHANGE_ITEM_USER = "hudson_job_change_item_user";
+    public static final String JOB_CHANGE_ITEM_USER = "job_change_item_user";
     
-    public static final String HUDSON_JOB_CHANGE_ITEM_MESSAGE = "hudson_job_change_item_message";
+    public static final String JOB_CHANGE_ITEM_MESSAGE = "job_change_item_message";
+
 }

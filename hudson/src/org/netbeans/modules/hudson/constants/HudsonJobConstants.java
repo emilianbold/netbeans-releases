@@ -24,29 +24,32 @@ package org.netbeans.modules.hudson.constants;
  *
  * @author Michal Mocnak
  */
-public interface HudsonJobConstants {
+public class HudsonJobConstants {
+
+    private HudsonJobConstants() {}
     
-    public static final String HUDSON_JOB_DISPLAY_NAME = "hudson_job_display_name";
+    public static final String JOB_DISPLAY_NAME = "job_display_name";
     
-    public static final String HUDSON_JOB_NAME = "hudson_job_name";
+    public static final String JOB_NAME = "job_name";
     
-    public static final String HUDSON_JOB_DESCRIPTION = "hudson_job_description";
+    public static final String JOB_DESCRIPTION = "job_description";
     
-    public static final String HUDSON_JOB_URL = "hudson_job_url";
+    public static final String JOB_URL = "job_url";
     
-    public static final String HUDSON_JOB_VCS_ROOT = "hudson_job_vcs_root";
+    public static final String JOB_VCS_ROOT = "job_vcs_root";
     
-    public static final String HUDSON_JOB_COLOR = "hudson_job_color";
+    public static final String JOB_COLOR = "job_color";
     
-    public static final String HUDSON_JOB_IN_QUEUE = "hudson_job_in_queue";
+    public static final String JOB_IN_QUEUE = "job_in_queue";
     
-    public static final String HUDSON_JOB_BUILDABLE = "hudson_job_buildable";
+    public static final String JOB_BUILDABLE = "job_buildable";
     
-    public static final String HUDSON_JOB_LAST_BUILD = "hudson_job_last_build";
+    public static final String JOB_LAST_BUILD = "job_last_build";
     
-    public static final String HUDSON_JOB_LAST_STABLE_BUILD = "hudson_job_last_stable_build";
+    public static final String JOB_LAST_STABLE_BUILD = "job_last_stable_build";
     
-    public static final String HUDSON_JOB_LAST_SUCCESSFUL_BUILD = "hudson_job_last_successful_build";
+    public static final String JOB_LAST_SUCCESSFUL_BUILD = "job_last_successful_build";
     
-    public static final String HUDSON_JOB_LAST_FAILED_BUILD = "hudson_job_last_failed_build";
+    public static final String JOB_LAST_FAILED_BUILD = "job_last_failed_build";
+
 }

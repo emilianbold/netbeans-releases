@@ -23,16 +23,18 @@ package org.netbeans.modules.hudson.constants;
  *
  * @author marigan
  */
-public interface HudsonInstanceConstants {
+public class HudsonInstanceConstants {
+
+    private HudsonInstanceConstants() {}
     
-    public static final String HUDSON_INSTANCE_NAME = "hudson_name";
+    public static final String INSTANCE_NAME = "name";
     
-    public static final String HUDSON_INSTANCE_URL = "hudson_url";
+    public static final String INSTANCE_URL = "url";
     
-    public static final String HUDSON_INSTANCE_SYNC = "hudson_sync_time";
+    public static final String INSTANCE_SYNC = "sync_time";
 
     /**
      * preferred jobs for the instance, list of job names, separated by |
      */
-    public static final String HUDSON_INSTANCE_PREF_JOBS = "hudson_pref_jobs";
+    public static final String INSTANCE_PREF_JOBS = "pref_jobs";
 }

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
+import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -35,8 +35,7 @@ import org.openide.util.NbBundle;
  *
  * @author Michal Mocnak
  */
-public class HudsonInstanceProperties extends HashMap<String,String>
-        implements HudsonInstanceConstants {
+public class HudsonInstanceProperties extends HashMap<String,String> {
     
     private Sheet.Set set;
     
@@ -47,9 +46,9 @@ public class HudsonInstanceProperties extends HashMap<String,String>
     }
     
     public HudsonInstanceProperties(String name, String url, String sync) {
-        put(HUDSON_INSTANCE_NAME, name);
-        put(HUDSON_INSTANCE_URL, url);
-        put(HUDSON_INSTANCE_SYNC, sync);
+        put(INSTANCE_NAME, name);
+        put(INSTANCE_URL, url);
+        put(INSTANCE_SYNC, sync);
     }
     
     public HudsonInstanceProperties(Map<String,String> properties) {
@@ -79,19 +78,19 @@ public class HudsonInstanceProperties extends HashMap<String,String>
             set = Sheet.createPropertiesSet();
             
             // Set display name
-            set.setDisplayName(get(HUDSON_INSTANCE_NAME));
+            set.setDisplayName(get(INSTANCE_NAME));
             
             // Put properties in
             set.put(new PropertySupport[] {
-                new HudsonInstanceProperty(HUDSON_INSTANCE_NAME,
+                new HudsonInstanceProperty(INSTANCE_NAME,
                         NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Name"),
                         NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Name"),
                         true, false),
-                        new HudsonInstanceProperty(HUDSON_INSTANCE_URL,
+                        new HudsonInstanceProperty(INSTANCE_URL,
                         NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Url"),
                         NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Url"),
                         true, false),
-                        new HudsonInstanceProperty(HUDSON_INSTANCE_SYNC,
+                        new HudsonInstanceProperty(INSTANCE_SYNC,
                         NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Sync"),
                         NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Sync"),
                         true, true)

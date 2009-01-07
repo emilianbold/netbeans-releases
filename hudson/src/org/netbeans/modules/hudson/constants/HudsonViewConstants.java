@@ -13,11 +13,14 @@ package org.netbeans.modules.hudson.constants;
  *
  * @author marigan
  */
-public interface HudsonViewConstants {
+public class HudsonViewConstants {
 
-    public static final String HUDSON_VIEW_NAME = "hudson_view_name";
+    private HudsonViewConstants() {}
+
+    public static final String VIEW_NAME = "view_name";
     
-    public static final String HUDSON_VIEW_DESCRIPTION = "hudson_view_description";
+    public static final String VIEW_DESCRIPTION = "view_description";
     
-    public static final String HUDSON_VIEW_URL = "hudson_view_url";
+    public static final String VIEW_URL = "view_url";
+
 }

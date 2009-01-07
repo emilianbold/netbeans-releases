@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import org.netbeans.modules.hudson.constants.HudsonJobBuildConstants;
-import org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants;
-import org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants;
+import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants.*;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 
 /**
@@ -33,7 +33,7 @@ import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
  *
  * @author Michal Mocnak
  */
-public class HudsonJobBuild implements HudsonJobBuildConstants {
+public class HudsonJobBuild {
     
     public enum Result {
         SUCCESS, FAILURE
@@ -48,20 +48,20 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
     }
     
     public boolean isBuilding() {
-        Boolean building = properties.getProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.class);
+        Boolean building = properties.getProperty(JOB_BUILD_BUILDING, Boolean.class);
         return building != null ? building : false;
     }
     
     public int getDuration() {
-        return (int) (properties.getProperty(HUDSON_JOB_BUILD_DURATION, java.lang.Long.class) / 60000);
+        return (int) (properties.getProperty(JOB_BUILD_DURATION, java.lang.Long.class) / 60000);
     }
     
     public Date getDate() {
-        return new Date(properties.getProperty(HUDSON_JOB_BUILD_TIMESTAMP, Long.class));
+        return new Date(properties.getProperty(JOB_BUILD_TIMESTAMP, Long.class));
     }
     
     public Result getResult() {
-        return properties.getProperty(HUDSON_JOB_BUILD_RESULT, Result.class);
+        return properties.getProperty(JOB_BUILD_RESULT, Result.class);
     }
     
     public Collection<HudsonJobChangeItem> getChanges() {
@@ -72,7 +72,7 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
         changes.add(item);
     }
     
-    public static class HudsonJobChangeItem implements HudsonJobChangeItemConstants {
+    public static class HudsonJobChangeItem {
         
         private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
         
@@ -83,11 +83,11 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
         }
         
         public String getUser() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_ITEM_USER, String.class);
+            return properties.getProperty(JOB_CHANGE_ITEM_USER, String.class);
         }
         
         public String getMsg() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_ITEM_MESSAGE, String.class);
+            return properties.getProperty(JOB_CHANGE_ITEM_MESSAGE, String.class);
         }
         
         public Collection<HudsonJobChangeFile> getFiles() {
@@ -99,7 +99,7 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
         }
     }
     
-    public static class HudsonJobChangeFile implements HudsonJobChangeFileConstants{
+    public static class HudsonJobChangeFile {
         
         public enum EditType {
             add, edit, delete
@@ -112,19 +112,19 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
         }
         
         public String getName() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_NAME, String.class);
+            return properties.getProperty(JOB_CHANGE_FILE_NAME, String.class);
         }
         
         public EditType getEditType() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_EDIT_TYPE, EditType.class);
+            return properties.getProperty(JOB_CHANGE_FILE_EDIT_TYPE, EditType.class);
         }
         
         public String getRevision() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_REVISION, String.class);
+            return properties.getProperty(JOB_CHANGE_FILE_REVISION, String.class);
         }
         
         public String getPrevRevision() {
-            return properties.getProperty(HUDSON_JOB_CHANGE_FILE_PREVIOUS_REVISION, String.class);
+            return properties.getProperty(JOB_CHANGE_FILE_PREVIOUS_REVISION, String.class);
         }
     }
 }

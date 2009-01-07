@@ -24,13 +24,15 @@ package org.netbeans.modules.hudson.constants;
  * 
  * @author Michal Mocnak
  */
-public interface HudsonJobBuildConstants {
+public class HudsonJobBuildConstants {
+
+    private HudsonJobBuildConstants() {}
     
-    public static final String HUDSON_JOB_BUILD_BUILDING = "hudson_job_build_building";
+    public static final String JOB_BUILD_BUILDING = "job_build_building";
     
-    public static final String HUDSON_JOB_BUILD_DURATION = "hudson_job_build_duration";
+    public static final String JOB_BUILD_DURATION = "job_build_duration";
     
-    public static final String HUDSON_JOB_BUILD_TIMESTAMP = "hudson_job_build_timestamp";
+    public static final String JOB_BUILD_TIMESTAMP = "job_build_timestamp";
     
-    public static final String HUDSON_JOB_BUILD_RESULT = "hudson_job_build_result";
+    public static final String JOB_BUILD_RESULT = "job_build_result";
 }

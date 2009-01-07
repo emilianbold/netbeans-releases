@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.constants.HudsonJobConstants;
+import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
@@ -38,7 +38,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author pblaha
  */
-public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInBrowser {
+public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     
     private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
@@ -64,38 +64,38 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     }
     
     public String getDisplayName() {
-        return properties.getProperty(HUDSON_JOB_DISPLAY_NAME, String.class);
+        return properties.getProperty(JOB_DISPLAY_NAME, String.class);
     }
     
     public String getName() {
-        return properties.getProperty(HUDSON_JOB_NAME, String.class);
+        return properties.getProperty(JOB_NAME, String.class);
     }
     
     public String getDescription() {
         
-        return properties.getProperty(HUDSON_JOB_DESCRIPTION, String.class);
+        return properties.getProperty(JOB_DESCRIPTION, String.class);
         
     }
     
     public String getUrl() {
-        return properties.getProperty(HUDSON_JOB_URL, String.class);
+        return properties.getProperty(JOB_URL, String.class);
     }
     
     public Color getColor() {
-        return properties.getProperty(HUDSON_JOB_COLOR, Color.class);
+        return properties.getProperty(JOB_COLOR, Color.class);
     }
     
     public boolean isInQueue() {
-        return properties.getProperty(HUDSON_JOB_IN_QUEUE, Boolean.class);
+        return properties.getProperty(JOB_IN_QUEUE, Boolean.class);
     }
     
     public boolean isBuildable() {
-        return properties.getProperty(HUDSON_JOB_BUILDABLE, Boolean.class);
+        return properties.getProperty(JOB_BUILDABLE, Boolean.class);
     }
     
     public int getLastBuild() {
         try {
-            return properties.getProperty(HUDSON_JOB_LAST_BUILD, Integer.class);
+            return properties.getProperty(JOB_LAST_BUILD, Integer.class);
         } catch (NullPointerException e) {
             return 0;
         }
@@ -103,7 +103,7 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     
     public int getLastStableBuild() {
         try {
-            return properties.getProperty(HUDSON_JOB_LAST_STABLE_BUILD, Integer.class);
+            return properties.getProperty(JOB_LAST_STABLE_BUILD, Integer.class);
         } catch (NullPointerException e) {
             return 0;
         }
@@ -111,7 +111,7 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     
     public int getLastSuccessfulBuild() {
         try {
-            return properties.getProperty(HUDSON_JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
+            return properties.getProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
         } catch (NullPointerException e) {
             return 0;
         }
@@ -119,7 +119,7 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
     
     public int getLastFailedBuild() {
         try {
-            return properties.getProperty(HUDSON_JOB_LAST_FAILED_BUILD, Integer.class);
+            return properties.getProperty(JOB_LAST_FAILED_BUILD, Integer.class);
         } catch (NullPointerException e) {
             return 0;
         }
@@ -154,11 +154,11 @@ public class HudsonJobImpl implements HudsonJob, HudsonJobConstants, OpenableInB
             
             // Put properties in
             set.put(new PropertySupport[] {
-                new HudsonJobProperty(HUDSON_JOB_NAME,
+                new HudsonJobProperty(JOB_NAME,
                         NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Name"),
                         NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Name"),
                         true, false),
-                        new HudsonJobProperty(HUDSON_JOB_URL,
+                        new HudsonJobProperty(JOB_URL,
                         NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Url"),
                         NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url"),
                         true, false)

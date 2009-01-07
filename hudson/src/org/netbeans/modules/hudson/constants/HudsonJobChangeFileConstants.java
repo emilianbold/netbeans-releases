@@ -24,13 +24,16 @@ package org.netbeans.modules.hudson.constants;
  * 
  * @author Michal Mocnal
  */
-public interface HudsonJobChangeFileConstants {
+public class HudsonJobChangeFileConstants {
 
-    public static final String HUDSON_JOB_CHANGE_FILE_NAME = "hudson_job_change_file_name";
+    private HudsonJobChangeFileConstants() {}
+
+    public static final String JOB_CHANGE_FILE_NAME = "job_change_file_name";
     
-    public static final String HUDSON_JOB_CHANGE_FILE_EDIT_TYPE = "hudson_job_change_edit_type";
+    public static final String JOB_CHANGE_FILE_EDIT_TYPE = "job_change_edit_type";
     
-    public static final String HUDSON_JOB_CHANGE_FILE_REVISION = "hudson_job_change_revision";
+    public static final String JOB_CHANGE_FILE_REVISION = "job_change_revision";
     
-    public static final String HUDSON_JOB_CHANGE_FILE_PREVIOUS_REVISION = "hudson_job_change_previous_revision";
+    public static final String JOB_CHANGE_FILE_PREVIOUS_REVISION = "job_change_previous_revision";
+
 }

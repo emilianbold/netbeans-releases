@@ -21,7 +21,7 @@ package org.netbeans.modules.hudson.impl;
 
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.constants.HudsonViewConstants;
+import static org.netbeans.modules.hudson.constants.HudsonViewConstants.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.util.Lookup;
@@ -32,32 +32,32 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Michal Mocnak
  */
-public class HudsonViewImpl implements HudsonView,
-        HudsonViewConstants, OpenableInBrowser {
+public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     
     private HudsonInstance instance;
     private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
     public HudsonViewImpl(HudsonInstance instance, String name, String description, String url) {
-        properties.putProperty(HUDSON_VIEW_NAME, name);
-        properties.putProperty(HUDSON_VIEW_DESCRIPTION, description);
-        properties.putProperty(HUDSON_VIEW_URL, url);
+        properties.putProperty(VIEW_NAME, name);
+        properties.putProperty(VIEW_DESCRIPTION, description);
+        properties.putProperty(VIEW_URL, url);
         
         this.instance = instance;
     }
     
     public String getName() {
-        return properties.getProperty(HUDSON_VIEW_NAME, String.class);
+        return properties.getProperty(VIEW_NAME, String.class);
     }
     
     public String getDescription() {
-        return properties.getProperty(HUDSON_VIEW_DESCRIPTION, String.class);
+        return properties.getProperty(VIEW_DESCRIPTION, String.class);
     }
     
     public String getUrl() {
-        return properties.getProperty(HUDSON_VIEW_URL, String.class);
+        return properties.getProperty(VIEW_URL, String.class);
     }
     
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof HudsonViewImpl))
             return false;
@@ -65,6 +65,11 @@ public class HudsonViewImpl implements HudsonView,
         HudsonViewImpl v = (HudsonViewImpl) o;
         
         return getName().equals(v.getName()) && getUrl().equals(v.getUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
     
     public Lookup getLookup() {
