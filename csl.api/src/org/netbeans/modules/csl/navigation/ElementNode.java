@@ -191,7 +191,7 @@ public class ElementNode extends AbstractNode {
         }
         
         // Look up the current mime type
-        Document document = info.getSnapshot().getSource().getDocument();
+        Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return null;
         }

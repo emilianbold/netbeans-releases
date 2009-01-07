@@ -215,7 +215,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
 
-        final Document document = info.getSnapshot().getSource().getDocument();
+        final Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return DeclarationLocation.NONE;
         }

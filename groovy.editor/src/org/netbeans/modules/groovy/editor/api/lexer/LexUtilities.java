@@ -55,7 +55,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
@@ -114,11 +113,9 @@ public class LexUtilities {
     public static BaseDocument getDocument(Source source, boolean forceOpen) {
         BaseDocument bdoc = null;
 
-        Document doc = source.getDocument();
+        Document doc = source.getDocument(true);
         if (doc instanceof BaseDocument) {
             bdoc = (BaseDocument) doc;
-        } else if (forceOpen) {
-            bdoc = GsfUtilities.getDocument(source.getFileObject(), true);
         }
 
         return bdoc;

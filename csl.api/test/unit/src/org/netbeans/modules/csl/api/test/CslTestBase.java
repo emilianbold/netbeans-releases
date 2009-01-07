@@ -1038,7 +1038,7 @@ public abstract class CslTestBase extends NbTestCase {
     protected void checkOccurrences(String relFilePath, String caretLine, final boolean symmetric) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
-        Document doc = testSource.getDocument();
+        Document doc = testSource.getDocument(true);
         final int caretOffset = getCaretOffset(doc.getText(0, doc.getLength()), caretLine);
 
         final OccurrencesFinder finder = getOccurrencesFinder();
@@ -3643,7 +3643,7 @@ public abstract class CslTestBase extends NbTestCase {
                     // Also: Delete te contents from the document!!!
                     // This ensures that the node offsets will be out of date by the time the rules run
 //                    Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
-                    Document doc = pr.getSnapshot().getSource().getDocument();
+                    Document doc = pr.getSnapshot().getSource().getDocument(true);
                     doc.remove(0, doc.getLength());
                 }
 
@@ -3791,7 +3791,7 @@ public abstract class CslTestBase extends NbTestCase {
         List<Hint> result = r.hints;
         int caretOffset = r.caretOffset;
 
-        String annotatedSource = annotateHints((BaseDocument) info.getSnapshot().getSource().getDocument(), result, caretOffset);
+        String annotatedSource = annotateHints((BaseDocument) info.getSnapshot().getSource().getDocument(true), result, caretOffset);
 
         if (fileObject != null) {
             assertDescriptionMatches(fileObject, annotatedSource, true, getGoldenFileSuffix() + ".hints");
@@ -3839,7 +3839,7 @@ public abstract class CslTestBase extends NbTestCase {
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
 
-        Document doc = info.getSnapshot().getSource().getDocument();
+        Document doc = info.getSnapshot().getSource().getDocument(true);
         if (fix.isInteractive() && fix instanceof PreviewableFix) {
             PreviewableFix preview = (PreviewableFix)fix;
             assertTrue(preview.canPreview());

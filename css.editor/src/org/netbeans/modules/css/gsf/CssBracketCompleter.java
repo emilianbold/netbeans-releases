@@ -267,7 +267,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //range since they doesn't need to be the same
         if (!ranges.isEmpty()) {
             ranges.set(ranges.size() - 1, new OffsetRange(0,
-                    info.getSnapshot().getSource().getDocument().getLength()));
+                    info.getSnapshot().getSource().getDocument(true).getLength()));
         }
 
         return ranges;

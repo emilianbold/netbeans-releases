@@ -123,7 +123,7 @@ public class AstPathTest extends GroovyTestBase {
                 int caretOffset = lineOffset + caretDelta;
 
                 ModuleNode moduleNode = result.getRootElement().getModuleNode();
-                ret[0] = new AstPath(moduleNode, caretOffset, (BaseDocument) result.getSnapshot().getSource().getDocument());
+                ret[0] = new AstPath(moduleNode, caretOffset, (BaseDocument) result.getSnapshot().getSource().getDocument(true));
                 latch.countDown();
             }
         });

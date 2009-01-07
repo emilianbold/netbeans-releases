@@ -108,11 +108,7 @@ public class RetoucheUtils {
         BaseDocument doc = null;
 
         if (info != null) {
-            doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
-        }
-
-        if (doc == null) {
-            doc = GsfUtilities.getDocument(info.getSnapshot().getSource().getFileObject(), true);
+            doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
         }
 
         return doc;

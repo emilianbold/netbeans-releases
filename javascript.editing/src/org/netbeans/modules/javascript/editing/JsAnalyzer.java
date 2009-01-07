@@ -193,7 +193,7 @@ public class JsAnalyzer implements StructureScanner {
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codeblocks); // NOI18N
 
-        BaseDocument doc = (BaseDocument)result.getSnapshot().getSource().getDocument();
+        BaseDocument doc = (BaseDocument)result.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return Collections.emptyMap();
         }

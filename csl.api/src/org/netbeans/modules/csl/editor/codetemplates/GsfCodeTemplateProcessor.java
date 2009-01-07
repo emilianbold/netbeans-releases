@@ -127,7 +127,7 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (initParsing()) {
 
-                CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(snapshot.getSource ().getDocument (), caretOffset);
+                CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(snapshot.getSource ().getDocument (true), caretOffset);
 
                 if (completer == null) {
                     return null;

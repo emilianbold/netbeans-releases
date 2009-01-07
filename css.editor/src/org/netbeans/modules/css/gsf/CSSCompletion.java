@@ -445,7 +445,7 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
     
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
-        Document document = info.getSnapshot().getSource().getDocument();
+        Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return null;
         }

@@ -71,7 +71,7 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
     public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
-        Document doc = result.getSnapshot().getSource().getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return;
         }

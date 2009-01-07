@@ -401,7 +401,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
 
         for (Error error : errors) {
-            StyledDocument doc = (StyledDocument) snapshot.getSource ().getDocument ();
+            StyledDocument doc = (StyledDocument) snapshot.getSource ().getDocument (false);
             if (doc == null) {
                 continue;
             }
