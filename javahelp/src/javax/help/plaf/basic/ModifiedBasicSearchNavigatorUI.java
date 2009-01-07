@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import javax.help.*;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.plaf.ComponentUI;
@@ -45,6 +46,35 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
 
     public static ComponentUI createUI(JComponent x) {
         return new ModifiedBasicSearchNavigatorUI((ModifiedJHelpSearchNavigator) x);
+    }
+
+    // The purpose is to find reasons of I127368
+    @Override
+    protected void addSubHelpSets(HelpSet hs) {
+        for( Enumeration e = hs.getHelpSets(); e.hasMoreElements(); ) {
+            HelpSet ehs = (HelpSet) e.nextElement();
+                NavigatorView[] views = ehs.getNavigatorViews();
+                for (int i = 0; i < views.length; i++) {
+                    if(searchnav.canMerge(views[i])) {
+                        try {
+                            searchnav.merge(views[i]);
+                        } catch (IllegalArgumentException ex) {
+                            Hashtable params = views[i].getParameters();
+                            Object data = null;
+                            if (params != null)
+                                data = params.get("data");
+                            throw new IllegalArgumentException("View is invalid:\n" +
+                                                               "   View Name: " +  views[i].getName() +
+                                                               "   View Class: " + views[i].getClass().getName() +
+                                                               "   View Params: " + params +
+                                                               "   View Data: " + data +
+                                                               "   HelpSet URL: " + views[i].getHelpSet().getHelpSetURL()
+                                                               );
+                        }
+                    }
+                }
+                addSubHelpSets( ehs );
+        }
     }
 
     @Override

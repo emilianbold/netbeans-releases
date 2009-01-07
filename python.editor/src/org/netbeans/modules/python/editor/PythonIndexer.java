@@ -492,7 +492,7 @@ public class PythonIndexer implements Indexer {
                     } else if ("classmethod".equals(decoratorName)) { // NOI18N
                         // Classmethods seem to be used mostly for constructors/inherited factories
                         type = 'c';
-                        flags |= IndexedElement.CONSTRUCTOR|IndexedElement.STATIC;
+                        flags |= IndexedElement.CONSTRUCTOR | IndexedElement.STATIC;
                     } else if ("staticmethod".equals(decoratorName)) { // NOI18N
                         flags |= IndexedElement.STATIC;
                     }
@@ -866,52 +866,24 @@ public class PythonIndexer implements Indexer {
                                             }
 
                                         }
-                                    } else if (key.equals("function") || key.equals("data") && m.group(2).contains("(")) { // NOI18N
+                                    } else if (key.equals("function") || (key.equals("data") && m.group(2).contains("("))) { // NOI18N
                                         // constants.rst for example registers a data item for "quit" which is really a function
 
                                         String signature = m.group(2);
-                                        int dot = signature.indexOf('.');
-                                        if (dot != -1) {
-                                            int paren = signature.indexOf('(');
-                                            if (paren == -1 || paren > dot) {
-                                                assert signature.matches("\\w+\\.\\w+.*") : signature;
-                                                signature = signature.substring(dot + 1);
+                                        indexRstFunction(signature, lines, lineno, document);
+
+                                        // See if we have any additional lines with signatures
+                                        for (int lookahead = lineno + 1; lookahead < maxLines; lookahead++) {
+                                            String l = lines[lookahead];
+                                            String trimmed = l.trim();
+                                            if (trimmed.length() == 0) {
+                                                break;
                                             }
+                                            lineno++;
+
+                                            indexRstFunction(trimmed, lines, lookahead, document);
                                         }
-                                        signature = cleanupSignature(signature);
-                                        if (signature.indexOf('(') == -1) {
-                                            signature = signature + "()";
-                                        } else if (signature.indexOf(')') == -1) {
-                                            //signature = signature + ")";
-                                            assert signature.indexOf(')') != -1;
-                                        }
-                                        int lparen = signature.indexOf('(');
-                                        int rparen = signature.indexOf(')', lparen + 1);
-                                        if (lparen != -1 && rparen != -1) {
-                                            String methodName = signature.substring(0, lparen);
-                                            String args = signature.substring(lparen + 1, rparen);
 
-                                            StringBuilder sig = new StringBuilder();
-                                            sig.append(methodName);
-                                            int symFlags = 0;
-                                            if (SymInfo.isPrivateName(methodName)) {
-                                                symFlags |= ScopeConstants.PRIVATE;
-                                            }
-                                            // TODO - look up deprecated etc.
-                                            SymInfo fakeSym = new SymInfo(symFlags);
-
-                                            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
-                                            if (isDeprecated(lines, lineno)) {
-                                                flags |= IndexedElement.DEPRECATED;
-                                            }
-
-
-                                            appendFlags(sig, 'F', fakeSym, flags);
-                                            sig.append(args);
-                                            sig.append(';');
-
-                                            document.addPair(FIELD_ITEM, sig.toString(), true);
-                                        }
                                     } else if (key.equals("data")) { // NOI18N
                                         String data = m.group(2);
 
@@ -960,7 +932,7 @@ public class PythonIndexer implements Indexer {
                                     }
                                 }
                             }
-                        } else if (line.startsWith(".. _bltin-file-objects:")) { // NOI18N
+                        } else if (line.startsWith(".. _bltin-file-objects:") || line.startsWith(".. _string-methods:")) { // NOI18N
                             if (currentClass != null) {
                                 currentClass = null;
                             }
@@ -988,6 +960,46 @@ public class PythonIndexer implements Indexer {
         }
 
         return documents;
+    }
+
+    private void indexRstFunction(String signature, String[] lines, int lineno, IndexDocument document) {
+        int dot = signature.indexOf('.');
+        if (dot != -1) {
+            int paren = signature.indexOf('(');
+            if (paren == -1 || paren > dot) {
+                assert signature.matches("\\w+\\.\\w+.*") : signature;
+                signature = signature.substring(dot + 1);
+            }
+        }
+        signature = cleanupSignature(signature);
+        if (signature.indexOf('(') == -1) {
+            signature = signature + "()";
+        } else if (signature.indexOf(')') == -1) {
+            //signature = signature + ")";
+            assert signature.indexOf(')') != -1;
+        }
+        int lparen = signature.indexOf('(');
+        int rparen = signature.indexOf(')', lparen + 1);
+        if (lparen != -1 && rparen != -1) {
+            String methodName = signature.substring(0, lparen);
+            String args = signature.substring(lparen + 1, rparen);
+            StringBuilder sig = new StringBuilder();
+            sig.append(methodName);
+            int symFlags = 0;
+            if (SymInfo.isPrivateName(methodName)) {
+                symFlags |= ScopeConstants.PRIVATE;
+            }
+            // TODO - look up deprecated etc.
+            SymInfo fakeSym = new SymInfo(symFlags);
+            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
+            if (isDeprecated(lines, lineno)) {
+                flags |= IndexedElement.DEPRECATED;
+            }
+            appendFlags(sig, 'F', fakeSym, flags);
+            sig.append(args);
+            sig.append(';');
+            document.addPair(FIELD_ITEM, sig.toString(), true);
+        }
     }
 
     private List<IndexDocument> scanEgg(ParserResult result, IndexDocumentFactory factory) {

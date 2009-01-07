@@ -443,8 +443,16 @@ public class IndexedElementTest extends PythonTestBase {
         checkCreate("testfiles/rst/constants.rst");
     }
 
-   public void testIndexEgg() throws Exception {
-        checkCreate("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
+    public void testRstIndex10() throws Exception {
+        checkCreate("testfiles/rst/operator.rst");
     }
+
+    public void testRstIndex11() throws Exception {
+        checkCreate("testfiles/rst/collections.rst");
+    }
+
+//   public void testIndexEgg() throws Exception {
+//        checkCreate("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
+//    }
 
 }
