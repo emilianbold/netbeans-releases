@@ -106,7 +106,7 @@ public class ConfigActionTest extends ConfigAction {
                         executionDescriptor,
                         NbBundle.getMessage(ConfigActionTest.class, "LBL_RunPhpUnitTests"));
                 Future<Integer> result = service.run();
-                    result.get();
+                result.get();
             }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
