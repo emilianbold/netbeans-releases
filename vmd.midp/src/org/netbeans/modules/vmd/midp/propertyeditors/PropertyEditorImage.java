@@ -127,6 +127,11 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
         element.setAllEnabled(true);
     }
 
+    @Override
+    public void setAsText(String text) {
+        saveValue(text);
+    }
+
     public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
@@ -169,6 +174,11 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
             resourcePath = ""; // NOI18N
         }
         radioButton.setSelected(true);
+    }
+
+    @Override
+    public void setValue(Object value) {
+        super.setValue(value);
     }
 
     private void saveValue(String text) {

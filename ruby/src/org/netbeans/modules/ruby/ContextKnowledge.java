@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby;
 
@@ -60,7 +60,11 @@ public final class ContextKnowledge {
     private boolean analyzed;
 
     ContextKnowledge() {
-        this(null, null, null, -1, -1, null, null);
+        this(null, null);
+    }
+
+    ContextKnowledge(RubyIndex index, Node root) {
+        this(index, root, null, -1, -1, null, null);
     }
 
     public ContextKnowledge(RubyIndex index, Node root, Node target, int astOffset,
@@ -80,6 +84,15 @@ public final class ContextKnowledge {
         return type == null ? RubyType.createUnknown() : type;
     }
 
+    RubyType getType(final Node node) {
+        // TODO: implement with #setType below
+        return null;
+    }
+
+    void setType(Node node, RubyType type) {
+        // TODO: store the type for node
+    }
+
     void setAnalyzed(boolean analyzed) {
         this.analyzed = analyzed;
     }
@@ -90,6 +103,22 @@ public final class ContextKnowledge {
 
     Map<String, RubyType> getTypesForSymbols() {
         return typesForSymbols;
+    }
+
+    void maybePutTypeForSymbol(String var, String type, boolean override) {
+        maybePutTypeForSymbol(var, RubyType.create(type), override);
+    }
+
+    void maybePutTypeForSymbol(
+            final String symbol,
+            final RubyType newType,
+            final boolean override) {
+        RubyType mapType = typesForSymbols.get(symbol);
+        if (mapType == null || override) {
+            mapType = new RubyType();
+            typesForSymbols.put(symbol, mapType);
+        }
+        mapType.append(newType);
     }
 
     static RubyType getTypesForSymbol(
@@ -142,4 +171,5 @@ public final class ContextKnowledge {
     public String toString() {
         return "ContextKnowledge[realTypes:" + typesForSymbols + ']'; // NOI18N
     }
+
 }

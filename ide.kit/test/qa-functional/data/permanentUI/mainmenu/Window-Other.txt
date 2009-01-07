@@ -1,6 +1,6 @@
-Other                   > Declaration           D
-                          Javadoc               J
-                          Application Actions   A
-                          CSS Preview           S
-                          CSS Style Builder     B
-                          Maven Repository Browser
+Other                   > Declaration                D
+                          Javadoc                    J
+                          Application Actions        A
+                          CSS Preview                S
+                          CSS Style Builder          B
+                          Maven Repository Browser   M

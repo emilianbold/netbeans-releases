@@ -627,17 +627,20 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
         // Try to handle backspace such that if you backspace for indentation, we interpret it
         // as an attempt to outdent
         if (ch == ' ') {
-            int indentSize = IndentUtils.indentLevelSize(doc);
-            int lineIndent = GsfUtilities.getLineIndent(doc, dotPos);
-            if (lineIndent > 0) {
-                int mod = lineIndent % indentSize;
-                if (mod == indentSize - 1) {
-                    // Yes, we just deleted out of a whole multiple of the indent size, so remove space
-                    // down to the next indent step
-                    int deleteOffset = dotPos - mod;
-                    int deleteSize = mod;
-                    document.remove(deleteOffset, deleteSize);
-                    return true;
+            int textBegin = Utilities.getRowFirstNonWhite(doc, dotPos);
+            if (textBegin == -1 || textBegin >= dotPos) {
+                int indentSize = IndentUtils.indentLevelSize(doc);
+                int lineIndent = GsfUtilities.getLineIndent(doc, dotPos);
+                if (lineIndent > 0) {
+                    int mod = lineIndent % indentSize;
+                    if (mod == indentSize - 1) {
+                        // Yes, we just deleted out of a whole multiple of the indent size, so remove space
+                        // down to the next indent step
+                        int deleteOffset = dotPos - mod;
+                        int deleteSize = mod;
+                        document.remove(deleteOffset, deleteSize);
+                        return true;
+                    }
                 }
             }
         }

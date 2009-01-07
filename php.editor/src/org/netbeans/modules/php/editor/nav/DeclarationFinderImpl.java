@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
@@ -104,10 +105,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
 
-                if (t.id() == PHPTokenId.PHPDOC_COMMENT) {
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT ||  t.id() == PHPTokenId.PHP_COMMENT) {
                     inDocComment = true;
                     break;
-                }
+                } 
             }
         }
 
@@ -196,6 +197,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                         if (node != null && node.getStartOffset() < caretOffset && caretOffset < node.getEndOffset()) {
                                             result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                                         }
+                                    }
+                                }
+                            } else if (comment instanceof PHPVarComment) {
+                                PHPVarComment varComment = (PHPVarComment) comment;
+                                PHPDocVarTypeTag varTypeTag = varComment.getVariable();
+                                List<ASTNode> nodes = new ArrayList<ASTNode>(varTypeTag.getTypes());
+                                nodes.add(varTypeTag.getVariable());
+                                for (ASTNode node : nodes) {
+                                    if (node != null && node.getStartOffset() < caretOffset && caretOffset < node.getEndOffset()) {
+                                        result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                                        break;
                                     }
                                 }
                             }
