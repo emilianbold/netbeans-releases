@@ -55,7 +55,6 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
-import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
@@ -83,7 +82,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -743,65 +741,65 @@ class OccurenceBuilder {
             String name = currentNodeInfo.getName();
             currentNodeInfo =
                     null;
-            switch (kind) {
-                case FUNCTION:
-                    buildFunctionInvocations(name, fileScope);
-                    buildFunctionDeclarations(name, fileScope);
-                    break;
+            if (name != null && name.trim().length() > 0) {
+                switch (kind) {
+                    case FUNCTION:
+                        buildFunctionInvocations(name, fileScope);
+                        buildFunctionDeclarations(name, fileScope);
+                        break;
 
-                case VARIABLE:
-                    buildVariables(name, fileScope);
-                    buildDocTagsForVars(name, fileScope);
-                    break;
+                    case VARIABLE:
+                        buildVariables(name, fileScope);
+                        buildDocTagsForVars(name, fileScope);
+                        break;
 
-                case STATIC_METHOD:
-                    buildStaticMethodInvocations(name, fileScope);
-                    buildMethodDeclarations(name, fileScope);
-                    break;
+                    case STATIC_METHOD:
+                        buildStaticMethodInvocations(name, fileScope);
+                        buildMethodDeclarations(name, fileScope);
+                        break;
 
-                case FIELD:
-                case STATIC_FIELD:
-                    buildFieldDeclarations(name, fileScope);
-                    buildFieldInvocations(name, fileScope);
-                    buildStaticFieldInvocations(name, fileScope);
-                    buildDocTagsForFields(name, fileScope);
-                    break;
+                    case FIELD:
+                    case STATIC_FIELD:
+                        buildFieldDeclarations(name, fileScope);
+                        buildFieldInvocations(name, fileScope);
+                        buildStaticFieldInvocations(name, fileScope);
+                        buildDocTagsForFields(name, fileScope);
+                        break;
 
-                case CONSTANT:
-                    buildConstantInvocations(name, fileScope);
-                    buildConstantDeclarations(name, fileScope);
-                    break;
+                    case CONSTANT:
+                        buildConstantInvocations(name, fileScope);
+                        buildConstantDeclarations(name, fileScope);
+                        break;
 
-                case CLASS_CONSTANT:
-                case STATIC_CLASS_CONSTANT:
-                    buildStaticConstantInvocations(name, fileScope);
-                    buildStaticConstantDeclarations(name, fileScope);
-                    break;
+                    case CLASS_CONSTANT:
+                    case STATIC_CLASS_CONSTANT:
+                        buildStaticConstantInvocations(name, fileScope);
+                        buildStaticConstantDeclarations(name, fileScope);
+                        break;
 
-                case CLASS_INSTANCE_CREATION:
-                case CLASS:
-                case IFACE:
-                    buildClassNames(name, fileScope);
-                    buildClassIDs(name, fileScope);
-                    buildClassDeclarations(name, fileScope);
-                    buildDocTagsForClasses(name, fileScope);
-                    buildClassInstanceCreation(name, fileScope);
-                    buildInterfaceIDs(name, fileScope);
-                    buildInterfaceDeclarations(name, fileScope);
-                    break;
-                case METHOD:
-                    buildMethodInvocations(name, fileScope);
-                    buildMethodDeclarations(name, fileScope);
-                    break;
-                case INCLUDE:
-                    buildIncludes(name, fileScope);
-                    break;
-                default:
-                    throw new IllegalStateException();
+                    case CLASS_INSTANCE_CREATION:
+                    case CLASS:
+                    case IFACE:
+                        buildClassNames(name, fileScope);
+                        buildClassIDs(name, fileScope);
+                        buildClassDeclarations(name, fileScope);
+                        buildDocTagsForClasses(name, fileScope);
+                        buildClassInstanceCreation(name, fileScope);
+                        buildInterfaceIDs(name, fileScope);
+                        buildInterfaceDeclarations(name, fileScope);
+                        break;
+                    case METHOD:
+                        buildMethodInvocations(name, fileScope);
+                        buildMethodDeclarations(name, fileScope);
+                        break;
+                    case INCLUDE:
+                        buildIncludes(name, fileScope);
+                        break;
+                    default:
+                        throw new IllegalStateException();
 
-            }
-
-
+                }
+            } 
         }
     }
 
@@ -886,7 +884,7 @@ class OccurenceBuilder {
     private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScopeImpl indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
+        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
         List<MethodScopeImpl> methods = Collections.emptyList();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();

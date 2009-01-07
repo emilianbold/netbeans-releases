@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -51,7 +52,6 @@ public class HgPropertiesTest extends JellyTestCase {
 
     public static final String PROJECT_NAME = "JavaApp";
     public PrintStream stream;
-    String os_name;
     static Logger log;
 
     public HgPropertiesTest(String name) {
@@ -70,14 +70,6 @@ public class HgPropertiesTest extends JellyTestCase {
         }
     }
 
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(HgPropertiesTest.class).addTest("testHgPropertiesTest").enableModules(".*").clusters(".*"));
@@ -85,6 +77,8 @@ public class HgPropertiesTest extends JellyTestCase {
 
     public void testHgPropertiesTest() throws Exception {
         try {
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             ProjectSupport.waitScanFinished();

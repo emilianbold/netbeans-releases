@@ -199,6 +199,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
         private static final String YAML_MIMETYPE = "text/x-yaml";//NOI18N
+        private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+        private static final String PHP_SORT_TEXT = "0";//NOI18N
         private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
         private static final String HTML_MIMETYPE = "text/html";//NOI18N
         private static final String HTML_SORT_TEXT = "3";//NOI18N
@@ -239,20 +241,23 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         public String getSortText() {
+            String mimeType = language.getMimeType();
             //hack -> I need to ensure that the navigator selects the top most
             //node when user moves caret in the source.
             //Since the navigator tree is a generic graph if there are more
             //embedded languages we need to use some tricks...
-            if(language.getMimeType().equals(CSS_MIMETYPE)) {
+            if(mimeType.equals(CSS_MIMETYPE)) {
                 return CSS_SORT_TEXT;
-            } else if(language.getMimeType().equals(JAVASCRIPT_MIMETYPE)) {
+            } else if(mimeType.equals(JAVASCRIPT_MIMETYPE)) {
                 return JAVASCRIPT_SORT_TEXT;
-            } else if (language.getMimeType().equals(HTML_MIMETYPE)) {
+            } else if (mimeType.equals(HTML_MIMETYPE)) {
                 return HTML_SORT_TEXT;
-            } else if (language.getMimeType().equals(YAML_MIMETYPE)) {
+            } else if (mimeType.equals(YAML_MIMETYPE)) {
                 return YAML_SORT_TEXT;
-            } else if (language.getMimeType().equals(RUBY_MIMETYPE)) {
+            } else if (mimeType.equals(RUBY_MIMETYPE)) {
                 return RUBY_SORT_TEXT;
+            } else if (mimeType.equals(PHP_MIME_TYPE)) {
+                return PHP_SORT_TEXT;
             } else {
                 return OTHER_SORT_TEXT + getName();
             }

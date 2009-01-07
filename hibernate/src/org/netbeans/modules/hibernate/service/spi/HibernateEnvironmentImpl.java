@@ -135,6 +135,34 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         return false;
     }
 
+    /**
+     * Checks for direct database connection establishment using the database access
+     * details from the given HibernateConfiguration metadata.
+     *
+     * @param config HibernateConfiguration (schema2beans) object.
+     * @return true if can connect to database, false otherwise.
+     */
+    public boolean canDirectlyConnectToDB(HibernateConfiguration config) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader ccl = null;
+        try {
+            ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
+            Thread.currentThread().setContextClassLoader(ccl);
+            HibernateUtil.getDirectDBConnection(config);
+            logger.info("Direct Database connection established.");
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+            return true;
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Cannot establish direct database connection", e);
+        } finally {
+            if(ccl != null) {
+                Thread.currentThread().setContextClassLoader(originalClassLoader);
+            }
+        }
+        return false;
+    }
+
+
     public FileObject getSourceLocation() {
         SourceGroup[] sourceGroups = HibernateUtil.getSourceGroups(project);
         if (sourceGroups != null && sourceGroups.length != 0) {

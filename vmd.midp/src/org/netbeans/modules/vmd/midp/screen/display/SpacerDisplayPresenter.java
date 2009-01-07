@@ -51,19 +51,54 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.components.items.SpacerCD;
 
 
 /**
  * @author David Kaspar
  */
 public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
-    
-    JSeparator separator = new JSeparator (JSeparator.HORIZONTAL) {
-        @Override
-        public JPopupMenu getComponentPopupMenu () {
-            return Utilities.actionsToPopup (ActionsSupport.createActionsArray (getRelatedComponent ()), this);
-        }
-    };
+
+    private JSeparator separator;
+    private JPanel panel;
+    private JPanel innerPanel;
+
+    public SpacerDisplayPresenter() {
+        panel = new JPanel( );
+        innerPanel = new JPanel( );
+        separator = new JSeparator(JSeparator.HORIZONTAL) {
+
+            @Override
+            public JPopupMenu getComponentPopupMenu() {
+                return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
+            }
+        };
+        panel.setOpaque( false );
+        innerPanel.setOpaque( false );
+
+
+
+        panel.setLayout(new FlowLayout() {
+
+            @Override
+            public void layoutContainer(Container parent) {
+                super.layoutContainer(parent);
+                innerPanel.setLocation(0,
+                        (int) (parent.getHeight() -
+                        separator.getPreferredSize().getHeight()) / 2);
+
+            }
+        });
+        innerPanel.setLayout( new BoxLayout(innerPanel , BoxLayout.LINE_AXIS) );
+        
+        panel.add( innerPanel );
+        
+        innerPanel.add( separator );
+
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
+    }
 
     public boolean isTopLevelDisplay () {
         return false;
@@ -74,14 +109,45 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public JComponent getView () {
-        return separator;
+        return panel;
     }
 
     public void reload (ScreenDeviceInfo deviceInfo) {
+        int minHeight = Integer.parseInt(getComponent().readProperty(
+                SpacerCD.PROP_MIN_HEIGHT).getPrimitiveValue().toString());
+        int minWidth = Integer.parseInt(getComponent().readProperty(
+                SpacerCD.PROP_MIN_WIDTH).getPrimitiveValue().toString());
+
+        int panelWidth = (int)panel.getMinimumSize().getWidth();
+        panel.setMinimumSize( new Dimension(panelWidth, minHeight));
+
+        int sepHeight = (int)separator.getMinimumSize().getHeight();
+        innerPanel.setMinimumSize( new Dimension( minWidth , sepHeight));
+
+        int prefHeight = Integer.parseInt(getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_HEIGHT).getPrimitiveValue().toString());
+        int prefWidth = Integer.parseInt(getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_WIDTH).getPrimitiveValue().toString());
+
+        if ( prefHeight == -1 ){
+            prefHeight = minHeight;
+        }
+        if ( prefWidth == -1){
+            prefWidth = minWidth;
+        }
+
+        panel.setPreferredSize( new Dimension( (int)panel.getPreferredSize().getWidth() , prefHeight));
+
+        innerPanel.setPreferredSize( new Dimension( prefWidth , (int)separator.getPreferredSize().getHeight()) );
+        innerPanel.setMaximumSize( new Dimension( prefWidth , (int) separator.getMaximumSize().getHeight()) );
+
+        innerPanel.invalidate();
+        innerPanel.revalidate();
+        panel.revalidate();
     }
 
     public Shape getSelectionShape () {
-        return new Rectangle (separator.getSize ());
+        return new Rectangle (panel.getSize ());
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {

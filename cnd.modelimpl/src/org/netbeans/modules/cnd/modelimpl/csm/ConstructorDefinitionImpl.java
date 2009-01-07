@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 /**
  * @author Vladimir Kvasihn
  */
-public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl implements CsmInitializerListContainer {
+public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> implements CsmInitializerListContainer {
 
     private List<CsmExpression> initializers;
     

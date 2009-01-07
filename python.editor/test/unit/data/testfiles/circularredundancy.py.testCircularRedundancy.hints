@@ -1,0 +1,9 @@
+class First (Third ):
+      -----
+HINT:Parent/child First/Third inheritance circular redundancy
+class Second (First) :
+      ------
+HINT:Parent/child Second/First inheritance circular redundancy
+class Third (Second) :
+      -----
+HINT:Parent/child Third/Second inheritance circular redundancy

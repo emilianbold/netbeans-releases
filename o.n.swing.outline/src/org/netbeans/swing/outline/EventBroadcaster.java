@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -315,7 +315,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         //data entry.  The ProxyTableModel should never change out
         //from under us - all structural changes happen through the
         //table model.
-        assert (e.getType() == e.UPDATE) : "Table model should only fire " +
+        assert (e.getType() == TableModelEvent.UPDATE) : "Table model should only fire " +
             "updates, never structural changes";
         
         fireTableChange (translateEvent(e));
@@ -878,7 +878,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         ArrayList<int[]> res = new ArrayList<int[]>(al.size());
         for (int i=0; i < al.size(); i++) {
             ArrayList<Integer> curr = al.get(i);
-            Integer[] ints = (Integer[]) curr.toArray(new Integer[0]);
+            Integer[] ints = curr.toArray (new Integer[0]);
             
             res.add(toArrayOfInt(ints));
         }

@@ -151,14 +151,15 @@ border-top-color transparent
 color white
 color yellow
 End cursor position = 591
-[<style> @| </style>, @import, <style> @import </style>, 675]
+[<style> | </style>, @import, <style> @import </style>, 674]
+</style>
 @charset
 @font-face
 @import
 @media
 @page
-End cursor position = 691
-[<table style="|"></table>, background, <table style="background:"></table>, 826]
+End cursor position = 690
+[<table style="|"></table>, background, <table style="background:"></table>, 825]
 azimuth
 background
 background-attachment
@@ -275,8 +276,8 @@ widows
 width
 word-spacing
 z-index
-End cursor position = 852
-[<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 990]
+End cursor position = 851
+[<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 989]
 color aqua
 color black
 color blue
@@ -310,4 +311,4 @@ background-color transparent
 background-image url
 color white
 color yellow
-End cursor position = 1025
+End cursor position = 1024

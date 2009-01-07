@@ -41,19 +41,20 @@
 
 package org.netbeans.modules.performance.utilities;
 
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import org.w3c.dom.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.*;
 import java.util.Date;
 import java.util.Locale;
 import java.text.SimpleDateFormat;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -99,18 +100,19 @@ public class CommonUtilities {
     
     public static final String SOURCE_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
     public static final String TEST_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
-    //public static final String WEB_PAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
     private static PerformanceTestCase test = null;
     
     private static int size=0;
-    
+    private static DocumentBuilderFactory dbf=null;
+    private static DocumentBuilder db=null;
+    private static Document allPerfDoc=null;
+    private static Element testResultsTag, testTag, perfDataTag, testSuiteTag=null;
     private static String projectsDir; // <nbextra>/data/
     private static String tempDir; // <nbjunit.workdir>/tmpdir/
     
     static {
         SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
         TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
-       // WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
         String workDir = System.getProperty("nbjunit.workdir");
         if (workDir != null) {
             projectsDir = workDir + File.separator;
@@ -884,6 +886,8 @@ public class CommonUtilities {
     
     public static void xmlTestResults(String path, String suite, String name, String classname, String sname, String unit, String pass, long threshold, long[] results, int repeat) {
 
+        PrintStream out = System.out;
+
         System.out.println();
         System.out.println("#####  Results for "+name+"   #####");
         System.out.print("#####        [");
@@ -894,76 +898,111 @@ public class CommonUtilities {
             System.out.print("#");
         System.out.println();
         System.out.println();
-/*
-        File resLocal=new File(path+File.separator+"performance.xml");
-        PrintStream ps=null;
-        try {
-            ps=new PrintStream(resLocal); 
-            ps.println("<TestResults>");
-            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">");
-            ps.println("      <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>");
-            for (int i=2;i<=repeat;i++) 
-                ps.println("      <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>");
-            ps.println("   </Test>");
-            ps.println("</TestResults>");
-            ps.close();
-        } catch (IOException ioe)  
-        {
-            ps.close();
-        }
-*/
+
         path=System.getProperty("nbjunit.workdir");
-      //File resGlobal=new File(path+File.separator+"../../allPerformance.xml");
         File resGlobal=new File(path+File.separator+"allPerformance.xml");
-      FileOutputStream fos=null;
-      FileInputStream fis=null;
-      if (!resGlobal.exists()) {
-          try {
 
-          fos = new FileOutputStream(resGlobal, true);           
-          fos.write("<TestResults>\n".getBytes());
-          fos.write("   </Suite>\n".getBytes());
-          fos.write("</TestResults>".getBytes());
-          fos.close();
-
-            } catch (IOException ex) {
-
-            }
-      }
-      
-              
         try {
-            fis= new FileInputStream(resGlobal);
-            size=(int)(resGlobal.length()-25);
-            
-            byte[] array=new byte[size];
-            fis.read(array, 0, size);
-            fis.close();
-            
-            fos= new FileOutputStream(resGlobal, false);
-          
-            fos.write(array);
+            dbf=DocumentBuilderFactory.newInstance();
+            db = dbf.newDocumentBuilder();
+         } catch (Exception ex) {
+            ex.printStackTrace (  ) ;
+        }
 
-      
-            if (!new String(array).contains("<Suite suitename=\""+suite+"\" name=\""+sname+"\">")) {
-                if (new String(array).contains("<Suite suitename=")) fos.write("   </Suite>\n".getBytes());
-                fos.write(("   <Suite suitename=\""+suite+"\" name=\""+sname+"\">\n").getBytes());
+        if (!resGlobal.exists()) {
+            try {
+                resGlobal.createNewFile();
+                out = new PrintStream(new FileOutputStream(resGlobal));
+                out.print("<TestResults>\n");
+                out.print("</TestResults>");
+                out.close();
+            } catch (IOException ex) {
+            ex.printStackTrace (  ) ;
+            }
+         }
+
+        try {
+              allPerfDoc = db.parse(resGlobal);
+            } catch (Exception ex) {
+            ex.printStackTrace (  ) ;
             }
             
-            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">\n").getBytes());
-            fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
-            for (int i=2;i<=repeat;i++)
-                fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());
-            fos.write(("      </Test>\n").getBytes());
+        testResultsTag=allPerfDoc.getDocumentElement();
 
-            fos.write("   </Suite>\n".getBytes());            
-            fos.write("</TestResults>".getBytes());
-            fos.close();  
-            
-        } catch (IOException ex) {
-            System.err.println("Exception:"+ex);
+        testTag=null;
+        for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
+            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
+                testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
+                break;
+            }
         }
-               
+
+        if (testTag!=null) {
+            for (int i=1;i<=repeat;i++) {
+                perfDataTag=allPerfDoc.createElement("PerformanceData");
+                if (i==1) perfDataTag.setAttribute("runOrder", "1");
+                    else perfDataTag.setAttribute("runOrder", "2");
+                perfDataTag.setAttribute("value", new Long(results[i]).toString());
+                testTag.appendChild(perfDataTag);
+            }
+        }
+        else {
+            testTag=allPerfDoc.createElement("Test");
+            testTag.setAttribute("name", name);
+            testTag.setAttribute("unit", unit);
+            testTag.setAttribute("results", pass);
+            testTag.setAttribute("threshold", new Long(threshold).toString());
+            testTag.setAttribute("classname", classname);
+            for (int i=1;i<=repeat;i++) {
+                perfDataTag=allPerfDoc.createElement("PerformanceData");
+                if (i==1) perfDataTag.setAttribute("runOrder", "1");
+                    else perfDataTag.setAttribute("runOrder", "2");
+                perfDataTag.setAttribute("value", new Long(results[i]).toString());
+                testTag.appendChild(perfDataTag);
+            }
+        }
+
+            testSuiteTag=null;
+            for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
+                if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
+                    testSuiteTag =(Element)allPerfDoc.getElementsByTagName("Suite").item(i);
+                    break;
+                }
+            }
+
+            if (testSuiteTag==null) {
+                testSuiteTag=allPerfDoc.createElement("Suite");
+                testSuiteTag.setAttribute("name", sname);
+                testSuiteTag.setAttribute("suitename", suite);
+                testSuiteTag.appendChild(testTag);
+            } else {
+                testSuiteTag.appendChild(testTag);
+            }
+
+        testResultsTag.appendChild(testSuiteTag);
+
+
+        try {
+            out = new PrintStream(new FileOutputStream(resGlobal));
+        } catch (FileNotFoundException ex) {
+        }
+
+        Transformer tr=null;
+        try {
+            tr = TransformerFactory.newInstance().newTransformer();
+        } catch (TransformerConfigurationException ex) {
+        }
+
+        tr.setOutputProperty(OutputKeys.INDENT, "no");
+        tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        DOMSource docSrc = new DOMSource(allPerfDoc);
+        StreamResult result = new StreamResult(out);
+
+        try {
+            tr.transform(docSrc, result);
+        } catch (TransformerException ex) {
+        }
+        out.close();
     }
 
     public static void processUnitTestsResults(String className, PerformanceData pd) {

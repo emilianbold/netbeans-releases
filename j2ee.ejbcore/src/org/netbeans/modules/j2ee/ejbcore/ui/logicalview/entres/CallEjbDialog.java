@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -111,6 +112,8 @@ public class CallEjbDialog {
                 new HelpCtx(CallEjbPanel.class),
                 null
                 );
+        NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
+        panel.setNotificationLine(statusLine);
         
         panel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

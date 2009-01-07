@@ -56,6 +56,8 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 import org.w3c.dom.Document;
@@ -74,19 +76,19 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     
     private FileObject scratch;
     private FileObject projdir;
-    private FileObject extension1;
     private ProjectManager pm;
     private Project p;
     private AntProjectHelper h;
     private GeneratedFilesHelper gfh;
     private ExtImpl extenderImpl;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
-        extension1 = TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
+        TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
         extenderImpl = new ExtImpl();
         MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(extenderImpl));
         pm = ProjectManager.getDefault();
@@ -229,6 +231,24 @@ public class GeneratedFilesHelperTest extends NbTestCase {
             }
             assertTrue("generated file has platform line endings", ok);
         }
+    }
+
+    public void testVersionSeeSawing() throws Exception { // #42735
+        URL xslt = GeneratedFilesHelperTest.class.getResource("data/build.xsl");
+        URL xslt2 = GeneratedFilesHelperTest.class.getResource("data/build2.xsl");
+        GeneratedFilesHelper.STYLESHEET_VERSIONS.put(xslt, new SpecificationVersion("1.0"));
+        GeneratedFilesHelper.STYLESHEET_VERSIONS.put(xslt2, new SpecificationVersion("1.1"));
+        assertTrue(gfh.refreshBuildScript("build.xml", xslt, true));
+        FileObject buildXml = projdir.getFileObject("build.xml");
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertTrue(gfh.refreshBuildScript("build.xml", xslt2, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt2, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
+        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
     }
     
     private class ExtImpl implements AntBuildExtenderImplementation {

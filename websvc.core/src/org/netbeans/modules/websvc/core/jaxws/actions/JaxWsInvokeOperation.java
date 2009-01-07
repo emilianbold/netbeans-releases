@@ -41,34 +41,54 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
+import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author mkuchtiak
  */
 public class JaxWsInvokeOperation implements InvokeOperationCookie {
-    
-    /** Creates a new instance of JaxWsAddOperation */
-    public JaxWsInvokeOperation() {
-    }
-    
-    /*
-     * Adds a WS invocation to the class
+
+    private FileObject targetSource;
+    /** Creates a new instance of JaxWsAddOperation.
+     * @param targetSource filae object
      */
-    public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-        JaxWsCodeGenerator.insertMethodCall(targetSourceType, getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
-    }
-    
-    private DataObject getCurrentDataObject(Node n) {
-        return n.getCookie(DataObject.class);
+    public JaxWsInvokeOperation(FileObject targetSource) {
+        this.targetSource = targetSource;
     }
 
-    public boolean isWebServiceOperation(Node node) {
-        return node.getLookup().lookup(WsdlOperation.class)!=null;
+    @Override
+    public void invokeOperation(Lookup sourceNodeLookup, JTextComponent targetComponent) {
+        try {
+            DataObject dObj = DataObject.find(targetSource);
+            JaxWsCodeGenerator.insertMethodCall(getTargetSourceType(dObj),
+                    dObj,
+                    sourceNodeLookup);
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
     }
+
+    @Override
+    public InvokeOperationCookie.ClientSelectionPanel getDialogDescriptorPanel() {
+        return new ClientExplorerPanel(targetSource);
+    }
+
+    private InvokeOperationCookie.TargetSourceType getTargetSourceType(DataObject dObj) {
+        EditorCookie cookie = dObj.getCookie(EditorCookie.class);
+        if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return InvokeOperationCookie.TargetSourceType.JSP;
+        } else if (cookie!=null && "text/x-java".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return InvokeOperationCookie.TargetSourceType.JAVA;
+        }
+        return InvokeOperationCookie.TargetSourceType.UNKNOWN;
+    }
+
 }

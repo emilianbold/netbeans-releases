@@ -51,25 +51,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.FortranDataObject;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.FortranDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.asm.core.dataobjects.AsmDataObject;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
 
@@ -288,10 +283,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public FileObject getFileObject() {
-        File file = getCanonicalFile();
+        File curFile = getCanonicalFile();
         FileObject fo = null;
         try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
+            fo = FileUtil.toFileObject(curFile.getCanonicalFile());
         } catch (IOException e) {
         }
         return fo;
@@ -324,31 +319,30 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return dataObject;
     }
 
-    public int getDefaultTool() {
+    public final String getMIMEType() {
         DataObject dataObject = getDataObject();
-        int tool;
+        FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+        String mimeType = "";
+        if (fo == null) {
+            mimeType = MIMESupport.getFileMIMEType(new File(getPath()));
+        } else {
+            mimeType = MIMESupport.getFileMIMEType(fo);
+        }
+        return mimeType;
+    }
 
-        if (dataObject == null) {
-            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                tool = Tool.CCCompiler;
-            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                tool = Tool.CCompiler;
-            } else if (FortranDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                tool = Tool.FortranCompiler;
-//            } else if (AsmDataLoader.getInstance().getExtensions().isRegistered(path)) {
-//                tool = Tool.Assembler;
-            } else {
-                tool = Tool.CustomTool;
-            }
-        } else if (dataObject instanceof CDataObject) {
+    public int getDefaultTool() {
+        int tool;
+        String mimeType = getMIMEType();
+        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
             tool = Tool.CCompiler;
-        } else if (dataObject instanceof HDataObject) {
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = Tool.CustomTool;
-        } else if (dataObject instanceof CCDataObject) {
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
             tool = Tool.CCCompiler;
-        } else if (dataObject instanceof FortranDataObject) {
+        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = Tool.FortranCompiler;
-        } else if (dataObject instanceof AsmDataObject) {
+        } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
             tool = Tool.Assembler;
         } else {
             tool = Tool.CustomTool;
@@ -376,9 +370,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public NativeProject getNativeProject() {
-        Folder folder = getFolder();
-        if (folder != null) {
-            Project project = folder.getProject();
+        Folder curFolder = getFolder();
+        if (curFolder != null) {
+            Project project = curFolder.getProject();
             return project.getLookup().lookup(NativeProject.class);
         }
         return null;
@@ -419,6 +413,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
@@ -438,6 +433,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             Iterator iter = vec2.iterator();
             while (iter.hasNext()) {
                 vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String) iter.next()));
+            }
+            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
+                vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
             }
         }
         return vec;
@@ -478,6 +476,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
@@ -491,16 +490,19 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 }
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
+                vec = SPI_ACCESSOR.getItemUserMacros(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
+            }
         }
         return vec;
     }
 
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
         // Method return true for source files also.
-        String itemPath = getPath();
-        return HDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
-                ccFiles && CCDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
-                cFiles && CDataLoader.getInstance().getExtensions().isRegistered(itemPath);
+        String mimeType = getMIMEType();
+        return MIMENames.HEADER_MIME_TYPE.equals(mimeType) ||
+                (ccFiles && MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) ||
+                (cFiles && MIMENames.C_MIME_TYPE.equals(mimeType));
     }
 
     /**
@@ -556,5 +558,38 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     @Override
     public String toString() {
         return path;
+    }
+
+    private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
+    private static final class SpiAccessor {
+        private UserOptionsProvider provider;
+
+        private synchronized UserOptionsProvider getProvider() {
+            if (provider == null) {
+                provider = Lookup.getDefault().lookup(UserOptionsProvider.class);
+            }
+            return provider;
+        }
+
+        private SpiAccessor() {
+            
+        }
+
+        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+            if (getProvider() != null) {
+                return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+            } else {
+                return includes;
+            }
+        }
+
+        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+            if (getProvider() != null) {
+                return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
+            } else {
+                return macros;
+            }
+        }
+       
     }
 }

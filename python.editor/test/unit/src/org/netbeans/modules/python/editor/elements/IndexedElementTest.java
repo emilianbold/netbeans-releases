@@ -158,7 +158,7 @@ public class IndexedElementTest extends PythonTestBase {
 
             String[] methods = map.getValues("member");
             if (methods != null) {
-                System.out.println("Checking url " + url + ", " + methods.length + " methods");
+                //System.err.println("Checking url " + url + ", " + methods.length + " methods");
                 int methodCount = -1;
                 for (String signature : methods) {
                     methodCount++;
@@ -253,7 +253,7 @@ public class IndexedElementTest extends PythonTestBase {
 
             String[] items = map.getValues("items");
             if (items != null) {
-                System.out.println("Checking url " + url + ", " + items.length + " methods");
+                //System.err.println("Checking url " + url + ", " + items.length + " methods");
                 int methodCount = -1;
                 for (String signature : items) {
                     methodCount++;
@@ -395,6 +395,14 @@ public class IndexedElementTest extends PythonTestBase {
 
     public void testIndex13() throws Exception {
         checkCreate("testfiles/unittest.py");
+    }
+
+    public void testIndex14() throws Exception {
+        checkCreate("testfiles/properties.py");
+    }
+
+    public void testIndex15() throws Exception {
+        checkCreate("testfiles/tarfile.py");
     }
 
     public void testRstIndex1() throws Exception {

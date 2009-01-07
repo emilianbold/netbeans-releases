@@ -42,6 +42,7 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
@@ -51,20 +52,24 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.awt.Toolbar;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
@@ -276,9 +281,26 @@ public class MainWindowOperator extends JFrameOperator {
      */
     public void dragNDropToolbar(ContainerOperator toolbarOper, int x, int y) {
         // find toolbar drag and drop area. It is a component named "grip"
-        Component comp = findComponent((Container)toolbarOper.getSource(), 
-                                       new NameComponentChooser("grip"));
-        new ComponentOperator(comp).dragNDrop(comp.getWidth()/2, comp.getHeight()/2, x, y);
+        Component comp = toolbarOper.waitSubComponent(new ComponentChooser() {
+
+            public boolean checkComponent(Component arg0) {
+                return arg0.getClass().getName().endsWith("ToolbarBump");
+            }
+
+            public String getDescription() {
+                return "Toolbar bump";
+            }
+        });
+//        Component comp = findComponent((Container)toolbarOper.getSource(),
+//                                       new NameComponentChooser("__fake_drag_container__"));
+//                                       new NameComponentChooser("grip"));
+        ComponentOperator bumpOper = new ComponentOperator(comp);
+        new MouseRobotDriver(new Timeout("", 100)).dragNDrop(bumpOper,
+                comp.getWidth()/2, comp.getHeight()/2, comp.getWidth()/2 + x, comp.getHeight()/2 + y,
+                getDefaultMouseButton(), 0,
+                toolbarOper.getTimeouts().create("ComponentOperator.BeforeDragTimeout"),
+		toolbarOper.getTimeouts().create("ComponentOperator.AfterDragTimeout"));
+        //bumpOper.dragNDrop(comp.getWidth()/2, comp.getHeight()/2, comp.getWidth()/2 + x, comp.getHeight()/2 + y);
     }
     
     

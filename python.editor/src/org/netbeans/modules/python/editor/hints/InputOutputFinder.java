@@ -50,7 +50,7 @@ import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /** 
  * This visitor computes the set of input and output variables required by
@@ -160,9 +160,10 @@ class InputOutputFinder extends Visitor {
             when = WHEN_DURING;
         }
         int oldWhen = when;
-
-        if (node.value != null) {
-            node.value.accept(this);
+        
+        expr nodeValue = node.getInternalValue();
+        if (nodeValue != null) {
+            nodeValue.accept(this);
         }
         int newWhen = when;
         when = oldWhen;
@@ -170,11 +171,11 @@ class InputOutputFinder extends Visitor {
         boolean oldWriting = isWriting;
         try {
             isWriting = true;
-            exprType[] targets = node.targets;
+            List<expr> targets = node.getInternalTargets();
             if (targets != null) {
-                for (int i = 0; i < targets.length; i++) {
-                    if (targets[i] != null) {
-                        targets[i].accept(this);
+                for (expr expr : targets) {
+                    if (expr != null) {
+                        expr.accept(this);
                     }
                 }
             }
@@ -189,11 +190,11 @@ class InputOutputFinder extends Visitor {
 
     @Override
     public Object visitName(Name node) throws Exception {
-        if (parent instanceof Call && ((Call)parent).func == node) { // Name in a call is the call name, not a variable
+        if (parent instanceof Call && ((Call)parent).getInternalFunc() == node) { // Name in a call is the call name, not a variable
             return super.visitName(node);
         }
 
-        methodScope.read(node.id);
+        methodScope.read(node.getInternalId());
 
         return super.visitName(node);
     }

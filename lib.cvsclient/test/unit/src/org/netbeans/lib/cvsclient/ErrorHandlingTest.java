@@ -51,6 +51,7 @@ import org.netbeans.lib.cvsclient.command.status.StatusCommand;
 import org.netbeans.lib.cvsclient.connection.Connection;
 import org.netbeans.lib.cvsclient.connection.PServerConnection;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
+import org.netbeans.lib.cvsclient.command.CommandAbortedException;
 
 /**
  * Tescase covering handling network unreliability and
@@ -72,8 +73,7 @@ public class ErrorHandlingTest extends TestCase {
         System.setProperty("cvsClientLog", protocolLog);
         System.out.println(protocolLog);
 
-        InputStream in = getClass().getResourceAsStream("protocol/iz56552.in");
-        final PseudoCvsServer cvss = new PseudoCvsServer(in);
+        final PseudoCvsServer cvss = new PseudoCvsServer("protocol/iz56552.in");
         new Thread(cvss).start();
 
         String cvsRoot = cvss.getCvsRoot();
@@ -118,10 +118,7 @@ public class ErrorHandlingTest extends TestCase {
             }
         }
         t.interrupt();
-        if (testException[0] != null) {
-            throw testException[0];
-        }
-        assertTrue(completedFlag[0]);
+        assertTrue(testException[0] instanceof CommandAbortedException);
 
         TestKit.deleteRecursively(tmpDir);
     }

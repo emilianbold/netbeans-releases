@@ -476,6 +476,7 @@ made subject to such option by the copyright holder.
                 <project>../../profiler.j2se</project>
                 <project>../../profiler.nbmodule</project>
                 <project>../../profiler.projectsupport</project>
+                <project>../../profiler.selector.java</project>
                 <project>../../profiler.selector.spi</project>
                 <project>../../profiler.selector.ui</project>
                 <project>../../profiler.utilities</project>

@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -141,7 +142,8 @@ class OpenedEditors implements PropertyChangeListener {
 
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
                 // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
-                boolean valid = isOpen((JEditorPane) editor, fo);
+                // UPDATE it seems that this bug was fixed and there is no need in additional check now
+                boolean valid = true;// isOpen((JEditorPane) editor, fo);
                 if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", fo.toString(), valid); }
                 if (valid) {
                     visibleEditors.add(editor);
@@ -157,22 +159,22 @@ class OpenedEditors implements PropertyChangeListener {
         fireChangeEvent();
     }
 
-    private boolean isOpen(JEditorPane editor, FileObject fo) {
-        try {
-            DataObject dao = DataObject.find(fo);
-            if (dao != null) {
-                EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
-                if (editorCookie != null) {
-                    JEditorPane[] panes = editorCookie.getOpenedPanes();
-                    return panes != null && panes.length > 0;
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // we don't need to report this exception;
-            // probably the file is just removed by user
-        }
-        return false;
-    }
+//    private boolean isOpen(JEditorPane editor, FileObject fo) {
+//        try {
+//            DataObject dao = DataObject.find(fo);
+//            if (dao != null) {
+//                EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
+//                if (editorCookie != null) {
+//                    JEditorPane[] panes = editorCookie.getOpenedPanes();
+//                    return panes != null && panes.length > 0;
+//                }
+//            }
+//        } catch (DataObjectNotFoundException ex) {
+//            // we don't need to report this exception;
+//            // probably the file is just removed by user
+//        }
+//        return false;
+//    }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (SHOW_TIME) { System.err.println("OpenedEditors.propertyChange()"); }
@@ -204,7 +206,8 @@ class OpenedEditors implements PropertyChangeListener {
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
-    private final static List<String> mimeTypesList = Arrays.asList(new String[]{"text/x-c++", "text/x-c"}); //NOI18N
+    private final static List<String> mimeTypesList = Arrays.asList(new String[]
+                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE}); 
 
     /**
      * Filter unsupported files from the <code>files</code> parameter.

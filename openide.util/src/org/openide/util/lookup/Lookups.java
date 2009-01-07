@@ -160,6 +160,7 @@ public class Lookups {
      * so there is "stability" in doing this provided some parent loaders are the same
      * as the previous ones.
      * @since 3.35
+     * @see ServiceProvider
      */
     public static Lookup metaInfServices(ClassLoader classLoader) {
         return new MetaInfServicesLookup(classLoader, "META-INF/services/"); // NOI18N

@@ -44,19 +44,24 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArrayNode;
 import org.jruby.nb.ast.AssignableNode;
 import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.DStrNode;
 import org.jruby.nb.ast.DefnNode;
+import org.jruby.nb.ast.FCallNode;
 import org.jruby.nb.ast.IterNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.ReturnNode;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
@@ -155,6 +160,27 @@ public class AstUtilitiesTest extends RubyTestBase {
             "authent"
         });
         assertEquals(expected, requires);
+    }
+
+    public void testExitPointsFoo() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#foo");
+        Set<Node> exits = new LinkedHashSet<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("two exit points, was: " + exits, 2, exits.size());
+        Iterator<Node> it = exits.iterator();
+        assertTrue("return node", it.next() instanceof ReturnNode);
+        assertTrue("return node", it.next() instanceof ArrayNode);
+    }
+
+    public void testExitPointsBoo() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#boo(unusedparam,unusedparam2,usedparam)");
+        Set<Node> exits = new LinkedHashSet<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("one exit point, was: " + exits, 1, exits.size());
+        Iterator<Node> it = exits.iterator();
+        assertTrue("return node", it.next() instanceof FCallNode);
     }
 
     public void testGetMethodName() {

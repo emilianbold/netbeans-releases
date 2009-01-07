@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
+import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;
@@ -63,10 +65,10 @@ public class CsmRefactoringsFactory implements RefactoringPluginFactory {
                 return new CsmRenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (refactoring instanceof ChangeParametersRefactoring) {
                 return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
-//            } else if (refactoring instanceof EncapsulateFieldRefactoring) {
-//                return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
-//            } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
-//                return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
+            } else if (refactoring instanceof EncapsulateFieldRefactoring) {
+                return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
+            } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
+                return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
             }
         }
         return null;

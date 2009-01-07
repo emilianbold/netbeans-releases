@@ -48,6 +48,7 @@ import junit.framework.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
@@ -119,5 +120,12 @@ public class AbstractTestCase extends TestCase {
             return true;
         
         return false;        
+    }
+
+    protected XMLSyntaxSupport getSyntaxSupport(String path) throws Exception {
+        BaseDocument doc = getResourceAsDocument(path);
+        //must set the language inside unit tests
+        doc.putProperty(Language.class, XMLTokenId.language());
+        return ((XMLSyntaxSupport)doc.getSyntaxSupport());
     }
 }

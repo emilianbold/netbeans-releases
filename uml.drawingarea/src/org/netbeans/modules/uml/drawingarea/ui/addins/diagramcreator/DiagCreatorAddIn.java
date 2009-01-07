@@ -205,7 +205,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
                   // if we are in the design center, we need to set up the context for the new dialog
                   // a little differently than if we were in the project area
                	  //This has to be uncommented after resolving cyclic dependency issues
-                  //setUpNewDialogContext(pProjectTree);
                   waitCursor.restore();
 
                   guiCreateDiagram(handler);
@@ -442,19 +441,12 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
                   }
                }
                     
-//                    printNodeLocations("Pre Layout", pDiagram);
                performLayout(pDiagram, true);
                wait.restore();
-//               pumpMessages(pDiagram);
-
-               // I am keeping in the printNodeLocations in for debug reasons.
-//                printNodeLocations("Post Layout", pDiagram);
                     
                // Now we need to tell all the containers to populate themselves
                populateAllContainers(pDiagram);
                wait.restore();
-                    
-//                printNodeLocations("Post Populate", pDiagram);
             }
             finally
             {
@@ -487,34 +479,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
 //         m_Helper.registerDrawingAreaEvents(this);
       }
       return 0;
-   }
-
-   /**
-    * Register for the accelerators that the edit control needs.
-    */
-   private boolean registerAccelerators()
-   {
-      boolean bRetVal = false;
-
-      //if( !m_bAcceleratorsRegistered)
-      {
-         // Don't allow transformations if we're Describe Developer 'cause
-         // Component diagrams are not allowed
-         IAcceleratorManager cpManager = getAcceleratorManager();
-         if (cpManager != null && m_hook != null)
-         {
-            cpManager.register(m_hook, this, "F6", false);
-
-            bRetVal = true;
-            m_bAcceleratorsRegistered = true;
-         }
-      }
-      //else
-      {
-         m_bAcceleratorsRegistered = true;
-      }
-
-      return bRetVal;
    }
 
    /**
@@ -1042,48 +1006,6 @@ catch (IOException ex) {
                   continue;
               retObj.add(e);
           }
-//         if (pDiagram instanceof IUIDiagram)
-//         {
-//            IUIDiagram dia = (IUIDiagram) pDiagram;
-//            IDrawingAreaControl cpControl = dia.getDrawingArea();
-//            if (cpControl != null)
-//            {
-//               IPresentationTypesMgr presTypesMgr = cpControl.getPresentationTypesMgr();
-//               if (presTypesMgr != null)
-//               {
-//                  // Get the diagram kind
-//                  int diaKind = pDiagram.getDiagramKind();
-//
-//                  // Only keep valid elements for this diagram
-//                  int count = pNamedElements.size();
-//                  for (int i = 0; i < count; i++)
-//                  {
-//                     INamedElement namedEle = pNamedElements.get(i);
-//                     String initStr = presTypesMgr.getMetaTypeInitString(namedEle, diaKind);
-//                     if (initStr != null && initStr.length() > 0)
-//                     {
-//                        // Don't add links, because
-//                        // they will get discovered during relationship discovery.
-//                        PresentationTypeDetails details = presTypesMgr.getInitStringDetails(initStr, diaKind);
-//								int nKind = details.getObjectKind();
-//
-//                        if ((TSGraphObjectKind.TSGOK_NODE == nKind) || (TSGraphObjectKind.TSGOK_NODE_DECORATOR == nKind) || (TSGraphObjectKind.TSGOK_NODE_RESIZE == nKind))
-//                        {
-//                           if (retObj == null)
-//                           {
-//                              retObj = new ETArrayList < IElement > ();
-//                           }
-//                           
-//                           if (retObj != null)
-//                           {
-//                              retObj.add(namedEle);
-//                           }
-//                        }
-//                     }
-//                  }
-//               }
-//            }
-//         }
       }
       return retObj;
    }
@@ -1308,56 +1230,6 @@ catch (IOException ex) {
          pDiagram.selectAll(false);
          
          engine.layout(true);
-         
-//         // Set the default mode to be selection
-//         // TODO: Do we still need to set the mode to perform layout.
-////         pDiagram.enterMode(IDrawingToolKind.DTK_SELECTION);
-//
-//         // Layout the diagram
-//         int diaKind = pDiagram.getDiagramKind();
-//         
-//         // Let the diagram m decide its layout kind.
-//         //int layoutKind = getLayoutKind(diaKind);
-//
-//         // Do a layout using our action which will automatically create
-//         // a blocker for containment if necessary
-////         if (pDiagram instanceof IUIDiagram)
-////         {
-////            IUIDiagram dia = (IUIDiagram) pDiagram;
-////            IDrawingAreaControl cpControl = dia.getDrawingArea();
-////            if (cpControl != null)
-////            {
-////               if (diaKind == IDiagramKind.DK_COMPONENT_DIAGRAM)
-////               {
-////                  // Component diagram is unique 'cause it does some containment
-////                  IComponentDiagramCreator diaCreator = new ComponentDiagramCreator();
-////                  diaCreator.performLayout(pDiagram);
-////               }
-////               else
-////               {
-////                  // Perform normal layout routines
-////                  ITopographyChangeAction changeAction = new TopographyChangeAction();
-////                  if (ignoreContainment)
-////                  {
-////                     changeAction.setKind(DiagramAreaEnumerations.TAK_LAYOUTCHANGE_IGNORECONTAINMENT_SILENT);
-////                  }
-////                  else
-////                  {
-////                     changeAction.setKind(DiagramAreaEnumerations.TAK_LAYOUTCHANGE_SILENT);
-////                  }
-////
-////                  changeAction.setLayoutStyle(true, true, pDiagram.getLayoutStyle());
-////						changeAction.execute(cpControl);
-////                  //dia.postDelayedAction(changeAction);
-////               }
-////               cpControl.refresh(false);
-////            }
-////         }
-//         
-//         /* 
-//            GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
-//            gLayout.layoutGraph(scene);
-//          */
       }
    }
 
@@ -1594,21 +1466,6 @@ catch (IOException ex) {
       return diaMgr != null ? diaMgr.getCurrentDiagram() : null;
    }
 
-//   /**
-//    * Get the drawing area control from the diagram, throw if not able
-//    */
-//   private void pumpMessages(IDiagram pDiagram)
-//   {
-////      if (pDiagram instanceof IUIDiagram)
-////      {
-////         IDrawingAreaControl control = ((IUIDiagram) pDiagram).getDrawingArea();
-////         if (control != null)
-////         {
-////            control.pumpMessages(false);
-////         }
-////      }
-//   }
-
    /**
     * Retrieves the current product's accelerator manager
     */
@@ -1617,71 +1474,6 @@ catch (IOException ex) {
       IProduct prod = ProductHelper.getProduct();
       return prod != null ? prod.getAcceleratorManager() : null;
    }
-
-// This code was not being used in NB 6.0 either.
-//   /**
-//    * Create the class presentation elements
-//    */
-//   private void createClassPresentationElements(IDiagram pDiagram)
-//   {
-//      if (pDiagram != null)
-//      {
-////         ICoreRelationshipDiscovery relDiscovery = TypeConversions.getRelationshipDiscovery(pDiagram);
-//         IProject proj = pDiagram.getProject();
-//         if (proj != null)
-//         {
-//            // Gather up all the classes and create presentation elements
-//            IElementLocator locator = new ElementLocator();
-//
-//            // '//UML:Class' will find all classes in the project. To do it for just a particular namespace, pass 
-//            // the namespace element where ver is, and use this as as the query ".//UML:Class". 
-//            // ( Notice the '.' before the double slash ).
-//            ETList < IElement > elems = locator.findElementsByQuery(proj, "//UML:Class");
-//            if (elems != null)
-//            {
-//               int count = elems.size();
-//               for (int i = 0; i < count; i++)
-//               {
-//                  IElement elem = elems.get(i);
-//                  if (elem instanceof IClass)
-//                  {
-////                     IPresentationElement pEle = relDiscovery.createPresentationElement(elem);
-//                  }
-//               }
-//            }
-//         }
-//      }
-//   }
-//
-//   /**
-//    * Create the package presentation elements
-//    */
-//   private void createPackagePresentationElements(IDiagram pDiagram)
-//   {
-//      if (pDiagram instanceof IStructuralDiagram)
-//      {
-////         ICoreRelationshipDiscovery relDisco = TypeConversions.getRelationshipDiscovery(pDiagram);
-//         IProject proj = pDiagram.getProject();
-//         if (proj != null)
-//         {
-//            // Gather up all the classes and create presentation elements
-//            IElementLocator locator = new ElementLocator();
-//            ETList < IElement > elems = locator.findElementsByQuery(proj, ".//UML:Element.ownedElement/UML:Package");
-//            if (elems != null)
-//            {
-//               int count = elems.size();
-//               for (int i = 0; i < count; i++)
-//               {
-//                  IElement elem = elems.get(i);
-//                  if (elem instanceof IPackage)
-//                  {
-////                     IPresentationElement pEle = relDisco.createPresentationElement(elem);
-//                  }
-//               }
-//            }
-//         }
-//      }
-//   }
 
    /**
     * Message from the project tree that a context menu is about to be displayed
@@ -1776,104 +1568,11 @@ catch (IOException ex) {
    }
 
    /**
-    * The new dialog uses a context to keep some defaults for building the information
-    * presented in the dialog.  If the tree that we are coming from is the design center
-    * we need to set up the data a little differently.
-    * 
-    *
-    * @param pProjectTree[in]		The project tree
-    *
-    * @return HRESULT
-    *
-    */
-   //This has to be uncommented after resolving cyclic dependency issues
-//   private void setUpNewDialogContext(IProjectTreeControl pProjectTree)
-//   {
-//      // Create our context in case the new dialog is brought up and we need to get our
-//      // workspace and project
-//      INewDialogContext pContext = new NewDialogContext();
-//
-//      // all of this work is to get the workspace from the design pattern catalog
-//      // so that we will have the right projects in our project (namespace) lists
-//      ICoreProduct prod = ProductHelper.getCoreProduct();
-//      if (prod != null)
-//      {
-//         IDesignCenterManager pManager = prod.getDesignCenterManager();
-//         if (pManager instanceof IADDesignCenterManager)
-//         {
-//            IADDesignCenterManager adMgr = (IADDesignCenterManager) pManager;
-//            IDesignPatternCatalog pCatalog = adMgr.getDesignPatternCatalog();
-//            if (pCatalog != null)
-//            {
-//               IWorkspace pWorkspace = pCatalog.getWorkspace();
-//               pContext.setWorkspace(pWorkspace);
-//               pContext.setProject(null);
-//               pContext.setUseAllProjectExtensions(false);
-//               pContext.setProjectTree(pProjectTree);
-//            }
-//         }
-//      }
-//   }
-
-   /**
     * Populates all the containers on the diagram
     */
    private void populateAllContainers(IDiagram pDiagram)
    {
-//      pumpMessages(pDiagram);
-//      
-//      if (pDiagram instanceof IUIDiagram)
-//      {
-//         IDrawingAreaControl control = ((IUIDiagram) pDiagram).getDrawingArea();
-//         if (control != null)
-//         {
-//            // Get all the container draw engines
-//            ETList < IPresentationElement > pPEs = control.getAllItems();
-//            if (pPEs != null)
-//            {
-//               int count = pPEs.size();
-//               boolean needRelayout = false;
-//               for (int i = 0; i < count; i++)
-//               {
-//                  IPresentationElement pPE = pPEs.get(i);
-//                  IDrawEngine drawEngine = TypeConversions.getDrawEngine(pPE);
-//                  if (drawEngine instanceof IADContainerDrawEngine)
-//                  {
-//                     // Call populate on them so they create populate their contents
-//                     boolean didPopulate = ((IADContainerDrawEngine) drawEngine).populate();
-//                     if (didPopulate)
-//                     {
-//                        needRelayout = true;
-//                     }
-//                  }
-//               }
-//               
-//               // BUG : If the container grows it may end up containing
-//               // stuff that shouldn't be contained.  For SP1 we can't fix right now.
-//
-//               // If the populate actually added elements then we need to relayout the diagram 'cause
-//               // the containers may have resized, also we'll need to do a relationship discovery.
-//               if (needRelayout)
-//               {
-//                  final ICoreRelationshipDiscovery relDisco = TypeConversions.getRelationshipDiscovery(pDiagram);
-//                  final IDiagram diagram = pDiagram;
-//                  if (relDisco != null)
-//                  {
-//                     // Fix J2510:  We need to delay this so that the proper elements exist on the diagram,
-//                     //             and so that layout will work properly.
-//                     SwingUtilities.invokeLater( new Runnable()
-//                     {
-//                        public void run()
-//                        {
-//                           relDisco.discoverCommonRelations(true);
-//                           performLayout( diagram, false );
-//                        }
-//                     } );
-//                  }
-//               }
-//            }
-//         }
-//      }
+
    }
 
    /**
@@ -1924,44 +1623,6 @@ catch (IOException ex) {
          guiCreateDiagramFromProjectTreeElements(projTree);
       }
    }
-
-   /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.core.addinframework.ui.action.IPlugginAction#selectionChanged(org.netbeans.modules.uml.core.addinframework.ui.action.PluginAction, org.netbeans.modules.uml.core.addinframework.ui.action.selection.ISelection)
-    */
-//   public void selectionChanged(PluginAction action, ISelection selection)
-//   {
-//
-//   }
-
-   /**
-    * Determines if the "Create Diagram From Selected" menu item should be 
-    * enabled.
-    */
-//   public boolean validate(ApplicationView view, IContributionItem item, IMenuManager pContextMenu)
-//   {
-//      boolean valid = false;
-//      if (view instanceof IProjectTreeControl)
-//      {
-//         IProjectTreeControl control = (IProjectTreeControl) view;
-//
-//         boolean isFolder = isFolderSelected(control);
-//         if (!isFolder)
-//         {
-//            // See if we have a model element selected
-//            IElement firstSelModEle = control.getFirstSelectedModelElement();
-//
-//            if (canDiagramBeCreatedFromElement(firstSelModEle))
-//            {
-//               valid = true;
-//            }
-//         }
-//      }
-//      else if (view instanceof IDrawingAreaControl)
-//      {
-//         // not valid for drawing area.
-//      }
-//      return valid;
-//   }
 
    /**
     * Determines whether or not a folder node is selected in the tree
@@ -2033,40 +1694,12 @@ catch (IOException ex) {
       return bHandled;
    }
 
-   /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-    */
-//   public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-//   {
-//   }
-
-   /* Used to register the accelerators needed for the addin.
-    * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-    */
-//   public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-//   {
-//      IDiagram pParentDiagram = pDiagramControl.getDiagram();
-//      if (pParentDiagram instanceof IUIDiagram)
-//      {
-//         IUIDiagram pUIDiagram = (IUIDiagram) pParentDiagram;
-//         m_hook = (JComponent) pUIDiagram.getDrawingArea();
-//
-//         registerAccelerators();
-//      }
-//   }
-
    /* Used to register the accelerators needed for the addin.
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaOpened(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
    public void onDrawingAreaOpened(IDiagram pParentDiagram, IResultCell cell)
    {
-//      if (pParentDiagram instanceof IUIDiagram)
-//      {
-//         IUIDiagram pUIDiagram = (IUIDiagram) pParentDiagram;
-//         m_hook = (JComponent) pUIDiagram.getDrawingArea();
-//
-//         registerAccelerators();
-//      }
+
    }
 
    /* (non-Javadoc)
@@ -2117,34 +1750,12 @@ catch (IOException ex) {
    }
 
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaTooltipPreDisplay(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement, org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-    */
-//   public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
-//   {
-//   }
-
-   /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaActivated(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
    public void onDrawingAreaActivated(IDiagram pParentDiagram, IResultCell cell)
    {
 
    }
-
-   /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-    */
-//   public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-//   {
-//
-//   }
-
-   /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-    */
-//   public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-//   {
-//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreFileRemoved(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)

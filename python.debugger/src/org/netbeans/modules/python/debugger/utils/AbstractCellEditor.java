@@ -1,3 +1,41 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.python.debugger.utils;
 
 import java.awt.*;
@@ -8,27 +46,32 @@ import javax.swing.tree.*;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
+/**
+ *
+ * @author Jean-Yves Mengant
+ */
 public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
+
   protected EventListenerList listenerList = new EventListenerList();
-	protected Object value;
+  protected Object value;
   protected ChangeEvent changeEvent = null;
   protected int clickCountToStart = 1;
 
   /** Returns the value contained in the editor**/
-	public Object getCellEditorValue() {
-		return value;
-	}
+  public Object getCellEditorValue() {
+    return value;
+  }
 
-	public void setCellEditorValue(Object value) {
-		this.value = value;
-	}
+  public void setCellEditorValue(Object value) {
+    this.value = value;
+  }
 
   public void setClickCountToStart(int count) {
-		clickCountToStart = count;
+    clickCountToStart = count;
   }
 
   public int getClickCountToStart() {
-		return clickCountToStart;
+    return clickCountToStart;
   }
 
   /**
@@ -46,11 +89,12 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @see #shouldSelectCell
    */
   public boolean isCellEditable(EventObject anEvent) {
-		if (anEvent instanceof MouseEvent) {
-	    if (((MouseEvent)anEvent).getClickCount() < clickCountToStart)
-			  return false;
-		}
-		return true;
+    if (anEvent instanceof MouseEvent) {
+      if (((MouseEvent) anEvent).getClickCount() < clickCountToStart) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -87,12 +131,13 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @see #isCellEditable
    */
   public boolean shouldSelectCell(EventObject anEvent) {
-		if (this.isCellEditable(anEvent)) {
-	    if (anEvent == null || ((MouseEvent)anEvent).getClickCount() >= clickCountToStart)
-				return true;
-		}
-		return false;
-	}
+    if (this.isCellEditable(anEvent)) {
+      if (anEvent == null || ((MouseEvent) anEvent).getClickCount() >= clickCountToStart) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * Tell the editor to stop editing and accept any partially edited
@@ -103,8 +148,8 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @return	true if editing was stopped
    */
   public boolean stopCellEditing() {
-		fireEditingStopped();
-		return true;
+    fireEditingStopped();
+    return true;
   }
 
   /**
@@ -112,7 +157,7 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * edited value.
    */
   public void cancelCellEditing() {
-		fireEditingCanceled();
+    fireEditingCanceled();
   }
 
   /**
@@ -122,7 +167,7 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @param	l		the CellEditorListener
    */
   public void addCellEditorListener(CellEditorListener l) {
-		listenerList.add(CellEditorListener.class, l);
+    listenerList.add(CellEditorListener.class, l);
   }
 
   /**
@@ -131,7 +176,7 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @param	l		the CellEditorListener
    */
   public void removeCellEditorListener(CellEditorListener l) {
-		listenerList.remove(CellEditorListener.class, l);
+    listenerList.remove(CellEditorListener.class, l);
   }
 
   /**
@@ -153,9 +198,9 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @param	row		the row index of the node being edited
    * @return	the component for editing
    */
-  public Component getTreeCellEditorComponent(JTree tree, Object myvalue,	boolean isSelected,
-		                                          boolean expanded, boolean leaf, int row) {
-		return null;
+  public Component getTreeCellEditorComponent(JTree tree, Object myvalue, boolean isSelected,
+          boolean expanded, boolean leaf, int row) {
+    return null;
   }
 
   /**
@@ -182,33 +227,35 @@ public class AbstractCellEditor implements TableCellEditor, TreeCellEditor {
    * @return	the component for editing
    */
   public Component getTableCellEditorComponent(JTable table, Object myvalue, boolean isSelected,
-						                                   int row, int column) {
-		return null;
+          int row, int column) {
+    return null;
   }
 
   protected void fireEditingStopped() {
-		Object[] listeners = listenerList.getListenerList();
+    Object[] listeners = listenerList.getListenerList();
 
-		for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==CellEditorListener.class) {
-				if (changeEvent == null)
-		    		changeEvent = new ChangeEvent(this);
+    for (int i = listeners.length - 2; i >= 0; i -= 2) {
+      if (listeners[i] == CellEditorListener.class) {
+        if (changeEvent == null) {
+          changeEvent = new ChangeEvent(this);
+        }
 
-				((CellEditorListener)listeners[i+1]).editingStopped(changeEvent);
-	    }
-		}
+        ((CellEditorListener) listeners[i + 1]).editingStopped(changeEvent);
+      }
+    }
   }
 
   protected void fireEditingCanceled() {
-		Object[] listeners = listenerList.getListenerList();
+    Object[] listeners = listenerList.getListenerList();
 
-		for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==CellEditorListener.class) {
-				if (changeEvent == null)
-		    		changeEvent = new ChangeEvent(this);
+    for (int i = listeners.length - 2; i >= 0; i -= 2) {
+      if (listeners[i] == CellEditorListener.class) {
+        if (changeEvent == null) {
+          changeEvent = new ChangeEvent(this);
+        }
 
-			  ((CellEditorListener)listeners[i+1]).editingCanceled(changeEvent);
-	    }
-	  }
+        ((CellEditorListener) listeners[i + 1]).editingCanceled(changeEvent);
+      }
+    }
   }
 }

@@ -61,6 +61,13 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
             }
             return new File(script);
+        } else if ("coverage/coverage.py".equals(relativePath) || "coverage/coverage_wrapper.py".equals(relativePath)) {
+            try {
+                return new File(PythonTestBase.getXTestPythonHome().getParentFile(), relativePath.replace("/", File.separator)).getCanonicalFile();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                throw new RuntimeException("Couldn't find coverage files");
+            }
         } else if (relativePath.equals("modules/org-netbeans-modules-python-editor.jar")) {
             // During test?
             // HACK - TODO use mock

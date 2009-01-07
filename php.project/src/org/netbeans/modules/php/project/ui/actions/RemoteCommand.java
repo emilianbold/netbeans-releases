@@ -98,7 +98,7 @@ public abstract class RemoteCommand extends Command {
     @Override
     public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         // WARNING context can be null, see RunCommand.invokeAction()
-        return isRemoteConfigSelected() && getRemoteConfiguration() != null && TASK.isFinished();
+        return isRemoteConfigSelected() && TASK.isFinished();
     }
 
     protected abstract Runnable getContextRunnable(Lookup context);

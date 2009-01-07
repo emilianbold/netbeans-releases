@@ -59,6 +59,10 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 
 public class CKit extends CCKit {
 
+    public CKit() {
+        // default constructor needed to be created from services
+    }
+    
     @Override
     public String getContentType() {
         return MIMENames.C_MIME_TYPE;

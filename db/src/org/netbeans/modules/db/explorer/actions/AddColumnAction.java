@@ -66,6 +66,7 @@ public class AddColumnAction extends DatabaseAction {
     }
     
     public void performAction (Node[] activatedNodes) {
+        /*
         Node node;
         if (activatedNodes != null && activatedNodes.length == 1)
             node = activatedNodes[0];
@@ -95,5 +96,6 @@ public class AddColumnAction extends DatabaseAction {
             Logger.getLogger("global").log(Level.INFO, null, exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
+        */
     }
 }

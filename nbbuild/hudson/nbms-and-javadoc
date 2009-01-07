@@ -30,5 +30,13 @@ ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuil
     build-jnlp || exit
 ant index-layer-paths
 ant clean-untracked-files
-test -z "`hg st | tee /dev/stderr`" || exit
-test -z "`hg -R contrib st | tee /dev/stderr`" || exit
+for r in . contrib
+do
+    output="`hg -R $r st`"
+    if [ -n "$output" ]
+    then
+        echo "Local modifications found in $r:"
+        echo "$output"
+        exit 1
+    fi
+done

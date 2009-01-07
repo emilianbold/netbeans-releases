@@ -59,12 +59,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -224,6 +219,8 @@ class CompletionContextFinder {
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
+        } else if (tokenId == PHPTokenId.PHP_COMMENT) {
+            return getCompletionContextInComment(tokenSequence, caretOffset, info);
         } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
@@ -573,6 +570,24 @@ class CompletionContextFinder {
             tokenSequence.moveNext();
         }
         return false;
+    }
+
+    static CompletionContext getCompletionContextInComment(TokenSequence<PHPTokenId> tokenSeq, final int caretOffset, CompilationInfo info) {
+        Token<PHPTokenId> token = tokenSeq.token();
+        if (token.text().length() == 0) {
+            return CompletionContext.NONE;
+        }
+        CharSequence text = token.text();
+        int offset = caretOffset - tokenSeq.offset() -1;
+        char charAt = text.charAt(offset--);
+        while(-1 < offset && !Character.isWhitespace(charAt) && charAt != '$') {
+            charAt = text.charAt(offset);
+            offset--;
+        }
+        if (offset < text.length() && charAt == '$') {
+            return CompletionContext.STRING;
+        }
+        return CompletionContext.TYPE_NAME;
     }
 
     static int lexerToASTOffset (PHPParseResult result, int lexerOffset) {

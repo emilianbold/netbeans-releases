@@ -93,8 +93,8 @@ made subject to such option by the copyright holder.
   </folder>
 
   <folder name="Loaders">
-        <folder name="xml">
-            <folder name="sun-resource">
+        <folder name="text">
+            <folder name="x-sun-resource+xml">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-sun-ide-sunresources-resourcesloader-SunResourceDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.appsrvapi.Bundle"/>

@@ -55,6 +55,7 @@ import org.netbeans.modules.python.editor.scopes.SymInfo;
 import org.openide.util.NbBundle;
 import org.python.antlr.ast.Attribute;
 import org.python.antlr.ast.Name;
+import org.python.antlr.base.expr;
 
 /**
  * Check direct acces to parent protected variables or methods
@@ -74,17 +75,20 @@ public class AccessToProtected extends PythonAstRule {
     public void run(PythonRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         Attribute cur = (Attribute)context.node;
-        if (cur.attr == null) {
+        String curAttr = cur.getInternalAttr();
+        if (curAttr == null) {
             return;
         }
 
-        if (SymInfo.isProtectedName(cur.attr)) {
-            if (cur.value instanceof Name) {
-                Name nam = (Name)cur.value;
-                if (nam.id.equals("self")) { // NOI18N
+        if (SymInfo.isProtectedName(curAttr)) {
+            expr curValue = cur.getInternalValue();
+            if (curValue instanceof Name) {
+                Name nam = (Name)curValue;
+                String id = nam.getInternalId();
+                if (id.equals("self")) { // NOI18N
                     return; // normal access from class instance
                 }
-                if (PythonAstUtils.getParentClassFromNode(context.path, null, nam.id) != null) {
+                if (PythonAstUtils.getParentClassFromNode(context.path, null, id) != null) {
                     return; // parent access
                 }
                 // we should warn here : Access to protected Attributes from non child
@@ -93,7 +97,7 @@ public class AccessToProtected extends PythonAstRule {
                 range = PythonLexerUtils.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = Collections.emptyList();
-                    String message = NbBundle.getMessage(NameRule.class, ACCESS_PROTECTED_VARIABLE, cur.attr);
+                    String message = NbBundle.getMessage(NameRule.class, ACCESS_PROTECTED_VARIABLE, curAttr);
                     Hint desc = new Hint(this, message, info.getFileObject(), range, fixList, 2305);
                     result.add(desc);
                 }

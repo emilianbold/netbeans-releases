@@ -123,7 +123,7 @@ public class SchemaTest extends NbTestCase {
 
     public void validate() {
         assertNotNull("null schema", schema); //NOI18N
-        LOG.fine("Validating: " + file.getName()); //NOI18N
+        LOG.info("Validating: " + file.getAbsolutePath()); //NOI18N
         try {
             // parse an XML document into a DOM tree
             DocumentBuilder parser = dbf.newDocumentBuilder();
@@ -180,9 +180,8 @@ public class SchemaTest extends NbTestCase {
     private static Schema createSchema(String... resources) {
         Schema s = null;
         List<InputStream> iss = new ArrayList<InputStream>(resources.length);
-        Source[] sources = new StreamSource[resources.length];
-        for (int i = 0; i <
-                resources.length; i++) {
+        Source[] sources = new StreamSource[resources.length + 1];
+        for (int i = 0; i < resources.length; i++) {
             InputStream is = ClassLoader.getSystemResourceAsStream(resources[i]);
             sources[i] = new StreamSource(is);
             iss.add(is);

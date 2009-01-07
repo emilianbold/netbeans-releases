@@ -441,7 +441,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                     for (String str : startup_data.keySet()) {
                         begin = readLine.indexOf(str);
                         if(begin!=-1){
-                            end = readLine.indexOf((String)startup_data.get(str));
+                            end = readLine.indexOf(startup_data.get(str));
                             
                             if(end<=begin) end=readLine.length();
                             

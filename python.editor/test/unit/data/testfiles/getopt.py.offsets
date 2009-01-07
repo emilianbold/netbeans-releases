@@ -146,9 +146,9 @@ option involved with the exception.
 </FunctionDef><FunctionDef>def do_longs(<Name>opts</Name>, <Name>opt</Name>, <Name>longopts</Name>, <Name>args</Name>):
     <TryExcept>try:
         <Assign><Name>i</Name> = <Call><Attribute><Name>opt</Name>.index</Attribute>(<Str>'='</Str>)</Call></Assign>
-    except <Name>ValueError</Name>:
+    <ExceptHandler>except <Name>ValueError</Name>:
         <Assign><Name>optarg</Name> = <Name>None</Name></Assign>
-    else:
+   </ExceptHandler> else:
         <Assign><Tuple><Name>opt</Name>, <Name>optarg</Name></Tuple> = <Tuple><Subscript><Name>opt</Name>[<Slice>:<Name>i</Name></Slice>]</Subscript>, <Subscript><Name>opt</Name>[<Slice><BinOp><Name>i</Name>+<Num>1</Num></BinOp>:</Slice>]</Subscript></Tuple></Assign>
 
    </TryExcept> <Assign><Tuple><Name>has_arg</Name>, <Name>opt</Name></Tuple> = <Call><Name>long_has_args</Name>(<Name>opt</Name>, <Name>longopts</Name>)</Call></Assign>

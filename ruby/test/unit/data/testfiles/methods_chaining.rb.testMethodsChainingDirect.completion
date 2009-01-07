@@ -1,0 +1,9 @@
+Code completion result for source line:
+puts greeting.empty?.to_|s
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     to_s                                       FalseClass
+METHOD     to_s                                       TrueClass
+CALL       puts(obj)                                  Kernel
+------------------------------------
+METHOD     to_a                                       Object
+METHOD     to_enum(method, *args)                     Object

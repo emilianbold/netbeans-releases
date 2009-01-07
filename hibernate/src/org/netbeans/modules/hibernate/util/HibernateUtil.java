@@ -589,6 +589,36 @@ public class HibernateUtil {
         }
     }
 
+    public static Connection getDirectDBConnection(HibernateConfiguration configuration)
+            throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+
+            String driverClassName = getDbConnectionDetails(configuration, "hibernate.connection.driver_class"); //NOI18N
+            String driverURL = getDbConnectionDetails(configuration, "hibernate.connection.url"); //NOI18N
+            String username = getDbConnectionDetails(configuration, "hibernate.connection.username"); //NOI18N
+            String password = getDbConnectionDetails(configuration, "hibernate.connection.password"); //NOI18N
+            //Hibernate allows abbrivated properties
+            if (driverClassName == null) {
+                driverClassName = getDbConnectionDetails(configuration, "connection.driver_class"); //NOI18N
+            }
+            if (driverURL == null) {
+                driverURL = getDbConnectionDetails(configuration, "connection.url"); //NOI18N
+            }
+            if (username == null) {
+                username = getDbConnectionDetails(configuration, "connection.username"); //NOI18N
+            }
+            if (password == null) {
+                password = getDbConnectionDetails(configuration, "connection.password"); //NOI18N
+            }
+
+            Class driverClass = Thread.currentThread().getContextClassLoader().loadClass(driverClassName);
+            java.sql.Driver driver = (java.sql.Driver) driverClass.newInstance();
+            // Establish the connection
+            java.util.Properties info = new java.util.Properties();
+            info.setProperty("user", username);
+            info.setProperty("password", password);
+            return driver.connect(driverURL, info);
+    }
+
     public static String getRelativeSourcePath(FileObject file, FileObject sourceRoot) {
         String relativePath = "";
         try {
