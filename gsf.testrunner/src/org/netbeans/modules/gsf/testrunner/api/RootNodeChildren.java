@@ -294,9 +294,6 @@ final class RootNodeChildren extends Children.Array {
         if (!live) {
             return;
         }
-        if (passedSuites == 0) {
-            return;
-        }
 
         if (filtered) {
             removePassedSuites();
