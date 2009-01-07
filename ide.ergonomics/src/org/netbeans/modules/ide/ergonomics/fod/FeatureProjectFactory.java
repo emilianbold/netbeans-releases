@@ -142,7 +142,6 @@ public class FeatureProjectFactory implements ProjectFactory {
         public void run () {
             Feature2LayerMapping.logUI("ERGO_PROJECT_OPEN", info.clusterName);
             FindComponentModules findModules = new FindComponentModules(info);
-            findModules.createFindingTask ().waitFinished ();
             Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
             Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
             if (toInstall != null && ! toInstall.isEmpty ()) {
