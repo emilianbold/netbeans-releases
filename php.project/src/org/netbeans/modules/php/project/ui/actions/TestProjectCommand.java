@@ -61,12 +61,12 @@ public class TestProjectCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        getConfigAction().invokeAction(getProject(), null);
+        getConfigAction().invokeActionForProject(getProject());
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return getConfigAction().isActionEnabled(getProject(), null);
+        return getConfigAction().isActionEnabledForProject(getProject());
     }
 
     public String getDisplayName() {

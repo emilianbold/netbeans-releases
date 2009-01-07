@@ -46,7 +46,7 @@ import org.openide.util.Lookup;
 /**
  * Common action for all the possible Run Configurations of a PHP project.
  * <p>
- * Stateless, so thread safe.
+ * Meant to be stateless, so thread safe.
  * @author Tomas Mysik
  */
 public abstract class ConfigAction {
@@ -92,6 +92,8 @@ public abstract class ConfigAction {
         return action;
     }
 
-    public abstract void invokeAction(PhpProject project, Lookup context);
-    public abstract boolean isActionEnabled(PhpProject project, Lookup context);
+    public abstract void invokeActionForProject(PhpProject project);
+    public abstract void invokeActionForContext(PhpProject project, Lookup context);
+    public abstract boolean isActionEnabledForProject(PhpProject project);
+    public abstract boolean isActionEnabledForContext(PhpProject project, Lookup context);
 }

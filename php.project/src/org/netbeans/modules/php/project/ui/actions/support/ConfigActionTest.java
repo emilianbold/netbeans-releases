@@ -61,7 +61,26 @@ public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
 
     @Override
-    public void invokeAction(PhpProject project, Lookup context) {
+    public void invokeActionForProject(PhpProject project) {
+        invokeAction(project, null);
+    }
+
+    @Override
+    public void invokeActionForContext(PhpProject project, Lookup context) {
+        invokeAction(project, context);
+    }
+
+    @Override
+    public boolean isActionEnabledForProject(PhpProject project) {
+        return true;
+    }
+
+    @Override
+    public boolean isActionEnabledForContext(PhpProject project, Lookup context) {
+        return true;
+    }
+
+    private void invokeAction(PhpProject project, Lookup context) {
         List<Pair<FileObject, String>> pairs = getPairs(project, context);
         if (pairs == null) {
             return;
@@ -94,11 +113,6 @@ public class ConfigActionTest extends ConfigAction {
         } catch (ExecutionException ex) {
             CommandUtils.processExecutionException(ex);
         }
-    }
-
-    @Override
-    public boolean isActionEnabled(PhpProject project, Lookup context) {
-        return true;
     }
 
     // <working directory, script name>
