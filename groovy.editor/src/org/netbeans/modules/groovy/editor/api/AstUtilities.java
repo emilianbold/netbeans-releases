@@ -131,6 +131,10 @@ public class AstUtilities {
 
         GroovyParserResult result = (GroovyParserResult)r;
 
+        if (result.getRootElement() == null) {
+            return null;
+        }
+        
         return result.getRootElement().getModuleNode();
     }
 
