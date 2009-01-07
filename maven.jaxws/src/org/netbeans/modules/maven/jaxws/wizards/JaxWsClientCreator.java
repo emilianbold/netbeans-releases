@@ -45,11 +45,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.prefs.Preferences;
-import org.apache.maven.model.Plugin;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
@@ -64,7 +61,6 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -134,7 +130,6 @@ public class JaxWsClientCreator implements ClientCreator {
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
-                JaxWsService service = new JaxWsService(relativePath, false);
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
@@ -149,7 +144,6 @@ public class JaxWsClientCreator implements ClientCreator {
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
                         Collections.singletonList(operation));
-                jaxWsSupport.addService(service);
                 Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
                 if (prefs != null) {
                     prefs.put(wsdlFo.getName(), wsdlUrl);
