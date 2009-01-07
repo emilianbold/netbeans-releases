@@ -1,6 +1,6 @@
 Code completion result for source line:
 z = "f\|oo"
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    \ \<i>ooo</i>: The latin chara             null
 KEYWORD    \" Double Quote (\u0022)                   null

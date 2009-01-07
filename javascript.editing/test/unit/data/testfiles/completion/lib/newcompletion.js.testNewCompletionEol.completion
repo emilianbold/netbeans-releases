@@ -1,6 +1,6 @@
 Code completion result for source line:
 editor = new |
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO AbstractView                               DOM
 CONSTRUCTO Arguments                                  Core JS

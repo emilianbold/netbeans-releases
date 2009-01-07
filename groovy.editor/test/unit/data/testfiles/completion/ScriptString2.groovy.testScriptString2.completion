@@ -1,6 +1,6 @@
 Code completion result for source line:
 s.spli|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     split()                                    String[]
 METHOD     split(String)                   [PUBLIC]   String[]

@@ -61,12 +61,12 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.gsf.api.DataLoadersBridge;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -114,35 +114,31 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         Source source = HtmlCaretAwareSourceTask.forDocument(doc);
         source.addChangeListener(new HtmlCaretAwareSourceTask.SourceListener() {
-            public void parsed(CompilationInfo info) {
-                NavigationSideBar.this.change(info);
+            public void parsed(Result info, SchedulerEvent event) {
+                NavigationSideBar.this.change(info, event);
             }
         });
 
         updatePreferredSize();
     }
 
-    private void change(CompilationInfo info) {
-        int caretPosition = CaretAwareSourceTaskFactory.getLastPosition(fileObject);
+    private void change(Result info, SchedulerEvent event) {
 
-        HtmlParserResult result = (HtmlParserResult) info.getEmbeddedResult("text/html", caretPosition); //NOI18N
-        if (result == null) {
-            return;
-        }
 
-        TranslatedSource tsource = result.getTranslatedSource();
-        AstNode root = result.root();
+        int caretPosition = ((CursorMovedSchedulerEvent)event).getCaretOffset();
 
-        AstNode current = AstNodeUtils.findDescendant(root, tsource != null ? tsource.getAstOffset(caretPosition) : caretPosition);
+        AstNode root = ((HtmlParserResult)info).root();
+
+        AstNode current = AstNodeUtils.findDescendant(root, info.getSnapshot().getEmbeddedOffset(caretPosition));
         if (current == null) {
             return;
         }
 
-        updateNestingInfo(tsource, root, current);
+        updateNestingInfo(info, root, current);
 
     }
 
-    private void updateNestingInfo(final TranslatedSource tsource, AstNode root, AstNode node) {
+    private void updateNestingInfo(final Result tsource, AstNode root, AstNode node) {
         List<AstNode> newNesting = new ArrayList<AstNode>();
         do {
             if (node.type() == AstNode.NodeType.TAG) {
@@ -161,7 +157,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     }
 
-    private void updatePanelUI(final TranslatedSource tsource) {
+    private void updatePanelUI(final Result tsource) {
         removeAll();
 
         for (final AstNode node : nesting) {
@@ -181,7 +177,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
                 }
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int documentOffset = tsource != null ? tsource.getLexicalOffset(node.startOffset()) : node.startOffset();
+                    int documentOffset = tsource.getSnapshot().getOriginalOffset(node.startOffset());
                     component.getCaret().setDot(documentOffset);
                 }
             });

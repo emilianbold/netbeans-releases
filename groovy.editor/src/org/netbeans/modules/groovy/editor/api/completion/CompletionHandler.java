@@ -63,12 +63,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -105,6 +99,17 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
@@ -118,11 +123,7 @@ import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -714,7 +715,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         return new AstPath(root, request.astOffset, request.doc);
     }
 
-    private AstPath getPath(CompilationInfo info, BaseDocument doc, int astOffset) {
+    private AstPath getPath(ParserResult info, BaseDocument doc, int astOffset) {
         // figure out which class we are dealing with:
         ASTNode root = AstUtilities.getRoot(info);
 
@@ -731,8 +732,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         return new AstPath(root, astOffset, doc);
     }
 
-    private AstPath getPathFromInfo(final int caretOffset, final CompilationInfo info) {
-
+    private AstPath getPathFromInfo(final int caretOffset, final ParserResult info) {
         assert info != null;
 
         ASTNode root = AstUtilities.getRoot(info);
@@ -744,7 +744,8 @@ public class CompletionHandler implements CodeCompletionHandler {
             return null;
         }
 
-        BaseDocument doc = (BaseDocument) info.getDocument();
+        // FIXME parsing API
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
 
         return new AstPath(root, caretOffset, doc);
 
@@ -1202,7 +1203,8 @@ public class CompletionHandler implements CodeCompletionHandler {
         if (astOffset == -1) {
             return null;
         }
-        BaseDocument document = (BaseDocument) request.info.getDocument();
+
+        BaseDocument document = (BaseDocument) request.info.getSnapshot().getSource().getDocument();
         if (document == null) {
             LOG.log(Level.FINEST, "Could not get BaseDocument. It's null"); //NOI18N
             return null;
@@ -1631,7 +1633,7 @@ public class CompletionHandler implements CodeCompletionHandler {
      * @return
      */
     private ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request) {
-        FileObject fileObject = request.info.getFileObject();
+        FileObject fileObject = request.info.getSnapshot().getSource().getFileObject();
 
         if (fileObject != null) {
             return ClasspathInfo.create(fileObject);
@@ -1865,12 +1867,17 @@ public class CompletionHandler implements CodeCompletionHandler {
         if (mn != null) {
             LOG.log(Level.FINEST, "We are living in package : {0} ", currentPackage);
 
-            GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+            // FIXME parsing API
+            GroovyIndex index = null;
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            if (fo != null) {
+                index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+            }
 
             if (index != null) {
 
                 // This retrieves all classes from index:
-                Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
+                Set<IndexedClass> classes = index.getClasses("", QuerySupport.Kind.PREFIX, true, false, false);
 
                 if (classes.size() == 0) {
                     LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
@@ -1886,7 +1893,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
                         ElementKind ek;
 
-                        if(indexedClass.getKind() == org.netbeans.modules.gsf.api.ElementKind.CLASS){
+                        if(indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS){
                             ek = ElementKind.CLASS;
                         } else {
                             ek = ElementKind.INTERFACE;
@@ -2503,7 +2510,7 @@ public class CompletionHandler implements CodeCompletionHandler {
     }
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CompilationInfo info = context.getInfo();
+        ParserResult info = context.getParserResult();
         String prefix = context.getPrefix();
 
         final int lexOffset = context.getCaretOffset();
@@ -2523,8 +2530,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final Document document = info.getDocument();
-
+        final Document document = info.getSnapshot().getSource().getDocument();
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -2751,7 +2757,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         return sb.toString();
     }
 
-    public String document(CompilationInfo info, ElementHandle element) {
+    public String document(ParserResult info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
         String ERROR = "<h2>" + NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
@@ -2867,7 +2873,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         return originalHandle;
     }
 
-    public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
+    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         return null;
     }
 
@@ -2881,15 +2887,15 @@ public class CompletionHandler implements CodeCompletionHandler {
         return QueryType.NONE;
     }
 
-    public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
+    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return null;
     }
 
-    public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
+    public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         LOG.log(Level.FINEST, "parameters(), caretOffset = {0}", caretOffset); // NOI18N
 
         // here we need to calculate the list of parameters for the methods under the caret.
@@ -2898,7 +2904,9 @@ public class CompletionHandler implements CodeCompletionHandler {
         List<String> paramList = new ArrayList<String>();
 
         AstPath path = getPathFromInfo(caretOffset, info);
-        BaseDocument doc = (BaseDocument) info.getDocument();
+
+        // FIXME parsing API
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
 
         if (path != null) {
 
@@ -2949,7 +2957,7 @@ public class CompletionHandler implements CodeCompletionHandler {
     // FIXME make it ordinary class and/or split it
     static class CompletionRequest {
 
-        CompilationInfo info;
+        ParserResult info;
         int lexOffset;
         int astOffset;
         BaseDocument doc;

@@ -46,7 +46,6 @@ import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
 import java.util.Stack;
-import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -97,18 +96,19 @@ public final class NbCompilationUnit extends CompilationUnit {
                             }
                         }
                     };
-                    if (waitScanFinished) {
-                        javaSource.runWhenScanFinished(task, true).get();
-                    } else {
+//                    if (waitScanFinished) {
+//                        javaSource.runWhenScanFinished(task, true).get();
+//                    } else {
                         javaSource.runUserActionTask(task, true);
-                    }
+//                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
+//                catch (InterruptedException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                } catch (ExecutionException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
             }
             return classNodes[0];
         }

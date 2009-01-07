@@ -40,16 +40,22 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.FileObject;
 
 /**
  * Check the type inference for various files. Generates *.types goldenfiles.
@@ -63,17 +69,17 @@ public class TypesTest extends JsTestBase {
     }
 
     @Override
-    protected void initializeTypeNodes(CompilationInfo info, List<Object> nodes,
+    protected void initializeTypeNodes(ParserResult info, List<Object> nodes,
             Map<Object,OffsetRange> positions, Map<Object,String> types) throws Exception {
-        Node root = AstUtilities.getRoot(info);
+
+        Node root = ((JsParseResult) info).getRootNode();
         assertNotNull(root);
 
-        initialize(root, nodes, types, positions, info);
-
+        initialize(root, nodes, types, positions, (JsParseResult) info);
     }
 
     private void initialize(Node node, List<Object> nodes, Map<Object,String> types, Map<Object,
-            OffsetRange> positions, CompilationInfo info) throws Exception {
+            OffsetRange> positions, JsParseResult info) throws Exception {
         if (node.getSourceStart() > node.getSourceEnd()) {
             BaseDocument doc = LexUtilities.getDocument(info, false);
             assertTrue(node.toString() + "; node=" + node.toString() + " at line " + org.netbeans.editor.Utilities.getLineOffset(doc, node.getSourceStart()), false);
@@ -86,29 +92,33 @@ public class TypesTest extends JsTestBase {
                 type = JsTypeAnalyzer.getCallFqn(info, callNode, true);
             }
             if (type == null) {
-                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-                Node methodNode = node.getParentNode();
-                while (methodNode != null) {
-                    if (methodNode.getType() == Token.FUNCTION) {
-                        break;
-                    }
-                    methodNode = methodNode.getParentNode();
-                }
-                if (methodNode == null) {
-                    methodNode = AstUtilities.getRoot(info);
-                }
-                // No index - because we don't want to look up local symbols as though they are global
-                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, node, 0, 0, LexUtilities.getDocument(info, false), info.getFileObject());
-                type = analyzer.getType(node);
+// XXX: parsingapi
+//                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                Node methodNode = node.getParentNode();
+//                while (methodNode != null) {
+//                    if (methodNode.getType() == Token.FUNCTION) {
+//                        break;
+//                    }
+//                    methodNode = methodNode.getParentNode();
+//                }
+//                if (methodNode == null) {
+//                    methodNode = info.getRootNode();
+//                }
+//                // No index - because we don't want to look up local symbols as though they are global
+//                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, node, 0, 0);
+//                type = analyzer.getType(node);
+
 //                if (type == null && (node.getType() == Token.NAME || node.getType() == Token.BINDNAME)) {
 //                    // See if it's a global variable
 //                    if (AstUtilities.isGlobalVar(info, node)) {
 //                        type = analyzer.getType(node.getString());
 //                    }
 //                }
-                if (type == null && AstUtilities.isNameNode(node)) {
-                    type = analyzer.getType(node.getString());
-                }
+
+// XXX: parsingapi
+//                if (type == null && AstUtilities.isNameNode(node)) {
+//                    type = analyzer.getType(node.getString());
+//                }
             }
 
             if (type != null) {
@@ -169,11 +179,21 @@ public class TypesTest extends JsTestBase {
     // just make sure we don't abort during scanning.
     public void testStress() throws Exception {
         for (String file : JAVASCRIPT_TEST_FILES) {
-            CompilationInfo info = getInfo(file);
-            List<Object> nodes = new ArrayList<Object>();
-            Map<Object,String> types = new HashMap<Object,String>();
-            Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
-            initializeTypeNodes(info, nodes, positions, types);
+            FileObject f = getTestFile(file);
+            Source source = Source.create(f);
+
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws Exception {
+                    Parser.Result r = resultIterator.getParserResult();
+                    JsParseResult jspr = AstUtilities.getParseResult(r);
+                    assertNotNull("Expecting JsParseResult, but got " + r, jspr);
+
+                    List<Object> nodes = new ArrayList<Object>();
+                    Map<Object,String> types = new HashMap<Object,String>();
+                    Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
+                    initializeTypeNodes(jspr, nodes, positions, types);
+                }
+            });
         }
     }
 }
