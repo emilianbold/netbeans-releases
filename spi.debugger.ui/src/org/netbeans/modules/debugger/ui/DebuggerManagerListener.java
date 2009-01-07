@@ -325,55 +325,56 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     }
 
     private final void closeToolbar(DebuggerEngine engine) {
-        if (ToolbarPool.getDefault ().getConfiguration ().equals("Debugging")) {
-            final boolean doCloseToolbar;
-            synchronized (closedToolbarButtons) {
-                List<? extends Component> closedButtons = closedToolbarButtons.remove(engine);
-                doCloseToolbar = closedToolbarButtons.isEmpty();
+        final boolean doCloseToolbar;
+        synchronized (closedToolbarButtons) {
+            List<? extends Component> closedButtons = closedToolbarButtons.remove(engine);
+            doCloseToolbar = closedToolbarButtons.isEmpty();
+            if (closedButtons != null) {
+                // If it's not filled yet by AWT, wait...
+                while (closedButtons.size() == 1 && closedButtons.get(0) instanceof java.awt.Label) {
+                    try {
+                       closedToolbarButtons.wait();
+                    } catch (InterruptedException iex) {}
+                }
                 List<? extends Component> usedButtons = usedToolbarButtons.remove(engine);
-                if (closedButtons != null) {
-                    // If it's not filled yet by AWT, wait...
-                    if (closedButtons.size() == 1 && closedButtons.get(0) instanceof java.awt.Label) {
-                        try {
-                           closedToolbarButtons.wait();
-                        } catch (InterruptedException iex) {}
+                if (!ToolbarPool.getDefault ().getConfiguration ().equals("Debugging")) {
+                    return ;
+                }
+                if (!doCloseToolbar) {
+                    // An engine is removed, but there remain others =>
+                    // actions that remained enabled because of this are disabled unless needed by other engines.
+                    // Check whether the toolbar buttons are used by some other engine...
+                    final List<Component> usedByAllButtons = new ArrayList<Component>();
+                    for (List<? extends Component> ltc : usedToolbarButtons.values()) {
+                        usedByAllButtons.addAll(ltc);
                     }
-                    if (!doCloseToolbar) {
-                        // An engine is removed, but there remain others =>
-                        // actions that remained enabled because of this are disabled unless needed by other engines.
-                        // Check whether the toolbar buttons are used by some other engine...
-                        final List<Component> usedByAllButtons = new ArrayList<Component>();
-                        for (List<? extends Component> ltc : usedToolbarButtons.values()) {
-                            usedByAllButtons.addAll(ltc);
-                        }
-                        final List<Component> buttonsToClose = new ArrayList<Component>(usedButtons);
-                        buttonsToClose.removeAll(usedByAllButtons);
-                        if (!buttonsToClose.isEmpty()) {
-                            SwingUtilities.invokeLater (new Runnable () {
-                                public void run () {
-                                    for (Component c : buttonsToClose) {
-                                        c.setVisible(false);
-                                    }
+                    final List<Component> buttonsToClose = new ArrayList<Component>(usedButtons);
+                    buttonsToClose.removeAll(usedByAllButtons);
+                    if (!buttonsToClose.isEmpty()) {
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                for (Component c : buttonsToClose) {
+                                    c.setVisible(false);
                                 }
-                            });
-                        }                        
-                    } else {
-                        Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
-                        for (Component c : debugToolbar.getComponents()) {
-                            if (c instanceof AbstractButton) {
-                                c.setVisible(true);
                             }
+                        });
+                    }
+                } else {
+                    Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
+                    for (Component c : debugToolbar.getComponents()) {
+                        if (c instanceof AbstractButton) {
+                            c.setVisible(true);
                         }
                     }
                 }
             }
-            if (doCloseToolbar) {
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        ToolbarPool.getDefault ().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION); // NOI18N
-                    }
-                });
-            }
+        }
+        if (doCloseToolbar) {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    ToolbarPool.getDefault ().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION); // NOI18N
+                }
+            });
         }
     }
 
