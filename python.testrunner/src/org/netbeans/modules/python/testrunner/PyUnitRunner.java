@@ -281,23 +281,8 @@ public final class PyUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
         final TestSession session = new TestSession(name,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST, new PythonTestRunnerNodeFactory());
-        // Deadlock avoidance; remove later. Currently, if you try to run a unit test
-        // on a new user directory (when the Test Results window hasn't yet been shown)
-        // you could run into a deadlock. This avoids that.
-        boolean redispatch = true;
-        if (SwingUtilities.isEventDispatchThread()) {
-            redispatch = false;
-        }
-        if (redispatch) {
-            final PythonExecution descriptor = desc;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    TestExecutionManager.getInstance().start(descriptor, new PyUnitHandlerFactory(), session);
-                }
-            });
-        } else {
-            TestExecutionManager.getInstance().start(desc, new PyUnitHandlerFactory(), session);
-        }
+
+        TestExecutionManager.getInstance().start(desc, new PyUnitHandlerFactory(), session);
     }
 
     public boolean supports(TestType type) {
