@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.ui.nodes;
+package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -57,12 +57,12 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Action to display test failures.
  */
-class ShowFailures extends AbstractAction implements Runnable {
+public class ShowFailures extends AbstractAction implements Runnable {
 
     private final HudsonJob job;
     private final int buildNumber;
 
-    ShowFailures(HudsonJob job, int buildNumber) {
+    public ShowFailures(HudsonJob job, int buildNumber) {
         this.job = job;
         this.buildNumber = buildNumber;
         putValue(NAME, "Show Test Failures"); // XXX I18N
