@@ -238,7 +238,9 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
-                                result.put(port.getDisplayName(), port.getPortComponentName());
+                                // key = imlpementation class package name
+                                // value = service name
+                                result.put(port.getDisplayName(), wsDesc.getWebserviceDescriptionName());
 //                                if ("javax.xml.ws.WebServiceProvider".equals(wsDesc.getDisplayName())) { //NOI18N
 //                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
 //                                } else if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {

@@ -302,6 +302,11 @@ public class PythonKeystrokeHandlerTest extends PythonTestBase {
         deleteChar("foo^", "fo^");
     }
 
+    public void testBak4() throws Exception {
+        // Don't delete blocks when we're not in a prefix!
+        deleteChar("       # type(ff) ^int", "       # type(ff)^int");
+    }
+
     public void testLogicalRange1() throws Exception {
         String code = "print \"He^llo World!\"\n";
         String next = "print %<%\"He^llo World!\"%>%\n";

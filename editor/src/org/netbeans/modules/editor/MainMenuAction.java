@@ -57,6 +57,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Registry;
@@ -67,6 +68,7 @@ import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -86,6 +88,8 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     private final Icon forcedIcon;
     /** true when icon of original action should be ignored */
     private boolean forceIcon;
+
+    private Lookup.Result<KeyBindingSettings> kbs;
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
@@ -97,6 +101,9 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         // needs to listen on Registry - resultChanged event is fired before 
         // TopComponent is really focused - this causes problems in getComponent method 
         Registry.addChangeListener(this);
+        kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
+        kbs.addLookupListener(this);
+        kbs.allInstances();
         this.forceIcon = forceIcon;
         this.forcedIcon = forcedIcon;
     }

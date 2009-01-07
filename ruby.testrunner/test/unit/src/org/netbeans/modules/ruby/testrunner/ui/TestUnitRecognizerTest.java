@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
 
 /**
  *
@@ -350,16 +351,16 @@ public class TestUnitRecognizerTest extends TestCase {
     }
 
     public void testAssertEqualsPattern() {
-        Pattern pattern = TestUnitHandlerFactory.TestFailedHandler.STRING_COMPARISON;
         String strings = "<\"confirmation\"> expected but was <\"shonfirmation\">.";
         String numbers = "<1> expected but was <2>.";
 
-        Matcher matcher = pattern.matcher(strings);
-        assertTrue(matcher.matches());
-        assertEquals("confirmation", matcher.group(1));
-        assertEquals("shonfirmation", matcher.group(2));
+        ComparisonFailure stringsFailure = TestUnitHandlerFactory.TestFailedHandler.getComparisonFailure(strings);
+        assertNotNull(stringsFailure);
+        assertEquals("confirmation", stringsFailure.getExpected());
+        assertEquals("shonfirmation", stringsFailure.getActual());
 
-        assertFalse(pattern.matcher(numbers).matches());
+        ComparisonFailure numbersFailure = TestUnitHandlerFactory.TestFailedHandler.getComparisonFailure(numbers);
+        assertNull(numbersFailure);
     }
 
 }
