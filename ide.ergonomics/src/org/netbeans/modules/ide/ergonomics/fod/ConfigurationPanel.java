@@ -44,9 +44,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -97,6 +94,7 @@ public class ConfigurationPanel extends JPanel {
 
         infoLabel.setText(lblMsg);
         downloadButton.setText(btnMsg);
+        downloadButton.setMnemonic(btnMsg.charAt(0));
         setError(" "); // NOI18N
     }
 

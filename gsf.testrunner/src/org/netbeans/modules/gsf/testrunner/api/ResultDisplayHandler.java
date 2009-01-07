@@ -42,6 +42,8 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -102,27 +104,24 @@ final class ResultDisplayHandler {
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
         
-        JSplitPane splitPane = new JSplitPane(orientation, left, right) {
-            @Override
-            public void addNotify() {
-                super.addNotify();
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        setDividerLocation(location);
-                    }
-                });
-            }
-
-            @Override
-            public void removeNotify() {
-                DividerSettings newSettings = new DividerSettings(getOrientation(), getDividerLocation());
-                TestRunnerSettings.getDefault().setDividerSettings(newSettings);
-                super.removeNotify();
-            }
-        };
+        final JSplitPane splitPane = new JSplitPane(orientation, left, right);
+        splitPane.setDividerLocation(location);
         splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
         splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
+        splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                DividerSettings dividerSettings = new DividerSettings(splitPane.getOrientation(), splitPane.getDividerLocation());
+                TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
+            }
+        });
+        splitPane.addPropertyChangeListener(JSplitPane.ORIENTATION_PROPERTY, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                DividerSettings dividerSettings = new DividerSettings(splitPane.getOrientation(), splitPane.getDividerLocation());
+                TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
+            }
+        });
         return splitPane;
     }
 

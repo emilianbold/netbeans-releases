@@ -164,7 +164,7 @@ public class PythonLexerTest extends NbTestCase {
 
         LexerTestUtilities.incCheck(doc, false);
     }
-    
+
     public void testSpecialChars() {
         String text =
                 "x(3,2.0)\n" +
@@ -314,7 +314,7 @@ public class PythonLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_END, "\"");
         assertFalse(ts.moveNext());
     }
-    
+
     public void testChars2() {
         String text =
                 "x = \"'\"";
@@ -386,6 +386,31 @@ public class PythonLexerTest extends NbTestCase {
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_BEGIN, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_END, "\"");
+        assertFalse(ts.moveNext());
+    }
+
+    public void testDecorators1() {
+        String text =
+                "@foo\ndef bar:\n";
+        TokenHierarchy hi = TokenHierarchy.create(text, PythonTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.DECORATOR, "@foo");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.NEWLINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.DEF, "def");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.IDENTIFIER, "bar");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.COLON, ":");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.NEWLINE, "\n");
+        assertFalse(ts.moveNext());
+    }
+
+    public void testDecorators2() {
+        String text =
+                "@,";
+        TokenHierarchy hi = TokenHierarchy.create(text, PythonTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.DECORATOR, "@");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.COMMA, ",");
         assertFalse(ts.moveNext());
     }
 }

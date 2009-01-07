@@ -69,7 +69,6 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private static String prefix;
     private static Map<String,Exception> who = new HashMap<String, Exception>();
     private static Set<String> allowed = Collections.emptySet();
-    private static boolean disabled;
     private static SecurityManager man;
     private static Mode mode;
 
@@ -78,6 +77,8 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     };
     
     public static void initialize(String prefix, Mode mode, Set<String> allowedFiles) {
+        System.setProperty("counting.security.disabled", "true");
+
         if (System.getSecurityManager() instanceof CountingSecurityManager) {
             // ok
         } else {
@@ -92,6 +93,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
         Logger.getLogger("org.netbeans.TopSecurityManager").setLevel(Level.OFF);
         System.setProperty("org.netbeans.TopSecurityManager.level", "3000");
+        System.setProperty("counting.security.disabled", "false");
     }
 
     static void assertReflection(int maxCount, String whitelist) {
@@ -137,7 +139,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkPermission(Permission p) {
-        if (disabled) {
+        if (isDisabled()) {
             return;
         }
         if (p instanceof RuntimePermission && "setSecurityManager".equals(p.getName())) {
@@ -162,6 +164,12 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     @Override
     public void checkRead(String file) {
         if (mode == Mode.CHECK_READ && acceptFileRead(file)) {
+            String dirs = System.getProperty("netbeans.dirs");
+            if (dirs == null) {
+                // not initialized yet
+                return;
+            }
+
             setCnt(getCnt() + 1);
             pw.println("checkRead: " + file);
             if (who.get(file) == null) {
@@ -455,5 +463,12 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkPermission(Permission perm, Object context) {
+    }
+
+    /**
+     * @return the disabled
+     */
+    private static boolean isDisabled() {
+        return Boolean.getBoolean("counting.security.disabled");
     }
 }

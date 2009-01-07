@@ -408,7 +408,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     public void visit(Assignment node) {
         if (node.getLeftHandSide() instanceof Variable) {
             Variable var = (Variable) node.getLeftHandSide();
-            String type = CodeUtils.extractVariableTypeFromAssignment(node);
+            String type = CodeUtils.extractVariableType(node);
             varStack.addVariableDefinition(var, type);
         }
         

@@ -44,6 +44,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -108,6 +110,9 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         private List<String> output;
+        // package private for tests
+        static final Pattern STRING_COMPARISON = Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*");
+
 
         public TestFailedHandler(String regex) {
             super(regex);
@@ -117,6 +122,14 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
+        private Trouble.ComparisonFailure getComparisonFailure(String msg) {
+            Matcher comparisonMatcher = STRING_COMPARISON.matcher(msg);
+            if (!comparisonMatcher.matches()) {
+                return null;
+            }
+            return new Trouble.ComparisonFailure(comparisonMatcher.group(1), comparisonMatcher.group(2));
+        }
+
         @Override
         void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(TestType.TEST_UNIT.toString(), session);
@@ -124,7 +137,10 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
+
             String message = matcher.group(4);
+            testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
+
             String location = matcher.group(5);
             testcase.getTrouble().setStackTrace(getStackTrace(message, location));
             session.addTestCase(testcase);

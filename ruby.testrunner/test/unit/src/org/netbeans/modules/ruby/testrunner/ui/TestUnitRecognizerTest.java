@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.TestCase;
 
 /**
@@ -346,6 +347,19 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("0.203", matcher.group(1));
         assertEquals("test_foo", matcher.group(2));
         assertEquals("FooTest", matcher.group(3));
+    }
+
+    public void testAssertEqualsPattern() {
+        Pattern pattern = TestUnitHandlerFactory.TestFailedHandler.STRING_COMPARISON;
+        String strings = "<\"confirmation\"> expected but was <\"shonfirmation\">.";
+        String numbers = "<1> expected but was <2>.";
+
+        Matcher matcher = pattern.matcher(strings);
+        assertTrue(matcher.matches());
+        assertEquals("confirmation", matcher.group(1));
+        assertEquals("shonfirmation", matcher.group(2));
+
+        assertFalse(pattern.matcher(numbers).matches());
     }
 
 }
