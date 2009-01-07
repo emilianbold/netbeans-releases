@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.explorer.action;
 
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -58,11 +59,12 @@ public class EnableDebugAction extends BaseAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        return false;
+        return !RootNode.getOption().getDebugMode();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
+        RootNode.getOption().setDebugMode(true);
     }
 
 }
