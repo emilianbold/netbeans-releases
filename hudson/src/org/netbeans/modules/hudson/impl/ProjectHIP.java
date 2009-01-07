@@ -50,7 +50,7 @@ class ProjectHIP extends HudsonInstanceProperties {
         if (p != null) {
             setProperty(HUDSON_INSTANCE_URL, p.getServerUrl());
             setProperty(HUDSON_INSTANCE_NAME, p.getName());
-            setPreferedJobs();
+            setPreferredJobs();
         }
         //TODO listen on changes from the provider and refire them as changed properties.
     }
@@ -59,7 +59,7 @@ class ProjectHIP extends HudsonInstanceProperties {
         synchronized (providers) {
             providers.remove(prov);
         }
-        setPreferedJobs();
+        setPreferredJobs();
     }
 
     public Set<Project> getProviders() {
@@ -97,7 +97,7 @@ class ProjectHIP extends HudsonInstanceProperties {
         return lst;
     }
 
-    private void setPreferedJobs() {
+    private void setPreferredJobs() {
         String list = "";
         for (Project prj : getProviders()) {
             ProjectHudsonProvider p = prj.getLookup().lookup(ProjectHudsonProvider.class);
@@ -109,6 +109,6 @@ class ProjectHIP extends HudsonInstanceProperties {
             }
         }
         put(HUDSON_INSTANCE_PREF_JOBS, list);
-        }
+    }
 
 }
