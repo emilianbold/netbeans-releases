@@ -24,7 +24,9 @@ package org.netbeans.modules.hudson.constants;
  * 
  * @author Michal Mocnak
  */
-public interface HudsonXmlApiConstants {
+public class HudsonXmlApiConstants {
+
+    private HudsonXmlApiConstants() {}
     
     // XML API Suffix
     public static final String XML_API_URL ="/api/xml";
