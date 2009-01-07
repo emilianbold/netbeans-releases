@@ -100,7 +100,7 @@ public final class DiffViewAction extends AbstractAction {
 
         try {
             JComponent diffComponent = DiffController.create(expected, actual).getJComponent();
-            diffComponent.setPreferredSize(new Dimension(300, 150));
+            diffComponent.setPreferredSize(new Dimension(500, 250));
             JButton ok = new JButton(NbBundle.getMessage(DiffViewAction.class, "LBL_OK"));
             final DialogDescriptor descriptor = new DialogDescriptor(
                     diffComponent,
