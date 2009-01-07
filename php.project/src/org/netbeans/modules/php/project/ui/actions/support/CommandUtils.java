@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.actions.support;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -141,17 +142,6 @@ public class CommandUtils {
         return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;
     }
 
-    public static boolean isPhpFile(FileObject file) {
-        assert file != null;
-        return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
-    }
-
-    public static boolean isPhpOrHtmlFile(FileObject file) {
-        assert file != null;
-        String mimeType = FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE, HTML_MIME_TYPE);
-        return PhpSourcePath.MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
-    }
-
     private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {
         Collection<FileObject> retval = new LinkedHashSet<FileObject>();
         for (FileObject file : files) {
@@ -163,13 +153,19 @@ public class CommandUtils {
         return (!retval.isEmpty()) ? retval.toArray(new FileObject[retval.size()]) : null;
     }
 
-    private static FileObject getFileObject(Node node) {
-        DataObject dobj = node.getLookup().lookup(DataObject.class);
-        return (dobj != null) ? dobj.getPrimaryFile() : null;
-    }
-
     private PhpProject getProject() {
         return project;
+    }
+
+    public static boolean isPhpFile(FileObject file) {
+        assert file != null;
+        return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
+    }
+
+    public static boolean isPhpOrHtmlFile(FileObject file) {
+        assert file != null;
+        String mimeType = FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE, HTML_MIME_TYPE);
+        return PhpSourcePath.MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
     }
 
     /** Return <code>true</code> if user wants to restart the current debug session. */
@@ -203,5 +199,77 @@ public class CommandUtils {
             return null;
         }
         return new PhpUnit(phpUnitPath);
+    }
+
+    /**
+     * Get <b>valid</b> {@link FileObject}s for given nodes.
+     * @param nodes nodes to get {@link FileObject}s from.
+     * @return list of <b>valid</b> {@link FileObject}s, never <code>null</code>.
+     */
+    public static List<FileObject> getFileObjects(final Node[] nodes) {
+        if (nodes.length == 0) {
+            return Collections.<FileObject>emptyList();
+        }
+
+        final List<FileObject> files = new ArrayList<FileObject>();
+        for (Node node : nodes) {
+            FileObject fo = getFileObject(node);
+            assert fo != null : "A valid file object not found for node: " + node;
+            files.add(fo);
+        }
+        return files;
+    }
+
+    /**
+     * Get a <b>valid</b> {@link FileObject} for given node.
+     * @param node node to get {@link FileObject}s from.
+     * @return a <b>valid</b> {@link FileObject}, <code>null</code> otherwise.
+     */
+    public static FileObject getFileObject(Node node) {
+        assert node != null;
+
+        FileObject fileObj = node.getLookup().lookup(FileObject.class);
+        if (fileObj != null && fileObj.isValid()) {
+            return fileObj;
+        }
+        DataObject dataObj = node.getCookie(DataObject.class);
+        if (dataObj == null) {
+            return null;
+        }
+        fileObj = dataObj.getPrimaryFile();
+        if ((fileObj == null) || !fileObj.isValid()) {
+            return null;
+        }
+        return fileObj;
+    }
+
+    /**
+     * Return <code>true</code> if {@link FileObject} is underneath project sources directory
+     * or sources directory itself.
+     * @param project project to get sources directory from.
+     * @param fileObj {@link FileObject} to check.
+     * @return <code>true</code> if {@link FileObject} is underneath project sources directory
+     *         or sources directory itself.
+     */
+    public static boolean isUnderSources(PhpProject project, FileObject fileObj) {
+        assert project != null;
+        assert fileObj != null;
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+        return sources.equals(fileObj) || FileUtil.isParentOf(sources, fileObj);
+    }
+
+    /**
+     * Return <code>true</code> if {@link FileObject} is underneath project tests directory
+     * or tests directory itself.
+     * @param project project to get tests directory from.
+     * @param fileObj {@link FileObject} to check.
+     * @return <code>true</code> if {@link FileObject} is underneath project tests directory
+     *         or tests directory itself.
+     */
+    public static boolean isUnderTests(PhpProject project, FileObject fileObj, boolean showFileChooser) {
+        assert project != null;
+        assert fileObj != null;
+        FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, showFileChooser);
+        return tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
     }
 }

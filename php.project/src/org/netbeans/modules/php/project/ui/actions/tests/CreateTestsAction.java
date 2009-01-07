@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,11 +59,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -132,7 +130,7 @@ public final class CreateTestsAction extends NodeAction {
             return;
         }
         // ensure that test sources directory exists
-        final PhpProject phpProject = getPhpProject(activatedNodes[0]);
+        final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
@@ -154,7 +152,7 @@ public final class CreateTestsAction extends NodeAction {
 
         PhpProject onlyOneProjectAllowed = null;
         for (Node node : activatedNodes) {
-            FileObject fileObj = getFileObject(node);
+            FileObject fileObj = CommandUtils.getFileObject(node);
             if (fileObj == null) {
                 return false;
             }
@@ -165,7 +163,7 @@ public final class CreateTestsAction extends NodeAction {
                 return false;
             }
 
-            PhpProject phpProject = getPhpProject(fileObj);
+            PhpProject phpProject = PhpProjectUtils.getPhpProject(fileObj);
             if (phpProject == null) {
                 return false;
             }
@@ -176,11 +174,8 @@ public final class CreateTestsAction extends NodeAction {
                 return false;
             }
 
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-            boolean inTests = tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
-            boolean inSources = sources.equals(fileObj) || FileUtil.isParentOf(sources, fileObj);
-            if (!inSources || inTests) {
+            if (!CommandUtils.isUnderSources(phpProject, fileObj)
+                    || CommandUtils.isUnderTests(phpProject, fileObj, false)) {
                 return false;
             }
         }
@@ -197,55 +192,10 @@ public final class CreateTestsAction extends NodeAction {
         return null;
     }
 
-    /**
-     * @return a PHP project or <code>null</code>.
-     */
-    private static PhpProject getPhpProject(Node node) {
-        return getPhpProject(getFileObject(node));
-    }
-
-    /**
-     * @return a PHP project or <code>null</code>.
-     */
-    private static PhpProject getPhpProject(FileObject fo) {
-        assert fo != null;
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null) {
-            return null;
-        }
-        return project.getLookup().lookup(PhpProject.class);
-    }
-
-    private static FileObject getFileObject(Node node) {
-        FileObject fileObj = node.getLookup().lookup(FileObject.class);
-        if (fileObj != null && fileObj.isValid()) {
-            return fileObj;
-        }
-        DataObject dataObj = node.getCookie(DataObject.class);
-        if (dataObj == null) {
-            return null;
-        }
-        fileObj = dataObj.getPrimaryFile();
-        if ((fileObj == null) || !fileObj.isValid()) {
-            return null;
-        }
-        return fileObj;
-    }
-
-    private static List<FileObject> getFileObjects(final Node[] activatedNodes) {
-        final List<FileObject> files = new ArrayList<FileObject>();
-        for (Node node : activatedNodes) {
-            FileObject fo = getFileObject(node);
-            assert fo != null : "A valid file object not found for node: " + node;
-            files.add(fo);
-        }
-        return files;
-    }
-
     void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
         assert phpProject != null;
 
-        List<FileObject> files = getFileObjects(activatedNodes);
+        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
         final Set<FileObject> proceeded = new HashSet<FileObject>();
