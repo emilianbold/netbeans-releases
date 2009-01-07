@@ -104,6 +104,15 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         }
     }
 
+    public void testFutureImport1() throws Exception {
+        try {
+            skipJython = true;
+            checkCompletion("testfiles/futureimport.py", "import ^", true);
+        } finally {
+            skipJython = false;
+        }
+    }
+
     public void testDoc6() throws Exception {
         // Find documentation for a method that doesn't actually have a def - it's an alias
         checkCompletionDocumentation("testfiles/compl5.py", "self.assertA^lmostEquals(1,2)", true, "assertAlmostEquals");
@@ -170,6 +179,10 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/org.py", "from or^", true);
     }
 
+    public void testProperties() throws Exception {
+        checkCompletion("testfiles/properties.py", "x.ba^", true);
+    }
+
     public void testParameters1() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(foo^, bar)", true);
     }
@@ -188,6 +201,14 @@ public class PythonCodeCompleterTest extends PythonTestBase {
 
     public void testParameters5() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(\"foo\", \"bar\", inval^id)", true);
+    }
+
+    public void testDecorators1() throws Exception {
+        checkCompletion("testfiles/emptydecorators.py", "@^", true);
+    }
+
+    public void testDecorators2() throws Exception {
+        checkCompletion("testfiles/decorators.py", "@c^", true);
     }
 
     // -------------------------

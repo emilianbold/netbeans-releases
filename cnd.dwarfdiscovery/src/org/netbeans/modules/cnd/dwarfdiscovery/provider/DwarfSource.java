@@ -373,7 +373,9 @@ public class DwarfSource implements SourceFileProperties{
                     addUserIncludePath(include);
                 }
             } else if (option.equals("-fopenmp")){ // NOI18N
-                    userMacros.put("_OPENMP", null); // NOI18N
+                userMacros.put("_OPENMP", "200505"); // NOI18N
+            } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
+                userMacros.put("_OPENMP", null); // NOI18N
             }
         }
     }

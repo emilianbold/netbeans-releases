@@ -60,7 +60,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -159,7 +158,8 @@ public final class Source {
         
         String mimeType = NbEditorUtilities.getMimeType(document);
         if (mimeType == null) {
-            throw new NullPointerException("Netbeans documents must have 'mimeType' property"); //NOI18N
+            throw new NullPointerException("Netbeans documents must have 'mimeType' property: " //NOI18N
+                + document.getClass() + "@" + Integer.toHexString(System.identityHashCode(document))); //NOI18N
         }
 
         synchronized (Source.class) {
@@ -218,8 +218,8 @@ public final class Source {
      */
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
-    public Document getDocument () {
-        return _getDocument(false);
+    public Document getDocument (boolean forceOpen) {
+        return _getDocument (forceOpen);
     }
     
     /**
@@ -311,7 +311,8 @@ public final class Source {
     
     private int taskCount;
     private volatile Parser cachedParser;
-    private ASourceModificationEvent  sourceModificationEvent;
+    private volatile ASourceModificationEvent  sourceModificationEvent;
+    private final ASourceModificationEvent unspecifiedSourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
     private Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
@@ -505,24 +506,24 @@ public final class Source {
         @Override
         public void setSourceModification (Source source, int startOffset, int endOffset) {
             assert source != null;
+            source.sourceModificationEvent = new ASourceModificationEvent (source, startOffset, endOffset);
+        }
+
+        @Override
+        public void parsed (Source source) {
             synchronized (source) {
-                if (source.sourceModificationEvent == null) {
-                    source.sourceModificationEvent = new ASourceModificationEvent (this, startOffset, endOffset);
-                } else {
-                    source.sourceModificationEvent.startOffset = startOffset;
-                    source.sourceModificationEvent.endOffset = endOffset;
-                }
+                source.sourceModificationEvent = null;
             }
         }
 
         @Override
         public SourceModificationEvent getSourceModificationEvent (Source source) {
-            if (source.sourceModificationEvent == null)
-                synchronized (source) {
-                    if (source.sourceModificationEvent == null)
-                        source.sourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
-                }
-            return source.sourceModificationEvent;
+            assert source != null;
+            SourceModificationEvent event = source.sourceModificationEvent;
+            if (event == null) {
+                event = source.unspecifiedSourceModificationEvent;
+            }
+            return event;
         }
 
         @Override
@@ -601,7 +602,7 @@ public final class Source {
 
         @Override
         public String toString () {
-            return "ASourceModificationEvent " + startOffset + ":" + endOffset;
+            return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }
 }

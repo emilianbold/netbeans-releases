@@ -82,6 +82,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails
 public class OpenProjectListTest extends NbTestCase {
     FileObject f1_1_open, f1_2_open, f1_3_close;
     FileObject f2_1_open;
@@ -135,7 +136,6 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
 
-    @RandomlyFails // NB-Core-Build #1691
     public void testOpen () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);
         CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
@@ -152,7 +152,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
 
-    @RandomlyFails // NB-Core-Build #1767
     public void testListenerOpenClose () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0); 
         ChangeListener list = new ChangeListener();
@@ -177,7 +176,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals(0, list.newCount);
     }
 
-    @RandomlyFails // NB-Core-Build #1855
     public void testClose () throws Exception {
         testOpen ();
         
@@ -208,7 +206,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f2_1_open is still loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
 
-    @RandomlyFails // NB-Core-Build #810
     public void testSerialize() throws Exception {
         testOpen();
         
@@ -320,7 +317,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
     }
     
-    @RandomlyFails
     public void testMainProject() throws Exception {
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         

@@ -1,39 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="39">
+<configurationDescriptor version="53">
   <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>argnames.h</itemPath>
+      <itemPath>jvmlauncher.h</itemPath>
+      <itemPath>platformlauncher.h</itemPath>
+      <itemPath>utilsfuncs.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>jvmlauncher.cpp</itemPath>
+      <itemPath>nbexec.cpp</itemPath>
+      <itemPath>nbexecexe.cpp</itemPath>
+      <itemPath>nbexecloader.h</itemPath>
+      <itemPath>platformlauncher.cpp</itemPath>
+      <itemPath>utilsfuncs.cpp</itemPath>
+    </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false">
-      <itemPath>Makefile_windows.mk</itemPath>
+      <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>Makefile</itemPath>
-    <itemPath>nbexec.cpp</itemPath>
   </logicalFolder>
-  <projectmakefile>Makefile_windows.mk</projectmakefile>
+  <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Default" type="0">
+    <conf name="nbexec" type="2">
       <toolsSet>
-        <compilerSet>Cygwin</compilerSet>
-        <cRequired>true</cRequired>
-        <cppRequired>true</cppRequired>
-        <fortranRequired>false</fortranRequired>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>Cygwin|Cygwin</compilerSet>
         <platform>3</platform>
       </toolsSet>
-      <makefileType>
-        <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>make -f Makefile testinst</buildCommand>
-          <cleanCommand>make -f Makefile distclean</cleanCommand>
-          <executablePath>nbexec.exe</executablePath>
-        </makeTool>
-        <requiredProjects>
-        </requiredProjects>
-      </makefileType>
-      <item path="Makefile">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>5</developmentMode>
+          <architecture>1</architecture>
+          <warningLevel>2</warningLevel>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+          <includeDirectories>
+            <directoryPath>c:/cygwin/usr/include/mingw</directoryPath>
+            <directoryPath>C:/Program Files/Java/jdk1.6.0_10/include</directoryPath>
+            <directoryPath>C:/Program Files/Java/jdk1.6.0_10/include/win32</directoryPath>
+          </includeDirectories>
+          <commandLine>-s -mno-cygwin</commandLine>
+          <warningLevel>2</warningLevel>
+        </ccCompilerTool>
+        <linkerTool>
+          <output>nbexec.dll</output>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="argnames.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="jvmlauncher.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="jvmlauncher.h">
         <itemTool>3</itemTool>
       </item>
       <item path="nbexec.cpp">
         <itemTool>1</itemTool>
+      </item>
+      <item path="nbexecexe.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="nbexecloader.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="platformlauncher.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="platformlauncher.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="utilsfuncs.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="utilsfuncs.h">
+        <itemTool>3</itemTool>
       </item>
     </conf>
   </confs>

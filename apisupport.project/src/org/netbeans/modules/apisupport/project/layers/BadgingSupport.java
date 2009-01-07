@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -187,7 +188,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         orig = null;
                     }
                     if (orig != null && orig.hasExt("instance")) { // NOI18N
-                        return getInstanceLabel(orig);
+                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp);
                     }
                 }
             }

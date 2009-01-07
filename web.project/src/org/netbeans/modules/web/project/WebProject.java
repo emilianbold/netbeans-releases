@@ -45,10 +45,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,10 +59,13 @@ import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -71,6 +76,8 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -97,6 +104,7 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
@@ -133,6 +141,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -181,6 +190,8 @@ public final class WebProject implements Project, AntProjectListener {
     private final CopyOnSaveSupport css;
     private final ArtifactCopyOnSaveSupport artifactSupport;
     private final DeployOnSaveSupport deployOnSaveSupport;
+    private final EjbJarProvider webEjbJarProvider;
+    private final EjbJar apiEjbJar;
     private WebModule apiWebModule;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
@@ -338,6 +349,8 @@ public final class WebProject implements Project, AntProjectListener {
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
+        webEjbJarProvider = new EjbJarProvider(webModule, cpProvider);
+        apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarProvider);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         WebProjectJAXWSSupport jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
         WebProjectJAXWSClientSupport jaxWsClientSupport = new WebProjectJAXWSClientSupport(this);
@@ -470,6 +483,7 @@ public final class WebProject implements Project, AntProjectListener {
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
+            new WebProjectEjbJarProvider(this), // TODO: dongmei: register it only for Java EE 6 web project
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
@@ -490,7 +504,7 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(),
-            QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             classPathExtender,
             buildExtender,
             cpMod,
@@ -574,6 +588,10 @@ public final class WebProject implements Project, AntProjectListener {
 
     public WebModule getAPIWebModule () {
         return apiWebModule;
+    }
+
+    public EjbJar getAPIEjbJar() {
+        return apiEjbJar;
     }
     
     WebServicesSupport getAPIWebServicesSupport () {
@@ -808,6 +826,8 @@ public final class WebProject implements Project, AntProjectListener {
             
             try {
                 //DDDataObject initialization to be ready to listen on changes (#45771)
+
+                // web.xml
                 try {
                     FileObject ddFO = webModule.getDeploymentDescriptor();
                     if (ddFO != null) {
@@ -815,6 +835,16 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                     //PENDING
+                }
+
+                // ejb-jar.xml
+                try {
+                    FileObject ejbDdFO = webEjbJarProvider.getDeploymentDescriptor();
+                    if (ejbDdFO != null) {
+                        DataObject ejbdobj = DataObject.find(ejbDdFO);
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    //PENDING`
                 }
                 
                 // Register copy on save support
@@ -916,10 +946,12 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
+            // TODO: dongmei Anything for EJBs???????
             
             if (Boolean.parseBoolean(evaluator().getProperty(
                     WebProjectProperties.J2EE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
+                // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
             
@@ -1110,6 +1142,7 @@ public final class WebProject implements Project, AntProjectListener {
             
             artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(webModule);
+            // TODO: dongmei: anything for EJBs???????
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
@@ -1730,5 +1763,132 @@ public final class WebProject implements Project, AntProjectListener {
             return WebProject.this;
         }
 
+    }
+
+    private static final class CoSAwareFileBuiltQueryImpl implements FileBuiltQueryImplementation, PropertyChangeListener
+    {
+
+        private final FileBuiltQueryImplementation delegate;
+        private final WebProject project;
+        private final AtomicBoolean cosEnabled = new AtomicBoolean();
+        private final Map<FileObject, Reference<StatusImpl>> file2Status = new WeakHashMap<FileObject, Reference<StatusImpl>>();
+
+        public CoSAwareFileBuiltQueryImpl(FileBuiltQueryImplementation delegate, WebProject project)
+        {
+
+            this.delegate = delegate;
+            this.project = project;
+            project.evaluator().addPropertyChangeListener(this);
+            setCoSEnabledAndXor();
+
+        }
+
+        private synchronized StatusImpl readFromCache(FileObject file)
+        {
+            Reference<StatusImpl> r = file2Status.get(file);
+            return r != null ? r.get() : null;
+
+        }
+
+        public Status getStatus(FileObject file)
+        {
+            StatusImpl result = readFromCache(file);
+            if (result != null)
+            {
+                return result;
+            }
+
+
+            Status status = delegate.getStatus(file);
+            if (status == null)
+            {
+                return null;
+            }
+
+            synchronized (this)
+            {
+                StatusImpl foisted = readFromCache(file);
+                if (foisted != null)
+                {
+                    return foisted;
+                }
+
+                file2Status.put(file, new WeakReference<StatusImpl>(result = new StatusImpl(cosEnabled, status)));
+            }
+
+            return result;
+
+        }
+
+        boolean setCoSEnabledAndXor()
+        {
+            boolean nue = Boolean.parseBoolean(project.evaluator().getProperty(
+                                     WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            boolean old = cosEnabled.getAndSet(nue);
+
+            return old != nue;
+
+        }
+
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if (!setCoSEnabledAndXor())
+            {
+                return;
+            }
+
+            Collection<Reference<StatusImpl>> toRefresh;
+
+            synchronized (this)
+            {
+                toRefresh = new LinkedList<Reference<StatusImpl>>(file2Status.values());
+            }
+
+            for (Reference<StatusImpl> r : toRefresh)
+            {
+                StatusImpl s = r.get();
+
+                if (s != null)
+                {
+                    s.stateChanged(null);
+                }
+            }
+        }
+
+        private static final class StatusImpl implements Status, ChangeListener
+        {
+
+            private final ChangeSupport cs = new ChangeSupport(this);
+            private final AtomicBoolean cosEnabled;
+            private final Status delegate;
+
+            public StatusImpl(AtomicBoolean cosEnabled, Status delegate)
+            {
+                this.cosEnabled = cosEnabled;
+                this.delegate = delegate;
+            }
+
+            public boolean isBuilt()
+            {
+                return cosEnabled.get() || delegate.isBuilt();
+            }
+
+            public void addChangeListener(ChangeListener l)
+            {
+                cs.addChangeListener(l);
+            }
+
+            public void removeChangeListener(ChangeListener l)
+            {
+                cs.removeChangeListener(l);
+            }
+
+            public void stateChanged(ChangeEvent e)
+            {
+
+                cs.fireChange();
+
+            }
+        }
     }
 }

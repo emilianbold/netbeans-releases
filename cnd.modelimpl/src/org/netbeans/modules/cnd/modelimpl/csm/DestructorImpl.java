@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.*;
 /**
  * @author Vladimir Kvashin
  */
-public final class DestructorImpl extends MethodImpl {
+public final class DestructorImpl extends MethodImpl<CsmMethod> {
 
     public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         super(ast, cls, visibility, true);

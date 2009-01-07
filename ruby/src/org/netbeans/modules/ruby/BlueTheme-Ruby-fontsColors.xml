@@ -135,5 +135,15 @@ made subject to such option by the copyright holder.
     <fontcolor name="COMMENT_BOLD" default="default">
         <font style="bold"/>
     </fontcolor>
+
+    <!-- Code Coverage -->
+    <!--
+    <fontcolor name="covered" bgColor="ff006633"/>
+    <fontcolor name="uncovered" bgColor="ff602a2a"/>
+    <fontcolor name="inferred" bgColor="ff1e6633"/>
+    -->
+    <fontcolor name="covered" bgColor="ff122e31"/>
+    <fontcolor name="uncovered" bgColor="ff321e31"/>
+    <fontcolor name="inferred" bgColor="ff122831"/>
     
 </fontscolors>

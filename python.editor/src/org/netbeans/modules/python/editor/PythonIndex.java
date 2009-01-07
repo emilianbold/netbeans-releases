@@ -50,6 +50,7 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
 import org.netbeans.modules.python.editor.elements.IndexedPackage;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -57,7 +58,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
 
 /**
  *
@@ -900,12 +901,16 @@ public class PythonIndex {
 
         // ImportsFrom require no index lookup
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            if (ImportManager.isFutureImport(from)) {
+                continue;
+            }
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
 //                    } else {
-//                        String name = at.asname != null ? at.asname : at.name;
+//                        String name = at.getInternalAsname() != null ? at.getInternalAsname() : at.getInternalName();
 //                        assert name.length() > 0;
 //                        imported.add(name);
                     }
@@ -915,13 +920,13 @@ public class PythonIndex {
 
 //        for (Import imp : imports) {
 //            if (imp.names != null) {
-//                for (aliasType at : imp.names) {
-//                    if (at.asname != null) {
-//                        String name = at.asname;
+//                for (alias at : imp.getInternalNames()) {
+//                    if (at.getInternalAsname() != null) {
+//                        String name = at.getInternalAsname();
 //                        assert name.length() > 0;
 //                        imported.add(name);
 //                    } else {
-//                        imported.add(at.name);
+//                        imported.add(at.getInternalName());
 //                    }
 //                }
 //            }
@@ -979,10 +984,11 @@ public class PythonIndex {
 
         // ImportsFrom require no index lookup
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
                     }
                 }
             }

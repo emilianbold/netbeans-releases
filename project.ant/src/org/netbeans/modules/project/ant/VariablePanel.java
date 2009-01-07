@@ -177,7 +177,7 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         } else  if (variableBeingEditted == null && model.find(nameTextField.getText()) != null) {
             error = NbBundle.getBundle(VariablePanel.class).getString("MSG_Variable_Already_Exists");
         } else if (locationTextField.getText().length() == 0 ||
-            !new File(locationTextField.getText()).exists()) {
+            !getVariableLocation().exists()) {
             error = NbBundle.getBundle(VariablePanel.class).getString("MSG_Invalid_Location");
         } else if (variableBeingEditted == null && !PropertyUtils.isUsablePropertyName(nameTextField.getText())) {
             error = NbBundle.getBundle(VariablePanel.class).getString("MSG_Invalid_Name");
@@ -191,7 +191,7 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
     
     public File getVariableLocation() {
-        return new File(locationTextField.getText());
+        return FileUtil.normalizeFile(new File(locationTextField.getText()));
     }
     
 

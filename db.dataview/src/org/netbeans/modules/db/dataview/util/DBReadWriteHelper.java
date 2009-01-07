@@ -319,7 +319,7 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.BIT:
-                    ps.setBytes(index, convertBitStringToBytes(valueObj.toString()));
+                    ps.setBytes(index, BinaryToStringConverter.convertBitStringToBytes(valueObj.toString()));
                     break;
 
                 case Types.BINARY:
@@ -426,7 +426,7 @@ public class DBReadWriteHelper {
                 case -8:  //ROWID
                 case -15: //NCHAR
                     if (valueObj.toString().length() > col.getPrecision()) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
                     }
@@ -434,16 +434,16 @@ public class DBReadWriteHelper {
 
                 case Types.BIT:
                     if (valueObj.toString().length() > col.getPrecision()) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
                     }
                     if (valueObj.toString().trim().length() == 0) {
-                        String colName = col.getQualifiedName();
+                        String colName = col.getQualifiedName(false);
                         String errMsg = "Invalid data for column " + colName;
                         throw new DBException(errMsg);
                     }
-                    convertBitStringToBytes(valueObj.toString());
+                    BinaryToStringConverter.convertBitStringToBytes(valueObj.toString());
                     return valueObj;
 
                 case Types.BINARY:
@@ -464,35 +464,12 @@ public class DBReadWriteHelper {
             }
         } catch (Exception e) {
             String type = col.getTypeName();
-            String colName = col.getQualifiedName();
+            String colName = col.getQualifiedName(false);
             int precision = col.getPrecision();
             String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
             errMsg += "\nCause: " + e.getMessage();
             throw new DBException(errMsg);
         }
-    }
-
-    public static byte[] convertBitStringToBytes(String s) throws DBException {
-        int shtBits = s.length() % 8;
-        s = (shtBits > 0 ? "00000000".substring(0, 8 - shtBits) + s : s);
-
-        byte[] buf = new byte[s.length() / 8];
-
-        int bit = 0, index = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if ('1' == s.charAt(i)) { // NOI18N
-                int b = 1 << (7 - bit);
-                buf[index] |= b;
-            } else if ('0' != s.charAt(i)) { // NOI18N
-                throw new DBException(s.charAt(i) + "found at character " + i + "; 0 or 1 expected. ");
-            }
-            bit++;
-            if (bit > 7) {
-                bit = 0;
-                index++;
-            }
-        }
-        return buf;
     }
 
     public static boolean isNullString(String str) {

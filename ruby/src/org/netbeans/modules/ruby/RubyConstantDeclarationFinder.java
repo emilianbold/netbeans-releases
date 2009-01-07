@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.Set;
 import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -67,12 +68,15 @@ final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<Inde
             constants = index.getConstants(constantFqn);
         } else {
             // inside of class or module?
-            String constantName = ((INameNode) constantNode).getName();
             String className = AstUtilities.getFqnName(path);
-            constants = index.getConstants(className, constantName);
+            constants = index.getConstants(className, getConstantName());
+        }
+        DeclarationLocation decl = getElementDeclaration(constants, constantNode);
+        if (decl != DeclarationLocation.NONE) {
+            return decl;
         }
 
-        return getElementDeclaration(constants, constantNode);
+        return fix(findLocal(root), info);
     }
 
     @Override
@@ -81,4 +85,30 @@ final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<Inde
         return constants.isEmpty() ? null : constants.iterator().next();
     }
 
+    private String getConstantName() {
+        return ((INameNode) constantNode).getName();
+    }
+
+    /**
+     * Recursively search for constants declaration that matches the given name.
+     */
+    private DeclarationLocation findLocal(final Node node) {
+        if (node instanceof ConstDeclNode) {
+            if (((ConstDeclNode) node).getName().equals(getConstantName())) {
+                return getLocation(info, node);
+            }
+        }
+
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) {
+                continue;
+            }
+            DeclarationLocation location = findLocal(child);
+            if (location != DeclarationLocation.NONE) {
+                return location;
+            }
+        }
+
+        return DeclarationLocation.NONE;
+    }
 }

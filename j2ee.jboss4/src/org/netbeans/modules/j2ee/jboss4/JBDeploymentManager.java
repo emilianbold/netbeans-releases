@@ -153,8 +153,11 @@ public class JBDeploymentManager implements DeploymentManager {
                 Hashtable env = new Hashtable();
 
                 // Sets the jboss naming environment
+                String jnpPort = JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+                jnpPort  = ( jnpPort != null && jnpPort.trim().length() > 0 ) ? jnpPort.trim() : "1099";
+
                 env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
-                env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
+                env.put(Context.PROVIDER_URL, "jnp://localhost"+ ( jnpPort.length()  > 0 ? (":"  + jnpPort)  : "") );
                 env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
                 env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
                 env.put("jnp.disableDiscovery", Boolean.TRUE);
@@ -185,6 +188,8 @@ public class JBDeploymentManager implements DeploymentManager {
             } catch (NameNotFoundException ex) {
                 LOGGER.log(Level.FINE, null, ex);
             } catch (NamingException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            } catch (Exception ex) {
                 LOGGER.log(Level.FINE, null, ex);
             } finally {
                 if (oldLoader != null)

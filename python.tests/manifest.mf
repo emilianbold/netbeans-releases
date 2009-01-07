@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.python.tests
-OpenIDE-Module-Layer: org/netbeans/modules/python/tests/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/python/tests/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-AutoUpdate-Show-In-Client: false
-

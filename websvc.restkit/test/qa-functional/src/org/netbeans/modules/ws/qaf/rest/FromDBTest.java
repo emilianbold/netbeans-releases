@@ -72,12 +72,13 @@ public class FromDBTest extends CRUDTest {
 
     public void testFromDB() throws IOException {
         copyDBSchema();
+        createPU();
         //RESTful Web Services from Database
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromDatabase");
         createNewWSFile(getProject(), restLabel);
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
-        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel));
+        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel), false);
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clearText();
@@ -95,6 +96,18 @@ public class FromDBTest extends CRUDTest {
         assertEquals("Some files were not generated", 30, files.size()); //NOI18N
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
+    }
+
+    private void createPU() {
+        //Persistence
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Persistence Unit
+        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
+        createNewFile(getProject(), category, puLabel);
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
+        WizardOperator wo = new WizardOperator(title);
+        new JComboBoxOperator(wo, 1).selectItem("jdbc/sample"); //NOI18N
+        wo.finish();
     }
 
     /**

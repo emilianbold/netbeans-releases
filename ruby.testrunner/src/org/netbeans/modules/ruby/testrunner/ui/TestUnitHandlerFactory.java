@@ -44,6 +44,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
@@ -103,6 +110,8 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         private List<String> output;
+        private static final Pattern STRING_COMPARISON = Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*");//NOI18N
+
 
         public TestFailedHandler(String regex) {
             super(regex);
@@ -112,16 +121,36 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
+        // package private for tests
+        static Trouble.ComparisonFailure getComparisonFailure(String msg) {
+            if (msg == null) {
+                return null;
+            }
+            Matcher comparisonMatcher = STRING_COMPARISON.matcher(msg);
+            if (!comparisonMatcher.matches()) {
+                return null;
+            }
+            return new Trouble.ComparisonFailure(toMultipleLines(comparisonMatcher.group(1)),
+                    toMultipleLines(comparisonMatcher.group(2)));
+        }
+
+        private static String toMultipleLines(String toConvert) {
+            return toConvert.replace("\\n", "\n"); //NOI18N
+        }
+
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.toString(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
+
             String message = matcher.group(4);
+            testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
+
             String location = matcher.group(5);
-            testcase.getTrouble().stackTrace = getStackTrace(message, location);
+            testcase.getTrouble().setStackTrace(getStackTrace(message, location));
             session.addTestCase(testcase);
 
             String failureMsg = failureMsg(session.incrementFailuresCount());
@@ -130,13 +159,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             output.add("");
             output.add(failureMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().getStackTrace()));
             output.add("");
             
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, failureMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.getTrouble().stackTrace) {
+            for (String line : testcase.getTrouble().getStackTrace()) {
                 manager.displayOutput(session, line, false);
             }
             manager.displayOutput(session, "", false);
@@ -169,12 +198,12 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
@@ -183,13 +212,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             output.add("");
             output.add(errorMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().getStackTrace()));
             output.add("");
 
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, errorMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.getTrouble().stackTrace) {
+            for (String line : testcase.getTrouble().getStackTrace()) {
                 manager.displayOutput(session, line, true);
             }
             manager.displayOutput(session, "", false);
@@ -239,7 +268,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setName(matcher.group(2));

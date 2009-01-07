@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import java.util.HashMap;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAlwaysCapability;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAssertion;
 import org.netbeans.modules.websvc.wsitmodelext.tx.TxQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -58,10 +60,26 @@ import org.openide.nodes.Node;
  */
 public class TxModelHelper {
     
+    private static HashMap<ConfigVersion, TxModelHelper> instances =
+            new HashMap<ConfigVersion, TxModelHelper>();
+    
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
+
     /**
      * Creates a new instance of TxModelHelper
      */
-    private TxModelHelper() { }
+    private TxModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final synchronized TxModelHelper getInstance(ConfigVersion configVersion) {
+        TxModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new TxModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
+    }
     
     private static ATAssertion getATAssertion(Policy p) {
         return (ATAssertion) PolicyModelHelper.getTopLevelElement(p, ATAssertion.class,false);
@@ -73,7 +91,7 @@ public class TxModelHelper {
 
     /** Tx Value should be one of ComboConstants.TX_*
      */
-    public static void setTx(BindingOperation bop, Node node, String txValue) {
+    public void setTx(BindingOperation bop, Node node, String txValue) {
         
 //        String txAnnot = getTxFromAnnotation(bop, node);
 //        String txConfig = getTxFromConfig(bop);
@@ -97,9 +115,10 @@ public class TxModelHelper {
 //        
 //    }
     
-    private static void setTxInConfig(BindingOperation bop, String txValue) {
+    private void setTxInConfig(BindingOperation bop, String txValue) {
         WSDLModel model = bop.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(bop);
+        
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
             model.startTransaction();
@@ -119,7 +138,7 @@ public class TxModelHelper {
 
             // now add what is required
             WSDLComponentFactory wcf = model.getFactory();
-            PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(bop));
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
             All all = pmh.createPolicy(bop, false);
             
             if ((ComboConstants.TX_NEVER.equals(txValue)) || 
@@ -135,7 +154,7 @@ public class TxModelHelper {
 
             if (ComboConstants.TX_REQUIRED.equals(txValue)) {
                 tx = (ATAssertion)wcf.create(all, TxQName.ATASSERTION.getQName());
-                tx.setOptional(true);
+                tx.setOptional(true, configVersion);
                 all.addExtensibilityElement(tx);
                 txAlways = (ATAlwaysCapability)wcf.create(all, TxQName.ATALWAYSCAPABILITY.getQName());
                 all.addExtensibilityElement(txAlways);
@@ -148,7 +167,7 @@ public class TxModelHelper {
 
             if (ComboConstants.TX_SUPPORTED.equals(txValue)) {
                 tx = (ATAssertion)wcf.create(all, TxQName.ATASSERTION.getQName());
-                tx.setOptional(true);
+                tx.setOptional(true, configVersion);
                 all.addExtensibilityElement(tx);
             }
             

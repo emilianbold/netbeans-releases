@@ -52,7 +52,7 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Module;
-import org.python.antlr.ast.argumentsType;
+import org.python.antlr.ast.arguments;
 
 import static org.netbeans.modules.python.editor.hints.NameStyle.*;
 
@@ -132,21 +132,21 @@ public class NameRule extends PythonAstRule {
         } else if (node instanceof FunctionDef) {
             FunctionDef def = (FunctionDef)node;
             if (functionStyle != NO_PREFERENCE) {
-                if (!functionStyle.complies(def.name)) {
+                if (!functionStyle.complies(def.getInternalName())) {
                     String typeKey = "Function"; // NOI18N
-                    String message = NbBundle.getMessage(NameRule.class, "WrongStyle", def.name,
+                    String message = NbBundle.getMessage(NameRule.class, "WrongStyle", def.getInternalName(),
                             NbBundle.getMessage(NameRule.class, typeKey),
                             functionStyle.getDisplayName());
-                    List<HintFix> hintFixes = getNameStyleFixes(def.name, context, functionStyle, MODULE_STYLE_NAME, typeKey);
-                    addError(def.name, context, message, def, result, hintFixes);
+                    List<HintFix> hintFixes = getNameStyleFixes(def.getInternalName(), context, functionStyle, FUNCTION_STYLE_NAME, typeKey);
+                    addError(def.getInternalName(), context, message, def, result, hintFixes);
                 }
             }
 
             // Functions should have a first argument of name "self"
             if (selfRequired) {
-                argumentsType args = def.args;
-                if (args.args.length > 0) {
-                    String name = PythonAstUtils.getName(args.args[0]);
+                arguments args = def.getInternalArgs();
+                if (args.getInternalArgs().size() > 0) {
+                    String name = PythonAstUtils.getName(args.getInternalArgs().get(0));
                     if (!("self".equals(name) || "cls".equals(name))) { // NOI18N
                         // Make sure it's a class; other methods don't have to
                         if (PythonAstUtils.isClassMethod(context.path, def)) {
@@ -174,13 +174,13 @@ public class NameRule extends PythonAstRule {
         } else if (node instanceof ClassDef) {
             if (functionStyle != NO_PREFERENCE) {
                 ClassDef def = (ClassDef)node;
-                if (!classStyle.complies(def.name)) {
+                if (!classStyle.complies(def.getInternalName())) {
                     String typeKey = "Class"; // NOI18N
-                    String message = NbBundle.getMessage(NameRule.class, "WrongStyle", def.name,
+                    String message = NbBundle.getMessage(NameRule.class, "WrongStyle", def.getInternalName(),
                             NbBundle.getMessage(NameRule.class, typeKey),
                             classStyle.getDisplayName());
-                    List<HintFix> hintFixes = getNameStyleFixes(def.name, context, classStyle, CLASS_STYLE_NAME, typeKey);
-                    addError(def.name, context, message, def, result, hintFixes);
+                    List<HintFix> hintFixes = getNameStyleFixes(def.getInternalName(), context, classStyle, CLASS_STYLE_NAME, typeKey);
+                    addError(def.getInternalName(), context, message, def, result, hintFixes);
                 }
             }
         }
@@ -201,6 +201,10 @@ public class NameRule extends PythonAstRule {
                 fixes.add(cs);
             }
         }
+
+        // No preference always last
+        fixes.add(new ChangeStyleFix(this, context, NO_PREFERENCE, key, type));
+
         return fixes;
     }
 
@@ -267,7 +271,7 @@ public class NameRule extends PythonAstRule {
     }
 
     static NameStyle getModuleNameStyle(Preferences pref) {
-        return getNameStyle(MODULE_STYLE_NAME, NameStyle.LOWERCASE, pref);
+        return getNameStyle(MODULE_STYLE_NAME, NameStyle.NO_PREFERENCE, pref);
     }
 
     static NameStyle getClassNameStyle(Preferences pref) {
@@ -367,7 +371,11 @@ public class NameRule extends PythonAstRule {
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(NameRule.class, "ChangeStyle", NbBundle.getMessage(NameRule.class, typeKey), style.getDisplayName());
+            if (style == NO_PREFERENCE) {
+                return NbBundle.getMessage(NameRule.class, "ChangeNoStyle", NbBundle.getMessage(NameRule.class, typeKey));
+            } else {
+                return NbBundle.getMessage(NameRule.class, "ChangeStyle", NbBundle.getMessage(NameRule.class, typeKey), style.getDisplayName());
+            }
         }
 
         public void implement() throws Exception {

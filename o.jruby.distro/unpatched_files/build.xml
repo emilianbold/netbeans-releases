@@ -433,11 +433,13 @@
       <arg value="jdbc-activerecord-jdbc-adapter"/>
       -->
       <arg value="actionmailer"/>
-      <!-- 
+      <arg value="activerecord-jdbcmysql-adapter"/>
+      <!--
       removed from the  2.0.2 bundle 
       <arg value="actionwebservice"/>
       -->
       <arg value="rails"/>
+      <arg value="rcov"/>
       <!-- Ruby Debugger -->
       <arg value="ruby-debug-base"/>
       <arg value="ruby-debug-ide"/>

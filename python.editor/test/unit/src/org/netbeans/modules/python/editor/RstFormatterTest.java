@@ -136,14 +136,14 @@ public class RstFormatterTest extends PythonTestBase {
                 if (node instanceof FunctionDef) {
                     kind = ElementKind.METHOD;
                     FunctionDef func = (FunctionDef)node;
-                    name = func.name;
+                    name = func.getInternalName();
                     parameters = PythonAstUtils.getParameters(func);
                 } else if (node instanceof Module) {
                     name = info.getFileObject().getNameExt();
                     kind = ElementKind.MODULE;
                 } else if (node instanceof ClassDef) {
                     kind = ElementKind.CLASS;
-                    name = ((ClassDef)node).name;
+                    name = ((ClassDef)node).getInternalName();
                 }
                 String url = FileUtil.toFile(info.getFileObject()).toURI().toURL().toExternalForm();
                 String rhs = null;

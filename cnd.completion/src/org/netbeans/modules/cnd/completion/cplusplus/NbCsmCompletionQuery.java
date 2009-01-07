@@ -40,6 +40,10 @@
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -65,9 +69,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
  * Java completion query which is aware of project context.
@@ -75,6 +79,8 @@ import org.openide.loaders.DataObject;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
+    private Integer offset;
+    private Integer length;
     private final QueryScope queryScope;
     private final FileReferencesContext fileReferencesContext;
     
@@ -104,8 +110,19 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         if (this.csmFile == null) {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
-                DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-                this.csmFile = CsmUtilities.getCsmFile(dobj, true);
+                this.csmFile = CsmUtilities.getCsmFile(bDoc, true);
+                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
+                if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
+                    // this is context based code completion
+                    InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
+                    if (inputAttributes != null) {
+                        LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                        this.offset = (Integer) inputAttributes.getValue(path, "dialogBinding.offset"); //NOI18N
+                        this.length = (Integer) inputAttributes.getValue(path, "dialogBinding.length"); //NOI18N
+                    }
+                    CompletionSupport sup = CompletionSupport.get(bDoc);
+                    sup.setContextOffset(offset == null ? 0 : offset);
+                }
             }            
         }
         return this.csmFile;
@@ -130,6 +147,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                     sort, CsmCompletionUtils.isNaturalSort(mimeType), fileReferencesContext);
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
+            if (offset != null) {
+                ((CompletionResolverImpl)resolver).setContextOffset(offset.intValue());
+            }
         }
         return resolver;
     }    

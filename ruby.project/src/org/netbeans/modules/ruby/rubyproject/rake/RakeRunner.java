@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,6 +70,7 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 
 /**
  * Provides Rake running infrastructure.
@@ -159,12 +161,12 @@ public final class RakeRunner {
      *
      * @param taskNames the names of the tasks to run.
      */
-    public void run(String... taskNames) {
+    public List<Future<Integer>> run(String... taskNames) {
         if (taskNames.length == 0) {
             taskNames = new String[]{"default"}; // NOI18N
         }
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
-            return;
+            return null;
         }
 
         RakeTask[] rakeTasks = new RakeTask[taskNames.length];
@@ -174,18 +176,18 @@ public final class RakeRunner {
                 if (showWarnings) {
                     Util.notifyLocalized(RakeRunner.class, "RakeRunner.task.does.not.exist", taskNames[i]); // NOI18N
                 }
-                return; // run only when all tasks are available
+                return null; // run only when all tasks are available
             }
             rakeTasks[i] = rakeTask;
         }
-        run(rakeTasks);
+        return run(rakeTasks);
     }
 
-    private void run(final RakeTask... tasks) {
+    private List<Future<Integer>> run(final RakeTask... tasks) {
         assert tasks.length > 0 : "must pass at least one task";
 
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
-            return;
+            return null;
         }
 
         // Save all files first
@@ -213,9 +215,12 @@ public final class RakeRunner {
 
         final List<ExecutionService> services = getExecutionServices(tasksToRun);
 
+        List<Future<Integer>> futures = new ArrayList<Future<Integer>>(services.size());
         for (ExecutionService each : services) {
-            each.run();
+            futures.add(each.run());
         }
+
+        return futures;
     }
 
     private List<ExecutionService> getExecutionServices(List<? extends RakeTask> tasks) {
@@ -248,6 +253,11 @@ public final class RakeRunner {
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
         List<RubyExecutionDescriptor> result = new ArrayList<RubyExecutionDescriptor>(tasks.size());
 
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider == null || !coverageProvider.isEnabled()) {
+            coverageProvider = null;
+        }
+
         for (RakeTask task : tasks) {
             RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, rake);
             doStandardConfiguration(desc);
@@ -278,6 +288,11 @@ public final class RakeRunner {
             }
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+
+            if (coverageProvider != null) {
+                desc = coverageProvider.wrapWithCoverage(desc, true, null);
+            }
+
             result.add(desc);
         }
         return result;

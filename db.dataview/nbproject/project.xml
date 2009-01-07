@@ -86,6 +86,10 @@
                 <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/db/dataview/swingx-0.9.4.jar</runtime-relative-path>
+                <binary-origin>external/swingx-0.9.4.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

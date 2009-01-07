@@ -124,7 +124,10 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
     }
 
     public Collection<CsmScopeElement> getScopeElements() {
-        return (Collection) getStatements();
+        // statements are scope elements
+        @SuppressWarnings("unchecked")
+        Collection<CsmScopeElement> out = (Collection<CsmScopeElement>) ((List<? extends CsmScopeElement>) getStatements());
+        return out;
     }
 
     private AST resolveLazyCompoundStatement(TokenStream tokenStream) {

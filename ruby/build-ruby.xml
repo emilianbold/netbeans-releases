@@ -52,6 +52,8 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
+            <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="libs.bytelist"/>
             <buildpath location="libs.jvyamlb"/>
@@ -123,6 +125,8 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.api"/>
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
+            <buildpath location="gsf.testrunner"/>
+            <buildpath location="gsf.codecoverage"/>
 
             <buildpath location="libs.bytelist"/>
             <buildpath location="libs.jvyamlb"/>
@@ -138,6 +142,7 @@ made subject to such option by the copyright holder.
             <buildpath location="ruby.javaint"/>
             <buildpath location="ruby.hints"/>
             <buildpath location="ruby.help"/>
+            <buildpath location="ruby.testrunner"/>
 
             <buildpath location="o.kxml2"/>
             <buildpath location="o.rubyforge.debugcommons"/>

@@ -145,14 +145,18 @@ public class JaxWsNodeFactory implements NodeFactory {
             if (jaxwsSupport == null) {
                 jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
             }
-            jaxwsSupport.addPropertyChangeListener(this);
+            if (jaxwsSupport != null) {
+                jaxwsSupport.addPropertyChangeListener(this);
+            }
         }
         
         public void removeNotify() {
             if (jaxwsSupport == null) {
                 jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
             }
-            jaxwsSupport.removePropertyChangeListener(this);
+            if (jaxwsSupport != null) {
+                jaxwsSupport.removePropertyChangeListener(this);
+            }
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

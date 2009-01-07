@@ -40,7 +40,17 @@
  */
 package org.netbeans.modules.maven.jaxws.actions;
 
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -48,53 +58,68 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 
 public class AddOperationAction extends NodeAction  {
-    
+
     public String getName() {
         return NbBundle.getMessage(AddOperationAction.class, "LBL_OperationAction");
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-        
-    protected boolean asynchronous() {
-        return false;
-    }
-    
+
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        return implClassFo != null;
+        return implClassFo != null && !isFromWsdl(implClassFo);
     }
-    
+
     protected void performAction(Node[] activatedNodes) {
-        
+
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
         AddOperationCookie addOperationCookie = new JaxWsAddOperation(implClassFo);
-        addOperationCookie.addOperation(implClassFo);
-//        
-//        Project prj = FileOwnerQuery.getOwner(implClassFo);
-//        NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
-//        System.out.println("mp = "+mp);
-//        if (mp != null) {
-//            //if jaxws-plugin not in project at all, add to pom.xml!
-//            String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlFiles", "wsdlFile",
-//                    "wsimport");
-//            System.out.println("filePath = "+filepaths);
-//            if (filepaths != null) {
-//                
-//            } else {
-//                String dirpath = PluginPropertyUtils.getPluginProperty(prj, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlDirectory", 
-//                        "wsimport");
-//                if (dirpath == null) {
-//                    dirpath = "src/wsdl";
-//                }
-//                File dir = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), dirpath);
-//                System.out.println("dir = "+dir+":"+dir.exists());
-//                if (!dir.exists()) dir.mkdirs();
-//            }
-//        } 
-        
+        addOperationCookie.addOperation();
+    }
+
+    private boolean isFromWsdl(FileObject inplClass) {
+        final boolean[] fromWsdl = new boolean[1];
+        JavaSource javaSource = JavaSource.forFileObject(inplClass);
+        if (javaSource != null) {
+
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+                public void run(CompilationController controller) throws java.io.IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    if (typeElement != null && wsElement != null) {
+                        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : annotations) {
+                            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                                    if (entry.getKey().getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                                        fromWsdl[0] = true;
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                public void cancel() {
+                }
+
+            };
+
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return fromWsdl[0];
     }
 }
 

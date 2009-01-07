@@ -46,6 +46,9 @@
                         </folder>
                     </folder>
                 </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-php-editor-actions-FastImportAction.instance"/>
+                </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
                         <attr name="position" intvalue="1300"/>
@@ -101,6 +104,10 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
                     </folder>
+                    <file name="fast-import">
+                        <attr name="position" intvalue="1181"/>
+                    </file>
+
                 </folder>
                 <!--end of issue #127161-->
                 
@@ -133,6 +140,23 @@
                         <file name="PHPHints.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-php5">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.FmtTabsIndents.getController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.FmtBraces.getController"/>
+                            <attr name="position" intvalue="300"/>
                         </file>
                     </folder>
                 </folder>
@@ -174,6 +198,7 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
                         <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethods.instance"/>
                     </folder>
                     <folder name="experimental">
                         <attr name="position" intvalue="100"/>

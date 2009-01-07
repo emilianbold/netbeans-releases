@@ -130,14 +130,14 @@ public class ChangeEventImpl extends CsmChangeEvent {
         if( newNamespaces != null ) {
             return newNamespaces.values();
         }
-        return Collections.EMPTY_LIST;
+        return Collections.<CsmNamespace>emptyList();
     }
     
     public Collection<CsmNamespace> getRemovedNamespaces() {
         if( removedNamespaces != null ) {
             return removedNamespaces.values();
         }
-        return Collections.EMPTY_LIST;
+        return Collections.<CsmNamespace>emptyList();
     }
     
     public boolean isEmpty() {

@@ -3,12 +3,12 @@ class Page(object):
     |>PARAMETER:self<|.name = |>PARAMETER:name<|
     |>PARAMETER:self<|.entity = |>PARAMETER:entity<|
 
-  @sta|>METHOD:ticm<|ethod
-  def load(|>PARAMETER,UNUSED:name<|):
+  @staticmethod
+  def |>METHOD:load<|(|>PARAMETER,UNUSED:name<|):
     pass
 
-  @sta|>METHOD:ticmet<|hod
-  def exists(|>PARAMETER,UNUSED:name<|):
+  @staticmethod
+  def |>METHOD:exists<|(|>PARAMETER,UNUSED:name<|):
     pass
 
 

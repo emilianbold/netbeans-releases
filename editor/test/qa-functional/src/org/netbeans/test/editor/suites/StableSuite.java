@@ -46,6 +46,7 @@ import org.netbeans.test.editor.popup.MainMenuTest;
 import org.netbeans.test.editor.search.IncrementalSearchTest;
 import org.netbeans.test.editor.search.ReplaceTest;
 import org.netbeans.test.editor.suites.abbrevs.AbbreviationsAddRemovePerformer;
+import org.netbeans.test.editor.suites.keybindings.KeyMapTest;
 
 /**
  *
@@ -56,10 +57,8 @@ public class StableSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(GeneralTypingTest.class)
-                .addTest(GeneralTypingTest.class,
-                         "testJavaEnterBeginAndEnd")
-                .addTest(MainMenuTest.class,
-                         "testMainMenu")
+                .addTest(GeneralTypingTest.class, "testJavaEnterBeginAndEnd")
+                .addTest(MainMenuTest.class, "testMainMenu")
                 .addTest(IncrementalSearchTest.class,
                          //"testSearchForward",  //failing on windows -> removing from stable suite
                          //"testSearchBackwards",
@@ -75,6 +74,16 @@ public class StableSuite {
                          "testFindNext",
                          "testFindPrev")
                 .addTest(ReplaceTest.class)
+                .addTest(KeyMapTest.class, "prepareFileInEditor")
+                .addTest(KeyMapTest.class, "testVerify")
+                .addTest(KeyMapTest.class, "testAddDuplicateCancel")
+                .addTest(KeyMapTest.class, "testAddShortcut")
+                .addTest(KeyMapTest.class, "testUnassign")
+                .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
+                //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
+                .addTest(KeyMapTest.class, "testProfileDuplicte")
+                .addTest(KeyMapTest.class, "testHelp")
+                .addTest(KeyMapTest.class, "closeProject").clusters(".*").enableModules(".*")
                 //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
                 );
     }

@@ -41,6 +41,8 @@
 
 package org.netbeans.api.editor.settings;
 
+import org.openide.modules.PatchedPublic;
+
 
 /** The names of SimpleValuesSettings.
  *
@@ -390,6 +392,7 @@ public final class SimpleValueNames {
      */
     public static final String JAVADOC_POPUP_NEXT_TO_CC = "javadoc-popup-next-to-cc"; // NOI18N
 
+    @PatchedPublic
     private SimpleValueNames() {
         // to prevent instantialization
     }

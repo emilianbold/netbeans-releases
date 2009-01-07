@@ -70,20 +70,20 @@ public class PermanentUITest {
                   "testNavigate_InspectSubMenu", //stable
                   //"testView_CodeFoldsSubMenu",//???
                   //"testView_ToolbarsSubMenu",//#149237
-                  //"testProfile_AdvancedCommandsSubMenu",
-                  //"testProfile_ProfileOtherSubMenu",
+                  "testProfile_AdvancedCommandsSubMenu",//failing 154811
+                  "testProfile_ProfileOtherSubMenu",//failing 154811
                   "testRun_SetMainProjectSubMenu",
                   "testDebug_StackSubMenu",
                   //"testSource_PreprocessorBlocksSubMenu",
                   "testTools_InternationalizationSubMenu",
                   "testTools_PaletteSubMenu",
-                  //"testVersioning_CVSSubMenu",
-                  //"testVersioning_CVS_BranchesSubMenu",
-                  //"testVersioning_LocalHistorySubMenu",
-                  //"testVersioning_Mercurial_MergeSubMenu",
-                  //"testVersioning_Mercurial_RecoverSubMenu",
-                  //"testVersioning_Mercurial_ShareSubMenu",
-                  //"testVersioning_Mercurial_ShowSubMenu",
+                  "testVersioning_CVSSubMenu",
+                  "testVersioning_CVS_BranchesSubMenu",
+                  "testVersioning_LocalHistorySubMenu",
+                  "testVersioning_Mercurial_MergeSubMenu",
+                  "testVersioning_Mercurial_RecoverSubMenu",
+                  "testVersioning_Mercurial_ShareSubMenu",
+                  "testVersioning_Mercurial_ShowSubMenu",
                   "testWindow_DebuggingSubMenu",
                   "testWindow_NavigatingSubMenu",
                   "testWindow_OtherSubMenu",

@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.HashSet;
@@ -81,7 +79,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     ModelElementImpl(ScopeImpl inScope, IndexedElement element, PhpKind kind) {
         this(inScope, element.getName(),Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
                 new OffsetRange(element.getOffset(), element.getOffset()+element.getName().length()),
-                kind, new PhpModifiers(element.getModifiers()));
+                kind, new PhpModifiers(element.getFlags()));
         inScope.addElement(this);
     }
 

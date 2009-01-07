@@ -349,6 +349,7 @@ public class FolderChildrenTest extends NbTestCase {
 	assertEquals("All are visbile ", 3, arr.length);
     }
 
+    @RandomlyFails // NB-Core-Build #1868
     public void testReorderAfterRename() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         String pref = getName() + '/';

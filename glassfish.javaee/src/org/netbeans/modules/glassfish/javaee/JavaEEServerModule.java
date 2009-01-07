@@ -85,7 +85,7 @@ public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, Recogni
     // ProfilerCookie support
     // ------------------------------------------------------------------------
     public Object[] getData() {
-        Profiler profiler = (Profiler) Lookup.getDefault().lookup(Profiler.class);
+        Profiler profiler = Lookup.getDefault().lookup(Profiler.class);
         Object[] retVal = new Object[2];
         retVal[0] = JavaPlatform.getDefault().getInstallFolders().iterator().next();
         retVal[1] = new String[0];

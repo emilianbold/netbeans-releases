@@ -45,6 +45,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

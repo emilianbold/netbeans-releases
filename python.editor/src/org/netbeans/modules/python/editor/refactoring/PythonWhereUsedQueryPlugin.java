@@ -86,7 +86,7 @@ import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  * Actual implementation of Find Usages query search for Python
@@ -484,7 +484,7 @@ public class PythonWhereUsedQueryPlugin extends PythonRefactoringPlugin {
 
         @Override
         public Object visitFunctionDef(FunctionDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 PythonElementCtx matchCtx = new PythonElementCtx(fileCtx, node);
                 elements.add(refactoring, WhereUsedElement.create(matchCtx));
             }
@@ -508,13 +508,13 @@ public class PythonWhereUsedQueryPlugin extends PythonRefactoringPlugin {
 
         @Override
         public Object visitClassDef(ClassDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 PythonElementCtx matchCtx = new PythonElementCtx(fileCtx, node);
                 elements.add(refactoring, WhereUsedElement.create(matchCtx));
             }
-
-            if (node.bases != null) {
-                for (exprType base : node.bases) {
+            List<expr> bases = node.getInternalBases();
+            if (bases != null) {
+                for (expr base : bases) {
                     String extendsName = PythonAstUtils.getExprName(base);
                     if (extendsName != null && extendsName.equals(name)) {
                         //PythonElementCtx matchCtx = new PythonElementCtx(fileCtx, node);
@@ -529,7 +529,7 @@ public class PythonWhereUsedQueryPlugin extends PythonRefactoringPlugin {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            if (name.equals(node.id)) {
+            if (name.equals(node.getInternalId())) {
                 PythonElementCtx matchCtx = new PythonElementCtx(fileCtx, node);
                 elements.add(refactoring, WhereUsedElement.create(matchCtx));
             }

@@ -73,11 +73,11 @@ public final class ModelHandleUtils {
     public static ModelHandle createModelHandle(Project prj) throws IOException, XmlPullParserException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
-        ModelSource source = Utilities.createModelSource(pom, true);
+        ModelSource source = Utilities.createModelSource(pom);
         POMModel model = POMModelFactory.getDefault().getModel(source);
-        FileObject profilesFO = prj.getProjectDirectory().getFileObject("profiles.xml");
+        FileObject profilesFO = prj.getProjectDirectory().getFileObject("profiles.xml"); //NOI18N
         if (profilesFO != null) {
-            source = Utilities.createModelSource(profilesFO, true);
+            source = Utilities.createModelSource(profilesFO);
         } else {
             //the file doesn't exist. what now?
             File file = FileUtil.toFile(prj.getProjectDirectory());

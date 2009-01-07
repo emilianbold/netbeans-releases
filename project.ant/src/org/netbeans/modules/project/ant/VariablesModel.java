@@ -47,6 +47,7 @@ import java.util.Map;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,7 +120,7 @@ public class VariablesModel {
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         for (Map.Entry<String, String> entry : ep.entrySet()) {
             if (entry.getKey().startsWith(VARIABLE_PREFIX)) {
-                vs.add(new Variable(entry.getKey().substring(VARIABLE_PREFIX.length()), new File(entry.getValue())));
+                vs.add(new Variable(entry.getKey().substring(VARIABLE_PREFIX.length()), FileUtil.normalizeFile(new File(entry.getValue()))));
             }
         }
         return vs;

@@ -58,6 +58,7 @@ import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
@@ -77,7 +78,8 @@ public final class CategoryModel implements LookupListener {
             Collections.synchronizedMap(new LinkedHashMap<String, CategoryModel.Category>());
     private MasterLookup masterLookup;
     static final String OD_LAYER_FOLDER_NAME = "OptionsDialog"; // NOI18N
-
+    private Result<OptionsCategory> result;
+    
     Set<Map.Entry<String, CategoryModel.Category>> getCategories() {
         return id2Category.entrySet();
     }
@@ -290,7 +292,7 @@ public final class CategoryModel implements LookupListener {
 
     private Map<String, OptionsCategory> loadOptionsCategories() {
         Lookup lookup = Lookups.forPath(OD_LAYER_FOLDER_NAME);
-        Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
+        result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
         result.addLookupListener(this);
         Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
         for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {

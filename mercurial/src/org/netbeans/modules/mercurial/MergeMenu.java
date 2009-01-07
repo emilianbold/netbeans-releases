@@ -86,13 +86,17 @@ public class MergeMenu extends AbstractAction implements DynamicMenuContent {
 
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        menu.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
-        menu.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-        if(bShowMarkAsResolved){
-            menu.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N  
-        }
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        
+        JMenuItem item = menu.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx));
+        org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Merge"));
+
+        item = menu.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Resolve"));
+        if(bShowMarkAsResolved){
+            item = menu.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_MarkResolved"));
+        }
         return menu;
     }
 }

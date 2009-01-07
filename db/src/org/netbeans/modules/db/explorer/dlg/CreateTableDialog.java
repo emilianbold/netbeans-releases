@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +63,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.util.CommandBuffer;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
 import org.openide.awt.Mnemonics;
@@ -73,7 +73,6 @@ public class CreateTableDialog {
     Dialog dialog = null;
     JTextField dbnamefield, dbownerfield;
     JTable table;
-    JComboBox ownercombo;
     JButton addbtn, delbtn;
     Specification spec;
     private Vector ttab;
@@ -81,6 +80,7 @@ public class CreateTableDialog {
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    private static final int SIZE_COL_INDEX = 6;
     private static Logger LOGGER = Logger.getLogger(
             CreateTableDialog.class.getName());
 
@@ -89,7 +89,7 @@ public class CreateTableDialog {
             ClassLoader cl = CreateTableDialog.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(filename);
             if (stream == null) {
-                String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToOpenStream"), new String[] {filename}); // NOI18N
+                String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToOpenStream"), new Object[] {filename}); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -103,7 +103,7 @@ public class CreateTableDialog {
         return dlgtab;
     }
 
-    public CreateTableDialog(final Specification spe, DatabaseNodeInfo nfo) {
+    public CreateTableDialog(final Specification spe, final String schema) {
         spec = spe;
         try {
             JLabel label;
@@ -142,43 +142,6 @@ public class CreateTableDialog {
             layout.setConstraints(dbnamefield, constr);
             pane.add(dbnamefield);
 
-            // Table owner combo
-
-            label = new JLabel();
-            Mnemonics.setLocalizedText(label, bundle.getString("CreateTableOwner")); // NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableOwnerA11yDesc"));
-            constr.anchor = GridBagConstraints.WEST;
-            constr.weightx = 0.0;
-            constr.weighty = 0.0;
-            constr.fill = GridBagConstraints.NONE;
-            constr.insets = new java.awt.Insets (2, 10, 2, 2);
-            constr.gridx = 2;
-            constr.gridy = 0;
-            layout.setConstraints(label, constr);
-            pane.add(label);
-
-            Vector users = new Vector();
-            String schema = nfo.getDriverSpecification().getSchema();
-            if (schema != null && schema.length() > 0)
-                users.add(schema);
-            else
-                users.add(" "); //NOI18N
-
-            constr.fill = GridBagConstraints.HORIZONTAL;
-            constr.weightx = 0.0;
-            constr.weighty = 0.0;
-            constr.gridx = 3;
-            constr.gridy = 0;
-            constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            ownercombo = new JComboBox(users);
-            ownercombo.setSelectedIndex(0);
-            ownercombo.setRenderer(new ListCellRendererImpl());
-            ownercombo.setToolTipText(bundle.getString("ACS_CreateTableOwnerComboBoxA11yDesc"));
-            ownercombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableOwnerComboBoxA11yName"));
-            label.setLabelFor(ownercombo);
-            layout.setConstraints(ownercombo, constr);
-            pane.add(ownercombo);
-
             // Table columns in scrollpane
 
             constr.fill = GridBagConstraints.BOTH;
@@ -189,7 +152,7 @@ public class CreateTableDialog {
             constr.gridwidth = 4;
             constr.gridheight = 3;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            table = new DataTable(new DataModel());
+            table = new DataTable(new ColumnDataModel(getTypes()));
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             table.setToolTipText(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             table.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableColumnTableA11yName"));
@@ -289,12 +252,11 @@ public class CreateTableDialog {
                             final String tablename = getTableName();
                             final DataModel dataModel = (DataModel)table.getModel();
                             final Vector data = dataModel.getData();
-                            final String owner = ((String)ownercombo.getSelectedItem()).trim();
 
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                                 public Boolean call() throws Exception {
                                     CreateTableDDL ddl = new CreateTableDDL(
-                                            spec, owner, tablename);
+                                            spec, schema, tablename);
 
                                     return ddl.execute(data, dataModel.getTablePrimaryKeys());
                                 }
@@ -441,6 +403,36 @@ public class CreateTableDialog {
 
     }
 
+    private List<String> getTypes() {
+        // TODO: replace with static metadata API to return a List of the fixed SQL types
+        final String[] varTypes = {"java.sql.Types.VARCHAR", "java.sql.Types.BLOB", "java.sql.Types.BINARY"}; // NOI18N
+        return Arrays.asList(varTypes);
+    }
+
+    private class ColumnDataModel extends DataModel {
+        List<String> varTypeList;
+
+        ColumnDataModel(List<String> varTypes) {
+            varTypeList = varTypes;
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            boolean isFixed = false;
+            if (column == SIZE_COL_INDEX) {
+                String selectedSQLType = ((TypeElement) table.getValueAt(row, column - 1)).getType();
+                if (!varTypeList.contains(selectedSQLType)) {
+                    isFixed = true;
+                }
+            }
+            if (column == SIZE_COL_INDEX && isFixed) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+
     class ComboBoxEditor extends DefaultCellEditor {
         public ComboBoxEditor(final JComboBox jComboBox) {
             super(jComboBox);
@@ -456,6 +448,7 @@ public class CreateTableDialog {
 
     private static final class ListCellRendererImpl extends DefaultListCellRenderer {
         
+        @Override
         public Dimension getPreferredSize() {
             Dimension size = super.getPreferredSize();
             // hack to fix issue 65759

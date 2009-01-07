@@ -312,6 +312,10 @@ public class CsmFinderImpl implements CsmFinder {
         if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
             return true;
         }
+        elements = contResolver.getNamespaceAliases(nmsp, name, exactMatch, searchNested);
+        if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            return true;
+        }
         if (needFileLocal) {
             assert file != null : "file must be passed if needFileLocal is true";
             elements = contResolver.getFileLocalNamespaceVariables(nmsp, file, name, exactMatch);

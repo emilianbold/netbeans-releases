@@ -51,6 +51,9 @@ public class DecorationManager {
      * Returns the superset of states from all providers
      **/
     public Decoration getDecoration(Pattern p) {
+        if (p == null) {
+            return emptyDecoration;
+        }
         BpelEntity entity = p.getOMReference();
 
         Decoration result = null;

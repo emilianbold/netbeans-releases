@@ -52,12 +52,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
-import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -568,17 +570,35 @@ public class MainClassChooserImpl extends MainClassChooser {
             String[] items = PropertyUtils.tokenizePath(bootcp);
             if (items.length >0)
             {
-                FileObject bcpRoots[]=new FileObject[items.length];
-                int i=0;
+                //#155139 - can have a null return from FileUtil.toFileObject() if
+                //a reference in the bootclasspath does not exist on disk.  Not
+                //likely but evidently can happen.
+                List <FileObject> bcpRoots = new LinkedList<FileObject>();
                 for (String item : items) {
-                    FileObject fo=FileUtil.toFileObject(FileUtil.normalizeFile(new File(item)));
-                    if (FileUtil.isArchiveFile(fo))
-                        bcpRoots[i++]=FileUtil.getArchiveRoot(fo);
-                    else
-                        bcpRoots[i++]=fo;
+                    File f = new File(item);
+                    if (!f.exists()) {
+                        Logger.getLogger(MainClassChooserImpl.class.getName()).log(Level.INFO,
+                                "Non existent boot class path entry " + item + "'." +
+                                "Entire bootclasspath: " + bootcp);
+                        continue;
+                    }
+                    f = FileUtil.normalizeFile(f);
+                    FileObject fo=FileUtil.toFileObject(f);
+                    if (fo == null) {
+                        //bad symlink could possibly fail here?
+                        Logger.getLogger(MainClassChooserImpl.class.getName()).log(Level.INFO,
+                                "Unresolvable boot class path entry '" + item + "'." +
+                                "Entire bootclasspath: " + bootcp);
+                        continue;
+                    }
+                    if (FileUtil.isArchiveFile(fo)) {
+                        bcpRoots.add (FileUtil.getArchiveRoot(fo));
+                    } else {
+                        bcpRoots.add (fo);
+                    }
                 }
-
-                bcp=ClassPathSupport.createClassPath(bcpRoots);
+                FileObject[] roots = bcpRoots.toArray(new FileObject[0]);
+                bcp=ClassPathSupport.createClassPath(roots);
             }
         }
         else

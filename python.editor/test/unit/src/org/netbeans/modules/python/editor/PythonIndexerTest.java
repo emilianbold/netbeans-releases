@@ -116,6 +116,14 @@ public class PythonIndexerTest extends PythonTestBase {
         checkIndexer("testfiles/unittest.py");
     }
 
+    public void testIndex14() throws Exception {
+        checkIndexer("testfiles/properties.py");
+    }
+
+    public void testIndex15() throws Exception {
+        checkIndexer("testfiles/tarfile.py");
+    }
+
     public void testRstIndex1() throws Exception {
         checkIndexer("testfiles/rst/zipfile.rst");
     }

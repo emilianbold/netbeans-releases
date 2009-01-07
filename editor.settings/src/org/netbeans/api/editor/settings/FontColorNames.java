@@ -41,6 +41,8 @@
 
 package org.netbeans.api.editor.settings;
 
+import org.openide.modules.PatchedPublic;
+
 /**
  * Fonts and Colors settings names
  *
@@ -103,7 +105,8 @@ public final class FontColorNames {
 
     /** Coloring for the documentation popup window, eg. javadoc popup in code completion. */
     public static final String DOCUMENTATION_POPUP_COLORING = "documentation-popup-coloring"; //NOI18N
-    
+
+    @PatchedPublic
     private FontColorNames() {
         // to prevent instantialization
     }

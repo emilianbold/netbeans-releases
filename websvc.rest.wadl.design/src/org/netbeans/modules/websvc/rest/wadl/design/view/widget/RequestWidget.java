@@ -64,6 +64,7 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
     private transient Widget tabComponent;
+    private Method method;
 
     /**
      * Creates a new instance of MethodWidget
@@ -74,6 +75,7 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
         super(scene, 
               !method.getRequest().isEmpty()?method.getRequest().iterator().next():
                   model.getFactory().createRequest(), model);
+        this.method = method;
         initUI();
     }
 
@@ -134,7 +136,7 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
             ParametersWidget headerParamsWidget = new ParametersWidget(
                     NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Header"),
                         ParamStyle.HEADER, getObjectScene(), getRequest(),
-                        getWadlComponent(),
+                        this.method,
                         ParametersWidget.getParameters(getRequest().getParam(),
                         ParamStyle.HEADER), getModel());
             containerWidget.addChild(headerParamsWidget);
@@ -142,7 +144,7 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
             ParametersWidget queryParamsWidget = new ParametersWidget(
                     NbBundle.getMessage(ParametersWidget.class, "LBL_Param", "Query"),
                         ParamStyle.QUERY, getObjectScene(), getRequest(),
-                        getWadlComponent(),
+                        this.method,
                         ParametersWidget.getParameters(getRequest().getParam(),
                         ParamStyle.QUERY), getModel());
             containerWidget.addChild(queryParamsWidget);

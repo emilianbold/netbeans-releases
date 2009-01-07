@@ -1,833 +1,215 @@
-#API master signature file
-#Version 1.16
-CLSS public static abstract interface org.netbeans.api.java.queries.SourceForBinaryQuery$Result
-meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result.getRoots()
-meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static final org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
-cons public Item()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getJarFile()
-meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getJavadocFile()
-meth public java.lang.String org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.getSourceFile()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setJarFile(java.lang.String)
-meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setJavadocFile(java.lang.String)
-meth public void org.netbeans.spi.java.project.support.ui.EditJarSupport$Item.setSourceFile(java.lang.String)
-supr java.lang.Object
-CLSS public static abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
-intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
-meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result.getRoots()
-meth public abstract boolean org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result.preferSources()
-meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static org.openide.WizardDescriptor$ArrayIterator
-cons public ArrayIterator()
-cons public ArrayIterator([Lorg.openide.WizardDescriptor$Panel;)
-cons public ArrayIterator(java.util.List)
-intf org.openide.WizardDescriptor$Iterator
-meth protected [Lorg.openide.WizardDescriptor$Panel; org.openide.WizardDescriptor$ArrayIterator.initializePanels()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.WizardDescriptor$ArrayIterator.reset()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasNext()
-meth public boolean org.openide.WizardDescriptor$ArrayIterator.hasPrevious()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.WizardDescriptor$ArrayIterator.name()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$ArrayIterator.current()
-meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.nextPanel()
-meth public synchronized void org.openide.WizardDescriptor$ArrayIterator.previousPanel()
-meth public void org.openide.WizardDescriptor$ArrayIterator.addChangeListener(javax.swing.event.ChangeListener)
-meth public void org.openide.WizardDescriptor$ArrayIterator.removeChangeListener(javax.swing.event.ChangeListener)
-supr java.lang.Object
-CLSS public static abstract interface org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
-intf org.openide.WizardDescriptor$InstantiatingIterator
-intf org.openide.WizardDescriptor$Iterator
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
-meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
-meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
-meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static abstract interface org.openide.WizardDescriptor$InstantiatingIterator
-intf org.openide.WizardDescriptor$Iterator
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
-meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
-meth public abstract java.util.Set org.openide.WizardDescriptor$InstantiatingIterator.instantiate() throws java.io.IOException
-meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static abstract interface org.openide.WizardDescriptor$Iterator
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
-meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
-meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
-meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static abstract interface org.openide.WizardDescriptor$ProgressInstantiatingIterator
-intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
-intf org.openide.WizardDescriptor$InstantiatingIterator
-intf org.openide.WizardDescriptor$Iterator
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
-meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
-meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
-meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
-meth public abstract java.util.Set org.openide.WizardDescriptor$ProgressInstantiatingIterator.instantiate(org.netbeans.api.progress.ProgressHandle) throws java.io.IOException
-meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
-meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
-meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
-supr null
-CLSS public static abstract interface org.openide.filesystems.FileSystem$AtomicAction
-meth public abstract void org.openide.filesystems.FileSystem$AtomicAction.run() throws java.io.IOException
-supr null
-CLSS public static org.openide.nodes.Children$Array
-cons protected Array(java.util.Collection)
-cons public Array()
-fld  protected java.util.Collection org.openide.nodes.Children$Array.nodes
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-intf java.lang.Cloneable
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Array.refresh()
-meth protected java.util.Collection org.openide.nodes.Children$Array.initCollection()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.Children.addNotify()
-meth protected void org.openide.nodes.Children.removeNotify()
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Children$Array.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.Children$Array.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object org.openide.nodes.Children$Array.clone()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-supr org.openide.nodes.Children
-CLSS public static abstract org.openide.nodes.Children$Keys
-cons public Keys()
-fld  protected java.util.Collection org.openide.nodes.Children$Array.nodes
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-intf java.lang.Cloneable
-meth protected abstract [Lorg.openide.nodes.Node; org.openide.nodes.Children$Keys.createNodes(java.lang.Object)
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Array.refresh()
-meth protected final void org.openide.nodes.Children$Keys.refreshKey(java.lang.Object)
-meth protected final void org.openide.nodes.Children$Keys.setBefore(boolean)
-meth protected final void org.openide.nodes.Children$Keys.setKeys([Ljava.lang.Object;)
-meth protected final void org.openide.nodes.Children$Keys.setKeys(java.util.Collection)
-meth protected java.util.Collection org.openide.nodes.Children$Array.initCollection()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.Children$Keys.destroyNodes([Lorg.openide.nodes.Node;)
-meth protected void org.openide.nodes.Children.addNotify()
-meth protected void org.openide.nodes.Children.removeNotify()
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Children$Keys.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.Children$Keys.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object org.openide.nodes.Children$Keys.clone()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-supr org.openide.nodes.Children$Array
-CLSS public static org.openide.nodes.Children$Map
-cons protected Map(java.util.Map)
-cons public Map()
-fld  protected java.util.Map org.openide.nodes.Children$Map.nodes
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Map.put(java.lang.Object,org.openide.nodes.Node)
-meth protected final void org.openide.nodes.Children$Map.putAll(java.util.Map)
-meth protected final void org.openide.nodes.Children$Map.refresh()
-meth protected final void org.openide.nodes.Children$Map.refreshKey(java.lang.Object)
-meth protected final void org.openide.nodes.Children$Map.removeAll(java.util.Collection)
-meth protected java.lang.Object org.openide.nodes.Children.clone() throws java.lang.CloneNotSupportedException
-meth protected java.util.Map org.openide.nodes.Children$Map.initMap()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.Children$Map.remove(java.lang.Object)
-meth protected void org.openide.nodes.Children.addNotify()
-meth protected void org.openide.nodes.Children.removeNotify()
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Children$Map.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.Children$Map.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-supr org.openide.nodes.Children
-CLSS public static org.openide.nodes.Children$SortedArray
-cons protected SortedArray(java.util.Collection)
-cons public SortedArray()
-fld  protected java.util.Collection org.openide.nodes.Children$Array.nodes
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-intf java.lang.Cloneable
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Array.refresh()
-meth protected java.util.Collection org.openide.nodes.Children$Array.initCollection()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.Children.addNotify()
-meth protected void org.openide.nodes.Children.removeNotify()
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Children$Array.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.Children$Array.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object org.openide.nodes.Children$Array.clone()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.Comparator org.openide.nodes.Children$SortedArray.getComparator()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-meth public void org.openide.nodes.Children$SortedArray.setComparator(java.util.Comparator)
-supr org.openide.nodes.Children$Array
-CLSS public static org.openide.nodes.Children$SortedMap
-cons protected SortedMap(java.util.Map)
-cons public SortedMap()
-fld  protected java.util.Map org.openide.nodes.Children$Map.nodes
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Map.put(java.lang.Object,org.openide.nodes.Node)
-meth protected final void org.openide.nodes.Children$Map.putAll(java.util.Map)
-meth protected final void org.openide.nodes.Children$Map.refresh()
-meth protected final void org.openide.nodes.Children$Map.refreshKey(java.lang.Object)
-meth protected final void org.openide.nodes.Children$Map.removeAll(java.util.Collection)
-meth protected java.lang.Object org.openide.nodes.Children.clone() throws java.lang.CloneNotSupportedException
-meth protected java.util.Map org.openide.nodes.Children$Map.initMap()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.Children$Map.remove(java.lang.Object)
-meth protected void org.openide.nodes.Children.addNotify()
-meth protected void org.openide.nodes.Children.removeNotify()
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Children$Map.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.Children$Map.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.Comparator org.openide.nodes.Children$SortedMap.getComparator()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-meth public void org.openide.nodes.Children$SortedMap.setComparator(java.util.Comparator)
-supr org.openide.nodes.Children$Map
-CLSS public static org.openide.nodes.FilterNode$Children
-cons public Children(org.openide.nodes.Node)
-fld  protected java.util.Collection org.openide.nodes.Children$Array.nodes
-fld  protected org.openide.nodes.Node org.openide.nodes.FilterNode$Children.original
-fld  public static final org.openide.nodes.Children org.openide.nodes.Children.LEAF
-fld  public static final org.openide.util.Mutex org.openide.nodes.Children.MUTEX
-innr public static abstract org.openide.nodes.Children$Keys
-innr public static org.openide.nodes.Children$Array
-innr public static org.openide.nodes.Children$Map
-innr public static org.openide.nodes.Children$SortedArray
-innr public static org.openide.nodes.Children$SortedMap
-intf java.lang.Cloneable
-meth protected [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.createNodes(org.openide.nodes.Node)
-meth protected final boolean org.openide.nodes.Children.isInitialized()
-meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
-meth protected final void org.openide.nodes.Children$Array.refresh()
-meth protected final void org.openide.nodes.Children$Keys.refreshKey(java.lang.Object)
-meth protected final void org.openide.nodes.Children$Keys.setBefore(boolean)
-meth protected final void org.openide.nodes.Children$Keys.setKeys([Ljava.lang.Object;)
-meth protected final void org.openide.nodes.Children$Keys.setKeys(java.util.Collection)
-meth protected final void org.openide.nodes.FilterNode$Children.changeOriginal(org.openide.nodes.Node)
-meth protected java.util.Collection org.openide.nodes.Children$Array.initCollection()
-meth protected org.openide.nodes.Node org.openide.nodes.FilterNode$Children.copyNode(org.openide.nodes.Node)
-meth protected void org.openide.nodes.Children$Keys.destroyNodes([Lorg.openide.nodes.Node;)
-meth protected void org.openide.nodes.FilterNode$Children.addNotify()
-meth protected void org.openide.nodes.FilterNode$Children.filterChildrenAdded(org.openide.nodes.NodeMemberEvent)
-meth protected void org.openide.nodes.FilterNode$Children.filterChildrenRemoved(org.openide.nodes.NodeMemberEvent)
-meth protected void org.openide.nodes.FilterNode$Children.filterChildrenReordered(org.openide.nodes.NodeReorderEvent)
-meth protected void org.openide.nodes.FilterNode$Children.finalize()
-meth protected void org.openide.nodes.FilterNode$Children.removeNotify()
-meth protected volatile [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.createNodes(java.lang.Object)
-meth public [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.getNodes(boolean)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.nodes.FilterNode$Children.add([Lorg.openide.nodes.Node;)
-meth public boolean org.openide.nodes.FilterNode$Children.remove([Lorg.openide.nodes.Node;)
-meth public final [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes()
-meth public final int org.openide.nodes.Children.getNodesCount()
-meth public final java.util.Enumeration org.openide.nodes.Children.nodes()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object org.openide.nodes.FilterNode$Children.clone()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public org.openide.nodes.Node org.openide.nodes.FilterNode$Children.findChild(java.lang.String)
-meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
-supr org.openide.nodes.Children$Keys
-CLSS protected static org.openide.nodes.FilterNode$NodeAdapter
-cons public NodeAdapter(org.openide.nodes.FilterNode)
-intf java.beans.PropertyChangeListener
-intf java.util.EventListener
-intf org.openide.nodes.NodeListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.FilterNode$NodeAdapter.propertyChange(org.openide.nodes.FilterNode,java.beans.PropertyChangeEvent)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.openide.nodes.FilterNode$NodeAdapter.nodeDestroyed(org.openide.nodes.NodeEvent)
-meth public final void org.openide.nodes.FilterNode$NodeAdapter.propertyChange(java.beans.PropertyChangeEvent)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void org.openide.nodes.FilterNode$NodeAdapter.childrenAdded(org.openide.nodes.NodeMemberEvent)
-meth public void org.openide.nodes.FilterNode$NodeAdapter.childrenRemoved(org.openide.nodes.NodeMemberEvent)
-meth public void org.openide.nodes.FilterNode$NodeAdapter.childrenReordered(org.openide.nodes.NodeReorderEvent)
-supr java.lang.Object
-CLSS protected static org.openide.nodes.FilterNode$PropertyChangeAdapter
-cons public PropertyChangeAdapter(org.openide.nodes.FilterNode)
-intf java.beans.PropertyChangeListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.nodes.FilterNode$PropertyChangeAdapter.propertyChange(org.openide.nodes.FilterNode,java.beans.PropertyChangeEvent)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void org.openide.nodes.FilterNode$PropertyChangeAdapter.propertyChange(java.beans.PropertyChangeEvent)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public static abstract interface org.openide.nodes.Node$Cookie
-supr null
-CLSS public static abstract interface org.openide.nodes.Node$Handle
-fld  constant public static final long org.openide.nodes.Node$Handle.serialVersionUID
-intf java.io.Serializable
-meth public abstract org.openide.nodes.Node org.openide.nodes.Node$Handle.getNode() throws java.io.IOException
-supr null
-CLSS public static abstract org.openide.nodes.Node$IndexedProperty
-cons public IndexedProperty(java.lang.Class,java.lang.Class)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.openide.nodes.Node$IndexedProperty.canIndexedRead()
-meth public abstract boolean org.openide.nodes.Node$IndexedProperty.canIndexedWrite()
-meth public abstract boolean org.openide.nodes.Node$Property.canRead()
-meth public abstract boolean org.openide.nodes.Node$Property.canWrite()
-meth public abstract java.lang.Object org.openide.nodes.Node$IndexedProperty.getIndexedValue(int) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
-meth public abstract java.lang.Object org.openide.nodes.Node$Property.getValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
-meth public abstract void org.openide.nodes.Node$IndexedProperty.setIndexedValue(int,java.lang.Object) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
-meth public abstract void org.openide.nodes.Node$Property.setValue(java.lang.Object) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
-meth public boolean java.beans.FeatureDescriptor.isExpert()
-meth public boolean java.beans.FeatureDescriptor.isHidden()
-meth public boolean java.beans.FeatureDescriptor.isPreferred()
-meth public boolean org.openide.nodes.Node$IndexedProperty.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Node$Property.isDefaultValue()
-meth public boolean org.openide.nodes.Node$Property.supportsDefaultValue()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.openide.nodes.Node$IndexedProperty.hashCode()
-meth public java.beans.PropertyEditor org.openide.nodes.Node$IndexedProperty.getIndexedPropertyEditor()
-meth public java.beans.PropertyEditor org.openide.nodes.Node$Property.getPropertyEditor()
-meth public java.lang.Class org.openide.nodes.Node$IndexedProperty.getElementType()
-meth public java.lang.Class org.openide.nodes.Node$Property.getValueType()
-meth public java.lang.Object java.beans.FeatureDescriptor.getValue(java.lang.String)
-meth public java.lang.String java.beans.FeatureDescriptor.getDisplayName()
-meth public java.lang.String java.beans.FeatureDescriptor.getName()
-meth public java.lang.String java.beans.FeatureDescriptor.getShortDescription()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.nodes.Node$Property.getHtmlDisplayName()
-meth public java.util.Enumeration java.beans.FeatureDescriptor.attributeNames()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public void java.beans.FeatureDescriptor.setDisplayName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setExpert(boolean)
-meth public void java.beans.FeatureDescriptor.setHidden(boolean)
-meth public void java.beans.FeatureDescriptor.setName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setPreferred(boolean)
-meth public void java.beans.FeatureDescriptor.setShortDescription(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setValue(java.lang.String,java.lang.Object)
-meth public void org.openide.nodes.Node$Property.restoreDefaultValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
-supr org.openide.nodes.Node$Property
-CLSS public static abstract org.openide.nodes.Node$Property
-cons public Property(java.lang.Class)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean org.openide.nodes.Node$Property.canRead()
-meth public abstract boolean org.openide.nodes.Node$Property.canWrite()
-meth public abstract java.lang.Object org.openide.nodes.Node$Property.getValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
-meth public abstract void org.openide.nodes.Node$Property.setValue(java.lang.Object) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
-meth public boolean java.beans.FeatureDescriptor.isExpert()
-meth public boolean java.beans.FeatureDescriptor.isHidden()
-meth public boolean java.beans.FeatureDescriptor.isPreferred()
-meth public boolean org.openide.nodes.Node$Property.equals(java.lang.Object)
-meth public boolean org.openide.nodes.Node$Property.isDefaultValue()
-meth public boolean org.openide.nodes.Node$Property.supportsDefaultValue()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.openide.nodes.Node$Property.hashCode()
-meth public java.beans.PropertyEditor org.openide.nodes.Node$Property.getPropertyEditor()
-meth public java.lang.Class org.openide.nodes.Node$Property.getValueType()
-meth public java.lang.Object java.beans.FeatureDescriptor.getValue(java.lang.String)
-meth public java.lang.String java.beans.FeatureDescriptor.getDisplayName()
-meth public java.lang.String java.beans.FeatureDescriptor.getName()
-meth public java.lang.String java.beans.FeatureDescriptor.getShortDescription()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.nodes.Node$Property.getHtmlDisplayName()
-meth public java.util.Enumeration java.beans.FeatureDescriptor.attributeNames()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public void java.beans.FeatureDescriptor.setDisplayName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setExpert(boolean)
-meth public void java.beans.FeatureDescriptor.setHidden(boolean)
-meth public void java.beans.FeatureDescriptor.setName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setPreferred(boolean)
-meth public void java.beans.FeatureDescriptor.setShortDescription(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setValue(java.lang.String,java.lang.Object)
-meth public void org.openide.nodes.Node$Property.restoreDefaultValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
-supr java.beans.FeatureDescriptor
-CLSS public static abstract org.openide.nodes.Node$PropertySet
-cons public PropertySet()
-cons public PropertySet(java.lang.String,java.lang.String,java.lang.String)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract [Lorg.openide.nodes.Node$Property; org.openide.nodes.Node$PropertySet.getProperties()
-meth public boolean java.beans.FeatureDescriptor.isExpert()
-meth public boolean java.beans.FeatureDescriptor.isHidden()
-meth public boolean java.beans.FeatureDescriptor.isPreferred()
-meth public boolean org.openide.nodes.Node$PropertySet.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.openide.nodes.Node$PropertySet.hashCode()
-meth public java.lang.Object java.beans.FeatureDescriptor.getValue(java.lang.String)
-meth public java.lang.String java.beans.FeatureDescriptor.getDisplayName()
-meth public java.lang.String java.beans.FeatureDescriptor.getName()
-meth public java.lang.String java.beans.FeatureDescriptor.getShortDescription()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.nodes.Node$PropertySet.getHtmlDisplayName()
-meth public java.util.Enumeration java.beans.FeatureDescriptor.attributeNames()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public void java.beans.FeatureDescriptor.setDisplayName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setExpert(boolean)
-meth public void java.beans.FeatureDescriptor.setHidden(boolean)
-meth public void java.beans.FeatureDescriptor.setName(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setPreferred(boolean)
-meth public void java.beans.FeatureDescriptor.setShortDescription(java.lang.String)
-meth public void java.beans.FeatureDescriptor.setValue(java.lang.String,java.lang.Object)
-supr java.beans.FeatureDescriptor
-CLSS public static abstract interface org.openide.util.HelpCtx$Provider
-meth public abstract org.openide.util.HelpCtx org.openide.util.HelpCtx$Provider.getHelpCtx()
-supr null
-CLSS public static abstract org.openide.util.Lookup$Item
-cons public Item()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract java.lang.Class org.openide.util.Lookup$Item.getType()
-meth public abstract java.lang.Object org.openide.util.Lookup$Item.getInstance()
-meth public abstract java.lang.String org.openide.util.Lookup$Item.getDisplayName()
-meth public abstract java.lang.String org.openide.util.Lookup$Item.getId()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String org.openide.util.Lookup$Item.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public static abstract interface org.openide.util.Lookup$Provider
-meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
-supr null
-CLSS public static abstract org.openide.util.Lookup$Result
-cons public Result()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract java.util.Collection org.openide.util.Lookup$Result.allInstances()
-meth public abstract void org.openide.util.Lookup$Result.addLookupListener(org.openide.util.LookupListener)
-meth public abstract void org.openide.util.Lookup$Result.removeLookupListener(org.openide.util.LookupListener)
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.Collection org.openide.util.Lookup$Result.allItems()
-meth public java.util.Set org.openide.util.Lookup$Result.allClasses()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public static final org.openide.util.Lookup$Template
-cons public Template()
-cons public Template(java.lang.Class)
-cons public Template(java.lang.Class,java.lang.String,java.lang.Object)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean org.openide.util.Lookup$Template.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int org.openide.util.Lookup$Template.hashCode()
-meth public java.lang.Class org.openide.util.Lookup$Template.getType()
-meth public java.lang.Object org.openide.util.Lookup$Template.getInstance()
-meth public java.lang.String org.openide.util.Lookup$Template.getId()
-meth public java.lang.String org.openide.util.Lookup$Template.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-supr java.lang.Object
-CLSS public static abstract interface org.openide.util.Mutex$ExceptionAction
-meth public abstract java.lang.Object org.openide.util.Mutex$ExceptionAction.run() throws java.lang.Exception
-supr null
+#Signature file v4.0
+#Version 1.22.1
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
+
+CLSS public java.lang.Object
+cons public Object()
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected void finalize() throws java.lang.Throwable
+meth public boolean equals(java.lang.Object)
+meth public final java.lang.Class<?> getClass()
+meth public final void notify()
+meth public final void notifyAll()
+meth public final void wait() throws java.lang.InterruptedException
+meth public final void wait(long) throws java.lang.InterruptedException
+meth public final void wait(long,int) throws java.lang.InterruptedException
+meth public int hashCode()
+meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public org.netbeans.api.java.project.JavaProjectConstants
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.ARTIFACT_TYPE_FOLDER
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.ARTIFACT_TYPE_JAR
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.COMMAND_DEBUG_FIX
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.COMMAND_JAVADOC
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA
-fld  constant public static final java.lang.String org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_RESOURCES
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+fld public final static java.lang.String ARTIFACT_TYPE_FOLDER = "folder"
+fld public final static java.lang.String ARTIFACT_TYPE_JAR = "jar"
+fld public final static java.lang.String COMMAND_DEBUG_FIX = "debug.fix"
+fld public final static java.lang.String COMMAND_JAVADOC = "javadoc"
+fld public final static java.lang.String SOURCES_TYPE_JAVA = "java"
+fld public final static java.lang.String SOURCES_TYPE_RESOURCES = "resources"
 supr java.lang.Object
+
 CLSS public org.netbeans.api.java.project.classpath.ProjectClassPathModifier
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addLibraries([Lorg.netbeans.api.project.libraries.Library;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots([Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots([Ljava.net.URL;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeLibraries([Lorg.netbeans.api.project.libraries.Library;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeRoots([Ljava.net.URI;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth public static boolean org.netbeans.api.java.project.classpath.ProjectClassPathModifier.removeRoots([Ljava.net.URL;,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
+meth public static boolean addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean addLibraries(org.netbeans.api.project.libraries.Library[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean addRoots(java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean addRoots(java.net.URL[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean removeAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean removeLibraries(org.netbeans.api.project.libraries.Library[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean removeRoots(java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean removeRoots(java.net.URL[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 supr java.lang.Object
+hcls Extensible
+
+CLSS public final org.netbeans.api.java.project.runner.JavaRunner
+cons public JavaRunner()
+fld public final static java.lang.String PROP_APPLICATION_ARGS = "application.args"
+fld public final static java.lang.String PROP_CLASSNAME = "classname"
+fld public final static java.lang.String PROP_EXECUTE_CLASSPATH = "execute.classpath"
+fld public final static java.lang.String PROP_EXECUTE_FILE = "execute.file"
+fld public final static java.lang.String PROP_PLATFORM = "platform"
+fld public final static java.lang.String PROP_PLATFORM_JAVA = "platform.java"
+fld public final static java.lang.String PROP_PROJECT_NAME = "project.name"
+fld public final static java.lang.String PROP_RUN_JVMARGS = "run.jvmargs"
+fld public final static java.lang.String PROP_WORK_DIR = "work.dir"
+fld public final static java.lang.String QUICK_CLEAN = "clean"
+fld public final static java.lang.String QUICK_DEBUG = "debug"
+fld public final static java.lang.String QUICK_DEBUG_APPLET = "debug-applet"
+fld public final static java.lang.String QUICK_RUN = "run"
+fld public final static java.lang.String QUICK_RUN_APPLET = "run-applet"
+fld public final static java.lang.String QUICK_TEST = "junit"
+fld public final static java.lang.String QUICK_TEST_DEBUG = "junit-debug"
+meth public static boolean isSupported(java.lang.String,java.util.Map<java.lang.String,?>)
+meth public static org.openide.execution.ExecutorTask execute(java.lang.String,java.util.Map<java.lang.String,?>) throws java.io.IOException
+supr java.lang.Object
+hfds LOG
+
 CLSS public abstract interface org.netbeans.spi.java.project.classpath.ProjectClassPathExtender
-meth public abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.addAntArtifact(org.netbeans.api.project.ant.AntArtifact,java.net.URI) throws java.io.IOException
-meth public abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.addArchiveFile(org.openide.filesystems.FileObject) throws java.io.IOException
-meth public abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.addLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
-supr null
+ anno 0 java.lang.Deprecated()
+meth public abstract boolean addAntArtifact(org.netbeans.api.project.ant.AntArtifact,java.net.URI) throws java.io.IOException
+ anno 0 java.lang.Deprecated()
+meth public abstract boolean addArchiveFile(org.openide.filesystems.FileObject) throws java.io.IOException
+ anno 0 java.lang.Deprecated()
+meth public abstract boolean addLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
+ anno 0 java.lang.Deprecated()
+
 CLSS public abstract org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation
 cons protected ProjectClassPathModifierImplementation()
-meth protected abstract [Ljava.lang.String; org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.getExtensibleClassPathTypes(org.netbeans.api.project.SourceGroup)
-meth protected abstract [Lorg.netbeans.api.project.SourceGroup; org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.getExtensibleSourceGroups()
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.addAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.addLibraries([Lorg.netbeans.api.project.libraries.Library;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.addRoots([Ljava.net.URL;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeAntArtifacts([Lorg.netbeans.api.project.ant.AntArtifact;,[Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeLibraries([Lorg.netbeans.api.project.libraries.Library;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected abstract boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeRoots([Ljava.net.URL;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.addRoots([Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected boolean org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.removeRoots([Ljava.net.URI;,org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException,java.lang.UnsupportedOperationException
-meth protected final java.lang.String org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.performSharabilityHeuristics(java.net.URI,org.netbeans.spi.project.support.ant.AntProjectHelper) throws java.io.IOException,java.net.URISyntaxException
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected static [Ljava.net.URI; org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation.convertURLsToURIs([Ljava.net.URL;)
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
+meth protected abstract boolean addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract boolean addLibraries(org.netbeans.api.project.libraries.Library[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract boolean addRoots(java.net.URL[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract boolean removeAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract boolean removeLibraries(org.netbeans.api.project.libraries.Library[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract boolean removeRoots(java.net.URL[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected abstract java.lang.String[] getExtensibleClassPathTypes(org.netbeans.api.project.SourceGroup)
+meth protected abstract org.netbeans.api.project.SourceGroup[] getExtensibleSourceGroups()
+meth protected boolean addRoots(java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected boolean removeRoots(java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
+meth protected final java.lang.String performSharabilityHeuristics(java.net.URI,org.netbeans.spi.project.support.ant.AntProjectHelper) throws java.io.IOException,java.net.URISyntaxException
+meth protected static java.net.URI[] convertURLsToURIs(java.net.URL[])
 supr java.lang.Object
+hcls Accessor
+
 CLSS public org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport.createPropertyBasedClassPathImplementation(java.io.File,org.netbeans.spi.project.support.ant.PropertyEvaluator,[Ljava.lang.String;)
+meth public static org.netbeans.spi.java.classpath.ClassPathImplementation createPropertyBasedClassPathImplementation(java.io.File,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[])
 supr java.lang.Object
+
+CLSS public abstract interface org.netbeans.spi.java.project.runner.JavaRunnerImplementation
+meth public abstract boolean isSupported(java.lang.String,java.util.Map<java.lang.String,?>)
+meth public abstract org.openide.execution.ExecutorTask execute(java.lang.String,java.util.Map<java.lang.String,?>) throws java.io.IOException
+
 CLSS public org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport
 cons public ExtraSourceJavadocSupport()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
-meth public static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+meth public static org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation createExtraJavadocQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+meth public static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation createExtraSourceQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 supr java.lang.Object
+
+CLSS public org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection
+meth public static org.openide.filesystems.FileObject findJavadocRoot(org.openide.filesystems.FileObject)
+meth public static org.openide.filesystems.FileObject findPackageRoot(org.openide.filesystems.FileObject)
+meth public static org.openide.filesystems.FileObject findSourceRoot(org.openide.filesystems.FileObject)
+supr java.lang.Object
+hfds HOW_MANY_DIRS_TO_TRAVERSE_DEEP,JAVA_FILE,LOG,PACKAGE_INFO
+
 CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
 cons public LookupMergerSupport()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.spi.project.LookupMerger org.netbeans.spi.java.project.support.LookupMergerSupport.createJFBLookupMerger()
-meth public static org.netbeans.spi.project.LookupMerger org.netbeans.spi.java.project.support.LookupMergerSupport.createSFBLookupMerger()
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.classpath.ClassPathProvider> createClassPathProviderMerger(org.netbeans.spi.java.classpath.ClassPathProvider)
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation> createJFBLookupMerger()
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation> createSFBLookupMerger()
 supr java.lang.Object
+hcls JFBIMerged,JFBLookupMerger,SFBIMerged,SFBLookupMerger
+
 CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,[Ljava.lang.String;,[Ljava.lang.String;)
-meth public static synchronized void org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.showAlert()
-meth public static void org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,[Ljava.lang.String;,[Ljava.lang.String;)
+meth public static boolean isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
+meth public static void showAlert()
+meth public static void showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
 supr java.lang.Object
+hfds BROKEN_ALERT_TIMEOUT,brokenAlertLastTime,brokenAlertShown
+hcls MainWindowListener
+
 CLSS public final org.netbeans.spi.java.project.support.ui.EditJarSupport
 cons public EditJarSupport()
-innr public static final org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item org.netbeans.spi.java.project.support.ui.EditJarSupport.showEditDialog(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.java.project.support.ui.EditJarSupport$Item)
+innr public final static Item
+meth public static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item showEditDialog(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.java.project.support.ui.EditJarSupport$Item)
 supr java.lang.Object
+
+CLSS public final static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
+cons public Item()
+meth public java.lang.String getJarFile()
+meth public java.lang.String getJavadocFile()
+meth public java.lang.String getSourceFile()
+meth public void setJarFile(java.lang.String)
+meth public void setJavadocFile(java.lang.String)
+meth public void setSourceFile(java.lang.String)
+supr java.lang.Object
+hfds jarFile,javadocFile,sourceFile
+
 CLSS public org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer
 cons public IncludeExcludeVisualizer()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public synchronized java.lang.String org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.getExcludePattern()
-meth public synchronized java.lang.String org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.getIncludePattern()
-meth public synchronized javax.swing.JComponent org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.getVisualizerPanel()
-meth public synchronized void org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.addChangeListener(javax.swing.event.ChangeListener)
-meth public synchronized void org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.removeChangeListener(javax.swing.event.ChangeListener)
-meth public synchronized void org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.setExcludePattern(java.lang.String)
-meth public synchronized void org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.setIncludePattern(java.lang.String)
-meth public synchronized void org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer.setRoots([Ljava.io.File;) throws java.lang.IllegalArgumentException
+meth public java.lang.String getExcludePattern()
+meth public java.lang.String getIncludePattern()
+meth public javax.swing.JComponent getVisualizerPanel()
+meth public void addChangeListener(javax.swing.event.ChangeListener)
+meth public void removeChangeListener(javax.swing.event.ChangeListener)
+meth public void setExcludePattern(java.lang.String)
+meth public void setIncludePattern(java.lang.String)
+meth public void setRoots(java.io.File[])
 supr java.lang.Object
+hfds DELAY,GRANULARITY,RP,busy,excluded,excludes,included,includes,interrupted,listeners,panel,roots,scanCounter,task
+hcls RecalculateTask
+
 CLSS public abstract interface org.netbeans.spi.java.project.support.ui.PackageRenameHandler
-meth public abstract void org.netbeans.spi.java.project.support.ui.PackageRenameHandler.handleRename(org.openide.nodes.Node,java.lang.String) throws java.lang.IllegalArgumentException
-supr null
+meth public abstract void handleRename(org.openide.nodes.Node,java.lang.String)
+
 CLSS public org.netbeans.spi.java.project.support.ui.PackageView
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static javax.swing.ComboBoxModel org.netbeans.spi.java.project.support.ui.PackageView.createListView(org.netbeans.api.project.SourceGroup)
-meth public static javax.swing.ListCellRenderer org.netbeans.spi.java.project.support.ui.PackageView.listRenderer()
-meth public static org.openide.nodes.Node org.netbeans.spi.java.project.support.ui.PackageView.createPackageView(org.netbeans.api.project.SourceGroup)
-meth public static org.openide.nodes.Node org.netbeans.spi.java.project.support.ui.PackageView.findPath(org.openide.nodes.Node,java.lang.Object)
+meth public static javax.swing.ComboBoxModel createListView(org.netbeans.api.project.SourceGroup)
+meth public static javax.swing.ListCellRenderer listRenderer()
+meth public static org.openide.nodes.Node createPackageView(org.netbeans.api.project.SourceGroup)
+meth public static org.openide.nodes.Node findPath(org.openide.nodes.Node,java.lang.Object)
 supr java.lang.Object
+hcls PackageItem,PackageListCellRenderer,RootNode
+
 CLSS public final org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils
 cons public SharableLibrariesUtils()
-fld  constant public static final java.lang.String org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.isLastProjectSharable()
-meth public static boolean org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.showMakeSharableWizard(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.util.List,java.util.List)
-meth public static java.lang.String org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.browseForLibraryLocation(java.lang.String,java.awt.Component,java.io.File)
-meth public static void org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils.setLastProjectSharable(boolean)
+fld public final static java.lang.String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties"
+meth public static boolean isLastProjectSharable()
+meth public static boolean showMakeSharableWizard(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.util.List<java.lang.String>,java.util.List<java.lang.String>)
+meth public static java.lang.String browseForLibraryLocation(java.lang.String,java.awt.Component,java.io.File)
+meth public static void setLastProjectSharable(boolean)
 supr java.lang.Object
+hfds PROP_ACTIONS,PROP_HELPER,PROP_JAR_REFS,PROP_LAST_SHARABLE,PROP_LIBRARIES,PROP_LOCATION,PROP_REFERENCE_HELPER
+hcls CopyIterator,CopyJars,CopyLibraryJars,KeepJarAtLocation,KeepLibraryAtLocation
+
 CLSS public org.netbeans.spi.java.project.support.ui.templates.JavaTemplates
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static org.openide.WizardDescriptor$InstantiatingIterator org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator()
-meth public static org.openide.WizardDescriptor$Panel org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createPackageChooser(org.netbeans.api.project.Project,[Lorg.netbeans.api.project.SourceGroup;) throws java.lang.IllegalArgumentException
-meth public static org.openide.WizardDescriptor$Panel org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createPackageChooser(org.netbeans.api.project.Project,[Lorg.netbeans.api.project.SourceGroup;,org.openide.WizardDescriptor$Panel) throws java.lang.IllegalArgumentException
-meth public static org.openide.WizardDescriptor$Panel org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createPackageChooser(org.netbeans.api.project.Project,[Lorg.netbeans.api.project.SourceGroup;,org.openide.WizardDescriptor$Panel,boolean) throws java.lang.IllegalArgumentException
+meth public static org.openide.WizardDescriptor$InstantiatingIterator createJavaTemplateIterator()
+meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
+meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>)
+meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>,boolean)
 supr java.lang.Object
+
