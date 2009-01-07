@@ -57,6 +57,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -130,12 +131,20 @@ public class BrowseTestSources extends JPanel {
             notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotDirectory"));
             dialogDescriptor.setValid(false);
             return;
-        } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), FileUtil.toFileObject(testSourcesFile))) {
+        }
+        FileObject nbproject = phpProject.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
+        if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
             notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotUnderneathProjectFolder"));
             dialogDescriptor.setValid(false);
             return;
         } else if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject)))) {
             notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesEqualsSources"));
+            dialogDescriptor.setValid(false);
+            return;
+        } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
+                || nbproject.equals(testSourcesFo)) {
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesUnderneathNBMetadata"));
             dialogDescriptor.setValid(false);
             return;
         }
@@ -152,14 +161,16 @@ public class BrowseTestSources extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+
+        infoLabel = new JLabel();
         testSourcesLabel = new JLabel();
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.infoLabel.text")); // NOI18N
         testSourcesLabel.setLabelFor(testSourcesTextField);
 
-        Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text")); // NOI18N
-        testSourcesTextField.setEnabled(false);
+        Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));
         Mnemonics.setLocalizedText(testSourcesBrowseButton, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.text"));
         testSourcesBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -173,17 +184,22 @@ public class BrowseTestSources extends JPanel {
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(testSourcesLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(testSourcesBrowseButton)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(infoLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(testSourcesLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(testSourcesBrowseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(infoLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(testSourcesLabel)
                     .add(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -198,6 +214,7 @@ public class BrowseTestSources extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel infoLabel;
     private JButton testSourcesBrowseButton;
     private JLabel testSourcesLabel;
     private JTextField testSourcesTextField;

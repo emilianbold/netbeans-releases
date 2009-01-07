@@ -108,7 +108,7 @@ public final class ProjectPropertiesSupport {
      */
     public static FileObject getTestDirectory(PhpProject project, boolean showFileChooser) {
         FileObject testsDirectory = project.getTestsDirectory();
-        if (testsDirectory != null) {
+        if (testsDirectory != null && testsDirectory.isValid()) {
             return testsDirectory;
         }
         if (showFileChooser) {
