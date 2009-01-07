@@ -288,7 +288,7 @@ public final class Snapshot {
         if (fileObject != null)
             sb.append (fileObject.getNameExt ());
         else
-            sb.append (mimeType).append (" ").append (_source.getDocument ());
+            sb.append (mimeType).append (" ").append (_source.getDocument (false));
         if (!getMimeType ().equals (_source.getMimeType ())) {
             sb.append ("( ").append (getMimeType ()).append (" ");
             sb.append (getOriginalOffset (0)).append ("-").append(getOriginalOffset (getText ().length () - 1)).append (")");
