@@ -9,6 +9,7 @@ Searchable Keys:
   item : True;D;|DOCUMENTED|DOC_ONLY|;
   item : __debug__;D;|DOCUMENTED|DOC_ONLY|;
   item : copyright;D;|DOCUMENTED|DOC_ONLY|;
+  item : exit;F;|DOCUMENTED|DOC_ONLY|;code;
   item : quit;F;|DOCUMENTED|DOC_ONLY|;code;
   module : constants
 
