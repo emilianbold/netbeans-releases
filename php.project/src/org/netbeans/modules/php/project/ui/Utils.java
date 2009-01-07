@@ -458,6 +458,11 @@ public final class Utils {
     }
 
     // #144928
+    /**
+     * Handles correctly 'feature' of Windows Vista.
+     * @param folder folder to check.
+     * @return <code>true</code> if folder is writable.
+     */
     public static boolean isFolderWritable(File folder) {
         assert folder.isDirectory() : "Not a directory: " + folder;
 
