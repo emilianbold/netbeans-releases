@@ -52,6 +52,7 @@ import org.netbeans.spi.settings.Convertor;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 
 /** Checks usage of annotation to assign XML properties convertor.
  *
@@ -61,6 +62,11 @@ public final class XMLPropertiesConvertorAnnotationTest extends NbTestCase {
     /** Creates a new instance of XMLPropertiesConvertorTest */
     public XMLPropertiesConvertorAnnotationTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
     }
     
     public void testReadWrite() throws Exception {
@@ -94,5 +100,70 @@ public final class XMLPropertiesConvertorAnnotationTest extends NbTestCase {
         }
     }
     public static class HooFoo extends AnnoFoo {
+    }
+
+    public void testVerifyHaveDefaultConstructor() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.y.Kuk",
+            "import org.netbeans.api.settings.ConvertAsProperties;\n" +
+            "@ConvertAsProperties(dtd=\"-//x.y//Kuk//EN\")\n" +
+            "public class Kuk {\n" +
+            "  public Kuk(int i) {}\n" +
+            "}\n"
+        );
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err);
+        assertFalse("Should fail", res);
+        if (err.toString().indexOf("x.y.Kuk must have a no-argument constructor") == -1) {
+            fail("Wrong error message:\n" + err.toString());
+        }
+    }
+    public void testVerifyReadProperties() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.y.Kuk",
+            "import org.netbeans.api.settings.ConvertAsProperties;\n" +
+            "@ConvertAsProperties(dtd=\"-//x.y//Kuk//EN\")\n" +
+            "public class Kuk {\n" +
+            "  public Kuk() {}\n" +
+            "  public void writeProperties(java.util.Properties p){}\n" +
+            "}\n"
+        );
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err);
+        assertFalse("Should fail", res);
+        if (err.toString().indexOf("x.y.Kuk must have proper readProperties method") == -1) {
+            fail("Wrong error message:\n" + err.toString());
+        }
+    }
+    public void testVerifyWriteProperties() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.y.Kuk",
+            "import org.netbeans.api.settings.ConvertAsProperties;\n" +
+            "@ConvertAsProperties(dtd=\"-//x.y//Kuk//EN\")\n" +
+            "public class Kuk {\n" +
+            "  public Kuk() {}\n" +
+            "  public void readProperties(java.util.Properties p){}\n" +
+            "}\n"
+        );
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err);
+        assertFalse("Should fail", res);
+        if (err.toString().indexOf("x.y.Kuk must have proper writeProperties method") == -1) {
+            fail("Wrong error message:\n" + err.toString());
+        }
+    }
+    public void testVerifyWritePropertiesReturnsVoid() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.y.Kuk",
+            "import org.netbeans.api.settings.ConvertAsProperties;\n" +
+            "@ConvertAsProperties(dtd=\"-//x.y//Kuk//EN\")\n" +
+            "public class Kuk {\n" +
+            "  public Kuk() {}\n" +
+            "  public void readProperties(java.util.Properties p){}\n" +
+            "  public int writeProperties(java.util.Properties p){}\n" +
+            "}\n"
+        );
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err);
+        assertFalse("Should fail", res);
+        if (err.toString().indexOf("x.y.Kuk must have proper writeProperties method") == -1) {
+            fail("Wrong error message:\n" + err.toString());
+        }
     }
 }

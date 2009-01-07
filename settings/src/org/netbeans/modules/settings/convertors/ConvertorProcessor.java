@@ -51,6 +51,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.settings.ConvertAsProperties;
@@ -74,10 +75,14 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         Set<? extends TypeElement> annotations,
         RoundEnvironment env
     ) throws LayerGenerationException {
+        if (env.processingOver()) {
+            return false;
+        }
+
         for (Element e : env.getElementsAnnotatedWith(ConvertAsProperties.class)) {
             ConvertAsProperties reg = e.getAnnotation(ConvertAsProperties.class);
 
-            String[] convElem = instantiableClassOrMethod(e, null);
+            String convElem = instantiableClassOrMethod(e);
             final String dtd = reg.dtd();
 
             String dtdCode = convertPublicId(dtd);
@@ -103,7 +108,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                                     <attr name="settings.providerPath"
                                     stringvalue="xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance"/>
            */
-            layer(e).file("xml/memory/" + convElem[0].replace('.', '/')).
+            layer(e).file("xml/memory/" + convElem.replace('.', '/')).
                 stringvalue("settings.providerPath", "xml/lookups/" + dtdCode + ".instance").
                 write();
 
@@ -121,8 +126,8 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
             File f = layer(e).file("xml/lookups" + dtdCode + ".instance").
                 methodvalue("instanceCreate", "org.netbeans.api.settings.Factory", "create").
                 methodvalue("settings.convertor", "org.netbeans.api.settings.Factory", "properties").
-                stringvalue("settings.instanceClass", convElem[0]).
-                stringvalue("settings.instanceOf", convElem[0]).
+                stringvalue("settings.instanceClass", convElem).
+                stringvalue("settings.instanceOf", convElem).
                 boolvalue("xmlproperties.preventStoring", !reg.autostore());
             commaSeparated(f, reg.ignoreChanges()).write();
         }
@@ -200,8 +205,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
     }
 
-    private String[] instantiableClassOrMethod(Element e, Class type) throws IllegalArgumentException, LayerGenerationException {
-        TypeMirror typeMirror = type != null ? processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.')).asType() : null;
+    private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {
         switch (e.getKind()) {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
@@ -220,24 +224,36 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                         throw new LayerGenerationException(clazz + " must have a no-argument constructor", e);
                     }
                 }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(e.asType(), typeMirror)) {
-                    throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, e);
+                TypeMirror propType;
+                propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();
+                {
+                    boolean hasRead = false;
+                    boolean hasWrite = false;
+                    for (ExecutableElement m : ElementFilter.methodsIn(e.getEnclosedElements())) {
+                        if (
+                            m.getParameters().size() == 1 && 
+                            m.getSimpleName().contentEquals("readProperties") &&
+                            m.getParameters().get(0).asType().equals(propType)
+                        ) {
+                            hasRead = true;
+                        }
+                        if (
+                            m.getParameters().size() == 1 &&
+                            m.getSimpleName().contentEquals("writeProperties") &&
+                            m.getParameters().get(0).asType().equals(propType) &&
+                            m.getReturnType().getKind() == TypeKind.VOID
+                        ) {
+                            hasWrite = true;
+                        }
+                    }
+                    if (!hasRead) {
+                        throw new LayerGenerationException(clazz + " must have proper readProperties method", e);
+                    }
+                    if (!hasWrite) {
+                        throw new LayerGenerationException(clazz + " must have proper writeProperties method", e);
+                    }
                 }
-                return new String[] {clazz, null};
-            }
-            case METHOD: {
-                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e.getEnclosingElement()).toString();
-                String method = e.getSimpleName().toString();
-                if (!e.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException(clazz + "." + method + " must be static", e);
-                }
-                if (!((ExecutableElement) e).getParameters().isEmpty()) {
-                    throw new LayerGenerationException(clazz + "." + method + " must not take arguments", e);
-                }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) e).getReturnType(), typeMirror)) {
-                    throw new LayerGenerationException(clazz + "." + method + " is not assignable to " + typeMirror, e);
-                }
-                return new String[] {clazz, method};
+                return clazz;
             }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
