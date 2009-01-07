@@ -193,6 +193,7 @@ public class PhpProject implements Project {
     }
 
     synchronized void setTestsDirectory(FileObject testsDirectory) {
+        assert this.testsDirectory == null : "Project test directory already set to " + this.testsDirectory;
         assert testsDirectory != null && testsDirectory.isValid();
         this.testsDirectory = testsDirectory;
     }
