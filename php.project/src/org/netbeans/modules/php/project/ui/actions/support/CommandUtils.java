@@ -185,7 +185,7 @@ public class CommandUtils {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
-                        cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                        cause, NbBundle.getMessage(CommandUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
                 OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
             }
         });

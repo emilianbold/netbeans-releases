@@ -98,9 +98,9 @@ public class ConfigActionTest extends ConfigAction {
 
         try {
             for (Pair<FileObject, String> pair : pairs) {
-                ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit());
-                externalProcessBuilder = externalProcessBuilder.workingDirectory(FileUtil.toFile(pair.first));
-                externalProcessBuilder = externalProcessBuilder.addArgument(pair.second);
+                ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit())
+                        .workingDirectory(FileUtil.toFile(pair.first))
+                        .addArgument(pair.second);
                 ExecutionService service = ExecutionService.newService(
                         externalProcessBuilder,
                         executionDescriptor,

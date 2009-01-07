@@ -52,8 +52,8 @@ import org.openide.util.Lookup;
 public abstract class ConfigAction {
     public static enum Type {
         LOCAL,
-        SCRIPT,
         REMOTE,
+        SCRIPT,
         TEST,
     }
     private static final ConfigAction CONFIG_ACTION_TEST = new ConfigActionTest();
