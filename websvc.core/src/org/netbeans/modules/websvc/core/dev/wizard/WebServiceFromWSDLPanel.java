@@ -75,6 +75,8 @@ import org.netbeans.modules.websvc.core.dev.wizard.nodes.WsdlNode;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
+import org.netbeans.modules.websvc.project.api.WebService;
+import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -652,11 +654,23 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
     private boolean findServiceInProject(String serviceName) {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        for (Object o : support.getServices()) {
-            Service s = (Service) o;
-            if (s.getWsdlUrl() != null &&
-                    serviceName.equals(s.getServiceName())) {
-                return true;
+        if (support != null) {
+            for (Object o : support.getServices()) {
+                Service s = (Service) o;
+                if (s.getWsdlUrl() != null &&
+                        serviceName.equals(s.getServiceName())) {
+                    return true;
+                }
+            }
+        } else {
+            WebServiceData wsData = WebServiceData.getWebServiceData(project);
+            if (wsData != null) {
+                List<WebService> webServices = wsData.getServiceProviders();
+                for (WebService webService : webServices) {
+                    if (serviceName.equals(webService.getIdentifier())) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
