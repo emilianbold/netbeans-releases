@@ -251,13 +251,13 @@ public class ConfigurationMakefileWriterTest {
     public void testMain_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dylib\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dylib\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_GNU_MacOSX", "GNU", Platform.PLATFORM_MACOSX, golden.toString());
     }
 
@@ -265,13 +265,13 @@ public class ConfigurationMakefileWriterTest {
     public void testMain_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -279,13 +279,13 @@ public class ConfigurationMakefileWriterTest {
     public void testMain_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_GNU_Solaris_Intel", "GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -293,13 +293,13 @@ public class ConfigurationMakefileWriterTest {
     public void testMain_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -307,13 +307,13 @@ public class ConfigurationMakefileWriterTest {
     public void testMain_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -325,9 +325,9 @@ public class ConfigurationMakefileWriterTest {
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
-        golden.append("dist/Default/${PLATFORM}/libXxx.dylib: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o dist/Default/${PLATFORM}/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/libXxx.dylib: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o dist/Default/${CND_PLATFORM}/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_MacOSX", "GNU", Platform.PLATFORM_MACOSX, golden.toString());
     }
 
@@ -338,9 +338,9 @@ public class ConfigurationMakefileWriterTest {
         golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o ${OBJECTDIR}/test.o test.cc\n");
-        golden.append("dist/Default/${PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -G -o dist/Default/${PLATFORM}/libXxx.so -KPIC -norunpath -h libXxx.so ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -G -o dist/Default/${CND_PLATFORM}/libXxx.so -KPIC -norunpath -h libXxx.so ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -352,9 +352,9 @@ public class ConfigurationMakefileWriterTest {
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
-        golden.append("dist/Default/${PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -G -o dist/Default/${PLATFORM}/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -G -o dist/Default/${CND_PLATFORM}/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_Solaris_Intel", "GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
@@ -366,9 +366,9 @@ public class ConfigurationMakefileWriterTest {
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
-        golden.append("dist/Default/${PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -shared -o dist/Default/${PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -shared -o dist/Default/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -380,9 +380,9 @@ public class ConfigurationMakefileWriterTest {
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
-        golden.append("dist/Default/${PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
-        golden.append("\t${LINK.cc} -mno-cygwin -shared -o dist/Default/${PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("dist/Default/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${CND_PLATFORM}\n");
+        golden.append("\t${LINK.cc} -mno-cygwin -shared -o dist/Default/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 }

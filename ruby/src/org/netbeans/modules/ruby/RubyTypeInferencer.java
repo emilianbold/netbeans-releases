@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,14 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.ReturnNode;
 
 public final class RubyTypeInferencer {
 
@@ -110,33 +110,46 @@ public final class RubyTypeInferencer {
     }
 
     /** Called on AsgnNodes to compute RHS. */
-    static RubyType inferTypesOfRHS(final Node node, final ContextKnowledge knowledge) {
+    RubyType inferTypesOfRHS(final Node node) {
         List<Node> children = node.childNodes();
         if (children.size() != 1) {
             return RubyType.createUnknown();
         }
-        return inferTypes(children.get(0), knowledge);
+        return inferType(children.get(0));
     }
 
-    static RubyType inferTypes(final Node node, final ContextKnowledge knowledge) {
-        if (knowledge != null) {
-            if (!knowledge.wasAnalyzed()) {
-                new RubyTypeAnalyzer(knowledge).analyze();
-            }
-            switch (node.nodeId) {
-                case LOCALVARNODE:
-                case DVARNODE:
-                case INSTVARNODE:
-                case GLOBALVARNODE:
-                case CLASSVARNODE:
-                case COLON2NODE:
-                    return knowledge.getType(AstUtilities.getName(node));
-            }
+    RubyType inferType(final Node node) {
+        RubyType type = knowledge.getType(node);
+        if (type != null) {
+            return type;
         }
-        if (node.nodeId == NodeType.CALLNODE) {
-            return RubyMethodTypeInferencer.inferTypeFor((CallNode) node, knowledge);
+        if (!knowledge.wasAnalyzed()) {
+            new RubyTypeAnalyzer(knowledge).analyze();
         }
-        return getTypeForLiteral(node);
+        switch (node.nodeId) {
+            case LOCALVARNODE:
+            case DVARNODE:
+            case INSTVARNODE:
+            case GLOBALVARNODE:
+            case CLASSVARNODE:
+            case COLON2NODE:
+                type = knowledge.getType(AstUtilities.getName(node));
+                break;
+            case RETURNNODE:
+                ReturnNode retNode = (ReturnNode) node;
+                type = inferType(retNode.getValueNode());
+                break;
+        }
+        if (type == null && AstUtilities.isCall(node)) {
+            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
+        }
+        if (type == null) {
+            type = getTypeForLiteral(node);
+        }
+        // null element in types set means that we are not able to infer
+        // the expression
+        knowledge.setType(node, type);
+        return type;
     }
 
     /**
@@ -189,5 +202,11 @@ public final class RubyTypeInferencer {
         }
         return RubyType.createUnknown();
     }
+
+    @Override
+    public String toString() {
+        return "RubyTypeAnalyzer[knowledge:" + knowledge + ']'; // NOI18N
+    }
+    
 }
 

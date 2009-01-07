@@ -631,7 +631,10 @@ public class CompletionTest extends J2eeTestCase {
             String goldenFilePath = fullClassName.replace('.', '/')+"/" + test.getName();
             File goldenFile = new File(test.getDataDir()+"/goldenfiles/" + goldenFilePath);
             goldenFile = new File(goldenFile.getAbsolutePath().replace("build/", "")+".pass");
-            ref.renameTo(goldenFile);
+            goldenFile.getParentFile().mkdirs();
+            if (!ref.renameTo(goldenFile)){
+                throw new AssertionError("Generating golden files to " + goldenFile.getAbsolutePath() + " failed");
+            }
             assertTrue("Generating golden files to " + goldenFile.getAbsolutePath(), false);
     }
     

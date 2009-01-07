@@ -633,7 +633,7 @@ public class JavacParser extends Parser {
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
-        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel);
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo.getClassPath(PathKind.BOOT));
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -676,7 +676,7 @@ public class JavacParser extends Parser {
         }
     }
     
-    private static com.sun.tools.javac.code.Source validateSourceLevel (String sourceLevel) {
+    private static com.sun.tools.javac.code.Source validateSourceLevel (String sourceLevel, ClassPath bootClassPath) {
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
@@ -684,6 +684,18 @@ public class JavacParser extends Parser {
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source.name.equals(sourceLevel)) {
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
+                    if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
+                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.AssertionError' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.3"); //NOI18N
+                        return com.sun.tools.javac.code.Source.JDK1_3;
+                    }
+                }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
+                    if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
+                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.StringBuilder' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.4"); //NOI18N
+                        return com.sun.tools.javac.code.Source.JDK1_4;
+                    }
+                }
                 return source;
             }
         }
