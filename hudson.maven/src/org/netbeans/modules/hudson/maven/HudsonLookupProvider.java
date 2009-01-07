@@ -69,7 +69,7 @@ public class HudsonLookupProvider implements LookupProvider {
         private void checkHudson() {
             NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
             CiManagement cim = prj.getMavenProject().getCiManagement();
-            if (cim != null && cim.getSystem() != null && "hudson".equals(cim.getSystem())) {
+            if (cim != null && cim.getSystem() != null && "hudson".equalsIgnoreCase(cim.getSystem())) {
                 if (hudson == null) {
                     hudson = new HudsonProviderImpl(project);
                     content.add(hudson);
