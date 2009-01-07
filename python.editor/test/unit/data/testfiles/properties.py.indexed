@@ -1,0 +1,20 @@
+
+
+Document 0
+Searchable Keys:
+  class : Foo
+  class-ig : foo
+  extends : object
+  in : properties
+  member : bar;A;;self;
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  item : Foo;C;;
+  item : x;D;;
+  module : properties
+
+Not Searchable Keys:
