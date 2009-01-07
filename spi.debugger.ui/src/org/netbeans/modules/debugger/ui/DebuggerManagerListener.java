@@ -206,6 +206,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                         ToolbarPool.getDefault ().setConfiguration("Debugging"); // NOI18N
                     }
                     Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
+                    if (debugToolbar == null) return ;
                     for (Component c : debugToolbar.getComponents()) {
                         if (c instanceof AbstractButton) {
                             Action a = ((AbstractButton) c).getAction();
