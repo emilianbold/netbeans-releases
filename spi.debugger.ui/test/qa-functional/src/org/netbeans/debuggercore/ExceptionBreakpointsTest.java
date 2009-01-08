@@ -56,6 +56,7 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -166,6 +167,7 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
             dialog.ok();
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText(Utilities.runningStatusBarText);
