@@ -49,7 +49,7 @@ public class PythonKeystrokeHandlerTest extends PythonTestBase {
         //return new PythonFormatter();
         return null;
     }
-
+    
     public void testReturn() throws Exception {
         insertBreak("    def foo():\n        return^", "    def foo():\n        return\n    ^");
     }
@@ -268,6 +268,49 @@ public class PythonKeystrokeHandlerTest extends PythonTestBase {
         insertChar("''^\n", '\'', "'''^\n");
     }
 
+    public void testTripleQuotes4() throws Exception {
+        insertBreak("  '''^", "  '''\n  ^\n  '''");
+    }
+
+    public void testTripleQuotes5() throws Exception {
+        insertBreak("  '''^\n", "  '''\n  ^\n  '''\n");
+    }
+
+    public void testTripleQuotes6() throws Exception {
+        insertBreak("  \"\"\"^\n", "  \"\"\"\n  ^\n  \"\"\"\n");
+    }
+
+    public void testTripleQuotes7() throws Exception {
+        insertBreak("  '''foo^\n", "  '''foo'''\n  ^\n");
+    }
+
+    public void testTripleQuotes8() throws Exception {
+        insertBreak("  '''foo^", "  '''foo'''\n  ^");
+    }
+
+    public void testTripleQuotes9() throws Exception {
+        insertBreak("  '''foo^bar\n", "  '''foo\n  ^bar\n");
+    }
+
+    public void testTripleQuotes10() throws Exception {
+        insertBreak("  '''foo^'''\n", "  '''foo\n  ^'''\n");
+    }
+
+    public void testTripleQuotes11() throws Exception {
+        insertBreak("  '''\n  foo^", "  '''\n  foo'''\n  ^");
+    }
+
+    public void testTripleQuotes12() throws Exception {
+        insertBreak("  '''\n  foo^\n", "  '''\n  foo'''\n  ^\n");
+    }
+
+    public void testTripleQuotes13() throws Exception {
+        insertBreak("  r'''\n  foo^\n", "  r'''\n  foo'''\n  ^\n");
+    }
+
+    public void testTripleQuotes14() throws Exception {
+        insertBreak("  r'''foo^'''\n", "  r'''foo\n  ^'''\n");
+    }
 
     public void testBreak4() throws Exception {
         insertBreak("test1:\n  foo^\n", "test1:\n  foo\n  ^\n");

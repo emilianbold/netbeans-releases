@@ -230,6 +230,10 @@ public class RstFormatterTest extends PythonTestBase {
         checkDocumentation("testfiles/rst/stdtypes.rst", "close", ElementKind.METHOD);
     }
 
+    public void testGetDoc5() throws Exception {
+        checkDocumentation("testfiles/rst/operator.rst", "__delitem__", ElementKind.METHOD);
+    }
+
     public void testFormatAll1() throws Exception {
         formatFile("testfiles/rst/string.rst");
     }

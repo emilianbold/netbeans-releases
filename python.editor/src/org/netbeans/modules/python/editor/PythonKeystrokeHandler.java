@@ -110,8 +110,8 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
             int lastChar = Utilities.getRowLastNonWhite(doc, offset);
             if (lastChar != -1) {
                 lastChar++; // points to beginning of last char
-                ts.move(Math.min(offset, lastChar));
-                if (ts.movePrevious()) {
+                int delta = ts.move(Math.min(offset, lastChar));
+                if ((delta > 0 && ts.moveNext()) || ts.movePrevious()) {
                     Token<? extends PythonTokenId> token = ts.token();
                     TokenId id = token.id();
                     if (id == PythonTokenId.ESC || id == PythonTokenId.COLON) {
@@ -124,15 +124,34 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
                         }
                     }
                     if (id == PythonTokenId.STRING_BEGIN) {
-                        CharSequence marker = token.text();
                         if ((ts.moveNext() && ts.token().id() == PythonTokenId.ERROR) || offset == doc.getLength()) {
                             // Beginning a ''' or """ sequence
                             String str = IndentUtils.createIndentString(doc, indent);
                             int newPos = offset + str.length();
-                            // TODO - remove r or u in marker
+                            CharSequence marker = token.text();
+                            marker = stripStringModifiers(marker);
                             doc.insertString(offset, str + "\n" + str + marker, null); // NOI18N
                             caret.setDot(offset);
                             return newPos + 1;
+                        }
+                    } else if (id == PythonTokenId.ERROR && offset >= lastChar) {
+                        if (ts.movePrevious()) {
+                            TokenId prev = ts.token().id();
+                            if (prev == PythonTokenId.STRING_BEGIN) {
+                                CharSequence marker = ts.token().text();
+                                marker = stripStringModifiers(marker);
+
+                                // Insert on the -same- line (this isn't a multiline docstring since
+                                // we have text on the same line (eh, check that we're n the same line
+                                // as the string begin!)
+
+                                String str = IndentUtils.createIndentString(doc, indent);
+                                String insert = marker + str; // NOI18N
+                                doc.insertString(offset, insert, null);
+                                int newOffset = offset + insert.length();
+                                caret.setDot(offset+marker.length()); // insert \n here
+                                return newOffset+1;
+                            }
                         }
                     } else if (ts.moveNext()) {
                         if (ts.token().id() == PythonTokenId.RPAREN && ts.moveNext()) {
@@ -200,6 +219,22 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
         caret.setDot(offset);
         return newPos + 1;
     }
+
+    private CharSequence stripStringModifiers(CharSequence delimiter) {
+        for (int i = 0; i < delimiter.length(); i++) {
+            char c = delimiter.charAt(i);
+
+            if (c == '\'' || c == '\"') {
+                if (i == 0) {
+                    return delimiter;
+                } else {
+                    return delimiter.subSequence(i, delimiter.length());
+                }
+            }
+        }
+
+        return delimiter;
+    }
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = // XXX What about PythonTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
             {
@@ -251,7 +286,7 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
                     caret.setDot(caretOffset);
                     doc.remove(start, end - start);
                 }
-            // Fall through to do normal insert matching work
+                // Fall through to do normal insert matching work
             } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
@@ -427,74 +462,72 @@ public class PythonKeystrokeHandler implements KeystrokeHandler {
         case ')':
         case ']':
         case '(':
-        case '[':
-             {
+        case '[': {
 
-                if (!isInsertMatchingEnabled(doc)) {
-                    return false;
-                }
+            if (!isInsertMatchingEnabled(doc)) {
+                return false;
+            }
 
 
-                Token<? extends PythonTokenId> token = PythonLexerUtils.getToken(doc, dotPos);
-                if (token == null) {
+            Token<? extends PythonTokenId> token = PythonLexerUtils.getToken(doc, dotPos);
+            if (token == null) {
+                return true;
+            }
+            TokenId id = token.id();
+
+            if (id == PythonTokenId.ANY_OPERATOR) {
+                int length = token.length();
+                String s = token.text().toString();
+                if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
+                    skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACKET);
+
                     return true;
                 }
-                TokenId id = token.id();
+            }
 
-                if (id == PythonTokenId.ANY_OPERATOR) {
-                    int length = token.length();
-                    String s = token.text().toString();
-                    if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
-                        skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACKET);
+            if (((id == PythonTokenId.IDENTIFIER) && (token.length() == 1)) ||
+                    (id == PythonTokenId.LBRACKET) || (id == PythonTokenId.RBRACKET) ||
+                    (id == PythonTokenId.LBRACE) || (id == PythonTokenId.RBRACE) ||
+                    (id == PythonTokenId.LPAREN) || (id == PythonTokenId.RPAREN)) {
+                if (ch == ']') {
+                    skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACKET);
+                } else if (ch == ')') {
+                    skipClosingBracket(doc, caret, ch, PythonTokenId.RPAREN);
+                } else if (ch == '}') {
+                    skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACE);
+                } else if ((ch == '[') || (ch == '(') || (ch == '{')) {
+                    completeOpeningBracket(doc, dotPos, caret, ch);
+                }
+            }
 
+            // Reindent blocks (won't do anything if } is not at the beginning of a line
+            if (ch == '}') {
+                reindent(doc, dotPos, PythonTokenId.RBRACE, caret);
+            } else if (ch == ']') {
+                reindent(doc, dotPos, PythonTokenId.RBRACKET, caret);
+            }
+        }
+
+        break;
+
+        case ':': {
+            int lineBegin = Utilities.getRowFirstNonWhite(doc, dotPos);
+            int lineEnd = Utilities.getRowLastNonWhite(doc, dotPos);
+            if (dotPos == lineEnd && lineBegin != -1) {
+                Token<? extends PythonTokenId> token = PythonLexerUtils.getToken(doc, lineBegin);
+                if (token != null) {
+                    PythonTokenId id = token.id();
+                    if (id == PythonTokenId.EXCEPT || id == PythonTokenId.FINALLY || id == PythonTokenId.ELIF ||
+                            id == PythonTokenId.ELSE) {
+                        // See if it's the end of an "else" or "elseif" - if so, reindent
+                        reindent(doc, lineBegin, id, caret);
                         return true;
                     }
                 }
-
-                if (((id == PythonTokenId.IDENTIFIER) && (token.length() == 1)) ||
-                        (id == PythonTokenId.LBRACKET) || (id == PythonTokenId.RBRACKET) ||
-                        (id == PythonTokenId.LBRACE) || (id == PythonTokenId.RBRACE) ||
-                        (id == PythonTokenId.LPAREN) || (id == PythonTokenId.RPAREN)) {
-                    if (ch == ']') {
-                        skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACKET);
-                    } else if (ch == ')') {
-                        skipClosingBracket(doc, caret, ch, PythonTokenId.RPAREN);
-                    } else if (ch == '}') {
-                        skipClosingBracket(doc, caret, ch, PythonTokenId.RBRACE);
-                    } else if ((ch == '[') || (ch == '(') || (ch == '{')) {
-                        completeOpeningBracket(doc, dotPos, caret, ch);
-                    }
-                }
-
-                // Reindent blocks (won't do anything if } is not at the beginning of a line
-                if (ch == '}') {
-                    reindent(doc, dotPos, PythonTokenId.RBRACE, caret);
-                } else if (ch == ']') {
-                    reindent(doc, dotPos, PythonTokenId.RBRACKET, caret);
-                }
             }
 
-            break;
-
-        case ':':
-             {
-                int lineBegin = Utilities.getRowFirstNonWhite(doc, dotPos);
-                int lineEnd = Utilities.getRowLastNonWhite(doc, dotPos);
-                if (dotPos == lineEnd && lineBegin != -1) {
-                    Token<? extends PythonTokenId> token = PythonLexerUtils.getToken(doc, lineBegin);
-                    if (token != null) {
-                        PythonTokenId id = token.id();
-                        if (id == PythonTokenId.EXCEPT || id == PythonTokenId.FINALLY || id == PythonTokenId.ELIF ||
-                                id == PythonTokenId.ELSE) {
-                            // See if it's the end of an "else" or "elseif" - if so, reindent
-                            reindent(doc, lineBegin, id, caret);
-                            return true;
-                        }
-                    }
-                }
-
-            }
-            break;
+        }
+        break;
 
         }
 

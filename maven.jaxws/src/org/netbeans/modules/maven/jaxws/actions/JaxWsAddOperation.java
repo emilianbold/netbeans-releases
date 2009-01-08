@@ -42,7 +42,10 @@
 package org.netbeans.modules.maven.jaxws.actions;
 
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.maven.jaxws._RetoucheUtil;
@@ -102,6 +105,12 @@ public class JaxWsAddOperation implements AddOperationCookie {
             List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
             for (AnnotationMirror anMirror : annotations) {
                 if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                        if (entry.getKey().getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                            return false;
+                        }
+                    }
                     return true;
                 }
             }

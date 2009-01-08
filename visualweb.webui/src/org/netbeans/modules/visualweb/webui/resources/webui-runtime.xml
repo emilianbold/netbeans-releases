@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 <library version="1.0">
     <name>webui-runtime</name>
     <type>complib</type>
-    <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
+    <localizing-bundle>org.netbeans.modules.visualweb.webui.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/webui.jar!/</resource>
