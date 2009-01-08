@@ -81,7 +81,7 @@ public final class RubyProcessCreator implements Callable<Process> {
     private final String charsetName;
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
-        this(descriptor, null);
+        this(descriptor, descriptor.getEncoding());
     }
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor,
