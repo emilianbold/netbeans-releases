@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,14 +50,24 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -65,13 +77,18 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowBuildConsole.class.getName());
 
-    private final HudsonJob job;
+    private final HudsonJobImpl job;
     private final int buildNumber;
+    /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
+    private final Pattern hyperlinkable;
 
-    public ShowBuildConsole(HudsonJob job, int buildNumber) {
+    public ShowBuildConsole(HudsonJobImpl job, int buildNumber) {
         this.job = job;
         this.buildNumber = buildNumber;
         putValue(NAME, "Show Console"); // XXX I18N
+        // XXX support Windows build servers (using backslashes)
+        hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
+            "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -121,8 +138,7 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                     BufferedReader r = new BufferedReader(new InputStreamReader(isToUse, "UTF-8"));
                     String line;
                     while ((line = r.readLine()) != null) {
-                        // XXX send errors to err, create hyperlinks, ...
-                        out.println(line);
+                        handleLine(line, out, err);
                     }
                 } finally {
                     is.close();
@@ -143,6 +159,96 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
         }
         out.close();
         err.close();
+    }
+
+    private void handleLine(String line, OutputWriter out, OutputWriter err) throws IOException, NumberFormatException, UnsupportedOperationException {
+        OutputWriter stream = line.matches("(?i).*((warn(ing)?|err(or)?)[]:]|failed).*") ? err : out;
+        Matcher m = hyperlinkable.matcher(line);
+        if (m.matches()) {
+            final String path = m.group(1);
+            final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
+            final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
+            final String message = m.group(4);
+            stream.println(line, new OutputListener() {
+                public void outputLineAction(OutputEvent ev) {
+                    acted(true);
+                }
+                public void outputLineSelected(OutputEvent ev) {
+                    acted(false);
+                }
+                private void acted(final boolean force) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            FileObject f = job.getRemoteWorkspace().findResource(path);
+                            if (f == null) {
+                                if (force) {
+                                    StatusDisplayer.getDefault().setStatusText("No file " + path + " found in remote workspace."); // XXX I18N
+                                    Toolkit.getDefaultToolkit().beep();
+                                }
+                                return;
+                            }
+                            StatusDisplayer.getDefault().setStatusText(message);
+                            // XXX try to translate to local path.
+                            // For example, http://test.geomatys.fr/hudson/job/GeoAPI/ws/trunk/.svn/entries lists:
+                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi/trunk        [URL of this checkout]
+                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi              [URL of server root]
+                            // whereas ${projdir}/.svn/entries (found via ProjectHudsonProvider?) might list:
+                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi/trunk/geoapi [what is checked out here]
+                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi              [URL of server root]
+                            // Assuming the server root URLs are the same (modulo protocol & minor hostname differences),
+                            // you can infer that http://test.geomatys.fr/hudson/job/GeoAPI/ws/geoapi
+                            // corresponds to ${projdir}. If the contents are identical (modulo CRLF), you can just open the local one.
+                            // If they are different but similar, you can perhaps open the local after adjusting line number.
+                            // Probably a bit easier for Hg since you just need to find the .hg root.
+                            try {
+                                DataObject d = DataObject.find(f);
+                                if (row == -1) {
+                                    if (force) {
+                                        final EditorCookie c = d.getLookup().lookup(EditorCookie.class);
+                                        if (c == null) {
+                                            LOG.fine("no EditorCookie found for " + f);
+                                            return;
+                                        }
+                                        EventQueue.invokeLater(new Runnable() {
+                                            public void run() {
+                                                try {
+                                                    c.openDocument();
+                                                } catch (IOException x) {
+                                                    LOG.log(Level.INFO, null, x);
+                                                }
+                                            }
+                                        });
+                                    }
+                                    return;
+                                }
+                                LineCookie c = d.getLookup().lookup(LineCookie.class);
+                                if (c == null) {
+                                    LOG.fine("no LineCookie found for " + f);
+                                    return;
+                                }
+                                try {
+                                    final Line l = c.getLineSet().getOriginal(row);
+                                        EventQueue.invokeLater(new Runnable() {
+                                            public void run() {
+                                                l.show(force ? Line.ShowOpenType.REUSE : Line.ShowOpenType.NONE,
+                                                        force ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT,
+                                                        col);
+                                            }
+                                        });
+                                } catch (IndexOutOfBoundsException x) {
+                                    LOG.log(Level.INFO, null, x);
+                                }
+                            } catch (IOException x) {
+                                LOG.log(Level.INFO, null, x);
+                            }
+                        }
+                    });
+                }
+                public void outputLineCleared(OutputEvent ev) {}
+            });
+        } else {
+            stream.println(line);
+        }
     }
 
 }
