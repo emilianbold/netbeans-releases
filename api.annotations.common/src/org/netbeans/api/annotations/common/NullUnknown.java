@@ -38,84 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
+package org.netbeans.api.annotations.common;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * This interface has all of the bean info accessor methods.
+ * The annotated element might be null under certain circumstances.
+ * The necessity of the non-null check depends on situations described
+ * in the javadoc (so the non-null check is not required by default).
  *
- * @Generated
+ * @author Andrei Badea, Petr Hejl
  */
-
-package org.netbeans.modules.j2ee.dd.api.webservices;
-import org.netbeans.modules.j2ee.dd.api.common.Icon;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-
-public interface PortComponentHandler extends org.netbeans.modules.j2ee.dd.api.common.ComponentInterface {
-	
-        public Icon newIcon();
-
-	public void setHandlerName(java.lang.String value);
-
-	public java.lang.String getHandlerName();
-
-	public void setHandlerNameId(java.lang.String value);
-
-	public java.lang.String getHandlerNameId();
-
-	public void setHandlerClass(java.lang.String value);
-
-	public java.lang.String getHandlerClass();
-
-	public void setInitParam(int index, InitParam value);
-
-	public InitParam getInitParam(int index);
-
-	public int sizeInitParam();
-
-	public void setInitParam(InitParam[] value);
-
-	public InitParam[] getInitParam();
-
-	public int addInitParam(InitParam value);
-
-	public int removeInitParam(InitParam value);
-
-	public InitParam newInitParam();
-
-	public void setSoapHeader(int index, javax.xml.namespace.QName value);
-
-	public javax.xml.namespace.QName getSoapHeader(int index);
-
-	public int sizeSoapHeader();
-
-	public void setSoapHeader(javax.xml.namespace.QName[] value);
-
-	public javax.xml.namespace.QName[] getSoapHeader();
-
-	public int addSoapHeader(javax.xml.namespace.QName value);
-
-	public int removeSoapHeader(javax.xml.namespace.QName value);
-
-	public void setSoapHeaderId(int index, java.lang.String value);
-
-	public java.lang.String getSoapHeaderId(int index);
-
-	public int sizeSoapHeaderId();
-
-	public void setSoapRole(int index, java.lang.String value);
-
-	public java.lang.String getSoapRole(int index);
-
-	public int sizeSoapRole();
-
-	public void setSoapRole(java.lang.String[] value);
-
-	public java.lang.String[] getSoapRole();
-
-	public int addSoapRole(java.lang.String value);
-
-	public int removeSoapRole(java.lang.String value);
-
-	public void setSoapRoleId(java.lang.String value);
-
-	public java.lang.String getSoapRoleId();
+@Documented
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
+        ElementType.LOCAL_VARIABLE})
+@Retention(RetentionPolicy.CLASS)
+@javax.annotation.Nonnull(when=javax.annotation.meta.When.UNKNOWN)
+@javax.annotation.meta.TypeQualifierNickname
+public @interface NullUnknown {
 
 }
