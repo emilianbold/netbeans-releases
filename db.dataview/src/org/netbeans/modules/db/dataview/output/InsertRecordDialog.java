@@ -41,7 +41,10 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -51,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
@@ -398,7 +402,38 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         rows.add(jTable1.createNewRow());
         jScrollPane1.setViewportView(jTable1);
         rowHeader = new JXTableRowHeader(jTable1);
+        final Component order[] = new Component[]{rowHeader, jTable1};
+        FocusTraversalPolicy policy = new FocusTraversalPolicy() {
 
+            List componentList = Arrays.asList(order);
+
+            public Component getFirstComponent(Container focusCycleRoot) {
+                return order[0];
+            }
+
+            public Component getLastComponent(Container focusCycleRoot) {
+                return order[order.length - 1];
+            }
+
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {              
+                if (aComponent instanceof JXTableRowHeader) {
+                    int rowIndex = jTable1.getRowCount() - 1;
+                    jTable1.editCellAt(rowIndex, 0);
+                    jTable1.setRowSelectionInterval(rowIndex, 0);
+                }
+                return jTable1;
+            }
+
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+                int index = componentList.indexOf(aComponent);
+                return order[(index - 1 + order.length) % order.length];
+            }
+
+            public Component getDefaultComponent(Container focusCycleRoot) {
+                return order[0];
+            }
+        };
+        setFocusTraversalPolicy(policy);
         jScrollPane1.setRowHeaderView(rowHeader);
         jScrollPane1.setCorner(JScrollPane.UPPER_LEFT_CORNER, rowHeader.getTableHeader());
         jTable1.createTableModel(rows, rowHeader);
@@ -443,6 +478,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private void processKeyEvents(KeyEvent e) {
         KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
         KeyStroke paste = KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK, false);
+        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
 
         if (KeyStroke.getKeyStrokeForEvent(e).equals(copy)) {
             copy();
@@ -457,8 +493,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             control0Event();
         } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
             control1Event();
+        } else if (KeyStroke.getKeyStrokeForEvent(e).equals(tab)) {
         }
-
     }
     private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -563,7 +599,6 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             jTable1.setRowSelectionInterval(row, row);
         }
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
     private javax.swing.JPanel btnPanel;

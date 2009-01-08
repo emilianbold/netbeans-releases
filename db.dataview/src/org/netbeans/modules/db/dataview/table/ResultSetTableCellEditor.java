@@ -114,6 +114,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
                     try {
                         assert table != null;
                         int col = table.getEditingColumn();
+                        //textField.addKeyListener(new TableKeyListener());
                         return DBReadWriteHelper.validate(txtVal, ((ResultSetJXTable) table).getDBColumn(col));
                     } catch (Exception ex) {
                         StatusDisplayer.getDefault().setStatusText(ex.getMessage());
@@ -124,7 +125,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
         };
 
         textField.addActionListener(delegate);
-    }
+    }   
 
     public ResultSetTableCellEditor(final JRendererCheckBox checkBox) {
         super(checkBox);
@@ -197,7 +198,7 @@ class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCe
 class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {
 
     private JXButton customEditorButton = new JXButton("...");
-    private int row,  column;
+    private int row, column;
 
     public StringTableCellEditor(final JTextField textField) {
         super(textField);

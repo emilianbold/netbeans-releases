@@ -60,7 +60,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
@@ -91,11 +90,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (0, originalSnapshot.getOriginalOffset (0));
         assertEquals (10, originalSnapshot.getOriginalOffset (10));
         assertEquals(originalSnapshot.getText ().length (),originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()));
-        try {
-            originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()+1);
-            assert (false);
-        } catch (ArrayIndexOutOfBoundsException ex) {
-        }
+//        try {
+            assertEquals(-1, originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()+1));
+//            assert (false);
+//        } catch (ArrayIndexOutOfBoundsException ex) {
+//        }
         assertEquals (0, originalSnapshot.getEmbeddedOffset (0));
         assertEquals (10, originalSnapshot.getEmbeddedOffset (10));
 //        try {
@@ -121,11 +120,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (30, languageJednaSnapshot.getOriginalOffset (20));
         assertEquals (33, languageJednaSnapshot.getOriginalOffset (23));
         assertEquals (40, languageJednaSnapshot.getOriginalOffset (30));
-        try {
-            languageJednaSnapshot.getOriginalOffset (31);
-            assert (false);
-        } catch (ArrayIndexOutOfBoundsException ex) {
-        }
+//        try {
+            assertEquals(-1, languageJednaSnapshot.getOriginalOffset (31));
+//            assert (false);
+//        } catch (ArrayIndexOutOfBoundsException ex) {
+//        }
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (5));
         assertEquals (0, languageJednaSnapshot.getEmbeddedOffset (10));
@@ -153,11 +152,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (30, petaSnapshot.getOriginalOffset (15));
         assertEquals (34, petaSnapshot.getOriginalOffset (19));
         assertEquals (35, petaSnapshot.getOriginalOffset (20));
-        try {
-            petaSnapshot.getOriginalOffset (21);
-            assert (false);
-        } catch (ArrayIndexOutOfBoundsException ex) {
-        }
+//        try {
+            assertEquals(-1, petaSnapshot.getOriginalOffset (21));
+//            assert (false);
+//        } catch (ArrayIndexOutOfBoundsException ex) {
+//        }
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (10));
         assertEquals (0, petaSnapshot.getEmbeddedOffset (15));

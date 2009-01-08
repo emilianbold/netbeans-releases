@@ -73,5 +73,7 @@ public interface ServerList {
 
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard);
     
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+
     public boolean isValidExecutable(String hkey, String path);
 }
