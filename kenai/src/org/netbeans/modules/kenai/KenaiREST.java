@@ -40,19 +40,12 @@
 package org.netbeans.modules.kenai;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.spi.KenaiImpl;
 import org.codeviation.pojson.*;
-import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
-import org.netbeans.modules.kenai.util.Utils;
 
 /**
  * Talks to remote Kenai server via Web services API.
@@ -86,8 +79,8 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException {
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name);
+    public ProjectData getProject(String name, String username, char[] password) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name + ".json");
         RestResponse resp = null;
         try {
             resp = conn.get(null);
@@ -100,16 +93,11 @@ public class KenaiREST extends KenaiImpl {
         String sss = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
-        JsonProjectInfo obj = pload.load(sss, JsonProjectInfo.class);
-        try {
-            return parse(obj);
-        } catch (Exception ex) {
-            throw new KenaiException(ex);
-        }
+        return pload.load(sss, ProjectData.class);
     }
 
     @Override
-    public Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException {
+    public Iterator<ProjectData> searchProjects(String pattern, String username, char[] password) throws KenaiException {
         RestConnection conn = new RestConnection(baseURL.toString() + "/home/live_lookup?val=" + pattern);
         RestResponse resp = null;
         try {
@@ -122,29 +110,27 @@ public class KenaiREST extends KenaiImpl {
         PojsonLoad pload = PojsonLoad.create();
         JsonLiveLookup [] objs = pload.load(sss, JsonLiveLookup[].class);
 
-        Set<KenaiProjectImpl> projects = new HashSet<KenaiProjectImpl>();
+        Set<ProjectData> projects = new HashSet<ProjectData>();
         for (JsonLiveLookup obj : objs) {
             if ("project".equals(obj.t)) {
-                try {
-                    // TODO: FAKE name is the last part of the URL MAYBE!
-                    String name = obj.url;
-                    int idx = name.lastIndexOf('/');
-                    if (idx >= 0) {
-                        name = name.substring(idx + 1);
-                    }
-                    KenaiProjectImpl prj = new KenaiProjectImpl(name, new URL(baseURL, obj.url));
-                    prj.put(KenaiProjectImpl.DISPLAY_NAME, obj.name);
-                    projects.add(prj);
-                } catch (MalformedURLException malformedURLException) {
-                    Utils.logError(this, malformedURLException);
+                // TODO: FAKE name is the last part of the URL MAYBE!
+                String name = obj.url;
+                int idx = name.lastIndexOf('/');
+                if (idx >= 0) {
+                    name = name.substring(idx + 1);
                 }
+                ProjectData prj = new ProjectData();
+                prj.name = name;
+                prj.href = baseURL + obj.url;
+                prj.display_name = obj.name;
+                projects.add(prj);
             }
         }
         return projects.iterator();
     }
 
     @Override
-    public KenaiProjectImpl createProject(String name, String displayName, String username, char[] password) throws KenaiException {
+    public ProjectData createProject(String name, String displayName, String username, char[] password) throws KenaiException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -171,17 +157,5 @@ public class KenaiREST extends KenaiImpl {
         }
     }
 
-    private KenaiProjectImpl parse(JsonProjectInfo o) throws MalformedURLException, ParseException {
-        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");
-        KenaiProjectImpl p = new KenaiProjectImpl(o.name, new URL(o.href));
-        
-        p.put("display_name", o.display_name);
-        p.put("image", new URL(o.image));
-        p.put("owner", o.owner);
-        p.put("description", o.description);
-        p.put("created_at", df.parse(o.created_at));
-        p.put("updated_at", df.parse(o.updated_at));
-
-        return p;
-    }
+//        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");
 }

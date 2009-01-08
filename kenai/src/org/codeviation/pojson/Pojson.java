@@ -108,7 +108,17 @@ public class Pojson {
     @Target({ElementType.TYPE, ElementType.FIELD })
     public @interface SkipNullValues {
     }
-    
+
+
+    /** Tells Pojson not to complain about nonexisting fields in the class
+     * when loading the data from the stream. I.e. having more fields in the
+     * stream than in the class is fine.
+     *
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE })
+    public @interface IgnoreNonExisting {
+    }
     
     /** Tells Pojson how the filename of the record should be formated
      * the format string is the same as the one of printf method. If used on

@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.Authenticator;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Iterator;
@@ -111,10 +110,18 @@ public class KenaiTest {
     }
 
     @Test
+    public void testLogin() throws Exception {
+        try {
+            instance.login("jerry", "mouse".toCharArray());
+            assert false : "Bogus login successful";
+        } catch (KenaiException e) {
+            // this is the expected result
+        }
+    }
+
+    @Test
     public void testIsAuthorized() throws Exception {
         String name = "java-inline";
-
-        instance.login("jerry", "mouse".toCharArray());
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);

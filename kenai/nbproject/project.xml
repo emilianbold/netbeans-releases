@@ -4,8 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.kenai</code-name-base>
-            <module-dependencies>
-            </module-dependencies>
+            <module-dependencies/>
             <public-packages>
                 <package>org.netbeans.modules.kenai.api</package>
             </public-packages>

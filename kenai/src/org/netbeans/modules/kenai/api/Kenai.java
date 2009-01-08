@@ -45,8 +45,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.kenai.KenaiREST;
-import org.netbeans.modules.kenai.spi.KenaiImpl;
-import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
+import org.netbeans.modules.kenai.KenaiImpl;
+import org.netbeans.modules.kenai.ProjectData;
 
 /**
  * Main entry point to Kenai integration.
@@ -77,8 +77,6 @@ public final class Kenai {
 
     private final KenaiImpl     impl;
 
-    private final Persistence   persistence;
-
     /**
      * Currently user username.
      */
@@ -91,13 +89,7 @@ public final class Kenai {
 
     Kenai(KenaiImpl impl) {
         this.impl = impl;
-        this.persistence = new Persistence();
     }
-
-    /**
-     * Cached list of all Kenai projects that we know of.
-     */
-    private final Map<String, KenaiProject> projects = new HashMap<String, KenaiProject>();
 
     /**
      * Logs an existing user into Kenai. Login session persists until the login method
@@ -140,7 +132,7 @@ public final class Kenai {
      * @return an interator over kenai domains that match given search pattern
      */
     public Iterator<KenaiProject> searchProjects(String pattern) throws KenaiException {
-        Iterator<KenaiProjectImpl> prjs = impl.searchProjects(pattern, username, password);
+        Iterator<ProjectData> prjs = impl.searchProjects(pattern, username, password);
         return new ProjectsIterator(prjs);
     }
 
@@ -151,26 +143,12 @@ public final class Kenai {
      * @return KenaiProject
      */
     public KenaiProject getProject(String name) throws KenaiException {
-        KenaiProject p = projects.get(name);
-        if (p == null) {
-            KenaiProjectImpl prj = impl.getProject(name, username, password);
-            if (prj != null) {
-                p = new KenaiProject(this, prj);
-                p.fillInfo(prj);
-                projects.put(name, p);
-                persistence.storeProjects(projects.values());
-            }
-        }
-        return p;
+        ProjectData prj = impl.getProject(name, username, password);
+        return new KenaiProject(prj);
     }
 
-    KenaiProjectImpl getDetails(String name) throws KenaiException {
+    ProjectData getDetails(String name) throws KenaiException {
         return impl.getProject(name, username, password);
-    }
-
-    private void fillProjectInfo(KenaiProject p) throws KenaiException {
-        KenaiProjectImpl prj = impl.getProject(p.getName(), username, password);
-        p.fillInfo(prj);
     }
 
     /**
@@ -185,8 +163,8 @@ public final class Kenai {
         if (username == null) {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
-        KenaiProjectImpl prj = impl.createProject(name, displayName, username, password);
-        return new KenaiProject(this, prj);
+        ProjectData prj = impl.createProject(name, displayName, username, password);
+        return new KenaiProject(prj);
     }
 
     public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
@@ -195,9 +173,9 @@ public final class Kenai {
 
     private class ProjectsIterator implements Iterator<KenaiProject> {
 
-        private final Iterator<KenaiProjectImpl> it;
+        private final Iterator<ProjectData> it;
 
-        public ProjectsIterator(Iterator<KenaiProjectImpl> it) {
+        public ProjectsIterator(Iterator<ProjectData> it) {
             this.it = it;
         }
 
@@ -206,20 +184,12 @@ public final class Kenai {
         }
 
         public KenaiProject next() {
-            KenaiProjectImpl prj = it.next();
-            return toProject(prj);
+            ProjectData prj = it.next();
+            return new KenaiProject(prj);
         }
 
         public void remove() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-    }
-
-    private KenaiProject toProject(KenaiProjectImpl prj) {
-        KenaiProject p = projects.get(KenaiProjectImpl.NAME);
-        if (p == null) {
-            p = new KenaiProject(this, prj);
-        }
-        return p;
     }
 }

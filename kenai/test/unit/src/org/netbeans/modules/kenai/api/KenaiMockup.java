@@ -44,8 +44,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.kenai.spi.KenaiImpl;
-import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
+import org.netbeans.modules.kenai.KenaiImpl;
+import org.netbeans.modules.kenai.ProjectData;
 
 /**
  * Mockup kenai server.
@@ -54,7 +54,7 @@ import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
  */
 public class KenaiMockup extends KenaiImpl {
 
-    private final List<KenaiProjectImpl> projects = new ArrayList<KenaiProjectImpl>();
+    private final List<ProjectData> projects = new ArrayList<ProjectData>();
 
     private final List<User> users = new ArrayList<User>();
 
@@ -77,8 +77,9 @@ public class KenaiMockup extends KenaiImpl {
     }
 
     private void init() throws MalformedURLException {
-        KenaiProjectImpl p = new KenaiProjectImpl("java-inline", new URL("http://localhost:7890/projects/java-inline"));
-        p.put(KenaiProjectImpl.DISPLAY_NAME, "JavaInline for JRuby");
+        ProjectData p = new ProjectData();
+        p.name = "java-inline";
+        p.href = "http://localhost:7890/projects/java-inline";
         projects.add(p);
 
         User u = new User("jerry", "mouse");
@@ -86,15 +87,15 @@ public class KenaiMockup extends KenaiImpl {
     }
 
     @Override
-    public KenaiProjectImpl createProject(String name, String displayName, String username, char[] password) throws KenaiException {
+    public ProjectData createProject(String name, String displayName, String username, char[] password) throws KenaiException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException {
-        List<KenaiProjectImpl> result = new ArrayList<KenaiProjectImpl>();
-        for (KenaiProjectImpl p : projects) {
-            if (p.getName().startsWith(pattern)) {
+    public Iterator<ProjectData> searchProjects(String pattern, String username, char[] password) throws KenaiException {
+        List<ProjectData> result = new ArrayList<ProjectData>();
+        for (ProjectData p : projects) {
+            if (p.name.startsWith(pattern)) {
                 result.add(p);
             }
         }
@@ -102,9 +103,9 @@ public class KenaiMockup extends KenaiImpl {
     }
     
     @Override
-    public KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException {
-        for (KenaiProjectImpl p : projects) {
-            if (p.getName().equals(name)) {
+    public ProjectData getProject(String name, String username, char[] password) throws KenaiException {
+        for (ProjectData p : projects) {
+            if (p.name.equals(name)) {
                 return p;
             }
         }

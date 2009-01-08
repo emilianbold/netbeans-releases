@@ -43,6 +43,7 @@ package org.codeviation.pojson;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.codeviation.commons.patterns.Filter;
@@ -194,9 +195,9 @@ public class StoreInfo {
             return true;
         }
         
-//         if ( type == Date.class || ClassUtils.isSuperclass(type, Date.class)) {
-//            return true;
-//        }
+         if ( Date.class.equals(type) || ClassUtils.isSuperclass(type, Date.class)) {
+            return true;
+        }
     
         return false;
     }

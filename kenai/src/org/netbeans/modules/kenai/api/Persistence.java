@@ -40,7 +40,17 @@
 package org.netbeans.modules.kenai.api;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import org.codeviation.pojson.PojsonLoad;
+import org.codeviation.pojson.PojsonSave;
+import org.netbeans.modules.kenai.ProjectData;
+import org.netbeans.modules.kenai.util.Utils;
 
 /**
  * Provides persistence services to Kenai module.
@@ -49,11 +59,72 @@ import java.util.Collection;
  */
 class Persistence {
 
-    public Persistence() {
+    private static final Persistence instance = new Persistence();
+
+    static Persistence getInstance() {
+        return instance;
     }
 
-    public void storeProjects(Collection<KenaiProject> projects) {
+    private Persistence() {
+    }
+
+    public synchronized boolean storeProjects(Collection<KenaiProject> projects) {
         File master = getMasterStorage();
+        int idx = 0;
+        for (KenaiProject project : projects) {
+            String projectFileName = computeProjectFileName(project.getName()) + "-" + idx + ".kp";
+            File file = new File(master, projectFileName);
+            try {
+                storeProject(file, project);
+            } catch (IOException iOException) {
+                Utils.logWarn(this, iOException);
+                file.delete();
+            }
+        }
+        return true;
+    }
+
+    public synchronized Collection<KenaiProject> loadProjects() {
+        List<KenaiProject> projects = new ArrayList();
+
+        File master = getMasterStorage();
+        File [] projectFiles = master.listFiles();
+        if (projectFiles != null) {
+            PojsonLoad load = new PojsonLoad();
+            for (File file : projectFiles) {
+                try {
+                    FileInputStream fis = new FileInputStream(file);
+                    ProjectData data = load.load(fis, ProjectData.class);
+                    fis.close();
+                    projects.add(new KenaiProject(data));
+                } catch (IOException iOException) {
+                    Utils.logWarn(this, iOException);
+                    file.delete();
+                }
+            }
+        }
+        return projects;
+    }
+
+    private void storeProject(File file, KenaiProject project) throws IOException {
+        ProjectData data = project.getData();
+        PojsonSave save = new PojsonSave();
+
+        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+        save.save(writer, data);
+        writer.close();
+    }
+
+    private String computeProjectFileName(String name) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : name.toCharArray()) {
+            if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9') {
+                sb.append(c);
+            } else {
+                sb.append('-');
+            }
+        }
+        return sb.toString();
     }
 
     private File getMasterStorage() {

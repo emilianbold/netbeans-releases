@@ -43,8 +43,8 @@ package org.netbeans.modules.kenai;
  *
  * @author Maros Sandor
  */
-public class JsonFeature {
-
+@org.codeviation.pojson.Pojson.IgnoreNonExisting
+public class FeatureData {
     public String href;
     public String name;
     public String display_name;

@@ -55,7 +55,8 @@ public class FileFilters {
     public static final Filter<File> EXISTS = new UniversalFF(UniversalFF.EXISTS);
     public static final Filter<File> CAN_READ = new UniversalFF(UniversalFF.CAN_READ);
     public static final Filter<File> CAN_WRITE = new UniversalFF(UniversalFF.CAN_WRITE);
-    public static final Filter<File> CAN_EXECUTE = new UniversalFF(UniversalFF.CAN_EXECUTE);
+    // Requires 1.6
+    //public static final Filter<File> CAN_EXECUTE = new UniversalFF(UniversalFF.CAN_EXECUTE);
     public static final Filter<File> IS_FILE = new UniversalFF(UniversalFF.IS_FILE);
     public static final Filter<File> IS_DIRECTORY = new UniversalFF(UniversalFF.IS_DIRECTORY);
     public static final Filter<File> IS_HIDDEN = new UniversalFF(UniversalFF.IS_HIDDEN);
@@ -133,8 +134,9 @@ public class FileFilters {
                     return file.canRead();
                 case CAN_WRITE:
                     return file.canWrite();
-                case CAN_EXECUTE:
-                    return file.canRead();
+                //case CAN_EXECUTE:
+                    //return file.canExecute();
+                    //return file.canRead();
                 case IS_FILE:
                     return file.isFile();
                 case IS_DIRECTORY:

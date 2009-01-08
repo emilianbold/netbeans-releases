@@ -43,17 +43,11 @@ package org.netbeans.modules.kenai;
  *
  * @author Maros Sandor
  */
-public class JsonProjectInfo {
-
+@org.codeviation.pojson.Pojson.IgnoreNonExisting
+public class LicenceData {
     public String href;
     public String name;
     public String display_name;
-    public String image;
-    public String owner;
-    public String description;
-    public String created_at;
-    public String updated_at;
-    public JsonLicence [] licenses;
-    public JsonFeature [] features;
-//    public String [] tags;
+    public String license_uri;
+    public String preference_level;
 }

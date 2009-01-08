@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.spi;
+package org.netbeans.modules.kenai;
 
 import java.util.Iterator;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -49,7 +49,6 @@ import org.netbeans.modules.kenai.api.KenaiException;
  */
 public abstract class KenaiImpl {
 
-
     /**
      * Searches kenai for projects.
      *
@@ -59,7 +58,7 @@ public abstract class KenaiImpl {
      * @return list of Kenai projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract Iterator<KenaiProjectImpl> searchProjects(String pattern, String username, char[] password) throws KenaiException;
+    public abstract Iterator<ProjectData> searchProjects(String pattern, String username, char[] password) throws KenaiException;
 
     /**
      * Retrieves all available information about a Kenai project.
@@ -70,7 +69,7 @@ public abstract class KenaiImpl {
      * @return KenaiProjectImpl or null if the project does not exist
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract KenaiProjectImpl getProject(String name, String username, char[] password) throws KenaiException;
+    public abstract ProjectData getProject(String name, String username, char[] password) throws KenaiException;
 
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.
@@ -95,5 +94,5 @@ public abstract class KenaiImpl {
     public abstract void verify(String username, char[] password) throws KenaiException;
 
     public abstract void register(String username, char[] password) throws KenaiException ;
-    public abstract KenaiProjectImpl createProject(String name, String displayName, String username, char [] password) throws KenaiException;
+    public abstract ProjectData createProject(String name, String displayName, String username, char [] password) throws KenaiException;
 }

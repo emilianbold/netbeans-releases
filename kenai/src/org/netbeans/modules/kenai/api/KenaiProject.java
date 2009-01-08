@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import org.netbeans.modules.kenai.spi.KenaiProjectImpl;
+import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.util.Utils;
 
 /**
@@ -50,25 +51,11 @@ import org.netbeans.modules.kenai.util.Utils;
  */
 public final class KenaiProject {
 
-    private final Kenai kenai;
+    private final String    name;
 
-    private final String name;
+    private final URL       href;
 
-    private final URL   location;
-
-    private String      displayName;
-
-    private String      description;
-
-    private String      owner;
-
-    private long        createdTimestamp;
-
-    private long        updatedTimestamp;
-
-    private URL         imageLocation;
-
-    private String []   tags;
+    private ProjectData     data;
 
     /**
      * When detailed properties of this project has been fetched.
@@ -81,11 +68,14 @@ public final class KenaiProject {
      *
      * @param p
      */
-    KenaiProject(Kenai kenai, KenaiProjectImpl p) {
-        this.kenai = kenai;
-        this.name = (String) p.get(KenaiProjectImpl.NAME);
-        this.location = (URL) p.get(KenaiProjectImpl.LOCATION);
-        this.displayName = (String) p.get(KenaiProjectImpl.DISPLAY_NAME);
+    KenaiProject(ProjectData p) {
+        this.name = p.name;
+        try {
+            this.href = new URL(p.href);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+        this.data = p;
     }
 
     public String getName() {
@@ -93,34 +83,38 @@ public final class KenaiProject {
     }
 
     public URL getWebLocation() {
-        return location;
+        return href;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return data.display_name;
     }
 
     public String getDescription() {
         fetchDetailsIfNotAvailable();
-        return description;
+        return data.description;
     }
 
     public String[] getTags() {
         return new String[0];
     }
 
-    void fillInfo(KenaiProjectImpl prj) {
+    void fillInfo(ProjectData prj) {
         detailsTimestamp = System.currentTimeMillis();
+    }
+
+    ProjectData getData() {
+        return data;
     }
 
     private void fetchDetailsIfNotAvailable() {
         if (detailsTimestamp > 0) return;
 
-        try {
-            KenaiProjectImpl prj = kenai.getDetails(name);
-            fillInfo(prj);
-        } catch (KenaiException kenaiException) {
-            Utils.logError(this, kenaiException);
-        }
+//        try {
+//            ProjectData prj = kenai.getDetails(name);
+//            fillInfo(prj);
+//        } catch (KenaiException kenaiException) {
+//            Utils.logError(this, kenaiException);
+//        }
     }
 }
