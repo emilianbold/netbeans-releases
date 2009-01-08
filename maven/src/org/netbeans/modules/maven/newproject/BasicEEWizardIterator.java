@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -53,27 +54,93 @@ import org.openide.util.NbBundle;
  *
  *@author Dafe Simonek
  */
-public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
+
+    private Archetype[] archs;
+    private String[] eeLevels;
+
+    private static Archetype[] WEB_APP_ARCHS;
+    private static Archetype[] EJB_ARCHS;
+
+    private static final String[] EE_LEVELS = new String[] {
+        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
+        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14"), //NOI18N
+        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE13") //NOI18N
+    };
+
+    static {
+        WEB_APP_ARCHS = new Archetype[3];
+
+        Archetype arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("webapp-jee5"); //NOI18N
+        WEB_APP_ARCHS[0] = arch;
+
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("webapp-j2ee14"); //NOI18N
+        WEB_APP_ARCHS[1] = arch;
+
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("webapp-j2ee13"); //NOI18N
+        WEB_APP_ARCHS[2] = arch;
+
+        EJB_ARCHS = new Archetype[3];
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("ejb-jee5"); //NOI18N
+        EJB_ARCHS[0] = arch;
+
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("ejb-j2ee14"); //NOI18N
+        EJB_ARCHS[1] = arch;
+
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setArtifactId("ejb-j2ee13"); //NOI18N
+        EJB_ARCHS[2] = arch;
+    }
     
-    private WebAppWizardIterator() {}
+    private BasicEEWizardIterator(String[] eeLevels, Archetype[] archs) {
+        this.archs = archs;
+        this.eeLevels = eeLevels;
+    }
     
-    public static WebAppWizardIterator createIterator() {
-        return new WebAppWizardIterator();
+    public static BasicEEWizardIterator createWebAppIterator() {
+        return new BasicEEWizardIterator(EE_LEVELS, WEB_APP_ARCHS);
+    }
+
+    public static BasicEEWizardIterator createEJBIterator() {
+        return new BasicEEWizardIterator(EE_LEVELS, EJB_ARCHS);
     }
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(true)
+            new BasicWizardPanel(eeLevels, archs)
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(WebAppWizardIterator.class, "LBL_CreateProjectStep2"),
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_CreateProjectStep2"),
         };
     }
     
@@ -115,7 +182,7 @@ public class WebAppWizardIterator implements WizardDescriptor.ProgressInstantiat
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(WebAppWizardIterator.class, "NameFormat"),
+        return MessageFormat.format(NbBundle.getMessage(BasicEEWizardIterator.class, "NameFormat"),
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
