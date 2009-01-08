@@ -1444,7 +1444,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         // return special variable
         if (expression.returnReplaced().equals(identifier)) {
             ThreadReference tr = evaluationContext.getFrame().thread();
-            JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
+            JPDAThreadImpl thread = evaluationContext.getDebugger().getThread(tr);
             JDIVariable returnVar = (JDIVariable) thread.getReturnVariable();
             if (returnVar != null) {
                 return returnVar.getJDIValue();
@@ -1593,7 +1593,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     return frame.getValue(lv);
                 } catch (AbsentInformationException aiex) {
                     org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                    lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                    lvs = new CallStackFrameImpl(((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
                                                  frame, 0, evaluationContext.getDebugger()).getMethodArguments();
                     if (lvs != null) {
                         for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {

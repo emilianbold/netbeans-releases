@@ -442,93 +442,94 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         int from, 
         int to
     ) {
-        synchronized (debugger.LOCK) {
-            CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.
-                getCurrentCallStackFrame ();
-            if (callStackFrame == null) 
-                return new String [] {"No current thread"};
+        CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.
+            getCurrentCallStackFrame ();
+        if (callStackFrame == null)
+            return new String [] {"No current thread"};
+        ((JPDAThreadImpl) callStackFrame.getThread()).accessLock.readLock().lock();
+        try {
+            StackFrame stackFrame = null;
             try {
-                StackFrame stackFrame = null;
-                try {
-                    stackFrame = callStackFrame.getStackFrame ();
-                } catch (InvalidStackFrameException e) {
-                }
-                if (stackFrame == null)
-                    return new String [] {"No current thread"};
-                ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
-                List<Operation> operations = callStackFrame.getThread().getLastOperations();
-                ReturnVariableImpl returnVariable;
-                boolean haveLastOperations;
-                if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
-                    haveLastOperations = true;
-                    returnVariable = null;
-                } else {
-                    returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
-                    haveLastOperations = false;
-                }
-                //int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
-                int retValShift = (returnVariable != null) ? 1 : 0;
-                Operation currentOperation = callStackFrame.getThread().getCurrentOperation();
-                //int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
-                int currArgShift = (currentOperation != null) ? 1 : 0;
-                int shift = retValShift + currArgShift;
-                if (thisR == null) {
-                    ReferenceType classType = LocationWrapper.declaringType(StackFrameWrapper.location(stackFrame));
-                    Object[] avs = null;
-                    avs = getLocalVariables (
-                        callStackFrame,
-                        stackFrame,
-                        Math.max (from - shift - 1, 0),
-                        Math.max (to - shift - 1, 0)
-                    );
-                    Object[] result = new Object [avs.length + shift + 1];
-                    if (from < 1 && retValShift > 0) {
-                        result[0] = returnVariable;
-                    }
-                    if (from < 1 && currArgShift > 0) {
-                        //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
-                        result[retValShift] = currentOperation;
-                    }
-                    if (from < 1 + shift) {
-                        //result [0] = new ThisVariable (debugger, classType.classObject(), "");
-                        result[shift] = debugger.getClassType(classType);
-                    }
-                    System.arraycopy (avs, 0, result, 1 + shift, avs.length);
-                    return result;
-                } else {
-                    Object[] avs = null;
-                    avs = getLocalVariables (
-                        callStackFrame,
-                        stackFrame,
-                        Math.max (from - shift - 1, 0),
-                        Math.max (to - shift - 1, 0)
-                    );
-                    Object[] result = new Object [avs.length + shift + 1];
-                    if (from < 1 && retValShift > 0) {
-                        result[0] = returnVariable;
-                    }
-                    if (from < 1 && currArgShift > 0) {
-                        //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
-                        result[retValShift] = currentOperation;
-                    }
-                    if (from < 1 + shift) {
-                        result[shift] = new ThisVariable (debugger, thisR, "");
-                    }
-                    System.arraycopy (avs, 0, result, 1 + shift, avs.length);
-                    return result;
-                }            
-            } catch (NativeMethodException nmex) {
-                return new String[] { "NativeMethodException" };
-            } catch (InternalExceptionWrapper ex) {
-                return new String [] {ex.getMessage ()};
-            } catch (VMDisconnectedExceptionWrapper dex) {
-                return new String[] {  };
-            } catch (InvalidStackFrameException isfex) {
-                return new String [] {"No current thread"};
-            } catch (InvalidStackFrameExceptionWrapper isfex) {
-                return new String [] {"No current thread"};
+                stackFrame = callStackFrame.getStackFrame ();
+            } catch (InvalidStackFrameException e) {
             }
-        } // synchronized
+            if (stackFrame == null)
+                return new String [] {"No current thread"};
+            ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
+            List<Operation> operations = callStackFrame.getThread().getLastOperations();
+            ReturnVariableImpl returnVariable;
+            boolean haveLastOperations;
+            if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
+                haveLastOperations = true;
+                returnVariable = null;
+            } else {
+                returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
+                haveLastOperations = false;
+            }
+            //int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
+            int retValShift = (returnVariable != null) ? 1 : 0;
+            Operation currentOperation = callStackFrame.getThread().getCurrentOperation();
+            //int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
+            int currArgShift = (currentOperation != null) ? 1 : 0;
+            int shift = retValShift + currArgShift;
+            if (thisR == null) {
+                ReferenceType classType = LocationWrapper.declaringType(StackFrameWrapper.location(stackFrame));
+                Object[] avs = null;
+                avs = getLocalVariables (
+                    callStackFrame,
+                    stackFrame,
+                    Math.max (from - shift - 1, 0),
+                    Math.max (to - shift - 1, 0)
+                );
+                Object[] result = new Object [avs.length + shift + 1];
+                if (from < 1 && retValShift > 0) {
+                    result[0] = returnVariable;
+                }
+                if (from < 1 && currArgShift > 0) {
+                    //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
+                    result[retValShift] = currentOperation;
+                }
+                if (from < 1 + shift) {
+                    //result [0] = new ThisVariable (debugger, classType.classObject(), "");
+                    result[shift] = debugger.getClassType(classType);
+                }
+                System.arraycopy (avs, 0, result, 1 + shift, avs.length);
+                return result;
+            } else {
+                Object[] avs = null;
+                avs = getLocalVariables (
+                    callStackFrame,
+                    stackFrame,
+                    Math.max (from - shift - 1, 0),
+                    Math.max (to - shift - 1, 0)
+                );
+                Object[] result = new Object [avs.length + shift + 1];
+                if (from < 1 && retValShift > 0) {
+                    result[0] = returnVariable;
+                }
+                if (from < 1 && currArgShift > 0) {
+                    //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
+                    result[retValShift] = currentOperation;
+                }
+                if (from < 1 + shift) {
+                    result[shift] = new ThisVariable (debugger, thisR, "");
+                }
+                System.arraycopy (avs, 0, result, 1 + shift, avs.length);
+                return result;
+            }
+        } catch (NativeMethodException nmex) {
+            return new String[] { "NativeMethodException" };
+        } catch (InternalExceptionWrapper ex) {
+            return new String [] {ex.getMessage ()};
+        } catch (VMDisconnectedExceptionWrapper dex) {
+            return new String[] {  };
+        } catch (InvalidStackFrameException isfex) {
+            return new String [] {"No current thread"};
+        } catch (InvalidStackFrameExceptionWrapper isfex) {
+            return new String [] {"No current thread"};
+        } finally {
+            ((JPDAThreadImpl) callStackFrame.getThread()).accessLock.readLock().unlock();
+        }
     }
     
     private org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables (

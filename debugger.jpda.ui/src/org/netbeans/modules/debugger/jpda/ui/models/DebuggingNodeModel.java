@@ -355,7 +355,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         RPFD.post(new Runnable() {
             public void run() {
                 String frame = null;
-                synchronized (t) {
+                t.getReadAccessLock().lock();
+                try {
                     if (t.isSuspended () && (t.getStackDepth () > 0)) {
                         try {
                             CallStackFrame[] sf = t.getCallStack (0, 1);
@@ -365,6 +366,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         } catch (AbsentInformationException e) {
                         }
                     }
+                } finally {
+                    t.getReadAccessLock().unlock();
                 }
                 if (oldFrame == null && frame != null || oldFrame != null && !oldFrame.equals(frame)) {
                     synchronized (frameDescriptionsByThread) {

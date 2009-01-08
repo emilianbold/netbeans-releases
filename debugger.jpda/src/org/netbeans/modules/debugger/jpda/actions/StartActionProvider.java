@@ -277,7 +277,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                     debuggerImpl.finish();
                 }
             },
-            debuggerImpl.LOCK
+            debuggerImpl.accessLock
         );
     }
 

@@ -117,7 +117,7 @@ public class CheckDeadlocksAction extends AbstractAction
             for (ThreadReference threadRef : VirtualMachineWrapper.allThreads(vm)) {
                 try {
                     if (ThreadReferenceWrapper.suspendCount(threadRef) == 1) {
-                        JPDAThreadImpl jpdaThread = (JPDAThreadImpl)debugger.getThread(threadRef);
+                        JPDAThreadImpl jpdaThread = debugger.getThread(threadRef);
                         jpdaThread.notifySuspended();
                         threadsToNotify.add(jpdaThread);
                     }

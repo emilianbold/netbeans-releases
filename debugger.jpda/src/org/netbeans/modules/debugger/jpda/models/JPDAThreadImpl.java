@@ -72,6 +72,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -149,6 +153,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private JPDABreakpoint      stepSuspendedByBreakpoint;
     private VirtualMachine      vm;
 
+    public final ReadWriteLock  accessLock = new ThreadReentrantReadWriteLock();
+
     public JPDAThreadImpl (
         ThreadReference     threadReference,
         JPDADebuggerImpl    debugger
@@ -175,6 +181,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             suspended = false;
             suspendCount = 0;
         }
+    }
+
+    public Lock getReadAccessLock() {
+        return accessLock.readLock();
     }
 
     /**
@@ -301,7 +311,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return true if this thread is suspended by debugger
      */
-    public synchronized boolean isSuspended () {
+    public boolean isSuspended () {
         return suspended;
     }
     
@@ -435,10 +445,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
+        accessLock.readLock().lock();
         try {
             List l;
             CallStackFrame[] theCachedFrames = null;
-            synchronized (this) {
                 int max = ThreadReferenceWrapper.frameCount(threadReference);
                 from = Math.min(from, max);
                 to = Math.min(to, max);
@@ -484,7 +494,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
                     throw ioobex;
                 }
-            }
+            
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
@@ -526,6 +536,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             return new CallStackFrame [0];
         } catch (VMDisconnectedExceptionWrapper ex) {
             return new CallStackFrame [0];
+        } finally {
+            accessLock.readLock().unlock();
         }
     }
     
@@ -601,22 +613,23 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public void suspend () {
         Boolean suspendedToFire = null;
-        synchronized (this) {
-            try {
-                if (!isSuspended ()) {
-                    ThreadReferenceWrapper.suspend (threadReference);
-                    suspendedToFire = Boolean.TRUE;
-                    suspendCount++;
-                    threadName = ThreadReferenceWrapper.name(threadReference);
-                }
-                //System.err.println("suspend("+getName()+") suspended = true");
-                suspended = true;
-            } catch (IllegalThreadStateExceptionWrapper ex) {
-                // Thrown when thread has exited
-            } catch (InternalExceptionWrapper ex) {
-            } catch (ObjectCollectedExceptionWrapper ex) {
-            } catch (VMDisconnectedExceptionWrapper ex) {
+        accessLock.writeLock().lock();
+        try {
+            if (!isSuspended ()) {
+                ThreadReferenceWrapper.suspend (threadReference);
+                suspendedToFire = Boolean.TRUE;
+                suspendCount++;
+                threadName = ThreadReferenceWrapper.name(threadReference);
             }
+            //System.err.println("suspend("+getName()+") suspended = true");
+            suspended = true;
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } finally {
+            accessLock.writeLock().unlock();
         }
         if (suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,
@@ -634,7 +647,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (!can) return ;
         }
         Boolean suspendedToFire = null;
-        synchronized (this) {
+        accessLock.writeLock().lock();
+        try {
             waitUntilMethodInvokeDone();
             setReturnVariable(null); // Clear the return var on resume
             setCurrentOperation(null);
@@ -660,6 +674,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             } catch (VMDisconnectedExceptionWrapper ex) {
             } catch (InternalExceptionWrapper ex) {
             }
+        } finally {
+            accessLock.writeLock().unlock();
         }
         JPDABreakpoint brkp = null;
         synchronized (stepBreakpointLock) {
@@ -688,7 +704,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     private List<PropertyChangeEvent> notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
-        synchronized (this) {
+        accessLock.writeLock().lock();
+        try {
             if (resumed) {
                 waitUntilMethodInvokeDone();
             }
@@ -710,6 +727,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 suspendedToFire = Boolean.FALSE;
                 methodInvokingDisabledUntilResumed = false;
             }
+        } finally {
+            accessLock.writeLock().unlock();
         }
         cleanCachedFrames();
         PropertyChangeEvent stepBrkpEvt = null;
@@ -743,7 +762,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
     private void notifySuspended(boolean doFire) {
         Boolean suspendedToFire = null;
-        synchronized (this) {
+        accessLock.writeLock().lock();
+        try {
             try {
                 suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
             } catch (IllegalThreadStateExceptionWrapper ex) {
@@ -768,6 +788,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 } catch (IllegalThreadStateExceptionWrapper ex) {
                 }
             }
+        } finally {
+            accessLock.writeLock().unlock();
         }
         if (suspendedToFire != null && doFire) {
             pch.firePropertyChange(PROP_SUSPENDED,
@@ -785,7 +807,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void notifyMethodInvoking() throws PropertyVetoException {
         List<PropertyChangeEvent> evts;
-        synchronized (this) {
+        accessLock.writeLock().lock();
+        try {
             if (methodInvokingDisabledUntilResumed) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
@@ -807,6 +830,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 evts = notifyToBeRunning(false, false);
             }
             watcher = new SingleThreadWatcher(this);
+        } finally {
+            accessLock.writeLock().unlock();
         }
         for (PropertyChangeEvent evt : evts) {
             pch.firePropertyChange(evt);
@@ -816,7 +841,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public void notifyMethodInvokeDone() {
         SingleThreadWatcher watcherToDestroy = null;
         boolean wasUnsuspendedStateWhenInvoking;
-        synchronized (this) {
+        accessLock.writeLock().lock();
+        try {
             // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
             // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
             if (resumedToFinishMethodInvocation) {
@@ -833,9 +859,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             methodInvoking = false;
             wasUnsuspendedStateWhenInvoking = unsuspendedStateWhenInvoking;
             unsuspendedStateWhenInvoking = false;
-            this.notifyAll();
+            synchronized (this) {
+                this.notifyAll();
+            }
             watcherToDestroy = watcher;
             watcher = null;
+        } finally {
+            accessLock.writeLock().unlock();
         }
         if (watcherToDestroy != null) {
             watcherToDestroy.destroy();
@@ -846,55 +876,60 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
-    public synchronized boolean isMethodInvoking() {
+    public boolean isMethodInvoking() {
         return methodInvoking;
     }
     
     public void waitUntilMethodInvokeDone() {
-        synchronized (this) {
+        accessLock.readLock().lock();
+        try {
             while (methodInvoking) {
-                try {
-                    this.wait();
-                } catch (InterruptedException iex) {
-                    break;
+                synchronized (this) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException iex) {
+                        break;
+                    }
                 }
             }
+        } finally {
+            accessLock.readLock().unlock();
         }
     }
     
-    public synchronized void disableMethodInvokeUntilResumed() {
+    public void disableMethodInvokeUntilResumed() {
+        accessLock.writeLock().lock();
         methodInvokingDisabledUntilResumed = true;
+        accessLock.writeLock().unlock();
     }
 
     private boolean inStep = false;
 
     public void setInStep(boolean inStep, EventRequest stepRequest) {
         SingleThreadWatcher watcherToDestroy = null;
-        synchronized (this) {
-            this.inStep = inStep;
-            if (inStep) {
-                boolean suspendThread;
-                try {
-                    suspendThread = EventRequestWrapper.suspendPolicy(stepRequest) == StepRequest.SUSPEND_EVENT_THREAD;
-                } catch (InternalExceptionWrapper ex) {
-                    suspendThread = false;
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                    suspendThread = false;
-                }
-                if (suspendThread) {
-                    watcher = new SingleThreadWatcher(this);
-                }
-            } else if (watcher != null) {
-                watcherToDestroy = watcher;
-                watcher = null;
+        this.inStep = inStep;
+        if (inStep) {
+            boolean suspendThread;
+            try {
+                suspendThread = EventRequestWrapper.suspendPolicy(stepRequest) == StepRequest.SUSPEND_EVENT_THREAD;
+            } catch (InternalExceptionWrapper ex) {
+                suspendThread = false;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                suspendThread = false;
             }
+            if (suspendThread) {
+                watcher = new SingleThreadWatcher(this);
+            }
+        } else {
+            watcherToDestroy = watcher;
+            watcher = null;
         }
         if (watcherToDestroy != null) {
             watcherToDestroy.destroy();
         }
     }
 
-    public synchronized boolean isInStep() {
+    public boolean isInStep() {
         return inStep;
     }
 
@@ -935,7 +970,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
         try {
             ObjectReference or;
-            synchronized (this) {
+            accessLock.readLock().lock();
+            try {
                 if (!isSuspended()) return null;
                 try {
                     if ("DestroyJavaVM".equals(ThreadReferenceWrapper.name(threadReference))) {
@@ -953,6 +989,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), iex);
                     return null;
                 }
+            } finally {
+                accessLock.readLock().unlock();
             }
             if (or == null) return null;
             return new ThisVariable (debugger, or, "" + ObjectReferenceWrapper.uniqueID(or));
@@ -1008,7 +1046,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             return new ObjectVariable[0];
         }
         List<ObjectReference> l;
-        synchronized (this) {
+        accessLock.readLock().lock();
+        try {
             if (!isSuspended()) return new ObjectVariable [0];
             if ("DestroyJavaVM".equals(threadName)) {
                 // See defect #6474293
@@ -1031,6 +1070,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), iex);
                 return new ObjectVariable [0];
             }
+        } finally {
+            accessLock.readLock().unlock();
         }
         int i, k = l.size ();
         try {
@@ -1079,29 +1120,27 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
-        if (JPDAUtils.IS_JDK_16) {
+        if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
+            accessLock.readLock().lock();
             try {
-                synchronized(this) {
-                    if (!isSuspended()) {
-                        return Collections.emptyList();
+                if (!isSuspended() || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                    return Collections.emptyList();
+                }
+                List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
+                if (monitorInfos != null && monitorInfos.size() > 0) {
+                    List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                    for (Object monitorInfo : monitorInfos) {
+                        mis.add(createMonitorInfo(monitorInfo));
                     }
-                    boolean canGetMonitorFrameInfo = VirtualMachineWrapper.canGetMonitorFrameInfo0(vm);
-                    if (canGetMonitorFrameInfo) {
-                        List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
-                        if (monitorInfos != null && monitorInfos.size() > 0) {
-                            List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                            for (Object monitorInfo : monitorInfos) {
-                                mis.add(createMonitorInfo(monitorInfo));
-                            }
-                            return Collections.unmodifiableList(mis);
-                        }
-                    }
+                    return Collections.unmodifiableList(mis);
                 }
             } catch (IncompatibleThreadStateException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), ex);
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
+            } finally {
+                accessLock.readLock().unlock();
             }
         }
         return Collections.emptyList();
@@ -1301,7 +1340,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         try {
                             ThreadReferenceWrapper.suspend(tr); // Increases the suspend count to 2 so that it's not resumed by EventSet.resume()
                         } catch (Exception e) {}
-                        JPDAThreadImpl t = (JPDAThreadImpl) debugger.getExistingThread(tr);
+                        JPDAThreadImpl t = debugger.getExistingThread(tr);
                         if (t != null) {
                             t.notifySuspended();
                         }
@@ -1314,17 +1353,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     // We have to do it explicitely a suspend the thread right after the invocation, 'resumedToFinishMethodInvocation' flag is used for that.
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            synchronized (JPDAThreadImpl.this) {
+                            accessLock.writeLock().lock();
+                            try {
                                 resumedToFinishMethodInvocation = true;
-                                try {
                                     ThreadReferenceWrapper.resume(threadReference);
-                                } catch (VMDisconnectedExceptionWrapper e) {
-                                    // Ignored
-                                } catch (Exception e) {
-                                    Exceptions.printStackTrace(e);
-                                }
-                                //System.err.println("  Resuming "+getName()+" because of method invocation.");
+                            } catch (VMDisconnectedExceptionWrapper e) {
+                                // Ignored
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            } finally {
+                                accessLock.writeLock().unlock();
                             }
+                            //System.err.println("  Resuming "+getName()+" because of method invocation.");
                         }
                     }, 200);
                 }
@@ -1437,6 +1477,139 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         @Override
         public int size() {
             return threads.size();
+        }
+
+    }
+
+    private class ThreadReentrantReadWriteLock extends ReentrantReadWriteLock {
+
+        private final ReentrantReadWriteLock.ReadLock readerLock;
+        private final ReentrantReadWriteLock.WriteLock writerLock;
+
+        private ThreadReentrantReadWriteLock() {
+            super(false);  // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+            readerLock = new ThreadReadLock();
+            writerLock = new ThreadWriteLock();
+        }
+
+        @Override
+        public ReadLock readLock() {
+            return readerLock;
+        }
+
+        @Override
+        public WriteLock writeLock() {
+            return writerLock;
+        }
+
+        private class ThreadReadLock extends ReadLock {
+
+            private ThreadReadLock() {
+                super(ThreadReentrantReadWriteLock.this);
+            }
+
+            @Override
+            public void lock() {
+                debugger.accessLock.readLock().lock();
+                super.lock();
+            }
+
+            @Override
+            public void lockInterruptibly() throws InterruptedException {
+                debugger.accessLock.readLock().lockInterruptibly();
+                try {
+                    super.lockInterruptibly();
+                } catch (InterruptedException iex) {
+                    debugger.accessLock.readLock().unlock();
+                    throw iex;
+                }
+            }
+
+            @Override
+            public boolean tryLock() {
+                boolean locked = debugger.accessLock.readLock().tryLock();
+                if (locked) {
+                    locked = super.tryLock();
+                    if (!locked) {
+                        debugger.accessLock.readLock().unlock();
+                    }
+                }
+                return locked;
+            }
+
+            @Override
+            public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
+                boolean locked = debugger.accessLock.readLock().tryLock(timeout, unit);
+                if (locked) {
+                    locked = super.tryLock(timeout, unit);
+                    if (!locked) {
+                        debugger.accessLock.readLock().unlock();
+                    }
+                }
+                return locked;
+            }
+
+            @Override
+            public void unlock() {
+                super.unlock();
+                debugger.accessLock.readLock().unlock();
+            }
+
+        }
+
+        private class ThreadWriteLock extends WriteLock {
+
+            private ThreadWriteLock() {
+                super(ThreadReentrantReadWriteLock.this);
+            }
+            
+            @Override
+            public void lock() {
+                debugger.accessLock.readLock().lock();
+                super.lock();
+            }
+
+            @Override
+            public void lockInterruptibly() throws InterruptedException {
+                debugger.accessLock.readLock().lockInterruptibly();
+                try {
+                    super.lockInterruptibly();
+                } catch (InterruptedException iex) {
+                    debugger.accessLock.readLock().unlock();
+                    throw iex;
+                }
+            }
+
+            @Override
+            public boolean tryLock() {
+                boolean locked = debugger.accessLock.readLock().tryLock();
+                if (locked) {
+                    locked = super.tryLock();
+                    if (!locked) {
+                        debugger.accessLock.readLock().unlock();
+                    }
+                }
+                return locked;
+            }
+
+            @Override
+            public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
+                boolean locked = debugger.accessLock.readLock().tryLock(timeout, unit);
+                if (locked) {
+                    locked = super.tryLock(timeout, unit);
+                    if (!locked) {
+                        debugger.accessLock.readLock().unlock();
+                    }
+                }
+                return locked;
+            }
+
+            @Override
+            public void unlock() {
+                super.unlock();
+                debugger.accessLock.readLock().unlock();
+            }
+
         }
 
     }

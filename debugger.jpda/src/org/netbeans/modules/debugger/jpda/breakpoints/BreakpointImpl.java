@@ -324,7 +324,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                     (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
                      & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
                 if (value != null) {
-                    JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
+                    JPDAThreadImpl jt = getDebugger().getThread(threadReference);
                     ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
                     jt.setReturnVariable(retVariable);
                     variable = retVariable;
@@ -414,7 +414,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             }
         }
         if (!resume) {
-            ((JPDAThreadImpl) getDebugger().getThread(threadReference)).setCurrentBreakpoint(breakpoint);
+            getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
@@ -465,7 +465,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                     if (resumeDecision != null) {
                         return resumeDecision.booleanValue();
                     }
-                    JPDAThreadImpl tr = (JPDAThreadImpl) debugger.getThread(thread);
+                    JPDAThreadImpl tr = debugger.getThread(thread);
                     tr.setStepSuspendedBy(breakpoint);
 
                     /*final String message;
@@ -592,9 +592,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         try {
             try {
                 boolean success;
-                synchronized (debugger.LOCK) {
+                JPDAThreadImpl jtr = debugger.getThread(thread);
+                jtr.accessLock.writeLock().lock();
+                try {
                     StackFrame sf = ThreadReferenceWrapper.frame (thread, 0);
                     success = evaluateConditionIn (condition, sf, 0);
+                } finally {
+                    jtr.accessLock.writeLock().unlock();
                 }
                 // condition true => stop here (do not resume)
                 // condition false => resume
