@@ -124,15 +124,10 @@ class FileMapStorage implements Storage {
                 outdir += File.separator;
             }
             File dir = new File (outdir);
-            if (!dir.exists() || !dir.canWrite()) {
-                //Handle the (unlikely) case we cannot write to the system
-                //temporary directory
-                IllegalStateException ise = new IllegalStateException ("Cannot" + //NOI18N
-                " write to " + outdir); //NOI18N
-                Exceptions.attachLocalizedMessage(ise,
-                                                  NbBundle.getMessage(OutWriter.class,
-                                                                      "FMT_CannotWrite",
-                                                                      outdir));
+            if (!dir.exists()) {
+                //Handle the event that we cannot find the system temporary directory
+                IllegalStateException ise = new IllegalStateException ("Cannot find temp directory " + outdir); //NOI18N
+                Exceptions.attachLocalizedMessage(ise, NbBundle.getMessage(OutWriter.class, "FMT_CannotWrite", outdir));
                 throw ise;
             }
             //#47196 - if user holds down F9, many threads can enter this method
@@ -146,6 +141,12 @@ class FileMapStorage implements Storage {
                     outfile = new File(fname.toString());
                 }
                 outfile.createNewFile();
+                if (!outfile.exists() || !outfile.canWrite()) {
+                    //Handle the (unlikely) case we cannot write to the system temporary directory
+                    IllegalStateException ise = new IllegalStateException ("Cannot write to " + fname); //NOI18N
+                    Exceptions.attachLocalizedMessage(ise, NbBundle.getMessage(OutWriter.class, "FMT_CannotWrite", outdir));
+                    throw ise;
+                }
                 outfile.deleteOnExit();
             }
         }

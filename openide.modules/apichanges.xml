@@ -47,6 +47,23 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="PatchedPublic">
+        <api name="modules"/>
+        <summary>Added annotation <code>@PatchedPublic</code></summary>
+        <version major="7" minor="9"/>
+        <date day="6" month="1" year="2009"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added <code>@PatchedPublic</code> to request that the module system
+                treat binary references to a method as public even if in source is
+                is not public.
+            </p>
+        </description>
+        <class package="org.openide.modules" name="PatchedPublic"/>
+        <issue number="155796"/>
+    </change>
     <change id="OpenIDE-Module-Hide-Classpath-Packages">
         <api name="modules"/>
         <summary>Ability to hide JRE packages from the module classpath</summary>
