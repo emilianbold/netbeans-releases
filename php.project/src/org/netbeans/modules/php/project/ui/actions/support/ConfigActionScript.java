@@ -53,18 +53,18 @@ public class ConfigActionScript extends ConfigAction {
 
     @Override
     public boolean isRunProjectEnabled(PhpProject project) {
-        return true;
+        return isRunProjectEnabled();
     }
 
     @Override
     public boolean isDebugProjectEnabled(PhpProject project) {
-        return XDebugStarterFactory.getInstance() != null;
+        return isDebugProjectEnabled();
     }
 
     @Override
     public boolean isRunFileEnabled(PhpProject project, Lookup context) {
         FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject file = CommandUtils.getPhpFileForContextOrSelectedNodes(context, rootFolder);
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
         return file != null && CommandUtils.isPhpFile(file);
     }
 

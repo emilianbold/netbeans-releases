@@ -88,53 +88,7 @@ public class DebugProjectCommand extends Command implements Displayable {
             getConfigAction().debugProject(getProject());
         } else {
             eventuallyUploadFiles();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                        try {
-                            showURLForDebugProjectFile();
-                        } catch (MalformedURLException ex) {
-                        //TODO improve error handling
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-            };
-
-            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-            if (jsDebuggingAvailable) {
-                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-                if (!keepDebugging) {
-                    return;
-                }
-            }
-
-            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
-                //temporary; after narrowing deps. will be changed
-                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-                if (dbgStarter != null) {
-                    if (dbgStarter.isAlreadyRunning()) {
-                        if (CommandUtils.warnNoMoreDebugSession()) {
-                            dbgStarter.stop();
-                            invokeAction(context);
-                        }
-                    } else {
-                        final FileObject fileForProject = fileForProject(true);
-                        if (fileForProject != null) {
-                            startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
-                        } else {
-                            String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
-                            String err = NbBundle.getMessage(DebugProjectCommand.class,
-                                    "ERR_Missing_IndexFile", idxFileName);//NOI18N
-
-                            final Message messageDecriptor = new NotifyDescriptor.Message(err,
-                                    NotifyDescriptor.WARNING_MESSAGE);
-                            DialogDisplayer.getDefault().notify(messageDecriptor);
-                            getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
-                        }
-                    }
-                }
-            } else {
-                runnable.run();
-            }
+            getConfigAction().debugProject(getProject());
         }
     }
 

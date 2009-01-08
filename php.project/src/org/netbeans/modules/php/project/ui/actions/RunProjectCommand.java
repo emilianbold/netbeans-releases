@@ -42,10 +42,8 @@ package org.netbeans.modules.php.project.ui.actions;
 
 
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -75,12 +73,8 @@ public class RunProjectCommand extends Command implements Displayable {
             getConfigAction().runProject(getProject());
         } else {
             eventuallyUploadFiles();
-            try {
-                showURLForProjectFile();
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
+            // XXX
+            getConfigAction().runProject(getProject());
         }
     }
 

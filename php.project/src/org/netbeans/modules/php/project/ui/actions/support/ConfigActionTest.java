@@ -67,7 +67,7 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isRunProjectEnabled(PhpProject project) {
-        return true;
+        return isRunProjectEnabled();
     }
 
     @Override

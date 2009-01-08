@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +57,10 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -250,15 +257,10 @@ public class CommandUtils {
         return context.lookupAll(FileObject.class);
     }
 
-    public static FileObject[] getPhpFilesForContext(Lookup context, FileObject rootDirectory) {
-        return filter(filesForContext(context), rootDirectory);
+    public static FileObject[] filesForContext(Lookup context, FileObject baseDirectory) {
+        return filter(filesForContext(context), baseDirectory);
     }
 
-    public static FileObject[] getPhpFilesForSelectedNodes(FileObject rootDirectory) {
-        return filter(Arrays.asList(filesForSelectedNodes()), rootDirectory);
-    }
-
-    // XXX change to list and rename to get...
     public static FileObject[] filesForSelectedNodes() {
         Node[] nodes = getSelectedNodes();
         if (nodes == null) {
@@ -268,19 +270,127 @@ public class CommandUtils {
         return fileObjects.toArray(new FileObject[fileObjects.size()]);
     }
 
-    public static FileObject getPhpFileForContextOrSelectedNodes(Lookup context, FileObject rootFolder) {
+    public static FileObject[] filesForSelectedNodes(FileObject baseDirectory) {
+        return filter(Arrays.asList(filesForSelectedNodes()), baseDirectory);
+    }
+
+    public static FileObject fileForContextOrSelectedNodes(Lookup context, FileObject rootFolder) {
         assert rootFolder != null;
         assert rootFolder.isFolder() : "Folder must be given: " + rootFolder;
 
-        FileObject[] files = getPhpFilesForContext(context, rootFolder);
+        FileObject[] files = filesForContext(context, rootFolder);
         if (files == null || files.length == 0) {
-            files = getPhpFilesForSelectedNodes(rootFolder);
+            files = filesForSelectedNodes(rootFolder);
         }
         return (files != null && files.length > 0) ? files[0] : null;
+    }
+
+    public static URL urlForProject(PhpProject project) throws MalformedURLException {
+        FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
+        FileObject indexFile = fileForProject(project, webRoot);
+        return urlForFile(project, webRoot, indexFile);
+    }
+
+    public static URL urlForDebugProject(PhpProject project) throws MalformedURLException {
+        DebugInfo debugInfo = getDebugInfo(project);
+        URL debugUrl = urlForProject(project);
+        if (debugInfo.debugServer) {
+            debugUrl = appendQuery(debugUrl, getDebugArguments(project));
+        }
+        return debugUrl;
+    }
+
+    public static URL urlForContext(PhpProject project, Lookup context) throws MalformedURLException {
+        FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
+        FileObject selectedFile = fileForContextOrSelectedNodes(context, webRoot);
+        return urlForFile(project, webRoot, selectedFile);
+    }
+
+    public static URL urlForDebugContext(PhpProject project, Lookup context) throws MalformedURLException {
+        DebugInfo debugInfo = getDebugInfo(project);
+        URL debugUrl = urlForContext(project, context);
+        if (debugInfo.debugServer) {
+            debugUrl = appendQuery(debugUrl, getDebugArguments(project));
+        }
+        return debugUrl;
+    }
+
+    /**
+     * @return FileObject or <code>null</code>.
+     */
+    public static FileObject fileForProject(PhpProject project, FileObject baseDirectory) {
+        assert baseDirectory != null;
+        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (indexFile != null) {
+            return baseDirectory.getFileObject(indexFile);
+        }
+        return baseDirectory;
+    }
+
+    public static DebugInfo getDebugInfo(PhpProject project) {
+        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            debugServer = true;
+            debugClient = false;
+        }
+        assert debugServer || debugClient;
+        return new DebugInfo(debugClient, debugServer);
+    }
+
+    public static URL getBaseURL(PhpProject project) throws MalformedURLException {
+        String baseURLPath = ProjectPropertiesSupport.getUrl(project);
+        if (baseURLPath == null) {
+            throw new MalformedURLException();
+        }
+        return new URL(baseURLPath);
     }
 
     private static Node[] getSelectedNodes() {
         return TopComponent.getRegistry().getCurrentNodes();
     }
 
+    private static URL urlForFile(PhpProject project, FileObject webRoot, FileObject file) throws MalformedURLException {
+        String relativePath = FileUtil.getRelativePath(webRoot, file);
+        assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
+        URL retval = new URL(getBaseURL(project), relativePath);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
+        return (arguments != null) ? appendQuery(retval, arguments) : retval;
+    }
+    private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
+        URI retval;
+        try {
+            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
+                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(),
+                    queryWithoutQMark, originalURL.getRef());
+        } catch (URISyntaxException ex) {
+            MalformedURLException mex = new MalformedURLException(ex.getLocalizedMessage());
+            mex.initCause(ex);
+            throw mex;
+        }
+        return retval.toURL();
+    }
+
+    private static String getDebugArguments(PhpProject project) {
+        String args = ProjectPropertiesSupport.getArguments(project);
+        StringBuilder arguments = new StringBuilder();
+        if (PhpProjectUtils.hasText(args)) {
+            arguments.append(args);
+            arguments.append("&"); // NOI18N
+        }
+        arguments.append("XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
+        return arguments.toString();
+    }
+
+
+    public final static class DebugInfo {
+        final boolean debugClient;
+        final boolean debugServer;
+
+        public DebugInfo(boolean debugClient, boolean debugServer) {
+            this.debugClient = debugClient;
+            this.debugServer = debugServer;
+        }
+    }
 }

@@ -56,6 +56,8 @@ public abstract class ConfigAction {
         SCRIPT,
         TEST,
     }
+    private static final ConfigAction CONFIG_ACTION_LOCAL = new ConfigActionLocal();
+    private static final ConfigAction CONFIG_ACTION_REMOTE = new ConfigActionRemote();
     private static final ConfigAction CONFIG_ACTION_SCRIPT = new ConfigActionScript();
     private static final ConfigAction CONFIG_ACTION_TEST = new ConfigActionTest();
 
@@ -82,6 +84,12 @@ public abstract class ConfigAction {
         assert type != null;
         ConfigAction action = null;
         switch (type) {
+            case LOCAL:
+                action = CONFIG_ACTION_LOCAL;
+                break;
+            case REMOTE:
+                action = CONFIG_ACTION_REMOTE;
+                break;
             case SCRIPT:
                 action = CONFIG_ACTION_SCRIPT;
                 break;
@@ -107,4 +115,18 @@ public abstract class ConfigAction {
 
     public abstract void runFile(PhpProject project, Lookup context);
     public abstract void debugFile(PhpProject project, Lookup context);
+
+    /**
+     * The default implementation.
+     */
+    protected boolean isRunProjectEnabled() {
+        return true;
+    }
+
+    /**
+     * The default implementation.
+     */
+    protected boolean isDebugProjectEnabled() {
+        return XDebugStarterFactory.getInstance() != null;
+    }
 }

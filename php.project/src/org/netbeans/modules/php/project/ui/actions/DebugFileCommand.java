@@ -76,61 +76,61 @@ public class DebugFileCommand extends DebugProjectCommand {
             // XXX
             getConfigAction().debugFile(getProject(), context);
         } else {
+            // XXX
+            //eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+            getConfigAction().debugFile(getProject(), context);
+
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-            final FileObject startFile = fileForContext(context);
-            final URL[] url = new URL[1];
-            try {
-                url[0] = getURLForDebug(context, true);
-            } catch (MalformedURLException ex) {
-                //TODO improve error handling
-                Exceptions.printStackTrace(ex);
-            }
-
-            eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    try {
-                        showURLForDebug(url[0]);
-                    } catch (MalformedURLException ex) {
-                        //TODO improve error handling
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            };
-
-            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-            if (jsDebuggingAvailable) {
-                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-                if (!keepDebugging) {
-                    return;
-                }
-            }
-
-            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
-                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-                if (dbgStarter != null) {
-                    if (dbgStarter.isAlreadyRunning()) {
-                        if (CommandUtils.warnNoMoreDebugSession()) {
-                            dbgStarter.stop();
-                            invokeAction(context);
-                        }
-                    } else {
-                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
-                    }
-                }
-            } else {
-                runnable.run();
-            }
+//            final FileObject startFile = fileForContext(context);
+//            final URL[] url = new URL[1];
+//            try {
+//                url[0] = getURLForDebug(context, true);
+//            } catch (MalformedURLException ex) {
+//                //TODO improve error handling
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+//            Runnable runnable = new Runnable() {
+//                public void run() {
+//                    try {
+//                        showURLForDebug(url[0]);
+//                    } catch (MalformedURLException ex) {
+//                        //TODO improve error handling
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//            };
+//
+//            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+//            if (jsDebuggingAvailable) {
+//                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
+//                if (!keepDebugging) {
+//                    return;
+//                }
+//            }
+//
+//            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
+//                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+//                if (dbgStarter != null) {
+//                    if (dbgStarter.isAlreadyRunning()) {
+//                        if (CommandUtils.warnNoMoreDebugSession()) {
+//                            dbgStarter.stop();
+//                            invokeAction(context);
+//                        }
+//                    } else {
+//                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
+//                    }
+//                }
+//            } else {
+//                runnable.run();
+//            }
         }
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        if (isScriptSelected()) {
-            return getConfigAction().isDebugFileEnabled(getProject(), context);
-        }
-        FileObject file = fileForContext(context);
-        return file != null && XDebugStarterFactory.getInstance() != null;
+        return getConfigAction().isDebugFileEnabled(getProject(), context);
     }
 
     @Override

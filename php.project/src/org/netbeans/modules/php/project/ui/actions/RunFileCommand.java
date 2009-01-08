@@ -72,27 +72,24 @@ public class RunFileCommand extends Command implements Displayable {
             // XXX
             getConfigAction().runFile(getProject(), context);
         } else {
-            try {
-                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-                final URL url = urlForContext(context, true);
-
-                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-                showURL(url);
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
+            // XXX
+            getConfigAction().runFile(getProject(), context);
+//            try {
+//                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
+//                final URL url = urlForContext(context, true);
+//
+//                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+//                showURL(url);
+//            } catch (MalformedURLException ex) {
+//                //TODO: improve error handling
+//                Exceptions.printStackTrace(ex);
+//            }
         }
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        if (isScriptSelected()) {
-            // XXX
-            return getConfigAction().isRunFileEnabled(getProject(), context);
-        }
-        FileObject file = fileForContext(context);
-        return file != null;
+        return getConfigAction().isRunFileEnabled(getProject(), context);
     }
 
     @Override
