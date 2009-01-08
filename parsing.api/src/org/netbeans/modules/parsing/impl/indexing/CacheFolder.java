@@ -70,11 +70,11 @@ public class CacheFolder {
 
     private static void loadSegments () throws IOException {
         if (segments == null) {
-            final FileObject cacheFolder = getCacheFolder();
-            assert cacheFolder != null;
+            final FileObject folder = getCacheFolder();
+            assert folder != null;
             segments = new Properties ();
             invertedSegments = new HashMap<String,String> ();
-            final FileObject segmentsFile =  cacheFolder.getFileObject(SEGMENTS_FILE);
+            final FileObject segmentsFile =  folder.getFileObject(SEGMENTS_FILE);
             if (segmentsFile!=null) {
                 final InputStream in = segmentsFile.getInputStream();
                 try {
@@ -98,9 +98,9 @@ public class CacheFolder {
 
 
     private static void storeSegments () throws IOException {
-        final FileObject cacheFolder = getCacheFolder();
-        assert cacheFolder != null;
-        final FileObject segmentsFile = FileUtil.createData(cacheFolder, SEGMENTS_FILE);
+        final FileObject folder = getCacheFolder();
+        assert folder != null;
+        final FileObject segmentsFile = FileUtil.createData(folder, SEGMENTS_FILE);
         final OutputStream out = segmentsFile.getOutputStream();
         try {
             segments.store(out,null);
@@ -128,12 +128,12 @@ public class CacheFolder {
             invertedSegments.put(rootName, slice);
             storeSegments ();
         }
-        final FileObject cacheFolder = getCacheFolder();
+        final FileObject folder = getCacheFolder();
         if (onlyIfAlreadyExists) {
-            return cacheFolder.getFileObject(slice);
+            return folder.getFileObject(slice);
         }
         else {
-            return FileUtil.createFolder(cacheFolder, slice);
+            return FileUtil.createFolder(folder, slice);
         }
     }
 
@@ -163,11 +163,15 @@ public class CacheFolder {
 
 
     /**
-     * Only for unit tests!
+     * Only for unit tests! It's used also by CslTestBase, which is not in the
+     * same package, hence the public keyword.
      *
      */
-    static synchronized void setCacheFolder (final FileObject folder) {
+    public static synchronized void setCacheFolder (final FileObject folder) {
         assert folder != null && folder.canRead() && folder.canWrite();
         cacheFolder = folder;
+        segments = null;
+        invertedSegments = null;
+        index = 0;
     }
 }

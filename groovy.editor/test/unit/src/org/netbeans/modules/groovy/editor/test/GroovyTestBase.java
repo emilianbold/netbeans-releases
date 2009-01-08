@@ -91,7 +91,6 @@ public class GroovyTestBase extends CslTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
         GroovyIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");

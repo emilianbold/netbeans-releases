@@ -193,6 +193,11 @@ public abstract class CslTestBase extends NbTestCase {
         super.setUp();
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        assert wd != null;
+        FileObject cache = FileUtil.createFolder(wd, "var/cache");
+        assert cache != null;
+        CacheFolder.setCacheFolder(cache);
     }
 
     protected void initializeRegistry() {
