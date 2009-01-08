@@ -15,6 +15,7 @@
         <folder name="Window">
             <folder name="Other">
                 <file name="ReporterResultAction.shadow">
+                    <attr name="position" intvalue="1300"/>
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-exceptions-ReporterResultAction.instance"/>
                 </file>
             </folder>
