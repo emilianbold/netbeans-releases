@@ -70,6 +70,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -179,7 +180,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             // FIXME parsing API - source & binary IDs
             GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(),
-                    null, null));
+                    Collections.singleton(ClassPath.SOURCE), null));
 
             if (root == null) {
                 // No parse tree - try to just use the syntax info to do a simple index lookup
