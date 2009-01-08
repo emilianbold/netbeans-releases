@@ -110,8 +110,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         private List<String> output;
-        // package private for tests
-        static final Pattern STRING_COMPARISON = Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*");
+        private static final Pattern STRING_COMPARISON = Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*");//NOI18N
 
 
         public TestFailedHandler(String regex) {
@@ -122,12 +121,21 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
-        private Trouble.ComparisonFailure getComparisonFailure(String msg) {
+        // package private for tests
+        static Trouble.ComparisonFailure getComparisonFailure(String msg) {
+            if (msg == null) {
+                return null;
+            }
             Matcher comparisonMatcher = STRING_COMPARISON.matcher(msg);
             if (!comparisonMatcher.matches()) {
                 return null;
             }
-            return new Trouble.ComparisonFailure(comparisonMatcher.group(1), comparisonMatcher.group(2));
+            return new Trouble.ComparisonFailure(toMultipleLines(comparisonMatcher.group(1)),
+                    toMultipleLines(comparisonMatcher.group(2)));
+        }
+
+        private static String toMultipleLines(String toConvert) {
+            return toConvert.replace("\\n", "\n"); //NOI18N
         }
 
         @Override
