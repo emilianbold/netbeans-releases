@@ -46,13 +46,15 @@ public class PythonThreadInfos {
   /** Thread Name */
   private String _name;
   private boolean _isCurrent = false;
+  private boolean _isSuspended = false ;
 
   /**
    * Creates a new instance of PythonThreadInfos
    */
-  public PythonThreadInfos(String name, boolean isCurrent) {
+  public PythonThreadInfos(String name, boolean isCurrent , boolean isSuspended ) {
     _name = name;
     _isCurrent = isCurrent;
+    _isSuspended = isSuspended ; 
   }
 
   public String get_name() {
@@ -62,4 +64,9 @@ public class PythonThreadInfos {
   public boolean isCurrent() {
     return _isCurrent;
   }
+
+  public boolean isSuspended() {
+    return _isSuspended ; 
+  }
+
 }
