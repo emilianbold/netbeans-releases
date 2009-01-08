@@ -148,8 +148,8 @@ public class BrowseTestSources extends JPanel {
             dialogDescriptor.setValid(false);
             return;
         } else if (!Utils.isFolderWritable(testSourcesFile)) {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotWritable"));
-            dialogDescriptor.setValid(true);
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotWritable"));
+            dialogDescriptor.setValid(false);
             return;
         } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
             notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotUnderneathProjectFolder"));
