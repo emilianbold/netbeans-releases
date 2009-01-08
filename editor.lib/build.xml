@@ -42,24 +42,4 @@ made subject to such option by the copyright holder.
 -->
 <project name="editor.lib" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <!-- Binary compatibility pacthes -->
-    <target name="compile" depends="projectized-common.compile">
-       <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-
-       <enhanceclass basedir="${build.classes.dir}" >
-           <classpath>
-               <pathelement location="${o.n.bootstrap.dir}/lib/boot.jar"/>
-<!-- I have absolutely no idea why this is not working!
-               <pathelement location="${openide/util.dir}/modules/org-openide-util.jar"/>
--->
-               <pathelement location="${nb_all}/nbbuild/build/public-package-jars/org-openide-util.jar"/>
-           </classpath>
-
-           <patch class="org/netbeans/editor/JumpList" >
-               <member name="&lt;init&gt;" />
-           </patch>
-       </enhanceclass>
-   </target>
-
 </project>

@@ -189,7 +189,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         APT node = apt.getFirstChild();
         while (node != null) {
-            if (node.getType() == APT.Type.CONDITION_CONTAINER) {
+            if (node.getType() == APT.Type.CONDITION_CONTAINER || node.getType() == APT.Type.ERROR) {
                 return true;
             }
             assert node.getFirstChild() == null;

@@ -20,6 +20,8 @@
         </token>
     </scanner>
     <Program start='0' end='165'>
+        <Comments>
+        </Comments>
         <Statements>
             <InLineHtml start='0' end='137'/>
             <ExpressionStatement start='155' end='165'>

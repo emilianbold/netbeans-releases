@@ -100,9 +100,9 @@ public class UnresolvedDetector extends PythonAstRule {
                 List<HintFix> fixList = new ArrayList<HintFix>(3);
                 // Is is a reference to a module?
                 boolean tryModule = false;
-                if (node.parent instanceof Call) {
-                    Call call = (Call)node.parent;
-                    PythonTree t = call.func;
+                if (node.getParent() instanceof Call) {
+                    Call call = (Call)node.getParent();
+                    PythonTree t = call.getInternalFunc();
                     if (t instanceof Attribute) {
                         tryModule = true;
                     }
@@ -115,6 +115,8 @@ public class UnresolvedDetector extends PythonAstRule {
                     message = NbBundle.getMessage(NameRule.class, "UnresolvedVariableMaybe", name, "False"); // NOI18N
                 } else if (name.equals("nil") || name.equals("null")) {
                     message = NbBundle.getMessage(NameRule.class, "UnresolvedVariableMaybe", name, "None"); // NOI18N
+                } else if (name.equals("this")) {
+                    message = NbBundle.getMessage(NameRule.class, "UnresolvedVariableMaybe", name, "self"); // NOI18N
                 } else if (tryModule) {
                     Set<IndexedElement> moduleElements = index.getModules(name, NameKind.EXACT_NAME);
                     if (moduleElements.size() > 0) {

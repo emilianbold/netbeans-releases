@@ -45,7 +45,7 @@ import org.netbeans.api.diff.StreamSource;
 import java.io.IOException;
 
 /**
- * Provider for DiffControllerImpl implemetations. Providers should be registered in default lookup, in META-INF/services folder. 
+ * Provider for DiffControllerImpl implemetations. Providers should be registered in default lookup using {@link org.openide.util.lookup.ServiceProvider}. 
  * 
  * @author Maros Sandor
  */

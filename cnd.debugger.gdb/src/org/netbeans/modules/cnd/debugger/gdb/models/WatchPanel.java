@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.awt.AWTKeyStroke;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -47,6 +48,39 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FontMetrics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
+import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -55,12 +89,131 @@ import java.awt.BorderLayout;
  */
 public class WatchPanel {
 
+    private static RequestProcessor contextRetrievalRP;
     private JPanel panel;
-    private JTextField textField;
+    private JEditorPane editorPane;
     private String expression;
 
     public WatchPanel(String expression) {
         this.expression = expression;
+    }
+
+    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
+        EditorKit kit = CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE);
+        editorPane.setEditorKit(kit);
+        if (EventQueue.isDispatchThread()) {
+            synchronized (WatchPanel.class) {
+                if (contextRetrievalRP == null) {
+                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1); // NOI18N
+                }
+                contextRetrievalRP.post(new Runnable() {
+
+                    public void run() {
+                        final Context c = retrieveContext();
+                        if (c != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    setupContext(editorPane, c.fileObject, c.line);
+                                    if (contextSetUp != null) {
+                                        contextSetUp.actionPerformed(null);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            setupUI(editorPane);
+        } else {
+            Context c = retrieveContext();
+            if (c != null) {
+                setupContext(editorPane, c.fileObject, c.line);
+            } else {
+                setupUI(editorPane);
+            }
+            if (contextSetUp != null) {
+                contextSetUp.actionPerformed(null);
+            }
+        }
+    }
+
+    private static Context retrieveContext() {
+        // TODO: check how to get context from call stack
+        DebuggerEngine en = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        CallStackFrame csf = null;
+        if (en != null) {
+            GdbDebugger d = en.lookupFirst(null, GdbDebugger.class);
+            if (d != null) {
+                csf = d.getCurrentCallStackFrame();
+            }
+        }
+        if (csf != null) {
+            String language = DebuggerManager.getDebuggerManager().getCurrentSession().getCurrentLanguage();
+            String fullname = csf.getFullname();
+
+            if (fullname != null && fullname.trim().length() > 0) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fullname)));
+                return new Context(fo, csf.getLineNumber());
+            }
+        } else {
+            EditorContext context = EditorContextBridge.getContext();
+            FileObject fo = context == null ? null : context.getCurrentFileObject();
+            if (fo != null) {
+                return new Context(fo, context.getCurrentLineNumber());
+            }
+        }
+        return null;
+    }
+
+    public static void setupContext(JEditorPane editorPane, FileObject contextFO, int line) {
+        setupUI(editorPane);
+        StyledDocument doc;
+        if (contextFO == null) {
+            return;
+        }
+        try {
+            DataObject dobj = DataObject.find(contextFO);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+            try {
+                doc = ec.openDocument();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return;
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // null dobj
+            return;
+        }
+        try {
+            int offset = NbDocument.findLineOffset(doc, line);
+            DialogBinding.bindComponentToFile(contextFO, offset, 0, editorPane);
+        } catch (IndexOutOfBoundsException ioobex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
+        }
+    }
+
+    private static void setupUI(final JEditorPane editorPane) {
+//        Runnable runnable = new Runnable() {
+//            public void run() {
+//                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+//                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+//                // Do not draw text limit line
+//                try {
+//                    java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
+//                    textLimitLineField.setAccessible(true);
+//                    textLimitLineField.set(eui, false);
+//                } catch (Exception ex) {}
+//            }
+//        };
+//        if (SwingUtilities.isEventDispatchThread()) {
+//            runnable.run();
+//        } else {
+//            SwingUtilities.invokeLater(runnable);
+//        }
     }
 
     public JComponent getPanel() {
@@ -72,29 +225,95 @@ public class WatchPanel {
         ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
 
         panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WatchPanel")); // NOI18N
-        JLabel textLabel = new JLabel(bundle.getString("CTL_Watch_Name")); // NOI18N
-        textLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
+        JLabel textLabel = new JLabel();
+        Mnemonics.setLocalizedText(textLabel, bundle.getString("CTL_Watch_Name")); // NOI18N
+        editorPane = new JEditorPane();//expression); // NOI18N
+        editorPane.setText(expression);
+
+        ActionListener editorPaneUpdated = new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                editorPane.setText(expression);
+                editorPane.selectAll();
+            }
+        };
+        setupContext(editorPane, editorPaneUpdated);
+
+        JScrollPane sp = createScrollableLineEditor(editorPane);
+        FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
+        int size = 2 * fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
+        Insets eInsets = editorPane.getInsets();
+        Insets spInsets = sp.getInsets();
+        sp.setPreferredSize(new Dimension(30 * size,
+                size + 2 +
+                eInsets.bottom + eInsets.top +
+                spInsets.bottom + spInsets.top));
+
+        textLabel.setBorder(new EmptyBorder(0, 0, 5, 0));
         panel.setLayout(new BorderLayout());
         panel.setBorder(new EmptyBorder(11, 12, 1, 11));
-        panel.add("West", textLabel); // NOI18N
-        panel.add("Center", textField = new JTextField(25)); // NOI18N
-        textField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Watch_Name")); // NOI18N
-        textField.setBorder(new CompoundBorder(textField.getBorder(), new EmptyBorder(2, 0, 2, 0)));
-        textLabel.setDisplayedMnemonic(bundle.getString("CTL_Watch_Name_Mnemonic").charAt(0)); // NOI18N
-        String t = Utils.getIdentifier();
-        if (t != null) {
-            textField.setText(t);
-        } else {
-            textField.setText(expression);
-        }
-        textField.selectAll();
+        panel.add(BorderLayout.NORTH, textLabel);
+        panel.add(BorderLayout.CENTER, sp);
 
-        textLabel.setLabelFor(textField);
-        textField.requestFocus();
+        editorPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Watch_Name")); // NOI18N
+        editorPane.setText(expression);
+        editorPane.selectAll();
+
+        textLabel.setLabelFor(editorPane);
+        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch"); // NOI18N
+        editorPane.requestFocus();
+
         return panel;
     }
 
     public String getExpression() {
-        return textField.getText().trim();
+        return editorPane.getText().trim();
+    }
+
+    public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
+        editorPane.setKeymap(new FilteredKeymap(editorPane));
+        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        editorPane.setBorder(
+                new CompoundBorder(editorPane.getBorder(),
+                new EmptyBorder(0, 0, 0, 0)));
+
+        JTextField referenceTextField = new JTextField("M"); // NOI18N
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(referenceTextField.getBackground());
+        sp.setBorder(referenceTextField.getBorder());
+        sp.setBackground(referenceTextField.getBackground());
+
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(editorPane, gridBagConstraints);
+        sp.setViewportView(panel);
+
+        int preferredHeight = referenceTextField.getPreferredSize().height;
+        if (sp.getPreferredSize().height < preferredHeight) {
+            sp.setPreferredSize(referenceTextField.getPreferredSize());
+        }
+        sp.setMinimumSize(sp.getPreferredSize());
+
+        setupUI(editorPane);
+
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+        return sp;
+    }
+
+    private static final class Context {
+
+        public final FileObject fileObject;
+        public final int line;
+        private Context(FileObject fo, int contextLine) {
+            this.fileObject = fo;
+            this.line = contextLine <= 0 ? 0 : contextLine;
+        }
     }
 }

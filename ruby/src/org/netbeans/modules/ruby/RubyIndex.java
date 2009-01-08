@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,12 +57,14 @@ import java.util.regex.Pattern;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.modules.gsf.api.Index.*;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
@@ -108,6 +110,10 @@ public final class RubyIndex {
     private RubyIndex(Index index, FileObject context) {
         this.index = index;
         this.context = context;
+    }
+
+    public static RubyIndex get(final CompilationInfo info) {
+        return RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE));
     }
 
     public static RubyIndex get(Index index) {
@@ -399,6 +405,18 @@ public final class RubyIndex {
         return classes;
     }
     
+    Set<? extends IndexedMethod> getMethods(final String name, final RubyType clz, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : clz.getRealTypes()) {
+            methods.addAll(getMethods(name, realType, kind, ALL_SCOPE));
+        }
+        return methods;
+    }
+
+    Set<IndexedMethod> getMethods(String name, NameKind kind) {
+        return getMethods(name, (String) null, kind);
+    }
+
     /**
      * Return a set of methods that match the given name prefix, and are in the given
      * class and module. If no class is specified, match methods across all classes.
@@ -406,7 +424,6 @@ public final class RubyIndex {
      * you must call this method on each superclass as well as the mixin modules.
      */
     @SuppressWarnings("unchecked") // unchecked - lucene has source 1.4
-
     Set<IndexedMethod> getMethods(final String name, final String clz, NameKind kind) {
         return getMethods(name, clz, kind, ALL_SCOPE);
     }
@@ -576,8 +593,8 @@ public final class RubyIndex {
             signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedMethod m =
-            IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
+        IndexedMethod m = IndexedMethod.create(this, signature, fqn, clz,
+                fileUrl, require, attributes, flags, context);
 
         m.setInherited(inherited);
         return m;
@@ -630,10 +647,11 @@ public final class RubyIndex {
         String name = typeIndex == -1 ? signature : signature.substring(0, typeIndex);
         int flags = 0;
 
+        // TODO parse possibly multiple types
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
-        IndexedConstant m =IndexedConstant.create(
-                this, name, classFQN, fileUrl, require, flags, context, type);
+        IndexedConstant m = IndexedConstant.create(
+                this, name, classFQN, fileUrl, require, flags, context, RubyType.create(type));
 
         return m;
     }
@@ -875,6 +893,14 @@ public final class RubyIndex {
         }
         
         return null;
+    }
+
+    Set<IndexedMethod> getInheritedMethods(RubyType receiverType, String prefix, NameKind kind) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        for (String realType : receiverType.getRealTypes()) {
+            methods.addAll(getInheritedMethods(realType, prefix, kind));
+        }
+        return methods;
     }
 
     /**
@@ -1396,6 +1422,14 @@ public final class RubyIndex {
         return getConstants(parts[0], parts[1]);
     }
 
+    public Set<? extends IndexedConstant> getConstants(RubyType classFqn, String prefix) {
+        Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
+        for (String realType : classFqn.getRealTypes()) {
+            constants.addAll(getConstants(realType, prefix));
+        }
+        return constants;
+    }
+
     public Set<? extends IndexedConstant> getConstants(String classFqn, String prefix) {
         boolean haveRedirected = false;
 
@@ -1838,7 +1872,7 @@ public final class RubyIndex {
         return getPreindexUrl(url, null);
     }
     static String getPreindexUrl(String url, FileObject context) {
-        if (RubyIndexer.PREINDEXING) {
+        if (RubyIndexer.isPreindexing()) {
             Iterator<RubyPlatform> it = null;
             if (context != null && context.isValid()) {
                 Project project = FileOwnerQuery.getOwner(context);

@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.openide.util.Lookup;
 
 
 /** Handles adding, removing, reordering of source roots.
@@ -220,7 +221,8 @@ public class JavaSourceRootsUI
 
     public static Sources retrieveJavaProjectSources(Project javaProject)
     {
-        return (Sources)javaProject.getLookup().lookup(Sources.class);
+        Lookup lookup=javaProject.getLookup();
+        return (Sources)lookup.lookup(Sources.class);
     }
     
     

@@ -219,4 +219,13 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return true if JDBC driver class can be loaded, else false.
      */
     boolean canLoadDBDriver(HibernateConfiguration config);
+
+    /**
+     * Checks for direct database connection establishment using the database access
+     * details from the given HibernateConfiguration metadata.
+     *
+     * @param config HibernateConfiguration (schema2beans) object.
+     * @return true if can connect to database, false otherwise.
+     */
+    boolean canDirectlyConnectToDB(HibernateConfiguration config);
 }

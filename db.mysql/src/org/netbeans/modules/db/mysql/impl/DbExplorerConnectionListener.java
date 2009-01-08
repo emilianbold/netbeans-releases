@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.*;
-import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.mysql.DatabaseServerManager;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
 
 /**

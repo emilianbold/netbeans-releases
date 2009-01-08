@@ -90,6 +90,7 @@ import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.Element;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.AstElement;
@@ -748,40 +749,50 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             Error error = null;
             Node root = AstUtilities.getRoot(workingCopy);
             if (root != null) {
-                
-                Element element = AstElement.getElement(workingCopy, root);
-                Node node = searchCtx.getNode();
-                
-                JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
-                
-                Node scopeNode = null;
-                if (workingCopy.getFileObject() == searchCtx.getFileObject()) {
-                    if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
-                        node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
-                        node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
-
-
-                        // TODO - map this node to our new tree.
-                        // In the mean time, just search in the old seach tree.
-                        Node searchRoot = node;
-                        while (searchRoot.getParentNode() != null) {
-                            searchRoot = searchRoot.getParentNode();
-                        }
-
-                        VariableVisitor v = new VariableVisitor();
-                        new ParseTreeWalker(v).walk(searchRoot);
-                        scopeNode = v.getDefiningScope(node);
+                BaseDocument doc = GsfUtilities.getDocument(workingCopy.getFileObject(), true);
+                try {
+                    if (doc != null) {
+                        doc.readLock();
                     }
-                }
 
-                if (scopeNode != null) {
-                    findLocal(searchCtx, fileCtx, scopeNode, oldName);
-                } else {
-                    // Full AST search
-                    AstPath path = new AstPath();
-                    path.descend(root);
-                    find(path, searchCtx, fileCtx, root, oldName);
-                    path.ascend();
+                    Element element = AstElement.getElement(workingCopy, root);
+                    Node node = searchCtx.getNode();
+
+                    JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
+
+                    Node scopeNode = null;
+                    if (workingCopy.getFileObject() == searchCtx.getFileObject()) {
+                        if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
+                            node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
+                            node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
+
+
+                            // TODO - map this node to our new tree.
+                            // In the mean time, just search in the old seach tree.
+                            Node searchRoot = node;
+                            while (searchRoot.getParentNode() != null) {
+                                searchRoot = searchRoot.getParentNode();
+                            }
+
+                            VariableVisitor v = new VariableVisitor();
+                            new ParseTreeWalker(v).walk(searchRoot);
+                            scopeNode = v.getDefiningScope(node);
+                        }
+                    }
+
+                    if (scopeNode != null) {
+                        findLocal(searchCtx, fileCtx, scopeNode, oldName);
+                    } else {
+                        // Full AST search
+                        AstPath path = new AstPath();
+                        path.descend(root);
+                        find(path, searchCtx, fileCtx, root, oldName);
+                        path.ascend();
+                    }
+                } finally {
+                    if (doc != null) {
+                        doc.readUnlock();
+                    }
                 }
             } else {
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
@@ -969,8 +980,10 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             int start = pos;
             int end = pos+oldCode.length();
             // TODO if a SymbolNode, +=1 since the symbolnode includes the ":"
+            BaseDocument doc = null;
             try {
-                BaseDocument doc = (BaseDocument)ces.openDocument();
+                doc = (BaseDocument)ces.openDocument();
+                doc.readLock();
 
                 if (start > doc.getLength()) {
                     start = end = doc.getLength();
@@ -1031,6 +1044,10 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 Exceptions.printStackTrace(ie);
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
+            } finally {
+                if (doc != null) {
+                    doc.readUnlock();
+                }
             }
             
             if (newCode == null) {

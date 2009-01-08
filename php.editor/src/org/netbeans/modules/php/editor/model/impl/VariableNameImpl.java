@@ -67,8 +67,8 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
-    VarAssignmentImpl createElement(ScopeImpl scope, Variable varNode, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
-        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, varNode,assignment, allAssignments);
+    VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
         addElement(retval);
         return retval;
     }
@@ -76,7 +76,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible) {
         this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
-    private VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
+    VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
         this.globallyVisible = globallyVisible;
     }
@@ -116,9 +116,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             retval = assignments.get(0);
         } else {
             for (VarAssignmentImpl varAssignmentImpl : assignments) {
-                if (varAssignmentImpl.getOffset() <= offset) {
+                if (varAssignmentImpl.getBlockRange().containsInclusive(offset)) {
                     if (retval == null || retval.getOffset() <= varAssignmentImpl.getOffset()) {
-                        retval = varAssignmentImpl;
+                         if (varAssignmentImpl.getOffset() < offset) {
+                            retval = varAssignmentImpl;
+                         }
                     }
                 }
             }

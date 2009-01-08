@@ -17,7 +17,7 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-<project name="wsdl4j" default="netbeans" basedir=".">
+<project name="o.n.soa.libs.wsdl4j" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="ext_init">

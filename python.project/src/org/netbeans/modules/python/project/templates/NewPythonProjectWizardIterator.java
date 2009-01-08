@@ -117,7 +117,7 @@ public class NewPythonProjectWizardIterator implements WizardDescriptor.Progress
             // main file
             final String mainName = (String) descriptor.getProperty(NewPythonProjectWizardIterator.MAIN_FILE);        
             if (mainName != null) {            
-                resultSet.add(createMainFile(Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Python/Module.py"),
+                resultSet.add(createMainFile(Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Python/_module.py"),
                         sourceDir,mainName).getPrimaryFile());
             }
         }

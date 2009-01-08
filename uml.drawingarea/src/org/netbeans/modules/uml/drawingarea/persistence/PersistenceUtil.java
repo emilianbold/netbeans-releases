@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
@@ -54,6 +55,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
@@ -137,7 +139,6 @@ public class PersistenceUtil {
         nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
         nodeWriter.setLocation(widget.getPreferredLocation());
 
-//        nodeWriter.setSize(widget.getBounds().getSize());
         Rectangle bnd = widget.getBounds();//border need correction for selection border sizes
         if (bnd != null)
         {
@@ -184,14 +185,19 @@ public class PersistenceUtil {
             props = new HashMap<String, String>();
         }
         ResourceTable table = widget.getResourceTable();
-        Set<String> propertyNames = table.getLocalPropertyNames();
-        for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
+        if(table!=null)
         {
-            String key = it.next();
-//            System.out.println(" Scene property = " + key);
-            Object propVal = table.getProperty(key);
-//            System.out.println(" property value = " + propVal.toString());
-            props.put(key, propVal.toString());
+            Set<String> propertyNames = table.getLocalPropertyNames();
+            for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
+            {
+                String key = it.next();
+                Object propVal = table.getProperty(key);
+                props.put(key, propVal.toString());
+            }
+        }
+        else
+        {
+            UMLLogger.logMessage("Absent resource table.", Level.WARNING);
         }
     }
     

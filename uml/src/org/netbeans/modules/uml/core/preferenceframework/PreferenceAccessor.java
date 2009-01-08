@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.uml.core.preferenceframework;
 
+import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
+import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
+import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.openide.util.NbBundle;
 
 /**
@@ -192,11 +195,6 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 */
 	public String getDefaultRoundTripBehavior(String lang, String behavior) {
             throw new UnsupportedOperationException ("RoundTrip prefs are no long valid.");
-//		// String str = "RoundTrip|";
-//		String str = "RoundTrip|";
-//		str += lang;
-//		String value = getPreferenceValue("", str, behavior);
-//		return value;
 	}
 
 	/**
@@ -211,8 +209,6 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 */
 	public String getDefaultEditorCustomizationFile() {
             throw new UnsupportedOperationException ("PropertyEditor|CustomizationFile pref is no long valid.");
-//		String value = getPreferenceValue("", "PropertyEditor", "CustomizationFile");
-//		return value;
 	}
 
 	/**
@@ -267,26 +263,26 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	private String getPreferenceValue(String key, String path, String name) {
-            throw new UnsupportedOperationException ("key="+key+"::path="+path+"::name="+name+":: Using old options.");
+            //throw new UnsupportedOperationException ("key="+key+"::path="+path+"::name="+name+":: Using old options.");
             
-//		String value = "";
-//		ICoreProduct prod = ProductRetriever.retrieveProduct();
-//		if (prod != null)
-//		{
-//			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-//			if (prefMan != null)
-//			{
-//				if (key.length() > 0)
-//				{
-//					value = prefMan.getPreferenceValue(key, path, name);
-//				}
-//				else
-//				{
-//					value = prefMan.getPreferenceValue(path, name);
-//				}
-//			}
-//		}
-//		return value;
+		String value = "";
+		ICoreProduct prod = ProductRetriever.retrieveProduct();
+		if (prod != null)
+		{
+			IPreferenceManager2 prefMan = prod.getPreferenceManager();
+			if (prefMan != null)
+			{
+				if (key.length() > 0)
+				{
+					value = prefMan.getPreferenceValue(key, path, name);
+				}
+				else
+				{
+					value = prefMan.getPreferenceValue(path, name);
+				}
+			}
+		}
+		return value;
 	}
 
 	/**

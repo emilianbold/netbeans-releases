@@ -181,5 +181,59 @@ public final class FileUtilities {
         }
         return outDir;
     }
+
+    /**
+     *
+     * Produce a machine-independent relativized version of a filename from a basedir.
+     * Unlike {@link URI#relativize} this will produce "../" sequences as needed.
+     * @param basedir a directory to resolve relative to (need not exist on disk)
+     * @param file a file or directory to find a relative path for
+     * @return a relativized path (slash-separated), or null if it is not possible (e.g. different DOS drives);
+     *         just <samp>.</samp> in case the paths are the same
+     * @throws IllegalArgumentException if the basedir is known to be a file and not a directory
+     *
+     * copied from project.ant's PropertyUtils
+     */
+    public static String relativizeFile(File basedir, File file) {
+        if (basedir.isFile()) {
+            throw new IllegalArgumentException("Cannot relative w.r.t. a data file " + basedir); // NOI18N
+        }
+        if (basedir.equals(file)) {
+            return "."; // NOI18N
+        }
+        StringBuffer b = new StringBuffer();
+        File base = basedir;
+        String filepath = file.getAbsolutePath();
+        while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
+            base = base.getParentFile();
+            if (base == null) {
+                return null;
+            }
+            if (base.equals(file)) {
+                // #61687: file is a parent of basedir
+                b.append(".."); // NOI18N
+                return b.toString();
+            }
+            b.append("../"); // NOI18N
+        }
+        URI u = base.toURI().relativize(file.toURI());
+        assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
+        b.append(u.getPath());
+        if (b.charAt(b.length() - 1) == '/') {
+            // file is an existing directory and file.toURI ends in /
+            // we do not want the trailing slash
+            b.setLength(b.length() - 1);
+        }
+        return b.toString();
+    }
+
+    private static String slashify(String path) {
+        if (path.endsWith(File.separator)) {
+            return path;
+        } else {
+            return path + File.separatorChar;
+        }
+    }
+
    
 }

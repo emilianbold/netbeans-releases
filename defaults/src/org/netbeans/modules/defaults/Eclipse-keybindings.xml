@@ -81,6 +81,7 @@ made subject to such option by the copyright holder.
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-previous" key="BACK_SPACE"/>
     <bind actionName="delete-previous" key="S-BACK_SPACE"/>
+    <bind actionName="documentation-show" key="F2"/>
     <bind actionName="documentation-show" key="DS-SPACE"/>
     <bind actionName="documentation-show" key="DS-BACK_SLASH"/>
     <bind actionName="expand-all-folds" key="DS-ADD"/>
@@ -155,7 +156,6 @@ made subject to such option by the copyright holder.
     <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="toggle-highlight-search" key="OS-H"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
-    <bind actionName="tooltip-show" key="F2"/>
     <bind actionName="try-catch" key="OS-W"/>
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="undo" key="UNDO"/>

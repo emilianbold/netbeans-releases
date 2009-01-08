@@ -56,7 +56,7 @@ public class AnnotationBarTest extends TestCase {
         assertNull(Utils.previousRevision("1.1"));
         assertEquals("1.1", Utils.previousRevision("1.2"));
         assertEquals("1.2.1.1", Utils.previousRevision("1.2.1.2"));
-        assertEquals("1.199", Utils.previousRevision("1.200.0.1.1.1"));
+        assertEquals("1.200", Utils.previousRevision("1.200.0.1.1.1"));
     }
 
 }

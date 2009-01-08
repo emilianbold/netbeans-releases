@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -152,6 +154,22 @@ public class ExtractCode extends PythonSelectionRule {
 
     public String getDisplayName() {
         return NbBundle.getMessage(ExtractCode.class, "ExtractCode");
+    }
+
+    public String getId() {
+        return "ExtractCode"; // NOI18N
+    }
+
+    public String getDescription() {
+        return "";
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     public boolean showInTasklist() {

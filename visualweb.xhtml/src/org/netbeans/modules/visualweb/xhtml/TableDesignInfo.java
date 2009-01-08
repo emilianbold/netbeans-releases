@@ -365,6 +365,10 @@ public class TableDesignInfo extends XhtmlDesignInfo implements MarkupTableDesig
         initialized = table;
         ds = DesignerServiceHack.getDefault();
         tableData = ds.getTableInfo(table);
+        if (tableData == null) {
+            // XXX #156331 Possible NPE
+            return;
+        }
         rows = ds.getRowCount(tableData);
         columns = ds.getColumnCount(tableData);
     }

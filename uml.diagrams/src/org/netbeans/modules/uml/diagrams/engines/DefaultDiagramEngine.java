@@ -383,6 +383,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
 
         private IPresentationElement originalSource = null;
         private IPresentationElement originalTarget = null;
+        private Router originalRouter;
         private Anchor originalSourceAnchor = null;
         private Anchor originalTargetAnchor = null;
         private RelationValidator validator = new RelationValidator();
@@ -393,7 +394,8 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             Widget sourceWidget = connectionWidget.getSourceAnchor().getRelatedWidget();
             originalSource = (IPresentationElement) getScene().findObject(sourceWidget);
             originalSourceAnchor= connectionWidget.getSourceAnchor();
-            
+            originalRouter = connectionWidget.getRouter();
+            connectionWidget.setRouter(RouterFactory.createDirectRouter());
             Widget targetWidget = connectionWidget.getTargetAnchor().getRelatedWidget();
             originalTarget = (IPresentationElement) getScene().findObject(targetWidget);
             originalTargetAnchor = connectionWidget.getTargetAnchor();
@@ -524,8 +526,16 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             }
             DesignerScene scene = getScene();
             IPresentationElement replacementNode = (IPresentationElement)scene.findObject(replacementWidget);
-            if(reconnectingSource && replacementNode==originalSource)return;
-            else if(!reconnectingSource && replacementNode==originalTarget)return;
+            if(reconnectingSource && replacementNode==originalSource)
+            {
+                connectionWidget.setRouter(originalRouter);
+                return;
+            }
+            else if(!reconnectingSource && replacementNode==originalTarget)
+            {
+                connectionWidget.setRouter(originalRouter);
+                return;
+            }
             IPresentationElement edge = (IPresentationElement)scene.findObject(connectionWidget);
             IElement relationship = edge.getFirstSubject();
             

@@ -502,14 +502,10 @@ public class Utilities {
             EditorCookie ec = (EditorCookie)dObject.getCookie(EditorCookie.class);
             Document doc = ec.openDocument();
             if(doc instanceof BaseDocument)
-                return doc;
-            
-            
-            result = new org.netbeans.editor.BaseDocument(
-                    org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
+                return doc;            
+            result = new org.netbeans.editor.BaseDocument(true, modelSourceFileObject.getMIMEType());
             String str = doc.getText(0, doc.getLength());
-            result.insertString(0,str,null);
-            
+            result.insertString(0,str,null);            
         } catch (Exception dObjEx) {
             return null;
         }

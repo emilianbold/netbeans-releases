@@ -39,12 +39,13 @@
 package org.netbeans.modules.ruby.hints.introduce;
 
 import org.netbeans.modules.ruby.ParseTreeWalker;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.jruby.nb.ast.ClassNode;
@@ -201,10 +202,21 @@ public class IntroduceHint extends RubySelectionRule {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHint");
     }
 
-    // Only used by configurable rules
-    //public String getDescription() {
-    //    return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDesc");
-    //}
+    public String getId() {
+        return "RubyIntroduceHint"; // NOI18N
+    }
+
+    public String getDescription() {
+        return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDesc");
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
 
     public boolean showInTasklist() {
         return false;

@@ -46,7 +46,7 @@ import java.awt.Component;
 
 /**
  * Provides a component which will be added at east side of the status line.
- * A provider should be installed in default lookup, e.g. using META-INF/services.
+ * A provider should be installed in default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *
  * @since 6.4
  * @author Jiri Rechtacek

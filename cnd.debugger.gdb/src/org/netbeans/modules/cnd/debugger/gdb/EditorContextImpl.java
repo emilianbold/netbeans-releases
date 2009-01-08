@@ -417,7 +417,11 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
     }
-    
+
+    public FileObject getCurrentFileObject() {
+        return EditorContextDispatcher.getDefault().getCurrentFile();
+    }
+
     /**
      * Get the MIME type of the most recently selected file.
      *
@@ -436,7 +440,8 @@ public class EditorContextImpl extends EditorContext {
     public void addPropertyChangeListener(PropertyChangeListener l) {
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.C_MIME_TYPE, l);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.CPLUSPLUS_MIME_TYPE, l);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-asm", l); // NOI18N
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.HEADER_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.ASM_MIME_TYPE, l);
     }
     
     /**

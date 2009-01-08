@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -51,7 +53,15 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -62,6 +72,8 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
+    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_NAME = "variableFromNextAssignmentName"; //NOI18N
+    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -88,14 +100,87 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         // No op.
     }
 
+    private String getNextVariableType(final String variableName) {
+        int offset = request.getComponent().getCaretPosition();
+        Model model = ModelFactory.getModel(info);
+        VariableScope varScope = model.getVariableScope(offset);
+        String varName = variableName;
+        if (varName == null) {
+            varName = getNextVariableName();
+        }
+        if (varName == null ||  varScope == null) {
+            return null;
+        }
+        if (varName.charAt(0) != '$') {
+            varName = "$" + varName; //NOI18N
+        }
+
+        List<? extends VariableName> variables = varScope.getVariables(varName);
+        VariableName first = ModelUtils.getFirst(variables);
+        if (first != null) {
+            ArrayList<String> uniqueTypeNames = new ArrayList<String>();
+            for(TypeScope type : first.getTypes(offset)) {
+                if (!uniqueTypeNames.contains(type.getName())) {
+                    uniqueTypeNames.add(type.getName());
+                }
+            }
+            String typeNames = "";
+            for(String typeName : uniqueTypeNames) {
+                typeNames =  typeNames + "|" + typeName;
+            }
+            if (typeNames.length() > 0) {
+                typeNames = typeNames.substring(1);
+            } else {
+                typeNames = "type";//NOI18N
+            }
+            return typeNames;
+        }
+        return null;
+    }
+
     private String getProposedValue(CodeTemplateParameter param) {
+        String variableName = null;
         for (Entry<String, String> entry : param.getHints().entrySet()) {
             String hintName = entry.getKey();
             if (NEW_VAR_NAME.equals(hintName)) {
                 return newVarName(param.getValue());
             }
+            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_NAME.equals(hintName)) {
+                variableName = getNextVariableName();
+                return variableName;
+            }
+            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE.equals(hintName)) {
+                return getNextVariableType(variableName);
+            }
         }
         return null;
+    }
+
+
+    private String getNextVariableName() {
+        if (!initParsing()) {
+            return null;
+        }
+        final int caretOffset = request.getComponent().getCaretPosition();
+        VariableName var = null;
+        Model model = ModelFactory.getModel(info);
+        VariableScope varScope = model.getVariableScope(caretOffset);
+        if (varScope != null) {
+            List<? extends VariableName> allVariables = varScope.getAllVariables();
+            for (VariableName variableName : allVariables) {
+                if (var == null) {
+                    var = variableName;
+                } else {
+                    int newDiff = Math.abs(variableName.getNameRange().getStart() - caretOffset);
+                    int oldDiff = Math.abs(var.getNameRange().getStart() - caretOffset);
+                    if (newDiff < oldDiff) {
+                        var = variableName;
+                    }
+                }
+            }
+        }
+
+        return var != null ? var.getName().substring(1) : null;
     }
 
     private String newVarName(final String proposed) {
@@ -153,6 +238,40 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
             return new PHPCodeTemplateProcessor(request);
+        }
+    }
+
+    private static final class AssignmentLocator extends DefaultVisitor {
+
+        private int offset;
+        protected Assignment node = null;
+
+        /**
+         * Locates the nearest assignement after the offset
+         * @param beginNode
+         * @param astOffset
+         * @return
+         */
+        public Assignment locate(ASTNode beginNode, int astOffset) {
+            offset = astOffset;
+            scan(beginNode);
+            return this.node;
+        }
+        
+        @Override
+        public void scan(ASTNode current) {
+            if (this.node == null && current != null) {
+                current.accept(this);
+            }
+        }
+
+        @Override
+        public void visit(Assignment node) { 
+            if (node != null) {
+                if (node.getStartOffset() > offset) {
+                    this.node = node;
+                }
+            }
         }
     }
 }

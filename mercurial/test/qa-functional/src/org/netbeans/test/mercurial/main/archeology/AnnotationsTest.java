@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -33,7 +34,6 @@ public class AnnotationsTest extends JellyTestCase {
     
     public static final String PROJECT_NAME = "JavaApp";
     public PrintStream stream;
-    String os_name;
     static Logger log;
     
     /** Creates a new instance of AnnotationsTest */
@@ -54,14 +54,6 @@ public class AnnotationsTest extends JellyTestCase {
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AnnotationsTest.class)
                 .addTest("testShowAnnotations")
@@ -74,6 +66,8 @@ public class AnnotationsTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
             MessageHandler mh = new MessageHandler("Annotating");
             log.addHandler(mh);
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));

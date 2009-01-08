@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import javax.swing.text.Document;
-import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,8 +70,7 @@ public class TestUtil {
     }
     
     public static Document loadDocument(InputStream in) throws Exception {
-    Document sd = new org.netbeans.editor.BaseDocument(
-            org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
+        Document sd = new org.netbeans.editor.BaseDocument(true, "text/xml");
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         StringBuffer sbuf = new StringBuffer();
         try {

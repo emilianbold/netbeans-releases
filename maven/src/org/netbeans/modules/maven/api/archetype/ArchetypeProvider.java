@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * Componentized provider of list of available archetypes.
  * It is used in New Maven project wizard to populate the list of available archetypes.
- * The providers are expected to be registered in META-INF/services of the module.
+ * The providers are expected to be registered using {@link org.openide.util.lookup.ServiceProvider}.
  * There are 2 default implementations registered: One lists 3 basic archetypes 
  * (simple, webapp and mojo) and the other lists all archetypes it find in local repository index.
  * @author mkleint

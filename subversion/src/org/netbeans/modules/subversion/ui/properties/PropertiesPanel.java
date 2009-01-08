@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,32 +40,137 @@
  */
 package org.netbeans.modules.subversion.ui.properties;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+import static org.jdesktop.layout.GroupLayout.BASELINE;
+import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
+import static org.jdesktop.layout.GroupLayout.HORIZONTAL;
+import static org.jdesktop.layout.GroupLayout.LEADING;
+import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**
  *
  * @author  Peter Pis
+ * @author  Marian Petras
  */
-public class PropertiesPanel extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener {
+public class PropertiesPanel extends JPanel implements DocumentListener,
+                                                       ItemListener,
+                                                       PreferenceChangeListener,
+                                                       TableModelListener {
+    private enum AddButtonState {
+        ADD       ("PropertiesPanel.btnAdd.text"),                      //NOI18N
+        ADD_UPDATE("PropertiesPanel.btnAddUpdate.text"),                //NOI18N
+        UPDATE    ("PropertiesPanel.btnUpdate.text");                   //NOI18N
+
+        private final String btnLabel;
+        AddButtonState(String msgKey) {
+            btnLabel = NbBundle.getMessage(PropertiesPanel.class, msgKey);
+        }
+        String getLabel() {
+            return btnLabel;
+        }
+    }
+
+    final JButton btnAdd = new JButton() {
+        private Dimension prefSize;
+        @Override
+        public Dimension getPreferredSize() {
+            if (prefSize == null) {
+                int maxWidth;
+                int maxHeight;
+                Dimension d;
+                Mnemonics.setLocalizedText(this, AddButtonState.ADD.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = d.width;
+                maxHeight = d.height;
+                Mnemonics.setLocalizedText(this, AddButtonState.ADD_UPDATE.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = Math.max(maxWidth, d.width);
+                maxHeight = Math.max(maxHeight, d.height);
+                Mnemonics.setLocalizedText(this, AddButtonState.UPDATE.getLabel());
+                d = super.getPreferredSize();
+                maxWidth = Math.max(maxWidth, d.width);
+                maxHeight = Math.max(maxHeight, d.height);
+                prefSize = new Dimension(maxWidth, maxHeight);
+            }
+            return prefSize;
+        }
+    };
+    final JButton btnBrowse = new JButton();
+    final JButton btnRefresh = new JButton();
+    final JButton btnRemove = new JButton();
+    final JCheckBox cbxRecursively = new JCheckBox();
+    final JComboBox comboName = new JComboBox();
+    final JTextArea txtAreaValue = new JTextArea();
+    final JPanel propsPanel = new DerivedHeightPanel(txtAreaValue, 2.0f);
+    final JLabel labelForTable = new JLabel();
 
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
     private PropertiesTable propertiesTable;
     private ListenersSupport listenerSupport = new ListenersSupport(this);
-    
+    private final JLabel lblErrMessage = new JLabel();
+    private final Document propNameDocument;
+    private final Document propValueDocument;
+    private String propertyName;
+    private String propertyValue;
+    private String illegalPropErrMsgKey;
+    private boolean recursive;
+    private String[] existingProperties;
+    private String[] illegalProperties;
+    private SvnProperties propValueChangeListener;
+    private boolean interactionInitialized;
+
     /** Creates new form PropertiesPanel */
     public PropertiesPanel() {
+        propNameDocument = ((JTextField) comboName.getEditor().getEditorComponent())
+                           .getDocument();
+        propValueDocument = txtAreaValue.getDocument();
         initComponents();
+    }
+
+    String getPropertyName() {
+        return propertyName;
+    }
+
+    String getPropertyValue() {
+        return propertyValue;
     }
     
     void setPropertiesTable(PropertiesTable propertiesTable){
         this.propertiesTable = propertiesTable;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);        
@@ -74,6 +179,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         txtAreaValue.selectAll();
     }
 
+    @Override
     public void removeNotify() {
         propertiesTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
@@ -87,158 +193,368 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         }
     }
 
+    /**
+     * Adds the given list of property names to the combo-box's pop-up
+     * and clears the current combo-box value.
+     * If there were other property names present in the pop-up, they are
+     * removed first.
+     */
+    void setPredefinedPropertyNames(String[] propertyNames) {
+        comboName.setModel(new DefaultComboBoxModel(propertyNames));
+        comboName.getEditor().setItem("");                              //NOI18N
+    }
+
+    void setExistingPropertyNames(String[] propNames) {
+        existingProperties = propNames;
+        if (interactionInitialized) {
+            existingPropertiesChanged();
+        }
+    }
+
+    void setIllegalPropertyNames(String[] propNames, String errMsgKey) {
+        illegalProperties = propNames;
+        illegalPropErrMsgKey = errMsgKey;
+        if (interactionInitialized) {
+            illegalPropertiesChanged();
+        }
+    }
+
+    void setForDirectory(boolean forDirectory) {
+        if (forDirectory) {
+            cbxRecursively.setEnabled(true);
+        } else {
+            cbxRecursively.setEnabled(false);
+            cbxRecursively.setSelected(false);
+        }
+    }
+
+    void initInteraction() {
+        updatePropertyName();
+        updatePropertyValue();
+        updateIsRecursive();
+        propNameDocument.addDocumentListener(this);
+        propValueDocument.addDocumentListener(this);
+        cbxRecursively.addItemListener(this);
+
+        refreshAddButtonText();
+        refreshAddButtonState();
+
+        interactionInitialized = true;
+    }
+
+    void setPropertyValueChangeListener(SvnProperties l) {
+        propValueChangeListener = l;
+    }
+
+    void removePropertyValueChangeListener() {
+        propValueChangeListener = null;
+    }
+
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
-    
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+
+    // <editor-fold defaultstate="collapsed" desc="UI Definition Code">
     private void initComponents() {
+        JLabel lblPropertyName = new JLabel();
+        lblPropertyName.setLabelFor(comboName);
+        Mnemonics.setLocalizedText(lblPropertyName, getString("PropertiesPanel.jLabel2.text")); // NOI18N
 
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        propsPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jSeparator1 = new javax.swing.JSeparator();
-        labelForTable = new javax.swing.JLabel();
-
-        jLabel2.setLabelFor(comboName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel2.text")); // NOI18N
-
-        jLabel1.setLabelFor(txtAreaValue);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnBrowse, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnBrowse.text")); // NOI18N
-        btnBrowse.setActionCommand(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnBrowse.actionCommand")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout propsPanelLayout = new org.jdesktop.layout.GroupLayout(propsPanel);
-        propsPanel.setLayout(propsPanelLayout);
-        propsPanelLayout.setHorizontalGroup(
-            propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 421, Short.MAX_VALUE)
-        );
-        propsPanelLayout.setVerticalGroup(
-            propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 101, Short.MAX_VALUE)
-        );
+        JLabel lblPropertyValue = new JLabel();
+        lblPropertyValue.setLabelFor(txtAreaValue);
+        Mnemonics.setLocalizedText(lblPropertyValue, getString("PropertiesPanel.jLabel1.text")); // NOI18N
 
         txtAreaValue.setColumns(20);
         txtAreaValue.setRows(5);
+        JScrollPane jScrollPane1 = new JScrollPane();
         jScrollPane1.setViewportView(txtAreaValue);
-        txtAreaValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "txtAreaValue.AccessibleContext.accessibleName")); // NOI18N
-        txtAreaValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "txtAreaValue.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRefresh, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRefresh.text")); // NOI18N
-        btnRefresh.setActionCommand(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnRefresh.actionCommand")); // NOI18N
-        btnRefresh.setMaximumSize(new java.awt.Dimension(75, 23));
-        btnRefresh.setMinimumSize(new java.awt.Dimension(75, 23));
+        lblErrMessage.setForeground(Color.RED);
+        lblErrMessage.setVisible(false);
+        lblErrMessage.setText(" ");  //to get non-zero preferred height //NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRemove.text")); // NOI18N
-        btnRemove.setActionCommand(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnRemove.actionCommand")); // NOI18N
+        Mnemonics.setLocalizedText(btnBrowse, getString("PropertiesPanel.btnBrowse.text")); // NOI18N
+        btnBrowse.setActionCommand(getString("btnBrowse.actionCommand")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnAdd, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnAdd.text")); // NOI18N
-        btnAdd.setMaximumSize(new java.awt.Dimension(75, 23));
-        btnAdd.setMinimumSize(new java.awt.Dimension(75, 23));
+        JSeparator jSeparator1 = new JSeparator();
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbxRecursively, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.cbxRecursively.text")); // NOI18N
-        cbxRecursively.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbxRecursively.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        Mnemonics.setLocalizedText(btnAdd, getString("PropertiesPanel.btnAdd.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelForTable, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel3.text")); // NOI18N
+        Mnemonics.setLocalizedText(cbxRecursively, getString("PropertiesPanel.cbxRecursively.text")); // NOI18N
+        cbxRecursively.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        Mnemonics.setLocalizedText(btnRemove, getString("PropertiesPanel.btnRemove.text")); // NOI18N
+        btnRemove.setActionCommand(getString("btnRemove.actionCommand")); // NOI18N
+
+        Mnemonics.setLocalizedText(btnRefresh, getString("PropertiesPanel.btnRefresh.text")); // NOI18N
+        btnRefresh.setActionCommand(getString("btnRefresh.actionCommand")); // NOI18N
+
+        Mnemonics.setLocalizedText(labelForTable, getString("jLabel3.text")); // NOI18N
+
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, propsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, comboName, 0, 315, Short.MAX_VALUE)
-                            .add(btnBrowse)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(layout.createSequentialGroup()
-                        .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbxRecursively)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 73, Short.MAX_VALUE)
-                        .add(btnRemove)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, labelForTable))
-                .addContainerGap())
+                layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(LEADING)
+                                .add(layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup()
+                                                .add(lblPropertyName)
+                                                .add(lblPropertyValue))
+                                        .addPreferredGap(RELATED)
+                                        .add(layout.createParallelGroup()
+                                                .add(comboName, 0, DEFAULT_SIZE, DEFAULT_SIZE)
+                                                .add(jScrollPane1)))
+                                .add(layout.createSequentialGroup()
+                                        .add(lblErrMessage, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(RELATED)
+                                        .add(btnBrowse))
+                                .add(jSeparator1)
+                                .add(layout.createSequentialGroup()
+                                        .add(btnAdd, PREFERRED_SIZE, DEFAULT_SIZE, DEFAULT_SIZE)
+                                        .addPreferredGap(RELATED)
+                                        .add(cbxRecursively)
+                                        .addPreferredGap(cbxRecursively, btnRemove, RELATED, true)
+                                        .add(btnRemove)
+                                        .addPreferredGap(RELATED)
+                                        .add(btnRefresh))
+                                .add(labelForTable)
+                                .add(propsPanel))
+                        .addContainerGap()
         );
-
-        layout.linkSize(new java.awt.Component[] {btnAdd, btnBrowse, btnRefresh, btnRemove}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new Component[] {btnBrowse, btnRefresh, btnRemove}, HORIZONTAL);
+        layout.setHonorsVisibility(false);
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(comboName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(btnBrowse)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnRemove)
-                    .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(cbxRecursively))
-                .add(18, 18, 18)
-                .add(labelForTable)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(propsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(BASELINE)
+                                .add(lblPropertyName)
+                                .add(comboName))
+                        .addPreferredGap(RELATED)
+                        .add(layout.createParallelGroup(LEADING)
+                                .add(lblPropertyValue)
+                                .add(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
+                        .addPreferredGap(RELATED)
+                        .add(layout.createParallelGroup(BASELINE)
+                                .add(lblErrMessage)
+                                .add(btnBrowse))
+                        .addPreferredGap(RELATED)
+                        .add(jSeparator1, PREFERRED_SIZE, 10, PREFERRED_SIZE)
+                        .addPreferredGap(RELATED)
+                        .add(layout.createParallelGroup(BASELINE)
+                                .add(btnAdd)
+                                .add(cbxRecursively)
+                                .add(btnRemove)
+                                .add(btnRefresh))
+                        .add(18)
+                        .add(labelForTable)
+                        .addPreferredGap(RELATED)
+                        .add(propsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap()
         );
 
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel2.AccessibleContext.accessibleDescription")); // NOI18N
-        comboName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "comboName.AccessibleContext.accessibleName")); // NOI18N
-        comboName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "comboName.AccessibleContext.accessibleDescription")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
-        btnBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnBrowse.AccessibleContext.accessibleDescription")); // NOI18N
-        btnRefresh.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnRefresh.AccessibleContext.accessibleDescription")); // NOI18N
-        btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnRemove.AccessibleContext.accessibleDescription")); // NOI18N
-        btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "btnAdd.AccessibleContext.accessibleDescription")); // NOI18N
-        cbxRecursively.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "cbxRecursively.AccessibleContext.accessibleDescription")); // NOI18N
-        labelForTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "labelForTable.AccessibleContext.accessibleDescription")); // NOI18N
-    }// </editor-fold>//GEN-END:initComponents
-    
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton btnAdd = new javax.swing.JButton();
-    final javax.swing.JButton btnBrowse = new javax.swing.JButton();
-    final javax.swing.JButton btnRefresh = new javax.swing.JButton();
-    final javax.swing.JButton btnRemove = new javax.swing.JButton();
-    final javax.swing.JCheckBox cbxRecursively = new javax.swing.JCheckBox();
-    final javax.swing.JComboBox comboName = new javax.swing.JComboBox();
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
-    public javax.swing.JLabel labelForTable;
-    public javax.swing.JPanel propsPanel;
-    final javax.swing.JTextArea txtAreaValue = new javax.swing.JTextArea();
-    // End of variables declaration//GEN-END:variables
-    
+        lblPropertyName.getAccessibleContext().setAccessibleDescription(getString("jLabel2.AccessibleContext.accessibleDescription")); // NOI18N
+        lblPropertyValue.getAccessibleContext().setAccessibleDescription(getString("jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        comboName.getAccessibleContext().setAccessibleName(getString("comboName.AccessibleContext.accessibleName")); // NOI18N
+        comboName.getAccessibleContext().setAccessibleDescription(getString("comboName.AccessibleContext.accessibleDescription")); // NOI18N
+
+        txtAreaValue.getAccessibleContext().setAccessibleName(getString("txtAreaValue.AccessibleContext.accessibleName")); // NOI18N
+        txtAreaValue.getAccessibleContext().setAccessibleDescription(getString("txtAreaValue.AccessibleContext.accessibleDescription")); // NOI18N
+
+        btnBrowse.getAccessibleContext().setAccessibleDescription(getString("btnBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+
+        btnAdd.getAccessibleContext().setAccessibleDescription(getString("btnAdd.AccessibleContext.accessibleDescription")); // NOI18N
+        cbxRecursively.getAccessibleContext().setAccessibleDescription(getString("cbxRecursively.AccessibleContext.accessibleDescription")); // NOI18N
+        btnRemove.getAccessibleContext().setAccessibleDescription(getString("btnRemove.AccessibleContext.accessibleDescription")); // NOI18N
+        btnRefresh.getAccessibleContext().setAccessibleDescription(getString("btnRefresh.AccessibleContext.accessibleDescription")); // NOI18N
+
+        labelForTable.getAccessibleContext().setAccessibleDescription(getString("labelForTable.AccessibleContext.accessibleDescription")); // NOI18N
+    }// </editor-fold>
+
+    private void setErrMessage(String message) {
+        if (message == null) {
+            lblErrMessage.setText(" ");                                 //NOI18N
+            lblErrMessage.setVisible(false);
+        } else {
+            lblErrMessage.setText(message);
+            lblErrMessage.setVisible(true);
+            int widthReserve = lblErrMessage.getSize().width - lblErrMessage.getPreferredSize().width;
+            if (widthReserve < 0) {
+                makeDialogWider(-widthReserve);
+            }
+        }
+    }
+
+    private void makeDialogWider(int delta) {
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w != null) {
+            Dimension size = w.getSize();
+            size.width += delta;
+            w.setSize(size);
+        }
+    }
+
+    private static String getString(String msgKey) {
+        return NbBundle.getMessage(PropertiesPanel.class, msgKey);
+    }
+
+    private void refreshAddButtonText() {
+        AddButtonState buttonState;
+        if (recursive) {
+            buttonState = AddButtonState.ADD_UPDATE;
+        } else {
+            boolean isExistingProperty = false;
+            if (existingProperties != null) {
+                for (int i = 0; i < existingProperties.length; i++) {
+                    if (existingProperties[i].equals(propertyName)) {
+                        isExistingProperty = true;
+                        break;
+                    }
+                }
+            }
+            buttonState = isExistingProperty ? AddButtonState.UPDATE
+                                             : AddButtonState.ADD;
+        }
+        Mnemonics.setLocalizedText(btnAdd, buttonState.getLabel());
+    }
+
+    private void refreshAddButtonState() {
+        boolean enabled;
+        String errMsg;
+
+        if (propertyName.length() == 0) {
+            enabled = false;
+            errMsg = null;
+        } else if (!isPropertyNameLegal()) {
+            enabled = false;
+            errMsg = NbBundle.getMessage(PropertiesPanel.class,
+                                         illegalPropErrMsgKey,
+                                         propertyName);
+        } else if (propertyName.indexOf(' ') != -1) {
+            enabled = false;
+            errMsg = NbBundle.getMessage(PropertiesPanel.class,
+                                         "PropertiesPanel.errPropNameInvalid"); //NOI18N
+        } else {
+            enabled = propertyValue.length() != 0;
+            errMsg = null;
+        }
+
+        btnAdd.setEnabled(enabled);
+        setErrMessage(errMsg);
+    }
+
+    private boolean isPropertyNameLegal() {
+        for (int i = 0; i < illegalProperties.length; i++) {
+            if (propertyName.equals(illegalProperties[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void propNameChanged() {
+        /* update button's text: */
+        if (!recursive) {              //if recursive, it is always "Add/Update"
+            refreshAddButtonText();
+        }
+
+        /* update button's state (enabled/disabled): */
+        refreshAddButtonState();
+    }
+
+    private void propValueChanged() {
+        refreshAddButtonState();
+
+        if (propValueChangeListener != null) {
+            propValueChangeListener.propertyValueChanged();
+        }
+    }
+
+    private void recursiveToggled() {
+        refreshAddButtonText();
+    }
+
+    private void existingPropertiesChanged() {
+        refreshAddButtonText();
+    }
+
+    private void illegalPropertiesChanged() {
+        refreshAddButtonState();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        textChanged(e.getDocument());
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        textChanged(e.getDocument());
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        //document attribute changes - not interesting
+    }
+
+    /** Called when the Recursive check-box is toggled. */
+    public void itemStateChanged(ItemEvent e) {
+        assert e.getSource() == cbxRecursively;
+        updateIsRecursive();
+        recursiveToggled();
+    }
+
+    private void textChanged(Document document) {
+        if (document == propNameDocument) {
+            updatePropertyName();
+            propNameChanged();
+        } else {
+            assert document == propValueDocument;
+            updatePropertyValue();
+            propValueChanged();
+        }
+    }
+
+    private void updatePropertyName() {
+        try {
+            propertyName = propNameDocument.getText(0, propNameDocument.getLength()).trim();
+        } catch (BadLocationException ex) {
+            assert false;
+            propertyName = "";                                          //NOI18N
+        }
+    }
+
+    private void updatePropertyValue() {
+        propertyValue = txtAreaValue.getText().trim();
+    }
+
+    private void updateIsRecursive() {
+        recursive = cbxRecursively.isSelected();
+    }
+
+    /**
+     * Panel whose preferred height is derived from preferred height
+     * of another component.
+     */
+    private final class DerivedHeightPanel extends JPanel {
+        private final Component deriveFrom;
+        private final float ratio;
+        private Dimension prefSize = null;
+        private DerivedHeightPanel(Component deriveFrom, float ratio) {
+            this.deriveFrom = deriveFrom;
+            this.ratio = ratio;
+        }
+        @Override
+        public Dimension getPreferredSize() {
+            if (prefSize == null) {
+                prefSize = computePrefSize();
+            }
+            return prefSize;
+        }
+        private Dimension computePrefSize() {
+            int prefHeight = Math.round(
+                                 ratio * deriveFrom.getPreferredSize().height);
+            return new Dimension(0, prefHeight);
+        }
+    }
+
 }

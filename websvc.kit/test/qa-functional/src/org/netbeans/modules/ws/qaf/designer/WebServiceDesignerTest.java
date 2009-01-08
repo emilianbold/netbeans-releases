@@ -202,14 +202,14 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         assertEquals(opCount, WsDesignerUtilities.operationsCount(wsName));
         WsDesignerUtilities.invokeAddOperation(wsName);
         //Add Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_OperationAction");
         NbDialogOperator dialog = new NbDialogOperator(actionName);
-        new JTextFieldOperator(dialog, 2).setText("test1"); //NOI18N
-        new JTextFieldOperator(dialog, 1).setText("String"); //NOI18N
+        new JTextFieldOperator(dialog, "operation").setText("test1"); //NOI18N
+        new JTextFieldOperator(dialog, "java.lang.String").setText("String"); //NOI18N
         dialog.ok();
         try {
             //slow down a bit
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         } catch (InterruptedException ex) {
             //ignore
         }

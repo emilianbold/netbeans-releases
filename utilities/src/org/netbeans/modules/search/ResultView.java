@@ -271,7 +271,7 @@ final class ResultView extends TopComponent {
         } else {
             Component comp = getComponent(0);
             if (comp instanceof JTabbedPane) {
-                ((JTabbedPane) comp).addTab(panel.getName() + "   ", null, panel, panel.getToolTipText()); // NOI18N
+                ((JTabbedPane) comp).addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
                 ((JTabbedPane) comp).setSelectedComponent(panel);
                 comp.validate();
             } else {
@@ -280,8 +280,8 @@ final class ResultView extends TopComponent {
                 pane.addMouseListener(popL);
                 pane.addPropertyChangeListener(closeL);
                 add(pane, BorderLayout.CENTER);
-                pane.addTab(comp.getName() + "   ", null, comp, ((JPanel) comp).getToolTipText()); //NOI18N
-                pane.addTab(panel.getName() + "   ", null, panel, panel.getToolTipText()); //NOI18N
+                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
+                pane.addTab(getTabTitle(panel), null, panel, panel.getToolTipText()); 
                 pane.setSelectedComponent(panel);
                 pane.validate();
             }
@@ -290,13 +290,19 @@ final class ResultView extends TopComponent {
         requestActive();
     }
 
+    private String getTabTitle(Component panel){
+        return NbBundle.getMessage(ResultView.class,
+                            "TEXT_MSG_RESULTS_FOR_X",   //NOI18N
+                            String.valueOf(panel.getName())) + "   ";   //NOI18N
+    }
+
     private void updateTabTitle(JPanel panel) {
         if (getComponentCount() != 0) {
             Component comp = getComponent(0);
             if (comp instanceof JTabbedPane) {
                 JTabbedPane pane = (JTabbedPane)comp;
                 int index = pane.indexOfComponent(panel);
-                pane.setTitleAt(index, panel.getName() + "   "); //NOI18N
+                pane.setTitleAt(index, getTabTitle(panel));
                 pane.setToolTipTextAt(index, panel.getToolTipText());
             }
         }
@@ -308,6 +314,10 @@ final class ResultView extends TopComponent {
             if (panel == null) {
                 panel = (JPanel) tabs.getSelectedComponent();
             }
+            ResultViewPanel rvp = (ResultViewPanel)panel;
+            if (rvp.isSearchInProgress()){
+                Manager.getInstance().stopSearching(viewToSearchMap.get(panel));
+            }
             tabs.remove(panel);
             if (tabs.getComponentCount() == 1) {
                 Component c = tabs.getComponent(0);
@@ -318,17 +328,21 @@ final class ResultView extends TopComponent {
                 setName(((JPanel)c).getToolTipText());
             }
         } else if (comp instanceof ResultViewPanel)  {
+            ResultViewPanel rvp = (ResultViewPanel)comp;
+            if (rvp.isSearchInProgress()){
+                Manager.getInstance().stopSearching(viewToSearchMap.get(comp));
+            }
             remove(comp);
             close();
         } else {
             close();
         }
+        Manager.getInstance().scheduleCleanTask(new CleanTask(viewToSearchMap.get(panel).getResultModel()));
+        
         SearchTask sTask = viewToSearchMap.remove(panel);
         searchToViewMap.remove(sTask);
         ReplaceTask rTask = searchToReplaceMap.remove(sTask);
         replaceToSearchMap.remove(rTask);
-
-        Manager.getInstance().startCleaning(sTask.getResultModel());
 
         validate();
     }
@@ -357,15 +371,20 @@ final class ResultView extends TopComponent {
         panel.removeIssuesPanel();
         String msgKey = null;
         switch (blockingTask) {
+            case Manager.REPLACING:
+                msgKey = "TEXT_FINISHING_REPLACE";                  //NOI18N
+                break;
             case Manager.SEARCHING:
                 msgKey = "TEXT_FINISHING_PREV_SEARCH";                  //NOI18N
                 break;
+/*
             case Manager.CLEANING_RESULT:
                 msgKey = "TEXT_CLEANING_RESULT";                        //NOI18N
                 break;
             case Manager.PRINTING_DETAILS:
                 msgKey = "TEXT_PRINTING_DETAILS";                       //NOI18N
                 break;
+ */
             default:
                 assert false;
         }
@@ -437,11 +456,11 @@ final class ResultView extends TopComponent {
 
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel == null){
-            panel = new ResultViewPanel();
+            panel = new ResultViewPanel(task);
             addSearchPair(panel, task);
             addTabPanel(panel);
         }
-        panel.setName("Results for '" + task.getSearchCriteria().getTextPatternExpr() + "'"); //NOI18N
+        panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
         return panel;
     }
     

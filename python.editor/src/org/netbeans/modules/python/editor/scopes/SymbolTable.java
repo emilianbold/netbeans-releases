@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.spi.DefaultError;
-import org.netbeans.modules.python.editor.AstPath;
 import org.netbeans.modules.python.editor.PythonAstUtils;
 import org.netbeans.modules.python.editor.PythonIndex;
 import org.netbeans.modules.python.editor.PythonIndexer;
@@ -62,6 +61,7 @@ import org.netbeans.modules.python.editor.elements.AstElement;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.imports.ImportEntry;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -78,10 +78,10 @@ import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Interactive;
 import org.python.antlr.ast.Lambda;
-import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Str;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
+import org.python.antlr.base.expr;
 import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
 
 /**
@@ -93,6 +93,9 @@ import static org.netbeans.modules.python.editor.scopes.ScopeConstants.*;
  * @author Tor Norbye
  */
 public class SymbolTable {
+    private final static int YES = 1;
+    private final static int NO = 0;
+    private final static int CIRCULAR = -1;
     private Map<PythonTree, ScopeInfo> scopes = new HashMap<PythonTree, ScopeInfo>();
     private PythonTree root;
     private FileObject fileObject;
@@ -112,8 +115,20 @@ public class SymbolTable {
             put("__name__", "__bases");
         }
     };
+    private HashMap<String, ClassDef> classes = new HashMap<String, ClassDef>();
     // TODO - use WeakHashMap?
     static Map<String, Set<IndexedElement>> importedElements = new HashMap<String, Set<IndexedElement>>();
+
+    private HashMap<String, ClassDef> buildLocalClasses() {
+        HashMap<String, ClassDef> localClasses = new HashMap<String, ClassDef>();
+        for (PythonTree cur : scopes.keySet()) {
+            if (cur instanceof ClassDef) {
+                ClassDef curClass = (ClassDef)cur;
+                localClasses.put(curClass.getInternalName(), curClass);
+            }
+        }
+        return localClasses;
+    }
 
     public SymbolTable(PythonTree root, FileObject fileObject) {
         this.root = root;
@@ -124,6 +139,7 @@ public class SymbolTable {
                 ScopesCompiler compiler = new ScopesCompiler(this, scopes, root, imports, importsFrom, mainImports, topLevelImports);
                 compiler.parse();
                 publicSymbols = compiler.getPublicSymbols();
+                classes = buildLocalClasses();
                 if (publicSymbols != null) {
                     // Mark all other symbols private!
                     Set<String> names = new HashSet<String>(publicSymbols.size() + 1);
@@ -291,10 +307,11 @@ public class SymbolTable {
         List<String> modules = new ArrayList<String>();
 
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
                     }
                 }
             }
@@ -431,7 +448,6 @@ public class SymbolTable {
                         signature = PythonIndexer.computeClassSig((ClassDef)node, sym);
                     } else if (sym.isFunction() && node instanceof FunctionDef) {
                         assert sym.isFunction() && node instanceof FunctionDef : name + ";" + sym + " in " + module;
-                        ;
                         signature = PythonIndexer.computeFunctionSig(name, (FunctionDef)node, sym);
                     } else {
                         // Probably a generator expression
@@ -503,64 +519,73 @@ public class SymbolTable {
                     int ordinal = 0;
                     String module = null;
                     String asName = null;
-                    for (aliasType at : imp.names) {
-                        if (name.equals(at.asname)) {
-                            module = at.name;
-                            asName = at.asname;
-                            break;
-                        } else if (name.equals(at.name)) {
-                            module = at.name;
-                            break;
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (name.equals(at.getInternalAsname())) {
+                                module = at.getInternalName();
+                                asName = at.getInternalAsname();
+                                break;
+                            } else if (name.equals(at.getInternalName())) {
+                                module = at.getInternalName();
+                                break;
+                            }
                         }
-                    }
-                    if (module == null) {
-                        // For imports with dotted names, like wsgiref.handlers,
-                        // the symbol table entry is just "wsgiref", yet I have to match
-                        // the symbols, so try again more carefully
-                        for (aliasType at : imp.names) {
-                            if (at.asname != null && at.asname.startsWith(name) &&
-                                    at.asname.charAt(name.length()) == '.') {
-                                module = at.name;
-                                asName = at.asname;
-                                break;
-                            } else if (at.name.startsWith(name) &&
-                                    at.name.charAt(name.length()) == '.') {
-                                module = at.name;
-                                break;
+                        if (module == null) {
+                            // For imports with dotted names, like wsgiref.handlers,
+                            // the symbol table entry is just "wsgiref", yet I have to match
+                            // the symbols, so try again more carefully
+                            for (alias at : names) {
+                                if (at.getInternalAsname() != null && at.getInternalAsname().startsWith(name) &&
+                                        at.getInternalAsname().charAt(name.length()) == '.') {
+                                    module = at.getInternalName();
+                                    asName = at.getInternalAsname();
+                                    break;
+                                } else if (at.getInternalName().startsWith(name) &&
+                                        at.getInternalName().charAt(name.length()) == '.') {
+                                    module = at.getInternalName();
+                                    break;
+                                }
                             }
                         }
                     }
                     unused.add(new ImportEntry(module, asName, true, imp, imp.getCharStartIndex() + (ordinal++)));
                 } else if (node instanceof ImportFrom) {
                     ImportFrom imp = (ImportFrom)node;
-                    String module = imp.module;
+                    if (ImportManager.isFutureImport(imp)) {
+                        continue;
+                    }
+                    String module = imp.getInternalModule();
                     String origName = null;
                     String asName = null;
                     int ordinal = 0;
-                    for (aliasType at : imp.names) {
-                        if (name.equals(at.asname)) {
-                            origName = at.name;
-                            asName = at.asname;
-                            break;
-                        } else if (name.equals(at.name)) {
-                            origName = at.name;
-                            break;
+                    List<alias> names = imp.getInternalNames();
+                    if (names != null) {
+                        for (alias at : names) {
+                            if (name.equals(at.getInternalAsname())) {
+                                origName = at.getInternalName();
+                                asName = at.getInternalAsname();
+                                break;
+                            } else if (name.equals(at.getInternalName())) {
+                                origName = at.getInternalName();
+                                break;
+                            }
                         }
-                    }
-                    if (origName == null) {
-                        // For imports with dotted names, like wsgiref.handlers,
-                        // the symbol table entry is just "wsgiref", yet I have to match
-                        // the symbols, so try again more carefully
-                        for (aliasType at : imp.names) {
-                            if (at.asname != null && at.asname.startsWith(name) &&
-                                    at.asname.charAt(name.length()) == '.') {
-                                origName = at.name;
-                                asName = at.asname;
-                                break;
-                            } else if (at.name.startsWith(name) &&
-                                    at.name.charAt(name.length()) == '.') {
-                                origName = at.name;
-                                break;
+                        if (origName == null) {
+                            // For imports with dotted names, like wsgiref.handlers,
+                            // the symbol table entry is just "wsgiref", yet I have to match
+                            // the symbols, so try again more carefully
+                            for (alias at : names) {
+                                if (at.getInternalAsname() != null && at.getInternalAsname().startsWith(name) &&
+                                        at.getInternalAsname().charAt(name.length()) == '.') {
+                                    origName = at.getInternalName();
+                                    asName = at.getInternalAsname();
+                                    break;
+                                } else if (at.getInternalName().startsWith(name) &&
+                                        at.getInternalName().charAt(name.length()) == '.') {
+                                    origName = at.getInternalName();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -592,15 +617,17 @@ public class SymbolTable {
 
         @Override
         public Object visitImport(Import imp) throws Exception {
-            if (imp.names != null) {
+            List<alias> names = imp.getInternalNames();
+            if (names != null && names.size() > 0) {
                 boolean found = false;
-                for (aliasType at : imp.names) {
-                    if (at.asname != null) {
-                        if (name.equals(at.asname)) {
+                for (alias at : names) {
+                    String asName = at.getInternalAsname();
+                    if (asName != null) {
+                        if (name.equals(asName)) {
                             found = true;
                             break;
                         }
-                    } else if (name.equals(at.name)) {
+                    } else if (name.equals(at.getInternalName())) {
                         found = true;
                         break;
                     }
@@ -614,15 +641,17 @@ public class SymbolTable {
 
         @Override
         public Object visitImportFrom(ImportFrom imp) throws Exception {
-            if (imp.names != null) {
+            List<alias> names = imp.getInternalNames();
+            if (names != null && names.size() > 0) {
                 boolean found = false;
-                for (aliasType at : imp.names) {
-                    if (at.asname != null) {
-                        if (name.equals(at.asname)) {
+                for (alias at : names) {
+                    String asName = at.getInternalAsname();
+                    if (asName != null) {
+                        if (name.equals(asName)) {
                             found = true;
                             break;
                         }
-                    } else if (name.equals(at.name)) {
+                    } else if (name.equals(at.getInternalName())) {
                         found = true;
                         break;
                     }
@@ -637,7 +666,7 @@ public class SymbolTable {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            if (node.id.equals(name)) {
+            if (node.getInternalId().equals(name)) {
                 nodes.add(node);
             }
             return super.visitName(node);
@@ -645,7 +674,7 @@ public class SymbolTable {
 
         @Override
         public Object visitFunctionDef(FunctionDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 nodes.add(node);
             }
 
@@ -658,7 +687,7 @@ public class SymbolTable {
 
         @Override
         public Object visitClassDef(ClassDef node) throws Exception {
-            if (name.equals(node.name)) {
+            if (name.equals(node.getInternalName())) {
                 nodes.add(node);
             }
 
@@ -785,6 +814,222 @@ public class SymbolTable {
         return notInInitAttribs;
     }
 
+    private ScopeInfo getClassScope(String className) {
+        for (ScopeInfo scopeInfo : scopes.values()) {
+            if (scopeInfo.scope_node instanceof ClassDef) {
+                ClassDef curClass = (ClassDef)scopeInfo.scope_node;
+                if (curClass.getInternalName().equals(className)) {
+                    return scopeInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    private int belongsToParents(ClassDef cls, String name, HashMap<String, String> cycling) {
+        List<expr> bases = cls.getInternalBases();
+        if (bases == null || bases.size() == 0) {
+            return NO; // no parents
+        }
+        for (expr base : bases) {
+            String className = null;
+            if (base instanceof Name) {
+                className = ((Name)base).getInternalId();
+            } else {
+                // should be Attribute here( module.className form )
+                // which imply imported from external scope
+                // So we give up on scope returning optimistaically True
+                return YES;
+            }
+            assert (className != null);
+            if (cycling.get(className) != null) {
+                cycling.clear();
+                // put parent child conficting back in cycling
+                cycling.put(className, cls.getInternalName());
+                return CIRCULAR;
+            }
+            cycling.put(className, className);
+            ScopeInfo localClassScope = getClassScope(className);
+            if (localClassScope == null) {
+                // return true (success) when at least one parent is outside module scope
+                // just to notify caller to be optimistic and assume that
+                // name is resolved by imported classes inheritance
+                // scanning imported classed from here is discouraged for
+                // performances reasons
+                return YES;
+            } else {
+                if ((name != null) &&
+                        (localClassScope.attributes.get(name) != null)) {
+                    return YES;
+                }
+                // try recurse parentage to resolve attribute
+                ClassDef parentClass = (ClassDef)localClassScope.scope_node;
+                int recResult = belongsToParents(parentClass, name, cycling);
+                if (recResult != NO) // stop on FOUND(YES) or CIRCULAR error
+                {
+                    return recResult;
+                }
+            }
+        }
+        return NO;
+    }
+
+    private boolean isImported(String moduleName) {
+        for (Import imported : imports) {
+            List<alias> names = imported.getInternalNames();
+            if (names != null) {
+                for (alias cur : names) {
+                    String name = cur.getInternalName();
+                    String asName = cur.getInternalAsname();
+                    if (((name != null) && (name.equals(moduleName))) ||
+                            ((asName != null) && (asName.equals(moduleName)))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isImportedFrom(String className) {
+        for (ImportFrom importedFrom : importsFrom) {
+            List<alias> names = importedFrom.getInternalNames();
+            if (names != null) {
+                for (alias cur : names) {
+                    String name = cur.getInternalName();
+                    String asName = cur.getInternalAsname();
+                    if (((name != null) && (name.equals(className))) ||
+                            ((asName != null) && (asName.equals(className)))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<PythonTree> getUnresolvedParents(CompilationInfo info) {
+        // deal with unresolved parents in inherit trees
+        List<PythonTree> unresolvedParents = new ArrayList<PythonTree>();
+        Index gsfIndex = info.getIndex(PythonTokenId.PYTHON_MIME_TYPE);
+        PythonIndex index = PythonIndex.get(gsfIndex, info.getFileObject());
+
+        for (String cur : classes.keySet()) {
+            ClassDef cls = classes.get(cur);
+            List<expr> bases = cls.getInternalBases();
+            if (bases == null || bases.size() > 0) {
+                // has parents
+                for (expr base : bases) {
+                    if (base instanceof Name) {
+                        String className = ((Name)base).getInternalId();
+                        Set<String> builtin = getBuiltin(info);
+                        if ((!classes.containsKey(className)) &&
+                                (!builtin.contains(className))) {
+                            // check in from imports
+                            if (!isImportedFrom(className)) {
+                                unresolvedParents.add(base);
+                            }
+                        }
+                    } else {
+                        // should be Attribute here( module.className form )
+                        // which imply imported from external scope
+                        Attribute attr = (Attribute)base;
+                        String clsName = attr.getInternalAttr();
+                        if (attr.getInternalValue() instanceof Name) {
+                            String moduleName = ((Name)(attr.getInternalValue())).getInternalId();
+                            // check that import is resolved first
+                            if (!isImported(moduleName)) {
+                                unresolvedParents.add(base);
+                            } else {
+                                Set<IndexedElement> found = index.getImportedElements(clsName, NameKind.EXACT_NAME, PythonIndex.ALL_SCOPE, Collections.<String>singleton(moduleName), null);
+                                if (found.size() == 0) {
+                                    unresolvedParents.add(base);
+                                }
+                            }
+                        } else {
+                            unresolvedParents.add(base);
+                        }
+                    }
+                }
+            }
+        }
+        return unresolvedParents;
+    }
+
+    public HashMap<ClassDef, String> getClassesCyclingRedundancies(CompilationInfo info) {
+        HashMap<ClassDef, String> cyclingRedundancies = new HashMap<ClassDef, String>();
+        for (String cur : classes.keySet()) {
+            HashMap<String, String> returned = new HashMap<String, String>();
+            ClassDef curClass = classes.get(cur);
+            if (!cyclingRedundancies.containsKey(curClass)) {
+                if (belongsToParents(curClass, null, returned) == CIRCULAR) {
+                    // store hashMap returned
+                    Map.Entry<String, String> cycling = returned.entrySet().iterator().next();
+                    cyclingRedundancies.put(curClass, cycling.getKey());
+                }
+            }
+        }
+        return cyclingRedundancies;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PythonTree> getUnresolvedAttributes(CompilationInfo info) {
+        List<PythonTree> unresolvedNodes = new ArrayList<PythonTree>();
+        for (ScopeInfo scopeInfo : scopes.values()) {
+            Set<String> unresolved = new HashSet<String>();
+            Map<String, SymInfo> tbl = scopeInfo.tbl;
+            // unresolved attributes in local classes
+            Map<String, SymInfo> attribs = scopeInfo.attributes;
+            for (Map.Entry<String, SymInfo> curAttr : attribs.entrySet()) {
+                SymInfo symInfo = curAttr.getValue();
+                if (symInfo.isRead()) {
+                    // check for builtin attribs first
+                    if (classAttributes.get(curAttr.getKey()) == null) {
+                        // not a builtin attribute
+                        ScopeInfo parentScope = scopeInfo.getClassScope();
+                        if (parentScope != null) {
+                            // limit scope to Classes for self and inherited
+                            Map<String, SymInfo> parentattribs = parentScope.attributes;
+                            SymInfo classAttr = parentattribs.get(curAttr.getKey());
+                            tbl = parentScope.tbl;
+                            if (classAttr == null) {
+                                // may be  also a reference to a method
+                                classAttr = tbl.get(curAttr.getKey());
+                            }
+                            if (classAttr == null) {
+                                // do not bother with method since they are
+                                // managed by completion
+                                ClassDef curClass = (ClassDef)parentScope.scope_node;
+                                if (belongsToParents(curClass, curAttr.getKey(), new HashMap()) == NO) {
+                                    if (!symInfo.isCalled()) {
+                                        // no corresponding attributes
+                                        //PythonTree tree = symInfo.node ;
+                                        Attribute attr = (Attribute)symInfo.node;
+                                        // Name name = new Name(tree.getToken(),attr.getInternalAttr(),attr.ctx) ;
+                                        unresolvedNodes.add(attr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (unresolved.size() > 0) {
+                NameFinder finder = new NameFinder(unresolved);
+                List<Name> nodes = finder.run(scopeInfo.scope_node);
+                unresolvedNodes.addAll(nodes);
+            }
+
+        }
+
+        if (unresolvedNodes.size() > 1) {
+            Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+        }
+
+        return unresolvedNodes;
+    }
+
     @SuppressWarnings("unchecked")
     public List<PythonTree> getUnresolved(CompilationInfo info) {
         List<PythonTree> unresolvedNodes = new ArrayList<PythonTree>();
@@ -822,39 +1067,6 @@ public class SymbolTable {
                 }
             }
 
-            // unresolved attributes in local classes
-            Map<String, SymInfo> attribs = scopeInfo.attributes;
-            for (Map.Entry<String, SymInfo> curAttr : attribs.entrySet()) {
-                SymInfo symInfo = curAttr.getValue();
-                if (symInfo.isRead()) {
-                    // check for builtin attribs first
-                    if (classAttributes.get(curAttr.getKey()) == null) {
-                        // not a builtin attribute
-                        ScopeInfo parentScope = scopeInfo.getClassScope();
-                        if (parentScope != null) {
-                            // limit scope to Classes for self and inherited
-                            Map<String, SymInfo> parentattribs = parentScope.attributes;
-                            SymInfo classAttr = parentattribs.get(curAttr.getKey());
-                            tbl = parentScope.tbl;
-                            if (classAttr == null) {
-                                // may be  also a reference to a method
-                                classAttr = tbl.get(curAttr.getKey());
-                            }
-                            if (classAttr == null) {
-                                // do not bother with method since they are
-                                // managed by completion
-                                if (!symInfo.isCalled()) {
-                                    // no corresponding attributes
-                                    //PythonTree tree = symInfo.node ;
-                                    Attribute attr = (Attribute)symInfo.node;
-                                    // Name name = new Name(tree.getToken(),attr.attr,attr.ctx) ;
-                                    unresolvedNodes.add(attr);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             if (unresolved.size() > 0) {
                 // Check imports and see if it's resolved by existing imports
@@ -879,7 +1091,7 @@ public class SymbolTable {
 
         if (unresolvedNodes.size() > 1) {
             Collections.sort(unresolvedNodes, PythonUtils.ATTRIBUTE_NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unresolvedNodes;
@@ -915,7 +1127,7 @@ public class SymbolTable {
 
         if (unusedNodes.size() > 1) {
             Collections.sort(unusedNodes, PythonUtils.NAME_NODE_COMPARATOR);
-        //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
+            //Collections.sort(unusedNodes, PythonUtils.NODE_POS_COMPARATOR);
         }
 
         return unusedNodes;
@@ -950,7 +1162,7 @@ public class SymbolTable {
 
         @Override
         public Object visitName(Name node) throws Exception {
-            String name = node.id;
+            String name = node.getInternalId();
             if (names.contains(name)) {
                 nodes.add(node);
             }

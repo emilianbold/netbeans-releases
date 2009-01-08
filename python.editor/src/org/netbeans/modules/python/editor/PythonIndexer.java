@@ -68,7 +68,7 @@ import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  *
@@ -191,7 +191,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.115"; // NOI18N
+        return "0.116"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -235,13 +235,13 @@ public class PythonIndexer implements Indexer {
             this.factory = factory;
 
             module = PythonUtils.getModuleName(null, file);
-        //PythonTree root = PythonAstUtils.getRoot(result);
-        //if (root instanceof Module) {
-        //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
-        //    if (moduleDoc != null) {
-        //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
-        //    }
-        //}
+            //PythonTree root = PythonAstUtils.getRoot(result);
+            //if (root instanceof Module) {
+            //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
+            //    if (moduleDoc != null) {
+            //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
+            //    }
+            //}
         }
 
         private IndexTask(PythonParserResult result, IndexDocumentFactory factory, String overrideUrl) {
@@ -310,7 +310,7 @@ public class PythonIndexer implements Indexer {
                     }
                 } else if (sym.isFunction()) {
                     if (sym.node instanceof Name) {
-                        assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                        assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                     }
                     assert sym.node instanceof FunctionDef : sym.node;
                     FunctionDef def = (FunctionDef)sym.node;
@@ -346,8 +346,9 @@ public class PythonIndexer implements Indexer {
             classDocument.addPair(FIELD_IN, module, true);
 
             // Superclass
-            if (clz.bases != null) {
-                for (exprType base : clz.bases) {
+            List<expr> bases = clz.getInternalBases();
+            if (bases != null) {
+                for (expr base : bases) {
                     String extendsName = PythonAstUtils.getExprName(base);
                     if (extendsName != null) {
                         classDocument.addPair(FIELD_EXTENDS_NAME, extendsName, true);
@@ -392,7 +393,7 @@ public class PythonIndexer implements Indexer {
 
                 } else if (sym.isFunction() && sym.node instanceof FunctionDef) {
                     if (sym.node instanceof Name) {
-                        assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                        assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                     }
                     FunctionDef def = (FunctionDef)sym.node;
                     String sig = computeFunctionSig(name, def, sym);
@@ -429,7 +430,7 @@ public class PythonIndexer implements Indexer {
 
                     } else if (sym.isFunction() && sym.node instanceof FunctionDef) {
                         if (sym.node instanceof Name) {
-                            assert false : "Unexpected non-function node, " + ((Name)sym.node).id + " - from symbol " + name + " in " + file + " with sym=" + sym;
+                            assert false : "Unexpected non-function node, " + ((Name)sym.node).getInternalId() + " - from symbol " + name + " in " + file + " with sym=" + sym;
                         }
                         FunctionDef def = (FunctionDef)sym.node;
                         String sig = computeFunctionSig(name, def, sym);
@@ -466,7 +467,7 @@ public class PythonIndexer implements Indexer {
 
     public static String computeClassSig(ClassDef def, SymInfo sym) {
         StringBuilder sig = new StringBuilder();
-        sig.append(def.name);
+        sig.append(def.getInternalName());
         appendFlags(sig, 'C', sym, 0);
 
         return sig.toString();
@@ -476,12 +477,29 @@ public class PythonIndexer implements Indexer {
         StringBuilder sb = new StringBuilder();
         sb.append(name);
         char type;
+        int flags = 0;
         if ("__init__".equals(name)) { // NOI18N
             type = 'c';
         } else {
             type = 'F';
+
+            List<expr> decorators = def.getInternalDecorator_list();
+            if (decorators != null && decorators.size() > 0) {
+                for (expr decorator : decorators) {
+                    String decoratorName = PythonAstUtils.getExprName(decorator);
+                    if ("property".equals(decoratorName)) { // NOI18N
+                        type = 'A';
+                    } else if ("classmethod".equals(decoratorName)) { // NOI18N
+                        // Classmethods seem to be used mostly for constructors/inherited factories
+                        type = 'c';
+                        flags |= IndexedElement.CONSTRUCTOR | IndexedElement.STATIC;
+                    } else if ("staticmethod".equals(decoratorName)) { // NOI18N
+                        flags |= IndexedElement.STATIC;
+                    }
+                }
+            }
         }
-        appendFlags(sb, type, sym, 0);
+        appendFlags(sb, type, sym, flags);
 
         List<String> params = PythonAstUtils.getParameters(def);
         boolean first = true;
@@ -848,52 +866,24 @@ public class PythonIndexer implements Indexer {
                                             }
 
                                         }
-                                    } else if (key.equals("function") || key.equals("data") && m.group(2).contains("(")) { // NOI18N
+                                    } else if (key.equals("function") || (key.equals("data") && m.group(2).contains("("))) { // NOI18N
                                         // constants.rst for example registers a data item for "quit" which is really a function
 
                                         String signature = m.group(2);
-                                        int dot = signature.indexOf('.');
-                                        if (dot != -1) {
-                                            int paren = signature.indexOf('(');
-                                            if (paren == -1 || paren > dot) {
-                                                assert signature.matches("\\w+\\.\\w+.*") : signature;
-                                                signature = signature.substring(dot + 1);
+                                        indexRstFunction(signature, lines, lineno, document);
+
+                                        // See if we have any additional lines with signatures
+                                        for (int lookahead = lineno + 1; lookahead < maxLines; lookahead++) {
+                                            String l = lines[lookahead];
+                                            String trimmed = l.trim();
+                                            if (trimmed.length() == 0) {
+                                                break;
                                             }
+                                            lineno++;
+
+                                            indexRstFunction(trimmed, lines, lookahead, document);
                                         }
-                                        signature = cleanupSignature(signature);
-                                        if (signature.indexOf('(') == -1) {
-                                            signature = signature + "()";
-                                        } else if (signature.indexOf(')') == -1) {
-                                            //signature = signature + ")";
-                                            assert signature.indexOf(')') != -1;
-                                        }
-                                        int lparen = signature.indexOf('(');
-                                        int rparen = signature.indexOf(')', lparen + 1);
-                                        if (lparen != -1 && rparen != -1) {
-                                            String methodName = signature.substring(0, lparen);
-                                            String args = signature.substring(lparen + 1, rparen);
 
-                                            StringBuilder sig = new StringBuilder();
-                                            sig.append(methodName);
-                                            int symFlags = 0;
-                                            if (SymInfo.isPrivateName(methodName)) {
-                                                symFlags |= ScopeConstants.PRIVATE;
-                                            }
-                                            // TODO - look up deprecated etc.
-                                            SymInfo fakeSym = new SymInfo(symFlags);
-
-                                            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
-                                            if (isDeprecated(lines, lineno)) {
-                                                flags |= IndexedElement.DEPRECATED;
-                                            }
-
-
-                                            appendFlags(sig, 'F', fakeSym, flags);
-                                            sig.append(args);
-                                            sig.append(';');
-
-                                            document.addPair(FIELD_ITEM, sig.toString(), true);
-                                        }
                                     } else if (key.equals("data")) { // NOI18N
                                         String data = m.group(2);
 
@@ -942,7 +932,7 @@ public class PythonIndexer implements Indexer {
                                     }
                                 }
                             }
-                        } else if (line.startsWith(".. _bltin-file-objects:")) { // NOI18N
+                        } else if (line.startsWith(".. _bltin-file-objects:") || line.startsWith(".. _string-methods:")) { // NOI18N
                             if (currentClass != null) {
                                 currentClass = null;
                             }
@@ -970,6 +960,46 @@ public class PythonIndexer implements Indexer {
         }
 
         return documents;
+    }
+
+    private void indexRstFunction(String signature, String[] lines, int lineno, IndexDocument document) {
+        int dot = signature.indexOf('.');
+        if (dot != -1) {
+            int paren = signature.indexOf('(');
+            if (paren == -1 || paren > dot) {
+                assert signature.matches("\\w+\\.\\w+.*") : signature;
+                signature = signature.substring(dot + 1);
+            }
+        }
+        signature = cleanupSignature(signature);
+        if (signature.indexOf('(') == -1) {
+            signature = signature + "()";
+        } else if (signature.indexOf(')') == -1) {
+            //signature = signature + ")";
+            assert signature.indexOf(')') != -1;
+        }
+        int lparen = signature.indexOf('(');
+        int rparen = signature.indexOf(')', lparen + 1);
+        if (lparen != -1 && rparen != -1) {
+            String methodName = signature.substring(0, lparen);
+            String args = signature.substring(lparen + 1, rparen);
+            StringBuilder sig = new StringBuilder();
+            sig.append(methodName);
+            int symFlags = 0;
+            if (SymInfo.isPrivateName(methodName)) {
+                symFlags |= ScopeConstants.PRIVATE;
+            }
+            // TODO - look up deprecated etc.
+            SymInfo fakeSym = new SymInfo(symFlags);
+            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
+            if (isDeprecated(lines, lineno)) {
+                flags |= IndexedElement.DEPRECATED;
+            }
+            appendFlags(sig, 'F', fakeSym, flags);
+            sig.append(args);
+            sig.append(';');
+            document.addPair(FIELD_ITEM, sig.toString(), true);
+        }
     }
 
     private List<IndexDocument> scanEgg(ParserResult result, IndexDocumentFactory factory) {

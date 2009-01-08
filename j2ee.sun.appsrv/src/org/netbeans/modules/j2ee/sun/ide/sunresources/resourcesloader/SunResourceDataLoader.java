@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
@@ -56,34 +55,33 @@ import org.openide.util.NbBundle;
 public class SunResourceDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = 1L;
-    
+    public static final String MIME_TYPE = "text/x-sun-resource+xml";
+
     public SunResourceDataLoader() {
         this("org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject"); //NOI18N
     }
-    
+
     // Can be useful for subclasses:
     protected SunResourceDataLoader(String recognizedObjectClass) {
         super(recognizedObjectClass);
     }
-    
+
     protected String defaultDisplayName() {
         return NbBundle.getMessage(SunResourceDataLoader.class, "LBL_loaderName"); //NOI18N
     }
-    
+
     protected void initialize() {
         super.initialize();
-        
-        ExtensionList extensions = new ExtensionList();
-        extensions.addExtension("sun-resource"); //NOI18N
-        setExtensions(extensions);
+        getExtensions().addMimeType(MIME_TYPE);
     }
-    
+
     protected String actionsContext () {
-        return "Loaders/xml/sun-resource/Actions/"; // NOI18N
+        return "Loaders/" + MIME_TYPE + "/Actions"; //NOI18N
+
     }
-    
+
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new SunResourceDataObject(primaryFile, this);
     }
-    
+
 }

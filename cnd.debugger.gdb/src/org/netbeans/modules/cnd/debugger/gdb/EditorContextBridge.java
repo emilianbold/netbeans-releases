@@ -534,7 +534,15 @@ public class EditorContextBridge {
             }
             return dobj;
         }
-        
+
+        public FileObject getCurrentFileObject() {
+            FileObject fo = cp1.getCurrentFileObject();
+            if (fo == null) {
+                fo = cp2.getCurrentFileObject();
+            }
+            return fo;
+        }
+
         public String getSelectedFunctionName () {
             String s = cp1.getSelectedFunctionName ();
             if ( (s == null) || (s.trim ().length () < 1)) {

@@ -44,6 +44,7 @@ package org.netbeans.core;
 import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -452,7 +453,7 @@ public abstract class NbTopManager {
         return org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
     }
 
-    public static List getModuleJars() {
+    public static List<File> getModuleJars() {
         return org.netbeans.core.startup.Main.getModuleSystem().getModuleJars();
     }
 

@@ -497,7 +497,7 @@ public class PHPIndexer implements Indexer {
         private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable var = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableType(assignment);
                 String varName = CodeUtils.extractVariableName(var);
                 if (varName != null) {
                     String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;

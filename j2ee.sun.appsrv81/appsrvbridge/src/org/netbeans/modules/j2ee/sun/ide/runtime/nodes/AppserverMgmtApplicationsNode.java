@@ -49,7 +49,6 @@ import org.netbeans.modules.j2ee.sun.bridge.apis.Controller;
 import org.netbeans.modules.j2ee.sun.bridge.apis.Enableable;
 import org.netbeans.modules.j2ee.sun.bridge.apis.Undeployable;
 import org.netbeans.modules.j2ee.sun.ide.controllers.J2EEServerMgmtController;
-import org.netbeans.modules.j2ee.sun.ide.runtime.actions.EnableDisableAction;
 import org.netbeans.modules.j2ee.sun.ide.runtime.actions.UndeployAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
@@ -91,7 +90,6 @@ public abstract class AppserverMgmtApplicationsNode
         if(!isEmbedded) {
             return new SystemAction[] {
                 SystemAction.get(UndeployAction.class),
-                SystemAction.get(EnableDisableAction.class),
                 SystemAction.get(PropertiesAction.class)
             };
         } else {

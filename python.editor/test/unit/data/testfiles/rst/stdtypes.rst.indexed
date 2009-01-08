@@ -72,49 +72,9 @@ Searchable Keys:
   member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
   member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
   member : as_integer_ratio;F;|DOCUMENTED|DOC_ONLY|;;
-  member : capitalize;F;|DOCUMENTED|DOC_ONLY|;;
-  member : center;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
-  member : count;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
-  member : decode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
-  member : encode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
-  member : endswith;F;|DOCUMENTED|DOC_ONLY|;suffix,start,end;
-  member : expandtabs;F;|DOCUMENTED|DOC_ONLY|;tabsize;
-  member : find;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
-  member : format;F;|DOCUMENTED|DOC_ONLY|;format_string,*args,**kwargs;
   member : fromhex;F;|DOCUMENTED|DOC_ONLY|;s;
   member : hex;F;|DOCUMENTED|DOC_ONLY|;;
-  member : index;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
-  member : isalnum;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isalpha;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isdecimal;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isdigit;F;|DOCUMENTED|DOC_ONLY|;;
-  member : islower;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isnumeric;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isspace;F;|DOCUMENTED|DOC_ONLY|;;
-  member : istitle;F;|DOCUMENTED|DOC_ONLY|;;
-  member : isupper;F;|DOCUMENTED|DOC_ONLY|;;
-  member : join;F;|DOCUMENTED|DOC_ONLY|;seq;
-  member : ljust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
-  member : lower;F;|DOCUMENTED|DOC_ONLY|;;
-  member : lstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
   member : next;F;|DOCUMENTED|DOC_ONLY|;;
-  member : partition;F;|DOCUMENTED|DOC_ONLY|;sep;
-  member : replace;F;|DOCUMENTED|DOC_ONLY|;old,new,count;
-  member : rfind;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
-  member : rindex;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
-  member : rjust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
-  member : rpartition;F;|DOCUMENTED|DOC_ONLY|;sep;
-  member : rsplit;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
-  member : rstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
-  member : split;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
-  member : splitlines;F;|DOCUMENTED|DOC_ONLY|;keepends;
-  member : startswith;F;|DOCUMENTED|DOC_ONLY|;prefix,start,end;
-  member : strip;F;|DOCUMENTED|DOC_ONLY|;chars;
-  member : swapcase;F;|DOCUMENTED|DOC_ONLY|;;
-  member : title;F;|DOCUMENTED|DOC_ONLY|;;
-  member : translate;F;|DOCUMENTED|DOC_ONLY|;table,deletechars;
-  member : upper;F;|DOCUMENTED|DOC_ONLY|;;
-  member : zfill;F;|DOCUMENTED|DOC_ONLY|;width;
 
 Not Searchable Keys:
 
@@ -151,10 +111,60 @@ Not Searchable Keys:
 
 Document 4
 Searchable Keys:
+  class : str
+  class-ig : str
+  in : stdtypes
+  member : capitalize;F;|DOCUMENTED|DOC_ONLY|;;
+  member : center;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : count;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : decode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
+  member : encode;F;|DOCUMENTED|DOC_ONLY|;encoding,errors;
+  member : endswith;F;|DOCUMENTED|DOC_ONLY|;suffix,start,end;
+  member : expandtabs;F;|DOCUMENTED|DOC_ONLY|;tabsize;
+  member : find;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : format;F;|DOCUMENTED|DOC_ONLY|;format_string,*args,**kwargs;
+  member : index;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : isalnum;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isalpha;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isdecimal;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isdigit;F;|DOCUMENTED|DOC_ONLY|;;
+  member : islower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isnumeric;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isspace;F;|DOCUMENTED|DOC_ONLY|;;
+  member : istitle;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isupper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : join;F;|DOCUMENTED|DOC_ONLY|;seq;
+  member : ljust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : lower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : lstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : partition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : replace;F;|DOCUMENTED|DOC_ONLY|;old,new,count;
+  member : rfind;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : rindex;F;|DOCUMENTED|DOC_ONLY|;sub,start,end;
+  member : rjust;F;|DOCUMENTED|DOC_ONLY|;width,fillchar;
+  member : rpartition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : rsplit;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
+  member : rstrip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : split;F;|DOCUMENTED|DOC_ONLY|;sep,maxsplit;
+  member : splitlines;F;|DOCUMENTED|DOC_ONLY|;keepends;
+  member : startswith;F;|DOCUMENTED|DOC_ONLY|;prefix,start,end;
+  member : strip;F;|DOCUMENTED|DOC_ONLY|;chars;
+  member : swapcase;F;|DOCUMENTED|DOC_ONLY|;;
+  member : title;F;|DOCUMENTED|DOC_ONLY|;;
+  member : translate;F;|DOCUMENTED|DOC_ONLY|;table,deletechars;
+  member : upper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : zfill;F;|DOCUMENTED|DOC_ONLY|;width;
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
   item : dict;C;|DOCUMENTED|DOC_ONLY|;
   item : file;C;|DOCUMENTED|DOC_ONLY|;
   item : float;C;|DOCUMENTED|DOC_ONLY|;
   item : set;C;|DOCUMENTED|DOC_ONLY|;
+  item : str;C;|DOCUMENTED|DOC_ONLY|;
   module : stdtypes
 
 Not Searchable Keys:

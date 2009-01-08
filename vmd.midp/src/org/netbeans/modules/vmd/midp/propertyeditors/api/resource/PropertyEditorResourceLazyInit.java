@@ -134,7 +134,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
-        return new PropertyEditorResourceLazyInit( ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) {
+        return new PropertyEditorResourceLazyInit(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) {
 
             @Override
             protected PropertyEditorResourceElement createElement() {
@@ -154,34 +154,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
      * @param userCodeLabel - text labe for custom code window
      * @param databinding - Boolena.TRUE FALSE is databinding is used
      */
-    public PropertyEditorResourceLazyInit(PropertyEditorResourceElement perElement,
-            TypeID type,
-            String newComponentAsText,
-            String noneComponentAsText,
-            String userCodeLabel,
-            boolean databinding) {
-        super(userCodeLabel);
-
-        this.databinding = databinding;
-
-        if (newComponentAsText == null || noneComponentAsText == null) {
-            throw Debug.illegalArgument("Argument can not be null"); //NOI18N
-        }
-
-        if (newComponentAsText.equals(noneComponentAsText)) {
-            throw Debug.illegalArgument("Arguments can not be equal"); //NOI18N
-        }
-
-        this.componentTypeID = type;
-        this.newComponentAsText = newComponentAsText;
-        this.noneComponentAsText = noneComponentAsText;
-
-        createdComponents = new HashMap<String, DesignComponent>();
-
-        this.perElement = perElement;
-        perElement.setPropertyEditorMessageAwareness(this);
-    }
-
     public PropertyEditorResourceLazyInit(
             TypeID type,
             String newComponentAsText,
@@ -205,7 +177,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         this.noneComponentAsText = noneComponentAsText;
 
         createdComponents = new HashMap<String, DesignComponent>();
-        
     }
 
     protected abstract PropertyEditorResourceElement createElement();
@@ -222,30 +193,31 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             rePanel = null;
         }
         radioButton = null;
-        if (perElement instanceof CleanUp) {
+        if (perElement != null && perElement instanceof CleanUp) {
             ((CleanUp) perElement).clean(component);
+            perElement = null;
         }
-        perElement = null;
         if (databindingElement != null) {
             databindingElement.clean(component);
+            databindingElement = null;
         }
-        databindingElement = null;
+        
     }
 
     @Override
     public void setAsText(String text) {
         saveValue(text);
     }
-
+    
     @Override
     public final Component getCustomEditor() {
         if (perElement == null) {
-            final DesignComponent component_ = component != null ? component.get() :null;
+            final DesignComponent component_ = component != null ? component.get() : null;
             perElement = createElement();
             perElement.setDesignComponent(component_);
             perElement.setPropertyEditorMessageAwareness(this);
         }
-        
+
         if (radioButton == null) {
             radioButton = new JRadioButton();
             rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
@@ -271,11 +243,11 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             updateState((PropertyValue) getValue());
         }
         perElement.getCustomEdiotrNotification();
-        
+
         return superCustomEditor;
     }
 
-    private Map<String, DesignComponent> getComponentsMap() {
+    protected Map<String, DesignComponent> getComponentsMap() {
         final Map<String, DesignComponent> componentsMap = new TreeMap<String, DesignComponent>();
         if (component == null || component.get() == null) {
             return componentsMap;
@@ -369,19 +341,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         }
     }
 
-    private void setValue(PropertyValue value) {
-        super.setValue(value);
-        final DesignComponent component_ = component.get();
-        if (!NULL_VALUE.equals(value) && perElement != null && perElement.isPostSetValueSupported(component_)) {
-            perElement.postSetValue(component_, value.getComponent());
-        } else if (NULL_VALUE.equals(value)) {
-            perElement.nullValueSet(component_);
-        } 
-    }
-
     // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
-        String nameToBeCreated = ClassCode.getSuggestedMainName (componentTypeID);
+        String nameToBeCreated = ClassCode.getSuggestedMainName(componentTypeID);
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);
         component.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
     }
@@ -485,20 +447,20 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
 
                             public void run() {
                                 if (wrapper.getComponent() != null) {
-                                    // component need to be changed
+                                    // component needs to be changed
                                     Map<String, PropertyValue> changes = wrapper.getChanges();
                                     for (String propertyName : changes.keySet()) {
                                         final PropertyValue propertyValue = changes.get(propertyName);
                                         _component.writeProperty(propertyName, propertyValue);
                                     }
                                 } else {
-                                    // component need to be deleted
+                                    // component needs to be deleted
                                     toBeDeleted.add(_component);
                                 }
                             }
                         });
                     } else {
-                        // component need to be created
+                        // component needs to be created
                         if (wrapper.isDeleted()) {
                             // do not create
                             continue;
@@ -543,9 +505,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
                 }
 
             }
-            perElement.postSaveValue(component.get());
-
+            
         }
+        perElement.postSaveValue(component.get());
     }
 
     public JComponent getCustomEditorComponent() {
@@ -565,11 +527,14 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
     }
 
     public void updateState(PropertyValue value) {
+        if (component == null || component.get() == null) {
+            return;
+        }
         final DesignComponent c = component.get();
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);
         }
-        if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
+        if (getPropertyDisplayName() != null && MidpDatabindingSupport.getDatabaindingAsText(c, getPropertyNames().get(0)) != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
         } else if (rePanel.needsUpdate()) {
             radioButton.setSelected(!isCurrentValueAUserCodeType());

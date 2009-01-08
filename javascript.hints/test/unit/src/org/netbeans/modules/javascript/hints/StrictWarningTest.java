@@ -114,6 +114,11 @@ public class StrictWarningTest extends HintTestBase {
         checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", null);
     }
 
+    public void testSideEffectsNamespaces() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/namespace.js", null);
+    }
+
     // Test no false return warnings
     public void testReturnAnalysis() throws Exception {
         goldenfileSuffix = "";

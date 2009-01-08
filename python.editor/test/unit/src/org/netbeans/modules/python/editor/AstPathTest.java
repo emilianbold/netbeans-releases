@@ -125,7 +125,7 @@ public class AstPathTest extends PythonTestBase {
         AstPath path = getPath(relFilePath, caretLine);
         ClassDef def = (ClassDef)path.getTypedAncestor(ClassDef.class);
         assertNotNull(def);
-        assertEquals("DuplicateSectionError", def.name);
+        assertEquals("DuplicateSectionError", def.getInternalName());
     }
 
     public void testGetTypedAncestorFrom() throws Exception {
@@ -139,6 +139,6 @@ public class AstPathTest extends PythonTestBase {
 
         FunctionDef def = (FunctionDef)path.getTypedAncestor(FunctionDef.class, parent);
         assertNotNull(def);
-        assertEquals("test", def.name);
+        assertEquals("test", def.getInternalName());
     }
 }

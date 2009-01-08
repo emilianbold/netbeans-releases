@@ -118,6 +118,9 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFileRemoved(List<NativeFileItem> file) {
     }
 
+    public void onFileImplRemoved(List<FileImpl> files){
+    }
+
     public void onFileAdded(NativeFileItem file) {
     }
 

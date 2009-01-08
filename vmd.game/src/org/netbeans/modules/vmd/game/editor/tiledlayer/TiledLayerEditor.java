@@ -65,77 +65,78 @@ import org.openide.util.NbBundle;
 public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerListener, PropertyChangeListener {
         
     public static final int MAX_COMPILABLE_CELLS = 8000;
+    public static final int MAX_EXTENDABLE_CELLS = 100000;
     
-        private TiledLayer tiledLayer;
-        private TiledLayerEditorComponent editorComponent;
-        private JScrollPane editorScroll;
+    private TiledLayer tiledLayer;
+    private TiledLayerEditorComponent editorComponent;
+    private JScrollPane editorScroll;
         
         /**
      * Creates new form TiledLayerEditor
      */
-        public TiledLayerEditor(final TiledLayer tiledLayer) {
-                this.tiledLayer = tiledLayer;
-                this.tiledLayer.addTiledLayerListener(this);
-                this.tiledLayer.addPropertyChangeListener(this);
-                this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
-                initComponents();
-                
-                this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.name"));
-                this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.description"));
-                
-                this.toggleButtonPaint.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (toggleButtonPaint.isSelected()) {
-                            editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_PAINT);
-                        }
-                    }
-                });
-                this.toggleButtonSelect.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (toggleButtonSelect.isSelected()) {
-                            editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_SELECT);
-                        }
-                    }
-                });
-                this.resizableModeButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        editorComponent.setAutoResizable(resizableModeButton.isSelected());
-                    }
-                });
-                
-                this.toggleButtonPaint.setSelected(true);
-                this.resizableModeButton.setSelected(true);
-                
-                this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                                NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
-                                DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt"));
-                                dd.setButtonListener(dialog);
-                                dd.setValid(false);
-                                dialog.setDialogDescriptor(dd);
-                                Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-                                d.setVisible(true);
-                        }
-                });
-                this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
-                this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
-                this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
-                
-                this.editorScroll = new JScrollPane();
-                this.editorScroll.getViewport().setBackground(Color.WHITE);
-                this.editorScroll.setViewportView(this.editorComponent);
-                this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
-                this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
-                this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
-                this.jPanel2.add(this.editorScroll, BorderLayout.CENTER);
-                
-                JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
-                scrollAnimTiles.setBorder(null);
-                this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
+    public TiledLayerEditor(final TiledLayer tiledLayer) {
+        this.tiledLayer = tiledLayer;
+        this.tiledLayer.addTiledLayerListener(this);
+        this.tiledLayer.addPropertyChangeListener(this);
+        this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
+        initComponents();
+
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.name"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.description"));
+
+        this.toggleButtonPaint.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (toggleButtonPaint.isSelected()) {
+                    editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_PAINT);
+                }
+            }
+        });
+        this.toggleButtonSelect.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (toggleButtonSelect.isSelected()) {
+                    editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_SELECT);
+                }
+            }
+        });
+        this.resizableModeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editorComponent.setAutoResizable(resizableModeButton.isSelected());
+            }
+        });
+
+        this.toggleButtonPaint.setSelected(true);
+        this.resizableModeButton.setSelected(true);
+
+        this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
+                    DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt"));
+                    dd.setButtonListener(dialog);
+                    dd.setValid(false);
+                    dialog.setDialogDescriptor(dd);
+                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                    d.setVisible(true);
+                }
+            });
+            this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
+            this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
+            this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
+
+            this.editorScroll = new JScrollPane();
+            this.editorScroll.getViewport().setBackground(Color.WHITE);
+            this.editorScroll.setViewportView(this.editorComponent);
+            this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
+            this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
+            this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
+            this.jPanel2.add(this.editorScroll, BorderLayout.CENTER);
+
+            JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
+            scrollAnimTiles.setBorder(null);
+            this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
         
         this.updateTextLabels();
-        }
-        
+    }
+
         /** This method is called from within the constructor to
          * initialize the form.
          * WARNING: Do NOT modify this code. The content of this method is
@@ -306,13 +307,30 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
                 textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
         Color textColor = null;
-        if (this.tiledLayer.getRowCount() * this.tiledLayer.getColumnCount() > MAX_COMPILABLE_CELLS) {
+        int cellsCnt = this.tiledLayer.getRowCount() * this.tiledLayer.getColumnCount();
+        if (cellsCnt > MAX_EXTENDABLE_CELLS) {
             textColor = Color.RED;
-            textFieldName.setToolTipText(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.textFieldName.err.tooltip"));
+            textFieldName.setToolTipText(NbBundle.getMessage(TiledLayerEditor.class,
+                    "TiledLayerEditor.textFieldName.notExtendable.err.tooltip",
+                    MAX_EXTENDABLE_CELLS));
+            resizableModeButton.setSelected(false);
+            editorComponent.setAutoResizable(false);
+            resizableModeButton.setEnabled(false);
+        }
+        else if (cellsCnt > MAX_COMPILABLE_CELLS) {
+            textColor = Color.RED;
+            textFieldName.setToolTipText(NbBundle.getMessage(TiledLayerEditor.class,
+                    "TiledLayerEditor.textFieldName.notCompilable.err.tooltip"));
+            if (!this.resizableModeButton.isEnabled()){
+                this.resizableModeButton.setEnabled(true);
+            }
         }
         else {
             textColor = Color.BLACK;
             textFieldName.setToolTipText(null);
+            if (!this.resizableModeButton.isEnabled()){
+                this.resizableModeButton.setEnabled(true);
+            }
         }
         textFieldName.setForeground(textColor);
     }

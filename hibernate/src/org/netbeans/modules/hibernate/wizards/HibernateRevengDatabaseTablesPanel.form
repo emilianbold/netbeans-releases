@@ -13,6 +13,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -29,8 +30,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cmbDatabaseConn" pref="409" max="32767" attributes="0"/>
           </Group>
-          <Component id="tablesPanel" alignment="1" pref="501" max="32767" attributes="0"/>
-          <Component id="jScrollPane3" alignment="1" pref="501" max="32767" attributes="0"/>
+          <Component id="tablesPanel" alignment="1" pref="519" max="32767" attributes="0"/>
+          <Component id="jScrollPane3" alignment="1" pref="519" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

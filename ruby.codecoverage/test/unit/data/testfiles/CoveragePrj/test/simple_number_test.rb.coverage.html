@@ -1,0 +1,37 @@
+<html>
+<head>
+<style>
+div { white-space: pre; font-family: monospace; margin: 0px; padding: 0px }
+.covered { background-color: CCFFCC }
+.partial { background-color: FFFFCC }
+.not_covered { background-color: FFCCCC }
+.inferred { background-color: E0FFE0 }
+.unknown { background-color: EEEEEE }
+</style>
+</head>
+<body>
+<h1>File Coverage for simple_number_test.rb</h1>
+<div class="covered">require "simple_number"</div>
+<div class="covered">require "test/unit"</div>
+<div class="inferred"></div>
+<div class="covered">class TestSimpleNumber &lt; Test::Unit::TestCase</div>
+<div class="inferred"></div>
+<div class="covered">  def setup</div>
+<div class="covered">    @num = SimpleNumber.new(2)</div>
+<div class="covered">  end</div>
+<div class="inferred"></div>
+<div class="covered">  def teardown</div>
+<div class="inferred">    ## Nothing really</div>
+<div class="inferred">  end</div>
+<div class="inferred"></div>
+<div class="covered">  def test_simple</div>
+<div class="covered">    assert_equal(4, @num.add(2) )</div>
+<div class="covered">  end</div>
+<div class="inferred"></div>
+<div class="covered">  def test_simple2</div>
+<div class="covered">    assert_equal(4, @num.multiply(2) )</div>
+<div class="covered">  end</div>
+<div class="inferred"></div>
+<div class="inferred">end</div>
+
+</body></html>

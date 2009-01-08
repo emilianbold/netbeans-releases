@@ -5,9 +5,12 @@
 
 package org.netbeans.modules.python.project;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.python.project.spi.TestRunner;
+import org.netbeans.modules.python.project.ui.actions.CleanCommand;
 import org.netbeans.modules.python.project.ui.actions.Command;
 import org.netbeans.modules.python.project.ui.actions.CopyCommand;
 import org.netbeans.modules.python.project.ui.actions.DebugCommand;
@@ -41,16 +44,30 @@ public class PythonActionProvider implements ActionProvider {
             new CopyCommand(project),
             new MoveCommand(project),
             new RenameCommand(project),
-            new RunSingleCommand(project),
-            new RunCommand(project) ,
+            new CleanCommand(project),
+            new RunSingleCommand(project, false),
+            new RunSingleCommand(project, true), // Run as Test
+            new RunCommand(project, false),
+            new RunCommand(project, true), // Run project as Test
             new DebugCommand(project) ,
-            new DebugSingleCommand(project)
+            new DebugSingleCommand(project, false),
+            new DebugSingleCommand(project, true) // Debug as Test
         };
         for (Command command : commandArray) {
             commands.put(command.getCommandId(), command);
         }
     }
-        
+
+    public static TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
     public String[] getSupportedActions() {
         final Set<String> names = commands.keySet();
         return names.toArray(new String[names.size()]);

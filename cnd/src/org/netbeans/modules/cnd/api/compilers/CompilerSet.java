@@ -73,8 +73,12 @@ public class CompilerSet {
         return isDefault;
     }
 
-    public void setAsDefault(boolean isDefault) {
+    void setAsDefault(boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public void unsetDefault() {
+        this.isDefault = false;  // to set to true use CompilerSetManager.setDefault()
     }
 
     /** Recognized (and prioritized) types of compiler sets */

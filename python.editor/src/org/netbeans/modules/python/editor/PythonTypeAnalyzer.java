@@ -45,7 +45,7 @@ import org.python.antlr.ast.Num;
 import org.python.antlr.ast.Str;
 import org.python.antlr.ast.Tuple;
 import org.python.antlr.ast.VisitorBase;
-import org.python.antlr.ast.exprType;
+import org.python.antlr.base.expr;
 
 /**
  * Type Analyzer for Python. This class is responsible for
@@ -143,13 +143,14 @@ public class PythonTypeAnalyzer {
                 return null;
             }
             String type = null;
-            if (assign.value instanceof Name) {
-                Name name = (Name)assign.value;
-                type = localVars.get(name.id);
-            } else if (assign.value instanceof Call) {
-                Call call = (Call)assign.value;
-                if (call.func instanceof Name) {
-                    String funcName = ((Name)call.func).id;
+            expr value = assign.getInternalValue();
+            if (value instanceof Name) {
+                Name name = (Name)value;
+                type = localVars.get(name.getInternalId());
+            } else if (value instanceof Call) {
+                Call call = (Call)value;
+                if (call.getInternalFunc() instanceof Name) {
+                    String funcName = ((Name)call.getInternalFunc()).getInternalId();
                     if (Character.isUpperCase(funcName.charAt(0)) ||
                             index.isLowercaseClassName(funcName)) {
                         // If you do x = Foo(), then the type of x is Foo.
@@ -162,13 +163,16 @@ public class PythonTypeAnalyzer {
 
             }
             if (type == null) {
-                type = assign.value.accept(this);
+                type = value.accept(this);
             }
             if (type != null) {
-                for (exprType et : assign.targets) {
-                    if (et instanceof Name) {
-                        Name name = (Name)et;
-                        localVars.put(name.id, type);
+                java.util.List<expr> targets = assign.getInternalTargets();
+                if (targets != null) {
+                    for (expr et : targets) {
+                        if (et instanceof Name) {
+                            Name name = (Name)et;
+                            localVars.put(name.getInternalId(), type);
+                        }
                     }
                 }
             }
@@ -181,8 +185,8 @@ public class PythonTypeAnalyzer {
             if (call.getCharStartIndex() >= targetAstOffset) {
                 return null;
             }
-            if (call.func != null) {
-                return call.func.accept(this);
+            if (call.getInternalFunc() != null) {
+                return call.getInternalFunc().accept(this);
             }
             return null;
         }
@@ -192,8 +196,9 @@ public class PythonTypeAnalyzer {
             if (name.getCharStartIndex() >= targetAstOffset) {
                 return null;
             }
-            if (name.id != null && name.id.length() > 0 && Character.isUpperCase(name.id.charAt(0))) {
-                return name.id;
+            String id = name.getInternalId();
+            if (id != null && id.length() > 0 && Character.isUpperCase(id.charAt(0))) {
+                return id;
             }
 
             return null;

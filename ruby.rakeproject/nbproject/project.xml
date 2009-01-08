@@ -113,6 +113,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
                 <friend>org.netbeans.modules.ruby.kit</friend>
+                <friend>org.netbeans.modules.ruby.merbproject</friend>
                 <friend>org.netbeans.modules.ruby.platform</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>

@@ -80,11 +80,11 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     }
     
     public boolean isValid() {
-	boolean valid = ((ConsolidationStrategyPanel)getComponent()).valid( wizardDescriptor);
-	if (valid) {
-	    wizardDescriptor.setMessage(""); // NOI18N
+        boolean valid = ((ConsolidationStrategyPanel)getComponent()).valid( wizardDescriptor);
+        if (valid) {
+            wizardDescriptor.setMessage(null);
         }
-	return valid;
+        return valid;
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

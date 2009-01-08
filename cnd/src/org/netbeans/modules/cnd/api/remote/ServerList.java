@@ -71,7 +71,9 @@ public interface ServerList {
     
     public void removeServer(ServerRecord record);
 
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard);
     
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+
     public boolean isValidExecutable(String hkey, String path);
 }

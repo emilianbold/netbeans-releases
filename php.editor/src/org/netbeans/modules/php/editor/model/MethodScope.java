@@ -47,6 +47,8 @@ public interface MethodScope extends FunctionScope, VariableScope {
     boolean isMagic();
     boolean isConstructor();
     ClassScope getClassScope();
+    String getClassSkeleton();
+    String getInterfaceSkeleton();
     //TODO:
     //boolean implementedMethod();
     //boolean overridenMethod();
