@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  */
 public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor {
 
-    private Map<String, PropertyValue> values;
+    private final Map<String, PropertyValue> values;
     private String[] tags;
     private TypeID enableTypeID;
 
@@ -84,8 +84,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
         super.cleanUp(component);
         tags = null;
         enableTypeID = null;
-        values.clear();
-        values = null;
     }
 
     @Override
@@ -105,7 +103,7 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
     }
 
 //    private void initComponents() {
-//        
+//
 //        customEditor = new CustomEditor();
 //        customEditor.updateModel();
 //    }
@@ -123,6 +121,9 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
     @Override
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
+        if (values == null) {
+            return null;
+        }
         for (String key : values.keySet()) {
             PropertyValue tmpValue = values.get(key);
             if (value.getPrimitiveValue().equals(tmpValue.getPrimitiveValue())) {
@@ -145,7 +146,7 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
 //    public void customEditorOKButtonPressed() {
 //        super.customEditorOKButtonPressed();
 //        saveValue(customEditor.getText());
-//        
+//
 //    }
     @Override
     public String[] getTags() {
@@ -176,7 +177,7 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
 //            setLayout(new BorderLayout());
 //            combobox = new JComboBox();
 //            combobox.setModel(new DefaultComboBoxModel());
-//            
+//
 //            add(combobox, BorderLayout.CENTER);
 //        }
 //
@@ -201,6 +202,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
 //            }
 //        }
 //
-//        
+//
 //    }
 }

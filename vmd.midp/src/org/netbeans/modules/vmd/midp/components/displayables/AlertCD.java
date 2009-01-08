@@ -173,7 +173,7 @@ public final class AlertCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue> getKindTypes() {
-        if (alertTypes == null) {
+        if (alertTypes == null || alertTypes.isEmpty()) {
             alertTypes = new TreeMap<String, PropertyValue>();
             for (MidpTypes.AlertType type : MidpTypes.AlertType.values()) {
                 alertTypes.put(type.toString(), MidpTypes.createAlertTypeValue(type));
