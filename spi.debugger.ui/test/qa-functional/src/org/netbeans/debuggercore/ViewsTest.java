@@ -129,6 +129,7 @@ public class ViewsTest extends JellyTestCase {
             }
             new EventTool().waitNoEvent(500);
             Utilities.toggleBreakpoint(eo, 92);
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
