@@ -366,6 +366,9 @@ public final class NbJSDebugger {
                 URLDisplayer.getDefault().showURL(uri.toURL());
             } catch (MalformedURLException e) {
                 // TODO
+            } catch (IllegalArgumentException e) {
+                // URL is not absolute 
+                // TODO
             }
         } else {
             DebuggerManager manager = DebuggerManager.getDebuggerManager();
@@ -441,7 +444,13 @@ public final class NbJSDebugger {
     }
 
     public boolean supportsHttpMonitor() {
-        return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
+        // Previously only Firefox supported HTTP monitor. Currently both
+        // IE and Firefox support HTTP monitor, so no check needs to be done.
+        // However, if in the future another browser is added that does not
+        // have HTTP monitor suppport, a conditional such as below would need
+        // to be added.
+        return true;
+        //return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
     }
 
     public String getID() {
