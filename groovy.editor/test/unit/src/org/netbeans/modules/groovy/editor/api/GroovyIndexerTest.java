@@ -123,7 +123,7 @@ public class GroovyIndexerTest extends GroovyTestBase {
 
         // get all classes
         Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP, true, false, false);
-        assertEquals(6, classes.size());
+        assertEquals(5, classes.size());
 
 //        final FileObject fo = getTestFile("testfiles/Hello.groovy");
 //        Source source = Source.create(fo);

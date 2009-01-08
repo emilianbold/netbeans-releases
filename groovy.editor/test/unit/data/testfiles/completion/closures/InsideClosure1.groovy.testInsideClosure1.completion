@@ -416,7 +416,6 @@ CLASS      Writer                                     null
 CLASS      XmlNodePrinter                             null
 CLASS      XmlParser                                  null
 CLASS      XmlSlurper                                 null
-CLASS      testClass1                                 null
 VARIABLE   it                                         Object
 KEYWORD    assert                                     null
 KEYWORD    boolean                                    null
