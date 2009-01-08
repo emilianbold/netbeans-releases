@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.groovy.editor.api.elements;
 
+import org.netbeans.modules.csl.api.ElementKind;
+
 /**
  * Element describing a Groovy comment
  *
@@ -48,7 +50,6 @@ package org.netbeans.modules.groovy.editor.api.elements;
  * @author Gopala Krishnan S
  */
 
-import org.netbeans.modules.gsf.api.ElementKind;
 
 public class CommentElement extends GroovyElement {
 

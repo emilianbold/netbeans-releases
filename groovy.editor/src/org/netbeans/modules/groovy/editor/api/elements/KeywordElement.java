@@ -40,7 +40,8 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+
 
 /**
  * Element describing a Groovy keyword

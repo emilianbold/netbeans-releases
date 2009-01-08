@@ -77,16 +77,14 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SelectCodeElementAction;
+import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
-import org.netbeans.editor.ext.html.HtmlIndenter;
-import org.netbeans.modules.gsf.ToggleBlockCommentAction;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 
@@ -380,7 +378,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
 
-    public static class HTMLDeleteCharAction extends DeleteCharAction implements NextCharProvider {
+    public static class HTMLDeleteCharAction extends DeleteCharAction {
 
         private JTextComponent currentTarget;
         
@@ -390,13 +388,11 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            target.putClientProperty(NextCharProvider.class, this);
             try {
                 currentTarget = target;
                 super.actionPerformed(evt, target);
             } finally {
                 currentTarget = null;
-                target.putClientProperty(NextCharProvider.class, null);
             }
         }
 

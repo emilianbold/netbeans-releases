@@ -1,6 +1,6 @@
 Code completion result for source line:
 def t1 = {println i|}
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      IFileNameFinder                            null
 CLASS      IOException                                null

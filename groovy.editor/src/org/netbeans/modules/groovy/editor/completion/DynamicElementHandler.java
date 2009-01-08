@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import java.util.Collections;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.util.Lookup;
 
 /**
@@ -57,13 +57,13 @@ public final class DynamicElementHandler {
 
     private static final Logger LOG = Logger.getLogger(DynamicElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private DynamicElementHandler(CompilationInfo info) {
+    private DynamicElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static DynamicElementHandler forCompilationInfo(CompilationInfo info) {
+    public static DynamicElementHandler forCompilationInfo(ParserResult info) {
         return new DynamicElementHandler(info);
     }
 
@@ -73,11 +73,15 @@ public final class DynamicElementHandler {
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
             String className, String prefix, int anchor) {
 
+        if (info.getSnapshot().getSource().getFileObject() == null) {
+            return Collections.emptyMap();
+        }
+
         Map<MethodSignature, CompletionItem.DynamicMethodItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem.DynamicMethodItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
-            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), sourceClassName, className).entrySet()) {
+            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getSnapshot().getSource().getFileObject(), sourceClassName, className).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
                     resultDynamic.put(entry.getKey(), new CompletionItem.DynamicMethodItem(
                             anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
@@ -91,11 +95,15 @@ public final class DynamicElementHandler {
     public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
             String className, String prefix, int anchor) {
 
+        if (info.getSnapshot().getSource().getFileObject() == null) {
+            return Collections.emptyMap();
+        }
+        
         Map<FieldSignature, CompletionItem.DynamicFieldItem> resultDynamic =
                 new HashMap<FieldSignature, CompletionItem.DynamicFieldItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
-            for (Map.Entry<FieldSignature, String> entry : provider.getFields(info.getFileObject(), sourceClassName, className).entrySet()) {
+            for (Map.Entry<FieldSignature, String> entry : provider.getFields(info.getSnapshot().getSource().getFileObject(), sourceClassName, className).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
                     resultDynamic.put(entry.getKey(), new CompletionItem.DynamicFieldItem(
                             anchor, entry.getKey().getName(), entry.getValue()));

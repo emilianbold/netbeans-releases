@@ -103,6 +103,7 @@ public enum CSSTokenId implements TokenId {
     RROUND("brace"),
     URL("url"),
     URI("url"),
+    GENERATED("default"),
     CDO("whitespace_comment"),
     CDC("whitespace_comment"),
     INCLUDES("operator"),

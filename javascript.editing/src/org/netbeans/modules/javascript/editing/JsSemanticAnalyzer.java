@@ -46,12 +46,14 @@ import java.util.Set;
 import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * Semantically analyze a given JavaScript buffer
@@ -63,35 +65,34 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  *
  * @author Tor Norbye
  */
-public class JsSemanticAnalyzer implements SemanticAnalyzer {
+public class JsSemanticAnalyzer extends SemanticAnalyzer {
 
-    private boolean cancelled;
-    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    // -----------------------------------------------------------------------
+    // SemanticAnalyzer implementation
+    // -----------------------------------------------------------------------
 
-    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
+    public @Override Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
-    protected final synchronized boolean isCancelled() {
-        return cancelled;
-    }
+    // -----------------------------------------------------------------------
+    // ParserResultTask implementation
+    // -----------------------------------------------------------------------
 
-    protected final synchronized void resume() {
-        cancelled = false;
-    }
-
-    public void cancel() {
+    public @Override void cancel() {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) throws Exception {
+    public @Override void run(Result result, SchedulerEvent event) {
         resume();
 
+        semanticHighlights = null;
+        
         if (isCancelled()) {
             return;
         }
 
-        JsParseResult rpr = AstUtilities.getParseResult(info);
+        JsParseResult rpr = AstUtilities.getParseResult(result);
         if (rpr == null) {
             return;
         }
@@ -105,12 +106,40 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
 //            // Just perform incremental analysis
 //            semanticHighlights = analyzeIncremental(info, rpr, root);
 //        } else {
-            semanticHighlights = analyzeFullTree(info, rpr, root);
+            semanticHighlights = analyzeFullTree(rpr, root);
 //        }
 //        rpr.semanticHighlights = semanticHighlights;
     }
 
-    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(CompilationInfo info, JsParseResult rpr, Node root) {
+    public @Override int getPriority() {
+        return 0;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    // -----------------------------------------------------------------------
+    // Public implementation
+    // -----------------------------------------------------------------------
+
+    protected final synchronized boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected final synchronized void resume() {
+        cancelled = false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Private implementation
+    // -----------------------------------------------------------------------
+
+    private boolean cancelled;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+
+
+    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(JsParseResult rpr, Node root) {
         VariableVisitor visitor = rpr.getVariableVisitor();
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
@@ -140,7 +169,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
             String s = node.getString();
             //filter out generated code
             // and zero-length nodes (they may have names but these are generated)
-            if (JsModel.isGeneratedIdentifier(s) || node.getSourceStart() == node.getSourceEnd()) {
+            if (JsEmbeddingProvider.isGeneratedIdentifier(s) || node.getSourceStart() == node.getSourceEnd()) {
                 continue;
             }
             OffsetRange range = AstUtilities.getNameRange(node);
@@ -156,7 +185,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
         
         List<Node> nodes = new ArrayList<Node>();
-        if (JsUtils.isEjsFile(info.getFileObject())) {
+        if (JsUtils.isEjsFile(rpr.getSnapshot().getSource().getFileObject())) {
             // No E4X highlights in EJS files
             AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, nodes);
         } else {
@@ -164,7 +193,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
         for (Node node : nodes) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
+            if (node.isStringNode() && JsEmbeddingProvider.isGeneratedIdentifier(node.getString())) {
                 continue;
             }
             final int type = node.getType();
@@ -223,17 +252,15 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
-                for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
-                    if (range != OffsetRange.NONE) {
-                        translated.put(range, entry.getValue());
-                    }
+            Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
+            for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
+                OffsetRange range = LexUtilities.getLexerOffsets(rpr, entry.getKey());
+                if (range != OffsetRange.NONE) {
+                    translated.put(range, entry.getValue());
                 }
-
-                highlights = translated;
             }
+
+            highlights = translated;
 
             return highlights;
         } else {
