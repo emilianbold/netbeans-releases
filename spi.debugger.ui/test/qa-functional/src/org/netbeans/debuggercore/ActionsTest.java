@@ -506,7 +506,7 @@ public class ActionsTest extends JellyTestCase {
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
             //continue
-            new ContinueAction().performMenu();
+            //new ContinueAction().performMenu();
             String pausePath = Utilities.runMenu + "|" + Utilities.pauseItem;
             for (int i = 0; i < 10; i++) {
                 if (MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
