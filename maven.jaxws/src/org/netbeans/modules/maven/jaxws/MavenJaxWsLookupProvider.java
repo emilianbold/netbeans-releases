@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
@@ -229,18 +230,23 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         private void updateJaxWs() {
 
             try {
-                Map<String, String> newServices = wsModel.runReadAction(
-                        new MetadataModelAction<WebservicesMetadata, Map<String, String>>() {
+                Map<String, ServiceInfo> newServices = wsModel.runReadAction(
+                        new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
 
-                    public Map<String, String> run(WebservicesMetadata metadata) {
-                        Map<String, String> result = new HashMap<String, String>();
+                    public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
+                        Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
                                 // key = imlpementation class package name
                                 // value = service name
-                                result.put(port.getDisplayName(), wsDesc.getWebserviceDescriptionName());
+                                QName portName = port.getWsdlPort();
+                                result.put(port.getDisplayName(),
+                                           new ServiceInfo(wsDesc.getWebserviceDescriptionName(),
+                                                        (portName == null ? null : portName.getLocalPart()),
+                                                        port.getDisplayName(),
+                                                        wsDesc.getWsdlFile()));
 //                                if ("javax.xml.ws.WebServiceProvider".equals(wsDesc.getDisplayName())) { //NOI18N
 //                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
 //                                } else if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
@@ -285,7 +291,25 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                 }
                 // add new services
                 for (String key : newServices.keySet()) {
-                    jaxWsSupport.addService(new JaxWsService(newServices.get(key), key));
+                    ServiceInfo serviceInfo = newServices.get(key);
+                    if (serviceInfo.getWsdlLocation() == null) {
+                        jaxWsSupport.addService(new JaxWsService(serviceInfo.getServiceName(), key));
+                    } else {
+                        JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
+                        String wsdlLocation = serviceInfo.getWsdlLocation();
+                        service.setWsdlLocation(wsdlLocation);
+                        if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(13));
+                        } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(14));
+                        } else {
+                            service.setLocalWsdl(wsdlLocation);
+                        }
+                        if (serviceInfo.getPortName() != null) {
+                            service.setPortName(serviceInfo.getPortName());
+                        }
+                        jaxWsSupport.addService(service);
+                    }
                 }
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();
@@ -335,6 +359,53 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         } else {
             return Collections.<JaxWsService>emptyList();
         }
+    }
+
+    private class ServiceInfo {
+        private String serviceName;
+        private String portName;
+        private String implClass;
+        private String wsdlLocation;
+
+        public ServiceInfo(String serviceName, String portName, String implClass, String wsdlLocation) {
+            this.serviceName = serviceName;
+            this.portName = portName;
+            this.implClass = implClass;
+            this.wsdlLocation = wsdlLocation;
+        }
+        
+        public String getImplClass() {
+            return implClass;
+        }
+
+        public void setImplClass(String implClass) {
+            this.implClass = implClass;
+        }
+
+        public String getPortName() {
+            return portName;
+        }
+
+        public void setPortName(String portName) {
+            this.portName = portName;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getWsdlLocation() {
+            return wsdlLocation;
+        }
+
+        public void setWsdlLocation(String wsdlLocation) {
+            this.wsdlLocation = wsdlLocation;
+        }
+
     }
 
 }
