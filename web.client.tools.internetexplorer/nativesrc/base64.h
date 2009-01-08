@@ -33,65 +33,13 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *      jdeva <deva@neteans.org>
+ *      jdeva <deva@neteans.org>, jwinblad <jwinblad@netbeans.org>
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 #pragma once
-#include "ScriptDebugger.h"
 #include <string>
-#include <map>
-#include <list>
-#include <set>
-#include "Mshtml.h"
 
-using namespace std;
-
-class ScriptDebugger;
-struct StackFrame;
-struct Property;
-
-class DbgpConnection {
-public:
-    // pointer to the last debugger connection, used by the http monitor code
-    static DbgpConnection* lastInstance;
-
-    DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrowserCookie);
-    BOOL connectToIDE();
-    void close();
-    static DWORD WINAPI commandHandler(LPVOID param);
-    void sendInitMessage();
-    ScriptDebugger *getScriptDebugger() {
-        return m_pScriptDebugger;
-    }
-    void setScriptDebugger(ScriptDebugger *pScriptDebugger) {
-        m_pScriptDebugger = pScriptDebugger;
-    }
-    DWORD getWebBrowserCookie() {
-        return m_dwWebBrowserCookie;
-    }
-    void handleDocumentComplete(IHTMLDocument2 *pHTMLDocument);
-    void sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason);
-    void sendStatusMessage(tstring status, tstring reason);
-    void sendErrorMessage(tstring message);
-    void sendReloadSourcesMessage(tstring docName);
-
-    // JRW TODO: verify sendResponse needs to stay public for HTTP Monitor Code
-    void sendResponse(tstring xmlString);
-private:
-    SOCKET m_socket;
-    tstring m_port, m_sessionId;
-    SOCKET getSocket() {
-        return m_socket;
-    }
-    ScriptDebugger *m_pScriptDebugger;
-    DWORD m_dwWebBrowserCookie;
-    BOOL readCommand(char *cmdString);
-    void processCommand(char *cmdString, DbgpConnection *pDbgpConnection);
-    
-    void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
-    void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
-    set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly);
-};
-
-
+tstring encodeToBase64(tstring value);
+BOOL unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen);
+BOOL UTF8toUnicode(char *str, TCHAR **ppChars);

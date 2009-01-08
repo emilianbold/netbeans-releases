@@ -10,6 +10,7 @@
 #include <time.h>
 #include <cstdlib> // for rand()
 #include <atlstr.h>
+#include "base64.h"
 
 char* gPostText = NULL;
 
@@ -91,7 +92,7 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     //MessageBox(0,request.c_str(),_T("Netbeans BHO - Request Received"),MB_OK);
 
 
-    size = 0;
+    /*size = 0;
     hrTemp = spWinInetHttpInfo->QueryInfo(HTTP_QUERY_CONTENT_ID,
         0, &size, &flags, 0);
     if (size > 0) {
@@ -102,10 +103,10 @@ STDMETHODIMP CTestSink::BeginningTransaction(
             buf, &size, &flags, 0);
         ATLASSERT(SUCCEEDED(hrTemp));
         MessageBox(0,A2CT(buf),_T("Netbeans BHO - Request Received"),MB_OK);
-    }
+    }*/
 
     // id - TODO
-    msg.addChildTagWithValue(_T("id"), 200);
+    msg.addChildTagWithValue(_T("id"), 123);
 
     // method - Fill in whether this request was a GET or POST request
     size = 0; //reset buffer size
@@ -160,7 +161,10 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
 
     if (DbgpConnection::lastInstance != NULL) {
-        DbgpConnection::lastInstance->sendResponse(msg.toString());
+        ScriptDebugger* sdbg = DbgpConnection::lastInstance->getScriptDebugger();
+        //if (sdbg!= NULL && sdbg->isHttpMonitorEnabled()) {
+            DbgpConnection::lastInstance->sendResponse(msg.toString());
+        //} 
     }
 
     return hr;
@@ -309,18 +313,14 @@ STDMETHODIMP CTestSink::OnResponse(
     response += L"----/szResponseHeaders----\r\n";
 
     tstring headerSet1 = W2CT(szResponseHeaders);
-    // First line contains the HTTP status response.
+    // First line of headers contains the HTTP status response.
     // Examples: "HTTP/1.0 200 OK" or "HTTP/1.0 404 Not Found"
-    // to get the status code we will get the first numeric token after the first
-    // space
-    int whitespaceIndex = headerSet1.find(L" ",0);
-    int statusStart = headerSet1.find_first_of(L"0123456789", whitespaceIndex);
-    int statusEnd = headerSet1.find(L" ",statusStart);
-    tstring httpStatus = headerSet1.substr(statusStart, statusEnd-statusStart);
-    msg.addChildTagWithValue(_T("status"),httpStatus);
+    // But can also pull out the status code from dwResponseCode directly
+    // without requiring any parsing.
+    msg.addChildTagWithValue(_T("status"),dwResponseCode); // HTTP response code
 
-    addAllHeaders(headerSet1, msg); //parse headers from szResponseHeaders
-
+    addAllHeaders(headerSet1, msg); //parse & add headers from szResponseHeaders
+/*
     if (szRequestHeaders)
     {
         response += _T("(Repeat request)\r\n");
@@ -334,19 +334,22 @@ STDMETHODIMP CTestSink::OnResponse(
             EnsureCRLF(response);
         }
     }
-    response += _T("\r\n");
+    response += _T("\r\n");*/
 
-
-    msg.addChildTagWithValue(_T("url"), _T("http://www.example.com"));
+    //TODO - response URL
+    msg.addChildTagWithValue(_T("url"), _T("http://"));
     
-    msg.addChildTagWithValue(_T("id"), 200);
+    //TODO - response ID. this should match the ID from the request.
+    // a different ID will clear out the history in netbeans of requests
+    msg.addChildTagWithValue(_T("id"), 123);
 
-    msg.addChildTagWithValue(_T("name"),_T("FOO"));
+    //TODO - response Name
+    msg.addChildTagWithValue(_T("name"),_T("http://"));
 
     // Content type: comes as a string formatted such as:
     // "Content-Type: text/html; charset=utf-8"
-    // We aren't interested (primarily) in charset so that part needs to be
-    // trimmed off if present.
+    // We aren't interested in charset here so that part needs to be
+    // trimmed off (if present).
     tstring contentType1 =  A2CT(contentTypeStr);
     int semicolonPos = contentType1.find(_T(";"),0);
     if (semicolonPos != std::wstring::npos) {
@@ -359,17 +362,23 @@ STDMETHODIMP CTestSink::OnResponse(
     tstring categoryString = getCategoryForMimeType(contentType1);
     msg.addChildTagWithValue(_T("category"), categoryString);
 
-    msg.addChildTagWithValue(_T("responseText"),_T("FOO"));
-
-    //msg.addChildTagWithValue(_T("urlParams"), _T("null"));
-    //msg.addChildTagWithValue(_T("postText"), _T("undefined"));
-    //msg.addChildTagWithValue(_T("loadInit"), rand());
+    // responseText should be base64 encoded. responseText is displayed in the
+    // "Response Body" window in the Netbeans HTTP Monitor
+    if (categoryString.find(_T("image"), 0) != tstring.npos) { 
+        msg.addChildTagWithValue(_T("responseText"), encodeToBase64(_T("IMAGE")));
+    //} else if (categoryString.find(_T("xhr"), 0) != tstring.npos) { 
+        //show the xml response as the response text
+        //msg.addChildTagWithValue(_T("responseText"), encodeToBase64(_T("???")));
+    } else {
+        msg.addChildTagWithValue(_T("responseText"), encodeToBase64(_T("BINARY")));
+    }
     msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
-    //msg.addHeader(_T("Host"), _T("www.google.com"));
-    //msg.addHeader(_T("Keep-Alive"), _T("300"));
-    // TODO: this could crash if lastInstance isn't valid
+
     if (DbgpConnection::lastInstance != NULL) {
-        DbgpConnection::lastInstance->sendResponse(msg.toString());
+        ScriptDebugger* sdbg = DbgpConnection::lastInstance->getScriptDebugger();
+        //if (sdbg!= NULL && sdbg->isHttpMonitorEnabled()) {
+            DbgpConnection::lastInstance->sendResponse(msg.toString());
+        //} 
     }
 
     //if (categoryString.find(L"text") != tstring::npos) {

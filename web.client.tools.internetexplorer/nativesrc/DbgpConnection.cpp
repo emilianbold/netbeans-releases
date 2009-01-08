@@ -43,6 +43,7 @@
 #include "XMLTag.h"
 #include "Exdisp.h"
 #include "Utils.h"
+#include "base64.h"
 
 // initialize default value to NULL
 DbgpConnection* DbgpConnection::lastInstance = NULL;
@@ -106,34 +107,6 @@ void DbgpConnection::sendResponse(tstring xmlString) {
     }
 }
 
-BOOL DbgpConnection::unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen) {
-    char *data = NULL;
-    int dataLen = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, data, 0, 0, 0);
-    if(dataLen) {
-        data = new char[dataLen];
-        dataLen = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, data, dataLen, 0, 0);
-        if(dataLen) {
-            *ppBytes = data;
-            *pBytesLen = dataLen;
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
-BOOL DbgpConnection::UTF8toUnicode(char *str, TCHAR **ppChars) {
-    TCHAR *out = NULL;
-    int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, out, 0);
-    if(len) {
-        out = new TCHAR[len];
-        len = MultiByteToWideChar(CP_UTF8, 0, str, -1, out, len);
-        if(len) {
-            *ppChars = out;
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
 
 void DbgpConnection::sendInitMessage() {
     DbgpMessage message;
@@ -173,21 +146,6 @@ void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
         ++iter;
     }
     sendResponse(message.toString());
-}
-
-tstring DbgpConnection::encodeToBase64(tstring value) {
-    USES_CONVERSION;
-    char *data = NULL;
-    int dataLen;
-    if(unicodeToUTF8(value, &data, &dataLen)) {
-        int destLen = Base64EncodeGetRequiredLength(dataLen, ATL_BASE64_FLAG_NOCRLF);
-        char *dest = new char[destLen+1];
-        if(Base64Encode((BYTE *)data, dataLen, dest, &destLen, ATL_BASE64_FLAG_NOCRLF)) {
-            dest[destLen] = 0;
-            return tstring(A2T(dest));
-        }
-    }
-    return NULL;
 }
 
 
