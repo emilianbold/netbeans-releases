@@ -39,10 +39,16 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.util.FileUtils;
 
 /**
@@ -98,8 +104,46 @@ public class ConvertClusterPath extends Task {
             FileUtils fu = FileUtils.getFileUtils();
             Project fakeproj = new Project();
             fakeproj.setBasedir(basedir);
-            Path convPath = new Path(fakeproj, from);
-            log("Converted path: '" + convPath.toString() + "'.", Project.MSG_VERBOSE);
+            Path absPath = new Path(fakeproj, from);
+            log("Converted path: '" + absPath.toString() + "'.", Project.MSG_VERBOSE);
+
+            // When cluster does not exist, try to find one with different number
+            final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*)([0-9]+)[/\\\\]?$");
+            Path convPath = new Path(fakeproj);
+
+            for (Iterator it = absPath.iterator(); it.hasNext();) {
+                FileResource element = (FileResource) it.next();
+                File f = element.getFile();
+                String fPath = f.getAbsolutePath();
+                final Matcher cm = pat.matcher(fPath);
+                if (f.exists()) {
+                    if (! f.isDirectory())
+                        throw new BuildException("Only directories can be elements of cluster.path. Got '" + fPath + "'");
+                    convPath.createPathElement().setLocation(f);
+                    continue;
+                }
+                if (cm.matches()) {
+                    // cluster is numbered, search for one with different number
+                    File parent = f.getParentFile();
+
+                    if (parent != null) {
+                        File[] alternate = parent.listFiles(new FilenameFilter() {
+                            public boolean accept(File dir, String name) {
+                                Matcher am = pat.matcher(name);
+                                return am.matches() && cm.group(1).equalsIgnoreCase(am.group(1));
+                            }
+                        });
+                        if (alternate.length > 0 && alternate[0].isDirectory()) {
+                            log("Cluster '" + fPath + "' not found, using '" + alternate[0].getAbsolutePath() + "' instead.", Project.MSG_WARN);
+                            convPath.createPathElement().setLocation(alternate[0]);
+                            continue;
+                        }
+                    }
+                }
+                // no alternate cluster found
+                throw new BuildException("Cluster '" + fPath + "' not found.");
+            }
+
             if (id != null && id.length() > 0)
                 getProject().addReference(id, convPath);
             if (to != null && to.length() > 0)

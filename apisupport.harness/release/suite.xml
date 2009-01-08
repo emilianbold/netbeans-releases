@@ -54,7 +54,50 @@ made subject to such option by the copyright holder.
         <property name="harness.taskdefs.done" value="true"/>
     </target>
 
-    <target name="-init" depends="-taskdefs">
+    <target name="-convert-old-project" unless="cluster.path.evaluated">
+        <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
+
+        <pathconvert property="old.project.update.tracking">
+            <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
+        </pathconvert>
+
+        <selector id="old.project.included.files">
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                <param name="excludeModules" value="${disabled.modules}"/>
+                <!-- XXX inc/exc clusters -->
+                <param name="includeClusters" value="${enabled.clusters}"/>
+                <param name="excludeClusters" value="${disabled.clusters}"/>
+                <param name="updateTrackingFiles" value="${old.project.update.tracking}"/>
+            </custom>
+        </selector>
+
+        <pathconvert property="old.project.clusters.duplicates" pathsep="&#10;">
+            <fileset dir="${netbeans.dest.dir}">
+                <selector refid="old.project.included.files"/>
+            </fileset>
+            <chainedmapper>
+                <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+                <filtermapper>
+                    <linecontainsregexp negate="true">
+                        <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
+                    </linecontainsregexp>
+                </filtermapper>
+            </chainedmapper>
+        </pathconvert>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <mkdir dir="${basedir}/build"/>
+        <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
+
+        <pathconvert property="cluster.path.evaluated">
+            <union> <!-- union removes duplicates -->
+                <files includesfile="${old.project.clusters.duplicates.file}"/>
+            </union>
+        </pathconvert>
+    </target>
+
+    <target name="-init" depends="-taskdefs,-convert-old-project">
+        <!-- netbeans.dest.dir -> cluster.path.id translation for pre-7.0 modules -->
+        <!-- XXX Does not preserve order of clusters specified in etc/netbeans.clusters -->
         <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
@@ -106,7 +149,9 @@ made subject to such option by the copyright holder.
     
 
     <target name="build" depends="-init,branding,release" description="Build all modules in the suite.">
-        <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
+        <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
+            <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
+        </subant>
         <mkdir dir="${cluster}/config/Modules"/>
         <pathconvert pathsep="," property="disabled.modules.paths.list">
             <pathfileset>
@@ -151,6 +196,7 @@ made subject to such option by the copyright holder.
         <subant target="nbm" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
             <property name="nbm.target.dir" location="${build.updates.dir}"/>
             <property name="${nbm.target.cluster.name}" value="${help.target.cluster}" />
+            <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
         </subant>
         <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="." automaticgrouping="true">
             <fileset dir="${build.updates.dir}">
@@ -369,7 +415,9 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
                 <exclude name="testuserdir/"/>
             </fileset>
         </delete>
-        <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
+        <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
+            <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
+        </subant>
         <delete dir="${dist.dir}"/>
     </target>
 
@@ -416,7 +464,9 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     
     <target name="test" depends="build" description="Runs tests for all modules in the suite.">
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted" sorttests="true"/>
-        <subant target="test" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false"/>
+        <subant target="test" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false">
+            <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
+        </subant>
     </target>
     
 </project>

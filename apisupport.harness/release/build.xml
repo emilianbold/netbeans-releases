@@ -53,9 +53,53 @@ made subject to such option by the copyright holder.
         <property name="harness.taskdefs.done" value="true"/>
     </target>
 
-    <target name="common-init" depends="taskdefs">
+    <target name="-convert-old-project" unless="cluster.path.evaluated">
+        <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
+
+        <pathconvert property="old.project.update.tracking">
+            <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
+        </pathconvert>
+
+        <selector id="old.project.included.files">
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                <param name="excludeModules" value="${disabled.modules}"/>
+                <!-- XXX inc/exc clusters -->
+                <param name="includeClusters" value="${enabled.clusters}"/>
+                <param name="excludeClusters" value="${disabled.clusters}"/>
+                <param name="updateTrackingFiles" value="${old.project.update.tracking}"/>
+            </custom>
+        </selector>
+
+        <pathconvert property="old.project.clusters.duplicates" pathsep="&#10;">
+            <fileset dir="${netbeans.dest.dir}">
+                <selector refid="old.project.included.files"/>
+            </fileset>
+            <chainedmapper>
+                <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+                <filtermapper>
+                    <linecontainsregexp negate="true">
+                        <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
+                    </linecontainsregexp>
+                </filtermapper>
+            </chainedmapper>
+        </pathconvert>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <mkdir dir="${basedir}/build"/>
+        <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
+
+        <pathconvert property="cluster.path.evaluated">
+            <union id="old.project.clusters"> <!-- union removes duplicates -->
+                <files includesfile="${old.project.clusters.duplicates.file}"/>
+            </union>
+        </pathconvert>
+    </target>
+
+    <target name="common-init" depends="taskdefs,-convert-old-project">
         <property name="netbeans.javadoc.dir" location="build/javadoc"/>
-        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id" basedir="${suite.dir}"/>
+        <condition property="cluster.path.basedir" value="${suite.dir}" else="${basedir}">
+            <isset property="suite.dir"/>
+        </condition>
+        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id" basedir="${cluster.path.basedir}"/>
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">

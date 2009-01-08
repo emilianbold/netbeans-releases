@@ -42,15 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="run" basedir=".">
 
-    <target name="-taskdefs" unless="harness.taskdefs.done">
-        <!-- dirname property="harness.dir" file="${suite.file}"/>
-        <echo level="verbose">Using build harness in ${harness.dir}</echo>
-        <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <property name="harness.taskdefs.done" value="true"/ -->
-    </target>
-
-    <target name="-init" depends="-taskdefs">
-
+    <target name="-init">
         <property name="run.jdkhome" location="${nbjdk.home}"/>
         <condition property="test.user.dir" value="${suite.dir}/build/testuserdir" else="build/testuserdir">
             <isset property="suite.dir"/>
@@ -140,7 +132,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">
-        <fail if="netbeans.dest.dir" message="APISupport module or suite should not set netbeans.dest.dir (= ${netbeans.dest.dir})."/>
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
         <property name="run.args.extra" value=""/>
