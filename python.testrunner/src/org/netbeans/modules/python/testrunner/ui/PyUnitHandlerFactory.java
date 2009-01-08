@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.netbeans.modules.python.project.spi.TestRunner.TestType;
 import org.netbeans.modules.python.testrunner.PyUnitRunner;
 import org.openide.util.NbBundle;
@@ -119,11 +120,13 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
         String expected;
         String actual;
 
+        boolean isDocTest = false;
         expected = comparisonMatcher.group(2);
         if (expected == null) {
             expected = comparisonMatcher.group(5);
             actual = comparisonMatcher.group(6);
         } else {
+            isDocTest = true;
             actual = comparisonMatcher.group(3);
         }
 
@@ -131,7 +134,13 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
         expected = expected.replace("\\n", "\n"); // NOI18N
         actual = actual.replace("\\n", "\n"); // NOI18N
 
-        return new Trouble.ComparisonFailure(expected, actual);
+        if (isDocTest) {
+            // We know the doc test output is in python console format which generally
+            // can be highlighted by the python lexer (for string literals, etc.)
+            return new Trouble.ComparisonFailure(expected, actual, PythonTokenId.PYTHON_MIME_TYPE);
+        } else {
+            return new Trouble.ComparisonFailure(expected, actual);
+        }
     }
 
 
