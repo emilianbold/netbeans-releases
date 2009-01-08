@@ -96,15 +96,15 @@ public abstract class ConfigAction {
         return action;
     }
 
-    public abstract void runProject(PhpProject project);
-    public abstract void debugProject(PhpProject project);
-
-    public abstract void runFile(PhpProject project, Lookup context);
-    public abstract void debugFile(PhpProject project, Lookup context);
-
     public abstract boolean isRunProjectEnabled(PhpProject project);
     public abstract boolean isDebugProjectEnabled(PhpProject project);
 
     public abstract boolean isRunFileEnabled(PhpProject project, Lookup context);
     public abstract boolean isDebugFileEnabled(PhpProject project, Lookup context);
+
+    public abstract void runProject(PhpProject project);
+    public abstract void debugProject(PhpProject project);
+
+    public abstract void runFile(PhpProject project, Lookup context);
+    public abstract void debugFile(PhpProject project, Lookup context);
 }

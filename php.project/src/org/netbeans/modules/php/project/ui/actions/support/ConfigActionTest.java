@@ -66,26 +66,6 @@ public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
 
     @Override
-    public void runProject(PhpProject project) {
-        invokeAction(project, null);
-    }
-
-    @Override
-    public void debugProject(PhpProject project) {
-        throw new IllegalStateException("Debug project tests action is not supported");
-    }
-
-    @Override
-    public void runFile(PhpProject project, Lookup context) {
-        invokeAction(project, context);
-    }
-
-    @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean isRunProjectEnabled(PhpProject project) {
         return true;
     }
@@ -102,6 +82,26 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void runProject(PhpProject project) {
+        invokeAction(project, null);
+    }
+
+    @Override
+    public void debugProject(PhpProject project) {
+        throw new IllegalStateException("Debug project tests action is not supported");
+    }
+
+    @Override
+    public void runFile(PhpProject project, Lookup context) {
+        invokeAction(project, context);
+    }
+
+    @Override
+    public void debugFile(PhpProject project, Lookup context) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

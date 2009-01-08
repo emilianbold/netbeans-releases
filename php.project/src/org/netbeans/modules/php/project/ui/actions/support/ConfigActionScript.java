@@ -52,26 +52,6 @@ import org.openide.util.Lookup;
 public class ConfigActionScript extends ConfigAction {
 
     @Override
-    public void runProject(PhpProject project) {
-        new RunScript(project).invokeAction(null);
-    }
-
-    @Override
-    public void debugProject(PhpProject project) {
-        new DebugScript(project).invokeAction(null);
-    }
-
-    @Override
-    public void runFile(PhpProject project, Lookup context) {
-        new RunScript(project).invokeAction(context);
-    }
-
-    @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        new DebugScript(project).invokeAction(context);
-    }
-
-    @Override
     public boolean isRunProjectEnabled(PhpProject project) {
         return true;
     }
@@ -94,5 +74,25 @@ public class ConfigActionScript extends ConfigAction {
             return false;
         }
         return isRunFileEnabled(project, context);
+    }
+
+    @Override
+    public void runProject(PhpProject project) {
+        new RunScript(project).invokeAction(null);
+    }
+
+    @Override
+    public void debugProject(PhpProject project) {
+        new DebugScript(project).invokeAction(null);
+    }
+
+    @Override
+    public void runFile(PhpProject project, Lookup context) {
+        new RunScript(project).invokeAction(context);
+    }
+
+    @Override
+    public void debugFile(PhpProject project, Lookup context) {
+        new DebugScript(project).invokeAction(context);
     }
 }
