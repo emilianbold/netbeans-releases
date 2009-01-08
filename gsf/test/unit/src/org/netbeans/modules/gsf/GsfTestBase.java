@@ -1457,7 +1457,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
         
         
-    public class IndexDocumentImpl implements IndexDocument {
+    public static class IndexDocumentImpl implements IndexDocument {
         public List<String> indexedKeys = new ArrayList<String>();
         public List<String> indexedValues = new ArrayList<String>();
         public List<String> unindexedKeys = new ArrayList<String>();
@@ -1480,8 +1480,8 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-        private IndexDocumentFactoryImpl() {
+    public static class IndexDocumentFactoryImpl implements IndexDocumentFactory {
+        public IndexDocumentFactoryImpl() {
         }
 
         public IndexDocument createDocument(int initialPairs) {
