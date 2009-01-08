@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
