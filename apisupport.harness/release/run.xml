@@ -53,7 +53,10 @@ made subject to such option by the copyright holder.
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
-        <property name="run.app.exe" value="bin\netbeans.exe"/>
+        <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
+        <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">
+            <available file="${install}\bin\nb.exe"/>
+        </condition>
         <property name="run.app.sh" value="bin/netbeans"/>
         <property name="run.exe.candidate" location="${install}\${run.app.exe}"/>
         <property name="run.sh.candidate" location="${install}/${run.app.sh}"/>

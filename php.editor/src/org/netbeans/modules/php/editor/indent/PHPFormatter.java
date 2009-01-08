@@ -459,12 +459,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                     for (Integer offset : breaks.keySet()) {
                         int len = breaks.get(offset);
-                        
+                        doc.insertString(offset + len, replacement, null);
+
                         if (len > 0) {
                             doc.remove(offset, len);
                         }
-
-                        doc.insertString(offset, replacement, null);
                     }
                 } catch (BadLocationException badLocationException) {
                     badLocationException.printStackTrace();

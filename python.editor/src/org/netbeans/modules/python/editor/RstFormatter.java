@@ -745,11 +745,11 @@ public class RstFormatter {
             String text = doc.getText(0, doc.getLength());
             // What about functions?
             if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                int offset = findElementMatch(text, "function::", name); // NOI18N
+                int offset = findElementMatch(text, "function::", name, true); // NOI18N
                 if (offset == -1) {
-                    offset = findElementMatch(text, "method::", name); // NOI18N
+                    offset = findElementMatch(text, "method::", name, false); // NOI18N
                     if (offset == -1 && kind == ElementKind.CONSTRUCTOR) {
-                        offset = findElementMatch(text, "class::", name); // NOI18N
+                        offset = findElementMatch(text, "class::", name, false); // NOI18N
                     }
                 }
                 if (offset != -1) {
@@ -764,9 +764,9 @@ public class RstFormatter {
                     }
                 }
             } else if (kind == ElementKind.CLASS) {
-                int offset = findElementMatch(text, "class::", name); // NOI18N
+                int offset = findElementMatch(text, "class::", name, false); // NOI18N
                 if (offset == -1) {
-                    offset = findElementMatch(text, "exception::", name); // NOI18N
+                    offset = findElementMatch(text, "exception::", name, false); // NOI18N
                 }
                 if (offset != -1) {
                     int end = findElementEnd(text, offset);
@@ -777,9 +777,9 @@ public class RstFormatter {
                     }
                 }
             } else if (kind == ElementKind.MODULE) {
-                int offset = findElementMatch(text, "module::", name); // NOI18N
+                int offset = findElementMatch(text, "module::", name, false); // NOI18N
                 if (offset == -1) {
-                    offset = findElementMatch(text, "currentmodule::", name); // NOI18N
+                    offset = findElementMatch(text, "currentmodule::", name, false); // NOI18N
                 }
                 if (offset != -1) {
                     int end = findElementEnd(text, offset);
@@ -791,9 +791,9 @@ public class RstFormatter {
                 }
             } else {
 //                assert kind == ElementKind.ATTRIBUTE :;
-                int offset = findElementMatch(text, "data::", name); // NOI18N
+                int offset = findElementMatch(text, "data::", name, true); // NOI18N
                 if (offset == -1) {
-                    offset = findElementMatch(text, "attribute::", name); // NOI18N
+                    offset = findElementMatch(text, "attribute::", name, false); // NOI18N
                 }
                 if (offset != -1) {
                     int end = findElementEnd(text, offset);
@@ -880,7 +880,7 @@ public class RstFormatter {
         }
     }
 
-    public static int findElementMatch(String text, String key, String name) {
+    public static int findElementMatch(String text, String key, String name, boolean checkAdjacentLines) {
         int nameLength = name.length();
         int offset = 0;
         int keyLength = key.length();
@@ -927,6 +927,66 @@ public class RstFormatter {
                 // TODO - validate the arguments list?
                 return next;
             }
+
+            // Look on subsequent lines too - we sometimes have adjacent lines
+            // with additional signatures
+            if (checkAdjacentLines) {
+                while (true) {
+                    int lineBegin = lineEnd+1;
+                    if (lineBegin >= text.length()) {
+                        break;
+                    }
+
+                    lineEnd = text.indexOf('\n', lineBegin);
+                    if (lineEnd == -1) {
+                        lineEnd = text.length(); // on last line with no crlf at the end
+                    }
+
+                    while (lineBegin < lineEnd) {
+                        char c = text.charAt(lineBegin);
+                        if (!Character.isWhitespace(c)) {
+                            break;
+                        }
+                        lineBegin++;
+                    }
+
+                    while (lineEnd > lineBegin) {
+                        char c = text.charAt(lineEnd-1);
+                        if (!Character.isWhitespace(c)) {
+                            break;
+                        }
+                        lineEnd--;
+                    }
+
+                    if (lineEnd <= lineBegin) {
+                        break;
+                    }
+
+                    nameBegin = lineBegin;
+                    nameEnd = -1;
+
+                    // Pick out the bame
+                    for (int i = lineBegin; i < lineEnd; i++) {
+                        char c = text.charAt(i);
+                        if (c == '(' || c == ' ') {
+                            nameEnd = i;
+                            break;
+                        } else if (c == '.') {
+                            nameBegin = i + 1;
+                        }
+                    }
+                    if (nameEnd == -1) {
+                        nameEnd = lineEnd;
+                    }
+
+                    if (nameEnd - nameBegin == nameLength &&
+                            text.regionMatches(nameBegin, name, 0, nameLength)) {
+                        // TODO - validate the arguments list?
+                        return next;
+                    }
+                }
+            }
+
         }
 
         return -1;
