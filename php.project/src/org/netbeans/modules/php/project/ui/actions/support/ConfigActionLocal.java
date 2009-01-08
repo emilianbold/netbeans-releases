@@ -174,8 +174,8 @@ public class ConfigActionLocal extends ConfigAction {
             final URL url = CommandUtils.urlForContext(project, context);
             assert url != null;
 
-            // XXX for REMOTE
-            //eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+            preShowUrl(project, context);
+
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             //TODO: improve error handling
@@ -199,8 +199,8 @@ public class ConfigActionLocal extends ConfigAction {
         assert url != null;
         final URL debugUrl = url;
 
-        // XXX for REMOTE
-        //eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+        preShowUrl(project, context);
+
         Runnable runnable = new Runnable() {
             public void run() {
                 try {
@@ -243,6 +243,10 @@ public class ConfigActionLocal extends ConfigAction {
         } else {
             runnable.run();
         }
+    }
+
+    protected void preShowUrl(PhpProject project, Lookup context) {
+        // hook for subclasses
     }
 
     private void startDebugger(final PhpProject project, final XDebugStarter dbgStarter, final Runnable initDebuggingCode,

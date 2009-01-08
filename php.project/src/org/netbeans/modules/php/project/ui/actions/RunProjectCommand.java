@@ -48,7 +48,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class RunProjectCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
@@ -68,14 +68,7 @@ public class RunProjectCommand extends Command implements Displayable {
             // property not set yet
             return;
         }
-        if (scriptSelected) {
-            // XXX
-            getConfigAction().runProject(getProject());
-        } else {
-            eventuallyUploadFiles();
-            // XXX
-            getConfigAction().runProject(getProject());
-        }
+        getConfigAction().runProject(getProject());
     }
 
     @Override

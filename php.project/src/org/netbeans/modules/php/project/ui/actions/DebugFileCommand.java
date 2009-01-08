@@ -41,24 +41,15 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 
-import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.support.DebugScript;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
-public class DebugFileCommand extends DebugProjectCommand {
+public class DebugFileCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
     public static final String DISPLAY_NAME = DebugProjectCommand.DISPLAY_NAME;
 
@@ -72,60 +63,7 @@ public class DebugFileCommand extends DebugProjectCommand {
             // property not set yet
             return;
         }
-        if (isScriptSelected()) {
-            // XXX
-            getConfigAction().debugFile(getProject(), context);
-        } else {
-            // XXX
-            //eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-            getConfigAction().debugFile(getProject(), context);
-
-            // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-//            final FileObject startFile = fileForContext(context);
-//            final URL[] url = new URL[1];
-//            try {
-//                url[0] = getURLForDebug(context, true);
-//            } catch (MalformedURLException ex) {
-//                //TODO improve error handling
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-//            Runnable runnable = new Runnable() {
-//                public void run() {
-//                    try {
-//                        showURLForDebug(url[0]);
-//                    } catch (MalformedURLException ex) {
-//                        //TODO improve error handling
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//            };
-//
-//            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-//            if (jsDebuggingAvailable) {
-//                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-//                if (!keepDebugging) {
-//                    return;
-//                }
-//            }
-//
-//            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
-//                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-//                if (dbgStarter != null) {
-//                    if (dbgStarter.isAlreadyRunning()) {
-//                        if (CommandUtils.warnNoMoreDebugSession()) {
-//                            dbgStarter.stop();
-//                            invokeAction(context);
-//                        }
-//                    } else {
-//                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
-//                    }
-//                }
-//            } else {
-//                runnable.run();
-//            }
-        }
+        getConfigAction().debugFile(getProject(), context);
     }
 
     @Override

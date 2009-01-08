@@ -51,10 +51,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -72,7 +74,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class CommandUtils {
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
@@ -345,6 +347,12 @@ public class CommandUtils {
             throw new MalformedURLException();
         }
         return new URL(baseURLPath);
+    }
+
+    public static Command getCommand(PhpProject project, String commandName) {
+        PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
+        assert provider != null;
+        return provider.getCommand(commandName);
     }
 
     private static Node[] getSelectedNodes() {

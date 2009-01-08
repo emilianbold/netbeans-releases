@@ -94,7 +94,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         uploadFiles(selectedFiles, (FileObject[]) null);
     }
 
-    void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
+    public void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
