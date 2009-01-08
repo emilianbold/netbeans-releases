@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Utilities.keyToString">
+        <api name="util"/>
+        <summary>Added <code>keyToString(KeyStroke stroke, boolean portable)</code></summary>
+        <version major="7" minor="21"/>
+        <date day="8" month="1" year="2009"/>
+        <author login="msauer"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                <code>keyToString(KeyStroke stroke, boolean portable)</code>
+                provides cross-platform compitable keystroke textual representation
+                instead of hardcoding Ctrl, Meta or Alt key.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="110492"/>
+    </change>
     <change id="ServiceProvider">
         <api name="lookup"/>
         <summary>Added <code>ServiceProvider</code> annotation</summary>
