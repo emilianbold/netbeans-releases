@@ -45,6 +45,7 @@ import org.netbeans.modules.php.project.ui.actions.support.RunScript;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -53,27 +54,23 @@ import org.openide.util.Lookup;
 /**
  * @author Radek Matous
  */
-public class RunFileCommand extends RunProjectCommand {
+public class RunFileCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
     public static final String DISPLAY_NAME = RunProjectCommand.DISPLAY_NAME;
-    private final RunScript runScript;
 
-    /**
-     * @param project
-     */
     public RunFileCommand(PhpProject project) {
         super(project);
-        runScript = new RunScript(project);
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    public void invokeAction(Lookup context) {
         if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }
         if (isScriptSelected()) {
-            runScript.invokeAction(context);
+            // XXX
+            getConfigAction().runFile(getProject(), context);
         } else {
             try {
                 // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
@@ -89,11 +86,12 @@ public class RunFileCommand extends RunProjectCommand {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject file = fileForContext(context);
+    public boolean isActionEnabled(Lookup context) {
         if (isScriptSelected()) {
-            return isPhpFileSelected(file);
+            // XXX
+            return getConfigAction().isRunFileEnabled(getProject(), context);
         }
+        FileObject file = fileForContext(context);
         return file != null;
     }
 
@@ -104,6 +102,6 @@ public class RunFileCommand extends RunProjectCommand {
 
     @Override
     public String getDisplayName() {
-        return RunFileCommand.DISPLAY_NAME;
+        return DISPLAY_NAME;
     }
 }

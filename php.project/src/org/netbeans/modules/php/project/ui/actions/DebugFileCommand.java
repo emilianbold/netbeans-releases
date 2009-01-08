@@ -61,21 +61,20 @@ import org.openide.util.Lookup;
 public class DebugFileCommand extends DebugProjectCommand {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
     public static final String DISPLAY_NAME = DebugProjectCommand.DISPLAY_NAME;
-    private final DebugScript debugScript;
 
     public DebugFileCommand(PhpProject project) {
         super(project);
-        debugScript = new DebugScript(project);
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) {
         if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }
         if (isScriptSelected()) {
-            debugScript.invokeAction(context);
+            // XXX
+            getConfigAction().debugFile(getProject(), context);
         } else {
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final FileObject startFile = fileForContext(context);
@@ -126,13 +125,12 @@ public class DebugFileCommand extends DebugProjectCommand {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject file = fileForContext(context);
-        boolean enabled = file != null;
+    public boolean isActionEnabled(Lookup context) {
         if (isScriptSelected()) {
-            enabled = isPhpFileSelected(file);
+            return getConfigAction().isDebugFileEnabled(getProject(), context);
         }
-        return enabled && XDebugStarterFactory.getInstance() != null;
+        FileObject file = fileForContext(context);
+        return file != null && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

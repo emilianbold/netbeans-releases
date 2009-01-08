@@ -56,6 +56,7 @@ public abstract class ConfigAction {
         SCRIPT,
         TEST,
     }
+    private static final ConfigAction CONFIG_ACTION_SCRIPT = new ConfigActionScript();
     private static final ConfigAction CONFIG_ACTION_TEST = new ConfigActionTest();
 
     public static Type convert(PhpProjectProperties.RunAsType runAsType) {
@@ -81,6 +82,9 @@ public abstract class ConfigAction {
         assert type != null;
         ConfigAction action = null;
         switch (type) {
+            case SCRIPT:
+                action = CONFIG_ACTION_SCRIPT;
+                break;
             case TEST:
                 action = CONFIG_ACTION_TEST;
                 break;

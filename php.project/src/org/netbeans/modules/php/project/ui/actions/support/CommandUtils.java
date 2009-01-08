@@ -91,34 +91,6 @@ public class CommandUtils {
         return filter(Arrays.asList(filesForSelectedNodes()), dir);
     }
 
-    public Collection<? extends FileObject> filesForContext(Lookup context) {
-        return context.lookupAll(FileObject.class);
-    }
-
-    public static FileObject[] filesForSelectedNodes() {
-        Node[] nodes = getSelectedNodes();
-        if (nodes == null) {
-            return new FileObject[0];
-        }
-        List<FileObject> list = new ArrayList<FileObject>(nodes.length);
-        for (Node node : nodes) {
-            FileObject fileObject = node.getLookup().lookup(FileObject.class);
-
-            if (fileObject == null) {
-                fileObject = getFileObject(node);
-            }
-
-            if (fileObject != null) {
-                list.add(fileObject);
-            }
-        }
-        return list.toArray(new FileObject[list.size()]);
-    }
-
-    public static Node[] getSelectedNodes() {
-        return TopComponent.getRegistry().getCurrentNodes();
-    }
-
     public String getRelativeSrcPath(FileObject fileObject) {
         return getRelativePhpPath(ProjectPropertiesSupport.getSourcesDirectory(getProject()), fileObject);
     }
@@ -272,4 +244,43 @@ public class CommandUtils {
         FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, showFileChooser);
         return tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
     }
+
+    public static Collection<? extends FileObject> filesForContext(Lookup context) {
+        assert context != null;
+        return context.lookupAll(FileObject.class);
+    }
+
+    public static FileObject[] getPhpFilesForContext(Lookup context, FileObject rootDirectory) {
+        return filter(filesForContext(context), rootDirectory);
+    }
+
+    public static FileObject[] getPhpFilesForSelectedNodes(FileObject rootDirectory) {
+        return filter(Arrays.asList(filesForSelectedNodes()), rootDirectory);
+    }
+
+    // XXX change to list and rename to get...
+    public static FileObject[] filesForSelectedNodes() {
+        Node[] nodes = getSelectedNodes();
+        if (nodes == null) {
+            return new FileObject[0];
+        }
+        List<FileObject> fileObjects = getFileObjects(nodes);
+        return fileObjects.toArray(new FileObject[fileObjects.size()]);
+    }
+
+    public static FileObject getPhpFileForContextOrSelectedNodes(Lookup context, FileObject rootFolder) {
+        assert rootFolder != null;
+        assert rootFolder.isFolder() : "Folder must be given: " + rootFolder;
+
+        FileObject[] files = getPhpFilesForContext(context, rootFolder);
+        if (files == null || files.length == 0) {
+            files = getPhpFilesForSelectedNodes(rootFolder);
+        }
+        return (files != null && files.length > 0) ? files[0] : null;
+    }
+
+    private static Node[] getSelectedNodes() {
+        return TopComponent.getRegistry().getCurrentNodes();
+    }
+
 }

@@ -86,7 +86,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     @Override
-    public final void invokeAction(Lookup context) throws IllegalArgumentException {
+    public final void invokeAction(Lookup context) {
         if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
@@ -96,7 +96,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     @Override
-    public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+    public final boolean isActionEnabled(Lookup context) {
         // WARNING context can be null, see RunCommand.invokeAction()
         return isRemoteConfigSelected() && TASK.isFinished();
     }

@@ -72,22 +72,20 @@ public class DebugProjectCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_DEBUG;
     public static final String DISPLAY_NAME = NbBundle.getMessage(DebugProjectCommand.class, "LBL_DebugProject");
 
-    private final DebugScript debugScript;
-
     public DebugProjectCommand(PhpProject project) {
         super(project);
-        debugScript = new DebugScript(project);
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) {
         if (!isRunConfigurationValid(true)) {
             // property not set yet
             return;
         }
         boolean scriptSelected = isScriptSelected();
         if (scriptSelected) {
-            debugScript.invokeAction(null);
+            // XXX
+            getConfigAction().debugProject(getProject());
         } else {
             eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
@@ -152,8 +150,9 @@ public class DebugProjectCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return XDebugStarterFactory.getInstance() != null;
+    public boolean isActionEnabled(Lookup context) {
+        // XXX
+        return getConfigAction().isDebugProjectEnabled(getProject());
     }
 
     @Override

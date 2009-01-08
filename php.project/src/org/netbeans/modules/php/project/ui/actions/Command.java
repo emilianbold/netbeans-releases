@@ -59,6 +59,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -89,9 +90,9 @@ public abstract class Command {
 
     public abstract String getCommandId();
 
-    public abstract void invokeAction(Lookup context) throws IllegalArgumentException;
+    public abstract void invokeAction(Lookup context);
 
-    public abstract boolean isActionEnabled(Lookup context) throws IllegalArgumentException;
+    public abstract boolean isActionEnabled(Lookup context);
 
     public boolean asyncCallRequired() {
         return true;
@@ -413,6 +414,10 @@ public abstract class Command {
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
             uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
         }
+    }
+
+    protected ConfigAction getConfigAction() {
+        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(getProject())));
     }
 
     private static class DebugInfo {

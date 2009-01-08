@@ -57,6 +57,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+/**
+ * Action implementation for TEST configuration.
+ * It means running and debugging tests.
+ * @author Tomas Mysik
+ */
 public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
 
