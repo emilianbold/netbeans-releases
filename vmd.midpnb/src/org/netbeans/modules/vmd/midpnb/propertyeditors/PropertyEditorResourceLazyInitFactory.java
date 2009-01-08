@@ -207,7 +207,7 @@ public class PropertyEditorResourceLazyInitFactory {
                             instanceNamme[0] = (String) component_.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
                         }
                     });
-                    setAsText(instanceNamme[0]);
+                    //setAsText(instanceNamme[0]);
                 }
 
             }

@@ -296,6 +296,19 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         return getDecodeValue(value);
     }
 
+    private void setValue(PropertyValue value) {
+        super.setValue(value);
+        if (perElement == null) {
+            return;
+        }
+        final DesignComponent component_ = component.get();
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+            perElement.postSetValue(component_, value.getComponent());
+        } else if (NULL_VALUE.equals(value)) {
+            perElement.nullValueSet(component_);
+        }
+    }
+
     private void saveValue(String text) {
         if (text == null || text.length() <= 0) {
             return;
@@ -505,9 +518,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
                 }
 
             }
-            
+            perElement.postSaveValue(component.get());
         }
-        perElement.postSaveValue(component.get());
+        
     }
 
     public JComponent getCustomEditorComponent() {
