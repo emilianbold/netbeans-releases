@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.debuggercore.ts;
+package org.netbeans.modules.ruby.platform.execution;
 
-import junit.framework.Test;
-import org.netbeans.debuggercore.WatchesTest;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import java.io.IOException;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
 /**
  *
- * @author peter
+ * @author Erno Mononen
  */
-public class WatchesTestSuite extends JellyTestCase {
-    
-    public WatchesTestSuite(String name) {
+public class RubyExecutionDescriptorTest extends RubyTestBase {
+
+    public RubyExecutionDescriptorTest(String name) {
         super(name);
     }
-    
-    @Override 
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+
+    public void testAddInitialArgs() throws IOException {
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(getSafeJRuby());
+        descriptor.addInitialArgs("-a -b");
+        assertEquals("-a -b", descriptor.getInitialArgsPlain());
+
+        descriptor.addInitialArgs("-cee -dee");
+        assertEquals("-a -b -cee -dee", descriptor.getInitialArgsPlain());
+
+        assertEquals(4, descriptor.getInitialArgs().length);
+        assertEquals("-a", descriptor.getInitialArgs()[0]);
+        assertEquals("-b", descriptor.getInitialArgs()[1]);
+        assertEquals("-cee", descriptor.getInitialArgs()[2]);
+        assertEquals("-dee", descriptor.getInitialArgs()[3]);
+
+        // test that null is allowed
+        assertNotNull(descriptor.addInitialArgs(null));
     }
 
-    public static Test suite() {
-//        String os = System.getProperty("os.name");
-//        String jdk = System.getProperty("java.version");
-//        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
-//            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-//        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(WatchesTest.class,
-                    "testWatchesPublicVariables",
-                    "testWatchesProtectedVariables",
-                    "testWatchesPrivateVariables",
-                    "testWatchesPackagePrivateVariables",
-                    "testWatchesFiltersBasic",
-                    "testWatchesFiltersLinkedList",
-                    "testWatchesFiltersArrayList",
-                    "testWatchesFiltersVector",
-                    "testWatchesFiltersHashMap",
-                    "testWatchesFiltersHashtable",
-                    "testWatchesFiltersTreeMap",
-                    "testWatchesFiltersTreeSet",
-                    "testWatchesFilters1DArray",
-                    "testWatchesFilters2DArray",
-                    "testWatchesValues").enableModules(".*").clusters(".*"));
-//        }
-    } 
+
 }
