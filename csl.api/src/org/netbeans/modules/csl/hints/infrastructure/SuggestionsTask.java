@@ -79,18 +79,6 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
     public SuggestionsTask() {
     }
     
-    static Language getHintsProviderLanguage(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument)doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getHintsProvider() != null) {
-                return l;
-            }
-        }
-        
-        return null;
-    }
-    
     public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
