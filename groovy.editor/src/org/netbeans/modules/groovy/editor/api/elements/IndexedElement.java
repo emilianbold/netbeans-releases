@@ -68,7 +68,7 @@ public abstract class IndexedElement extends GroovyElement {
     protected int flags;
     protected int docLength = -1;
     private Document document;
-    private FileObject fileObject;
+    //private FileObject fileObject;
 
     protected IndexedElement(GroovyIndex index, IndexResult result, String classFqn, String attributes, int flags) {
         this.index = index;
@@ -102,7 +102,7 @@ public abstract class IndexedElement extends GroovyElement {
                 return null;
             }
 
-            document = LexUtilities.getDocument(fileObject, true);
+            document = LexUtilities.getDocument(fo, true);
         }
 
         return document;
