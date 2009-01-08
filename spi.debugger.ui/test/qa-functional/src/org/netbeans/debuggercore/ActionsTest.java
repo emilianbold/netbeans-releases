@@ -505,14 +505,15 @@ public class ActionsTest extends JellyTestCase {
             new ContinueAction().performMenu();
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
-<<<<<<< /home/felipee/SUN/clones/70/main/spi.debugger.ui/test/qa-functional/src/org/netbeans/debuggercore/ActionsTest.java
+
             //continue
             //new ContinueAction().performMenu();
-=======
+
+           //continue
            //continue
            //new EventTool().waitNoEvent(1000);
            // new ContinueAction().performMenu();
->>>>>>> /tmp/ActionsTest.java~other.V5NS0i
+
             String pausePath = Utilities.runMenu + "|" + Utilities.pauseItem;
             for (int i = 0; i < 10; i++) {
                 if (MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
