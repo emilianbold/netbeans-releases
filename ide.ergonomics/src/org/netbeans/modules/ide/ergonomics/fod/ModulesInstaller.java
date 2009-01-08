@@ -109,15 +109,13 @@ public class ModulesInstaller {
         boolean success = false;
         
         FindComponentModules findModules = new FindComponentModules(info);
-        findModules.createFindingTask().waitFinished();
-        
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
         Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
         if (toInstall != null && !toInstall.isEmpty()) {
             ModulesInstaller installer = new ModulesInstaller(toInstall, findModules, monitor);
             installer.getInstallTask ().schedule (10);
             installer.getInstallTask ().waitFinished();
-            findModules.createFindingTask().waitFinished();
+            findModules = new FindComponentModules(info);
             success = findModules.getModulesForInstall ().isEmpty ();
         } else if (toEnable != null && !toEnable.isEmpty()) {
             ModulesActivator enabler = new ModulesActivator(toEnable, findModules, monitor);
