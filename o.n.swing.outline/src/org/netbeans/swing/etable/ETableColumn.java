@@ -137,9 +137,10 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * This method marks this column as sorted. Value 0 of the parameter rank
      * means that this column is not sorted.
-     * @param int rank value 1 means that this is the most important sorted
+     * @param rank value 1 means that this is the most important sorted
      *        column, number 2 means second etc.
-     * @param comparator operates over ETable.RowMapping objects
+     * @param ascending true means ascending
+     * @since 1.3
      */
     public void setSorted(int rank, boolean ascending) {
         if (!isSortingAllowed() && (rank != 0 || comparator != null)) {
@@ -164,6 +165,9 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Rank value 1 means that this is the most important column
      * (with respect to the table sort), value 2 means second etc.
+     * @param newRank value 1 means that this is the most important sorted
+     *        column, number 2 means second etc.
+     * @since 1.3
      */
     public void setSortRank(int newRank) {
         if (!isSortingAllowed() && newRank != 0) {
@@ -193,6 +197,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Checks whether the sort order is ascending (true means ascending,
      * false means descending).
+     * @return true for ascending order
      */
     public boolean isAscending() {
         return ascending;
@@ -202,6 +207,8 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      * Sets the sort order. Please note: the column has to be already
      * sorted when calling this method otherwise IllegalStateException
      * is thrown.
+     * @param ascending true means ascending
+     * @since 1.3
      */
     public void setAscending(boolean ascending) {
         if (!isSortingAllowed()) {
