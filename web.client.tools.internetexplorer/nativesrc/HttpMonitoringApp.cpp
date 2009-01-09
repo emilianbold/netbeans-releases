@@ -59,10 +59,10 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     msg.addChildTagWithValue(_T("url"), url);
 
     // This block for displaying as debug message
-    tstring request = _T("(Request for ") + url + _T(")\r\n");
+    /*tstring request = _T("(Request for ") + url + _T(")\r\n");
     m_redirects = _T("(Response for ") + url + _T(")\r\n");
     request += A2CT(pbuf);
-    EnsureCRLF(request);
+    EnsureCRLF(request);*/
 
     if (szHeaders)
     {
@@ -79,9 +79,9 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     if (SUCCEEDED(hr) && pszAdditionalHeaders && *pszAdditionalHeaders)
     {
         // This block for displaying as debug message
-        request += L"----pszAdditionalHeaders----\r\n";
-        request += W2CT(*pszAdditionalHeaders);
-        EnsureCRLF(request);
+        //request += L"----pszAdditionalHeaders----\r\n";
+        //request += W2CT(*pszAdditionalHeaders);
+        //EnsureCRLF(request);
 
         tstring headerSet = W2CT(*pszAdditionalHeaders);
         addAllHeaders(headerSet, msg); //parse headers from pszAdditionalHeaders
@@ -184,32 +184,7 @@ void addAllHeaders(const tstring headerSet, HttpDbgpResponse &msg) {
     size_t posColon = 0;
     size_t posLineEnd = 0;
     int tempCounter = 0;
-//DebugBreak();    
- /*   do {
-        posLineEnd = headerSet.find(L"\r\n", posLineStart);
-        posColon = headerSet.find(L":", posLineStart);
-        
-        if (posLineEnd < posColon) {
-            // line does not have a colon, not handled          
-            continue; 
-        }
-        
-        // substr(start,len)
-        tstring headerName = headerSet.substr(posLineStart, posColon-posLineStart);
-        tstring headerValue;
-        int valStartPos = posColon+2; // skip past the ": " (2 characters) 
 
-        if (posLineEnd == wstring::npos) { //end of string
-            headerValue = headerSet.substr(valStartPos); 
-        } else { 
-            headerValue = headerSet.substr(valStartPos, posLineEnd-valStartPos); 
-        }
-        msg.addHeader(headerName, headerValue);
-
-        // move to next line, skipping the "\r\n"
-        posLineStart = posLineEnd + 2; 
-    } while (posLineEnd != wstring::npos);
-*/
     posColon = headerSet.find(L":", posLineStart);
     // on response messages the first line is not a header but the HTTP response
     // eg: HTTP/1.1 402 OK -- filter these out. This is kind of a hack, not really
@@ -306,11 +281,11 @@ STDMETHODIMP CTestSink::OnResponse(
 
 
     // For Debug output message
-    tstring response = m_redirects;
+    /*tstring response = m_redirects;
     response += L"----szResponseHeaders----\r\n";
     response += W2CT(szResponseHeaders);
     EnsureCRLF(response);
-    response += L"----/szResponseHeaders----\r\n";
+    response += L"----/szResponseHeaders----\r\n";*/
 
     tstring headerSet1 = W2CT(szResponseHeaders);
     // First line of headers contains the HTTP status response.
