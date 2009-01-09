@@ -422,7 +422,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return call stack
      */
     public CallStackFrame[] getCallStack () throws AbsentInformationException {
-        return getCallStack (0, getStackDepth ());
+        accessLock.readLock().lock();
+        try {
+            return getCallStack (0, getStackDepth ());
+        } finally {
+            accessLock.readLock().unlock();
+        }
     }
     
     /**
