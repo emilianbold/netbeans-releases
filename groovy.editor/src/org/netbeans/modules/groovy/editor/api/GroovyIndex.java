@@ -84,7 +84,9 @@ public final class GroovyIndex {
 
     public static GroovyIndex get(Collection<FileObject> roots) {
         try {
-            return new GroovyIndex(QuerySupport.forRoots(GroovyTokenId.GROOVY_MIME_TYPE,
+            return new GroovyIndex(QuerySupport.forRoots(
+                    GroovyIndexer.Factory.NAME,
+                    GroovyIndexer.Factory.VERSION,
                     roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);

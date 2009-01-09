@@ -186,6 +186,9 @@ public class GroovyIndexer extends EmbeddingIndexer {
 
     public static final class Factory extends EmbeddingIndexerFactory {
 
+        public static final String NAME = "groovy"; // NOI18N
+        public static final int VERSION = 8;
+
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             if (isIndexable(indexable, snapshot)) {
@@ -197,12 +200,12 @@ public class GroovyIndexer extends EmbeddingIndexer {
 
         @Override
         public int getIndexVersion() {
-            return 8;
+            return VERSION;
         }
 
         @Override
         public String getIndexerName() {
-            return "groovy"; // NOI18N
+            return NAME;
         }
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {

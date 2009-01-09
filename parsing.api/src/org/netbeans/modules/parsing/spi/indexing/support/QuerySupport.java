@@ -47,15 +47,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -110,10 +107,10 @@ public final class QuerySupport {
     private final IndexFactoryImpl spiFactory;
     private final Map<URL,IndexImpl> indexes;
 
-    private QuerySupport (final String mimeType, final URL... roots) throws IOException {
+    private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.spiFactory = new LuceneIndexFactory();
         this.indexes = new HashMap<URL, IndexImpl>();
-        final String indexerFolder = findIndexerFolder(mimeType);
+        final String indexerFolder = findIndexerFolder(indexerName, indexerVersion);
         if (indexerFolder != null) {
             for (URL root : roots) {
                 final FileObject cacheFolder = CacheFolder.getDataFolder(root);
@@ -158,32 +155,24 @@ public final class QuerySupport {
         return result;
     }
 
-    public static QuerySupport forRoots (final String mimeType, final URL... roots) throws IOException {
-        Parameters.notNull("mimeType", mimeType);
+    public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final URL... roots) throws IOException {
+        Parameters.notNull("indexerName", indexerName);
         Parameters.notNull("roots", roots);
-        return new QuerySupport(mimeType, roots);
+        return new QuerySupport(indexerName, indexerVersion, roots);
     }
 
-    public static QuerySupport forRoots (final String mimeType, final FileObject... roots) throws IOException {
-        Parameters.notNull("mimeType", mimeType);
+    public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final FileObject... roots) throws IOException {
+        Parameters.notNull("indexerName", indexerName);
         Parameters.notNull("roots", roots);
         final List<URL> rootsURL = new ArrayList<URL>(roots.length);
         for (FileObject root : roots) {
             rootsURL.add(root.getURL());
         }
-        return new QuerySupport(mimeType, rootsURL.toArray(new URL[rootsURL.size()]));
+        return new QuerySupport(indexerName, indexerVersion, rootsURL.toArray(new URL[rootsURL.size()]));
     }
 
-    private static String findIndexerFolder (final String mimeType) {
-        final EmbeddingIndexerFactory embeddingFactory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
-        if (embeddingFactory != null) {
-            return SPIAccessor.getInstance().getIndexerPath(embeddingFactory.getIndexerName(), embeddingFactory.getIndexVersion());
-        }
-        final CustomIndexerFactory customFactory = MimeLookup.getLookup(mimeType).lookup(CustomIndexerFactory.class);
-        if (customFactory != null) {
-            return SPIAccessor.getInstance().getIndexerPath(customFactory.getIndexerName(), embeddingFactory.getIndexVersion());
-        }
-        return null;
+    private static String findIndexerFolder (final String indexerName, final int indexerVersion) {
+        return SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion);
     }
 
 }

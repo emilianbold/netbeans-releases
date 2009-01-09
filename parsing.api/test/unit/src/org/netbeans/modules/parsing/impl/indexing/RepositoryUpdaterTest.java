@@ -781,10 +781,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         public int getIndexVersion() {
             return 1;
         }
-
+        
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            
+
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
         }
 
     }
@@ -843,7 +848,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
+<<<<<<< local
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+=======
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context ctx) {
+>>>>>>> other
             for (Indexable i : deleted) {
                 indexer.expectedDeleted.remove(i.getURL());
             }

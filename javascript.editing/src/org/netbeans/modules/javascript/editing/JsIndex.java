@@ -94,7 +94,9 @@ public final class JsIndex {
 
     public static JsIndex get(Collection<FileObject> roots) {
         try {
-            return new JsIndex(QuerySupport.forRoots(JsTokenId.JAVASCRIPT_MIME_TYPE, roots.toArray(new FileObject[roots.size()])));
+            return new JsIndex(QuerySupport.forRoots(JsIndexer.Factory.NAME,
+                    JsIndexer.Factory.VERSION,
+                    roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
             return EMPTY;
