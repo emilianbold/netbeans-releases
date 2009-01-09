@@ -156,4 +156,14 @@
         <file name="QuickSearch_hidden"/>
         <file name="UndoRedo_hidden"/>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="ProfilerOptionsCategory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.options.ProfilerOptionsCategory"/>
+            </file>
+        </folder>
+        <file name="Editor.instance_hidden"/>
+        <file name="Editor_hidden"/>
+        <file name="FontsAndColors.instance_hidden"/>
+    </folder>
 </filesystem>
