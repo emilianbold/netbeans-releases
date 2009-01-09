@@ -276,13 +276,13 @@ public class CommandUtils {
         return filter(Arrays.asList(filesForSelectedNodes()), baseDirectory);
     }
 
-    public static FileObject fileForContextOrSelectedNodes(Lookup context, FileObject rootFolder) {
-        assert rootFolder != null;
-        assert rootFolder.isFolder() : "Folder must be given: " + rootFolder;
+    public static FileObject fileForContextOrSelectedNodes(Lookup context, FileObject baseDirectory) {
+        assert baseDirectory != null;
+        assert baseDirectory.isFolder() : "Folder must be given: " + baseDirectory;
 
-        FileObject[] files = filesForContext(context, rootFolder);
+        FileObject[] files = filesForContext(context, baseDirectory);
         if (files == null || files.length == 0) {
-            files = filesForSelectedNodes(rootFolder);
+            files = filesForSelectedNodes(baseDirectory);
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -322,6 +322,8 @@ public class CommandUtils {
      */
     public static FileObject fileForProject(PhpProject project, FileObject baseDirectory) {
         assert baseDirectory != null;
+        assert baseDirectory.isFolder() : "Folder must be given: " + baseDirectory;
+
         String indexFile = ProjectPropertiesSupport.getIndexFile(project);
         if (indexFile != null) {
             return baseDirectory.getFileObject(indexFile);
