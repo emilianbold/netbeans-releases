@@ -73,6 +73,7 @@ public class HgLogMessage {
 
     public HgLogMessage(String changeset){
     }
+
     private void updatePaths(List<String> pathsStrings, String path, List<String> filesShortPaths, char status) {
         if (filesShortPaths.isEmpty()) {
             paths.add(new HgLogMessageChangedPath(path, status));
@@ -95,15 +96,27 @@ public class HgLogMessage {
     public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id, 
             String parents, String fm, String fa, String fd, String fc) {
 
-        this(rootURL, filesShortPaths, rev, auth, desc, date, id, parents);
-
+        this.rootURL = rootURL;
+        this.rev = rev;
+        this.author = auth;
+        this.desc = desc;
+        this.id = id;
         this.date = new Date(Long.parseLong(date.split(" ")[0]) * 1000); // UTC in miliseconds
+        String[] parentSplits;
+        parentSplits = parents != null ? parents.split(" ") : null;
+        if ((parentSplits != null) && (parentSplits.length == 2)) {
+        String[] ps1 = parentSplits[0].split(":"); // NOI18N
+        this.parentOneRev = ps1 != null && ps1.length >= 1 ? ps1[0] : null;
+        String[] ps2 = parentSplits[1].split(":"); // NOI18N
+        this.parentTwoRev = ps2 != null && ps2.length >= 1 ? ps2[0] : null;
+        }
+        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null && !this.parentOneRev.equals("-1") && !this.parentTwoRev.equals("-1") ? true : false;
 
         this.paths = new ArrayList<HgLogMessageChangedPath>();
         List<String> apathsStrings = new ArrayList<String>();
         List<String> dpathsStrings = new ArrayList<String>();
         List<String> cpathsStrings = new ArrayList<String>();
-        
+
         // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
         if (fc != null && !fc.equals("")) {
             for (String s : fc.split(" ")) {
@@ -130,24 +143,11 @@ public class HgLogMessage {
                 }
             }
         }
-    }
-
-    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id, String parents) {
-        String parentSplits[];
-        this.rootURL = rootURL;
-        this.rev = rev;
-        this.author = auth;
-        this.desc = desc;
-        parentSplits = parents != null? parents.split(" "): null;
-        if((parentSplits != null) && (parentSplits.length == 2)){
-            String ps1[] = parentSplits[0].split(":"); // NOI18N
-            this.parentOneRev = ps1 != null && ps1.length >=1? ps1[0]: null;
-            String ps2[] = parentSplits[1].split(":"); // NOI18N
-            this.parentTwoRev = ps2 != null && ps2.length >=1? ps2[0]: null;
+        if(fa == null && fc == null && fd == null && fm == null) {
+            for (String fileSP : filesShortPaths) {
+                paths.add(new HgLogMessageChangedPath(fileSP, ' '));
+            }    
         }
-        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null &&
-                !this.parentOneRev.equals("-1") && !this.parentTwoRev.equals("-1")? true: false;
-        this.id = id;
     }
 
     HgLogMessageChangedPath [] getChangedPaths(){

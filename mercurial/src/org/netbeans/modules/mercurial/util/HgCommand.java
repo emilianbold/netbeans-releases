@@ -931,6 +931,10 @@ public class HgCommand {
                                 bShowMerges, true, -1, logger);
     }
 
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, fromRevision, toRevision, bShowMerges, false, -1, logger);
+    }
+    
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, files, HG_STATUS_FLAG_TIP_CMD, "0", true, false, limit, logger);
     }
