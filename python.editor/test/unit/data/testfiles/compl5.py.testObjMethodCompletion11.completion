@@ -36,8 +36,6 @@ CONSTRUCTO __init__(methodName)
 METHOD     __call__(args, kwds)                       
 METHOD     __repr__()                                 
 METHOD     __str__()                                  
-ATTRIBUTE  __bases__                                  
 ATTRIBUTE  __dict__                                   
 ATTRIBUTE  ---__members__             ---             
 ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   

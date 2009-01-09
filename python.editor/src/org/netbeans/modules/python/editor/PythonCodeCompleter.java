@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.python.editor;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,16 +35,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
@@ -60,7 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -983,6 +978,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                             item.setSmart(true);
                             item.setAddImport(""); // No extra imports of these
                             item.setAnchorOffset(anchor);
+                            item.setInImport(true);
                             proposals.add(item);
                         }
                         request.completionResult.setFilterable(false);
@@ -1250,24 +1246,25 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (elements.isEmpty()) {
-                        elements = index.getInheritedElements(fqn + "::" + type, prefix, kind);
-
-                        int f = fqn.lastIndexOf("::");
-
-                        if (f == -1) {
-                            break;
-                        } else {
-                            fqn = fqn.substring(0, f);
-                        }
-                    }
+                    //while (elements.isEmpty()) {
+                    //    elements = index.getInheritedElements(fqn + "::" + type, prefix, kind);
+                    //
+                    //    int f = fqn.lastIndexOf("::");
+                    //
+                    //    if (f == -1) {
+                    //        break;
+                    //    } else {
+                    //        fqn = fqn.substring(0, f);
+                    //    }
+                    //}
 
                     // Add methods in the class (without an FQN)
-                    Set<IndexedElement> m = index.getInheritedElements(type, prefix, kind);
+                    //Set<IndexedElement> m = index.getInheritedElements(type, prefix, kind);
+                    elements = index.getInheritedElements(type, prefix, kind);
 
-                    if (!m.isEmpty()) {
-                        elements.addAll(m);
-                    }
+                    //if (!m.isEmpty()) {
+                    //    elements.addAll(m);
+                    //}
                 }
             }
 
@@ -1287,11 +1284,15 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                             if (names != null) {
                                 for (alias at : names) {
                                     if (at.getInternalAsname() != null && at.getInternalAsname().equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+                                        
                                         // Yes, imported symbol
                                         moduleName = at.getInternalName();
                                         moduleCompletion = true;
                                         break;
                                     } else if (at.getInternalName().equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+
                                         if (at.getInternalAsname() != null) {
                                             moduleCompletion = false;
                                         } else {
@@ -1785,7 +1786,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         @Override
         public String getCustomInsertTemplate() {
             String[] params = method.getParams();
-            if (params == null) {
+            if (params == null || isInImport()) {
                 return getInsertPrefix() + "${cursor}"; // NOI18N
             }
 
@@ -1927,6 +1928,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         protected IndexedElement indexedElement;
         protected short smartFlag;
         private String addImport;
+        private boolean inImport;
 
         private PythonCompletionItem(Element element, CompletionRequest request) {
             this.element = element;
@@ -1948,6 +1950,14 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
         public void setAddImport(String addImport) {
             this.addImport = addImport;
+        }
+
+        public boolean isInImport() {
+            return inImport;
+        }
+
+        public void setInImport(boolean inImport) {
+            this.inImport = inImport;
         }
 
         @Override

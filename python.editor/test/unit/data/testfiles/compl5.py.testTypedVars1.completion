@@ -70,10 +70,8 @@ METHOD     __setattr__(name, value)
 METHOD     __sizeof__()                               
 METHOD     __str__()                                  
 METHOD     __subclasshook__()                         
-ATTRIBUTE  __bases__                                  
 ATTRIBUTE  __class__                                  
 ATTRIBUTE  __dict__                                   
 ATTRIBUTE  __doc__                                    
 ATTRIBUTE  ---__members__             ---             
 ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   

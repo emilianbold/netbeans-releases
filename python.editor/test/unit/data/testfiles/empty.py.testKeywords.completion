@@ -680,7 +680,6 @@ CLASS      Random
 CLASS      Range                                      
 CLASS      RangeException                             
 CLASS      Rational                                   
-CLASS      RawConfigParser                            
 CLASS      RawIOBase                                  
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
@@ -1026,6 +1025,7 @@ CLASS      dispatcher_with_send
 CLASS      dl                                         
 CLASS      error                                      
 CLASS      error_data                                 
+CLASS      error_reply                                
 CLASS      error_temp                                 
 CLASS      excel                                      
 CLASS      excel_tab                                  

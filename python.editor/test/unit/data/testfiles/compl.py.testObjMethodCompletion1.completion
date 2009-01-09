@@ -21,6 +21,7 @@ CLASS      AbstractFunctionCode
 CLASS      AbstractHTTPHandler                        
 CLASS      AbstractWriter                             
 CLASS      Add                                        
+CLASS      AddressList                                
 CLASS      And                                        
 CLASS      Application                                
 CLASS      ArgumentError                              
@@ -685,7 +686,6 @@ CLASS      Random
 CLASS      Range                                      
 CLASS      RangeException                             
 CLASS      Rational                                   
-CLASS      RawConfigParser                            
 CLASS      RawIOBase                                  
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
@@ -1032,9 +1032,6 @@ CLASS      dispatcher_with_send
 CLASS      dl                                         
 CLASS      error                                      
 CLASS      error_data                                 
-CLASS      error_proto                                
-CLASS      error_reply                                
-CLASS      error_temp                                 
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   

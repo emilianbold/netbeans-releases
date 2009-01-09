@@ -22,8 +22,6 @@ VARIABLE   start_dir
 ------------------------------------
 CONSTRUCTO __init__(file, mode, compressi             
 METHOD     __del__()                                  
-ATTRIBUTE  __bases__                                  
 ATTRIBUTE  __dict__                                   
 ATTRIBUTE  ---__members__             ---             
 ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   

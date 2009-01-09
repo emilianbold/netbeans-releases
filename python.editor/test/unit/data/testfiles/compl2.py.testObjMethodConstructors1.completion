@@ -23,8 +23,6 @@ ATTRIBUTE  name
 ATTRIBUTE  newlines                                   
 ATTRIBUTE  softspace                                  
 ------------------------------------
-ATTRIBUTE  __bases__                                  
 ATTRIBUTE  __dict__                                   
 ATTRIBUTE  ---__members__             ---             
 ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   

@@ -1,7 +1,6 @@
 Code completion result for source line:
 print whatever.r|
 (QueryType=COMPLETION, NameKind=PREFIX)
-OTHER      Specify type of <code>whatever             
 ------------------------------------
 METHOD     r_eval(code)                               
 METHOD     r_exec(code)                               

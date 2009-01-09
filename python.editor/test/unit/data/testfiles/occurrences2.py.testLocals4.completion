@@ -29,7 +29,6 @@ CLASS      AbstractFunctionCode
 CLASS      AbstractHTTPHandler                        
 CLASS      AbstractWriter                             
 CLASS      Add                                        
-CLASS      AddressList                                
 CLASS      And                                        
 CLASS      Application                                
 CLASS      ArgumentError                              
@@ -791,6 +790,7 @@ CLASS      StopTokenizing
 CLASS      Strange                                    
 CLASS      StreamConverter                            
 CLASS      StreamHandler                              
+CLASS      StreamReader                               
 CLASS      StreamRequestHandler                       
 CLASS      StreamWriter                               
 CLASS      StrictVersion                              
@@ -1040,6 +1040,7 @@ CLASS      dl
 CLASS      error                                      
 CLASS      error_data                                 
 CLASS      error_proto                                
+CLASS      error_reply                                
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   
