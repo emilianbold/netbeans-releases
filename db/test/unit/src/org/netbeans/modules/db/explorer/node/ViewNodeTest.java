@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.node;
 
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.api.db.explorer.DatabaseException;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
-* Interface of driver-related nodes.
-* @author Slavek Psenicka
-*/
-public interface DriverOperations
-{
-    /** Add driver operation
-    * @param drv Driver to add
-    */
-    public void addDriver(DatabaseDriver drv)
-    throws DatabaseException;
-}
+ *
+ * @author Rob Englander
+ */
+public class ViewNodeTest extends DDLTestBase {
 
-/*
-* <<Log>>
-*  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
-*       Microsystems Copyright in File Comment
-*  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
-* $
-*/
+    public ViewNodeTest(String testName) {
+        super(testName);
+    }
+
+    public void testClipboardCopy() throws Exception {
+        String tablename = "testtable";
+        String pkName = "id";
+        createBasicTable(tablename, pkName);
+
+        String viewname = "testview";
+        createView(viewname, "select id from testtable");
+
+        ViewNode viewNode = getViewNode(viewname);
+        assertNotNull(viewNode);
+        assertTrue(viewNode.canCopy());
+
+        Transferable transferable = (Transferable)viewNode.clipboardCopy();
+        Set mimeTypes = new HashSet();
+        DataFlavor[] flavors = transferable.getTransferDataFlavors();
+        for (int i = 0; i < flavors.length; i++) {
+            mimeTypes.add(flavors[i].getMimeType());
+        }
+
+        assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-view; class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$View"));
+        assertTrue(mimeTypes.contains("application/x-java-openide-nodednd; mask=1; class=org.openide.nodes.Node"));
+
+        dropView(viewname);
+        dropTable(tablename);
+    }
+}
