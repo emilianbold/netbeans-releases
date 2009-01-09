@@ -737,10 +737,10 @@ public class RstFormatter {
      * @return
      */
     private String extractRst(IndexedElement element, BaseDocument doc, String[] signatureHolder) {
-        return extractRst(element.getName(), element.getKind(), doc, signatureHolder);
+        return extractRst(element.getName(), element.getClz(), element.getKind(), doc, signatureHolder);
     }
 
-    String extractRst(String name, ElementKind kind, BaseDocument doc, String[] signatureHolder) {
+    String extractRst(String name, String clz, ElementKind kind, BaseDocument doc, String[] signatureHolder) {
         try {
             String text = doc.getText(0, doc.getLength());
             // What about functions?
@@ -750,6 +750,12 @@ public class RstFormatter {
                     offset = findElementMatch(text, "method::", name, false); // NOI18N
                     if (offset == -1 && kind == ElementKind.CONSTRUCTOR) {
                         offset = findElementMatch(text, "class::", name, false); // NOI18N
+                        if (offset == -1 && clz != null && clz.length() > 0 && "__init__".equals(name)) { // NOI18N
+                            offset = findElementMatch(text, "method::", clz, false); // NOI18N
+                            if (offset == -1) {
+                                offset = findElementMatch(text, "class::", clz, false); // NOI18N
+                            }
+                        }
                     }
                 }
                 if (offset != -1) {
@@ -965,7 +971,7 @@ public class RstFormatter {
                     nameBegin = lineBegin;
                     nameEnd = -1;
 
-                    // Pick out the bame
+                    // Pick out the name
                     for (int i = lineBegin; i < lineEnd; i++) {
                         char c = text.charAt(i);
                         if (c == '(' || c == ' ') {

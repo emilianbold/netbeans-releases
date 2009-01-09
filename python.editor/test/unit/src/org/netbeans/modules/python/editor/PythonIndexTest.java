@@ -59,8 +59,8 @@ public class PythonIndexTest extends PythonTestBase {
 //    }
 
     public void testGetFileObject2() throws Exception {
-        FileObject fo = PythonIndex.getFileObject("cluster:pythonstubs/pythonstubs-2_6.egg");
+        FileObject fo = PythonIndex.getFileObject("cluster:pythonstubs/pythonstubs-2_6_1.egg");
         assertNotNull(fo);
-        assertEquals("pythonstubs-2_6.egg", fo.getNameExt());
+        assertEquals("pythonstubs-2_6_1.egg", fo.getNameExt());
     }
 }

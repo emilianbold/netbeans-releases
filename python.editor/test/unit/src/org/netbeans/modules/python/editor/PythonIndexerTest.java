@@ -124,6 +124,10 @@ public class PythonIndexerTest extends PythonTestBase {
         checkIndexer("testfiles/tarfile.py");
     }
 
+    public void testIndex16() throws Exception {
+        checkIndexer("testfiles/rst/pickle.rst");
+    }
+
     public void testRstIndex1() throws Exception {
         checkIndexer("testfiles/rst/zipfile.rst");
     }
@@ -168,11 +172,19 @@ public class PythonIndexerTest extends PythonTestBase {
         checkIndexer("testfiles/rst/collections.rst");
     }
 
+    public void testRstIndex12() throws Exception {
+        checkIndexer("testfiles/rst/ctypes.rst");
+    }
+
+    public void testRstIndex13() throws Exception {
+        checkIndexer("testfiles/rst/stub_missing.rst");
+    }
+
     public void testIndexEgg() throws Exception {
         checkIndexer("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
     }
 
 //    public void testIndexEgg2() throws Exception {
-//        checkIndexer("testfiles/pythonstubs-2_6.egg");
+//        checkIndexer("testfiles/pythonstubs-2_6_1.egg");
 //    }
 }

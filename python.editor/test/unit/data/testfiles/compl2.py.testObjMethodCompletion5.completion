@@ -1,6 +1,7 @@
 Code completion result for source line:
 print whatever.r|
 (QueryType=COMPLETION, NameKind=PREFIX)
+OTHER      Specify type of <code>whatever             
 ------------------------------------
 METHOD     r_eval(code)                               
 METHOD     r_exec(code)                               
@@ -141,6 +142,7 @@ METHOD     reload(module, path)
 METHOD     remainder(a, b)                            
 METHOD     remainder_near(a, b)                       
 METHOD     remainder_near(other, context)             
+METHOD     remove()                                   
 METHOD     remove(elem)                               
 METHOD     remove(element)                            
 METHOD     remove(elt)                                
@@ -186,6 +188,7 @@ METHOD     renameNode(n, namespaceURI, na
 METHOD     repeat(repeat, number)                     
 METHOD     replace(hour, minute, second,              
 METHOD     replace(hour, minute, second,              
+METHOD     replace(old, new)                          
 METHOD     replace(old, new, count)                   
 METHOD     replace(old, new, maxsplit)                
 METHOD     replace(win)                               
@@ -286,16 +289,20 @@ METHOD     return_ok_version(cookie, requ
 METHOD     return_stmt(nodelist)                      
 METHOD     reverse()                                  
 METHOD     reverse()                                  
+METHOD     reverse()                                  
 METHOD     reverse_order()                            
 METHOD     revert(filename, ignore_discar             
 METHOD     rewind()                                   
 METHOD     rewind()                                   
 METHOD     rewindbody()                               
 METHOD     rfind(string, start, end)                  
+METHOD     rfind(sub)                                 
 METHOD     rfind(sub, start, end)                     
 METHOD     rfind(sub, start, end)                     
+METHOD     rindex(sub)                                
 METHOD     rindex(sub, start, end)                    
 METHOD     rindex(sub, start, end)                    
+METHOD     rjust(width)                               
 METHOD     rjust(width, args)                         
 METHOD     rjust(width, fillchar)                     
 METHOD     rmd(dirname)                               
@@ -306,11 +313,14 @@ METHOD     rotate(other, context)
 METHOD     rowxfer(line)                              
 METHOD     rpartition(sep)                            
 METHOD     rpartition(sep)                            
+METHOD     rpartition(sep)                            
 METHOD     rpop(user)                                 
 METHOD     rset()                                     
 METHOD     rset()                                     
+METHOD     rsplit()                                   
 METHOD     rsplit(sep, maxsplit)                      
 METHOD     rsplit(sep, maxsplit)                      
+METHOD     rstrip()                                   
 METHOD     rstrip(chars)                              
 METHOD     rstrip(chars)                              
 METHOD     run()                                      
@@ -477,6 +487,7 @@ VARIABLE   ruler
 VARIABLE   runtime_library_dirs                       
 VARIABLE   runtime_library_dirs                       
 VARIABLE   rx                                         
+ATTRIBUTE  real                                       
 ATTRIBUTE  real                                       
 ATTRIBUTE  restype                                    
 ATTRIBUTE  returns_unicode                            

@@ -245,6 +245,9 @@ public class IndexedElement extends Element {
     public String getRhs() {
         if (rhs == null) {
             rhs = module;
+            if (rhs.equals("stub_missing")) { // NOI18N
+                rhs = "builtin";
+            }
         }
         return rhs;
     }

@@ -5,13 +5,9 @@ Searchable Keys:
   class : defaultdict
   class-ig : defaultdict
   in : collections
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;default_factory;
   member : __missing__;F;|DOCUMENTED|DOC_ONLY|;key;
-  member : _asdict;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;;
-  member : _fields;A;|DOCUMENTED|PRIVATE|DOC_ONLY|;
-  member : _make;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;iterable;
-  member : _replace;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;kwargs;
   member : default_factory;A;|DOCUMENTED|DOC_ONLY|;
-  member : defaultdict;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;default_factory;
 
 Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
@@ -22,10 +18,10 @@ Searchable Keys:
   class : deque
   class-ig : deque
   in : collections
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;iterable,maxlen;
   member : append;F;|DOCUMENTED|DOC_ONLY|;x;
   member : appendleft;F;|DOCUMENTED|DOC_ONLY|;x;
   member : clear;F;|DOCUMENTED|DOC_ONLY|;;
-  member : deque;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;iterable,maxlen;
   member : extend;F;|DOCUMENTED|DOC_ONLY|;iterable;
   member : extendleft;F;|DOCUMENTED|DOC_ONLY|;iterable;
   member : pop;F;|DOCUMENTED|DOC_ONLY|;;
