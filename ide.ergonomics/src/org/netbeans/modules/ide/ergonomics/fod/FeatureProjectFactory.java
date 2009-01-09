@@ -77,7 +77,7 @@ public class FeatureProjectFactory implements ProjectFactory {
 
     public boolean isProject(FileObject projectDirectory) {
         for (FeatureInfo info : FeatureManager.features()) {
-            if (info.isProject(projectDirectory, false)) {
+            if (!info.isEnabled() && info.isProject(projectDirectory, false)) {
                 return true;
             }
         }
@@ -86,7 +86,7 @@ public class FeatureProjectFactory implements ProjectFactory {
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         for (FeatureInfo info : FeatureManager.features()) {
-            if (info.isProject(projectDirectory, true)) {
+            if (!info.isEnabled() && info.isProject(projectDirectory, true)) {
                 return new FeatureNonProject(projectDirectory, info, state);
             }
         }
@@ -273,6 +273,10 @@ public class FeatureProjectFactory implements ProjectFactory {
         }
 
         final void associate(Project p) {
+            if (p == null) {
+                delegate = Lookup.EMPTY;
+                return;
+            }
             assert dir.equals(p.getProjectDirectory());
             ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
             if (info != null) {
