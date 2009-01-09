@@ -8,7 +8,7 @@
 #include "XMLTag.h"
 #include "DbgpResponse.h"
 #include <time.h>
-#include <cstdlib> // for rand()
+//#include <cstdlib> // for rand()
 #include <atlstr.h>
 #include "base64.h"
 
@@ -88,7 +88,7 @@ STDMETHODIMP CTestSink::BeginningTransaction(
     }
 
     // This block for displaying as debug message
-    request += _T("\r\n");
+    //request += _T("\r\n");
     //MessageBox(0,request.c_str(),_T("Netbeans BHO - Request Received"),MB_OK);
 
 
@@ -128,7 +128,7 @@ STDMETHODIMP CTestSink::BeginningTransaction(
             // so here we replace "&" with " " (whitespace) in the post 
             // parameters string
             std::string postText2 = gPostText;
-            int idx;
+            size_t idx;
             while( (idx=postText2.find_first_of('&')) >= 0 ) {
                 postText2.replace( idx, 1, " " );
             }
@@ -141,10 +141,10 @@ STDMETHODIMP CTestSink::BeginningTransaction(
         }
     }
     else { // get request
-        int splitPos = url.find('?');
+        size_t splitPos = url.find('?');
         if (splitPos != tstring::npos) {
             std::wstring params = url.substr(splitPos + 1);
-            int idx;
+            size_t idx;
             while( (idx=params.find_first_of('&')) >= 0 ) {
                 params.replace( idx, 1, L" " );
             }
@@ -201,7 +201,7 @@ void addAllHeaders(const tstring headerSet, HttpDbgpResponse &msg) {
         tstring headerValue = L"";
         headerName += headerSet.substr(posLineStart, posColon-posLineStart); // substr(start,len)
 
-        int valStartPos = posColon+2; // skip past the ": " (2 characters) 
+        size_t valStartPos = posColon+2; // skip past the ": " (2 characters) 
 
         if (posLineEnd >= headerSet.size()) {
             // at end of string
@@ -326,7 +326,7 @@ STDMETHODIMP CTestSink::OnResponse(
     // We aren't interested in charset here so that part needs to be
     // trimmed off (if present).
     tstring contentType1 =  A2CT(contentTypeStr);
-    int semicolonPos = contentType1.find(_T(";"),0);
+    size_t semicolonPos = contentType1.find(_T(";"),0);
     if (semicolonPos != std::wstring::npos) {
         contentType1 = contentType1.substr(0,semicolonPos);
     }
