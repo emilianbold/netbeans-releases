@@ -43,7 +43,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.cookies.InstanceCookie;
@@ -66,7 +66,7 @@ public class ImportProjectAction implements ActionListener {
 
             public void run() {
                 FeatureInfo featureInfo = null;
-                for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                for (FeatureInfo info : FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class)) {
                     if ("Eclipse".equals(info.getProjectImporter())) { // NOI18N
                         featureInfo = info;
                         break;

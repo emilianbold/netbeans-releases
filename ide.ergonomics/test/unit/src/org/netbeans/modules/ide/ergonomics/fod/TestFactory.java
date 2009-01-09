@@ -2,6 +2,8 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -15,28 +17,33 @@ import org.openide.util.lookup.Lookups;
 public final class TestFactory extends ProjectOpenedHook
 implements ProjectFactory, Project, ProjectInformation {
 
-    static FileObject recognize;
+    static Set<FileObject> recognize = new HashSet<FileObject>();
     int closed;
     int opened;
     int listenerCount;
+    final FileObject dir;
 
     public TestFactory() {
-        super();
+        dir = null;
+    }
+
+    private TestFactory(FileObject dir) {
+        this.dir = dir;
     }
 
     public boolean isProject(FileObject projectDirectory) {
-        return projectDirectory.equals(recognize);
+        return recognize.contains(projectDirectory);
     }
 
-    public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        return isProject(projectDirectory) ? new TestFactory() : null;
+    public Project loadProject(FileObject pd, ProjectState state) throws IOException {
+        return isProject(pd) ? new TestFactory(pd) : null;
     }
 
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
     public FileObject getProjectDirectory() {
-        return recognize;
+        return dir;
     }
 
     public Lookup getLookup() {
@@ -79,7 +86,11 @@ implements ProjectFactory, Project, ProjectInformation {
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (obj instanceof TestFactory) {
+            return super.equals(obj);
+        } else {
+            return false;
+        }
     }
 
     @Override
