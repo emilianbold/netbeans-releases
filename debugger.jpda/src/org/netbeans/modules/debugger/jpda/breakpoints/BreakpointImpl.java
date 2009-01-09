@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,14 +42,12 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
@@ -94,10 +92,8 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
-import org.netbeans.modules.debugger.jpda.util.Executor;
 
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -171,7 +167,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             if (reader != null) {
                 reader.storeCachedClassName(breakpoint, null);
             }
-            RequestProcessor.getDefault().post(new Runnable() {
+            debugger.getRequestProcessor().post(new Runnable() {
                 public void run() {
                     // Update lazily in RP. We'll access java source parsing and JDI.
                     update();
@@ -185,7 +181,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     protected void remove () {
         if (SwingUtilities.isEventDispatchThread()) {
             // One can not want to access the requests in AWT EQ
-            RequestProcessor.getDefault().post(new Runnable() {
+            debugger.getRequestProcessor().post(new Runnable() {
                 public void run() {
                     removeAllEventRequests ();
                 }

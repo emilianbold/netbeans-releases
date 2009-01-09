@@ -45,7 +45,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -70,7 +69,6 @@ import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -154,7 +152,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             }
             return ;
         } // Otherwise:
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
                 debugger.accessLock.readLock().lock();
                 try {
@@ -189,7 +187,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             }
             return ;
         } // Otherwise:
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
                 debugger.accessLock.readLock().lock();
                 try {

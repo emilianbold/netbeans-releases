@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
@@ -142,6 +143,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private Set nodesInDeadlock = new HashSet();
     private static final Map<JPDADebugger, Set> nodesInDeadlockByDebugger = new WeakHashMap<JPDADebugger, Set>();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private RequestProcessor rp;
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -149,6 +151,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         debugger.addPropertyChangeListener(WeakListeners.propertyChange(currentThreadListener, debugger));
         deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
         deadlockDetector.addPropertyChangeListener(new DeadlockListener());
+        rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
     }
     
     public static Set getNodesInDeadlock(JPDADebugger debugger) {
@@ -229,7 +232,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         return getDisplayName(t, showPackageNames, null);
     }
 
-    public static String getDisplayName(JPDAThread t, boolean showPackageNames, DebuggingNodeModel model) throws UnknownTypeException {
+    private static String getDisplayName(JPDAThread t, boolean showPackageNames, DebuggingNodeModel model) throws UnknownTypeException {
         String frame;
         synchronized (frameDescriptionsByThread) {
             frame = frameDescriptionsByThread.get(t);
@@ -346,13 +349,20 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", threadName, breakpoint.toString());
     }
 
-    private static RequestProcessor RPFD = new RequestProcessor("Frame Description", 1);
-
     private static void loadFrameDescription(final String oldFrame,
                                              final JPDAThread t,
                                              final boolean showPackageNames,
                                              final DebuggingNodeModel model) {
-        RPFD.post(new Runnable() {
+        RequestProcessor rp;
+        try {
+            JPDADebugger debugger = (JPDADebugger) t.getClass().getMethod("getDebugger").invoke(t);
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+            return ;
+        }
+        rp.post(new Runnable() {
             public void run() {
                 String frame = null;
                 t.getReadAccessLock().lock();
@@ -665,11 +675,19 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         private Reference<JPDAThread> tr;
         // currently waiting / running refresh task
         // there is at most one
+        private RequestProcessor rp;
         private RequestProcessor.Task task;
         private boolean shouldExpand = false;
         
         public ThreadStateUpdater(JPDAThread t) {
             this.tr = new WeakReference(t);
+            try {
+                JPDADebugger debugger = (JPDADebugger) t.getClass().getMethod("getDebugger").invoke(t);
+                Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+                rp = s.lookupFirst(null, RequestProcessor.class);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
             ((Customizer) t).addPropertyChangeListener(WeakListeners.propertyChange(this, t));
         }
 
@@ -685,7 +703,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 }
                 synchronized (this) {
                     if (task == null) {
-                        task = new RequestProcessor("Debugger Threads Refresh").create(new Refresher());
+                        task = rp.create(new Refresher());
                     }
                     task.schedule(100);
                 }

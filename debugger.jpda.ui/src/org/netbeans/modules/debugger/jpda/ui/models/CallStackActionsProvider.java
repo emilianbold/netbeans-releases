@@ -113,33 +113,16 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         }
     };
         
-    private static final Action POP_TO_HERE_ACTION = Models.createAction (
-        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                // TODO: Check whether this frame is deeper then the top-most
-                return true;
-            }
-            public void perform (final Object[] nodes) {
-                // Do not do expensive actions in AWT,
-                // It can also block if it can not procceed for some reason
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        popToHere ((CallStackFrame) nodes [0]);
-                    }
-                });
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    );
-        
     private JPDADebugger    debugger;
-    private ContextProvider  lookupProvider;
+    private ContextProvider lookupProvider;
+    private Action          POP_TO_HERE_ACTION;
 
 
     public CallStackActionsProvider (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        POP_TO_HERE_ACTION = DebuggingActionsProvider.createPOP_TO_HERE_ACTION(requestProcessor);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {

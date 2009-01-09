@@ -44,15 +44,12 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
+
 import java.io.IOException;
-
 import java.util.Collections;
-
 import java.util.Set;
+
 import org.netbeans.api.debugger.ActionsManager;
-
-
-import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
@@ -64,9 +61,9 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
+
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -156,7 +153,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                 "postAction () setStarting end"
             );
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
                 //debuggerImpl.setStartingThread(Thread.currentThread());
                 synchronized (StartActionProvider.this) {
@@ -238,7 +235,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             debuggerImpl.setException (exception);
             // kill the session that did not start properly
             final Session session = lookupProvider.lookupFirst(null, Session.class);
-            RequestProcessor.getDefault().post(new Runnable() {
+            debuggerImpl.getRequestProcessor().post(new Runnable() {
                 public void run() {
                     // Kill it in a separate thread so that the startup sequence can be finished.
                     session.kill();

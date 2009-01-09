@@ -44,15 +44,11 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
-import com.sun.jdi.NativeMethodException;
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -118,7 +114,6 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * The implementation of JPDAThread.
@@ -1351,7 +1346,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     // HACK because of JDI:
                     // When invoking a method, EventSet.resume() will not resume the invocation thread
                     // We have to do it explicitely a suspend the thread right after the invocation, 'resumedToFinishMethodInvocation' flag is used for that.
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    debugger.getRequestProcessor().post(new Runnable() {
                         public void run() {
                             accessLock.writeLock().lock();
                             try {

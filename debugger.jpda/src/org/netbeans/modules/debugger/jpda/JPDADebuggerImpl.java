@@ -149,6 +149,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
 * Representation of a debugging session.
@@ -269,9 +270,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current thread or null
      */
     public JPDAThread getCurrentThread () {
-        synchronized (currentThreadAndFrameLock) {
-            return currentThread;
-        }
+        return currentThread;
     }
 
     /**
@@ -463,6 +462,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public Session getSession() {
         return lookupProvider.lookupFirst(null, Session.class);
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return javaEngineProvider.getRequestProcessor();
     }
 
     private Boolean canBeModified;

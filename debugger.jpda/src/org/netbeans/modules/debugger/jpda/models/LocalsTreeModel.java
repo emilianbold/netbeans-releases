@@ -642,12 +642,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     private static class Listener implements PropertyChangeListener {
         
-        private JPDADebugger debugger;
+        private JPDADebuggerImpl debugger;
         private WeakReference<LocalsTreeModel> model;
         
         public Listener (
             LocalsTreeModel tm,
-            JPDADebugger debugger
+            JPDADebuggerImpl debugger
         ) {
             this.debugger = debugger;
             model = new WeakReference<LocalsTreeModel>(tm);
@@ -695,7 +695,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                         System.out.println("LTM cancel old task " + task);
                     task = null;
                 }
-                task = RequestProcessor.getDefault ().post (new Runnable () {
+                task = debugger.getRequestProcessor().post (new Runnable () {
                     public void run () {
                         if (debugger.getState () != JPDADebugger.STATE_STOPPED) {
                             if (verbose)

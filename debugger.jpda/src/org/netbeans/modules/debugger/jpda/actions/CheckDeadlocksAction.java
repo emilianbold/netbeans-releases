@@ -71,7 +71,6 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Daniel Prusa
@@ -99,7 +98,7 @@ public class CheckDeadlocksAction extends AbstractAction
         if (de == null) return;
         final JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return;
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
                 checkForDeadlock(debugger);
             }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,7 +49,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.windows.TopComponent;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 
@@ -63,7 +63,8 @@ import org.openide.windows.WindowManager;
 public class JavaEngineProvider extends DebuggerEngineProvider {
 
     private DebuggerEngine.Destructor   desctuctor;
-    private Session                     session;  
+    private Session                     session;
+    private RequestProcessor            jpdaRP = new RequestProcessor("JPDA Debugger", 5);
     
     public JavaEngineProvider (ContextProvider contextProvider) {
         session = contextProvider.lookupFirst(null, Session.class);
@@ -78,7 +79,11 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     }
     
     public Object[] getServices () {
-        return getUIComponentProxies();
+        Object[] components = getUIComponentProxies();
+        Object[] services = new Object[components.length + 1];
+        System.arraycopy(components, 0, services, 0, components.length);
+        services[components.length] = jpdaRP;
+        return services;
     }
     
     static Object[] getUIComponentProxies() {
@@ -125,6 +130,10 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     
     public Session getSession () {
         return session;
+    }
+
+    RequestProcessor getRequestProcessor() {
+        return jpdaRP;
     }
 }
 

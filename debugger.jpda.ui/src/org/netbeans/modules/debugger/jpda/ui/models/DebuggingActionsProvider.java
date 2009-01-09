@@ -167,28 +167,30 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     
     );
 
-    private static final Action POP_TO_HERE_ACTION = Models.createAction (
-        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                // TODO: Check whether this frame is deeper then the top-most
-                if (node instanceof CallStackFrame) {
-                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
-                }
-                return true;
-            }
-            public void perform (final Object[] nodes) {
-                // Do not do expensive actions in AWT,
-                // It can also block if it can not procceed for some reason
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        popToHere ((CallStackFrame) nodes [0]);
+    static final Action createPOP_TO_HERE_ACTION(final RequestProcessor requestProcessor) {
+        return Models.createAction (
+            NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
+            new Models.ActionPerformer () {
+                public boolean isEnabled (Object node) {
+                    // TODO: Check whether this frame is deeper then the top-most
+                    if (node instanceof CallStackFrame) {
+                        return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
                     }
-                });
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    );
+                    return true;
+                }
+                public void perform (final Object[] nodes) {
+                    // Do not do expensive actions in AWT,
+                    // It can also block if it can not procceed for some reason
+                    requestProcessor.post(new Runnable() {
+                        public void run() {
+                            popToHere ((CallStackFrame) nodes [0]);
+                        }
+                    });
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
+        );
+    }
 
     private Action SUSPEND_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Suspend_Label"),
@@ -310,6 +312,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         
     private JPDADebugger debugger;
     private Session session;
+    private Action POP_TO_HERE_ACTION;
     
     private Action LANGUAGE_SELECTION;
 
@@ -317,6 +320,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     public DebuggingActionsProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         session = lookupProvider.lookupFirst(null, Session.class);
+        RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        POP_TO_HERE_ACTION = createPOP_TO_HERE_ACTION(requestProcessor);
         LANGUAGE_SELECTION = new LanguageSelection(session);
     }
     

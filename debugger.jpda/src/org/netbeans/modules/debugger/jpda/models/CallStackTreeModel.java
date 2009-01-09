@@ -59,7 +59,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 
@@ -248,7 +248,7 @@ public class CallStackTreeModel implements TreeModel {
         
         // currently waiting / running refresh task
         // there is at most one
-        private RequestProcessor.Task task;
+        private Task task;
         
         // check also whether the current thread was resumed/suspended
         // the call stack needs to be refreshed after invokeMethod() which resumes the thread
@@ -277,7 +277,7 @@ public class CallStackTreeModel implements TreeModel {
             if (refresh) {
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = ((JPDADebuggerImpl) debugger).getRequestProcessor().create(new Refresher());
                     }
                     task.schedule(200);
                 }
