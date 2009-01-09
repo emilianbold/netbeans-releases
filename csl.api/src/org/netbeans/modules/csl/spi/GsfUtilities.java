@@ -634,7 +634,15 @@ public final class GsfUtilities {
      * @return The collection of roots for a given file. It may be empty, but never <code>null</code>.
      */
     public static Collection<FileObject> getRoots(FileObject f, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
-        Collection<FileObject> roots = null;
+        Collection<FileObject> roots = new HashSet<FileObject>();
+
+        if (sourcePathIds != null) {
+            collectClasspathRoots(f, sourcePathIds, false, roots);
+        }
+
+        if (binaryPathIds != null) {
+            collectClasspathRoots(f, binaryPathIds, true, roots);
+        }
 
         Project p = FileOwnerQuery.getOwner(f);
         if (p != null) {
@@ -642,8 +650,6 @@ public final class GsfUtilities {
             SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for(SourceGroup group : sourceGroups) {
                 if (FileUtil.isParentOf(group.getRootFolder(), f)) {
-                    roots = new HashSet<FileObject>();
-
                     // Collect source path roots
                     if (sourcePathIds == null) {
                         roots.add(group.getRootFolder());
@@ -713,9 +719,9 @@ public final class GsfUtilities {
         return roots;
     }
 
-    private static void collectClasspathRoots(FileObject sourcesRoot, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
+    private static void collectClasspathRoots(FileObject file, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
         for(String id : pathIds) {
-            Collection<FileObject> classpathRoots = getClasspathRoots(sourcesRoot, id);
+            Collection<FileObject> classpathRoots = getClasspathRoots(file, id);
             if (binaryPaths) {
                 // Filter out roots that do not have source files available
                 for(FileObject f : classpathRoots) {
@@ -740,11 +746,11 @@ public final class GsfUtilities {
         }
     }
 
-    private static Collection<FileObject> getClasspathRoots(FileObject sourcesRoot, String classpathId) {
+    private static Collection<FileObject> getClasspathRoots(FileObject file, String classpathId) {
         Collection<FileObject> roots = Collections.<FileObject>emptySet();
 
-        if (sourcesRoot != null) {
-            ClassPath classpath = ClassPath.getClassPath(sourcesRoot, classpathId);
+        if (file != null) {
+            ClassPath classpath = ClassPath.getClassPath(file, classpathId);
             if (classpath != null) {
                 roots = Arrays.asList(classpath.getRoots());
             }
