@@ -48,7 +48,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -83,18 +82,15 @@ import org.w3c.dom.Text;
  *
  * @author mkleint
  */
+@LookupProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=300)
 public class LookupProviderImpl implements LookupProvider {
 
     private static final String HELP_ID_FRAGMENT = "web"; // NOI18N
     
-    /** Creates a new instance of LookupProviderImpl */
-    public LookupProviderImpl() {
-    }
-    
     public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project prj = (Project)baseContext.lookup(Project.class);
-        ProjectAccessor acc = (ProjectAccessor)baseContext.lookup(ProjectAccessor.class);
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)baseContext.lookup(AuxiliaryConfiguration.class);
+        Project prj = baseContext.lookup(Project.class);
+        ProjectAccessor acc = baseContext.lookup(ProjectAccessor.class);
+        AuxiliaryConfiguration aux = baseContext.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         assert prj != null;
         assert acc != null;
