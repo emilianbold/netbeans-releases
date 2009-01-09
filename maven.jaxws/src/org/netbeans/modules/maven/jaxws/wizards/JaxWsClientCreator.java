@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import java.io.IOException;
@@ -144,9 +145,10 @@ public class JaxWsClientCreator implements ClientCreator {
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
                         Collections.singletonList(operation));
-                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class, true);
                 if (prefs != null) {
-                    prefs.put(wsdlFo.getName(), wsdlUrl);
+                    // repember original wsdlUrl for Client
+                    prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
                 }
             }
         }

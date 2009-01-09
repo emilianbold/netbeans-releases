@@ -47,8 +47,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
@@ -319,16 +321,13 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
-                "org.codehaus.mojo", //NOI18N
-                "jaxws-maven-plugin", //NOI18N
-                "wsdlFiles", //NOI18N
-                "wsdlFile", //NOI18N
-                "wsimport"); //NOI18N
-        if (filepaths != null) {
-            for (String filePath : filepaths) {
-                JaxWsService client = new JaxWsService(filePath, false);
-                jaxWsSupport.addService(client);
+        String[] wsdlPaths = getWsdlPaths(prj);
+        if (wsdlPaths != null) {
+            for (String wsdlPath : wsdlPaths) {
+                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                    JaxWsService client = new JaxWsService(wsdlPath, false);
+                    jaxWsSupport.addService(client);
+                }
             }
         } else {
             // look for wsdl in wsdl folder
@@ -343,22 +342,53 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
-            "org.codehaus.mojo", //NOI18N
-            "jaxws-maven-plugin", //NOI18N
-            "wsdlFiles", //NOI18N
-            "wsdlFile", //NOI18N
-            "wsimport"); //NOI18N
-        if (filepaths != null) {
+        String[] wsdlPaths = getWsdlPaths(prj);
+        if (wsdlPaths != null) {
             List<JaxWsService> clients = new ArrayList<JaxWsService>();
-            for (String filePath : filepaths) {
-                JaxWsService client = new JaxWsService(filePath, false);
-                clients.add(client);
+            for (String wsdlPath : wsdlPaths) {
+                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                    JaxWsService client = new JaxWsService(wsdlPath, false);
+                    clients.add(client);
+                }
             }
             return clients;
         } else {
             return Collections.<JaxWsService>emptyList();
         }
+    }
+
+    String[] getWsdlPaths(Project prj) {
+        return PluginPropertyUtils.getPluginPropertyList(prj,
+                "org.codehaus.mojo", //NOI18N
+                "jaxws-maven-plugin", //NOI18N
+                "wsdlFiles", //NOI18N
+                "wsdlFile", //NOI18N
+                "wsimport"); //NOI18N
+    }
+
+    private boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs != null) {
+            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
+            if (wsdlFo != null) {
+                // if client exists return true
+                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
+                    return true;
+                // if service doesn't exist return true
+                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+        if (localWsdlocalFolder!=null) {
+            return localWsdlocalFolder.getFileObject(localWsdlPath);
+        }
+        return null;
     }
 
     private class ServiceInfo {
