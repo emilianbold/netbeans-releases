@@ -83,6 +83,8 @@ public interface LookupProvider {
         String[] projectType();
         /**
          * Optional ordering.
+         * <p>Note: this attribute will set the order for <em>all</em> the project types.
+         * If you need to set the order for just one, please file an RFE.
          */
         int position() default Integer.MAX_VALUE;
     }
