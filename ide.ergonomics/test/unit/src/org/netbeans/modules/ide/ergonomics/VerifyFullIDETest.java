@@ -89,8 +89,6 @@ public class VerifyFullIDETest extends NbTestCase {
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
         all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
-        all.put("skip", "org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory");
-        all.put("test", "org.netbeans.modules.ide.ergonomics.fod.TestFactory");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 
@@ -171,6 +169,9 @@ public class VerifyFullIDETest extends NbTestCase {
         StringBuilder sb, Class<?> what, Method info, Map<String,String> all
     ) throws Exception {
         for (Object f : Lookup.getDefault().lookupAll(what)) {
+            if (f.getClass().getPackage().getName().equals("org.netbeans.modules.ide.ergonomics.fod")) {
+                continue;
+            }
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);

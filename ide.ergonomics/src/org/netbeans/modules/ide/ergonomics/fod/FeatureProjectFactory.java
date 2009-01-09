@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
@@ -161,9 +162,24 @@ public class FeatureProjectFactory implements ProjectFactory {
         implements Runnable {
             @Override
             protected void projectOpened() {
+                if (state == null) {
+                    return;
+                }
                 RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
                 if (success) {
                     switchToReal();
+                    // make sure support for projects we depend on are also enabled
+                    SubprojectProvider sp = getLookup().lookup(SubprojectProvider.class);
+                    if (sp != null) {
+                        for (Project subP : sp.getSubprojects()) {
+                            FeatureNonProject toOpen;
+                            toOpen = subP.getLookup().lookup(FeatureNonProject.class);
+                            if (toOpen != null) {
+                                toOpen.delegate.hook.projectOpened();
+                            }
+                        }
+                    }
+
                 }
             }
 
@@ -197,11 +213,13 @@ public class FeatureProjectFactory implements ProjectFactory {
         Lookup delegate;
         private final InstanceContent ic = new InstanceContent();
         private final Lookup hooks = new AbstractLookup(ic);
+        private final FeatureNonProject.FeatureOpenHook hook;
 
 
         public FeatureDelegate(FileObject dir, FeatureNonProject feature) {
             this.dir = dir;
-            ic.add(UILookupMergerSupport.createProjectOpenHookMerger(feature.new FeatureOpenHook()));
+            this.hook = feature.new FeatureOpenHook();
+            ic.add(UILookupMergerSupport.createProjectOpenHookMerger(hook));
             this.delegate = new ProxyLookup(
                 Lookups.fixed(feature, this),
                 LookupProviderSupport.createCompositeLookup(
