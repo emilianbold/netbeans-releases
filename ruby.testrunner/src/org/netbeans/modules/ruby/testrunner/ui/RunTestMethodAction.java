@@ -63,7 +63,7 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         this.debug = debug;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    protected void doActionPerformed(ActionEvent e) {
         // XXX
         TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
         if (TestRunner.TestType.RSPEC == type) {

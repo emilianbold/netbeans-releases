@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.python.testrunner.ui;
+
+package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.python.editor.PythonDeclarationFinder;
-import org.netbeans.modules.python.project.spi.TestRunner;
+import javax.swing.AbstractAction;
+import org.openide.LifecycleManager;
 
 /**
- * Action for running all tests in a file.
+ * An optional base action for actions in the test runner tree view. Currently
+ * handles merely doing saveAll before performing the action.
  *
  * @author Erno Mononen
  */
-final class RunTestSuiteAction extends BaseTestMethodNodeAction {
+public abstract class TestNodeAction extends AbstractAction {
 
-    private final boolean debug;
-
-    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
+    public final void actionPerformed(ActionEvent e) {
+        LifecycleManager.getDefault().saveAll();
+        doActionPerformed(e);
     }
 
-    protected void doActionPerformed(ActionEvent e) {
-        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-        //if (TestRunner.TestType.RSPEC == type) {
-        //    runRspec();
-        //    return;
-        //}
-        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-        if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(type).runTest(location.getFileObject(), debug);
-        }
+    protected abstract void doActionPerformed(ActionEvent e);
 
-    }
 }
