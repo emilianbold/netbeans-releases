@@ -100,7 +100,7 @@ import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
 
-public class DataViewWindow2 extends TopComponent {
+public class DataViewWindow extends TopComponent {
 
     // TODO: remove this class, replace by the SQL editor
 
@@ -117,7 +117,7 @@ public class DataViewWindow2 extends TopComponent {
 
     static final long serialVersionUID = 6855188441469780252L;
 
-    public DataViewWindow2(DatabaseConnection connection, String query) throws SQLException {
+    public DataViewWindow(DatabaseConnection connection, String query) throws SQLException {
         //this.info = info;
         this.connection = connection;
 

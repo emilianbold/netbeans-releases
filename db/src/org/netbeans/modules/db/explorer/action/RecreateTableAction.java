@@ -54,7 +54,7 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.dataview.DataViewWindow2;
+import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
 import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
@@ -237,7 +237,7 @@ public class RecreateTableAction extends BaseAction {
     }
 
     private static class WindowTask implements Runnable {
-        public DataViewWindow2 win;
+        public DataViewWindow win;
         public Exception exc = null;
         public boolean completed = false;
         private final DatabaseConnection connection;
@@ -251,7 +251,7 @@ public class RecreateTableAction extends BaseAction {
 
         public void run() {
             try {
-                win = new DataViewWindow2(connection, dlg.getEditedCommand());
+                win = new DataViewWindow(connection, dlg.getEditedCommand());
             } catch ( Exception e ) {
                 this.exc = e;
             }
