@@ -100,11 +100,20 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         init ();
     }
 
+    /**
+     * Used by unit tests
+     * @return
+     */
+    State getState () {
+        return state;
+    }
+
     private synchronized void init () {
         if (state == State.CREATED) {
             regs.addPathRegistryListener(this);
             registerFileSystemListener();
-//            submitBatch();
+            final Work w = new RootsWork (WorkType.COMPILE_BATCH);
+            submit (w);
             state = State.INITIALIZED;
         }
     }
@@ -113,7 +122,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         FileUtil.addFileChangeListener(this);
     }
 
-    public void close () {
+    public synchronized void close () {
         state = State.CLOSED;
         this.regs.removePathRegistryListener(this);
         this.unregisterFileSystemListener();
@@ -145,9 +154,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
-        final Iterable<? extends PathRegistryEvent.Change> changes = event.getChanges();
-        assert changes != null;
-        final Work w = new RootsWork (WorkType.COMPILE_BATCH,changes);
+        final Work w = new RootsWork (WorkType.COMPILE_BATCH);
         submit (w);
     }
     
@@ -229,7 +236,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         return this.scannedUnknown;
     }
 
-    private enum State {CREATED, INITIALIZED, CLOSED};
+    enum State {CREATED, INITIALIZED, INITIALIZED_AFTER_FIRST_SCAN, CLOSED};
 
     private enum WorkType {COMPILE_BATCH, COMPILE};
 
@@ -272,17 +279,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
 
     private static class RootsWork extends Work {
-        private final Iterable<? extends PathRegistryEvent.Change> changes;
-
         
-        public RootsWork (final WorkType type, Iterable<? extends PathRegistryEvent.Change> changes) {
+        public RootsWork (final WorkType type) {
             super (type);
-            assert changes != null;
-            this.changes = changes;
-        }
-
-        public Iterable<? extends PathRegistryEvent.Change> getChanges() {
-            return this.changes;
         }
     }
 
@@ -326,7 +325,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 final WorkType type = work.getType();
                 switch (type) {
                     case COMPILE_BATCH:
-                        batchCompile(((RootsWork)work).getChanges());
+                        batchCompile();
                         break;
                     case COMPILE:
                         
@@ -350,8 +349,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             return !empty;
         }
 
-        private void batchCompile (final Iterable<? extends PathRegistryEvent.Change> changes) {            
-            assert changes != null;
+        private void batchCompile () {
             try {
                 final DependenciesContext ctx = new DependenciesContext(scannedRoots, scannedBinaries, true);
                 final List<URL> newRoots = new LinkedList<URL>();
@@ -377,7 +375,16 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             } catch (final TopologicalSortException tse) {
                 final IllegalStateException ise = new IllegalStateException ();
                 throw (IllegalStateException) ise.initCause(tse);
-            }            
+            }
+            finally {
+                if (state == State.INITIALIZED) {
+                    synchronized (RepositoryUpdater.this) {
+                        if (state == State.INITIALIZED) {
+                            state = State.INITIALIZED_AFTER_FIRST_SCAN;
+                        }
+                    }
+                }
+            }
         }
 
         private void scanBinaries (final DependenciesContext ctx) {

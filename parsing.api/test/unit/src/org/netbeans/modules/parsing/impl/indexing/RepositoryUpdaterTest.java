@@ -205,6 +205,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(f4);
         assertEquals(EMIME, f4.getMIMEType());
         embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
+        RepositoryUpdater.State state;
+        do {
+            Thread.sleep(100);
+            state = RepositoryUpdater.getDefault().getState();
+        } while (state != RepositoryUpdater.State.INITIALIZED_AFTER_FIRST_SCAN);
+
     }
 
     public void testPathAddedRemovedChanged () throws Exception {
