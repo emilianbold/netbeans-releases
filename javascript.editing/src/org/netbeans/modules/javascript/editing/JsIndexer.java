@@ -925,6 +925,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
     public static final class Factory extends EmbeddingIndexerFactory {
 
+        public static final String NAME = "javascript"; // NOI18N
+        public static final int VERSION = 7;
+
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
             boolean b = isIndexable(indexable, snapshot);
@@ -946,12 +949,12 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public String getIndexerName() {
-            return "javascript"; // NOI18N
+            return NAME;
         }
 
         @Override
         public int getIndexVersion() {
-            return 7;
+            return VERSION;
         }
 
         private FileObject cachedFo;
