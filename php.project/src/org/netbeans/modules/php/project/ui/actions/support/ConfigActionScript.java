@@ -67,6 +67,7 @@ import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -229,7 +230,7 @@ public class ConfigActionScript extends ConfigAction {
         }
         processBuilder = processBuilder.addArgument(scriptFile.getName());
         String argProperty = ProjectPropertiesSupport.getArguments(project);
-        if (argProperty != null && argProperty.length() > 0) {
+        if (PhpProjectUtils.hasText(argProperty)) {
             for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                 processBuilder = processBuilder.addArgument(argument);
             }

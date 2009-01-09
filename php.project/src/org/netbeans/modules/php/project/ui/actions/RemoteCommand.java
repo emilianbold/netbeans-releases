@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -128,6 +129,19 @@ public abstract class RemoteCommand extends Command {
         assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
 
         return RemoteConnections.get().remoteConfigurationForName(configName);
+    }
+
+    protected boolean isRemoteConfigSelected() {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(getProject());
+        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
+    }
+
+    protected String getRemoteConfigurationName() {
+        return ProjectPropertiesSupport.getRemoteConnection(getProject());
+    }
+
+    protected String getRemoteDirectory() {
+        return ProjectPropertiesSupport.getRemoteDirectory(getProject());
     }
 
     protected void processRemoteException(RemoteException remoteException) {

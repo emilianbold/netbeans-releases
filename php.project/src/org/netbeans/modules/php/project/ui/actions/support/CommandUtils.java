@@ -76,66 +76,10 @@ import org.openide.windows.TopComponent;
 /**
  * @author Radek Matous, Tomas Mysik
  */
-public class CommandUtils {
+public final class CommandUtils {
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
-    private final PhpProject project;
-
-    public CommandUtils(PhpProject project) {
-        this.project = project;
-    }
-
-    /**
-     * @return The file objects in the sources folder
-     */
-    public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript) {
-        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
-            ProjectPropertiesSupport.getWebRootDirectory(getProject());
-        return filter(filesForContext(context), dir);
-    }
-
-    public FileObject[] phpFilesForSelectedNodes(boolean runAsScript) {
-        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
-            ProjectPropertiesSupport.getWebRootDirectory(getProject());
-        return filter(Arrays.asList(filesForSelectedNodes()), dir);
-    }
-
-    public String getRelativeSrcPath(FileObject fileObject) {
-        return getRelativePhpPath(ProjectPropertiesSupport.getSourcesDirectory(getProject()), fileObject);
-    }
-
-    public String getRelativeWebRootPath(FileObject fileObject) {
-        return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
-    }
-
-    private String getRelativePhpPath(FileObject folder, FileObject fileObject) {
-        if (fileObject != null) {
-            if (FileUtil.isParentOf(folder, fileObject)) {
-                return FileUtil.getRelativePath(folder, fileObject);
-            } else if (folder.equals(fileObject)) {
-                return ""; //NOI18N
-            }
-        }
-        return null;
-    }
-
-    private static boolean isUnderSourceRoot(FileObject sourceRoot, FileObject file) {
-        return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;
-    }
-
-    private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {
-        Collection<FileObject> retval = new LinkedHashSet<FileObject>();
-        for (FileObject file : files) {
-            if (!isUnderSourceRoot(dir, file)) {
-                return null;
-            }
-            retval.add(file);
-        }
-        return (!retval.isEmpty()) ? retval.toArray(new FileObject[retval.size()]) : null;
-    }
-
-    private PhpProject getProject() {
-        return project;
+    private CommandUtils() {
     }
 
     public static boolean isPhpFile(FileObject file) {
@@ -254,15 +198,33 @@ public class CommandUtils {
         return tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
     }
 
+    /**
+     * Get {@link FileObject}s for context.
+     * @param context context to search in.
+     * @return {@link FileObject}s for context.
+     */
     public static Collection<? extends FileObject> filesForContext(Lookup context) {
         assert context != null;
         return context.lookupAll(FileObject.class);
     }
 
+    /**
+     * Get <b>valid</b> {@link FileObject}s for context and base directory.
+     * Return <code>null</code> if any {@link FileObject} is invalid or if
+     * the base directory is not parent folder of all found {@link FileObject}s.
+     * @param context context to search in.
+     * @param baseDirectory a directory that must be a parent folder of all the found {@link FileObject}s.
+     * @return <b>valid</b> {@link FileObject}s for context and base directory or <code>null</code>.
+     */
     public static FileObject[] filesForContext(Lookup context, FileObject baseDirectory) {
-        return filter(filesForContext(context), baseDirectory);
+        return filterValidFiles(filesForContext(context), baseDirectory);
     }
 
+    /**
+     * Get an array of {@link FileObject}s for currently selected nodes.
+     * @return an array of {@link FileObject}s for currently selected nodes, never <code>null</code>.
+     * @see #filesForSelectedNodes(FileObject)
+     */
     public static FileObject[] filesForSelectedNodes() {
         Node[] nodes = getSelectedNodes();
         if (nodes == null) {
@@ -272,10 +234,24 @@ public class CommandUtils {
         return fileObjects.toArray(new FileObject[fileObjects.size()]);
     }
 
+    /**
+     * Get <b>valid</b> {@link FileObject}s for selected nodes and base directory.
+     * @param baseDirectory a directory that must be a parent folder of all the found {@link FileObject}s.
+     * @return <b>valid</b> {@link FileObject}s for selected nodes and base directory or <code>null</code>.
+     * @see #filesForSelectedNodes()
+     */
     public static FileObject[] filesForSelectedNodes(FileObject baseDirectory) {
-        return filter(Arrays.asList(filesForSelectedNodes()), baseDirectory);
+        return filterValidFiles(Arrays.asList(filesForSelectedNodes()), baseDirectory);
     }
 
+    /**
+     * Get a <b>valid</b> {@link FileObject} for context or selected nodes and base directory.
+     * Return <code>null</code> if any {@link FileObject} is invalid or if
+     * the base directory is not parent folder of all found {@link FileObject}s.
+     * @param context context to search in.
+     * @param baseDirectory a directory that must be a parent folder of all the found {@link FileObject}s.
+     * @return a <b>valid</b> {@link FileObject} for context or selected nodes and base directory or <code>null</code>.
+     */
     public static FileObject fileForContextOrSelectedNodes(Lookup context, FileObject baseDirectory) {
         assert baseDirectory != null;
         assert baseDirectory.isFolder() : "Folder must be given: " + baseDirectory;
@@ -287,12 +263,24 @@ public class CommandUtils {
         return (files != null && files.length > 0) ? files[0] : null;
     }
 
+    /**
+     * Get {@link URL} for running a project.
+     * @param project a project to get {@link URL} for.
+     * @return {@link URL} for running a project.
+     * @throws MalformedURLException if any error occurs.
+     */
     public static URL urlForProject(PhpProject project) throws MalformedURLException {
         FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
         FileObject indexFile = fileForProject(project, webRoot);
         return urlForFile(project, webRoot, indexFile);
     }
 
+    /**
+     * Get {@link URL} for debugging a project.
+     * @param project a project to get {@link URL} for.
+     * @return {@link URL} for debugging a project.
+     * @throws MalformedURLException if any error occurs.
+     */
     public static URL urlForDebugProject(PhpProject project) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
@@ -302,12 +290,26 @@ public class CommandUtils {
         return debugUrl;
     }
 
+    /**
+     * Get {@link URL} for running a project context (specific file).
+     * @param project a project to get {@link URL} for.
+     * @param context a context to get {@link URL} for.
+     * @return {@link URL} for running a project context (specific file).
+     * @throws MalformedURLException if any error occurs.
+     */
     public static URL urlForContext(PhpProject project, Lookup context) throws MalformedURLException {
         FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
         FileObject selectedFile = fileForContextOrSelectedNodes(context, webRoot);
         return urlForFile(project, webRoot, selectedFile);
     }
 
+    /**
+     * Get {@link URL} for debugging a project context (specific file).
+     * @param project a project to get {@link URL} for.
+     * @param context a context to get {@link URL} for.
+     * @return {@link URL} for debugging a project context (specific file).
+     * @throws MalformedURLException if any error occurs.
+     */
     public static URL urlForDebugContext(PhpProject project, Lookup context) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
@@ -318,7 +320,10 @@ public class CommandUtils {
     }
 
     /**
-     * @return FileObject or <code>null</code>.
+     * Get the index file (start file) for a project.
+     * @param project a project to get index file for.
+     * @param baseDirectory base directory to which is index file resolved (sources, tests, web root).
+     * @return the index file (start file) for a project, can be <code>null</code> if file is invalid or not found.
      */
     public static FileObject fileForProject(PhpProject project, FileObject baseDirectory) {
         assert baseDirectory != null;
@@ -331,6 +336,12 @@ public class CommandUtils {
         return baseDirectory;
     }
 
+    /**
+     * Get {@link DebugInfo debug information} for a project (server side debugging,
+     * client side debugging).
+     * @param project a project to get information for.
+     * @return {@link DebugInfo debug information} for a project.
+     */
     public static DebugInfo getDebugInfo(PhpProject project) {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
@@ -343,6 +354,12 @@ public class CommandUtils {
         return new DebugInfo(debugClient, debugServer);
     }
 
+    /**
+     *
+     * @param project
+     * @return
+     * @throws MalformedURLException if any error occurs.
+     */
     public static URL getBaseURL(PhpProject project) throws MalformedURLException {
         String baseURLPath = ProjectPropertiesSupport.getUrl(project);
         if (baseURLPath == null) {
@@ -351,6 +368,12 @@ public class CommandUtils {
         return new URL(baseURLPath);
     }
 
+    /**
+     * Get {@link Command} for given project and command name (identifier).
+     * @param project project to get a command for.
+     * @param commandName command name (identifier).
+     * @return {@link Command} for given project and command name (identifier), never <code>null</code>.
+     */
     public static Command getCommand(PhpProject project, String commandName) {
         PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
         assert provider != null;
@@ -368,6 +391,7 @@ public class CommandUtils {
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
+
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
         URI retval;
         try {
@@ -393,10 +417,24 @@ public class CommandUtils {
         return arguments.toString();
     }
 
+    private static FileObject[] filterValidFiles(Collection<? extends FileObject> files, FileObject dir) {
+        Collection<FileObject> retval = new LinkedHashSet<FileObject>();
+        for (FileObject file : files) {
+            if (!FileUtil.isParentOf(dir, file) || FileUtil.toFile(file) == null) {
+                return null;
+            }
+            retval.add(file);
+        }
+        return (!retval.isEmpty()) ? retval.toArray(new FileObject[retval.size()]) : null;
+    }
 
-    public final static class DebugInfo {
-        final boolean debugClient;
-        final boolean debugServer;
+    /**
+     * Holder class for debug information for a project (server side debugging,
+     * client side debugging).
+     */
+    public static final class DebugInfo {
+        public final boolean debugClient;
+        public final boolean debugServer;
 
         public DebugInfo(boolean debugClient, boolean debugServer) {
             this.debugClient = debugClient;
