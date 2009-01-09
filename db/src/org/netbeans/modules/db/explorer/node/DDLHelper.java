@@ -25,43 +25,40 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.node;
 
-import java.sql.Types;
-import java.util.HashSet;
-import org.netbeans.modules.db.test.DDLTestBase;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.DropIndex;
+import org.netbeans.lib.ddl.impl.Specification;
 
 /**
- *
- * @author David
+ * This class factors out interaction with the DDL package.  This allows
+ * us to unit test this interaction
+ * 
+ * @author <a href="mailto:david@vancouvering.com">David Van Couvering</a>
  */
-public class AddToIndexDDLTest extends DDLTestBase {
-
-    public AddToIndexDDLTest(String name) {
-        super(name);
+public class DDLHelper {
+    public static void deleteTable(Specification spec, 
+            String schema, String tablename) throws Exception {
+        AbstractCommand cmd = spec.createCommandDropTable(tablename);
+        cmd.setObjectOwner(schema);
+        cmd.execute();
     }
     
-    public void testAddToIndex() throws Exception {
-        String tablename = "addToIndex";
-        String indexname = "testindex";
-        String col1name = "col1";
-        String col2name = "col2";
-        
-        createBasicTable(tablename, "id");
-        addBasicColumn(tablename, col1name, Types.VARCHAR, 255);
-        createSimpleIndex(tablename, indexname, col1name);
-
-        addBasicColumn(tablename, col2name, Types.VARCHAR, 255);
-
-        AddToIndexDDL ddl = new AddToIndexDDL(getSpecification(), getSchema(), fixIdentifier(tablename));
-
-        
-        HashSet cols = new HashSet();
-        cols.add(fixIdentifier(col2name));
-        
-        boolean wasException = ddl.execute(fixIdentifier(indexname), false, cols);
-        assertFalse(wasException);
-        assertTrue(columnInIndex(tablename, col2name, indexname));        
+    public static void deleteIndex(Specification spec,
+            String schema, String tablename, String indexname)
+            throws Exception
+    {
+        DropIndex cmd = spec.createCommandDropIndex(indexname);
+        cmd.setTableName(tablename);
+        cmd.setObjectOwner(schema);
+        cmd.execute();        
     }
-
+    
+    public static void deleteView(Specification spec,
+            String schema, String viewname) throws Exception {
+        AbstractCommand cmd = spec.createCommandDropView(viewname);
+        cmd.setObjectOwner(schema);
+        cmd.execute();        
+    }
 }

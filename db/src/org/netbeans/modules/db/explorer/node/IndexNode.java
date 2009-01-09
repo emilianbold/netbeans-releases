@@ -49,7 +49,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.infos.DDLHelper;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;

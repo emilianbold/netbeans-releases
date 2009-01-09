@@ -77,7 +77,6 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -115,7 +114,6 @@ public class ConnectUsingDriverAction extends BaseAction {
     public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
-        ConnectionNodeInfo cni;
         boolean advancedPanel = false;
         boolean okPressed = false;
 

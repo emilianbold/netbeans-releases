@@ -53,7 +53,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.actions.AddToIndexDDL;
 import org.netbeans.modules.db.explorer.dlg.LabeledComboDialog;
 import org.netbeans.modules.db.explorer.node.IndexNode;
 import org.openide.DialogDisplayer;

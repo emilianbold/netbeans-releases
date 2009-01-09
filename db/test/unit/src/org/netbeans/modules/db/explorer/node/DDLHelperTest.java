@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.node;
 
 import java.sql.Types;
 import org.netbeans.modules.db.test.DDLTestBase;

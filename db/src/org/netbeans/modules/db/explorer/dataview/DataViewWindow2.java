@@ -84,7 +84,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.node.ColumnNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -611,14 +611,14 @@ public class DataViewWindow2 extends TopComponent {
         public void dragExit (DropTargetEvent dte) {
         }
 
-        private ColumnNodeInfo getNodeInfo(Transferable t) {
+        private ColumnNode getNode(Transferable t) {
             Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
             if (n != null)
-                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+                return (ColumnNode)n;
 
             n = NodeTransfer.node(t, NodeTransfer.COPY);
             if (n != null)
-                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+                return (ColumnNode)n;
 
             return null;
         }
@@ -641,9 +641,9 @@ public class DataViewWindow2 extends TopComponent {
                     int tabidx = 0;
                     HashMap tabidxmap = new HashMap();
                     for (int i = 0; i < count; i++) {
-                        ColumnNodeInfo nfo = getNodeInfo(mobj.getTransferableAt(i));
+                        ColumnNode nfo = getNode(mobj.getTransferableAt(i));
                         if (nfo != null) {
-                            String tablename = nfo.getTable();
+                            String tablename = nfo.getParentName();
                             Integer tableidx = (Integer)tabidxmap.get(tablename);
                             if (tableidx == null) tabidxmap.put(tablename, tableidx = new Integer(tabidx++));
                             if (buff.length()>0) buff.append(", "); //NOI18N
@@ -662,8 +662,8 @@ public class DataViewWindow2 extends TopComponent {
                     query = "select "+buff.toString()+" from "+frombuff.toString(); //NOI18N
 
                 } else {
-                    ColumnNodeInfo nfo = getNodeInfo(t);
-                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getTable(); //NOI18N
+                    ColumnNode nfo = getNode(t);
+                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getParentName(); //NOI18N
                 }
 
                 if (query != null)

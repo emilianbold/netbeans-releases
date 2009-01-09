@@ -85,6 +85,8 @@ public class JDBCDriverManagerTest extends DBTestBase {
         // This used to fail as described in issue 75204.
         assertSame(driver, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
 
+        // this currently fails.  The driverRef isn't being GCd.  This appears to be due to changes
+        // in the open ide platform.  
         Util.deleteDriverFiles();
         WeakReference<JDBCDriver> driverRef = new WeakReference<JDBCDriver>(driver);
         driver = null;
