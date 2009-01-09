@@ -933,7 +933,7 @@ public class HgCommand {
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
-         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+         return getLogMessages(rootUrl, files, HG_STATUS_FLAG_TIP_CMD, "0", true, false, limit, logger);
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
@@ -1421,7 +1421,7 @@ public class HgCommand {
 
         if(revStr == null) {
             if(to == null) {
-                to = "tip";
+                to = HG_STATUS_FLAG_TIP_CMD;
             }
             if(from == null) {
                 from = "0";
