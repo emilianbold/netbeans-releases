@@ -71,8 +71,7 @@ public final class RubyProcessCreator implements Callable<Process> {
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
 
     /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
-    //private static final boolean SKIP_KCODE = System.getProperty("ruby.no.kcode") == null; // NOI18N
-    private static final boolean SKIP_KCODE = true;
+    private static final boolean SKIP_KCODE = Boolean.getBoolean("ruby.no.kcode"); // NOI18N
 
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
     private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
