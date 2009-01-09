@@ -47,7 +47,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -114,7 +114,7 @@ public class DriverNode extends BaseNode {
                             JDBCDriverManager.getDefault().removeDriver(driver);
                         }
                     } catch (DatabaseException e) {
-                        Logger.getLogger(DriverNodeInfo.class.getName()).log(Level.INFO, null, e);
+                        Logger.getLogger(DriverNode.class.getName()).log(Level.INFO, null, e);
                     }
                 }
             }
@@ -132,5 +132,15 @@ public class DriverNode extends BaseNode {
  
     public String getIconBase() {
         return PREFERREDICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Driver"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverNode.class);
     }
 }

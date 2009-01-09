@@ -45,6 +45,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -53,7 +54,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 public class ViewListNode extends BaseNode {
     private static final String NAME = "Views"; // NOI18N
     private static final String DISPLAYNAME = "Views"; // NOI18N
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "ViewList"; //NOI18N
     
     private MetadataElementHandle<Schema> schemaHandle;
@@ -93,5 +94,15 @@ public class ViewListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ViewList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewListNode.class);
     }
 }
