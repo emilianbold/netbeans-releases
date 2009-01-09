@@ -59,10 +59,7 @@ import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.ide.ergonomics.newproject.RestartNotifier;
-import org.netbeans.modules.ide.ergonomics.newproject.RestartNotifier.RestartIcon;
 import org.openide.DialogDisplayer;
-import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -259,15 +256,6 @@ public class ModulesInstaller {
         Restarter r = installSupport.doInstall (i, installHandle);
         if (r != null) {
             installSupport.doRestartLater (r);
-            // XXX FindBrokenModules.writeEnableLater (modules4repair);
-            RestartIcon restartIcon = RestartNotifier.getFlasher (new Runnable () {
-               public void run () {
-                    LifecycleManager.getDefault ().exit ();
-                }
-            });
-            assert restartIcon != null : "Restart Icon cannot be null.";
-            restartIcon.setToolTipText (getBundle ("InstallerMissingModules_NeedsRestart"));
-            restartIcon.startFlashing ();
         } else {
             waitToModuleLoaded ();
         }
