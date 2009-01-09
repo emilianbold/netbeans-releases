@@ -45,6 +45,7 @@ import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,6 +57,11 @@ public class ViewDataAction extends QueryAction {
     @Override
     public String getName() {
         return bundle().getString("ViewData"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewDataAction.class);
     }
 
     public void performAction (final Node[] activatedNodes) {

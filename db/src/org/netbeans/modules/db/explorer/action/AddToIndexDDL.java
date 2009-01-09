@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.action;
 
 import java.util.Iterator;
 import java.util.Set;

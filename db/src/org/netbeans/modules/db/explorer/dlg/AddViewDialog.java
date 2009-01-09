@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.awt.Mnemonics;
 
