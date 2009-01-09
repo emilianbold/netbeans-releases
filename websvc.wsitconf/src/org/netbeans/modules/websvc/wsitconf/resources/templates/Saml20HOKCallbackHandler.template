@@ -8,28 +8,37 @@
 package ${package};
 </#if>
 
-import java.io.*;
-import java.util.*;
-
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-
-import com.sun.xml.wss.impl.callback.*;
-
-import com.sun.xml.wss.saml.*;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.sun.org.apache.xml.internal.security.keys.KeyInfo;
+import com.sun.xml.wss.impl.callback.SAMLCallback;
+import com.sun.xml.wss.impl.callback.SignatureKeyCallback;
+import com.sun.xml.wss.saml.Assertion;
+import com.sun.xml.wss.saml.Conditions;
+import com.sun.xml.wss.saml.NameID;
+import com.sun.xml.wss.saml.SAMLAssertionFactory;
+import com.sun.xml.wss.saml.SubjectConfirmation;
+import com.sun.xml.wss.saml.SubjectConfirmationData;
+import com.sun.xml.wss.saml.Subject;
 
 /** 
  *
@@ -44,12 +53,7 @@ public class Saml20HOKCallbackHandler implements CallbackHandler {
     private String keyStorePassword;
     private String keyStoreType;
     
-    private String trustStoreURL;
-    private String trustStorePassword;
-    private String trustStoreType;
-    
     private KeyStore keyStore;
-    private KeyStore trustStore;
     
     private static final String fileSeparator = System.getProperty("file.separator");
     
@@ -72,13 +76,7 @@ public class Saml20HOKCallbackHandler implements CallbackHandler {
             this.keyStoreType = "JKS";
             this.keyStorePassword = "changeit";
             
-            this.trustStoreURL = glassfish_home + fileSeparator + "domains" + fileSeparator + "domain1" +
-                    fileSeparator + "config" + fileSeparator + "cacerts.jks";
-            this.trustStoreType = "JKS";
-            this.trustStorePassword = "changeit";
-            
             initKeyStore();
-            initTrustStore();
         }catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -185,15 +183,6 @@ public class Saml20HOKCallbackHandler implements CallbackHandler {
         try {
             keyStore = KeyStore.getInstance(keyStoreType);
             keyStore.load(new FileInputStream(keyStoreURL), keyStorePassword.toCharArray());
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
-        }
-    }
-    
-    private void initTrustStore() throws IOException {
-        try {
-            trustStore = KeyStore.getInstance(trustStoreType);
-            trustStore.load(new FileInputStream(trustStoreURL), trustStorePassword.toCharArray());
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }

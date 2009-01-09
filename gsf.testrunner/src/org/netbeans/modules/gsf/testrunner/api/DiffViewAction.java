@@ -90,12 +90,14 @@ public final class DiffViewAction extends AbstractAction {
         StringComparisonSource expected =
                 new StringComparisonSource(
                 NbBundle.getMessage(DiffViewAction.class, "LBL_Expected"),
-                comparisonFailure.getExpected());
+                comparisonFailure.getExpected(),
+                comparisonFailure.getMimeType());
 
         StringComparisonSource actual =
                 new StringComparisonSource(
                 NbBundle.getMessage(DiffViewAction.class, "LBL_Actual"),
-                comparisonFailure.getActual());
+                comparisonFailure.getActual(),
+                comparisonFailure.getMimeType());
 
 
         try {
@@ -131,10 +133,12 @@ public final class DiffViewAction extends AbstractAction {
 
         private final String name;
         private final String source;
+        private final String mimeType;
 
-        public StringComparisonSource(String name, String source) {
+        public StringComparisonSource(String name, String source, String mimeType) {
             this.name = name;
             this.source = source;
+            this.mimeType = mimeType;
         }
 
         @Override
@@ -149,7 +153,7 @@ public final class DiffViewAction extends AbstractAction {
 
         @Override
         public String getMIMEType() {
-            return "text/plain"; //NOI18N
+            return mimeType;
         }
 
         @Override

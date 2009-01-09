@@ -268,6 +268,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         
         kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
         kbs.addLookupListener(WeakListeners.create(LookupListener.class, shortcutsTracker, kbs));
+        kbs.allInstances();
     }
     
     private JTextComponent getActiveComponent() {
@@ -1236,10 +1237,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
 
     /** Attempt to find the editor keystroke for the given editor action. */
-    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey) {
+    private KeyStroke[] findEditorKeys(String editorActionName) {
         // This method is implemented due to the issue
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
-        KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (editorActionName != null && getActiveComponent() != null) {
             TextUI ui = getActiveComponent().getUI();
             Keymap km = getActiveComponent().getKeymap();
@@ -1250,20 +1250,20 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     if (a != null) {
                         KeyStroke[] keys = km.getKeyStrokesForAction(a);
                         if (keys != null && keys.length > 0) {
-                            ret = keys;
+                            return keys;
                         } else {
                             // try kit's keymap
                             Keymap km2 = ((BaseKit)kit).getKeymap();
                             KeyStroke[] keys2 = km2.getKeyStrokesForAction(a);
                             if (keys2 != null && keys2.length > 0) {
-                                ret = keys2;
-                            }                            
+                                return keys2;
+                            }
                         }
                     }
                 }
             }
         }
-        return ret;
+        return new KeyStroke[0];
     }
 
     private void installKeybindings() {
@@ -1272,7 +1272,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         completionShortcut = null;
         
         // Register completion show
-        KeyStroke[] keys = findEditorKeys(ExtKit.completionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
+        KeyStroke[] keys = findEditorKeys(ExtKit.completionShowAction);
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_SHOW);
             if (completionShortcut == null) {
@@ -1284,21 +1284,21 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
 
         // Register all completion show
-        keys = findEditorKeys(ExtKit.allCompletionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)));
+        keys = findEditorKeys(ExtKit.allCompletionShowAction);
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_ALL_SHOW);
         }
         actionMap.put(COMPLETION_ALL_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_ALL_QUERY_TYPE));
 
         // Register documentation show
-        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
+        keys = findEditorKeys(ExtKit.documentationShowAction);
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], DOC_SHOW);
         }
         actionMap.put(DOC_SHOW, new DocShowAction());
         
         // Register tooltip show
-        keys = findEditorKeys(ExtKit.completionTooltipShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK));
+        keys = findEditorKeys(ExtKit.completionTooltipShowAction);
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], TOOLTIP_SHOW);
         }

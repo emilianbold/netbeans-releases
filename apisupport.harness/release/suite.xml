@@ -196,9 +196,21 @@ made subject to such option by the copyright holder.
         <property name="build.launcher.dir" location="build/launcher"/>
         
         <mkdir dir="${build.launcher.dir}/etc"/>
+        <!-- clean old launchers (platform could be changed) -->
+        <delete dir="${build.launcher.dir}/bin" failonerror="false"/>
         <mkdir dir="${build.launcher.dir}/bin"/>
 
-        <copy file="${harness.dir}/launchers/app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe"/>
+        <!-- make sure correct launchers are present - for pre7 platform use old app.exe launchers -->
+        <condition property="app.exe.prefix" value="" else="pre7_">
+            <available file="nbexec.dll">
+                <filepath>
+                    <dirset dir="${netbeans.dest.dir}" includes="platform*/lib"/>
+                </filepath>
+            </available>
+        </condition>
+        <copy file="${harness.dir}/launchers/${app.exe.prefix}app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
+        <copy file="${harness.dir}/launchers/${app.exe.prefix}app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe" failonerror="false" overwrite="true"/>
+
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
         <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf">
             <filterchain>

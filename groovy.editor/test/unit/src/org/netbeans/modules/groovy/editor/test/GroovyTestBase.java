@@ -42,11 +42,12 @@
 package org.netbeans.modules.groovy.editor.test;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.codehaus.groovy.ant.Groovyc;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,12 +59,9 @@ import org.netbeans.modules.groovy.editor.api.Formatter;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.test.MockLookup;
 
 /**
  * In order to be able to run tests using java.source on Mac, you need to apply patch
@@ -74,14 +72,6 @@ import org.openide.util.test.MockLookup;
  */
 public class GroovyTestBase extends CslTestBase {
 
-    private static void setLookups(Object... instances) {
-        Object[] allInstances = new Object[instances.length + 1];
-        ClassLoader classLoader = GroovyTestBase.class.getClassLoader();
-        allInstances[0] = classLoader;
-        System.arraycopy(instances, 0, allInstances, 1, instances.length);
-        MockLookup.setInstances(allInstances);
-    }
-    
     protected FileObject testFO;
 
     public GroovyTestBase(String testName) {
@@ -90,12 +80,14 @@ public class GroovyTestBase extends CslTestBase {
     
     @Override
     protected void setUp() throws Exception {
+        // No translation; call before the classpath scanning starts
+        GroovyIndex.setClusterUrl("file:/bogus");
+
         super.setUp();
-        GroovyIndex.setClusterUrl("file:/bogus"); // No translation
+
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
         FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
-        setLookups(new DummyClassPathProvider());
     }
 
     @Override
@@ -147,55 +139,52 @@ public class GroovyTestBase extends CslTestBase {
         return createDocument(read(fo));
     }
 
-    private static ClassPath createBootClassPath () throws IOException {
-	String bcp = System.getProperty ("sun.boot.class.path");	//NOI18N
-	assertNotNull (bcp);
-	StringTokenizer tk = new StringTokenizer (bcp,File.pathSeparator);
-	List<URL> roots = new ArrayList<URL>();
-	while (tk.hasMoreTokens()) {
-	    String token = tk.nextToken();
-	    File f = new File (token);
-	    URL url = f.toURI().toURL();
-	    if (FileUtil.isArchiveFile(url)) {
-		url = FileUtil.getArchiveRoot(url);
-	    }
-	    else if (!f.exists()) {
-		url = new URL (url.toExternalForm()+'/');
-	    }
-	    roots.add (url);
-	}
-	return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        if (getClass().getName().startsWith("org.netbeans.modules.groovy.editor.api.completion")) {
+            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
+            map.put(ClassPath.SOURCE, createSourcePath());
+            map.put(ClassPath.BOOT, createBootClassPath());
+            map.put(ClassPath.COMPILE, createCompilePath());
+            return map;
+        } else {
+            return null;
+        }
     }
 
-    private ClassPath createSourcePath() throws IOException {
+    private static ClassPath createBootClassPath() {
+        String bcp = System.getProperty("sun.boot.class.path");	//NOI18N
+        assertNotNull(bcp);
+        StringTokenizer tk = new StringTokenizer(bcp, File.pathSeparator);
+        List<URL> roots = new ArrayList<URL>();
+        while (tk.hasMoreTokens()) {
+            String token = tk.nextToken();
+            File f = new File(token);
+            try {
+                URL url = f.toURI().toURL();
+                if (FileUtil.isArchiveFile(url)) {
+                    url = FileUtil.getArchiveRoot(url);
+                } else if (!f.exists()) {
+                    url = new URL(url.toExternalForm() + '/');
+                }
+                roots.add(url);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    }
+    
+    private ClassPath createSourcePath() {
         File srcDir = getDataFile("/testfiles/completion");
         File srcDir2 = getDataFile("/testfiles/completion/types");
-	return ClassPathSupport.createClassPath(new FileObject[] { 
+    	return ClassPathSupport.createClassPath(new FileObject[] {
             FileUtil.toFileObject(srcDir), FileUtil.toFileObject(srcDir2)
         });
     }
 
-    private ClassPath createCompilePath() {
+    private static ClassPath createCompilePath() {
         URL url = Groovyc.class.getProtectionDomain().getCodeSource().getLocation();
         return ClassPathSupport.createClassPath(FileUtil.getArchiveRoot(url));
-    }
-
-    private class DummyClassPathProvider implements ClassPathProvider {
-
-        public ClassPath findClassPath(FileObject file, String type) {
-            try {
-                if (type.equals(ClassPath.SOURCE)) {
-                    return createSourcePath();
-                } else if (type.equals(ClassPath.BOOT)) {
-                    return createBootClassPath();
-                } else if (type.equals(ClassPath.COMPILE)) {
-                    return createCompilePath();
-                }
-            } catch (IOException ioe) {
-                //Skip it
-            }
-            return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-        }
     }
 
 }

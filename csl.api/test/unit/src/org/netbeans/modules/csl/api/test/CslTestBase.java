@@ -125,7 +125,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
@@ -137,6 +140,8 @@ import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
@@ -169,6 +174,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -176,8 +182,10 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Tor Norbye
@@ -188,9 +196,12 @@ public abstract class CslTestBase extends NbTestCase {
         super(testName);
     }
 
+    private Map<String, ClassPath> classPathsForTest;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
@@ -198,6 +209,48 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject cache = FileUtil.createFolder(wd, "var/cache");
         assert cache != null;
         CacheFolder.setCacheFolder(cache);
+
+        // This has to be before touching ClassPath class
+        MockLookup.setInstances(new TestClassPathProvider());
+
+        classPathsForTest = createClassPathsForTest();
+        if (classPathsForTest != null) {
+            RepositoryUpdater.getDefault();
+            
+            Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
+            logger.setLevel(Level.FINEST);
+            Waiter w = new Waiter();
+            logger.addHandler(w);
+
+            // initialize classpaths indexing
+            for(String cpId : classPathsForTest.keySet()) {
+                ClassPath cp = classPathsForTest.get(cpId);
+                GlobalPathRegistry.getDefault().register(cpId, new ClassPath [] { cp });
+            }
+
+            w.waitForScanToFinish();
+            logger.removeHandler(w);
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (classPathsForTest != null) {
+            Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
+            logger.setLevel(Level.FINEST);
+            Waiter w = new Waiter();
+            logger.addHandler(w);
+
+            for(String cpId : classPathsForTest.keySet()) {
+                ClassPath cp = classPathsForTest.get(cpId);
+                GlobalPathRegistry.getDefault().unregister(cpId, new ClassPath [] { cp });
+            }
+            
+            w.waitForScanToFinish();
+            logger.removeHandler(w);
+        }
+
+        super.tearDown();
     }
 
     protected void initializeRegistry() {
@@ -228,11 +281,6 @@ public abstract class CslTestBase extends NbTestCase {
             throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
         }
         return new File(destDir);
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
     
     protected FileObject touch(final String dir, final String path) throws IOException {
@@ -3978,7 +4026,7 @@ public abstract class CslTestBase extends NbTestCase {
         DeclarationLocation location = findDeclaration(relFilePath, caretLine);
         if (location == DeclarationLocation.NONE) {
             // if we dont found a declaration, bail out.
-            assertTrue("DeclarationLocation.NONE", false);
+            fail("DeclarationLocation.NONE");
         }
 
         int caretDelta = declarationLine.indexOf('^');
@@ -3992,7 +4040,6 @@ public abstract class CslTestBase extends NbTestCase {
         if (caretOffset != location.getOffset()) {
             fail("Offset mismatch (expected " + caretOffset + " vs. actual " + location.getOffset() + ": got " + getSourceWindow(text, location.getOffset()));
         }
-        assertEquals(caretOffset, location.getOffset());
     }
 
     protected void checkDeclaration(String relFilePath, String caretLine, String file, int offset) throws Exception {
@@ -4147,4 +4194,59 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
     } // End of TestIndexFactoryImpl class
+
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return null;
+    }
+
+    private class TestClassPathProvider implements ClassPathProvider {
+        public TestClassPathProvider() {
+
+        }
+        
+        public ClassPath findClassPath(FileObject file, String type) {
+            Map<String, ClassPath> map = classPathsForTest;
+
+            if (map != null) {
+                return map.get(type);
+            } else {
+                return null;
+            }
+        }
+    } // End of TestClassPathProvider class
+
+    private static final class Waiter extends Handler {
+
+        private final CountDownLatch latch = new CountDownLatch(1);
+        
+        public Waiter() {
+        }
+
+        public void waitForScanToFinish() {
+            try {
+                latch.await(60000, TimeUnit.MILLISECONDS);
+                if (latch.getCount() > 0) {
+                    fail("Waiting for classpath scanning to finish timed out");
+                }
+            } catch (InterruptedException ex) {
+                fail("Waiting for classpath scanning to finish was interrupted");
+            }
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if ("scanSources".equals(msg)) {
+                latch.countDown();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    } // End of Waiter class
 }
