@@ -318,8 +318,8 @@ final class JUnitOutputReader {
                         expectedOneSuiteTests = executedOneSuiteTests;
                     }
                     progressLogger.finest("test finished");             //NOI18N
-                    updateProgress();
                 }
+                updateProgress();
                 manager.displayReport(session, sessionType, report, true, statistics);
                 return;
             }
