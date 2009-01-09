@@ -93,7 +93,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
 
     private static final String TMP_FILE_SUFFIX = ".nb-tmp"; // NOI18N
-    private static final int OFFSET = 2;
+    private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
     private static final String INCLUDE_PATH_TPL = "ini_set(\"include_path\", %sini_get(\"include_path\"));"; // NOI18N
     private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
 
@@ -362,18 +362,17 @@ public final class CreateTestsAction extends NodeAction {
                     }
 
                     String line;
-                    int i = 0;
+                    boolean written = false;
                     while ((line = in.readLine()) != null) {
-                        ++i;
-                        if (i == OFFSET) {
-                            out.write(String.format(INCLUDE_PATH_TPL, sb.toString()));
-                            out.newLine();
-                        }
                         out.write(line);
                         out.newLine();
+                        if (!written && PHP_OPEN_TAG.equals(line.trim())) {
+                            out.write(String.format(INCLUDE_PATH_TPL, sb.toString()));
+                            out.newLine();
+                            written = true;
+                        }
                     }
                 } finally {
-                    out.flush();
                     out.close();
                 }
             } finally {
