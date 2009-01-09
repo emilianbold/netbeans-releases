@@ -405,6 +405,10 @@ public class IndexedElementTest extends PythonTestBase {
         checkCreate("testfiles/tarfile.py");
     }
 
+    public void testIndex16() throws Exception {
+        checkCreate("testfiles/rst/pickle.rst");
+    }
+
     public void testRstIndex1() throws Exception {
         checkCreate("testfiles/rst/zipfile.rst.indexed");
     }
@@ -449,6 +453,14 @@ public class IndexedElementTest extends PythonTestBase {
 
     public void testRstIndex11() throws Exception {
         checkCreate("testfiles/rst/collections.rst");
+    }
+
+    public void testRstIndex12() throws Exception {
+        checkCreate("testfiles/rst/ctypes.rst");
+    }
+
+    public void testRstIndex13() throws Exception {
+        checkCreate("testfiles/rst/stub_missing.rst");
     }
 
 //   public void testIndexEgg() throws Exception {

@@ -120,6 +120,11 @@ public class ImportEntry implements Comparable<ImportEntry> {
     }
 
     public int compareTo(ImportEntry other) {
+        boolean thisIsFuture = "__future__".equals(module); // NOI18N
+        boolean otherIsFuture = "__future__".equals(other.module); // NOI18N
+        if (thisIsFuture != otherIsFuture) {
+            return thisIsFuture ? -1 : 1;
+        }
         if (isSystem != other.isSystem) {
             return isSystem ? -1 : 1;
         }

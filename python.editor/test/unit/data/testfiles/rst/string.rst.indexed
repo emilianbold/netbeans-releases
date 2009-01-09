@@ -23,10 +23,9 @@ Searchable Keys:
   class : Template
   class-ig : template
   in : string
-  member : Template;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;template;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;template;
   member : safe_substitute;F;|DOCUMENTED|DOC_ONLY|;mapping,**kws;
   member : substitute;F;|DOCUMENTED|DOC_ONLY|;mapping,**kws;
-  member : template;A;|DOCUMENTED|DOC_ONLY|;
 
 Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;

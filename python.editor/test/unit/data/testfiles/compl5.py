@@ -9,4 +9,11 @@ class MyTest(unittest.TestCase):
 x = MyTest()
 x.r
 
+# @type os2 str
+os2.x
+# @type os3 int
+os3.x
+# @type os4 list
+os4.x
+os5.xhd
 

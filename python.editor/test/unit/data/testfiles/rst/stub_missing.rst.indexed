@@ -1,0 +1,486 @@
+
+
+Document 0
+Searchable Keys:
+  class : bool
+  class-ig : bool
+  in : stub_missing
+  member : __abs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __add__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __and__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __cmp__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __coerce__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __div__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __divmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __float__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __floordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __index__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __int__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __invert__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __long__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __lshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __mod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __mul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __neg__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __nonzero__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __oct__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __or__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __pos__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __pow__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __radd__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rand__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdivmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rfloordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rlshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __ror__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rpow__;F;|DOCUMENTED|DOC_ONLY|;x;
+  member : __rrshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rsub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rtruediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rxor__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __sub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __truediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __trunc__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __xor__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : conjugate;F;|DOCUMENTED|DOC_ONLY|;;
+  member : denominator;A;|DOCUMENTED|DOC_ONLY|;
+  member : imag;A;|DOCUMENTED|DOC_ONLY|;
+  member : numerator;A;|DOCUMENTED|DOC_ONLY|;
+  member : real;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : complex
+  class-ig : complex
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __coerce__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __divmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __float__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __int__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __long__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __nonzero__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __radd__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdivmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rfloordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rpow__;F;|DOCUMENTED|DOC_ONLY|;x;
+  member : __rsub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rtruediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : conjugate;F;|DOCUMENTED|DOC_ONLY|;;
+  member : imag;A;|DOCUMENTED|DOC_ONLY|;
+  member : real;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  class : dict
+  class-ig : dict
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __cmp__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __hash__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __len__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 3
+Searchable Keys:
+  class : float
+  class-ig : float
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __coerce__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __divmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __float__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;format_spec;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getformat__;F;|DOCUMENTED|DOC_ONLY|;typestr;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __int__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __long__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __nonzero__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __radd__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdivmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rfloordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rpow__;F;|DOCUMENTED|DOC_ONLY|;x;
+  member : __rsub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rtruediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __setformat__;F;|DOCUMENTED|DOC_ONLY|;typestr,fmt;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __trunc__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : conjugate;F;|DOCUMENTED|DOC_ONLY|;;
+  member : imag;A;|DOCUMENTED|DOC_ONLY|;
+  member : is_integer;F;|DOCUMENTED|DOC_ONLY|;;
+  member : real;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  class : int
+  class-ig : int
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __cmp__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __coerce__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __divmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __float__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __int__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __long__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __nonzero__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __oct__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __radd__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rand__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdivmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rfloordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rlshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __ror__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rpow__;F;|DOCUMENTED|DOC_ONLY|;x;
+  member : __rrshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rsub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rtruediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rxor__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __trunc__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : conjugate;F;|DOCUMENTED|DOC_ONLY|;;
+  member : denominator;A;|DOCUMENTED|DOC_ONLY|;
+  member : imag;A;|DOCUMENTED|DOC_ONLY|;
+  member : numerator;A;|DOCUMENTED|DOC_ONLY|;
+  member : real;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 5
+Searchable Keys:
+  class : list
+  class-ig : list
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __hash__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __len__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reversed__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;n;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : append;F;|DOCUMENTED|DOC_ONLY|;;
+  member : count;F;|DOCUMENTED|DOC_ONLY|;value;
+  member : extend;F;|DOCUMENTED|DOC_ONLY|;;
+  member : insert;F;|DOCUMENTED|DOC_ONLY|;;
+  member : pop;F;|DOCUMENTED|DOC_ONLY|;;
+  member : remove;F;|DOCUMENTED|DOC_ONLY|;;
+  member : reverse;F;|DOCUMENTED|DOC_ONLY|;;
+  member : sort;F;|DOCUMENTED|DOC_ONLY|;cmp,key,reverse;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 6
+Searchable Keys:
+  class : long
+  class-ig : long
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __cmp__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __coerce__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __divmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __float__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __int__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __long__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __nonzero__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __oct__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __radd__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rand__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rdivmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rfloordiv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rlshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __ror__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rpow__;F;|DOCUMENTED|DOC_ONLY|;x;
+  member : __rrshift__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rsub__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rtruediv__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rxor__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __trunc__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : conjugate;F;|DOCUMENTED|DOC_ONLY|;;
+  member : denominator;A;|DOCUMENTED|DOC_ONLY|;
+  member : imag;A;|DOCUMENTED|DOC_ONLY|;
+  member : numerator;A;|DOCUMENTED|DOC_ONLY|;
+  member : real;A;|DOCUMENTED|DOC_ONLY|;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 7
+Searchable Keys:
+  class : str
+  class-ig : str
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;format_spec;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __len__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;n;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : _formatter_field_name_split;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;;
+  member : _formatter_parser;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 8
+Searchable Keys:
+  class : tuple
+  class-ig : tuple
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __iter__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __len__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;n;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : count;F;|DOCUMENTED|DOC_ONLY|;value;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 9
+Searchable Keys:
+  class : unicode
+  class-ig : unicode
+  in : stub_missing
+  member : __class__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __delattr__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __doc__;A;|DOCUMENTED|DOC_ONLY|;
+  member : __format__;F;|DOCUMENTED|DOC_ONLY|;format_spec;
+  member : __getattribute__;F;|DOCUMENTED|DOC_ONLY|;name;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __hash__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __len__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __new__;F;|DOCUMENTED|DOC_ONLY|;S,___;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __repr__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __rmod__;F;|DOCUMENTED|DOC_ONLY|;y;
+  member : __rmul__;F;|DOCUMENTED|DOC_ONLY|;n;
+  member : __setattr__;F;|DOCUMENTED|DOC_ONLY|;name,value;
+  member : __sizeof__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __str__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __subclasshook__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : _formatter_field_name_split;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;;
+  member : _formatter_parser;F;|DOCUMENTED|PRIVATE|DOC_ONLY|;;
+  member : capitalize;F;|DOCUMENTED|DOC_ONLY|;;
+  member : center;F;|DOCUMENTED|DOC_ONLY|;width;
+  member : count;F;|DOCUMENTED|DOC_ONLY|;sub;
+  member : decode;F;|DOCUMENTED|DOC_ONLY|;;
+  member : encode;F;|DOCUMENTED|DOC_ONLY|;;
+  member : endswith;F;|DOCUMENTED|DOC_ONLY|;suffix;
+  member : expandtabs;F;|DOCUMENTED|DOC_ONLY|;;
+  member : find;F;|DOCUMENTED|DOC_ONLY|;sub;
+  member : format;F;|DOCUMENTED|DOC_ONLY|;*args,**kwargs;
+  member : isalnum;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isalpha;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isdigit;F;|DOCUMENTED|DOC_ONLY|;;
+  member : islower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isspace;F;|DOCUMENTED|DOC_ONLY|;;
+  member : istitle;F;|DOCUMENTED|DOC_ONLY|;;
+  member : isupper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : join;F;|DOCUMENTED|DOC_ONLY|;sequence;
+  member : ljust;F;|DOCUMENTED|DOC_ONLY|;width;
+  member : lower;F;|DOCUMENTED|DOC_ONLY|;;
+  member : lstrip;F;|DOCUMENTED|DOC_ONLY|;;
+  member : partition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : replace;F;|DOCUMENTED|DOC_ONLY|;old,new;
+  member : rfind;F;|DOCUMENTED|DOC_ONLY|;sub;
+  member : rindex;F;|DOCUMENTED|DOC_ONLY|;sub;
+  member : rjust;F;|DOCUMENTED|DOC_ONLY|;width;
+  member : rpartition;F;|DOCUMENTED|DOC_ONLY|;sep;
+  member : rsplit;F;|DOCUMENTED|DOC_ONLY|;;
+  member : rstrip;F;|DOCUMENTED|DOC_ONLY|;;
+  member : split;F;|DOCUMENTED|DOC_ONLY|;;
+  member : splitlines;F;|DOCUMENTED|DOC_ONLY|;;
+  member : startswith;F;|DOCUMENTED|DOC_ONLY|;prefix;
+  member : strip;F;|DOCUMENTED|DOC_ONLY|;;
+  member : swapcase;F;|DOCUMENTED|DOC_ONLY|;;
+  member : title;F;|DOCUMENTED|DOC_ONLY|;;
+  member : translate;F;|DOCUMENTED|DOC_ONLY|;table;
+  member : upper;F;|DOCUMENTED|DOC_ONLY|;;
+  member : zfill;F;|DOCUMENTED|DOC_ONLY|;width;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 10
+Searchable Keys:
+  item : bool;C;|DOCUMENTED|DOC_ONLY|;
+  item : complex;C;|DOCUMENTED|DOC_ONLY|;
+  item : dict;C;|DOCUMENTED|DOC_ONLY|;
+  item : float;C;|DOCUMENTED|DOC_ONLY|;
+  item : int;C;|DOCUMENTED|DOC_ONLY|;
+  item : list;C;|DOCUMENTED|DOC_ONLY|;
+  item : long;C;|DOCUMENTED|DOC_ONLY|;
+  item : str;C;|DOCUMENTED|DOC_ONLY|;
+  item : tuple;C;|DOCUMENTED|DOC_ONLY|;
+  item : unicode;C;|DOCUMENTED|DOC_ONLY|;
+  module : stub_missing
+
+Not Searchable Keys:
+  modattrs : S

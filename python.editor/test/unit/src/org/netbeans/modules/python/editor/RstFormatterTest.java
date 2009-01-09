@@ -165,21 +165,21 @@ public class RstFormatterTest extends PythonTestBase {
     public void testExtract1() throws Exception {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/stdtypes.rst"));
-        String rst = formatter.extractRst("dict", ElementKind.CLASS, doc, null);
+        String rst = formatter.extractRst("dict", null, ElementKind.CLASS, doc, null);
         assertTrue(rst, rst.trim().startsWith("Return a new dictionary initialized from "));
     }
 
     public void testExtract2() throws Exception {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/stdtypes.rst"));
-        String rst = formatter.extractRst("hex", ElementKind.METHOD, doc, null);
+        String rst = formatter.extractRst("hex", null, ElementKind.METHOD, doc, null);
         assertTrue(rst, rst.trim().startsWith("Return a representation of a floating-point number as a hexadecimal"));
     }
 
     public void testExtract3() throws Exception {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/stdtypes.rst"));
-        String rst = formatter.extractRst("encoding", ElementKind.ATTRIBUTE, doc, null);
+        String rst = formatter.extractRst("encoding", null, ElementKind.ATTRIBUTE, doc, null);
         assertTrue(rst, rst.trim().startsWith("The encoding that this file uses. When Unicode strings are written to a file,"));
     }
 
@@ -187,7 +187,7 @@ public class RstFormatterTest extends PythonTestBase {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/platform.rst"));
         String[] signatureHolder = new String[1];
-        String rst = formatter.extractRst("machine", ElementKind.METHOD, doc, signatureHolder);
+        String rst = formatter.extractRst("machine", null, ElementKind.METHOD, doc, signatureHolder);
         assertTrue(rst, rst.trim().startsWith("Returns the machine type, e.g"));
         assertEquals("machine()", signatureHolder[0]);
     }
@@ -195,14 +195,14 @@ public class RstFormatterTest extends PythonTestBase {
     public void testExtract5() throws Exception {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/zipfile.rst"));
-        String rst = formatter.extractRst("ZIP_STORED", ElementKind.ATTRIBUTE, doc, null);
+        String rst = formatter.extractRst("ZIP_STORED", null, ElementKind.ATTRIBUTE, doc, null);
         assertTrue(rst, rst.trim().startsWith("The numeric constant for an uncompressed archive membe"));
     }
 
     public void testExtract6() throws Exception {
         RstFormatter formatter = new RstFormatter();
         BaseDocument doc = getDocument(getTestFile("testfiles/rst/zipfile.rst"));
-        String rst = formatter.extractRst("zipfile", ElementKind.MODULE, doc, null);
+        String rst = formatter.extractRst("zipfile", null, ElementKind.MODULE, doc, null);
         assertTrue(rst, rst.trim().startsWith(":synopsis: Read and write ZIP-format archive files"));
     }
 
@@ -252,5 +252,9 @@ public class RstFormatterTest extends PythonTestBase {
 
     public void testFormatAll5() throws Exception {
         formatFile("testfiles/rst/smtpd.rst");
+    }
+
+    public void testFormatAll6() throws Exception {
+        formatFile("testfiles/rst/stub_missing.rst");
     }
 }

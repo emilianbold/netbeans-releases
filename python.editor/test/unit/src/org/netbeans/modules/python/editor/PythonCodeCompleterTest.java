@@ -211,6 +211,23 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/decorators.py", "@c^", true);
     }
 
+    public void testTypedVars1() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os2.^", true);
+    }
+
+    public void testTypedVars2() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os3.^", true);
+    }
+
+    public void testTypedVars3() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os4.^", true);
+    }
+
+    public void testTypedVars4() throws Exception {
+        // No type specified
+        checkCompletion("testfiles/compl5.py", "os5.xhd^", true);
+    }
+
     // -------------------------
     // Unstable tests:
     // -------------------------
