@@ -1,8 +1,6 @@
 Code completion result for source line:
 myvar.|close()
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     __enter__()                                
-METHOD     __exit__(exc_type, exc_val, ex             
 METHOD     close()                                    
 METHOD     fileno()                                   
 METHOD     flush()                                    
@@ -17,12 +15,6 @@ METHOD     truncate(size)
 METHOD     write(str)                                 
 METHOD     writelines(sequence)                       
 METHOD     ---xreadlines()            ---             
-ATTRIBUTE  __bases__                                  
-ATTRIBUTE  __class__                                  
-ATTRIBUTE  __dict__                                   
-ATTRIBUTE  ---__members__             ---             
-ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   
 ATTRIBUTE  closed                                     
 ATTRIBUTE  encoding                                   
 ATTRIBUTE  errors                                     
@@ -30,3 +22,7 @@ ATTRIBUTE  mode
 ATTRIBUTE  name                                       
 ATTRIBUTE  newlines                                   
 ATTRIBUTE  softspace                                  
+------------------------------------
+ATTRIBUTE  __dict__                                   
+ATTRIBUTE  ---__members__             ---             
+ATTRIBUTE  ---__methods__             ---             

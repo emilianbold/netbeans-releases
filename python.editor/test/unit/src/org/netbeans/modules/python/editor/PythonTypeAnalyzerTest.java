@@ -59,8 +59,8 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         assertEquals("SomeOtherClass", instance.getType("x"));
         assertEquals("SomeOtherClass", instance.getType("y"));
         assertEquals("SomeOtherClass", instance.getType("z"));
-        assertEquals("String", instance.getType("yz"));
-        assertEquals("Number", instance.getType("w"));
+        assertEquals("str", instance.getType("yz"));
+        assertEquals("int", instance.getType("w"));
         assertEquals(null, instance.getType("unknown"));
     }
 
@@ -68,10 +68,10 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^SECOND_CARET_POS", true);
 
         assertEquals("Other", instance.getType("x"));
-        assertEquals("Number", instance.getType("y"));
-        assertEquals("String", instance.getType("z"));
-        assertEquals("String", instance.getType("yz"));
-        assertEquals("Number", instance.getType("w"));
+        assertEquals("int", instance.getType("y"));
+        assertEquals("str", instance.getType("z"));
+        assertEquals("str", instance.getType("yz"));
+        assertEquals("int", instance.getType("w"));
         assertEquals(null, instance.getType("unknown"));
     }
 

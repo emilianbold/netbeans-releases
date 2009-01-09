@@ -927,7 +927,7 @@ public final class NbMavenProjectImpl implements Project {
             "java-beans", // NOI18N
             "oasis-XML-catalogs", // NOI18N
             "XML", // NOI18N
-            //            "web-service-clients",  // NOI18N
+            "web-service-clients",  // NOI18N
             "wsdl", // NOI18N
             // "servlet-types",     // NOI18N
             // "web-types",         // NOI18N

@@ -695,9 +695,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             try {
                 sd.remove(0, sd.getLength());
                 sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
-                
-                sd.insertString(sd.getLength(), String.valueOf(dispRevision.getChangedPath().getAction()), null);
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getChangedPath().getPath(), null);
+
+                String action = String.valueOf(dispRevision.getChangedPath().getAction()).trim();
+
+                sd.insertString(sd.getLength(), action, null);
+                sd.insertString(sd.getLength(), (action.equals("") ? "" : FIELDS_SEPARATOR) + dispRevision.getChangedPath().getPath(), null);
                 
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));

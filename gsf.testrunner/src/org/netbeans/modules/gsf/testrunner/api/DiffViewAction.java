@@ -66,14 +66,15 @@ public final class DiffViewAction extends AbstractAction {
 
     private final Trouble.ComparisonFailure comparisonFailure;
 
-    public DiffViewAction(Testcase testcase) {
-        Trouble trouble = testcase.getTrouble();
-        if (trouble == null || trouble.getComparisonFailure() == null) {
-            this.comparisonFailure = null;
+    public DiffViewAction(Trouble.ComparisonFailure comparisonFailure) {
+        this.comparisonFailure = comparisonFailure;
+        if (this.comparisonFailure == null) {
             setEnabled(false);
-        } else {
-            this.comparisonFailure = trouble.getComparisonFailure();
         }
+    }
+
+    public DiffViewAction(Testcase testcase) {
+        this(testcase.getTrouble() != null ? testcase.getTrouble().getComparisonFailure() : null);
     }
 
     @Override
@@ -89,17 +90,19 @@ public final class DiffViewAction extends AbstractAction {
         StringComparisonSource expected =
                 new StringComparisonSource(
                 NbBundle.getMessage(DiffViewAction.class, "LBL_Expected"),
-                comparisonFailure.getExpected());
+                comparisonFailure.getExpected(),
+                comparisonFailure.getMimeType());
 
         StringComparisonSource actual =
                 new StringComparisonSource(
                 NbBundle.getMessage(DiffViewAction.class, "LBL_Actual"),
-                comparisonFailure.getActual());
+                comparisonFailure.getActual(),
+                comparisonFailure.getMimeType());
 
 
         try {
             JComponent diffComponent = DiffController.create(expected, actual).getJComponent();
-            diffComponent.setPreferredSize(new Dimension(300, 150));
+            diffComponent.setPreferredSize(new Dimension(500, 250));
             JButton ok = new JButton(NbBundle.getMessage(DiffViewAction.class, "LBL_OK"));
             final DialogDescriptor descriptor = new DialogDescriptor(
                     diffComponent,
@@ -130,10 +133,12 @@ public final class DiffViewAction extends AbstractAction {
 
         private final String name;
         private final String source;
+        private final String mimeType;
 
-        public StringComparisonSource(String name, String source) {
+        public StringComparisonSource(String name, String source, String mimeType) {
             this.name = name;
             this.source = source;
+            this.mimeType = mimeType;
         }
 
         @Override
@@ -148,7 +153,7 @@ public final class DiffViewAction extends AbstractAction {
 
         @Override
         public String getMIMEType() {
-            return "text/plain"; //NOI18N
+            return mimeType;
         }
 
         @Override

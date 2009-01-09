@@ -104,11 +104,9 @@ public class KeyMapTest extends JellyTestCase {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Delete");
         NbDialogOperator ndo = new NbDialogOperator("Delete");
-        JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
-        cb.setSelected(true);
+        //JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
+        //cb.setSelected(true);
         ndo.yes();
-        ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        ndo.waitClosed();
     }
 
     @Override

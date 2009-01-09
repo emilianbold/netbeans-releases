@@ -21,7 +21,6 @@ class  ${clsname}TestCase(unittest.TestCase):
     def test_${clsname?uncap_first}(self):
         #assert x != y;
         #self.assertEqual(x, y, "Msg");
-        # assert_equal("foo", bar)
         self.fail("TODO: Write test")
 
 if __name__ == '__main__':

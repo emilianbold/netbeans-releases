@@ -74,8 +74,6 @@ public class PerClusterEnablementCheck extends NbTestCase {
         assertNotNull("java feature found", java);
 
         FindComponentModules find = new FindComponentModules(apisupport);
-        find.createFindingTask().schedule(0);
-        find.getFindingTask().waitFinished();
         Set<String> expectedNames = new HashSet<String>(java.getCodeNames());
         for (UpdateElement updateElement : find.getModulesForEnable()) {
             expectedNames.remove(updateElement.getCodeName());

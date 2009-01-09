@@ -2,6 +2,7 @@ package org.netbeans.modules.parsing.api;
 
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 public class MyScheduler extends Scheduler {
 
@@ -11,5 +12,10 @@ public class MyScheduler extends Scheduler {
         if (myScheduler == null)
             myScheduler = new MyScheduler ();
         myScheduler.schedule(source, event);
+    }
+
+    @Override
+    protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
+        return new SchedulerEvent (this) {};
     }
 }

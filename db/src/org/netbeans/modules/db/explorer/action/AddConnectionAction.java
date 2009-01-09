@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.action;
 
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 public class AddConnectionAction extends BaseAction {
 
@@ -54,5 +55,10 @@ public class AddConnectionAction extends BaseAction {
 
     public void performAction(Node[] activatedNodes) {
         new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(null, null);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddConnectionAction.class);
     }
 }

@@ -55,6 +55,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -85,7 +86,12 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -134,6 +140,9 @@ public class JaxWsNode extends AbstractNode {
         };
         content.add(cookie);
         setServiceUrl();
+        
+        attachFileChangeListener();
+
     }
 
     private boolean isWebProject() {
@@ -156,7 +165,7 @@ public class JaxWsNode extends AbstractNode {
     public String getShortDescription() {
         return getWsdlURL();
     }
-    
+
     private static final String WAITING_BADGE = "org/netbeans/modules/maven/jaxws/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/maven/jaxws/resources/error-badge.gif"; //NOI18N
     private static final String SERVICE_BADGE = "org/netbeans/modules/maven/jaxws/resources/XMLServiceDataIcon.png"; //NOI18N
@@ -816,4 +825,74 @@ public class JaxWsNode extends AbstractNode {
     protected void fireShortDescriptionChange() {
         setShortDescription(getWsdlURL());
     }
+
+    private void attachFileChangeListener() {
+        implBeanClass.addFileChangeListener(new FileChangeAdapter() {
+
+            @Override
+            public void fileChanged(final FileEvent fe) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        String oldServiceName = service.getServiceName();
+                        final String[] newServiceName = new String[1];
+                        JavaSource javaSource = JavaSource.forFileObject(fe.getFile());
+                        if (javaSource!=null) {
+
+                            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                                public void run(CompilationController controller) throws IOException {
+                                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                                    if (typeElement!=null) {
+                                        // check service name
+                                        newServiceName[0] = getServiceName(controller, typeElement);
+                                    }
+                                }
+                                public void cancel() {}
+                            };
+
+                            try {
+                                javaSource.runUserActionTask(task, true);
+                            } catch (IOException ex) {
+                                ErrorManager.getDefault().notify(ex);
+                            }
+
+                            if (newServiceName[0] == null) {
+                                newServiceName[0] = fe.getFile().getName()+"Service"; // defaultName
+                            }
+
+                            if (!newServiceName[0].equals(oldServiceName)) {
+                                service.setServiceName(newServiceName[0]);
+                                fireDisplayNameChange(oldServiceName, newServiceName[0]);
+                                fireNameChange(oldServiceName, newServiceName[0]);
+                                fireShortDescriptionChange();
+                            }
+
+                        }
+                    }
+                });
+            }
+
+        });
+    }
+
+    private String getServiceName(CompilationController controller, TypeElement classElement) {
+         // check service name
+        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+        if (wsElement != null) {
+            List<? extends AnnotationMirror> annotations = classElement.getAnnotationMirrors();
+
+            for (AnnotationMirror anMirror : annotations) {
+                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                    java.util.Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                    for (java.util.Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                        if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
+                            return (String)expressions.get(entry.getKey()).getValue();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }
