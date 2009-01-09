@@ -848,11 +848,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-<<<<<<< local
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-=======
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context ctx) {
->>>>>>> other
+
             for (Indexable i : deleted) {
                 indexer.expectedDeleted.remove(i.getURL());
             }
