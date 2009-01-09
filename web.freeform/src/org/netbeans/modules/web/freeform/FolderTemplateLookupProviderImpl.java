@@ -41,7 +41,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Milan Kubec
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=500)
+@LookupProvider.Registration(projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=500))
 public class FolderTemplateLookupProviderImpl implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

@@ -57,9 +57,8 @@ import org.openide.util.lookup.Lookups;
 @LookupProvider.Registration(projectType={
     "org-netbeans-modules-maven",
     "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-ant-freeform"
-}, /* for freeform */ position=700)
+    "org-netbeans-modules-web-project"
+}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=700))
 public class HibernateProjectLookupExtender implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

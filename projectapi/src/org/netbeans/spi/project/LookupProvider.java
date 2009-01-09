@@ -70,23 +70,36 @@ public interface LookupProvider {
     Lookup createAdditionalLookup(Lookup baseContext);
 
     /**
-     * annotation to register LookupProvider instances.
+     * Annotation to register LookupProvider instances.
      * @since org.netbeans.modules.projectapi 1.21
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
         /**
-         * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
-         * @return
+         * Token(s) denoting one or more project types, e.g. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
          */
-        String[] projectType();
+        String[] projectType() default {};
         /**
-         * Optional ordering.
-         * <p>Note: this attribute will set the order for <em>all</em> the project types.
-         * If you need to set the order for just one, please file an RFE.
+         * Alternate registration of project types with positions.
+         * You must specify either this or {@link #projectType} (or both).
          */
-        int position() default Integer.MAX_VALUE;
+        ProjectType[] projectTypes() default {};
+        @Retention(RetentionPolicy.SOURCE)
+        @Target({})
+        /**
+         * Alternate individual registration for one project type.
+         */
+        @interface ProjectType {
+            /**
+             * Token denoting project type.
+             */
+            String id();
+            /**
+             * Optional ordering.
+             */
+            int position() default Integer.MAX_VALUE;
+        }
     }
 
 }

@@ -55,10 +55,9 @@ import org.netbeans.spi.project.LookupProvider;
     "org-netbeans-modules-j2ee-earproject",
     "org-netbeans-modules-j2ee-ejbjarproject",
     "org-netbeans-modules-web-project",
-    "org-netbeans-modules-ant-freeform",
      "org-netbeans-modules-apisupport-project",
     "org-netbeans-modules-apisupport-project-suite"
-}, /* for freeform */ position=1200)
+}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=1200))
 public class LookupProviderImpl extends AbstractProjectLookupProvider {
 
     @Override

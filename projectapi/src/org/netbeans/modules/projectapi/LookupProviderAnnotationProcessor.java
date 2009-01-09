@@ -61,15 +61,20 @@ import org.openide.util.lookup.ServiceProvider;
 @SupportedAnnotationTypes("org.netbeans.spi.project.LookupProvider.Registration")
 public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor {
 
-    @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {
             return false;
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(LookupProvider.Registration.class)) {
             LookupProvider.Registration lpr = e.getAnnotation(LookupProvider.Registration.class);
+            if (lpr.projectType().length == 0 && lpr.projectTypes().length == 0) {
+                throw new LayerGenerationException("You must specify either projectType or projectTypes", e);
+            }
             for (String type : lpr.projectType()) {
-                layer(e).instanceFile("Projects/" + type + "/Lookup", null, LookupProvider.class).position(lpr.position()).write();
+                layer(e).instanceFile("Projects/" + type + "/Lookup", null, LookupProvider.class).write();
+            }
+            for (LookupProvider.Registration.ProjectType type : lpr.projectTypes()) {
+                layer(e).instanceFile("Projects/" + type.id() + "/Lookup", null, LookupProvider.class).position(type.position()).write();
             }
         }
         return true;

@@ -82,7 +82,7 @@ import org.w3c.dom.Text;
  *
  * @author mkleint
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=300)
+@LookupProvider.Registration(projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=300))
 public class LookupProviderImpl implements LookupProvider {
 
     private static final String HELP_ID_FRAGMENT = "web"; // NOI18N
