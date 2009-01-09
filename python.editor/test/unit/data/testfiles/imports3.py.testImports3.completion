@@ -58,6 +58,7 @@ KEYWORD    _MozillaCookieJar
 KEYWORD    __builtin__                                
 KEYWORD    __future__                                 
 KEYWORD    __main__                                   
+KEYWORD    _ast                                       
 KEYWORD    _rawffi                                    
 KEYWORD    _strptime                                  
 KEYWORD    _threading_local                           
@@ -114,7 +115,6 @@ KEYWORD    compl2
 KEYWORD    compl3                                     
 KEYWORD    compl4                                     
 KEYWORD    compl5                                     
-KEYWORD    complete-calls                             
 KEYWORD    constants                                  
 KEYWORD    contextlib                                 
 KEYWORD    cookielib                                  
@@ -133,7 +133,6 @@ KEYWORD    dbexts
 KEYWORD    dbhash                                     
 KEYWORD    dbm                                        
 KEYWORD    decimal                                    
-KEYWORD    decorators                                 
 KEYWORD    difflib                                    
 KEYWORD    dircache                                   
 KEYWORD    dis                                        
@@ -224,7 +223,6 @@ KEYWORD    email.parser
 KEYWORD    email.quoprimime                           
 KEYWORD    email.test.test_email_torture              
 KEYWORD    email.utils                                
-KEYWORD    emptydecorators                            
 KEYWORD    encodings                                  
 KEYWORD    encodings.aliases                          
 KEYWORD    encodings.ascii                            
@@ -355,7 +353,6 @@ KEYWORD    ftplib
 KEYWORD    functions                                  
 KEYWORD    functools                                  
 KEYWORD    future_builtins                            
-KEYWORD    futureimport                               
 KEYWORD    gc                                         
 KEYWORD    gdbm                                       
 KEYWORD    gensuitemodule                             
@@ -392,6 +389,7 @@ KEYWORD    isql
 KEYWORD    itertools                                  
 KEYWORD    javapath                                   
 KEYWORD    javashell                                  
+KEYWORD    jreload                                    
 KEYWORD    json                                       
 KEYWORD    keyword                                    
 KEYWORD    lib2to3                                    
@@ -438,7 +436,6 @@ KEYWORD    occurrences2
 KEYWORD    opcode                                     
 KEYWORD    operator                                   
 KEYWORD    optparse                                   
-KEYWORD    org                                        
 KEYWORD    os                                         
 KEYWORD    os.path                                    
 KEYWORD    ossaudiodev                                
@@ -460,7 +457,6 @@ KEYWORD    ---posixfile               ---
 KEYWORD    posixpath                                  
 KEYWORD    pprint                                     
 KEYWORD    profile                                    
-KEYWORD    properties                                 
 KEYWORD    pstats                                     
 KEYWORD    pty                                        
 KEYWORD    pwd                                        
@@ -505,7 +501,6 @@ KEYWORD    stdtypes
 KEYWORD    string                                     
 KEYWORD    ---stringprep              ---             
 KEYWORD    struct                                     
-KEYWORD    stub_missing                               
 KEYWORD    subprocess                                 
 KEYWORD    symbol                                     
 KEYWORD    symtable                                   
@@ -621,8 +616,8 @@ KEYWORD    xml.dom.minicompat
 KEYWORD    xml.dom.minidom                            
 KEYWORD    xml.dom.pulldom                            
 KEYWORD    xml.dom.xmlbuilder                         
+KEYWORD    xml.etree                                  
 KEYWORD    xml.etree.ElementTree                      
-KEYWORD    xml.etree.cElementTree                     
 KEYWORD    xml.parsers.expat                          
 KEYWORD    xml.sax                                    
 KEYWORD    xml.sax._exceptions                        

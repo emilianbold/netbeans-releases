@@ -63,10 +63,8 @@ METHOD     __subclasshook__()
 METHOD     __truediv__(a, b)                          
 METHOD     __trunc__()                                
 METHOD     __xor__(a, b)                              
-ATTRIBUTE  __bases__                                  
 ATTRIBUTE  __class__                                  
 ATTRIBUTE  __dict__                                   
 ATTRIBUTE  __doc__                                    
 ATTRIBUTE  ---__members__             ---             
 ATTRIBUTE  ---__methods__             ---             
-ATTRIBUTE  __name__                                   

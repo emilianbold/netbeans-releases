@@ -246,7 +246,7 @@ public class IndexedElement extends Element {
         if (rhs == null) {
             rhs = module;
             if (rhs.equals("stub_missing")) { // NOI18N
-                rhs = "builtin";
+                rhs = "<i>builtin</i>";
             }
         }
         return rhs;

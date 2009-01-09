@@ -275,6 +275,7 @@ CLASS      EntityResolver
 CLASS      Enum                                       
 CLASS      EnvironmentError                           
 CLASS      EnvironmentError                           
+CLASS      Error                                      
 CLASS      ErrorDuringImport                          
 CLASS      ErrorHandler                               
 CLASS      ErrorPrinter                               
@@ -692,6 +693,7 @@ CLASS      Random
 CLASS      Range                                      
 CLASS      RangeException                             
 CLASS      Rational                                   
+CLASS      RawConfigParser                            
 CLASS      RawIOBase                                  
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
@@ -743,6 +745,7 @@ CLASS      SSLSocket
 CLASS      ST                                         
 CLASS      SafeConfigParser                           
 CLASS      SafeTransport                              
+CLASS      Scanner                                    
 CLASS      Schema                                     
 CLASS      Scope                                      
 CLASS      Screen                                     
@@ -1038,8 +1041,8 @@ CLASS      dispatcher_with_send
 CLASS      dl                                         
 CLASS      error                                      
 CLASS      error_data                                 
-CLASS      error_perm                                 
 CLASS      error_proto                                
+CLASS      error_reply                                
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   

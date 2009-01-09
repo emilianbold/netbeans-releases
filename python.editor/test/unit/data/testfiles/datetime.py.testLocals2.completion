@@ -67,7 +67,6 @@ CLASS      AbstractFunctionCode
 CLASS      AbstractHTTPHandler                        
 CLASS      AbstractWriter                             
 CLASS      Add                                        
-CLASS      AddressList                                
 CLASS      And                                        
 CLASS      Application                                
 CLASS      ArgumentError                              
@@ -314,6 +313,7 @@ CLASS      EntityResolver
 CLASS      Enum                                       
 CLASS      EnvironmentError                           
 CLASS      EnvironmentError                           
+CLASS      Error                                      
 CLASS      ErrorDuringImport                          
 CLASS      ErrorHandler                               
 CLASS      ErrorPrinter                               
@@ -921,6 +921,7 @@ CLASS      TypeError
 CLASS      TypeInfo                                   
 CLASS      UDPServer                                  
 CLASS      URLError                                   
+CLASS      URLopener                                  
 CLASS      UUID                                       
 CLASS      UnaryAdd                                   
 CLASS      UnarySub                                   
@@ -1007,8 +1008,9 @@ CLASS      ZipInfo
 CLASS      _CData                          [PROTECTE  
 CLASS      _FuncPtr                        [PROTECTE  
 CLASS      _SimpleCData                    [PROTECTE  
+CLASS      _date_class                     [PRIVATE]  
 CLASS      _posixfile_                                
-CLASS      _tzinfo_class                   [PRIVATE]  
+CLASS      _time_class                     [PRIVATE]  
 CLASS      array                                      
 CLASS      async_chat                                 
 CLASS      bdist                                      
@@ -1078,7 +1080,9 @@ CLASS      dispatcher_with_send
 CLASS      dl                                         
 CLASS      error                                      
 CLASS      error_data                                 
+CLASS      error_perm                                 
 CLASS      error_proto                                
+CLASS      error_reply                                
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   

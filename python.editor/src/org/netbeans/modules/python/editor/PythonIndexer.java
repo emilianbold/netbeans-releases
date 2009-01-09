@@ -174,7 +174,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public boolean acceptQueryPath(String url) {
-        return true;
+        return url.indexOf("jsstubs") == -1; // NOI18N
     }
 
     public String getPersistentUrl(File file) {
