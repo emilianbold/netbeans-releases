@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.python.editor;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,23 +36,31 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.elements.IndexedMethod;
+import org.netbeans.modules.python.editor.lexer.Call;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -79,6 +88,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
@@ -198,8 +209,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 request.prefix = prefix = "";
             } else {
                 TokenId id = ts.token().id();
+                if (id == PythonTokenId.NEWLINE && ts.offset() == lexOffset && ts.movePrevious()) {
+                    id = ts.token().id();
+                }
                 if (id == PythonTokenId.COMMENT) {
-                    // No completion here at this point... Perhaps if we support epydoc
+                    completeComments(proposals, request, ts);
                     return completionResult;
                 } else if (id == PythonTokenId.STRING_LITERAL || id == PythonTokenId.STRING_END) {
                     // Comment completion - rst tags and such
@@ -353,6 +367,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             // Text is packaged as the name
             String rst = element.getName();
             return RstFormatter.document(rst);
+        } else if (element instanceof SpecifyTypeItem) {
+            SpecifyTypeItem item = (SpecifyTypeItem)element;
+            return NbBundle.getMessage(PythonCodeCompleter.class, "SpecifyTypeHtml", item.call.getLhs());
         }
 
         return RstFormatter.document(info, element);
@@ -710,13 +727,87 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         if (element instanceof IndexedMethod) {
             IndexedMethod method = (IndexedMethod)element;
             item = new PythonMethodItem(method, request);
-            item.setSmart(method.isSmart());
         } else {
             item = new PythonCompletionItem(request, element);
-            item.setSmart(element.isSmart());
         }
+        String name = element.getName();
+        // Internal names should not be shown as smart - don't emphasize these
+        boolean smart = element.isSmart() && !(name.startsWith("__") && name.endsWith("__")); // NOI18N
+
+        item.setSmart(smart);
 
         return item;
+    }
+    
+    private static final String[] BUILTIN_TYPES =
+            new String[]{
+        "str", "StringType",
+        "tuple", "TupleType",
+        "list", "ListType",
+        "dict", "DictType",
+        "int", "IntegerType",
+        "long", "LongType",
+        "float", "FloatType",
+        "bool", "BooleanType",
+        "complex", "ComplexType",
+        "unicode", "UnicodeType",
+        "file", "FileType",
+        "buffer", "BufferType",
+        "xrange", "XRangeType",
+        "slice", "SliceType",
+        "ModuleType", "ModuleType",
+        "MethodType", "MethodType",
+        "None", "NoneType",
+        "object", "ObjectType",
+    };
+
+    private boolean completeComments(List<CompletionProposal> proposals, CompletionRequest request, TokenSequence<? extends PythonTokenId> ts) throws BadLocationException {
+        assert ts.token().id() == PythonTokenId.COMMENT;
+        int offset = request.lexOffset - ts.offset();
+        CharSequence seq = ts.token().text();
+
+        int typeStart = TokenUtilities.indexOf(seq, "@type ", 0); // NOI18N
+        if (typeStart != -1) {
+            int prefixStart = TokenUtilities.lastIndexOf(seq, ' ');
+            if (prefixStart != -1) {
+                prefixStart++; // Skip
+                String prefix = "";
+                if (prefixStart < offset) {
+                    prefix = seq.subSequence(prefixStart, offset).toString();
+                }
+
+                for (int j = 0, n = BUILTIN_TYPES.length; j < n; j += 2) {
+                    String word = BUILTIN_TYPES[j];
+                    String desc = BUILTIN_TYPES[j + 1];
+
+                    if (!word.startsWith(prefix)) {
+                        continue;
+                    }
+
+                    KeywordItem item = new KeywordItem(word, desc, request, Integer.toString(10000 + j));
+                    proposals.add(item);
+                    item.smart = true;
+                }
+
+                PythonIndex index = request.index;
+                Set<IndexedElement> elements = index.getClasses(prefix, request.kind, PythonIndex.ALL_SCOPE, request.result, false);
+                for (IndexedElement element : elements) {
+                    if (element.isNoDoc()) {
+                        continue;
+                    }
+
+                    PythonCompletionItem item = createItem(element, request);
+                    item.setSmart(false);
+                    proposals.add(item);
+                }
+
+                request.completionResult.setFilterable(false);
+            }
+        }
+
+        // No other completions here at this point... Perhaps if we support epydoc
+
+        return true;
     }
 
     /**
@@ -1111,6 +1202,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
             String type = call.getType();
             String lhs = call.getLhs();
+            boolean addSpecifyTypeItem = false;
 
             if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 PythonTree method = PythonAstUtils.getLocalScope(path);
@@ -1120,6 +1212,10 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     // up and do it a bit more cleverly
                     PythonTypeAnalyzer analyzer = new PythonTypeAnalyzer(request.info, index, method, node, astOffset, lexOffset, fileObject);
                     type = analyzer.getType(lhs);
+
+                    if (type == null) {
+                        addSpecifyTypeItem = true;
+                    }
                 }
             }
 
@@ -1255,6 +1351,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             // left hand side because we can't resolve it.
             if ((elements.isEmpty())) {
                 elements = index.getAllMembers(prefix, kind, PythonIndex.ALL_SCOPE, request.result, false);
+
+                if (addSpecifyTypeItem) {
+                    // Add a special code completion item to TELL us the type
+                    proposals.add(new SpecifyTypeItem(request, call, lexOffset));
+                }
             }
 
             for (IndexedElement element : elements) {
@@ -1923,7 +2024,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
             String in = element.getIn();
 
-            if (in != null) {
+            if (in != null) { // NOI18N
                 formatter.appendText(in);
                 return formatter.getText();
             } else if (element instanceof IndexedElement) {
@@ -2196,6 +2297,146 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
     }
 
+    private static class SpecifyTypeItem implements CompletionProposal, ElementHandle, Runnable {
+        CompletionRequest request;
+        private int lexOffset;
+        private Call call;
+
+        private SpecifyTypeItem(CompletionRequest request, Call call, int lexOffset) {
+            this.request = request;
+            this.call = call;
+            this.lexOffset = lexOffset;
+        }
+
+        public String getVariableName() {
+            return call.getLhs();
+        }
+
+        public int getAnchorOffset() {
+            return request.anchor;
+        }
+
+        public ElementHandle getElement() {
+            return this;
+        }
+
+        public String getName() {
+            return "";
+        }
+
+        public String getInsertPrefix() {
+            // Return the prefix to ensure that when the prefix is nonempty we still
+            // show this item first
+            return request.prefix;
+        }
+
+        public String getSortText() {
+            return request.prefix;
+        }
+
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return NbBundle.getMessage(PythonCodeCompleter.class, "SpecifyTypeOf", getVariableName());
+        }
+
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsfret/source/resources/icons/implement-glyph.gif")); // NOI18N
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isSmart() {
+            return true;
+        }
+
+        public int getSortPrioOverride() {
+            // Sort to the very top
+            return -30000;
+        }
+
+        public String getCustomInsertTemplate() {
+            return null;
+        }
+
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        public String getMimeType() {
+            return PythonTokenId.PYTHON_MIME_TYPE;
+        }
+
+        public String getIn() {
+            return null;
+        }
+
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        private void apply() {
+            request.doc.runAtomic(this);
+        }
+
+        public void run() {
+            BaseDocument doc = request.doc;
+            try {
+
+                // Compute the best place to insert the string
+                String var = call.getLhs();
+
+                int indent = 0;
+                int offset = Utilities.getRowFirstNonWhite(doc, lexOffset);
+                if (offset == -1) {
+                    offset = lexOffset;
+                } else {
+                    indent = IndentUtils.lineIndent(doc, IndentUtils.lineStartOffset(doc, offset));
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("# @type "); // NOI18N
+                sb.append(var);
+                sb.append(" "); // NOI18N
+                int typeDelta = sb.length();
+                //sb.append("string"); // NOI18N
+                sb.append("\n"); // NOI18N
+                if (indent > 0) {
+                    sb.append(IndentUtils.createIndentString(doc, indent));
+                }
+
+                doc.insertString(offset, sb.toString(), null); // NOI18N
+
+                final JTextComponent target = GsfUtilities.getPaneFor(request.fileObject);
+                if (target != null) {
+                    target.getCaret().setDot(offset + typeDelta);
+
+                    // Invoke code completion again at the new location!
+                    // Can't do this immediately, or even in an invokeLater -
+                    // the current completion session has to be completely finished
+                    // first.
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            if (target instanceof JEditorPane) {
+                                Completion.get().showCompletion();
+                            }
+                        }
+                    }, 100);
+                }
+            } catch (BadLocationException e) {
+                // Can't update
+            }
+        }
+    }
+
     public class PythonCompletionResult extends DefaultCompletionResult {
         private CodeCompletionContext context;
 
@@ -2205,7 +2446,23 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
+        public boolean insert(CompletionProposal item) {
+            if (item instanceof SpecifyTypeItem) {
+                SpecifyTypeItem specify = (SpecifyTypeItem)item;
+                specify.apply();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
         public void afterInsert(CompletionProposal item) {
+            if (item.getKind() == ElementKind.CALL) {
+                return;
+            }
+
             if (item instanceof PythonCompletionItem) {
                 PythonCompletionItem pythonItem = (PythonCompletionItem)item;
                 org.netbeans.modules.python.editor.lexer.Call call = pythonItem.request.call;

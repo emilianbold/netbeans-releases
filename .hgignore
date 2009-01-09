@@ -207,7 +207,7 @@ derby\.log
 ^uml.kit/test/qa-lib/classes$
 ^performance/uml/test/.*\.sh$
 ^performance/uml/test/qa-functional/src/gui/TempTest\.java$
-^python.editor/external/pythonstubs-2_6.egg$
+^python.editor/external/pythonstubs-.*\.egg$
 ^uml.propertysupport/src/org/netbeans/modules/uml/propertysupport/options/panels/\.JavaPlatformOptionsPanel\.java\.swp$
 ^versioning/clearcase/JavaApplication21/\.hgignore$
 ^versioning/clearcase/JavaApplication21/\.hg$

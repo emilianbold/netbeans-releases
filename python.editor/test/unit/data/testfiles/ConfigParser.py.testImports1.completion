@@ -464,6 +464,7 @@ KEYWORD    ---posixfile               ---
 KEYWORD    posixpath                                  
 KEYWORD    pprint                                     
 KEYWORD    profile                                    
+KEYWORD    properties                                 
 KEYWORD    pstats                                     
 KEYWORD    pty                                        
 KEYWORD    pwd                                        
@@ -508,6 +509,7 @@ KEYWORD    stdtypes
 KEYWORD    string                                     
 KEYWORD    ---stringprep              ---             
 KEYWORD    struct                                     
+KEYWORD    stub_missing                               
 KEYWORD    subprocess                                 
 KEYWORD    symbol                                     
 KEYWORD    symtable                                   

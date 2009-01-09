@@ -1,6 +1,7 @@
 Code completion result for source line:
 unknown.fai|
 (QueryType=COMPLETION, NameKind=PREFIX)
+OTHER      Specify type of <code>unknown<             
 ------------------------------------
 METHOD     fail(msg)                                  
 METHOD     fail(object, name, args)                   
