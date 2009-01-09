@@ -199,15 +199,16 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         }
         if (databindingElement != null) {
             databindingElement.clean(component);
+            databindingElement = null;
         }
-        databindingElement = null;
+        
     }
 
     @Override
     public void setAsText(String text) {
         saveValue(text);
     }
-
+    
     @Override
     public final Component getCustomEditor() {
         if (perElement == null) {
@@ -246,7 +247,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         return superCustomEditor;
     }
 
-    private Map<String, DesignComponent> getComponentsMap() {
+    protected Map<String, DesignComponent> getComponentsMap() {
         final Map<String, DesignComponent> componentsMap = new TreeMap<String, DesignComponent>();
         if (component == null || component.get() == null) {
             return componentsMap;
@@ -293,6 +294,19 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         }
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);
+    }
+
+    private void setValue(PropertyValue value) {
+        super.setValue(value);
+        if (perElement == null) {
+            return;
+        }
+        final DesignComponent component_ = component.get();
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+            perElement.postSetValue(component_, value.getComponent());
+        } else if (NULL_VALUE.equals(value)) {
+            perElement.nullValueSet(component_);
+        }
     }
 
     private void saveValue(String text) {
@@ -446,20 +460,20 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
 
                             public void run() {
                                 if (wrapper.getComponent() != null) {
-                                    // component need to be changed
+                                    // component needs to be changed
                                     Map<String, PropertyValue> changes = wrapper.getChanges();
                                     for (String propertyName : changes.keySet()) {
                                         final PropertyValue propertyValue = changes.get(propertyName);
                                         _component.writeProperty(propertyName, propertyValue);
                                     }
                                 } else {
-                                    // component need to be deleted
+                                    // component needs to be deleted
                                     toBeDeleted.add(_component);
                                 }
                             }
                         });
                     } else {
-                        // component need to be created
+                        // component needs to be created
                         if (wrapper.isDeleted()) {
                             // do not create
                             continue;
@@ -506,6 +520,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             }
             perElement.postSaveValue(component.get());
         }
+        
     }
 
     public JComponent getCustomEditorComponent() {

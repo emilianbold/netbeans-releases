@@ -124,7 +124,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             return ;
         }
 
-        Document doc = parseResult.getSnapshot().getSource().getDocument();
+        Document doc = parseResult.getSnapshot().getSource().getDocument(false);
 
         if (doc == null) {
             Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

@@ -54,17 +54,4 @@ public interface GoalsProvider {
      * @return
      */
     Set<String> getAvailableGoals();
-
-    /**
-     *
-     * @param groupId
-     * @param artifactId
-     * @param version
-     * @return set of arrays,
-     * the first element in array is the property name,
-     * the second element in array is the property expression
-     */
-
-    //TODO remove this and move the whole PluginIndexManager to maven.indexer module
-    public Set<String[]> getPluginPropertyExpression(String groupId, String artifactId, String version, String goal);
 }
