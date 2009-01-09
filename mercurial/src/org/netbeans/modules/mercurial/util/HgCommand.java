@@ -936,7 +936,7 @@ public class HgCommand {
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
-         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+         return getLogMessages(rootUrl, files, HG_STATUS_FLAG_TIP_CMD, "0", true, false, limit, logger);
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
@@ -1518,6 +1518,16 @@ public class HgCommand {
             revStr = from + (headRevInt != -1 ? ":" + headRevInt: "");
         }else if (toInt > -1){
             revStr = "0:" + to;
+        }
+
+        if(revStr == null) {
+            if(to == null) {
+                to = HG_STATUS_FLAG_TIP_CMD;
+            }
+            if(from == null) {
+                from = "0";
+            }
+            revStr = from + ":" + to;
         }
 
         return revStr;
