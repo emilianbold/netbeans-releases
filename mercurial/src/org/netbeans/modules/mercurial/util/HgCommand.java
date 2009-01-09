@@ -925,9 +925,8 @@ public class HgCommand {
 
         return messages.toArray(new HgLogMessage[0]);
     }
-    public static HgLogMessage[] getLogMessages(final String rootUrl,
-            final Set<File> files, String fromRevision, String toRevision,
-            boolean bShowMerges, OutputLogger logger) {
+
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
          return getLogMessages(rootUrl, files, fromRevision, toRevision,
                                 bShowMerges, true, -1, logger);
     }
@@ -936,11 +935,7 @@ public class HgCommand {
          return getLogMessages(rootUrl, files, HG_STATUS_FLAG_TIP_CMD, "0", true, false, limit, logger);
     }
 
-    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
-         return getLogMessages(rootUrl, files, null, null, true, false, -1, logger);
-    }
-
-     public static HgLogMessage[] getLogMessages(final String rootUrl,
+    public static HgLogMessage[] getLogMessages(final String rootUrl,
             final Set<File> files, String fromRevision, String toRevision,
             boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
