@@ -253,7 +253,7 @@ public class JpyDbgView extends TopComponent
   /**
    * termination of current debugging session
    */
-  public synchronized void terminateSession(PythonEvent event) {
+  public void terminateSession(PythonEvent event) {
     _pyContainer.terminateSession();
 
     if (_logger != null) {

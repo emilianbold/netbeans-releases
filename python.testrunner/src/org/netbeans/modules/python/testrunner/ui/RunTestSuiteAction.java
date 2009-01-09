@@ -42,10 +42,8 @@ import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.python.api.FileLocation;
 import org.netbeans.modules.python.editor.PythonDeclarationFinder;
 import org.netbeans.modules.python.project.spi.TestRunner;
-import org.openide.filesystems.FileObject;
 
 /**
  * Action for running all tests in a file.
@@ -61,7 +59,7 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
         this.debug = debug;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    protected void doActionPerformed(ActionEvent e) {
         TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
         //if (TestRunner.TestType.RSPEC == type) {
         //    runRspec();

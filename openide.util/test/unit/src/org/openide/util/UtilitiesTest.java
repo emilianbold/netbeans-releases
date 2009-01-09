@@ -160,6 +160,17 @@ public class UtilitiesTest extends TestCase {
         // XXX stringToKeys, Mac support, various more exotic conditions...
     }
 
+    public void testKeyConversionsPortable() throws Exception {
+        if (Utilities.isMac()) {
+            assertEquals("SD-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.META_MASK), true));
+            assertEquals("SO-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK), true));
+            assertEquals("A-RIGHT", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), true));
+        } else {
+            assertEquals("SD-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK), true));
+            assertEquals("O-RIGHT", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), true));
+        }
+    }
+
     public void testSpecialKeyworksOn14AsWell15 () throws Exception {
         KeyStroke ks = Utilities.stringToKey("C-CONTEXT_MENU");
         assertNotNull ("key stroke created", ks);
@@ -174,7 +185,7 @@ public class UtilitiesTest extends TestCase {
         String s = Utilities.keyToString(ks);
         assertEquals ("Correctly converted", "CONTEXT_MENU", s);
     }
-    
+
     public void testActionsToPopupWithLookup() throws Exception {
         MockServices.setServices(AwtBridgeImpl.class);
         final List<String> commands = new ArrayList<String>();

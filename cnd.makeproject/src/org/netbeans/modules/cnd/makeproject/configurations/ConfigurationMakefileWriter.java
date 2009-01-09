@@ -252,7 +252,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
 
         bw.write("# Macros\n"); // NOI18N
-        bw.write("PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
+        bw.write("CND_PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         bw.write("# Include project Makefile\n"); // NOI18N
@@ -613,7 +613,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public static String getObjectDir(MakeConfiguration conf) {
-        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + "${PLATFORM}"; // UNIX path // NOI18N
+        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + "${CND_PLATFORM}"; // UNIX path // NOI18N
     }
 
     private String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
@@ -700,7 +700,7 @@ public class ConfigurationMakefileWriter {
 
         bw.write("# Macros\n"); // NOI18N
         bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
-        bw.write("PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
+        bw.write("CND_PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
         bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
         bw.write("TMPDIRNAME=" + tmpDirName + "\n"); // NOI18N
         String projectOutput = conf.getOutputValue();

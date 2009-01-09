@@ -419,7 +419,7 @@ public class PackagingConfiguration {
     }
     
     private String getOutputDefault() {
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package"; // NOI18N 
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/package"; // NOI18N 
 //        String outputName = getOutputName();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         

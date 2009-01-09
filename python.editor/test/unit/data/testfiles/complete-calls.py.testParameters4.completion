@@ -4,6 +4,7 @@ y.foo(xyz, b|az)
 CALL       foo(... , param3, ...)                     
 ------------------------------------
 METHOD     basestring()                               
+METHOD     bin(x)                                     
 METHOD     bool(x)                                    
 METHOD     buffer(object, offset, size)               
 KEYWORD    break                                      

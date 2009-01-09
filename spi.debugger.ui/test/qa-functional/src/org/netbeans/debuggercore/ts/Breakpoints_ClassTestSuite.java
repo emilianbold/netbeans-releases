@@ -47,6 +47,7 @@ import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author Peter, Revision Petr Cyhelsky
+ * @TODO fix
  */
 public class Breakpoints_ClassTestSuite extends JellyTestCase {
     

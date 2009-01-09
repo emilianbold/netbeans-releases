@@ -190,7 +190,8 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 FileUtil.toFile(project.getProjectDirectory()),
                 getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
-        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
+        TestRunnerUtilities.addProperties(desc, project);
+        desc.addInitialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();

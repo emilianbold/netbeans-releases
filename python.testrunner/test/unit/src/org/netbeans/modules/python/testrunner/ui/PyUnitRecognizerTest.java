@@ -36,11 +36,11 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.python.testrunner.ui;
 
 import java.util.regex.Matcher;
 import junit.framework.TestCase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
 
 /**
  * Unit test for the PyUnitHandler - adapted from the Test::Unit testcases by
@@ -50,7 +50,6 @@ import junit.framework.TestCase;
  * @author Tor Norbye
  */
 public class PyUnitRecognizerTest extends TestCase {
-    
     public void testTestStarted() {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.TestStartedHandler();
         String output = "%TEST_STARTED% test_foo (TestFooBar)";
@@ -103,14 +102,14 @@ public class PyUnitRecognizerTest extends TestCase {
         String output = "%TEST_FAILED% time=0.007233 testname=test_positive_price (ProductTest) message=<false> is not true. location=./test/unit/product_test.rb:69:in `test_positive_price'";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
-        
+
         assertEquals(5, matcher.groupCount());
         assertEquals("0.007233", matcher.group(1));
         assertEquals("test_positive_price", matcher.group(2));
         assertEquals("ProductTest", matcher.group(3));
         assertEquals("<false> is not true.", matcher.group(4));
         assertEquals("./test/unit/product_test.rb:69:in `test_positive_price'", matcher.group(5));
-        
+
         String outputScientificNotation = "%TEST_FAILED% time=9.8e-07 testname=test_positive_price (ProductTest) message=<false> is not true. location=./test/unit/product_test.rb:69:in `test_positive_price'";
         matcher = handler.match(outputScientificNotation);
         assertTrue(matcher.matches());
@@ -130,22 +129,22 @@ public class PyUnitRecognizerTest extends TestCase {
     }
 
 
-/*
-FAen ta meg!
-%SUITE_STARTING% Other_TestCase
-Joda!
-%TEST_STARTED% test_probably_errs (other_test.Other_TestCase)
-%TEST_ERROR% time=0.000024 testname=test_probably_errs (other_test.Other_TestCase) message=integer division or modulo by zero location=run() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:267%BR%test_probably_errs() in /Users/tor/NetBeansProjects/NewPythonProject44/src/other_test.py:27%BR%
-%TEST_STARTED% test_probably_fails (other_test.Other_TestCase)
-%TEST_FAILED% time=0.000028 testname=test_probably_fails (other_test.Other_TestCase) message=TODO: Write test location=run() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:263%BR%test_probably_fails() in /Users/tor/NetBeansProjects/NewPythonProject44/src/other_test.py:24%BR%fail() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:301%BR%
-%TEST_STARTED% test_should_succeed (other_test.Other_TestCase)
-%TEST_FINISHED% time=0.000013 test_should_succeed (other_test.Other_TestCase)
-%SUITE_FAILURES% 1
-%SUITE_ERRORS% 1
-%SUITE_FINISHED% time=0.0005
+    /*
+    FAen ta meg!
+    %SUITE_STARTING% Other_TestCase
+    Joda!
+    %TEST_STARTED% test_probably_errs (other_test.Other_TestCase)
+    %TEST_ERROR% time=0.000024 testname=test_probably_errs (other_test.Other_TestCase) message=integer division or modulo by zero location=run() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:267%BR%test_probably_errs() in /Users/tor/NetBeansProjects/NewPythonProject44/src/other_test.py:27%BR%
+    %TEST_STARTED% test_probably_fails (other_test.Other_TestCase)
+    %TEST_FAILED% time=0.000028 testname=test_probably_fails (other_test.Other_TestCase) message=TODO: Write test location=run() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:263%BR%test_probably_fails() in /Users/tor/NetBeansProjects/NewPythonProject44/src/other_test.py:24%BR%fail() in /System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:301%BR%
+    %TEST_STARTED% test_should_succeed (other_test.Other_TestCase)
+    %TEST_FINISHED% time=0.000013 test_should_succeed (other_test.Other_TestCase)
+    %SUITE_FAILURES% 1
+    %SUITE_ERRORS% 1
+    %SUITE_FINISHED% time=0.0005
 
 
- */
+     */
     public void testTestError() {
         PyUnitHandlerFactory.TestErrorHandler handler = new PyUnitHandlerFactory.TestErrorHandler();
 
@@ -154,13 +153,13 @@ Joda!
 
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
-        
+
         assertEquals(5, matcher.groupCount());
         assertEquals("0.000024", matcher.group(1));
         assertEquals("test_probably_errs", matcher.group(2));
         assertEquals("other_test.Other_TestCase", matcher.group(3));
         assertEquals("integer division or modulo by zero", matcher.group(4));
-        
+
         String[] stackTrace = PyUnitHandlerFactory.getStackTrace(matcher.group(4), matcher.group(5));
         assertEquals(3, stackTrace.length);
         assertEquals("integer division or modulo by zero", stackTrace[0]);
@@ -173,28 +172,28 @@ Joda!
         String output = "%SUITE_FINISHED% time=0.124";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
-        
+
         assertEquals(1, matcher.groupCount());
         assertEquals("0.124", matcher.group(1));
     }
-    
+
     public void testSuiteFinished2() {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.SuiteFinishedHandler();
         String output = "%SUITE_FINISHED% time=8.4e-05";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
-        
+
         assertEquals(1, matcher.groupCount());
         assertEquals("8.4e-05", matcher.group(1));
     }
-    
+
     public void testSuiteStarted() {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.SuiteStartedHandler();
         String output = "%SUITE_STARTED% 0 tests, 0 assertions, 0 failures, 0 errors";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
     }
-    
+
     public void testSuiteStarting() throws InterruptedException {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.SuiteStartingHandler();
         String output = "%SUITE_STARTING% TestMe";
@@ -228,7 +227,7 @@ Joda!
         assertEquals("FINE", matcher.group(1));
         assertEquals("Loading 3 files took 12.345", matcher.group(2));
     }
-    
+
     public void testIssue143508TestStarted() {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.TestStartedHandler();
         String output = "%TEST_STARTED% test_foo (FooTest)\\n";
@@ -237,7 +236,7 @@ Joda!
         assertEquals(2, matcher.groupCount());
         assertEquals("test_foo", matcher.group(1));
         assertEquals("FooTest", matcher.group(2));
-    } 
+    }
 
     public void testIssue143508TestFinished() {
         TestRecognizerHandler handler = new PyUnitHandlerFactory.TestFinishedHandler();
@@ -250,4 +249,17 @@ Joda!
         assertEquals("FooTest", matcher.group(3));
     }
 
+    public void testExtractDiff1() {
+        ComparisonFailure failure = PyUnitHandlerFactory.getComparisonFailure("'foo\nbar\nbaz' != 'foo\nbr\nbazz'");
+        assertNotNull(failure);
+        assertEquals("'foo\nbar\nbaz'", failure.getExpected());
+        assertEquals("'foo\nbr\nbazz'", failure.getActual());
+    }
+
+    public void testExtractDiff2() {
+        ComparisonFailure failure = PyUnitHandlerFactory.getComparisonFailure("Expected 265252859812191058636308480000000L but got 132626429906095529318154240000000L");
+        assertNotNull(failure);
+        assertEquals("265252859812191058636308480000000L", failure.getExpected());
+        assertEquals("132626429906095529318154240000000L", failure.getActual());
+    }
 }

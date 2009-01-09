@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
@@ -72,15 +73,6 @@ public class GoalsProviderImpl implements GoalsProvider {
             Exceptions.printStackTrace(ex);
         }
         return Collections.<String>emptySet();
-    }
-
-    public Set<String[]> getPluginPropertyExpression(String groupId, String artifactId, String version, String goal) {
-        try {
-            return PluginIndexManager.getPluginParameterExpressions(groupId, artifactId, version, goal);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.<String[]>emptySet();
     }
 
 }

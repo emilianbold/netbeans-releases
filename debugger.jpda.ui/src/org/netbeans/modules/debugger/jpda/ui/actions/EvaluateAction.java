@@ -53,7 +53,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.debugger.jpda.ui.Evaluator2;
+import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,15 +68,15 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
     private transient Reference lastDebuggerRef = new WeakReference(null);
 
     public EvaluateAction () {
-        listener = new EnableListener (this);
-        DebuggerManager.getDebuggerManager().addDebuggerListener(
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                listener);
+//        listener = new EnableListener (this);
+//        DebuggerManager.getDebuggerManager().addDebuggerListener(
+//                DebuggerManager.PROP_CURRENT_ENGINE,
+//                listener);
         putValue (
             Action.NAME,
             NbBundle.getMessage(EvaluateAction.class, "CTL_Evaluate") // NOI18N
         );
-        checkEnabled();
+//        checkEnabled();
     }
 
     private synchronized boolean canBeEnabled() {
@@ -110,11 +110,14 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
     }
 
     public void actionPerformed (ActionEvent evt) {
-        DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (de == null) return ;
-        JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
-        if (debugger == null) return ;
-        Evaluator2.open(debugger);
+//        DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
+//        if (de == null) return;
+//        JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
+//        if (debugger == null) return;
+
+        CodeEvaluator.openEvaluator();
+
+        // Evaluator2.open(debugger);
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -132,9 +135,9 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
 
     @Override
     protected void finalize() throws Throwable {
-        DebuggerManager.getDebuggerManager().removeDebuggerListener(
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                listener);
+//        DebuggerManager.getDebuggerManager().removeDebuggerListener(
+//                DebuggerManager.PROP_CURRENT_ENGINE,
+//                listener);
     }
 
 
