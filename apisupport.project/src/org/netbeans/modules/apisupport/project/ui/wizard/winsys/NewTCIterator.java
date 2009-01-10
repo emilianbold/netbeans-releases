@@ -185,6 +185,14 @@ final class NewTCIterator extends BasicWizardIterator {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
             actionLessTC = false;
         }
+        boolean propertiesPersistence;
+        try {
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.netbeans.modules.settings");
+            propertiesPersistence = current.compareTo(new SpecificationVersion("1.18")) >= 0; // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
+            propertiesPersistence = false;
+        }
 
         
         Map<String,String> replaceTokens = new HashMap<String,String>();
@@ -233,11 +241,16 @@ final class NewTCIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.jdesktop.layout")); //NOI18N
+        if (propertiesPersistence) {
+            fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.settings")); //NOI18N
+        }
         
         // x. generate java classes
         final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.java"); //NOI18N
-        FileObject template = CreatedModifiedFiles.getTemplate("templateTopComponent.java");//NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate(
+            propertiesPersistence ? "templateTopComponentAnno.java" : "templateTopComponent.java" //NOI18N
+        );
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
         // x. generate java classes
         final String tcFormName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,

@@ -21,4 +21,12 @@
         <attr name="value1" stringvalue="Ahoj1"/>
         <attr name="testLoc" bundlevalue="org.openide.filesystems.data.TestBundle#AHOJ"/>
     </folder>
+    <folder name="peer">
+        <file name="base">
+            <attr name="testPeer" newvalue="org.openide.filesystems.XMLFileSystemTestHid$Data"/>
+        </file>
+        <file name="snd">
+            <attr name="testPeer" methodvalue="org.openide.filesystems.XMLFileSystemTestHid.getFO"/>
+        </file>
+    </folder>
 </filesystem>

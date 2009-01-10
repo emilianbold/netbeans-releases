@@ -42,9 +42,9 @@
 package org.openide.filesystems;
 
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.net.URL;
-import junit.framework.*;
-import java.io.*;
+import junit.framework.Test;
 import org.netbeans.junit.*;
 
 /**
@@ -52,11 +52,11 @@ import org.netbeans.junit.*;
  * @author  rm111737
  * @version
  */
-public class XMLFileSystemTest extends FileSystemFactoryHid
+public class MultiFileSystemXMLTest extends FileSystemFactoryHid
 implements XMLFileSystemTestHid.Factory {
 
     /** Creates new XMLFileSystemTest */
-    public XMLFileSystemTest(Test test) {
+    public MultiFileSystemXMLTest(Test test) {
         super(test);
     }
 
@@ -66,29 +66,29 @@ implements XMLFileSystemTestHid.Factory {
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(XMLFileSystemTestHid.class);        
                 
-        return new XMLFileSystemTest(suite);
+        return new MultiFileSystemXMLTest(suite);
     }
 
     protected void destroyFileSystem(String testName) throws IOException {}
     
-    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException{
+    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         return new FileSystem[] {TestUtilHid.createXMLFileSystem(testName, resources)};
     }
 
     public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
-        XMLFileSystem xfs = new XMLFileSystem();
+        MFS mfs = new MFS();
         try {
-            xfs.setXmlUrls(layers);
+            mfs.xfs.setXmlUrls(layers);
         } catch (PropertyVetoException ex) {
             throw (IOException)new IOException().initCause(ex);
         }
-        return xfs;
+        return mfs;
     }
 
     public boolean setXmlUrl(org.openide.filesystems.FileSystem fs, URL[] layers) throws IOException {
-        XMLFileSystem xfs = (XMLFileSystem)fs;
+        MFS mfs = (MFS)fs;
         try {
-            xfs.setXmlUrls(layers);
+            mfs.xfs.setXmlUrls(layers);
         } catch (PropertyVetoException ex) {
             throw (IOException)new IOException().initCause(ex);
         }
@@ -96,5 +96,15 @@ implements XMLFileSystemTestHid.Factory {
     }
     
 
-    
+    private static final class MFS extends MultiFileSystem {
+        private XMLFileSystem xfs;
+        public MFS() {
+            this(new XMLFileSystem());
+        }
+
+        private MFS(XMLFileSystem fs) {
+            super(new FileSystem[] { fs });
+            this.xfs = fs;
+        }
+    }
 }
