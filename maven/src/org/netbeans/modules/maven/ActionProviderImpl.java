@@ -56,6 +56,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -240,7 +241,10 @@ public class ActionProviderImpl implements ActionProvider {
 //                NbMavenProject.fireMavenProjectReload(project);
                 RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
                 if (info != null) {
-                    RepositoryIndexer.updateIndexWithArtifacts(info, project.getOriginalMavenProject().getDependencyArtifacts());
+                    List<Artifact> arts = new ArrayList<Artifact>();
+                    arts.add(project.getOriginalMavenProject().getArtifact());
+                    arts.addAll(project.getOriginalMavenProject().getDependencyArtifacts());
+                    RepositoryIndexer.updateIndexWithArtifacts(info, arts);
                 }
             }
         });

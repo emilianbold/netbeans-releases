@@ -60,7 +60,9 @@ import org.openide.nodes.Node;
  * @author mkuchtiak
  */
 public class MavenWebService implements WebServiceImplementation {
-
+    public static final String CLIENT_PREFIX = "_C_"; //NOI18N
+    public static final String SERVICE_PREFIX = "_S_"; //NOI18N
+    
     private JaxWsService service;
     private Project prj;
 

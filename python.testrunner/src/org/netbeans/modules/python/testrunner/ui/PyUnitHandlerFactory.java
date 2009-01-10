@@ -44,11 +44,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.netbeans.modules.python.project.spi.TestRunner.TestType;
 import org.netbeans.modules.python.testrunner.PyUnitRunner;
 import org.openide.util.NbBundle;
@@ -105,8 +108,43 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
         return stackTraceList.toArray(new String[stackTraceList.size()]);
     }
 
-    static class TestFailedHandler extends TestRecognizerHandler {
+    // Doctest message defined in nb_test_runner.py, the other one is from unittest
+    private static final Pattern STRING_COMPARISON = Pattern.compile("(Expected (.+) but got (.+))|((.+) != (.+))", Pattern.DOTALL); // NOI18N
 
+    // Package private for tests
+    static Trouble.ComparisonFailure getComparisonFailure(String msg) {
+        Matcher comparisonMatcher = STRING_COMPARISON.matcher(msg);
+        if (!comparisonMatcher.matches()) {
+            return null;
+        }
+        String expected;
+        String actual;
+
+        boolean isDocTest = false;
+        expected = comparisonMatcher.group(2);
+        if (expected == null) {
+            expected = comparisonMatcher.group(5);
+            actual = comparisonMatcher.group(6);
+        } else {
+            isDocTest = true;
+            actual = comparisonMatcher.group(3);
+        }
+
+        // Convert back to multiline strings, if applicable
+        expected = expected.replace("\\n", "\n"); // NOI18N
+        actual = actual.replace("\\n", "\n"); // NOI18N
+
+        if (isDocTest) {
+            // We know the doc test output is in python console format which generally
+            // can be highlighted by the python lexer (for string literals, etc.)
+            return new Trouble.ComparisonFailure(expected, actual, PythonTokenId.PYTHON_MIME_TYPE);
+        } else {
+            return new Trouble.ComparisonFailure(expected, actual);
+        }
+    }
+
+
+    static class TestFailedHandler extends TestRecognizerHandler {
         private List<String> output;
 
         public TestFailedHandler(String regex) {
@@ -127,6 +165,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
             String message = matcher.group(4).replace("%BR%", "\n");
             String location = matcher.group(5);
             testcase.getTrouble().setStackTrace(getStackTrace(message, location));
+            testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
 
             session.addTestCase(testcase);
 

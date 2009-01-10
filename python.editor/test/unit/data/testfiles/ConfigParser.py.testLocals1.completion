@@ -5,6 +5,7 @@ VARIABLE   section
 VARIABLE   self                                       
 ------------------------------------
 CLASS      set                                        
+CLASS      str                                        
 METHOD     set(iterable)                              
 METHOD     setattr(object, name, value)               
 METHOD     slice(start, stop, step)                   

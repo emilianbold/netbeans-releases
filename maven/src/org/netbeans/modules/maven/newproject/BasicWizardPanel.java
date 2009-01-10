@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -59,19 +60,34 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     
     private WizardDescriptor wizardDescriptor;
     private BasicPanelVisual component;
-    private boolean webAppWizard;
+
+    private final String[] eeLevels;
+    private final Archetype[] archs;
     
     /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(boolean webAppWizard) {
-        this.webAppWizard = webAppWizard;
+    public BasicWizardPanel(String[] eeLevels, Archetype[] archs) {
+        this.archs = archs;
+        this.eeLevels = eeLevels;
+    }
+
+    public BasicWizardPanel() {
+        this(new String[0], null);
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new BasicPanelVisual(this, webAppWizard);
+            component = new BasicPanelVisual(this);
             component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
         }
         return component;
+    }
+
+    Archetype[] getArchetypes() {
+        return archs;
+    }
+
+    String[] getEELevels() {
+        return eeLevels;
     }
     
     public HelpCtx getHelp() {

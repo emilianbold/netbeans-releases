@@ -53,12 +53,12 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.actions.AddToIndexDDL;
 import org.netbeans.modules.db.explorer.dlg.LabeledComboDialog;
 import org.netbeans.modules.db.explorer.node.IndexNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
@@ -86,6 +86,11 @@ public class AddToIndexAction extends BaseAction {
         }
 
         return enabled;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddToIndexAction.class);
     }
 
     @Override

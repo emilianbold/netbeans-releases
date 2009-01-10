@@ -30,13 +30,16 @@ package org.netbeans.modules.python.editor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.lexer.TokenSequence;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.python.antlr.PythonTree;
-import org.python.antlr.Visitor;
 import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.List;
@@ -55,6 +58,7 @@ import org.python.antlr.base.expr;
  * @author Tor Norbye
  */
 public class PythonTypeAnalyzer {
+    private static final Pattern TYPE_DECLARATION = Pattern.compile("\\s*#\\s*@type\\s+(\\S+)\\s+(\\S+).*"); // NOI18N
     private PythonIndex index;
     /** Map from variable or field(etc) name to type. */
     private Map<String, String> localVars;
@@ -89,9 +93,10 @@ public class PythonTypeAnalyzer {
 //    }
     private final class TypeVisitor extends VisitorBase<String> {
         private int targetAstOffset;
-        private Map<String, String> localVars = new HashMap<String, String>();
+        private Map<String, String> localVars;
 
-        TypeVisitor(int targetAstOffset) {
+        TypeVisitor(Map<String, String> localVars, int targetAstOffset) {
+            this.localVars = localVars;
             this.targetAstOffset = targetAstOffset;
         }
 
@@ -118,22 +123,22 @@ public class PythonTypeAnalyzer {
 
         @Override
         public String visitStr(Str str) throws Exception {
-            return "String"; // NOI18N
+            return "str"; // NOI18N
         }
 
         @Override
         public String visitNum(Num node) throws Exception {
-            return "Number"; // NOI18N
+            return "int"; // NOI18N
         }
 
         @Override
         public String visitTuple(Tuple node) throws Exception {
-            return "Tuple"; // NOI18N
+            return "tuple"; // NOI18N
         }
 
         @Override
         public String visitList(List node) throws Exception {
-            return "List"; // NOI18N
+            return "list"; // NOI18N
         }
 
         // ListComp?
@@ -203,20 +208,67 @@ public class PythonTypeAnalyzer {
 
             return null;
         }
-
-        private Map<String, String> getLocalVars() {
-            return localVars;
-        }
     }
 
     private void init() {
         if (localVars == null) {
             startTime = System.currentTimeMillis();
+            localVars = new HashMap<String, String>();
 
-            TypeVisitor visitor = new TypeVisitor(astOffset);
+            if (info != null && root != null) {
+                // Look for type annotations
+                BaseDocument doc = (BaseDocument)info.getDocument();
+                if (doc != null) {
+                    OffsetRange range = PythonLexerUtils.getLexerOffsets(info, PythonAstUtils.getRange(root));
+                    if (range != OffsetRange.NONE) {
+                        try {
+                            doc.readLock();
+                            int start = Math.min(doc.getLength(), range.getStart());
+                            int length = Math.min(range.getLength(), doc.getLength() - start);
+                            String code = doc.getText(start, length);
+                            int next = 0;
+                            while (true) {
+                                int idx = code.indexOf("@type ", next);
+                                if (idx == -1) {
+                                    break;
+                                }
+                                int lineBegin = idx;
+                                for (; lineBegin >= 0; lineBegin--) {
+                                    if (code.charAt(lineBegin) == '\n') {
+                                        break;
+                                    }
+                                }
+                                lineBegin++;
+
+                                int lineEnd = idx;
+                                for (; lineEnd < code.length(); lineEnd++) {
+                                    if (code.charAt(lineEnd) == '\n') {
+                                        break;
+                                    }
+                                }
+
+                                Matcher matcher = TYPE_DECLARATION.matcher(code.substring(lineBegin, lineEnd));
+                                if (matcher.matches()) {
+                                    String var = matcher.group(1);
+                                    String type = matcher.group(2);
+                                    localVars.put(var, type);
+                                }
+
+                                next = lineEnd + 1;
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            doc.readUnlock();
+                        }
+                    }
+                }
+            }
+
+
+            TypeVisitor visitor = new TypeVisitor(localVars, astOffset);
             try {
                 visitor.visit(root);
-                localVars = visitor.getLocalVars();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
                 localVars = Collections.emptyMap();

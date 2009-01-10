@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 /**
  *
@@ -70,7 +71,10 @@ public class ValidationOutputWindowController {
      * @param  model  the model to validate.
      */
     public List<ResultItem> validate(Model model) {
-        
+        return validate(model, null);
+    }
+
+    public List<ResultItem> validate(Model model, ResultType type) {
         // Ensure the model is in sync.
         if (model!=null && !model.inSync()) {
             try {
@@ -80,16 +84,23 @@ public class ValidationOutputWindowController {
                 // and report it to the user.
             }
         }
-        
+
         Validation validation = new Validation();
         validation.validate(model, ValidationType.COMPLETE);
         List<ResultItem> validationResult = validation.getValidationResult();
-        printGuidanceInformation(validationResult);
-        
-        return validationResult;
+        if(type == null) {
+            printGuidanceInformation(validationResult);
+            return validationResult;
+        }
+            
+        List<ResultItem> results = new java.util.ArrayList<ResultItem>();
+        for(ResultItem item : validationResult) {
+            if(item.getType() == type)
+                results.add(item);
+        }
+        printGuidanceInformation(results);
+        return results;
     }
-    
-    
     
     private void printGuidanceInformation(List<ResultItem> guidanceInformation) {
         ValidationOutputWindow guidanceOutputWindow = new ValidationOutputWindow();

@@ -80,19 +80,19 @@ public interface PortComponentHandler extends org.netbeans.modules.j2ee.dd.api.c
 
 	public InitParam newInitParam();
 
-	public void setSoapHeader(int index, org.netbeans.modules.schema2beans.QName value);
+	public void setSoapHeader(int index, javax.xml.namespace.QName value);
 
-	public org.netbeans.modules.schema2beans.QName getSoapHeader(int index);
+	public javax.xml.namespace.QName getSoapHeader(int index);
 
 	public int sizeSoapHeader();
 
-	public void setSoapHeader(org.netbeans.modules.schema2beans.QName[] value);
+	public void setSoapHeader(javax.xml.namespace.QName[] value);
 
-	public org.netbeans.modules.schema2beans.QName[] getSoapHeader();
+	public javax.xml.namespace.QName[] getSoapHeader();
 
-	public int addSoapHeader(org.netbeans.modules.schema2beans.QName value);
+	public int addSoapHeader(javax.xml.namespace.QName value);
 
-	public int removeSoapHeader(org.netbeans.modules.schema2beans.QName value);
+	public int removeSoapHeader(javax.xml.namespace.QName value);
 
 	public void setSoapHeaderId(int index, java.lang.String value);
 

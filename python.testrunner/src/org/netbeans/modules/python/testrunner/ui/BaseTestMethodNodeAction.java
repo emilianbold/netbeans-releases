@@ -41,13 +41,9 @@ package org.netbeans.modules.python.testrunner.ui;
 
 import java.util.Collection;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestNodeAction;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.python.api.FileLocation;
-import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.project.PythonProject;
 import org.netbeans.modules.python.project.spi.TestRunner;
 import org.openide.filesystems.FileObject;
@@ -58,7 +54,7 @@ import org.openide.util.Lookup;
  *
  * @author Erno Mononen
  */
-abstract class BaseTestMethodNodeAction extends AbstractAction {
+abstract class BaseTestMethodNodeAction extends TestNodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(BaseTestMethodNodeAction.class.getName());
 
