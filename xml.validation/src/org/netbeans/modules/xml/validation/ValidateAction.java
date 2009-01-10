@@ -52,10 +52,10 @@ import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -78,8 +78,8 @@ public class ValidateAction extends AbstractAction {
     
     
     public ValidateAction(Model model) {
-        super(label, icon); 
-	putValue(NAME, label);
+        super(label, icon);
+        putValue(NAME, label);
         putValue(SHORT_DESCRIPTION, label);
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(ACCELERATOR));
         this.model = model;
@@ -104,8 +104,17 @@ public class ValidateAction extends AbstractAction {
             } catch(IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
+
+            String extension = "XML"; //NOI18N
+            try {
+                FileObject file = model.getModelSource().getLookup().lookup(FileObject.class);
+                extension = file.getExt().toUpperCase();
+            } catch (Exception ex) {
+                //if fails, it'll be XML
+            }
+
             io.getOut().println(NbBundle.getMessage(
-                    ValidateAction.class,"MSG_XML_valid_start"));
+                    ValidateAction.class,"MSG_XML_valid_start", extension));
             io.select();
             
             ValidationOutputWindowController validationController =
@@ -113,7 +122,7 @@ public class ValidateAction extends AbstractAction {
             validationResults = validationController.validate(model);
             
             io.getOut().print(NbBundle.getMessage(
-                    ValidateAction.class,"MSG_XML_valid_end"));
+                    ValidateAction.class, "MSG_XML_valid_end", extension));
             io.select();
         }
         
