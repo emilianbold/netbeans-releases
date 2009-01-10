@@ -117,8 +117,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "Templates/JSP_Servlet/Servlet.java",       // NOI18N
                 "Templates/Classes/Class.java",             // NOI18N
                 "Templates/Classes/Package",                // NOI18N
-//                "Templates/WebServices/WebService",         // NOI18N
-//                "Templates/WebServices/WebServiceClient",   // NOI18N
+                "Templates/WebServices/WebService",         // NOI18N
+                "Templates/WebServices/WebServiceClient",   // NOI18N
                 "Templates/Other/Folder",                   // NOI18N
     };
     

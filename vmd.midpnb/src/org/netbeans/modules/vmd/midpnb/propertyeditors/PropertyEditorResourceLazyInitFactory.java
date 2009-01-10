@@ -38,7 +38,19 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
@@ -47,7 +59,11 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTas
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGWaitScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.table.TableModelEditorElement;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +73,7 @@ import org.openide.util.NbBundle;
 public class PropertyEditorResourceLazyInitFactory {
 
     public static final DesignPropertyEditor createTaskPropertyEditor() {
-        return new PropertyEditorResourceLazyInit( SimpleCancellableTaskCD.TYPEID,
+        return new PropertyEditorResourceLazyInit(SimpleCancellableTaskCD.TYPEID,
                 NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
                 NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE"), // NOI18N
                 NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_UCLABEL"), // NOI18N
@@ -71,7 +87,7 @@ public class PropertyEditorResourceLazyInitFactory {
     }
 
     public static final DesignPropertyEditor createSVGTaskPropertyEditor() {
-        return new PropertyEditorResourceLazyInit( SimpleCancellableTaskCD.TYPEID,
+        return new PropertyEditorResourceLazyInit(SimpleCancellableTaskCD.TYPEID,
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE"), // NOI18N
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_UCLABEL"), //NOI18N
@@ -99,7 +115,7 @@ public class PropertyEditorResourceLazyInitFactory {
     }
 
     public static final DesignPropertyEditor createSVGFormPropertyEditor() {
-        return new PropertyEditorResourceLazyInit( SVGImageCD.TYPEID,
+        return new PropertyEditorResourceLazyInit(SVGImageCD.TYPEID,
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
                 NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL"), //NOI18N
@@ -107,7 +123,103 @@ public class PropertyEditorResourceLazyInitFactory {
 
             @Override
             protected PropertyEditorResourceElement createElement() {
+
                 return new SVGFormEditorElement();
+            }
+
+            @Override
+            public void setAsText(final String text) {
+                super.setAsText(text);
+                final DesignComponent parentComponent = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
+                final FileObject[] svgImageFileObject = new FileObject[1];
+                final Boolean[] parseIt = new Boolean[1];
+                parseIt[0] = Boolean.TRUE;
+                parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        DesignComponent childComponent = getComponentsMap().get(text);
+                        if (childComponent == null) {
+                            return;
+                        }
+                        PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+                        if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+                            //String svgImagePath = MidpTypes.getString(propertyValue);
+                            Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
+                            Iterator<FileObject> iterator = images.keySet().iterator();
+                            svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
+                            parseIt[0] = Boolean.TRUE;
+                        }
+                        DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+                        if (oldComponent == childComponent && svgImageFileObject[0] != null) {
+                            parseIt[0] = Boolean.FALSE;
+                        }
+                    }
+                });
+                nullValueSet(parentComponent);
+                FileObject imageFO = svgImageFileObject[0];
+                if (imageFO == null) {
+                    return;
+                }
+                final SVGComponentImageParser[] svgComponentImageParser = new SVGComponentImageParser[1];
+                parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        svgComponentImageParser[0] = SVGComponentImageParser.getParserByComponent(parentComponent);
+                    }
+                });
+
+                SVGComponentImageParser parser = svgComponentImageParser[0];
+                if (parser == null) {
+                    return;
+                }
+                InputStream inputStream = null;
+                try {
+                    inputStream = imageFO.getInputStream();
+                    if (inputStream != null) {
+                        parser.parse(inputStream, parentComponent);
+                    }
+                } catch (FileNotFoundException ex) {
+                    Debug.warning(ex);
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException ioe) {
+                            Debug.warning(ioe);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void customEditorOKButtonPressed() {
+                super.customEditorOKButtonPressed();
+                if (getValue() instanceof PropertyValue) {
+                    PropertyValue propertyValue = (PropertyValue) getValue();
+                    final DesignComponent component_ = propertyValue.getComponent();
+                    if (component_ == null) {
+                        return;
+                    }
+                    final String instanceNamme[] = new String[1];
+                    component_.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                        public void run() {
+                            instanceNamme[0] = (String) component_.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
+                        }
+                    });
+                    //setAsText(instanceNamme[0]);
+                }
+
+            }
+
+            private void nullValueSet(final DesignComponent svgForm) {
+                svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                    public void run() {
+                        SVGFormSupport.removeAllSVGFormComponents(svgForm);
+                        svgForm.resetToDefault(SVGFormCD.PROP_SVG_IMAGE);
+                    }
+                });
             }
         };
     }
@@ -125,5 +237,4 @@ public class PropertyEditorResourceLazyInitFactory {
             }
         };
     }
-
 }

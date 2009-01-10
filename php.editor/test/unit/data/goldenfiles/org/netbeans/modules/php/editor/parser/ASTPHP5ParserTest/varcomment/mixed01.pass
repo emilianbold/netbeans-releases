@@ -1,8 +1,5 @@
 <testresult testFile='mixed01.php'>
     <scanner>
-        <token id='T_VAR_COMMENT' start='6' end='35'>
-            <text>/* @var $hello person|user */</text>
-        </token>
         <token id='T_VARIABLE' start='36' end='42'>
             <text>$hello</text>
         </token>

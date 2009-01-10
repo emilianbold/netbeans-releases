@@ -317,6 +317,9 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
             int end = Utilities.getRowEnd(doc, offset)+1;
+            if (begin == -1) {
+                begin = end;
+            }
             String line = doc.getText(begin, end-begin);
             boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
             if (isBlockStart || line.startsWith("*")) {

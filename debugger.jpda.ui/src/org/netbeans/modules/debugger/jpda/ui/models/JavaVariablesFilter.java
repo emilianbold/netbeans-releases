@@ -134,6 +134,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             ObjectVariable ov = (ObjectVariable) variable;
             JPDAClassType ct = ov.getClassType();
 
+            if (ct == null) {
+                return original.getChildren (variable, from, to);
+            }
+
             if (isToArrayType (ct)) {
                 try {
                     ov = (ObjectVariable) ov.invokeMethod (
@@ -418,6 +422,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
     }
 
     private static boolean isInstanceOf(JPDAClassType ct, String className) {
+        if (ct == null) return false;
         try {
             java.lang.reflect.Method isInstanceOfMethod = ct.getClass().getMethod("isInstanceOf", String.class);
             return (Boolean) isInstanceOfMethod.invoke(ct, className);

@@ -263,7 +263,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         // UI stuff
         setAllEnabled(true);
         setText(_pathText[0]);
-        updateSVGComponentsList();
+        //updateSVGComponentsList();
     }
 
     @Override
@@ -316,10 +316,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
+                //System.out.println("-----");
                 for (int i = 0; i < model.getRowCount(); i++) {
                     String id = (String) model.getValueAt(i, 1);
+                    //System.out.println("Model - " + (String) model.getValueAt(i, 1));
                     for (DesignComponent component : SVGFormSupport.getSVGFormComponents(svgForm)) {
                         if (component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue().equals(id)) {
+                            //System.out.println(id + component.getComponentID());
                             orderdList.add(i, PropertyValue.createComponentReference(component));
                             break;
                         }

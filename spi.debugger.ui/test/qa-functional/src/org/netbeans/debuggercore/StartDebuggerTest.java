@@ -104,6 +104,7 @@ public class StartDebuggerTest extends JellyTestCase {
                 System.err.println(t.getMessage());
             }
             new DebugProjectAction().perform(projectNode);
+            new EventTool().waitNoEvent(500);
             Utilities.getDebugToolbar().waitComponentVisible(true);
             assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
             Utilities.waitStatusText(Utilities.runningStatusBarText);
@@ -139,6 +140,7 @@ public class StartDebuggerTest extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             new EventTool().waitNoEvent(500);
             Utilities.setCaret(eo, 75);
+            new EventTool().waitNoEvent(1000);
             new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
             assertTrue("Current PC annotation is not on line 39", Utilities.checkAnnotation(eo, 39, "CurrentPC"));

@@ -53,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
@@ -450,9 +451,9 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             if (wsdlUrl == null) {
                 if (wsdlFileObject != null) {
                     Project project = FileOwnerQuery.getOwner(wsdlFileObject);
-                    Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                    Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
                     if (prefs != null) {
-                        wsdlUrl = prefs.get(wsdlFileObject.getName(), null);
+                        wsdlUrl = prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFileObject.getName(), null);
                         if (wsdlUrl != null) {
                             client.setWsdlUrl(wsdlUrl);
                         }
@@ -504,10 +505,10 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                             if (wsdlUrlChanged) {
                                 wsdlUrl = newWsdlUrl;
                                 client.setWsdlUrl(wsdlUrl);
-                                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
                                 if (prefs != null) {
-                                    prefs.remove(wsdlFileObject.getName());
-                                    prefs.put(wsdlFo.getName(), wsdlUrl);
+                                    prefs.remove(MavenWebService.CLIENT_PREFIX+wsdlFileObject.getName());
+                                    prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
                                 }
                             }
                             wsdlFileObject = wsdlFo;

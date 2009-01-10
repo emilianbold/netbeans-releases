@@ -46,6 +46,7 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -88,6 +89,11 @@ public class AddColumnAction extends BaseAction {
                 }
             }
         );
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddColumnAction.class);
     }
 
 }

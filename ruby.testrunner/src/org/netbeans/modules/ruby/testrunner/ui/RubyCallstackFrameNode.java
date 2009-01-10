@@ -40,28 +40,41 @@
  */
 
 package org.netbeans.modules.ruby.testrunner.ui;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
 
 /**
  *
- * @author Marian Petras
+ * @author Marian Petras, Erno Mononen
  */
 public final class RubyCallstackFrameNode extends CallstackFrameNode {
 
+    private final ComparisonFailure comparisonFailure;
+
     public RubyCallstackFrameNode(String frameInfo, String displayName) {
         super(frameInfo, displayName);
+        this.comparisonFailure = TestUnitHandlerFactory.TestFailedHandler.getComparisonFailure(displayName);
     }
 
     /**
      */
     @Override
     public Action getPreferredAction() {
+        if (comparisonFailure != null) {
+            return new DiffViewAction(comparisonFailure);
+        }
         return new JumpToCallStackAction(this, frameInfo);
     }
-    
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
+
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = new ArrayList<Action>(2);
+        actions.add(new JumpToCallStackAction(this, frameInfo));
+        actions.add(new DiffViewAction(comparisonFailure));
+        return actions.toArray(new Action[actions.size()]);
     }
 }

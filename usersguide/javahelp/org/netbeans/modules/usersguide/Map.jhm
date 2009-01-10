@@ -368,9 +368,8 @@
  <!--Node: Options | Source Creation and Management | Templates <-> help:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
 
- <!-- Options | IDE Configuration | System | File Types -->
-    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="configure/options_file_types.html" />
-    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl$FileTypeNode" url="configure/options_file_types.html" />
+ <!-- Options | Misc | Files -->
+    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/options_file_types.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->

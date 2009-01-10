@@ -168,8 +168,6 @@ public final class MidpDatabindingSupport {
             document.deleteComponent(indexToRemove);
 
         }
-
-
     }
 
     public static String getIndexName(DesignComponent connector) {
