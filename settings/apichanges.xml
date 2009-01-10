@@ -105,6 +105,34 @@ is the proper place.
 
 <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+    <change id="readResolveBehaviour">
+        <api name="settings_spi"/>
+        <summary>readProperties can designate its replace</summary>
+        <version major="1" minor="18"/>
+        <date day="10" month="1" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="compatible"/>
+        <description>
+            Semantics of <code>readProperties</code> method has been extended
+            to allow the method to return an object. Read
+            <a href="@TOP@/org/netbeans/spi/settings/doc-files/api.html#xmlprops">more</a>.
+        </description>
+        <issue number="155962"/>
+    </change>
+    <change id="convertor.propertyannotation">
+        <api name="settings_spi"/>
+        <summary>@ConvertAsProperties annotation</summary>
+        <version major="1" minor="18"/>
+        <date day="10" month="1" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            Human friendly way to register XML property based convertor via
+            the <code>@ConvertAsProperties</code> annotation.
+        </description>
+        <class package="org.netbeans.api.settings" name="ConvertAsProperties"/>
+        <issue number="155962"/>
+    </change>
     <change id="convertor.recognize.xml">
         <api name="settings_spi"/>
         <summary>Allow convertors to recognize .xml files in specially attributed folders.</summary>

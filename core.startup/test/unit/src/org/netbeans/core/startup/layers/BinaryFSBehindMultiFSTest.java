@@ -39,24 +39,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.filesystems;
+package org.netbeans.core.startup.layers;
 
-import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import junit.framework.*;
-import java.io.*;
-import org.netbeans.junit.*;
+import java.util.Arrays;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.AttributesTestHidden;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystemFactoryHid;
+import org.openide.filesystems.FileSystemTestHid;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.TestUtilHid;
+import org.openide.filesystems.XMLFileSystem;
+import org.openide.filesystems.XMLFileSystemTestHid;
 
 /**
  *
- * @author  rm111737
- * @version
+ * @author Radek Matous
  */
-public class XMLFileSystemTest extends FileSystemFactoryHid
+public class BinaryFSBehindMultiFSTest extends FileSystemFactoryHid
 implements XMLFileSystemTestHid.Factory {
-
-    /** Creates new XMLFileSystemTest */
-    public XMLFileSystemTest(Test test) {
+    public BinaryFSBehindMultiFSTest(Test test) {
         super(test);
     }
 
@@ -64,37 +71,35 @@ implements XMLFileSystemTestHid.Factory {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
-        suite.addTestSuite(XMLFileSystemTestHid.class);        
-                
-        return new XMLFileSystemTest(suite);
+        suite.addTestSuite(AttributesTestHidden.class);
+        suite.addTestSuite(XMLFileSystemTestHid.class);
+         
+        return new BinaryFSBehindMultiFSTest(suite);
+    }
+    
+    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
+        XMLFileSystem xfs = (XMLFileSystem)TestUtilHid.createXMLFileSystem(testName, resources);
+        LayerCacheManager bm = LayerCacheManager.manager(true);
+        return new FileSystem[] {BinaryCacheManagerTest.store(bm, Arrays.asList(xfs.getXmlUrls()))};
     }
 
-    protected void destroyFileSystem(String testName) throws IOException {}
-    
-    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException{
-        return new FileSystem[] {TestUtilHid.createXMLFileSystem(testName, resources)};
+    protected void destroyFileSystem(String testName) throws IOException {
+    }
+
+    private File getWorkDir() {
+        String workDirProperty = System.getProperty("workdir");//NOI18N
+        workDirProperty = (workDirProperty != null) ? workDirProperty : System.getProperty("java.io.tmpdir");//NOI18N                 
+        return new File(workDirProperty);
     }
 
     public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
-        XMLFileSystem xfs = new XMLFileSystem();
-        try {
-            xfs.setXmlUrls(layers);
-        } catch (PropertyVetoException ex) {
-            throw (IOException)new IOException().initCause(ex);
-        }
-        return xfs;
+        LayerCacheManager bm = LayerCacheManager.manager(true);
+        return new MultiFileSystem(new FileSystem[] {
+            BinaryCacheManagerTest.store(bm, Arrays.asList(layers))
+        });
     }
 
-    public boolean setXmlUrl(org.openide.filesystems.FileSystem fs, URL[] layers) throws IOException {
-        XMLFileSystem xfs = (XMLFileSystem)fs;
-        try {
-            xfs.setXmlUrls(layers);
-        } catch (PropertyVetoException ex) {
-            throw (IOException)new IOException().initCause(ex);
-        }
-        return true;
+    public boolean setXmlUrl(FileSystem fs, URL[] layers) throws IOException {
+        return false;
     }
-    
-
-    
 }
