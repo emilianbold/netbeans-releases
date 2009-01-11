@@ -528,27 +528,27 @@ public class CsmUtilities {
      */
     public static boolean openSource(CsmObject element) {
         if (CsmKindUtilities.isOffsetable(element)) {
-            return openAtElement((CsmOffsetable) element, false);
+            return openAtElement((CsmOffsetable) element);
         } else if (CsmKindUtilities.isFile(element)) {
             final CsmFile file = (CsmFile) element;
             CsmOffsetable fileTarget = new FileTarget(file);
-            return openAtElement(fileTarget, false);
+            return openAtElement(fileTarget);
         }
         return false;
     }
 
     public static boolean openSource(CsmFile file, int line, int column) {
-        return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)), false);
+        return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)));
     }
 //    //    public static boolean openSource(DataObject dob, int line, int column) {
 //        return false;
 //    }
 
-    private static boolean openAtElement(final CsmOffsetable element, final boolean jumpLineStart) {
-        return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element), jumpLineStart);
+    private static boolean openAtElement(final CsmOffsetable element) {
+        return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
     }
 
-    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element, final boolean jumpLineStart) {
+    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element) {
         if (dob != null) {
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -582,7 +582,7 @@ public class CsmUtilities {
                             panes = ec.getOpenedPanes();
                         }
                         if (panes != null && panes.length > 0) {
-                            selectElementInPane(panes[0], element, !opened, jumpLineStart);
+                            selectElementInPane(panes[0], element, !opened);
                         }
                     }
                 });
@@ -595,8 +595,7 @@ public class CsmUtilities {
     /** Jumps to element in given editor pane. When delayProcessing is
      * specified, waits for real visible open before jump
      */
-    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element,
-            boolean delayProcessing, final boolean jumpLineStart) {
+    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element, boolean delayProcessing) {
         //final Cursor editCursor = pane.getCursor();
         //pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (false && delayProcessing) {
@@ -612,7 +611,7 @@ public class CsmUtilities {
                     RequestProcessor.getDefault().post(new Runnable() {
 
                         public void run() {
-                            jumpToElement(pane, element, jumpLineStart);
+                            jumpToElement(pane, element);
                         }
                     });
                     pane.removeFocusListener(this);
@@ -623,7 +622,7 @@ public class CsmUtilities {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    jumpToElement(pane, element, jumpLineStart);
+                    jumpToElement(pane, element);
                 }
             });
             // try to activate outer TopComponent
@@ -640,21 +639,16 @@ public class CsmUtilities {
 //        jumpToElement(pane, element, false);
 //    }
 
-    private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable, boolean jumpLineStart) {
+    private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable) {
         //start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()-1) : element.getStartOffset();
         int start;
         CsmOffsetable element = pointOrOffsetable.getOffsetable();
         Point point = pointOrOffsetable.getPoint();
-        if (jumpLineStart) {
-            int line = (element == null) ? point.line : element.getStartPosition().getLine();
-            start = lineToPosition(pane, line - 1);
+        if (element == null) {
+            start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
+            start += point.column;
         } else {
-            if (element == null) {
-                start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
-                start += point.column;
-            } else {
-                start = element.getStartOffset();
-            }
+            start = element.getStartOffset();
         }
         if (pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition(start);
