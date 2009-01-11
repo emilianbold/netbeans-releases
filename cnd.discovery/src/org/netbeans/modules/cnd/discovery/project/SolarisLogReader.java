@@ -474,7 +474,7 @@ public class SolarisLogReader {
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
-            String out = line.substring(0, i-1);
+            String out = line.substring(0, i);
             line = line.substring(i+1);
             int j = line.indexOf('`');
             if (j < 0) {
