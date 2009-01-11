@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.highlight.semantic.ModelUtils;
@@ -92,26 +94,38 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
         private final DataObject dobj;
         private final CsmFile file;
-        private final Document doc;
+        private final WeakReference<BaseDocument> weakDoc;
         private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
             this.dobj = dobj;
             this.file = file;
-            this.doc = doc;
+            if (doc instanceof BaseDocument) {
+                weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
+            } else {
+                weakDoc = null;
+            }
         }
 
         public void run(Phase phase) {
-            if (phase == Phase.PARSED || phase == Phase.INIT) {
-                MyInterruptor interruptor = new MyInterruptor();
-                addCancelListener(interruptor);
-                try {
-                    HighlightProvider.getInstance().update(file, doc, dobj, interruptor);
-                } finally {
-                    removeCancelListener(interruptor);
+            Document doc = getDocument();
+            if (doc != null) {
+                if (phase == Phase.PARSED || phase == Phase.INIT) {
+                    MyInterruptor interruptor = new MyInterruptor();
+                    addCancelListener(interruptor);
+                    try {
+                        HighlightProvider.getInstance().update(file, doc, dobj, interruptor);
+                    } finally {
+                        removeCancelListener(interruptor);
+                    }
+                } else if (phase == Phase.CLEANUP) {
+                    HighlightProvider.getInstance().clear(doc);
                 }
-            } else if (phase == Phase.CLEANUP) {
-                HighlightProvider.getInstance().clear(doc);
             }
         }
+        
+        protected BaseDocument getDocument() {
+            return weakDoc != null ? weakDoc.get() : null;
+        }
+
         public boolean isValid() {
             return true;
         }
