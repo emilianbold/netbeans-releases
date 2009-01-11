@@ -43,20 +43,21 @@ package org.netbeans.modules.cnd.refactoring.api;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Refactoring used for changing encapsulate field.
+ * Refactoring used for encapsulating one field.
  * It creates getter and setter for given field and replaces all references.
- * @author Tomas Hurka
- * @author Jan Becicka
- * @author Jan Pokorsky
+ * @author Tomas Hurka, Jan Becicka, Jan Pokorsky
+ * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
-    private String getterName,setterName;
+    private String getterName;
+    private String setterName;
     private Set<CsmVisibility> methodModifiers;
     private Set<CsmVisibility> fieldModifiers;
     private boolean alwaysUseAccessors;
@@ -65,12 +66,12 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
      * Creates a new instance of EncapsulateFieldRefactoring
      * @param field field to refactor
      */
-    public EncapsulateFieldRefactoring(CsmObject field) {
+    public EncapsulateFieldRefactoring(CsmField field) {
         super(Lookups.fixed(field));
     }
     
     public CsmObject getSourceType() {
-        return getRefactoringSource().lookup(CsmObject.class);
+        return getRefactoringSource().lookup(CsmField.class);
     }
     
     /**

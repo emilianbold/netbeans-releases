@@ -5,34 +5,31 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Icon;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=ProjectFactory.class, position=29998)
-public final class TestFactory extends ProjectOpenedHook
-implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
+@ServiceProvider(service=ProjectFactory.class, position=29999)
+public final class TestFactory2 extends ProjectOpenedHook
+implements ProjectFactory, Project, ProjectInformation {
 
     static Set<FileObject> recognize = new HashSet<FileObject>();
-    static Set<Project> subprojects = new HashSet<Project>();
     int closed;
     int opened;
     int listenerCount;
     final FileObject dir;
 
-    public TestFactory() {
+    public TestFactory2() {
         dir = null;
     }
 
-    private TestFactory(FileObject dir) {
+    private TestFactory2(FileObject dir) {
         this.dir = dir;
     }
 
@@ -41,7 +38,7 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
     }
 
     public Project loadProject(FileObject pd, ProjectState state) throws IOException {
-        return isProject(pd) ? new TestFactory(pd) : null;
+        return isProject(pd) ? new TestFactory2(pd) : null;
     }
 
     public void saveProject(Project project) throws IOException, ClassCastException {
@@ -91,7 +88,7 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TestFactory) {
+        if (obj instanceof TestFactory2) {
             return super.equals(obj);
         } else {
             return false;
@@ -101,16 +98,6 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    public Set<? extends Project> getSubprojects() {
-        return subprojects;
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
     }
 
 
