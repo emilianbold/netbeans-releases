@@ -50,8 +50,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
@@ -96,7 +96,7 @@ public class DynamicVerifyTest extends NbTestCase {
 
     public void testGetAllProjectFactories() throws Exception {
         StringBuilder sb = new StringBuilder();
-        Map<String,String> all = Feature2LayerMapping.projectFiles();
+        Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
         all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
@@ -111,7 +111,7 @@ public class DynamicVerifyTest extends NbTestCase {
     }
 
     public void testGetAllNbProjects() throws Exception {
-        Map<String,String> all = Feature2LayerMapping.nbprojectTypes();
+        Map<String,String> all = FeatureManager.nbprojectTypes();
         StringBuilder sb = new StringBuilder();
 
         Class<?> ant = Class.forName(
@@ -170,7 +170,7 @@ public class DynamicVerifyTest extends NbTestCase {
 
     public void testGetAllDebuggers() {
        List<String> lazyDebuggers = new ArrayList<String>();
-       Iterator<? extends FeatureInfo> it = Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
+       Iterator<? extends FeatureInfo> it = FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
        for (; it.hasNext(); ) {
            FeatureInfo featureInfo = it.next();
            if (featureInfo.getAttachTypeName() != null) {

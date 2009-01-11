@@ -704,10 +704,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         return prepareTask;
     }
-
+    
     final void addRemoveDocListener(Document d, boolean add) {
+        if (d == null) {
+            return;
+        }
         if (Boolean.TRUE.equals(d.getProperty("supportsModificationListener"))) { // NOI18N
-
             if (add) {
                 d.putProperty("modificationListener", getListener()); // NOI18N
             } else {

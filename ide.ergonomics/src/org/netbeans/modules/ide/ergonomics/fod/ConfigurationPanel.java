@@ -78,7 +78,7 @@ public class ConfigurationPanel extends JPanel {
     private Callable<JComponent> callable;
 
     public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info) {
-        Feature2LayerMapping.logUI("ERGO_QUESTION", info.clusterName, displayName);
+        FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
         initComponents();
         this.callable = callable;
         String lblMsg = null;
@@ -101,7 +101,7 @@ public class ConfigurationPanel extends JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        Feature2LayerMapping.logUI("ERGO_CLOSE");
+        FeatureManager.logUI("ERGO_CLOSE");
     }
 
     void setError(String msg) {
@@ -166,7 +166,7 @@ public class ConfigurationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-        Feature2LayerMapping.logUI("ERGO_DOWNLOAD");
+        FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
         final boolean[] success = new boolean[1];
         final FeatureInfo info = featureInfo;

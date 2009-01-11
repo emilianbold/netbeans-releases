@@ -48,17 +48,19 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
 import org.netbeans.core.multiview.MultiViewModel.ElementSelectionListener;
@@ -70,7 +72,6 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
 
 /** Special subclass of TopComponent which shows and handles set of
@@ -647,38 +648,9 @@ public final class MultiViewPeer  {
         } else {
             return true;
         }
-        SharedClassObject option = null;
-        ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-        if (loader == null) {
-            loader = MultiViewPeer.class.getClassLoader().getSystemClassLoader();
-        }
-        try {
-            Class editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true,
-                    loader);
-            option = SharedClassObject.findObject(editorBaseOption);
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-        if (option != null) {
-            try {
-                Method is = option.getClass().getMethod("isToolbarVisible", new Class[0]);
-                Object ret;
-                ret = is.invoke(option, new Object[0]);
-                if (ret instanceof Boolean) {
-                    return ((Boolean)ret).booleanValue();
-                }
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (SecurityException ex) {
-                ex.printStackTrace();
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-            } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-            }
-        }
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        if( null != prefs )
+            return prefs.getBoolean("toolbarVisible", true); //NOI18N
         return true;
     }
 

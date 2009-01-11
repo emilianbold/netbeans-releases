@@ -74,7 +74,7 @@ public interface Validator {
      */
     ValidationResult validate(Model model, Validation validation, ValidationType validationType);
     
-    enum ResultType {
+    public enum ResultType {
         ADVICE, WARNING, ERROR
     }
     

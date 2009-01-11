@@ -53,7 +53,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
@@ -71,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -85,6 +85,11 @@ public class GrabTableAction extends BaseAction {
 
     public String getName() {
         return bundle().getString("GrabStructure"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(GrabTableAction.class);
     }
 
     protected boolean enable(Node[] activatedNodes) {

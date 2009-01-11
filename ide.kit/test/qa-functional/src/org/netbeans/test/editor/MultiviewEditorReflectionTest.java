@@ -72,9 +72,6 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
             Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
             settingsClass.getMethod("addSettingsChangeListener", listenerClass);
             settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
-            Class<?> editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true, loader);
-            SharedClassObject.findObject(editorBaseOption.asSubclass(SharedClassObject.class), true);
-            editorBaseOption.getMethod("isToolbarVisible");
     }
 
 }
