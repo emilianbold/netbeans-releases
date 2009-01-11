@@ -85,17 +85,17 @@ public class CppSymbolProvider implements SymbolProvider {
     private static final boolean TRACE = Boolean.getBoolean("cnd.gotosymbol.trace");
 
     public CppSymbolProvider() {
-        if (TRACE) { trace("ctor"); } // NOI17N
+        if (TRACE) { trace("ctor"); } // NOI18N
     }
 
     public void cancel() {
-        if (TRACE) { trace("cancel"); } // NOI17N
+        if (TRACE) { trace("cancel"); } // NOI18N
         cancelled = true;
         cache = null;
     }
 
     public void cleanup() {
-        if (TRACE) { trace("cleanup"); } // NOI17N
+        if (TRACE) { trace("cleanup"); } // NOI18N
         cancelled = false;
         cache = null;
     }
@@ -110,7 +110,7 @@ public class CppSymbolProvider implements SymbolProvider {
     }
 
     public void computeSymbolNames(Context context, Result result) {
-        if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI17N
+        if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
 
@@ -207,12 +207,12 @@ public class CppSymbolProvider implements SymbolProvider {
 
 
     private String toString(Context context) {
-        return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText());
+        return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText()); //NOI18N
     }
 
     private void trace(String format, Object... args) {
         if (TRACE) {
-            format = String.format("%s @%x %s\n", getClass().getSimpleName(), hashCode(), format);
+            format = String.format("%s @%x %s\n", getClass().getSimpleName(), hashCode(), format); //NOI18N
             System.err.printf(format, args);
         }
     }
