@@ -271,6 +271,9 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      * @param message to be displayed
      */
     public void displayError(String message) {
+        if (messageLabel == null) {
+            return;
+        }
         messageLabel.setText(message);
         messageLabel.setIcon(ICON_ERROR);
     }
@@ -279,6 +282,9 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      * Clears error/warning message on the custom property editor panel
      */
     public void clearErrorStatus() {
+        if (messageLabel == null) {
+            return;
+        }
         messageLabel.setText(" "); //NOI18N
         messageLabel.setIcon(null);
     }

@@ -83,14 +83,11 @@ public final class MavenCommandSettings {
         String toRet = getProperty(command);
         if (toRet == null) {
             //TODO is there some other way to do this?
-            if (COMMAND_CREATE_ARCHETYPE.equals(command)) {
-                toRet = "org.apache.maven.plugins:maven-archetype-plugin:1.0-alpha-4:create";//NOI18N
-            }
-            else if (COMMAND_INSTALL_FILE.equals(command)) {
+            if (COMMAND_INSTALL_FILE.equals(command)) {
                 toRet = "install:install-file";//NOI18N
             }
             else if (COMMAND_CREATE_ARCHETYPENG.equals(command)) {
-                toRet = "org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-3:generate";//NOI18N
+                toRet = "org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-4:generate";//NOI18N
             }
             else if (COMMAND_SCM_CHECKOUT.equals(command)) {
                 toRet = "org.apache.maven.plugins:maven-scm-plugin:1.0:checkout";//NOI18N

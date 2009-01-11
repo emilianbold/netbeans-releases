@@ -1,10 +1,6 @@
 Code completion result for source line:
 x.|r
 (QueryType=COMPLETION, NameKind=PREFIX)
-CONSTRUCTO __init__(methodName)                       
-METHOD     __call__(args, kwds)                       
-METHOD     __repr__()                                 
-METHOD     __str__()                                  
 METHOD     assertAlmostEqual(first, secon             
 METHOD     assertAlmostEquals(first, seco             
 METHOD     assertEqual(first, second, msg             
@@ -35,3 +31,11 @@ METHOD     setUp()
 METHOD     shortDescription()                         
 METHOD     tearDown()                                 
 VARIABLE   failureException                           
+------------------------------------
+CONSTRUCTO __init__(methodName)                       
+METHOD     __call__(args, kwds)                       
+METHOD     __repr__()                                 
+METHOD     __str__()                                  
+ATTRIBUTE  __dict__                                   
+ATTRIBUTE  ---__members__             ---             
+ATTRIBUTE  ---__methods__             ---             

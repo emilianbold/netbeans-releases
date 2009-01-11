@@ -35,8 +35,11 @@ public class PythonSemanticHighlighterTest extends PythonTestBase {
         checkSemantic("testfiles/test_scope.py");
     }
 
-    // Currently WRONG - position info is wrong
     public void testDecorators() throws Exception {
         checkSemantic("testfiles/staticmethods.py");
+    }
+
+    public void testDecorators2() throws Exception {
+        checkSemantic("testfiles/decorators.py");
     }
 }

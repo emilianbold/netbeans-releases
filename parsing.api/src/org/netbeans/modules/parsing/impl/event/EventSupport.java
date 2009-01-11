@@ -53,15 +53,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
-import org.netbeans.modules.parsing.impl.CurrentEditorTaskScheduler;
-import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
-import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -160,12 +157,11 @@ public final class EventSupport {
     private void resetStateImpl() {
         if (!k24) {
             //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
-            final boolean reschedule = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            final boolean reschedule = SourceAccessor.getINSTANCE().testFlag (source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
             if (reschedule) {
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduler.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduler.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduler.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduler.class);
+                //S ystem.out.println("reschedule");
+                SourceAccessor.getINSTANCE ().getCache (source).sourceModified ();
+                //S ystem.out.println("reschedule end");
             }
             TaskProcessor.resetStateImpl (this.source);
         }
@@ -187,7 +183,7 @@ public final class EventSupport {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
-            Document doc = source.getDocument();
+            Document doc = source.getDocument(false);
             if (doc != null) {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
@@ -202,7 +198,7 @@ public final class EventSupport {
                     th.removeTokenHierarchyListener(lexListener);
                     lexListener = null;
                 }                
-                Document doc = source.getDocument();
+                Document doc = source.getDocument(false);
                 if (doc != null) {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));

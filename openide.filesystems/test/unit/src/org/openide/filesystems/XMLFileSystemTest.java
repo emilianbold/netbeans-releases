@@ -46,7 +46,6 @@ import java.net.URL;
 import junit.framework.*;
 import java.io.*;
 import org.netbeans.junit.*;
-import org.openide.util.Exceptions;
 
 /**
  *

@@ -814,9 +814,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private Object getAttribute(FileObject fo, String attrName, String path) {
         Object o;
 
-        FileObject topFO = attrAskedFileObject.get();
+        FileObject previousFO = attrAskedFileObject.get();
 
-        if (topFO == null) {
+        if (previousFO == null || !previousFO.getPath().equals(getPath()))  {
             attrAskedFileObject.set(this);
         }
 
@@ -829,10 +829,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 o = fo.getAttribute(attrName);
             }
         } finally {
-            if (topFO == null) {
-                attrAskedFileObject.set(null);
+            attrAskedFileObject.set(previousFO);
             }
-        }
 
         if (o != null) {
             getAttributeCache().setDelegate(fo);

@@ -423,8 +423,8 @@ class DataViewUI extends JXPanel {
         //add refresh text field
         refreshField = new FixedSizeTextField(4);
         refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setMinimumSize(new Dimension(35, refreshField.getHeight()));
-        refreshField.setSize(35, refreshField.getHeight());
+        refreshField.setMinimumSize(new Dimension(45, refreshField.getHeight()));
+        refreshField.setSize(45, refreshField.getHeight());
 
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);
@@ -487,7 +487,8 @@ class DataViewUI extends JXPanel {
 
         URL url = getClass().getResource(imgPrefix + "row_add.png"); // NOI18N
         insert = new JXButton(new ImageIcon(url));
-        insert.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_insert"));
+        insert.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_insert")+" (Alt+I)");
+        insert.setMnemonic('I');
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
         processButton(insert);
@@ -520,7 +521,8 @@ class DataViewUI extends JXPanel {
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png"); // NOI18N
         truncateButton = new JXButton(new ImageIcon(url));
-        truncateButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_truncate_table"));
+        truncateButton.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_truncate_table")+" (Alt+T)");
+        truncateButton.setMnemonic('T');
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
         processButton(truncateButton);

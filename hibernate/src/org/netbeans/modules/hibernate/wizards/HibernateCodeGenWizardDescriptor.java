@@ -105,23 +105,33 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
 
     public boolean isValid() {
         SourceGroup sourceGroup = getComponent().getLocationValue();
+        if (getComponent().getConfigurationFile() == null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_ConfFileChooser")); // NOI18N
+            return false;
+        }
+
+        if (getComponent().getRevengFile() == null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_RevengFileChooser")); // NOI18N
+            return false;
+        }
+        
         String packageName = getComponent().getPackageName();
         if (sourceGroup == null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
             return false;
         }
 
         if (packageName.trim().equals("")) { // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
             return false;
         }
         if (!JavaIdentifiers.isValidPackageName(packageName)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
             return false;
         }
 
         if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
             return false;
         }
 

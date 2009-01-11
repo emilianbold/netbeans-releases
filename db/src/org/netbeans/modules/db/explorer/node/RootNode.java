@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseOption;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  * This is the root node for the database explorer.  This is a singleton
@@ -58,6 +64,10 @@ public class RootNode extends BaseNode {
     /** the singleton instance */
     private static RootNode instance = null;
     
+    private static DatabaseOption option = null;
+
+    private SpecificationFactory factory;
+
     /**
      * Gets the singleton instance.
      * 
@@ -89,6 +99,53 @@ public class RootNode extends BaseNode {
     }
     
     protected void initialize() {
+        try {
+            factory = new SpecificationFactory();
+            if (factory == null) {
+                throw new Exception(
+                        bundle().getString("EXC_NoSpecificationFactory"));
+            }
+
+            initDebugListening();
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    public SpecificationFactory getSpecificationFactory() {
+        return factory;
+    }
+    
+    /**
+     * Connects the debug property in the specification factory to the
+     * debugMode property in DBExplorer module's option.
+     */
+    private void initDebugListening() {
+        // call the getOption to ensure that option is initialized
+        getOption();
+
+        option.getPropertySupport().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if (e.getPropertyName() == null) {
+                    factory.setDebugMode(option.getDebugMode());
+                    return;
+                }
+
+                if (e.getPropertyName().equals(DatabaseOption.PROP_DEBUG_MODE)) {
+                    factory.setDebugMode(((Boolean) e.getNewValue()).booleanValue());
+                }
+            }
+        });
+
+        factory.setDebugMode(option.getDebugMode());
+    }
+
+    public static synchronized DatabaseOption getOption() {
+        if (option == null) {
+            option = DatabaseOption.getDefault();
+        }
+
+        return option;
     }
     
     @Override
@@ -104,5 +161,15 @@ public class RootNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Root"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RootNode.class);
     }
 }

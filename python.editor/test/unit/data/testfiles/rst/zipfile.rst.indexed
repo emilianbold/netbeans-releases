@@ -48,7 +48,7 @@ Searchable Keys:
   class : ZipFile
   class-ig : zipfile
   in : zipfile
-  member : ZipFile;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;file,mode,compression,allowZip64;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;file,mode,compression,allowZip64;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : comment;A;|DOCUMENTED|DOC_ONLY|;
   member : debug;A;|DOCUMENTED|DOC_ONLY|;
@@ -75,7 +75,7 @@ Searchable Keys:
   class-ig : zipinfo
   in : zipfile
   member : CRC;A;|DOCUMENTED|DOC_ONLY|;
-  member : ZipInfo;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,date_time;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,date_time;
   member : comment;A;|DOCUMENTED|DOC_ONLY|;
   member : compress_size;A;|DOCUMENTED|DOC_ONLY|;
   member : compress_type;A;|DOCUMENTED|DOC_ONLY|;

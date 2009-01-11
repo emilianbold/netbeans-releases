@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -408,7 +409,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     public void visit(Assignment node) {
         if (node.getLeftHandSide() instanceof Variable) {
             Variable var = (Variable) node.getLeftHandSide();
-            String type = CodeUtils.extractVariableTypeFromAssignment(node);
+            String type = CodeUtils.extractVariableType(node);
             varStack.addVariableDefinition(var, type);
         }
         
@@ -436,6 +437,18 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         
         super.visit(node);
     }
+    
+
+    @Override
+    public void visit(CatchClause node) {
+        String type = node.getClassName().getName();
+        Variable var = node.getVariable();
+        varStack.addVariableDefinition(var, type);
+
+        super.visit(node);
+    }
+
+
     
     private void assumeParamsPassedByRefInitialized(Collection<IndexedFunction> functions, FunctionInvocation node) {
         boolean refParam[] = new boolean[node.getParameters().size()];

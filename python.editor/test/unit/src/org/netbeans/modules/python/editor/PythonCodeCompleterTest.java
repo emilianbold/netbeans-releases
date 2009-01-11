@@ -179,6 +179,10 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/org.py", "from or^", true);
     }
 
+    public void testProperties() throws Exception {
+        checkCompletion("testfiles/properties.py", "x.ba^", true);
+    }
+
     public void testParameters1() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(foo^, bar)", true);
     }
@@ -197,6 +201,31 @@ public class PythonCodeCompleterTest extends PythonTestBase {
 
     public void testParameters5() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(\"foo\", \"bar\", inval^id)", true);
+    }
+
+    public void testDecorators1() throws Exception {
+        checkCompletion("testfiles/emptydecorators.py", "@^", true);
+    }
+
+    public void testDecorators2() throws Exception {
+        checkCompletion("testfiles/decorators.py", "@c^", true);
+    }
+
+    public void testTypedVars1() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os2.^", true);
+    }
+
+    public void testTypedVars2() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os3.^", true);
+    }
+
+    public void testTypedVars3() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os4.^", true);
+    }
+
+    public void testTypedVars4() throws Exception {
+        // No type specified
+        checkCompletion("testfiles/compl5.py", "os5.xhd^", true);
     }
 
     // -------------------------

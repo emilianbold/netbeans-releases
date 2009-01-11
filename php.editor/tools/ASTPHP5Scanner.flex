@@ -945,7 +945,9 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 <ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{LABEL}([|]{LABEL})*{WHITESPACE}?"*/" {
     comment = yytext();
     handleVarComment();
-    return createFullSymbol(ASTPHP5Symbols.T_VAR_COMMENT);
+    // if we want to handle the var comment in  ast, then return the T_VAR_Comment symbol
+    // but it needs some changes in parser grammar. see issue #154967
+    //return createFullSymbol(ASTPHP5Symbols.T_VAR_COMMENT);
 }
 
 <ST_IN_SCRIPTING>"/**" {

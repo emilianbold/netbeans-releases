@@ -1,0 +1,8 @@
+# Ensure that the future imports here aren't shown as unused or imported symbols for code completion
+from __future__ import absolute_imports
+from __future__ import with_statement
+import ghi
+from abc import whatever
+from def import whatever
+import jkl
+

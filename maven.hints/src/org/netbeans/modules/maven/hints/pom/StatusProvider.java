@@ -162,7 +162,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private void initializeModel() {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             if (fo != null) {
-                ModelSource ms = Utilities.createModelSource(fo, true);
+                ModelSource ms = Utilities.createModelSource(fo);
                 model = POMModelFactory.getDefault().getModel(ms);
                 model.setAutoSyncActive(false);
                 project = FileOwnerQuery.getOwner(fo);

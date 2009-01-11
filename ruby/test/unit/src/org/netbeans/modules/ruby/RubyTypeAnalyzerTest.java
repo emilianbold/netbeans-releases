@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -232,11 +232,15 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         // assertTypes("indexed constants type inference", "constants.rb", "REXML::COPY^RIGHT", "COPYRIGHT", "String");
     }
 
-    public void testCoreMethodType() throws Exception {
-        assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
-        assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
-        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum", "Numeric");
+    public void testMethodType() throws Exception {
+        assertTypes("method_type_inference.rb", "puts n^um.abs", "num", "Fixnum");
     }
+
+//    public void testCoreMethodType() throws Exception {
+//        assertTypes("core_methods.rb", "ance^stors.delete(String)", "ancestors", "Array");
+//        assertTypes("core_methods.rb", "puts has_^one.t", "has_one", "TrueClass", "FalseClass");
+//        assertTypes("core_methods.rb", "huh = a.eq^l?(123)", "a", "Fixnum", "Numeric");
+//    }
 
     public void testMethodsChaining() throws Exception {
         assertTypes("methods_chaining.rb", "puts gree^ting", "greeting", "String");

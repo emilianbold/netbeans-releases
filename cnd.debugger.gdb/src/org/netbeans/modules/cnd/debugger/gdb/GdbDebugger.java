@@ -2106,7 +2106,11 @@ public class GdbDebugger implements PropertyChangeListener {
         }
 
         if (cb.isError()) {
-            return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
+            String err = cb.getError();
+            if (err.startsWith("\"The program being debugged was signaled while in a function called from GDB")) { // NOI18N
+                err = NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
+            }
+            return err;
         }
 
         String response = cb.getResponse();

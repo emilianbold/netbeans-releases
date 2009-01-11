@@ -49,9 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 
-/** Can provide status and actions for FileObjects. Register it
- * in META-INF/services/org.netbeans.modules.masterfs.providers.AnnotationProvider
- * file.
+/** Can provide status and actions for FileObjects. Register it using {@link org.openide.util.lookup.ServiceProvider}.
  *
  * @author Jaroslav Tulach
  */

@@ -113,11 +113,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Context context, CompilationInfo info) {
-
-        if (!FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle())){
-            prettyPrint(context);
-        }
-
+        prettyPrint(context);
         reindent(context, info, false);
     }
     
@@ -128,11 +124,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     public int hangingIndentSize() {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
-
-    public String openingBraceStyle(){
-        return CodeStyle.get((Document) null).getOpeningBraceStyle();
-    }
-
+    
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
@@ -435,6 +427,12 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private void prettyPrint(Context context) {
         final BaseDocument doc = (BaseDocument) context.document();
+        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
+
+        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
+            return;
+        }
+
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
         final LinkedHashMap<Integer, Integer> breaks = new LinkedHashMap<Integer, Integer>();
         ts.move(context.endOffset());
@@ -456,17 +454,16 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
             public void run() {
                 try {
-                    String replacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle())
+                    String replacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)
                             ? "\n" : " "; //NOI18N
 
                     for (Integer offset : breaks.keySet()) {
                         int len = breaks.get(offset);
-                        
+                        doc.insertString(offset + len, replacement, null);
+
                         if (len > 0) {
                             doc.remove(offset, len);
                         }
-
-                        doc.insertString(offset, replacement, null);
                     }
                 } catch (BadLocationException badLocationException) {
                     badLocationException.printStackTrace();

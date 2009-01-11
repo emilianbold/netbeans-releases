@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,11 +41,8 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 
@@ -75,9 +72,6 @@ import org.jruby.nb.ast.NodeType;
  */
 public final class RubyTypeAnalyzer {
 
-    static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
-    static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
-
     private ContextKnowledge knowledge;
     private boolean analyzed;
     private boolean targetReached;
@@ -93,13 +87,8 @@ public final class RubyTypeAnalyzer {
     void analyze() {
         if (!analyzed) {
             knowledge.setAnalyzed(true);
-            if (knowledge.hasFileObject()) {
-                initFileTypeVars(knowledge.getTypesForSymbols());
-            }
-
-            if (knowledge.hasDocument()) {
-                initTypeAssertions(knowledge.getTypesForSymbols());
-            }
+            RubyTypeAnalyzer.initFileTypeVars(knowledge);
+            RDocAnalyzer.collectTypeAssertions(knowledge);
 
             analyze(knowledge.getRoot(), knowledge.getTypesForSymbols(), true);
             analyzed = true;
@@ -137,7 +126,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                RubyType type = RubyTypeInferencer.inferTypesOfRHS(node, knowledge);
+                RubyType type = new RubyTypeInferencer(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression
@@ -202,16 +191,17 @@ public final class RubyTypeAnalyzer {
         }
     }
 
+    /**
+     * This is a bit of a trick. I really know the types of the builtin fields
+     * here - @action_name, @assigns, @cookies,. However, this usage is
+     * deprecated; people should be using the corresponding accessors methods.
+     * Since I don't yet correctly do type analysis of attribute to method
+     * mappings (because that would require consulting the index to make sure
+     * the given method has not been overridden), I'll just simulate this by
+     * pretending that there are -local- variables of the given name
+     * corresponding to the return value of these methods.
+     */
     private static final String[] RAILS_CONTROLLER_VARS = new String[]{
-        // This is a bit of a trick. I really know the types of the
-        // builtin fields here - @action_name, @assigns, @cookies,.
-        // However, this usage is deprecated; people should be using
-        // the corresponding accessor methods. Since I don't yet correctly
-        // do type analysis of attribute to method mappings (because that would
-        // require consulting the index to make sure the given method has not
-        // been overridden), I'll just simulate this by pretending that there
-        // are -local- variables of the given name corresponding to the return
-        // value of these methods.
         "action_name", "String", // NOI18N
         "assigns", "Hash", // NOI18N
         "cookies", "ActionController::CookieJar", // NOI18N
@@ -223,9 +213,16 @@ public final class RubyTypeAnalyzer {
         "url", "ActionController::UrlRewriter", // NOI18N
     };
 
-    /** Look at the file type and see if we know about some known variables */
-    private void initFileTypeVars(final Map<String, RubyType> typesForSymbols) {
-        assert knowledge.hasFileObject();
+    /**
+     * Look at the file name and file extension and see if we know about some
+     * known variables. Does not perform real type analysis. Should be
+     * deprecated once we have real type analysis for this kind. See also {@link
+     * #RAILS_CONTROLLER_VARS}.
+     */
+    private static void initFileTypeVars(final ContextKnowledge knowledge) {
+        if (!knowledge.hasFileObject()) {
+            return;
+        }
 
         String ext = knowledge.getFileObject().getExt();
         if (ext.equals("rb")) {
@@ -235,7 +232,7 @@ public final class RubyTypeAnalyzer {
                 for (int i = 0; i < RAILS_CONTROLLER_VARS.length; i += 2) {
                     String var = RAILS_CONTROLLER_VARS[i];
                     String type = RAILS_CONTROLLER_VARS[i+1];
-                    maybePutTypeForSymbol(typesForSymbols, var, type, true);
+                    knowledge.maybePutTypeForSymbol(var, type, true);
                 }
             }
             // test files
@@ -249,99 +246,13 @@ public final class RubyTypeAnalyzer {
             for (int i = 0; i < RAILS_CONTROLLER_VARS.length; i += 2) {
                 String var = RAILS_CONTROLLER_VARS[i];
                 String type = RAILS_CONTROLLER_VARS[i+1];
-                maybePutTypeForSymbol(typesForSymbols, var, type, true);
+                knowledge.maybePutTypeForSymbol(var, type, true);
             }
         } else if (ext.equals("rjs")) { // #105088
-            maybePutTypeForSymbol(typesForSymbols, "page", "ActionView::Helpers::PrototypeHelper::JavaScriptGenerator::GeneratorMethods", true); // NOI18N
+            knowledge.maybePutTypeForSymbol("page", "ActionView::Helpers::PrototypeHelper::JavaScriptGenerator::GeneratorMethods", true); // NOI18N
         } else if (ext.equals("builder") || ext.equals("rxml")) { // NOI18N
-            maybePutTypeForSymbol(typesForSymbols, "xml", "Builder::XmlMarkup", true); // NOI18N
-            /*
-             */
+            knowledge.maybePutTypeForSymbol("xml", "Builder::XmlMarkup", true); // NOI18N
         }
-    }
-
-    /** Look at type assertions in the document and initialize name context */
-    private void initTypeAssertions(final Map<String, RubyType> typesForSymbols) {
-        Node root = knowledge.getRoot();
-        if (root instanceof MethodDefNode) {
-            // Look for parameter hints
-            List<String> rdoc = AstUtilities.gatherDocumentation(null, knowledge.getDocument(), root);
-
-            if ((rdoc != null) && (rdoc.size() > 0)) {
-                for (String line : rdoc) {
-                    if (line.startsWith(PARAM_HINT_ARG)) {
-                        StringBuilder sb = new StringBuilder();
-                        String name = null;
-                        int max = line.length();
-                        int i = PARAM_HINT_ARG.length();
-
-                        for (; i < max; i++) {
-                            char c = line.charAt(i);
-
-                            if (c == ' ') {
-                                continue;
-                            } else if (c == '=') {
-                                break;
-                            } else {
-                                sb.append(c);
-                            }
-                        }
-
-                        if ((i == max) || (line.charAt(i) != '=')) {
-                            continue;
-                        }
-
-                        i++;
-
-                        if (sb.length() > 0) {
-                            name = sb.toString();
-                            sb.setLength(0);
-                        } else {
-                            continue;
-                        }
-
-                        if ((i == max) || (line.charAt(i) != '>')) {
-                            continue;
-                        }
-
-                        i++;
-
-                        for (; i < max; i++) {
-                            char c = line.charAt(i);
-
-                            if (c == ' ') {
-                                continue;
-                            }
-
-                            if (!Character.isJavaIdentifierPart(c)) {
-                                break;
-                            } else {
-                                sb.append(c);
-                            }
-                        }
-
-                        if (sb.length() > 0) {
-                            String type = sb.toString();
-                            maybePutTypeForSymbol(typesForSymbols, name, type, true);
-                        }
-                    }
-
-                    //if (line.startsWith(":return:=>")) {
-                    //    // I don't really need the return type yet
-                    //}
-                }
-            }
-        }
-    }
-
-    private static RubyType getTypesForSymbol(
-            final Map<String, RubyType> typesForSymbols, final String name) {
-        RubyType type = typesForSymbols.get(name);
-        return type == null ? RubyType.createUnknown() : type;
-    }
-
-    private void maybePutTypeForSymbol(Map<String, RubyType> typesForSymbol, String var, String type, boolean override) {
-        maybePutTypeForSymbol(typesForSymbol, var, RubyType.create(type), override);
     }
 
     private void maybePutTypeForSymbol(

@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
+import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExtendedDelete;
@@ -78,11 +78,11 @@ public class DriverExtendedDeleteImpl implements ExtendedDelete {
     private static JDBCDriver[] getJDBCDrivers(Node[] nodes) {
         JDBCDriver[] jdbcDrivers = new JDBCDriver[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
-            DriverNodeInfo driverInfo = (DriverNodeInfo)nodes[i].getLookup().lookup(DriverNodeInfo.class);
+            DriverNode driverInfo = nodes[i].getLookup().lookup(DriverNode.class);
             if (driverInfo == null) {
                 return null;
             }
-            jdbcDrivers[i] = driverInfo.getJDBCDriver();
+            jdbcDrivers[i] = driverInfo.getDatabaseDriver().getJDBCDriver();
             if (jdbcDrivers[i] == null) {
                 return null;
             }

@@ -124,15 +124,10 @@ class FileMapStorage implements Storage {
                 outdir += File.separator;
             }
             File dir = new File (outdir);
-            if (!dir.exists() || !dir.canWrite()) {
-                //Handle the (unlikely) case we cannot write to the system
-                //temporary directory
-                IllegalStateException ise = new IllegalStateException ("Cannot" + //NOI18N
-                " write to " + outdir); //NOI18N
-                Exceptions.attachLocalizedMessage(ise,
-                                                  NbBundle.getMessage(OutWriter.class,
-                                                                      "FMT_CannotWrite",
-                                                                      outdir));
+            if (!dir.exists()) {
+                //Handle the event that we cannot find the system temporary directory
+                IllegalStateException ise = new IllegalStateException ("Cannot find temp directory " + outdir); //NOI18N
+                Exceptions.attachLocalizedMessage(ise, NbBundle.getMessage(OutWriter.class, "FMT_CannotWrite", outdir));
                 throw ise;
             }
             //#47196 - if user holds down F9, many threads can enter this method
@@ -146,6 +141,12 @@ class FileMapStorage implements Storage {
                     outfile = new File(fname.toString());
                 }
                 outfile.createNewFile();
+                if (!outfile.exists() || !outfile.canWrite()) {
+                    //Handle the (unlikely) case we cannot write to the system temporary directory
+                    IllegalStateException ise = new IllegalStateException ("Cannot write to " + fname); //NOI18N
+                    Exceptions.attachLocalizedMessage(ise, NbBundle.getMessage(OutWriter.class, "FMT_CannotWrite", outdir));
+                    throw ise;
+                }
                 outfile.deleteOnExit();
             }
         }
@@ -273,7 +274,7 @@ class FileMapStorage implements Storage {
             cont = this.contents;
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = fileChannel();
-                mappedStart = Math.max((long)0, (long)(start - (MAX_MAP_RANGE /2)));
+                mappedStart = Math.max((long)0, start - (MAX_MAP_RANGE /2));
                 long prevMappedRange = mappedRange;
                 long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
                 mappedRange = Math.min(ch.size(), start + map);

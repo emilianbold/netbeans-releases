@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -66,7 +67,6 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import hidden.org.codehaus.plexus.util.IOUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -81,7 +81,7 @@ import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -132,9 +132,15 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 : hintCtx.getParentNode().getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            Document pluginDoc = loadDocument(info, embedder);
-            if (pluginDoc != null) {
-                return collectPluginParams(pluginDoc, hintCtx);
+            List<GrammarResult> res = collectPluginParams(info, hintCtx);
+            if (res == null) { //let the local processing geta changce 
+                               //once the index failed.
+                Document pluginDoc = loadDocument(info, embedder);
+                if (pluginDoc != null) {
+                    return collectPluginParams(pluginDoc, hintCtx);
+                }
+            } else {
+                return res;
             }
         }
         return Collections.<GrammarResult>emptyList();
@@ -236,6 +242,28 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return toReturn;
     }
 
+    private List<GrammarResult> collectPluginParams(ArtifactInfoHolder info, HintContext hintCtx) {
+        Set<String> params;
+        try {
+            params = PluginIndexManager.getPluginParameterNames(info.getGroupId(), info.getArtifactId(), info.getVersion(), null);
+            if (params == null) {
+                return null;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        List<GrammarResult> toReturn = new ArrayList<GrammarResult>();
+
+        for (String name : params) {
+            if (name.startsWith(hintCtx.getCurrentPrefix())) {
+                toReturn.add(new MyElement(name));
+            }
+        }
+        return toReturn;
+    }
+
+
     @Override
     protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
         if (path.endsWith("executions/execution/goals/goal")) { //NOI18N
@@ -249,9 +277,14 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             previous = previous.getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            Document pluginDoc = loadDocument(info, embedder);
-            if (pluginDoc != null) {
-                return collectGoals(pluginDoc, virtualTextCtx);
+            Enumeration<GrammarResult> res = collectGoals(info, virtualTextCtx);
+            if (res == null) {
+                Document pluginDoc = loadDocument(info, embedder);
+                if (pluginDoc != null) {
+                    return collectGoals(pluginDoc, virtualTextCtx);
+                }
+            } else {
+                return res;
             }
         }
         if (path.endsWith("executions/execution/phase")) { //NOI18N
@@ -499,27 +532,8 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     }
     private Document loadDocument(ArtifactInfoHolder info, MavenEmbedder embedder) {
         if (info.getArtifactId() != null && info.getGroupId() != null && info.getVersion() != null) {
-        
-            File expandedPath = InstalledFileLocator.getDefault().locate("maven2/maven-plugins-xml", null, false); //NOI18N
-            assert expandedPath != null : "Shall have path expanded.."; //NOI18N
-            File folder = new File(expandedPath, info.getGroupId().replace('.', File.separatorChar));
-            File file = new File(folder, info.getArtifactId() + "-" + info.getVersion() + ".xml"); //NOI18N
-            if (file.exists()) {
-                InputStream str = null;
-                try {
-                    str = new FileInputStream(file);
-                    SAXBuilder builder = new SAXBuilder();
-                    return builder.build(str);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    IOUtil.close(str);
-                }
-            }
-            
             Artifact art = embedder.createArtifact(info.getGroupId(), info.getArtifactId(), info.getVersion(), null, "jar"); //NOI18N
             String repopath = embedder.getLocalRepository().pathOf(art);
-            
             File fil = new File(embedder.getLocalRepository().getBasedir(), repopath);
             if (fil.exists()) {
                 try {
@@ -565,6 +579,29 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         return Collections.enumeration(toReturn);
     }
+
+    private Enumeration<GrammarResult> collectGoals(ArtifactInfoHolder info, HintContext virtualTextCtx) {
+        @SuppressWarnings("unchecked")
+        Set<String> goals;
+        try {
+            goals = PluginIndexManager.getPluginGoals(info.getGroupId(), info.getArtifactId(), info.getVersion());
+            if (goals == null) {
+                // let the document/local repository based collectGoals() get a chance.
+                return null;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        Collection<GrammarResult> toReturn = new ArrayList<GrammarResult>();
+        for (String name : goals) {
+            if (name.startsWith(virtualTextCtx.getCurrentPrefix())) {
+               toReturn.add(new MyTextElement(name, virtualTextCtx.getCurrentPrefix()));
+            }
+        }
+        return Collections.enumeration(toReturn);
+    }
+
     
     
     private static class ArtifactInfoHolder  {

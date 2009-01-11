@@ -125,7 +125,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
             //read from profiles.xml
             FileObject profilesFo = fileObject.getFileObject("profiles.xml");
             if (profilesFo != null) {
-                ModelSource ms = Utilities.createModelSource(profilesFo, false);
+                ModelSource ms = Utilities.createModelSource(profilesFo);
                 ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
                 if (State.VALID.equals(pm.getState())) {
                     List<String> actProfs = pm.getProfilesRoot().getActiveProfiles();
@@ -203,7 +203,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         if (fileObject != null) { //144159
             FileObject profiles = fileObject.getFileObject("profiles.xml");
             if (profiles != null) {
-                ModelSource ms = Utilities.createModelSource(profiles, false);
+                ModelSource ms = Utilities.createModelSource(profiles);
                 ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
                 if (State.VALID.equals(pm.getState())) {
                     List<org.netbeans.modules.maven.model.profile.Profile> profs = pm.getProfilesRoot().getProfiles();

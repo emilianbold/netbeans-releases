@@ -199,7 +199,7 @@ public class ImportManagerTest extends PythonTestBase {
         assertDescriptionMatches(testFile, sb.toString(), false, ".imports");
     }
 
-    private void checkOrganize(String testFile, boolean systemLibsFirst, boolean splitImports, boolean commentOut, boolean sort) throws Exception {
+    private void checkOrganize(String testFile, boolean systemLibsFirst, boolean splitImports, boolean commentOut, boolean sort, boolean separateFrom) throws Exception {
         GsfTestCompilationInfo info = getInfo(getTestFile(testFile));
         Document doc = info.getDocument();
         DataObject dobj = DataObject.find(info.getFileObject());
@@ -216,7 +216,7 @@ public class ImportManagerTest extends PythonTestBase {
         prefs.putBoolean(FmtOptions.oneImportPerLine, splitImports);
         prefs.putBoolean(FmtOptions.systemLibsFirst, systemLibsFirst);
         prefs.putBoolean(FmtOptions.sortImports, sort);
-        prefs.putBoolean(FmtOptions.separateFromImps, false);
+        prefs.putBoolean(FmtOptions.separateFromImps, separateFrom);
 
         ImportManager manager = new ImportManager(info, (BaseDocument)doc);
         manager.rewriteMainImports(edits, Collections.<ImportEntry>emptyList(), Collections.<ImportEntry>emptySet());
@@ -326,35 +326,40 @@ public class ImportManagerTest extends PythonTestBase {
 //    }
 
     public void testFixOrganize1() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", true, true, false, true);
+        checkOrganize("testfiles/imports/organize1.py", true, true, false, true, false);
     }
 
     public void testFixOrganize2() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", true, false, false, true);
+        checkOrganize("testfiles/imports/organize1.py", true, false, false, true, false);
     }
 
     public void testFixOrganize3() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", true, true, false, true);
+        checkOrganize("testfiles/imports/organize1.py", true, true, false, true, false);
     }
 
     public void testFixOrganize4() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", false, true, true, true);
+        checkOrganize("testfiles/imports/organize1.py", false, true, true, true, false);
     }
 
     public void testFixOrganize5() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", true, false, false, true);
+        checkOrganize("testfiles/imports/organize1.py", true, false, false, true, false);
     }
 
     public void testFixOrganize6() throws Exception {
-        checkOrganize("testfiles/imports/imports1.py", true, true, false, true);
+        checkOrganize("testfiles/imports/imports1.py", true, true, false, true, false);
     }
 
     public void testFixOrganize7() throws Exception {
-        checkOrganize("testfiles/imports/organize1.py", true, true, false, false);
+        checkOrganize("testfiles/imports/organize1.py", true, true, false, false, false);
     }
 
     public void testFixOrganize8() throws Exception {
-        checkOrganize("testfiles/imports/organize2.py", true, true, false, true);
+        checkOrganize("testfiles/imports/organize2.py", true, true, false, true, false);
+    }
+
+    public void testSortFutureImports() throws Exception {
+        // 156442: Python __future__ imports not sorted properly
+        checkOrganize("testfiles/imports/futures.py", false, true, false, true, true);
     }
 
     // TODO - try manually importing zlib - doesn't go to the right place (and check for system libs)

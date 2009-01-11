@@ -205,6 +205,12 @@ public final class NbMavenProjectImpl implements Project {
         auxprops = new MavenProjectPropsImpl(this, auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            //#155766 sor of ugly, as not all (but the majority for sure) projects need
+            // a loaded maven project. But will protect from accidental loading in AWT
+            // thread.
+            getOriginalMavenProject();
+        }
     }
 
     public File getPOMFile() {
@@ -291,6 +297,7 @@ public final class NbMavenProjectImpl implements Project {
                 // that will not be used in current pom anyway..
                 // #135070
                 req.setRecursive(false);
+                req.setProperty("netbeans.execution", "true"); //NOI18N
                 MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
                 project = res.getProject();
                 if (res.hasExceptions()) {
@@ -920,7 +927,7 @@ public final class NbMavenProjectImpl implements Project {
             "java-beans", // NOI18N
             "oasis-XML-catalogs", // NOI18N
             "XML", // NOI18N
-            //            "web-service-clients",  // NOI18N
+            "web-service-clients",  // NOI18N
             "wsdl", // NOI18N
             // "servlet-types",     // NOI18N
             // "web-types",         // NOI18N

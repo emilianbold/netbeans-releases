@@ -39,11 +39,7 @@
 package org.netbeans.modules.db.dataview.output;
 
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
-import java.awt.AWTEvent;
-import java.awt.EventQueue;
-import java.awt.event.KeyEvent;
 import java.sql.Types;
-import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.swingx.JXTable;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -60,29 +56,7 @@ class InsertRecordTableUI extends ResultSetJXTable {
         if (getRSColumnCount() < 7) {
             setAutoResizeMode(JXTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         }
-    }
-
-    @Override
-    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        AWTEvent awtEvent = EventQueue.getCurrentEvent();
-        if (awtEvent instanceof KeyEvent) {
-            KeyEvent keyEvt = (KeyEvent) awtEvent;
-            if (keyEvt.getSource() != this) {
-                return;
-            }
-            if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
-                DefaultTableModel model = (DefaultTableModel) getModel();
-                model.addRow(createNewRow());
-                rowIndex = getRowCount() - 1; //Otherwise the selection switches to the first row
-                editCellAt(rowIndex, 0);
-            } else if (KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT + KeyEvent.VK_TAB, 0))) {
-                editCellAt(rowIndex, columnIndex);
-            } else {
-                editCellAt(rowIndex, columnIndex);
-            }
-        }
-        super.changeSelection(rowIndex, columnIndex, toggle, extend);
-    }
+    }   
 
     protected Object[] createNewRow() {
         Object[] row = new Object[getRSColumnCount()];
@@ -121,5 +95,4 @@ class InsertRecordTableUI extends ResultSetJXTable {
             model.addRow(createNewRow());
         }
     }
-
 }

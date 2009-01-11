@@ -58,6 +58,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -66,7 +67,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class TableNode extends BaseNode implements SchemaNameProvider {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif"; // NOI18N
     private static final String FOLDER = "Table"; //NOI18N
 
     /**
@@ -167,6 +168,11 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Table"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(TableNode.class);
     }
 
     @Override
