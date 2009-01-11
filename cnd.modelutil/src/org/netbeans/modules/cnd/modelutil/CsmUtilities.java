@@ -501,6 +501,10 @@ public class CsmUtilities {
         }
     }
 
+    private static interface Offsetable {
+        int getOffset();
+    }
+
     private static class PointOrOffsetable {
 
         private final Object content;
@@ -509,16 +513,38 @@ public class CsmUtilities {
             content = point;
         }
 
-        public PointOrOffsetable(CsmOffsetable offsetable) {
-            content = offsetable;
+        public PointOrOffsetable(final CsmOffsetable offsetable) {
+            content = new Offsetable() {
+                public int getOffset() {
+                    return offsetable.getStartOffset();
+                }
+            };
+        }
+
+        public PointOrOffsetable(final int offset) {
+            content = new Offsetable() {
+                public int getOffset() {
+                    return offset;
+                }
+            };
         }
 
         public Point getPoint() {
             return (content instanceof Point) ? (Point) content : null;
         }
 
-        public CsmOffsetable getOffsetable() {
-            return (content instanceof CsmOffsetable) ? (CsmOffsetable) content : null;
+        public Offsetable getOffsetable() {
+            return (content instanceof Offsetable) ? (Offsetable) content : null;
+        }
+
+        @Override
+        public String toString() {
+            if (content instanceof Point) {
+                Point point = (Point) content;
+                return String.format("[%d:%d]", point.line, point.column); // NOI18N
+            } else {
+                return String.format("[%d]", ((Offsetable) content).getOffset()); // NOI18N
+            }
         }
     }
 
@@ -540,9 +566,16 @@ public class CsmUtilities {
     public static boolean openSource(CsmFile file, int line, int column) {
         return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)));
     }
-//    //    public static boolean openSource(DataObject dob, int line, int column) {
-//        return false;
-//    }
+
+    public static boolean openSource(FileObject fo, int offset) {
+        DataObject dob;
+        try {
+            dob = DataObject.find(fo);
+            return openAtElement(dob, new PointOrOffsetable(offset));
+        } catch (DataObjectNotFoundException ex) {
+            return false;
+        }
+    }
 
     private static boolean openAtElement(final CsmOffsetable element) {
         return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
@@ -642,18 +675,19 @@ public class CsmUtilities {
     private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable) {
         //start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()-1) : element.getStartOffset();
         int start;
-        CsmOffsetable element = pointOrOffsetable.getOffsetable();
+        Offsetable element = pointOrOffsetable.getOffsetable();
         Point point = pointOrOffsetable.getPoint();
         if (element == null) {
             start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
             start += point.column;
         } else {
-            start = element.getStartOffset();
+            start = element.getOffset();
         }
         if (pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition(start);
             if (DEBUG) {
-                System.err.println("I'm going to " + start + " for element" + getElementJumpName(pointOrOffsetable));
+                String traceName;
+                System.err.println("I'm going to " + start + " for element " + pointOrOffsetable);
             }
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
@@ -690,15 +724,6 @@ public class CsmUtilities {
             }
         }
         return lineSt;
-    }
-
-    private static String getElementJumpName(PointOrOffsetable pointOrOffsetable) {
-        if (pointOrOffsetable.getOffsetable() != null) {
-            return getElementJumpName(pointOrOffsetable.getOffsetable());
-        } else {
-            return String.format("[%d:%d]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column); // NOI18N
-
-        }
     }
 
     public static String getElementJumpName(CsmObject element) {
