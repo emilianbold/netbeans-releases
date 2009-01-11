@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.gotodeclaration.symbol;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -113,13 +116,21 @@ public class CppSymbolProvider implements SymbolProvider {
 
         if (context.getProject() == null) {
             List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
+            Set<CsmProject> libs = new HashSet<CsmProject>();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
-                result.addResult(symbols);
+                collectLibs(csmProject, libs);                
             }
+            for(CsmProject csmProject : libs) {
+                if (cancelled) {
+                    break;
+                }
+                collectSymbols(csmProject, nameAcceptor, symbols);
+            }
+            result.addResult(symbols);
         } else {
             NativeProject nativeProject = context.getProject().getLookup().lookup(NativeProject.class);
             if (nativeProject != null) {
@@ -132,6 +143,15 @@ public class CppSymbolProvider implements SymbolProvider {
             }
         }
         cancelled = false;
+    }
+
+    private void collectLibs(CsmProject project, Collection<CsmProject> libs) {
+        for( CsmProject lib : project.getLibraries()) {
+            if (! libs.contains(lib)) {
+                libs.add(lib);
+                collectLibs(lib, libs);
+            }
+        }
     }
 
     private void collectSymbols(CsmProject csmProject, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
