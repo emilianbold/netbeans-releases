@@ -180,7 +180,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         cancel.set(false);
         
-        Document doc = result.getSnapshot().getSource().getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument(false);
 
         if (doc == null) {
             Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

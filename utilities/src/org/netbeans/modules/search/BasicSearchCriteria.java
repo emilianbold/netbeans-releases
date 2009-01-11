@@ -275,7 +275,7 @@ final class BasicSearchCriteria {
         assert !regexp;
         assert textPatternExpr != null;
         try {
-            int flags = 0;
+            int flags = Pattern.UNICODE_CASE;
             if (!caseSensitive) {
                 flags |= Pattern.CASE_INSENSITIVE;
             }

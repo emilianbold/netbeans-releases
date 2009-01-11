@@ -223,6 +223,9 @@ public class BracketCompletion {
             }
             if (ch == '(' || ch == '[') {
                 TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, dotPos, true);
+                if (token == null) {
+                    return;
+                }
                 if ((token.id() == CppTokenId.RBRACKET && tokenBalance(doc, CppTokenId.LBRACKET, CppTokenId.RBRACKET, dotPos) != 0)
                     || (token.id() == CppTokenId.RPAREN && tokenBalance(doc, CppTokenId.LPAREN, CppTokenId.RPAREN, dotPos) != 0)) {
                     doc.remove(dotPos, 1);

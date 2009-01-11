@@ -47,12 +47,12 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
@@ -73,7 +73,6 @@ public class DatabaseConnector {
 
     private DatabaseConnection databaseConnection;
     private Connection connection = null;
-    private SpecificationFactory factory;
     private boolean readOnly = false;
     private Specification spec;
 
@@ -84,12 +83,6 @@ public class DatabaseConnector {
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
-
-        try {
-            factory = new SpecificationFactory();
-        } catch (DDLException e) {
-            // throw a runtime exception?
-        }
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -112,6 +105,7 @@ public class DatabaseConnector {
         DriverSpecification dspec = driverSpecCache.get(catName);
         if (dspec == null) {
             try {
+                SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
                 dspec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
                 if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
                     //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
@@ -133,6 +127,7 @@ public class DatabaseConnector {
     
     public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
         try {
+            SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
             if (dbsys != null) {
                 spec = (Specification) factory.createSpecification(con, dbsys, connection);
                 readOnly = true;

@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.awt.Mnemonics;
 
@@ -70,7 +69,7 @@ public class AddViewDialog {
     JTextField namefld;
     JTextArea tarea;
 
-    public AddViewDialog(final Specification spec, final DatabaseNodeInfo info) {
+    public AddViewDialog(final Specification spec, final String schemaName) {
         try {
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
@@ -145,7 +144,7 @@ public class AddViewDialog {
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                                 public Boolean call() throws Exception {
                                     return AddViewDDL.addView(spec, 
-                                            (String)info.get(DatabaseNodeInfo.SCHEMA), 
+                                            schemaName,
                                             getViewName(), getViewCode());
                                 }
                             });

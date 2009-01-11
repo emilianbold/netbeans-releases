@@ -395,8 +395,6 @@ class ResultViewPanel extends JPanel{
     }
 
     void componentOpened() {
-        setRootDisplayName(getInitialRootNodeText());
-        /*selectAndActivateNode(root);*/
         if (searchScopeType == null) {
             setBtnModifyEnabled(false);
         }

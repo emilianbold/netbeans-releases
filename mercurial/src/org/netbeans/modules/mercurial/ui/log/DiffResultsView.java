@@ -214,6 +214,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 currentTask = new ShowDiffTask(header, revision1, HgNoRev, showLastDifference);
             }else if(action == HgLogMessage.HgCopyStatus){
                 currentTask = new ShowDiffTask(header, HgNoRev, revision2, showLastDifference);
+            } else {
+                currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
             }
             currentShowDiffTask = rp.create(currentTask);
             currentShowDiffTask.schedule(0);

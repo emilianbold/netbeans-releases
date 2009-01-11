@@ -162,15 +162,16 @@ public final class CompletionSupport {
         return CsmFinderFactory.getDefault().getFinder(fo);
     }
 
+    private static int NOT_INITIALIZED = -1;
     private int lastSeparatorOffset = -1;
-    private int contextOffset = 0;
+    private int contextOffset = NOT_INITIALIZED;
 
     public void setContextOffset(int offset) {
         this.contextOffset = offset;
     }
 
     private int doc2context(int docPos) {
-        return docPos + this.contextOffset;
+        return this.contextOffset == NOT_INITIALIZED ? docPos : this.contextOffset;
     }
     
     protected void setLastSeparatorOffset(int lastSeparatorOffset) {

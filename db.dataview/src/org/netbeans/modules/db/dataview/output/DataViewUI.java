@@ -423,8 +423,8 @@ class DataViewUI extends JXPanel {
         //add refresh text field
         refreshField = new FixedSizeTextField(4);
         refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setMinimumSize(new Dimension(35, refreshField.getHeight()));
-        refreshField.setSize(35, refreshField.getHeight());
+        refreshField.setMinimumSize(new Dimension(45, refreshField.getHeight()));
+        refreshField.setSize(45, refreshField.getHeight());
 
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);

@@ -55,6 +55,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -201,7 +202,9 @@ public class MethodBreakpointsTest extends JellyTestCase {
             try {
                 Utilities.startDebugger();
             } catch (Throwable th) {
+                new EventTool().waitNoEvent(500);
                 dialog.ok();
+                new EventTool().waitNoEvent(1500);
                 Utilities.startDebugger();
             }
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");

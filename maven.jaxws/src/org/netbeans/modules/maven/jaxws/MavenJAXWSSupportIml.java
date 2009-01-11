@@ -96,9 +96,10 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             if (wsdlFolder != null) {
                 FileObject wsdlFo = wsdlFolder.getFileObject(localWsdl);
                 if (wsdlFo != null) {
-                    Preferences prefs = ProjectUtils.getPreferences(prj, JaxWsService.class, true);
+                    Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class, true);
                     if (prefs != null) {
-                        prefs.remove(wsdlFo.getName());
+                        prefs.remove(MavenWebService.CLIENT_PREFIX+wsdlFo.getName());
+                        prefs.remove(MavenWebService.SERVICE_PREFIX+wsdlFo.getName());
                     }
                 }
             }

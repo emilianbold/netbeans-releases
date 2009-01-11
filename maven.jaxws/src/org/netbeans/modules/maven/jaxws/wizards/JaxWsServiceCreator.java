@@ -68,6 +68,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
+import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -90,7 +91,6 @@ import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
-import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -247,6 +247,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
 
+            Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
+            if (prefs != null) {
+                // remember original WSDL URL for service
+                prefs.put(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), wsdlUrl);
+            }
+
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
@@ -264,11 +270,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
                         Collections.singletonList(operation));
-
-                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
-                if (prefs != null) {
-                    prefs.put(wsdlFo.getName(), wsdlUrl);
-                }
 
                 // create empty web service implementation class
                 FileObject pkg = Templates.getTargetFolder(wiz);
