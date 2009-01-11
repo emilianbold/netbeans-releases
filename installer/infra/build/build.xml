@@ -374,7 +374,7 @@
 	<set property="glassfish.build.type" value="fcs"/>
 	
 	<set property="sjsas.milestone.number" value="60"/>
-	<set property="sjsas.milestone.number.real" value="60d"/>
+	<set property="sjsas.milestone.number.real" value="60f"/>
 	<set property="sjsas.build.type" value="fcs"/>
 	   
     <condition property="server.milestone.number" value="${sjsas.milestone.number}" else="${glassfish.milestone.number}">
