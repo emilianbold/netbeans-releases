@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.refactoring.javascript.plugins;
 
-import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -48,26 +48,21 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.refactoring.javascript.RetoucheUtils;
 import org.netbeans.modules.refactoring.javascript.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -109,157 +104,167 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         targetName = searchHandle.getSimpleName();
     }
     
-    protected Source getJsSource(Phase p) {
-        switch (p) {
-        default: 
-            return RetoucheUtils.getSource(searchHandle.getFileObject());
-        }
-    }
-    
-    @Override
+//    protected Source getJsSource(Phase p) {
+//        switch (p) {
+//        default:
+//            return RetoucheUtils.getSource(searchHandle.getFileObject());
+//        }
+//    }
+
     public Problem preCheck() {
         if (!searchHandle.getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(JsWhereUsedQueryPlugin.class, "DSC_ElNotAvail")); // NOI18N
         }
-        
-        return null;
-    }
-    
-    @Override
-    protected Problem preCheck(CompilationController info) {
-//        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
-//        if (p != null)
-//            return p;
-        
-//        if (!((jmiObject instanceof Feature) || (jmiObject instanceof Variable) || (jmiObject instanceof JavaPackage) || (jmiObject instanceof TypeParameter)) ) {
-//            return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "ERR_WhereUsedWrongType"));
-//        }
-        
+
         return null;
     }
     
     private Set<FileObject> getRelevantFiles(final JsElementCtx tph) {
-        final ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        //final ClassIndex idx = cpInfo.getClassIndex();
-        final Set<FileObject> set = new HashSet<FileObject>();
-                
-        final FileObject file = tph.getFileObject();
-        Source source;
-        if (file!=null) {
-           set.add(file);
-            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
-        } else {
-            source = Source.create(cpInfo);
-        }
-        //XXX: This is slow!
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
-            
-            public void run(CompilationController info) throws Exception {
-                info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                //System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
-                //set.add(info.getFileObject());
-                // (This currently doesn't need to run in a compilation controller since I'm not using parse results at all...)
+        Set<FileObject> set = new HashSet<FileObject>();
 
-                
-//                if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
-//                    // No need to do any parsing, we'll be using the index to find these files!
+        FileObject file = tph.getFileObject();
+        if (file != null) {
+            set.add(file);
+
+            boolean isLocal = false;
+            if (tph.getKind() == ElementKind.PARAMETER) {
+                isLocal = true;
+            } else if (tph.getKind() == ElementKind.VARIABLE) {
+                Node n = tph.getNode();
+                while (n != null) {
+                    if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
+                        isLocal = true;
+                        break;
+                    }
+                    n = n.getParentNode();
+                }
+            }
+
+            if (!isLocal) {
+                set.addAll(RetoucheUtils.getJsFilesInProject(file));
+            }
+        }
+
+        return set;
+
+
+//        final ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+//        //final ClassIndex idx = cpInfo.getClassIndex();
+//        final Set<FileObject> set = new HashSet<FileObject>();
+//
+//        final FileObject file = tph.getFileObject();
+//        Source source;
+//        if (file!=null) {
+//           set.add(file);
+//            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
+//        } else {
+//            source = Source.create(cpInfo);
+//        }
+//        //XXX: This is slow!
+//        UserTask task = new UserTask() {
+//            public void run(ResultIterator resultIterator) {
+//                //System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
+//                //set.add(info.getFileObject());
+//                // (This currently doesn't need to run in a compilation controller since I'm not using parse results at all...)
+//
+//
+////                if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
+////                    // No need to do any parsing, we'll be using the index to find these files!
+////                    set.add(info.getFileObject());
+////
+////                    String name = tph.getName();
+////
+////                    // Find overrides of the class
+////                    RubyIndex index = RubyIndex.get(info.getIndex());
+////                    String fqn = AstUtilities.getFqnName(tph.getPath());
+////                    Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
+////
+////                    if (classes.size() > 0) {
+////                        subclasses = classes;
+//////                        for (IndexedClass clz : classes) {
+//////                            FileObject fo = clz.getFileObject();
+//////                            if (fo != null) {
+//////                                set.add(fo);
+//////                            }
+//////                        }
+////                        // For now just parse this particular file!
+////                        set.add(info.getFileObject());
+////                        return;
+////                    }
+////                }
+//
+//                boolean isLocal = false;
+//                if (tph.getKind() == ElementKind.PARAMETER) {
+//                    isLocal = true;
+//                } else if (tph.getKind() == ElementKind.VARIABLE) {
+//                    Node n = tph.getNode();
+//                    while (n != null) {
+//                        if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
+//                            isLocal = true;
+//                            break;
+//                        }
+//                        n = n.getParentNode();
+//                    }
+//                }
+//                if (isLocal) {
+//                    // For local variables, only look in the current file!
 //                    set.add(info.getFileObject());
+//                }  else {
+//                    set.addAll(RetoucheUtils.getJsFilesInProject(info.getFileObject()));
+//                }
 //
-//                    String name = tph.getName();
-//                
-//                    // Find overrides of the class
-//                    RubyIndex index = RubyIndex.get(info.getIndex());
-//                    String fqn = AstUtilities.getFqnName(tph.getPath());
-//                    Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
-//
-//                    if (classes.size() > 0) {
-//                        subclasses = classes;
-////                        for (IndexedClass clz : classes) {
-////                            FileObject fo = clz.getFileObject();
-////                            if (fo != null) {
-////                                set.add(fo);
+////                final Element el = tph.resolveElement(info);
+////                if (el.getKind().isField()) {
+////                    //get field references from index
+////                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+////                } else if (el.getKind().isClass() || el.getKind().isInterface()) {
+////                    if (isFindSubclasses()||isFindDirectSubclassesOnly()) {
+////                        if (isFindDirectSubclassesOnly()) {
+////                            //get direct implementors from index
+////                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
+////                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+////                        } else {
+////                            //itererate implementors recursively
+////                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
+////                        }
+////                    } else {
+////                        //get type references from index
+////                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+////                    }
+////                } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
+////                    //Find overriding methods
+////                    TypeElement type = (TypeElement) el.getEnclosingElement();
+////                    set.addAll(getImplementorsRecursive(idx, cpInfo, type));
+////                }
+////                if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
+////                    //get method references for method and for all it's overriders
+////                    Set<ElementHandle<TypeElement>> s = idx.getElements(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+////                    for (ElementHandle<TypeElement> eh:s) {
+////                        TypeElement te = eh.resolve(info);
+////                        if (te==null) {
+////                            continue;
+////                        }
+////                        for (Element e:te.getEnclosedElements()) {
+////                            if (e instanceof ExecutableElement) {
+////                                if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
+////                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+////                                }
 ////                            }
 ////                        }
-//                        // For now just parse this particular file!
-//                        set.add(info.getFileObject());
-//                        return;
-//                    }
-//                }
-
-                boolean isLocal = false;
-                if (tph.getKind() == ElementKind.PARAMETER) {
-                    isLocal = true;
-                } else if (tph.getKind() == ElementKind.VARIABLE) {
-                    Node n = tph.getNode();
-                    while (n != null) {
-                        if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
-                            isLocal = true;
-                            break;
-                        }
-                        n = n.getParentNode();
-                    }
-                }
-                if (isLocal) {
-                    // For local variables, only look in the current file!
-                    set.add(info.getFileObject());
-                }  else {
-                    set.addAll(RetoucheUtils.getJsFilesInProject(info.getFileObject()));
-                }
-                
-//                final Element el = tph.resolveElement(info);
-//                if (el.getKind().isField()) {
-//                    //get field references from index
-//                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                } else if (el.getKind().isClass() || el.getKind().isInterface()) {
-//                    if (isFindSubclasses()||isFindDirectSubclassesOnly()) {
-//                        if (isFindDirectSubclassesOnly()) {
-//                            //get direct implementors from index
-//                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-//                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                        } else {
-//                            //itererate implementors recursively
-//                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
-//                        }
-//                    } else {
-//                        //get type references from index
-//                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                    }
-//                } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
-//                    //Find overriding methods
-//                    TypeElement type = (TypeElement) el.getEnclosingElement();
-//                    set.addAll(getImplementorsRecursive(idx, cpInfo, type));
-//                } 
-//                if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
-//                    //get method references for method and for all it's overriders
-//                    Set<ElementHandle<TypeElement>> s = idx.getElements(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
-//                    for (ElementHandle<TypeElement> eh:s) {
-//                        TypeElement te = eh.resolve(info);
-//                        if (te==null) {
-//                            continue;
-//                        }
-//                        for (Element e:te.getEnclosedElements()) {
-//                            if (e instanceof ExecutableElement) {
-//                                if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
-//                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                                }
-//                            }
-//                        }
-//                    }
-//                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
-//                } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-//                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                }
-//                    
-            }
-        };
-        try {
-            source.runUserActionTask(task, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        }
-        return set;
+////                    }
+////                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
+////                } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
+////                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+////                }
+////
+//            }
+//        };
+//        try {
+//            source.runUserActionTask(task, true);
+//        } catch (IOException ioe) {
+//            throw (RuntimeException) new RuntimeException().initCause(ioe);
+//        }
+//        return set;
     }
     
 //    private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
@@ -292,8 +297,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         return null;
     }
     
-    //@Override
-    protected Problem fastCheckParameters(CompilationController info) {
+    public Problem fastCheckParameters() {
         if (targetName == null) {
             return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
         }
@@ -303,8 +307,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         return null;
     }
     
-    //@Override
-    protected Problem checkParameters(CompilationController info) {
+    public Problem checkParameters() {
         return null;
     }
     
@@ -337,40 +340,35 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         return refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS);
     }
     
-    private class FindTask implements CancellableTask<WorkingCopy> {
+    private class FindTask extends TransformTask {
 
         private RefactoringElementsBag elements;
-        private volatile boolean cancelled;
 
         public FindTask(RefactoringElementsBag elements) {
             super();
             this.elements = elements;
         }
 
-        public void cancel() {
-            cancelled=true;
-        }
-
-        public void run(WorkingCopy compiler) throws IOException {
-            if (cancelled)
-                return ;
-            compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+        protected Collection<ModificationResult> process(JsParseResult jspr) {
+            if (isCancelled()) {
+                return null;
+            }
 
             Error error = null;
 
             JsElementCtx searchCtx = searchHandle;
             
-            Node root = AstUtilities.getRoot(compiler);
+            Node root = jspr.getRootNode();
             
             if (root == null) {
-                String sourceText = compiler.getText();
+                String sourceText = jspr.getSnapshot().getText().toString();
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
                 if (sourceText != null && sourceText.indexOf(targetName) != -1) {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 
-                    List<Error> errors = compiler.getErrors();
+                    List<? extends Error> errors = jspr.getDiagnostics();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
                             if (e.getSeverity() == Severity.ERROR) {
@@ -390,7 +388,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
 
                         desc = desc + "; " + errorMsg;
                         start = error.getStartPosition();
-                        start = LexUtilities.getLexerOffset(compiler, start);
+                        start = LexUtilities.getLexerOffset(jspr, start);
                         if (start == -1) {
                             start = 0;
                         }
@@ -400,13 +398,13 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                     Set<Modifier> modifiers = Collections.emptySet();
                     Icon icon = UiUtils.getElementIcon(ElementKind.ERROR, modifiers);
                     OffsetRange range = new OffsetRange(start, end);
-                    WhereUsedElement element = WhereUsedElement.create(compiler, targetName, desc, range, icon); 
+                    WhereUsedElement element = WhereUsedElement.create(jspr, targetName, desc, range, icon);
                     elements.add(refactoring, element);
                 }
             }
 
             if (error == null && isSearchInComments()) {
-                Document doc = RetoucheUtils.getDocument(compiler, compiler.getFileObject());
+                Document doc = RetoucheUtils.getDocument(jspr);
                 if (doc != null) {
                     //force open
                     TokenHierarchy<Document> th = TokenHierarchy.get(doc);
@@ -414,31 +412,30 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
 
                     ts.move(0);
 
-                    searchTokenSequence(compiler, ts);
+                    searchTokenSequence(jspr, ts);
                 }
             }
             
             if (root == null) {
                 // TODO - warn that this file isn't compileable and is skipped?
-                fireProgressListenerStep();
-                return;
+                return Collections.<ModificationResult>emptySet();
             }
             
-            BaseDocument doc = GsfUtilities.getDocument(compiler.getFileObject(), true);
+            BaseDocument doc = GsfUtilities.getDocument(jspr.getSnapshot().getSource().getFileObject(), true);
             Element element = null;
             try {
                 if (doc != null) {
                     doc.readLock();
                 }
 
-                element = AstElement.getElement(compiler, root);
+                element = AstElement.getElement(jspr, root);
             } finally {
                 if (doc != null) {
                     doc.readUnlock();
                 }
             }
             Node node = searchCtx.getNode();
-            JsElementCtx fileCtx = new JsElementCtx(root, node, element, compiler.getFileObject(), compiler);
+            JsElementCtx fileCtx = new JsElementCtx(root, node, element, jspr.getSnapshot().getSource().getFileObject(), jspr);
 
             // If it's a local search, use a simpler search routine
             // TODO: ArgumentNode - look to see if we're in a parameter list, and if so its a localvar
@@ -493,10 +490,11 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             } else if (isSearchFromBaseClass()) {
                 // TODO
             }
-            fireProgressListenerStep();
+
+            return Collections.<ModificationResult>emptySet();
         }
 
-        private void searchTokenSequence(CompilationInfo info, TokenSequence<?> ts) {
+        private void searchTokenSequence(JsParseResult info, TokenSequence<?> ts) {
             if (ts.moveNext()) {
                 do {
                     Token<?> token = ts.token();

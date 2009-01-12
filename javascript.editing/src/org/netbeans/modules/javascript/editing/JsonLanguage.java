@@ -41,11 +41,10 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -76,7 +75,7 @@ public class JsonLanguage extends JsLanguage {
     }
 
     @Override
-    public Indexer getIndexer() {
+    public EmbeddingIndexerFactory getIndexerFactory() {
         // No JSON indexing
         return null;
     }

@@ -50,17 +50,17 @@ import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -105,7 +105,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
             return;
         }
 
-        int thisCompilationRun = context.compilationInfo.hashCode();
+        int thisCompilationRun = context.parserResult.hashCode();
         LOG.log(Level.FINEST, "context.compilationInfo = {0}", thisCompilationRun);
 
         if (thisCompilationRun != lastCompilationRun) {
@@ -113,7 +113,8 @@ public class ClassNotFoundRule extends GroovyErrorRule {
             lastCompilationRun = thisCompilationRun;
         }
 
-        FileObject fo = context.compilationInfo.getFileObject();
+        // FIXME parsing API
+        FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
         List<ImportCandidate> importCandidates =
                 helper.getImportCandidate(fo, missingClassName);
