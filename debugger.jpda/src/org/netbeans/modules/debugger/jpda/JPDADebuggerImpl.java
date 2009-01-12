@@ -65,6 +65,7 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -178,7 +179,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private CallStackFrame              currentCallStackFrame;
     private final Object                currentThreadAndFrameLock = new Object();
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
-    public final ReentrantReadWriteLock accessLock = new ReentrantReadWriteLock(false); // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+    public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(false); // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
     private AbstractDICookie            attachingCookie;
@@ -1998,6 +1999,57 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             return deadlockDetector;
         }
+    }
+
+    private static class DebuggerReentrantReadWriteLock extends ReentrantReadWriteLock {
+
+        private ReadLock readerLock;
+        private WriteLock writerLock;
+
+        public DebuggerReentrantReadWriteLock(boolean fair) {
+            super(fair);
+            readerLock = new DebuggerReadLock(this);
+            writerLock = new DebuggerWriteLock(this);
+        }
+
+        @Override
+        public ReadLock readLock() {
+            return readerLock;
+        }
+
+        @Override
+        public WriteLock writeLock() {
+            return writerLock;
+        }
+
+        private static class DebuggerReadLock extends ReentrantReadWriteLock.ReadLock {
+
+            protected DebuggerReadLock(ReentrantReadWriteLock lock) {
+                super(lock);
+            }
+
+            @Override
+            public void lock() {
+                assert !EventQueue.isDispatchThread() : "Debugger lock taken in AWT Event Queue!";
+                super.lock();
+            }
+
+        }
+
+        private static class DebuggerWriteLock extends ReentrantReadWriteLock.WriteLock {
+
+            protected DebuggerWriteLock(ReentrantReadWriteLock lock) {
+                super(lock);
+            }
+
+            @Override
+            public void lock() {
+                assert !EventQueue.isDispatchThread() : "Debugger lock taken in AWT Event Queue!";
+                super.lock();
+            }
+
+        }
+
     }
 
 }
