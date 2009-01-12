@@ -42,16 +42,18 @@
 package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.IOException;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.ImageUtilities;
 
 /**
  * Factory for NetBeans module suite projects.
  * @author Jesse Glick
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class SuiteProjectType implements AntBasedProjectType {
+public final class SuiteProjectType implements AntBasedProjectType2 {
 
     public static final String TYPE = "org.netbeans.modules.apisupport.project.suite"; // NOI18N
     static final String NAME_SHARED = "data"; // NOI18N
@@ -76,6 +78,10 @@ public final class SuiteProjectType implements AntBasedProjectType {
     
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? NAMESPACE_SHARED : NAMESPACE_PRIVATE;
+    }
+
+    public Icon getIcon() {
+        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/suite.png", true));
     }
     
 }

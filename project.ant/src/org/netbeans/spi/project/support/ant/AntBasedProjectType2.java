@@ -39,49 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject;
+package org.netbeans.spi.project.support.ant;
 
-import java.io.IOException;
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.ImageUtilities;
 
 /**
- * Factory for simple J2SE projects.
- * @author Jesse Glick
+ * extension of {@link org.netbeans.spi.project.support.ant.AntBasedProjectType}
+ * that provides an icon for the project without actually creating an project instance for it.
+ * @author mkleint
+ * @since org.netbeans.modules.project.ant 1.28
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class J2SEProjectType implements AntBasedProjectType2 {
+public interface AntBasedProjectType2 extends AntBasedProjectType {
 
-    public static final String TYPE = "org.netbeans.modules.java.j2seproject"; // NOI18N
-    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
-    
-    /** Do nothing, just a service. */
-    public J2SEProjectType() {}
-    
-    public String getType() {
-        return TYPE;
-    }
-    
-    public Project createProject(AntProjectHelper helper) throws IOException {
-        return new J2SEProject(helper);
-    }
+    /**
+     * icon of the project type represented by the given implementation of the interface.
+     * @return
+     */
+    public Icon getIcon();
 
-    public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
-    }
-    
-    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
-    }
-
-    public Icon getIcon() {
-        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", true));
-    }
-    
 }
