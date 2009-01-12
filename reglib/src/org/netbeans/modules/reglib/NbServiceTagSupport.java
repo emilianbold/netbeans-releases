@@ -529,13 +529,25 @@ public class NbServiceTagSupport {
             }
             if ((tmpFile != null) && tmpFile.exists()) {
                 tmpFile.delete();
-                targetFile = regXmlFileNb;
+                //Verify we can overwrite/delete target file in install dir
+                //to handle case whet target file is read only.
+                if (regXmlFileNb.exists()) {
+                    if (regXmlFileNb.delete()) {
+                        targetFile = regXmlFileNb;
+                    } else {
+                        targetFile = regXmlFileHome;
+                    }
+                } else {
+                    targetFile = regXmlFileNb;
+                }
             } else {
                 targetFile = regXmlFileHome;    
             }
         } else {
             targetFile = regXmlFileHome;
         }
+        LOG.log(Level.FINE,"writeRegistrationXml targetFile: " + targetFile);
+
         BufferedOutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(targetFile));
@@ -567,12 +579,38 @@ public class NbServiceTagSupport {
         }
         
         File srcFile = null;
+        //Below srcFile must be either set or method must return
         if (regXmlFileNb.exists()) {
-            srcFile = regXmlFileNb;
-            LOG.log(Level.FINE,"Service tag will be loaded from NB install dir: " + srcFile);
+            //#151921 Check for empty file
+            if (regXmlFileNb.length() == 0) {
+                //Check file at home dir just in case install dir is read only
+                if (regXmlFileHome.exists()) {
+                    if (regXmlFileHome.length() == 0) {
+                        registration = new RegistrationData();
+                        LOG.log(Level.FINE,"Service tag file:" + regXmlFileHome + " is empty.");
+                        return registration;
+                    } else {
+                        srcFile = regXmlFileHome;
+                    }
+                } else {
+                    registration = new RegistrationData();
+                    LOG.log(Level.FINE,"Service tag file:" + regXmlFileNb + " is empty.");
+                    return registration;
+                }
+            } else {
+                srcFile = regXmlFileNb;
+                LOG.log(Level.FINE,"Service tag will be loaded from NB install dir: " + srcFile);
+            }
         } else if (regXmlFileHome.exists()) {
-            srcFile = regXmlFileHome;
-            LOG.log(Level.FINE,"Service tag will be loaded from user home dir: " + srcFile);
+            //#151921 Check for empty file
+            if (regXmlFileHome.length() == 0) {
+                registration = new RegistrationData();
+                LOG.log(Level.FINE,"Service tag file:" + regXmlFileHome + " is empty.");
+                return registration;
+            } else {
+                srcFile = regXmlFileHome;
+                LOG.log(Level.FINE,"Service tag will be loaded from user home dir: " + srcFile);
+            }
         } else {
             registration = new RegistrationData();
             LOG.log(Level.FINE,"Service tag file not found");
