@@ -85,7 +85,7 @@ public class CheckTreeView extends BeanTreeView  {
         if( null != input )
             input.remove( KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0) );
         
-        setBorder( UIManager.getBorder("ScrollPane.border") );
+        setBorder( UIManager.getBorder("ScrollPane.border") ); // NOI18N
     }
     
     @Override

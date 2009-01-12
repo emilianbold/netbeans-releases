@@ -75,7 +75,7 @@ public final class CsmContext {
 
     @Override
     public String toString() {
-        return "context: [" + file + ":" + offset + "]";
+        return "context: [" + file + ":" + offset + "]"; // NOI18N
     }
 
     private synchronized void initPath() {
