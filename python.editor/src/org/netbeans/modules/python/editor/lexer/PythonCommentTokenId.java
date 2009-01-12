@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -59,63 +58,59 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author Tor Norbye
  */
-public enum PythonStringTokenId implements TokenId {
-    STRING_TEXT("string"),
-    STRING_ESCAPE("string-escape"),
-    STRING_INVALID("string-escape-invalid"),
-    URL("url"),
-    EMBEDDED_PYTHON("string");
+public enum PythonCommentTokenId implements TokenId {
+    TEXT("comment"),
+    KEYWORD("comment"),
+    SEPARATOR("comment"),
+    TYPEKEY("comment"),
+    VARNAME("comment"),
+    TYPE("comment"),
+    TODO("comment");
     private final String primaryCategory;
 
-    PythonStringTokenId() {
+    PythonCommentTokenId() {
         this(null);
     }
 
-    PythonStringTokenId(String primaryCategory) {
+    PythonCommentTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
     public String primaryCategory() {
         return primaryCategory;
     }
-    public static final Language<PythonStringTokenId> language =
-            new LanguageHierarchy<PythonStringTokenId>() {
+    public static final Language<PythonCommentTokenId> language =
+            new LanguageHierarchy<PythonCommentTokenId>() {
                 @Override
-                protected Collection<PythonStringTokenId> createTokenIds() {
-                    return EnumSet.allOf(PythonStringTokenId.class);
+                protected Collection<PythonCommentTokenId> createTokenIds() {
+                    return EnumSet.allOf(PythonCommentTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<PythonStringTokenId>> createTokenCategories() {
+                protected Map<String, Collection<PythonCommentTokenId>> createTokenCategories() {
                     return null; // no extra categories
                 }
 
                 @Override
-                protected Lexer<PythonStringTokenId> createLexer(
-                        LexerRestartInfo<PythonStringTokenId> info) {
-                    return new PythonStringLexer(info, true);
+                protected Lexer<PythonCommentTokenId> createLexer(
+                        LexerRestartInfo<PythonCommentTokenId> info) {
+                    return new PythonCommentLexer(info, true);
                 }
 
                 @Override
                 protected LanguageEmbedding<?> embedding(
-                        Token<PythonStringTokenId> token, LanguagePath languagePath,
+                        Token<PythonCommentTokenId> token, LanguagePath languagePath,
                         InputAttributes inputAttributes) {
-                    PythonStringTokenId id = token.id();
-
-                    if (id == EMBEDDED_PYTHON && token.text() != null) {
-                        return LanguageEmbedding.create(PythonTokenId.language(), 3, 0); // 3: Exlude ">>>" prefix
-                    }
-
                     return null; // No embedding
                 }
 
                 @Override
                 public String mimeType() {
-                    return "text/x-python-string"; // NOI18N
+                    return "text/x-python-comment"; // NOI18N
                 }
             }.language();
 
-    public static Language<PythonStringTokenId> language() {
+    public static Language<PythonCommentTokenId> language() {
         return language;
     }
 }
