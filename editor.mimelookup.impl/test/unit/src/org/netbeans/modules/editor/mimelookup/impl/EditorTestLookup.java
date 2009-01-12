@@ -50,7 +50,6 @@ import junit.framework.Assert;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.Status;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
@@ -147,7 +146,7 @@ public class EditorTestLookup extends ProxyLookup {
         if (repository == null) {
             repository = new Repository(new SystemFileSystem(fs));
         } else {
-            ((SystemFileSystem) FileUtil.getConfigRoot().getFileSystem()).setOrig(fs);
+            ((SystemFileSystem) repository.getDefaultFileSystem()).setOrig(fs);
         }
         
         Object[] lookupContent = new Object[instances.length + 1];
@@ -155,9 +154,9 @@ public class EditorTestLookup extends ProxyLookup {
         System.arraycopy(instances, 0, lookupContent, 1, instances.length);
 
         // Create the Services folder (if needed}
-        FileObject services = FileUtil.getConfigFile("Services");
+        FileObject services = repository.getDefaultFileSystem().findResource("Services");
         if (services == null) {
-            services = FileUtil.getConfigRoot().createFolder("Services");
+            services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
         }
         
         DEFAULT_LOOKUP.setLookup(lookupContent, cl, services, exclude);
