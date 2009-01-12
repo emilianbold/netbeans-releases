@@ -599,7 +599,6 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
     <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
     <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../ide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
     <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
@@ -1227,7 +1226,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes" timeout="600000">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" timeout="600000">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1310,7 +1309,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>

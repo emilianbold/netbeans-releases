@@ -385,7 +385,7 @@ public class BinaryFS extends FileSystem {
 
                 ThreadLocal<?> attrAskedFileObject = ThreadLocal.class.cast(field.get(null));
                 topFO = (FileObject)attrAskedFileObject.get();
-                attrAskedFileObject.set(null);
+                //attrAskedFileObject.set(null);
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }

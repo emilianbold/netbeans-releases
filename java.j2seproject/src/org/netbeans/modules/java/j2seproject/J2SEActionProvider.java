@@ -413,6 +413,11 @@ class J2SEActionProvider implements ActionProvider {
                     }
                     if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
                         prepareSystemProperties(execProperties, false);
+                        if (COMMAND_RUN_SINGLE.equals(command)) {
+                            execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("run.class"));
+                        } else {
+                            execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("debug.class"));
+                        }
                         bypassAntBuildScript(command, context, execProperties);
                         return;
                     }

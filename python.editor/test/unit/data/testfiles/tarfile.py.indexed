@@ -1,0 +1,486 @@
+
+
+Document 0
+Searchable Keys:
+  class : CompressionError
+  class-ig : compressionerror
+  extends : TarError
+  in : tarfile
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 1
+Searchable Keys:
+  class : ExFileObject
+  class-ig : exfileobject
+  extends : object
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,tarfile,tarinfo;
+  member : __iter__;F;|PRIVATE|;self;
+  member : blocksize;D;|PRIVATE|;
+  member : buffer;D;;
+  member : close;F;|PRIVATE|;self;
+  member : closed;D;;
+  member : fileobj;D;;
+  member : mode;D;;
+  member : name;D;;
+  member : position;D;;
+  member : read;F;|PRIVATE|;self,size;
+  member : readline;F;|PRIVATE|;self,size;
+  member : readlines;F;|PRIVATE|;self;
+  member : seek;F;|PRIVATE|;self,pos,whence;
+  member : size;D;;
+  member : tell;F;|PRIVATE|;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 2
+Searchable Keys:
+  class : ExtractError
+  class-ig : extracterror
+  extends : TarError
+  in : tarfile
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 3
+Searchable Keys:
+  class : ReadError
+  class-ig : readerror
+  extends : TarError
+  in : tarfile
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 4
+Searchable Keys:
+  class : StreamError
+  class-ig : streamerror
+  extends : TarError
+  in : tarfile
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 5
+Searchable Keys:
+  class : TarError
+  class-ig : tarerror
+  extends : Exception
+  in : tarfile
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  class : TarFile
+  class-ig : tarfile
+  extends : object
+  in : tarfile
+  member : OPEN_METH;D;;
+  member : __init__;c;|CONSTRUCTOR|;self,name,mode,fileobj;
+  member : __iter__;F;;self;
+  member : _block;F;|PRIVATE|;self,count;
+  member : _check;F;|PRIVATE|;self,mode;
+  member : _dbg;F;|PRIVATE|;self,level,msg;
+  member : _extfileobj;D;|PRIVATE|;
+  member : _extract_member;F;|PRIVATE|;self,tarinfo,targetpath;
+  member : _getmember;F;|PRIVATE|;self,name,tarinfo;
+  member : _load;F;|PRIVATE|;self;
+  member : _loaded;D;|PRIVATE|;
+  member : _mode;D;|PRIVATE|;
+  member : add;F;;self,name,arcname,recursive;
+  member : addfile;F;;self,tarinfo,fileobj;
+  member : bz2open;c;|CONSTRUCTOR|STATIC|;cls,name,mode,fileobj,compresslevel;
+  member : chmod;F;;self,tarinfo,targetpath;
+  member : chown;F;;self,tarinfo,targetpath;
+  member : close;F;;self;
+  member : closed;D;;
+  member : debug;D;;
+  member : dereference;D;;
+  member : errorlevel;D;;
+  member : extract;F;;self,member,path;
+  member : extractall;F;;self,path,members;
+  member : extractfile;F;;self,member;
+  member : fileobj;D;;
+  member : fileobject;D;;
+  member : firstmember;D;;
+  member : getmember;F;;self,name;
+  member : getmembers;F;;self;
+  member : getnames;F;;self;
+  member : gettarinfo;F;;self,name,arcname,fileobj;
+  member : gzopen;c;|CONSTRUCTOR|STATIC|;cls,name,mode,fileobj,compresslevel;
+  member : ignore_zeros;D;;
+  member : inodes;D;;
+  member : list;F;;self,verbose;
+  member : makedev;F;;self,tarinfo,targetpath;
+  member : makedir;F;;self,tarinfo,targetpath;
+  member : makefifo;F;;self,tarinfo,targetpath;
+  member : makefile;F;;self,tarinfo,targetpath;
+  member : makelink;F;;self,tarinfo,targetpath;
+  member : makeunknown;F;;self,tarinfo,targetpath;
+  member : members;D;;
+  member : mode;D;;
+  member : name;D;;
+  member : next;F;;self;
+  member : offset;D;;
+  member : open;c;|CONSTRUCTOR|STATIC|;cls,name,mode,fileobj,bufsize;
+  member : posix;D;;
+  member : proc_builtin;F;;self,tarinfo;
+  member : proc_gnulong;F;;self,tarinfo;
+  member : proc_member;F;;self,tarinfo;
+  member : proc_sparse;F;;self,tarinfo;
+  member : taropen;c;|CONSTRUCTOR|STATIC|;cls,name,mode,fileobj;
+  member : utime;F;;self,tarinfo,targetpath;
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  class : TarFileCompat
+  class-ig : tarfilecompat
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,file,mode,compression;
+  member : close;F;|PRIVATE|;self;
+  member : getinfo;F;|PRIVATE|;self,name;
+  member : infolist;F;|PRIVATE|;self;
+  member : namelist;F;|PRIVATE|;self;
+  member : printdir;F;|PRIVATE|;self;
+  member : read;F;|PRIVATE|;self,name;
+  member : tarfile;D;;
+  member : testzip;F;|PRIVATE|;self;
+  member : write;F;|PRIVATE|;self,filename,arcname,compress_type;
+  member : writestr;F;|PRIVATE|;self,zinfo,bytes;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 8
+Searchable Keys:
+  class : TarInfo
+  class-ig : tarinfo
+  extends : object
+  in : tarfile
+  member : __init__;c;|CONSTRUCTOR|;self,name;
+  member : __repr__;F;;self;
+  member : _create_gnulong;F;|PRIVATE|;self,name,type;
+  member : buf;D;;
+  member : chksum;D;;
+  member : devmajor;D;;
+  member : devminor;D;;
+  member : frombuf;c;|CONSTRUCTOR|STATIC|;cls,buf;
+  member : gid;D;;
+  member : gname;D;;
+  member : isblk;F;;self;
+  member : ischr;F;;self;
+  member : isdev;F;;self;
+  member : isdir;F;;self;
+  member : isfifo;F;;self;
+  member : isfile;F;;self;
+  member : islnk;F;;self;
+  member : isreg;F;;self;
+  member : issparse;F;;self;
+  member : issym;F;;self;
+  member : linkname;D;;
+  member : mode;D;;
+  member : mtime;D;;
+  member : name;D;;
+  member : offset;D;;
+  member : offset_data;D;;
+  member : size;D;;
+  member : tobuf;F;;self,posix;
+  member : type;D;;
+  member : uid;D;;
+  member : uname;D;;
+
+Not Searchable Keys:
+
+
+Document 9
+Searchable Keys:
+  class : TarIter
+  class-ig : tariter
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,tarfile;
+  member : __iter__;F;|PRIVATE|;self;
+  member : index;D;;
+  member : next;F;|PRIVATE|;self;
+  member : tarfile;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 10
+Searchable Keys:
+  class : _BZ2Proxy
+  class-ig : _bz2proxy
+  extends : object
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,fileobj,mode;
+  member : blocksize;D;|PRIVATE|;
+  member : buf;D;;
+  member : bz2obj;D;;
+  member : close;F;|PRIVATE|;self;
+  member : fileobj;D;;
+  member : init;F;|PRIVATE|;self;
+  member : mode;D;;
+  member : pos;D;;
+  member : read;F;|PRIVATE|;self,size;
+  member : seek;F;|PRIVATE|;self,pos;
+  member : tell;F;|PRIVATE|;self;
+  member : write;F;|PRIVATE|;self,data;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 11
+Searchable Keys:
+  class : _FileInFile
+  class-ig : _fileinfile
+  extends : object
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,fileobj,offset,size,sparse;
+  member : fileobj;D;;
+  member : offset;D;;
+  member : position;D;;
+  member : read;F;|PRIVATE|;self,size;
+  member : readnormal;F;|PRIVATE|;self,size;
+  member : readsparse;F;|PRIVATE|;self,size;
+  member : readsparsesection;F;|PRIVATE|;self,size;
+  member : seek;F;|PRIVATE|;self,position;
+  member : size;D;;
+  member : sparse;D;;
+  member : tell;F;|PRIVATE|;self;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 12
+Searchable Keys:
+  class : _LowLevelFile
+  class-ig : _lowlevelfile
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,name,mode;
+  member : close;F;|PRIVATE|;self;
+  member : fd;D;;
+  member : read;F;|PRIVATE|;self,size;
+  member : write;F;|PRIVATE|;self,s;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 13
+Searchable Keys:
+  class : _Stream
+  class-ig : _stream
+  in : tarfile
+  member : __del__;F;|PRIVATE|;self;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,name,mode,comptype,fileobj,bufsize;
+  member : __read;F;|PRIVATE|;self,size;
+  member : __write;F;|PRIVATE|;self,s;
+  member : _extfileobj;D;|PRIVATE|;
+  member : _init_read_gz;F;|PRIVATE|;self;
+  member : _init_write_gz;F;|PRIVATE|;self;
+  member : _read;F;|PRIVATE|;self,size;
+  member : buf;D;;
+  member : bufsize;D;;
+  member : close;F;|PRIVATE|;self;
+  member : closed;D;;
+  member : cmp;D;;
+  member : comptype;D;;
+  member : crc;D;;
+  member : dbuf;D;;
+  member : fileobj;D;;
+  member : mode;D;;
+  member : name;D;;
+  member : pos;D;;
+  member : read;F;|PRIVATE|;self,size;
+  member : seek;F;|PRIVATE|;self,pos;
+  member : tell;F;|PRIVATE|;self;
+  member : write;F;|PRIVATE|;self,s;
+  member : zlib;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 14
+Searchable Keys:
+  class : _StreamProxy
+  class-ig : _streamproxy
+  extends : object
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,fileobj;
+  member : buf;D;;
+  member : close;F;|PRIVATE|;self;
+  member : fileobj;D;;
+  member : getcomptype;F;|PRIVATE|;self;
+  member : read;D;;
+  member : read;F;|PRIVATE|;self,size;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 15
+Searchable Keys:
+  class : _data
+  class-ig : _data
+  extends : _section
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,offset,size,realpos;
+  member : realpos;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 16
+Searchable Keys:
+  class : _hole
+  class-ig : _hole
+  extends : _section
+  in : tarfile
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 17
+Searchable Keys:
+  class : _ringbuffer
+  class-ig : _ringbuffer
+  extends : list
+  in : tarfile
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self;
+  member : find;F;|PRIVATE|;self,offset;
+  member : idx;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 18
+Searchable Keys:
+  class : _section
+  class-ig : _section
+  in : tarfile
+  member : __contains__;F;|PRIVATE|;self,offset;
+  member : __init__;c;|PRIVATE|CONSTRUCTOR|;self,offset,size;
+  member : offset;D;;
+  member : size;D;;
+
+Not Searchable Keys:
+  clzattrs : ;|PRIVATE|;
+
+
+Document 19
+Searchable Keys:
+  item : AREGTYPE;D;|PRIVATE|;
+  item : BLKTYPE;D;|PRIVATE|;
+  item : BLOCKSIZE;D;|PRIVATE|;
+  item : CHRTYPE;D;|PRIVATE|;
+  item : CONTTYPE;D;|PRIVATE|;
+  item : CompressionError;C;|PRIVATE|;
+  item : DIRTYPE;D;|PRIVATE|;
+  item : ExFileObject;C;|PRIVATE|;
+  item : ExtractError;C;|PRIVATE|;
+  item : FIFOTYPE;D;|PRIVATE|;
+  item : GNUTYPE_LONGLINK;D;|PRIVATE|;
+  item : GNUTYPE_LONGNAME;D;|PRIVATE|;
+  item : GNUTYPE_SPARSE;D;|PRIVATE|;
+  item : LENGTH_LINK;D;|PRIVATE|;
+  item : LENGTH_NAME;D;|PRIVATE|;
+  item : LENGTH_PREFIX;D;|PRIVATE|;
+  item : LNKTYPE;D;|PRIVATE|;
+  item : MAGIC;D;|PRIVATE|;
+  item : MAXSIZE_MEMBER;D;|PRIVATE|;
+  item : NUL;D;|PRIVATE|;
+  item : RECORDSIZE;D;|PRIVATE|;
+  item : REGTYPE;D;|PRIVATE|;
+  item : REGULAR_TYPES;D;|PRIVATE|;
+  item : ReadError;C;|PRIVATE|;
+  item : SUPPORTED_TYPES;D;|PRIVATE|;
+  item : SYMTYPE;D;|PRIVATE|;
+  item : S_IFBLK;D;|PRIVATE|;
+  item : S_IFCHR;D;|PRIVATE|;
+  item : S_IFDIR;D;|PRIVATE|;
+  item : S_IFIFO;D;|PRIVATE|;
+  item : S_IFLNK;D;|PRIVATE|;
+  item : S_IFREG;D;|PRIVATE|;
+  item : StreamError;C;|PRIVATE|;
+  item : TAR_GZIPPED;D;|PRIVATE|;
+  item : TAR_PLAIN;D;|PRIVATE|;
+  item : TGEXEC;D;|PRIVATE|;
+  item : TGREAD;D;|PRIVATE|;
+  item : TGWRITE;D;|PRIVATE|;
+  item : TOEXEC;D;|PRIVATE|;
+  item : TOREAD;D;|PRIVATE|;
+  item : TOWRITE;D;|PRIVATE|;
+  item : TSGID;D;|PRIVATE|;
+  item : TSUID;D;|PRIVATE|;
+  item : TSVTX;D;|PRIVATE|;
+  item : TUEXEC;D;|PRIVATE|;
+  item : TUREAD;D;|PRIVATE|;
+  item : TUWRITE;D;|PRIVATE|;
+  item : TarError;C;;
+  item : TarFile;C;;
+  item : TarFileCompat;C;|PRIVATE|;
+  item : TarInfo;C;;
+  item : TarIter;C;|PRIVATE|;
+  item : VERSION;D;|PRIVATE|;
+  item : _BZ2Proxy;C;|PRIVATE|;
+  item : _FileInFile;C;|PRIVATE|;
+  item : _LowLevelFile;C;|PRIVATE|;
+  item : _Stream;C;|PRIVATE|;
+  item : _StreamProxy;C;|PRIVATE|;
+  item : __all__;D;;
+  item : __author__;D;|PRIVATE|;
+  item : __credits__;D;|PRIVATE|;
+  item : __cvsid__;D;|PRIVATE|;
+  item : __date__;D;|PRIVATE|;
+  item : __version__;D;|PRIVATE|;
+  item : _data;C;|PRIVATE|;
+  item : _hole;C;|PRIVATE|;
+  item : _ringbuffer;C;|PRIVATE|;
+  item : _section;C;|PRIVATE|;
+  item : calc_chksums;F;|PRIVATE|;buf;
+  item : copy;I;|PRIVATE|;
+  item : copyfileobj;F;|PRIVATE|;src,dst,length;
+  item : errno;I;|PRIVATE|;
+  item : filemode;F;|PRIVATE|;mode;
+  item : filemode_table;D;|PRIVATE|;
+  item : grp;I;|PRIVATE|;
+  item : is_tarfile;F;;name;
+  item : itn;F;|PRIVATE|;n,digits,posix;
+  item : normpath;D;|PRIVATE|;
+  item : nti;F;|PRIVATE|;s;
+  item : open;D;|PRIVATE|;
+  item : os;I;|PRIVATE|;
+  item : pwd;I;|PRIVATE|;
+  item : shutil;I;|PRIVATE|;
+  item : stat;I;|PRIVATE|;
+  item : stn;F;|PRIVATE|;s,length;
+  item : struct;I;|PRIVATE|;
+  item : sys;I;|PRIVATE|;
+  item : time;I;|PRIVATE|;
+  item : version;D;|PRIVATE|;
+  module : tarfile
+
+Not Searchable Keys:

@@ -79,8 +79,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
-    private Integer offset;
-    private Integer length;
+    private Integer offsetInFile;
     private final QueryScope queryScope;
     private final FileReferencesContext fileReferencesContext;
     
@@ -117,11 +116,16 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                     InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
                     if (inputAttributes != null) {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
-                        this.offset = (Integer) inputAttributes.getValue(path, "dialogBinding.offset"); //NOI18N
-                        this.length = (Integer) inputAttributes.getValue(path, "dialogBinding.length"); //NOI18N
+                        offsetInFile = (Integer) inputAttributes.getValue(path, "dialogBinding.offset"); //NOI18N
+                        Integer length = (Integer) inputAttributes.getValue(path, "dialogBinding.length"); //NOI18N
+                        if (offsetInFile != null && length != null) {
+                            offsetInFile = Integer.valueOf(offsetInFile.intValue() - length.intValue());
+                        }
                     }
                     CompletionSupport sup = CompletionSupport.get(bDoc);
-                    sup.setContextOffset(offset == null ? 0 : offset);
+                    if (offsetInFile != null) {
+                        sup.setContextOffset(offsetInFile.intValue());
+                    }
                 }
             }            
         }
@@ -147,8 +151,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                     sort, CsmCompletionUtils.isNaturalSort(mimeType), fileReferencesContext);
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
-            if (offset != null) {
-                ((CompletionResolverImpl)resolver).setContextOffset(offset.intValue());
+            if (offsetInFile != null) {
+                ((CompletionResolverImpl)resolver).setContextOffset(offsetInFile.intValue());
             }
         }
         return resolver;

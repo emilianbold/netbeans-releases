@@ -15,15 +15,15 @@ public class NbModuleSuiteClusters extends TestCase {
 
         StringBuilder sb = new StringBuilder();
         String sep = "";
-        for (String d : dirs.split(":")) {
-            File f = new File(d);
-            if (f.getName().matches("platform[0-9]*")) {
+        for (String d : dirs.replace(File.separatorChar, '/').split(File.pathSeparator)) {
+            String sd = d.replaceFirst(".*/", "");
+            if (sd.matches("platform[0-9]*")) {
                 continue;
             }
-            if (f.getName().matches("harness[0-9]*")) {
+            if (sd.matches("harness[0-9]*")) {
                 continue;
             }
-            sb.append(sep).append(f.getName().replaceFirst("[0-9\\.]*$", ""));
+            sb.append(sep).append(sd.replaceFirst("[0-9\\.]*$", ""));
             sep = ":";
         }
         System.setProperty("clusters", sb.toString());

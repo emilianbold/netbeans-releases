@@ -83,6 +83,10 @@ public class TestSession {
     private String startingMsg;
 
     private final TestRunnerNodeFactory nodeFactory;
+    /**
+     * Handles re-running of this session's execution.
+     */
+    private RerunHandler rerunHandler;
 
     public TestSession(String name, Project project, SessionType sessionType) {
         this(name, project, sessionType, new DefaultTestRunnerNodeFactory());
@@ -101,6 +105,14 @@ public class TestSession {
 
     public TestRunnerNodeFactory getNodeFactory() {
         return nodeFactory;
+    }
+
+    public RerunHandler getRerunHandler() {
+        return rerunHandler;
+    }
+
+    public void setRerunHandler(RerunHandler rerunHandler) {
+        this.rerunHandler = rerunHandler;
     }
 
     /**

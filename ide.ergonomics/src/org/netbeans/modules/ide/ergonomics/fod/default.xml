@@ -18,7 +18,8 @@
             <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
 
             <folder name ="Import">
-                <file name="org-netbeans-modules-ide-ergonomics-ImportProjectAction.instance">
+                <attr name="position" intvalue="1426"/>
+                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
                     <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.ImportProjectAction"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.Bundle#CTL_ImportProject"/>
                     <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -154,5 +155,15 @@
         <file name="Memory_hidden"/>
         <file name="QuickSearch_hidden"/>
         <file name="UndoRedo_hidden"/>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="ProfilerOptionsCategory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.options.ProfilerOptionsCategory"/>
+            </file>
+        </folder>
+        <file name="Editor.instance_hidden"/>
+        <file name="Editor_hidden"/>
+        <file name="FontsAndColors.instance_hidden"/>
     </folder>
 </filesystem>

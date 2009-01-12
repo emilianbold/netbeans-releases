@@ -135,7 +135,7 @@ final class RootNode extends AbstractNode {
     
     /**
      */
-    TestsuiteNode displayReport(final Report report, final int[] statistics) {
+    TestsuiteNode displayReport(final Report report, int[] statistics) {
         assert EventQueue.isDispatchThread();
         assert statistics.length == 6;
         /* Called from the EventDispatch thread */

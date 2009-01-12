@@ -62,7 +62,7 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         //XXX: should not use the document, I guess:
-        Document doc = snapshot.getSource().getDocument();
+        Document doc = snapshot.getSource().getDocument(false);
 
         if (doc == null) {
             return Collections.emptyList();

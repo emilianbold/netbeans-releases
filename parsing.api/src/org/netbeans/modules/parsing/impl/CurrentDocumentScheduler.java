@@ -45,6 +45,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -79,6 +80,11 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
     @Override
     public String toString () {
         return "CurrentDocumentScheduler";
+    }
+
+    @Override
+    protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
+        return new SchedulerEvent (this) {};
     }
 }
 

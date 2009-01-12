@@ -230,9 +230,6 @@ final class Manager {
      *                     - one of the EVENT_xxx constants
      */
     private void notifySearchTaskStateChange(final SearchTask task, final int changeType) {
-        if (!searchWindowOpen) {
-            return;
-        }
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
@@ -490,11 +487,11 @@ final class Manager {
         if (moduleBeingUninstalled) {
             return;
         }
-        for(ListIterator<Runnable> iter = currentTasks.listIterator(); iter.hasNext();){
-            Runnable task = iter.next();
-            if (task instanceof SearchTask){
-                SearchTask sTask = (SearchTask)task;
-                sTask.stop(false);
+        Runnable[] tasks = currentTasks.toArray(new Runnable[currentTasks.size()]);
+        for(int i=0;i < tasks.length;i++){
+            if (tasks[i] instanceof SearchTask){
+                SearchTask sTask = (SearchTask)tasks[i];
+                sTask.stop(true);
                 scheduleCleanTask(new CleanTask(sTask.getResultModel()));
             }
         }

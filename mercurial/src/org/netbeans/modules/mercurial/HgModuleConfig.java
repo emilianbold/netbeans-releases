@@ -75,6 +75,7 @@ public class HgModuleConfig {
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     public static final String KEY_BACKUP_ON_REVERTMODS = "backupOnRevert";                               // NOI18N
     public static final String KEY_SHOW_HITORY_MERGES = "showHistoryMerges";                               // NOI18N
+    private static final String KEY_SHOW_FILE_INFO = "showFileInfo";        // NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -113,6 +114,10 @@ public class HgModuleConfig {
     
     public Pattern [] getIgnoredFilePatterns() {
         return getDefaultFilePatterns();
+    }
+
+    public boolean getShowFileInfo() {
+        return getPreferences().getBoolean(KEY_SHOW_FILE_INFO, false);
     }
     
     public boolean isExcludedFromCommit(String path) {
@@ -158,6 +163,10 @@ public class HgModuleConfig {
         getPreferences().putBoolean(KEY_SHOW_HITORY_MERGES, bShowMerges);
     }
     
+    public void setShowFileInfo(boolean info) {
+        getPreferences().putBoolean(KEY_SHOW_FILE_INFO, info);
+    }
+
     public void setExecutableBinaryPath(String path) {
         if(Utilities.isWindows() && path.endsWith(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE)){
             path = path.substring(0, path.length() - (HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE).length());

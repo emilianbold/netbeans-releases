@@ -111,7 +111,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         return new PageIterator(FileType.CSS);
     }
 
-    private PageIterator(FileType fileType) {
+    protected PageIterator(FileType fileType) {
         this.fileType = fileType;
     }
 

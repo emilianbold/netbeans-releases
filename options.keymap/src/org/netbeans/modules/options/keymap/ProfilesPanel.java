@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -56,6 +58,7 @@ import org.openide.NotifyDescriptor.InputLine;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -269,30 +272,6 @@ public class ProfilesPanel extends javax.swing.JPanel {
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
 
-        Document doc = XMLUtil.createDocument(ELEM_XML_ROOT, null, PUBLIC_ID, SYSTEM_ID);
-        Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
-
-        KeymapViewModel kmodel = KeymapPanel.getModel();
-        for (String category : kmodel.getCategories().get("")) {
-            for (Object o : kmodel.getItems(category)) {
-                if (o instanceof ShortcutAction) {
-                    ShortcutAction sca = (ShortcutAction) o;
-                    String[] shortcuts = kmodel.getShortcuts(sca);
-                    if (shortcuts.length > 0) { //export only actions with at least one SC
-                        String id = sca.getId();
-                        Element actionElement = doc.createElement(ELEM_ACTION);
-                        actionElement.setAttribute(ATTR_ACTION_ID, id);
-                        for (int i = 0; i < shortcuts.length; i++) {
-                            Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
-                            shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcuts[i]);
-                            actionElement.appendChild(shortcutElement);
-                        }
-                        root.appendChild(actionElement);
-                    }
-                }
-            }
-        }
-
         // show filechooser
         final JFileChooser chooser = getFileChooser();
 
@@ -300,6 +279,32 @@ public class ProfilesPanel extends javax.swing.JPanel {
 
         int ret = chooser.showSaveDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
+            Document doc = XMLUtil.createDocument(ELEM_XML_ROOT, null, PUBLIC_ID, SYSTEM_ID);
+            Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
+
+            KeymapViewModel kmodel = KeymapPanel.getModel();
+            for (String category : kmodel.getCategories().get("")) {
+                for (Object o : kmodel.getItems(category)) {
+                    if (o instanceof ShortcutAction) {
+                        ShortcutAction sca = (ShortcutAction) o;
+                        String[] shortcuts = kmodel.getShortcuts(sca);
+                        if (shortcuts.length > 0) { //export only actions with at least one SC
+                            String id = sca.getId();
+                            Element actionElement = doc.createElement(ELEM_ACTION);
+                            actionElement.setAttribute(ATTR_ACTION_ID, id);
+                            for (int i = 0; i < shortcuts.length; i++) {
+                                Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
+                                //get portable representation of the ahortcut
+                                String shortcutToStore = shortcutToPortableRepresentation(shortcuts[i]);
+                                shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcutToStore);
+                                actionElement.appendChild(shortcutElement);
+                            }
+                            root.appendChild(actionElement);
+                        }
+                    }
+                }
+            }
+
             File f = chooser.getSelectedFile();
 
             FileOutputStream fos;
@@ -313,6 +318,52 @@ public class ProfilesPanel extends javax.swing.JPanel {
         }
 
     }//GEN-LAST:event_exportButtonActionPerformed
+
+    private static String shortcutToPortableRepresentation(String key) {
+        assert key != null : "The parameter key must not be null"; //NOI18N
+
+        StringBuilder buf = new StringBuilder();
+        String delimiter = " "; //NOI18N
+
+        for(StringTokenizer st = new StringTokenizer(key, delimiter); st.hasMoreTokens();) { //NOI18N
+            String ks = st.nextToken().trim();
+
+            KeyStroke keyStroke = Utils.getKeyStroke(ks);
+
+            if (keyStroke != null) {
+                buf.append(Utilities.keyToString(keyStroke, true));
+                if (st.hasMoreTokens())
+                    buf.append(' ');
+            } else {
+                return null;
+            }
+        }
+
+        return buf.toString();
+    }
+
+    private static String portableRepresentationToShortcut(String portable) {
+        assert portable != null : "The parameter must not be null"; //NOI18N
+
+        StringBuilder buf = new StringBuilder();
+        String delimiter = " "; //NOI18N
+
+        for(StringTokenizer st = new StringTokenizer(portable, delimiter); st.hasMoreTokens();) { //NOI18N
+            String ks = st.nextToken().trim();
+
+            KeyStroke keyStroke = Utilities.stringToKey(ks);
+
+            if (keyStroke != null) {
+                buf.append(Utils.getKeyStrokeAsText(keyStroke));
+                if (st.hasMoreTokens())
+                    buf.append(' ');
+            } else {
+                return null;
+            }
+        }
+
+        return buf.toString();
+    }
 
     private static JFileChooser getFileChooser() {
         final JFileChooser chooser = new JFileChooser();
@@ -349,12 +400,13 @@ public class ProfilesPanel extends javax.swing.JPanel {
                     ShortcutAction sca = kmodel.findActionForId(id);
                     NodeList childList = action.getChildNodes();
                     int childCount = childList.getLength();
-                    Set<String> shortcuts = new LinkedHashSet(childCount);
+                    Set<String> shortcuts = new LinkedHashSet<String>(childCount);
                     for (int j = 0; j < childCount; j++) {//iterate shortcuts
                         //iterate shortcuts
                         NamedNodeMap attrs = childList.item(j).getAttributes();
                         if (attrs != null) {
-                            shortcuts.add(attrs.item(0).getNodeValue());
+                            String sc = attrs.item(0).getNodeValue();
+                            shortcuts.add(portableRepresentationToShortcut(sc));
                         }
                     }
                     kmodel.setShortcuts(sca, shortcuts);

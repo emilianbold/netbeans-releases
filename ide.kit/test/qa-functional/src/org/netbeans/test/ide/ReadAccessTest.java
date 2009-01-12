@@ -50,6 +50,7 @@ import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Read access test
@@ -63,26 +64,21 @@ import org.netbeans.junit.NbModuleSuite;
  * @author mrkam@netbeans.org
  */
 public class ReadAccessTest extends JellyTestCase {
-
-    private static int stage;
-
     private static void initCheckReadAccess() throws IOException {
-        if (stage == 2) {
-            Set<String> allowedFiles = new HashSet<String>();
-            InputStream is = ReadAccessTest.class.getResourceAsStream("allowed-file-reads.txt");
-            BufferedReader r = new BufferedReader(new InputStreamReader(is));
-            for (;;) {
-                String line = r.readLine();
-                if (line == null) {
-                    break;
-                }
-                if (line.startsWith("#")) {
-                    continue;
-                }
-                allowedFiles.add(line);
+        Set<String> allowedFiles = new HashSet<String>();
+        InputStream is = ReadAccessTest.class.getResourceAsStream("allowed-file-reads.txt");
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
             }
-            CountingSecurityManager.initialize(null, CountingSecurityManager.Mode.CHECK_READ, allowedFiles);
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedFiles.add(line);
         }
+        CountingSecurityManager.initialize(null, CountingSecurityManager.Mode.CHECK_READ, allowedFiles);
     }
     
     public ReadAccessTest(String name) {
@@ -90,25 +86,35 @@ public class ReadAccessTest extends JellyTestCase {
     }
     
     public static Test suite() throws IOException {
+        CountingSecurityManager.initialize("none", CountingSecurityManager.Mode.CHECK_READ, null);
 
-        /**
-         * Specify:
-         * stage = 1 to initialize userdir
-         * stage = 2 to perform measurement
-         */
-        stage = 2;
-        //stage = Integer.getInteger("test.whitelist.stage", 1);
-        
+        NbTestSuite suite = new NbTestSuite();
+        {
+            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+                ReadAccessTest.class
+            ).clusters(".*").enableModules(".*").reuseUserDir(false).enableClasspathModules(false);
+            conf = conf.addTest("testInitUserDir");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
+
+        {
+            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+                ReadAccessTest.class
+            ).clusters(".*").enableModules(".*").reuseUserDir(true).enableClasspathModules(false);
+            conf = conf.addTest("testReadAccess");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
+
+        return suite;
+    }
+
+    public void testInitUserDir() throws Exception {
+        Thread.sleep(10000);
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
+        // initializes counting, but waits till netbeans.dirs are provided
+        // by NbModuleSuite
         initCheckReadAccess();
-        
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            ReadAccessTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
-        
-
-        conf = conf.addTest("testReadAccess");
-        
-        return NbModuleSuite.create(conf);
     }
 
     public void testReadAccess() throws Exception {

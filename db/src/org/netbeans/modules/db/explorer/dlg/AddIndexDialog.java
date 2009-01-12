@@ -55,8 +55,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;

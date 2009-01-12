@@ -211,10 +211,10 @@ public class RetoucheUtils {
         Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
         for (ElementHandle<TypeElement> subTypeHandle: subTypes){
             TypeElement type = subTypeHandle.resolve(info);
-            if (type == null && LOG.isLoggable(Level.INFO)) {
+            if (type == null) {
                 // #120577: log info to find out what is going wrong
                 FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
-                LOG.log(Level.INFO, "#120577: Cannot resolve " + subTypeHandle + "; file: " + file); // NOI18N
+                throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
             }
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {

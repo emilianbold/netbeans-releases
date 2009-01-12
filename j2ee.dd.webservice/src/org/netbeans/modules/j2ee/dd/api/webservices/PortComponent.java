@@ -50,7 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface PortComponent extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean{
 	
-        public static final String PORT_COMPONENT_NAME = "PortComponentName";	// NOI18N
+    public static final String PORT_COMPONENT_NAME = "PortComponentName";	// NOI18N
 	public static final String PORTCOMPONENTNAMEID = "PortComponentNameId";	// NOI18N
 	public static final String WSDL_PORT = "WsdlPort";	// NOI18N
 	public static final String WSDLPORTID = "WsdlPortId";	// NOI18N
@@ -105,17 +105,17 @@ public interface PortComponent extends org.netbeans.modules.j2ee.dd.api.common.C
 
 	//public java.lang.String getWsdlPort();
 
-        public void setWsdlService(org.netbeans.modules.schema2beans.QName value) throws VersionNotSupportedException;
+        public void setWsdlService(javax.xml.namespace.QName value) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.schema2beans.QName getWsdlService() throws VersionNotSupportedException;
+	public javax.xml.namespace.QName getWsdlService() throws VersionNotSupportedException;
 
 	public void setWsdlServiceId(java.lang.String value) throws VersionNotSupportedException;
 
 	public java.lang.String getWsdlServiceId() throws VersionNotSupportedException;
         
-        public void setWsdlPort(org.netbeans.modules.schema2beans.QName value);
+        public void setWsdlPort(javax.xml.namespace.QName value);
 
-	public org.netbeans.modules.schema2beans.QName getWsdlPort();
+	public javax.xml.namespace.QName getWsdlPort();
 
 	public void setWsdlPortId(java.lang.String value);
 
