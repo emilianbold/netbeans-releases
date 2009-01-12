@@ -154,6 +154,8 @@ public class JsIndexer extends EmbeddingIndexer {
 //    }
 
     public void index(Indexable indexable, Parser.Result result, Context context) {
+        LOG.fine("Indexing: " + indexable.getRelativePath() + ", fullPath: " + result.getSnapshot().getSource().getFileObject().getPath());
+
         JsParseResult r = AstUtilities.getParseResult(result);
         if (r == null) {
             return;

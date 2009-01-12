@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,6 +109,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     private synchronized void init () {
         if (state == State.CREATED) {
+            LOGGER.fine("Initializing...");
             regs.addPathRegistryListener(this);
             registerFileSystemListener();
             final Work w = new RootsWork (WorkType.COMPILE_BATCH);
@@ -124,6 +124,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     public synchronized void close () {
         state = State.CLOSED;
+        LOGGER.fine("Closing...");
         this.regs.removePathRegistryListener(this);
         this.unregisterFileSystemListener();
     }
@@ -136,6 +137,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     private void submit (final Work  work) {
         Task t = getWorker ();
         assert t != null;
+        LOGGER.fine("Scheduling " + work);
         t.schedule (work);
     }
     //where
@@ -154,6 +156,24 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Paths changed:\n");
+            for(PathRegistryEvent.Change c : event.getChanges()) {
+                sb.append(" event=").append(c.getEventKind());
+                sb.append(" pathKind=").append(c.getPathKind());
+                sb.append(" pathType=").append(c.getPathType());
+                sb.append(" affected paths:\n");
+                for(ClassPath cp : c.getAffectedPaths()) {
+                    sb.append("  ");
+                    sb.append(cp.toString(ClassPath.PathConversionMode.PRINT));
+                    sb.append("\n");
+                }
+                sb.append("--");
+            }
+            sb.append("====");
+            LOGGER.fine(sb.toString());
+        }
         final Work w = new RootsWork (WorkType.COMPILE_BATCH);
         submit (w);
     }
@@ -325,9 +345,11 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 final WorkType type = work.getType();
                 switch (type) {
                     case COMPILE_BATCH:
+                        LOGGER.fine("Batch compile: " + work);
                         batchCompile();
                         break;
                     case COMPILE:
+                        LOGGER.fine("Compile: " + work);
                         final FileListWork sfw = (FileListWork) work;
                         compile (sfw.getFiles(),sfw.root);
                         break;
@@ -428,6 +450,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void scanBinary (URL root) {
+            LOGGER.fine("Scanning binary root: " + root);
         }
 
         private void scanSources  (final DependenciesContext ctx) {
@@ -445,6 +468,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void scanSource (URL root) throws IOException {
+            LOGGER.fine("Scanning sources root: " + root);
+
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {               
@@ -463,10 +488,15 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
                     final Map.Entry<String,Collection<Indexable>> entry = it.next();
                     final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
+                    LOGGER.fine("Using CustomIndexerFactories(" + entry.getKey() + "): " + factories);
+                    
                     boolean supportsEmbeddings = true;
                     try {
                         for (CustomIndexerFactory factory : factories) {
-                            supportsEmbeddings &= factory.supportsEmbeddedIndexers();
+                            boolean b = factory.supportsEmbeddedIndexers();
+                            LOGGER.fine("CustomIndexerFactory: " + factory + ", supportsEmbeddedIndexers=" + b);
+                            
+                            supportsEmbeddings &= b;
                             final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
                             factory.filesDeleted(deleted, ctx);
                             final CustomIndexer indexer = factory.createIndexer();
@@ -474,6 +504,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         }
                     } finally {
                         if (!supportsEmbeddings) {
+                            LOGGER.fine("Removing roots for " + entry.getKey() + ", indexed by custom indexers, embedded indexers forbidden");
                             it.remove();
                         }
                     }
@@ -483,6 +514,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 for (Collection<Indexable> data : resources.values()) {
                     toIndex.addAll(data);
                 }
+
+                LOGGER.fine("Using EmbeddingIndexers for " + toIndex);
+                
                 final SourceIndexer si = new SourceIndexer(root,cacheRoot);
                 si.index(toIndex, deleted);
             } finally {

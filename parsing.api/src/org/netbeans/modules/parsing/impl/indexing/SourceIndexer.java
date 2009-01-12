@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -68,6 +69,8 @@ import org.openide.util.Exceptions;
  */
 public class SourceIndexer {
 
+    private static final Logger LOG = Logger.getLogger(SourceIndexer.class.getName());
+    
     private final URL rootURL;
     private final FileObject cache;
     private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
@@ -92,6 +95,7 @@ public class SourceIndexer {
                         public void run(ResultIterator resultIterator) throws Exception {
                             final String mimeType = src.getMimeType();
                             final EmbeddingIndexerFactory indexer = findIndexer (mimeType);
+                            LOG.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'");
                             visit(resultIterator,indexer);
                         }
 
