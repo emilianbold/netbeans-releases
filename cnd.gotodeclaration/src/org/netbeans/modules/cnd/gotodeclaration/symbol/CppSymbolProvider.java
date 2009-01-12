@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.gotodeclaration.symbol;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -82,17 +85,17 @@ public class CppSymbolProvider implements SymbolProvider {
     private static final boolean TRACE = Boolean.getBoolean("cnd.gotosymbol.trace");
 
     public CppSymbolProvider() {
-        if (TRACE) { trace("ctor"); } // NOI17N
+        if (TRACE) { trace("ctor"); } // NOI18N
     }
 
     public void cancel() {
-        if (TRACE) { trace("cancel"); } // NOI17N
+        if (TRACE) { trace("cancel"); } // NOI18N
         cancelled = true;
         cache = null;
     }
 
     public void cleanup() {
-        if (TRACE) { trace("cleanup"); } // NOI17N
+        if (TRACE) { trace("cleanup"); } // NOI18N
         cancelled = false;
         cache = null;
     }
@@ -107,19 +110,27 @@ public class CppSymbolProvider implements SymbolProvider {
     }
 
     public void computeSymbolNames(Context context, Result result) {
-        if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI17N
+        if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
 
         if (context.getProject() == null) {
             List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
+            Set<CsmProject> libs = new HashSet<CsmProject>();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
-                result.addResult(symbols);
+                collectLibs(csmProject, libs);                
             }
+            for(CsmProject csmProject : libs) {
+                if (cancelled) {
+                    break;
+                }
+                collectSymbols(csmProject, nameAcceptor, symbols);
+            }
+            result.addResult(symbols);
         } else {
             NativeProject nativeProject = context.getProject().getLookup().lookup(NativeProject.class);
             if (nativeProject != null) {
@@ -132,6 +143,15 @@ public class CppSymbolProvider implements SymbolProvider {
             }
         }
         cancelled = false;
+    }
+
+    private void collectLibs(CsmProject project, Collection<CsmProject> libs) {
+        for( CsmProject lib : project.getLibraries()) {
+            if (! libs.contains(lib)) {
+                libs.add(lib);
+                collectLibs(lib, libs);
+            }
+        }
     }
 
     private void collectSymbols(CsmProject csmProject, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
@@ -187,12 +207,12 @@ public class CppSymbolProvider implements SymbolProvider {
 
 
     private String toString(Context context) {
-        return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText());
+        return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText()); //NOI18N
     }
 
     private void trace(String format, Object... args) {
         if (TRACE) {
-            format = String.format("%s @%x %s\n", getClass().getSimpleName(), hashCode(), format);
+            format = String.format("%s @%x %s\n", getClass().getSimpleName(), hashCode(), format); //NOI18N
             System.err.printf(format, args);
         }
     }
