@@ -46,23 +46,18 @@ import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
-import org.netbeans.modules.python.editor.PythonUtils;
 import org.netbeans.modules.python.project.PythonProject;
 import org.netbeans.modules.python.project.PythonProjectUtil;
 import org.netbeans.modules.python.project.ui.customizer.PythonProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
@@ -105,7 +100,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         if (evt.getSource() == this.eval &&
             (evt.getPropertyName() == null || evt.getPropertyName().equals(PythonProjectProperties.ACTIVE_PLATFORM))) {
             //Active platform was changed
-            resetCache ();
+            RequestProcessor.getDefault().post(new Runnable() {
+              public void run() {
+                resetCache ();
+              }
+            }) ;
         }
     }
     

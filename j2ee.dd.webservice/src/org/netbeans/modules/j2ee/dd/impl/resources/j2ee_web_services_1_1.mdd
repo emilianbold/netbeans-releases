@@ -100,10 +100,10 @@ made subject to such option by the copyright holder.
 		<bean-name>PortComponentType</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponent</implements>
 		<user-code>
-                    public void setWsdlService(org.netbeans.modules.schema2beans.QName value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    public void setWsdlService(javax.xml.namespace.QName value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                         throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
                     }
-                    public org.netbeans.modules.schema2beans.QName getWsdlService() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    public javax.xml.namespace.QName getWsdlService() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                         throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
                     }
                     public void setWsdlServiceId(java.lang.String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
@@ -114,13 +114,6 @@ made subject to such option by the copyright holder.
                     }
                 </user-code>
 	</meta-element>
-	<meta-element>
-		<dtd-name>xsdQNameType</dtd-name>
-		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
-		<bean-name>XsdQNameType</bean-name>
-		<wrapper-class>org.netbeans.modules.schema2beans.QName</wrapper-class>
-	</meta-element>
-
 	<meta-element>
 		<dtd-name>fully-qualified-classType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>

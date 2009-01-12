@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import javax.swing.text.Document;
-import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

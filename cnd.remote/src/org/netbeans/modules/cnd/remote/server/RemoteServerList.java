@@ -254,7 +254,11 @@ public class RemoteServerList implements ServerList {
         }
         getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
-    
+
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
+        return show(serverUpdateCache, false);
+    }
+
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard) {
         EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache, tempUseWizard);
         

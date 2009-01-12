@@ -91,13 +91,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     public Component getComponent () {
         if (panel == null) {
             panel = new ContentPanel (getBundle ("DescriptionPanel_Name"));
-            panel.addPropertyChangeListener (new PropertyChangeListener () {
-                        public void propertyChange (PropertyChangeEvent evt) {
-                            if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
-                                doFindingModues.run ();
-                            }
-                        }
-                    });
+            panel.addPropertyChangeListener (findModules);
         }
         return panel;
     }
@@ -129,31 +123,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
     }
     
-    private Runnable doFindingModues = new Runnable () {
+    private PresentModules findModules = new PresentModules();
+    private class PresentModules extends Object
+    implements Runnable, PropertyChangeListener {
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
+                RequestProcessor.getDefault().post(this);
+            }
+        }
         public void run () {
-            if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doFindingModues);
-                return;
-            }
-            RequestProcessor.Task findingTask = getFinder ().getFindingTask ();
-            if (findingTask != null && findingTask.isFinished ()) {
-                presentModulesForActivation ();
-            } else {
-                if (findingTask == null) {
-                    findingTask = getFinder ().createFindingTask ();
-                    findingTask.schedule (10);
-                }
-                if (findingTask.getDelay () > 0) {
-                    findingTask.schedule (10);
-                }
-                findingTask.addTaskListener (new TaskListener () {
-                            public void taskFinished (Task task) {
-                                presentModulesForActivation ();
-                                return;
-                            }
-                        });
-                findingTask.waitFinished();
-            }
+            assert !SwingUtilities.isEventDispatchThread ();
+            presentModulesForActivation ();
         }
     };
 

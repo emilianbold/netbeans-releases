@@ -43,15 +43,11 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>theme-default</name>
-    <type>theme</type>
-    <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
+    <name>jdbcsupport-runtime</name>
+    <type>j2se</type>
+    <localizing-bundle>org.netbeans.modules.visualweb.rowset.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/defaulttheme.jar!/</resource>
-    </volume>
-    <volume>
-        <type>runtime</type>
-        <resource>jar:nbinst:///modules/ext/defaulttheme.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>        
     </volume>
 </library>

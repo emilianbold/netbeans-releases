@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -191,8 +190,8 @@ public class WSITModelSupport {
             if (model != null) {
                 model.sync();
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) { // we need this, as we can't rely on wsdl model at all
+            logger.log(Level.INFO, null, ex);
         }
         return model;
     }

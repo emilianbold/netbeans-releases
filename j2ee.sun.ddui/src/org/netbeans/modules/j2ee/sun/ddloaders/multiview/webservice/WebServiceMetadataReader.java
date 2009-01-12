@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.CommonBeanReader;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
-import org.netbeans.modules.schema2beans.QName;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;

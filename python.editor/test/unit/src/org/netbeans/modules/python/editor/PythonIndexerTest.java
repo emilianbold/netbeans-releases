@@ -160,7 +160,19 @@ public class PythonIndexerTest extends PythonTestBase {
         checkIndexer("testfiles/rst/constants.rst");
     }
 
+    public void testRstIndex10() throws Exception {
+        checkIndexer("testfiles/rst/operator.rst");
+    }
+
+    public void testRstIndex11() throws Exception {
+        checkIndexer("testfiles/rst/collections.rst");
+    }
+
     public void testIndexEgg() throws Exception {
         checkIndexer("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
     }
+
+//    public void testIndexEgg2() throws Exception {
+//        checkIndexer("testfiles/pythonstubs-2_6.egg");
+//    }
 }
