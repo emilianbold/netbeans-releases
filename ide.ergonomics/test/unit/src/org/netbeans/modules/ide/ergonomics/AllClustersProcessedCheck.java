@@ -79,9 +79,6 @@ public class AllClustersProcessedCheck extends NbTestCase {
             if (n.equals("nb")) {
                 continue;
             }
-            if (n.equals("gsf")) {
-                continue;
-            }
             
             URL u = l.getResource("org/netbeans/modules/ide/ergonomics/" + n + "/Bundle.properties");
             if (u == null) {

@@ -70,7 +70,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeListener {
+public class ProjectWithDependenciesTest extends NbTestCase implements PropertyChangeListener {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
@@ -80,7 +80,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
     private int change;
     
     
-    public ProjectOnDemandTest(String testName) {
+    public ProjectWithDependenciesTest(String testName) {
         super(testName);
     }
 
@@ -89,7 +89,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(ProjectOnDemandTest.class).
+            addTest(ProjectWithDependenciesTest.class).
             gui(false)
         );
     }
@@ -105,10 +105,13 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         System.setProperty("netbeans.home", jar.getParentFile().getParent());
         System.setProperty("netbeans.user", getWorkDirPath());
         StringBuffer sb = new StringBuffer();
-        boolean found = false;
+        int found = 0;
         Exception ex2 = null;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui")) {
+            if (
+                info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui") ||
+                info.getCodeNameBase().equals("org.netbeans.modules.favorites")
+            ) {
              Method m = null;
                 Class<?> c = info.getClass();
                 for (;;) {
@@ -128,27 +131,33 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
                 m.setAccessible(true);
                 m.invoke(info, false);
                 assertFalse("Module is disabled", info.isEnabled());
-                found = true;
+                found++;
             }
             sb.append(info.getCodeNameBase()).append('\n');
         }
-        if (!found) {
-            fail("No module found:\n" + sb);
+        if (found != 2) {
+            fail("Two shall be found, was " + found + ":\n" + sb);
         }
 
         FeatureInfo info = FeatureInfo.create(
-            "cluster",
-            ProjectOnDemandTest.class.getResource("FeatureInfo.xml"),
-            ProjectOnDemandTest.class.getResource("TestBundle.properties")
+            "TestFactory",
+            ProjectWithDependenciesTest.class.getResource("FeatureInfo.xml"),
+            ProjectWithDependenciesTest.class.getResource("TestBundle.properties")
+        );
+        FeatureInfo info2 = FeatureInfo.create(
+            "TestFactory2",
+            ProjectWithDependenciesTest.class.getResource("FeatureInfo2.xml"),
+            ProjectWithDependenciesTest.class.getResource("TestBundle2.properties")
         );
         ic.add(info);
+        ic.add(info2);
         
         File dbp = new File(new File(getWorkDir(), "1st"), "dbproject");
         File db = new File(dbp, "project.properties");
         dbp.mkdirs();
         db.createNewFile();
 
-        File dbp2 = new File(new File(getWorkDir(), "2nd"), "dbproject");
+        File dbp2 = new File(new File(getWorkDir(), "2nd"), "umlproject");
         File db2 = new File(dbp2, "project.properties");
         dbp2.mkdirs();
         db2.createNewFile();
@@ -165,7 +174,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         super.tearDown();
     }
 
-    public void testRecognizeDocBookProject() throws Exception {
+    public void testRecognizeUMLTooProject() throws Exception {
         FileObject prjFO1 = root.getFileObject("1st");
         FileObject prjFO2 = root.getFileObject("2nd");
 
@@ -187,9 +196,12 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
         assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
+        assertNull("No test factory2 in project", p.getLookup().lookup(TestFactory2.class));
+        assertNull("No test factory2 in project", p2.getLookup().lookup(TestFactory2.class));
 
         TestFactory.recognize.add(prjFO1);
-        TestFactory.recognize.add(prjFO2);
+        TestFactory.subprojects.add(p2);
+        TestFactory2.recognize.add(prjFO2);
         OpenProjects.getDefault().open(new Project[] { p }, false);
         
         assertEquals("No Dialog currently created", 0, DD.cnt);
@@ -216,7 +228,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         }
 
         assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
-        assertNotNull("Test factory in not yet opened project", p2.getLookup().lookup(TestFactory.class));
+        assertNotNull("Test factory2 in not yet opened project", p2.getLookup().lookup(TestFactory2.class));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

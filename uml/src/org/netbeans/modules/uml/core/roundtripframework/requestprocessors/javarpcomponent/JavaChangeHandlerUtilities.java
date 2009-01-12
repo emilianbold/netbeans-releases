@@ -97,8 +97,10 @@ import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.openide.util.NbPreferences;
 
 /**
@@ -4033,6 +4035,12 @@ public class JavaChangeHandlerUtilities
     {
         if (derivedClasses == null)
             derivedClasses = new ETArrayList < IClassifier > ();
+        if(derivedClasses.contains(pBaseClass))//avoid infinite recursion on incorrect model, see issue #115479
+        {
+            //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
+            UMLLogger.logMessage("Possible generalization-implementation resolve problem.", Level.WARNING);
+            return derivedClasses;
+        }
         try
         {
             if (pBaseClass != null)

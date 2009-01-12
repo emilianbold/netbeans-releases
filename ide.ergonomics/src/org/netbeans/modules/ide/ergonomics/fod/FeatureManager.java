@@ -39,22 +39,26 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -63,14 +67,20 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jirka Rechtacek
  */
-public class Feature2LayerMapping {
-    private Feature2LayerMapping () {}
-    
-    private static Feature2LayerMapping INSTANCE = new Feature2LayerMapping ();
+public final class FeatureManager
+implements PropertyChangeListener, LookupListener {
+    private static FeatureManager INSTANCE = new FeatureManager ();
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
+    private final Lookup.Result<ModuleInfo> result;
+    private final ChangeSupport support;
 
-    
-    public static Feature2LayerMapping getInstance () {
+    private FeatureManager() {
+        support = new ChangeSupport(this);
+        result = Lookup.getDefault().lookupResult(ModuleInfo.class);
+        result.addLookupListener(this);
+    }
+
+    public static FeatureManager getInstance () {
         return INSTANCE;
     }
 
@@ -145,29 +155,6 @@ public class Feature2LayerMapping {
         
     }
     
-    public Collection<URL> getLayerURLs () {
-        List<URL> res = new ArrayList<URL>();
-        for (FeatureInfo pt2m : features()) {
-            URL url = FeatureInfoAccessor.DEFAULT.getDelegateLayer(pt2m);
-            if (url != null) {
-                res.add(url);
-            }
-        }
-        return res;
-    }
-    
-    public Set<String>getCodeName (URL layer) {
-        if (layer == null) {
-            return null;
-        }
-        for (FeatureInfo pt2m : features()) {
-            if (layer.equals(FeatureInfoAccessor.DEFAULT.getDelegateLayer(pt2m))) {
-                return FeatureInfoAccessor.DEFAULT.getCodeName(pt2m);
-            }
-        }
-        return null;
-    }
-
     /** Used from tests */
     public static synchronized void assignFeatureTypesLookup(Lookup lkp) {
         boolean eaOn = false;
@@ -196,8 +183,8 @@ public class Feature2LayerMapping {
                 String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;
                 String layerName = basename + "/layer.xml";
                 String bundleName = basename + "/Bundle.properties";
-                URL layer = Feature2LayerMapping.class.getResource(layerName);
-                URL bundle = Feature2LayerMapping.class.getResource(bundleName);
+                URL layer = FeatureManager.class.getResource(layerName);
+                URL bundle = FeatureManager.class.getResource(bundleName);
                 if (layer != null && bundle != null) {
                     FeatureInfo info;
                     try {
@@ -212,4 +199,30 @@ public class Feature2LayerMapping {
         }
         return featureTypesLookup;
     }
+
+    public void addChangeListener(ChangeListener l) {
+        if (!support.hasListeners()) {
+            resultChanged(null);
+        }
+        support.addChangeListener(l);
+    }
+    public void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        for (ModuleInfo m : result.allInstances()) {
+            m.removePropertyChangeListener(this);
+            m.addPropertyChangeListener(this);
+        }
+        if (ev != null) {
+            support.fireChange();
+        }
+    }
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
+            support.fireChange();
+        }
+    }
+
 }

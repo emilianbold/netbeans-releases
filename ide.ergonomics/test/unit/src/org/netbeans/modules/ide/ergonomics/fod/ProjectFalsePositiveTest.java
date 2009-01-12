@@ -70,7 +70,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeListener {
+public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChangeListener {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
@@ -80,7 +80,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
     private int change;
     
     
-    public ProjectOnDemandTest(String testName) {
+    public ProjectFalsePositiveTest(String testName) {
         super(testName);
     }
 
@@ -89,7 +89,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(ProjectOnDemandTest.class).
+            addTest(ProjectFalsePositiveTest.class).
             gui(false)
         );
     }
@@ -138,8 +138,8 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         FeatureInfo info = FeatureInfo.create(
             "cluster",
-            ProjectOnDemandTest.class.getResource("FeatureInfo.xml"),
-            ProjectOnDemandTest.class.getResource("TestBundle.properties")
+            ProjectFalsePositiveTest.class.getResource("FeatureInfo.xml"),
+            ProjectFalsePositiveTest.class.getResource("TestBundle.properties")
         );
         ic.add(info);
         
@@ -189,7 +189,6 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
 
         TestFactory.recognize.add(prjFO1);
-        TestFactory.recognize.add(prjFO2);
         OpenProjects.getDefault().open(new Project[] { p }, false);
         
         assertEquals("No Dialog currently created", 0, DD.cnt);
@@ -216,7 +215,10 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         }
 
         assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
-        assertNotNull("Test factory in not yet opened project", p2.getLookup().lookup(TestFactory.class));
+        assertFalse("No longer suspected to be project",
+            ProjectManager.getDefault().isProject(p2.getProjectDirectory())
+        );
+        assertNull("Lookup of the false possitive project", p2.getLookup().lookup(Object.class));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
