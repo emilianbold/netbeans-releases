@@ -1045,31 +1045,37 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     *   Can be null if one should find indices from current set of nodes
     */
     final void fireSubNodesChange(boolean addAction, Node[] delta, Node[] from) {
-        if (err.isLoggable(Level.FINER)) {
-            err.finer("fireSubNodesChange() " + this); // NOI18N
-            err.finer("    added: " + addAction); // NOI18N
-            err.finer("    delta: " + Arrays.toString(delta)); // NOI18N
-            err.finer("    from: " + Arrays.toString(from)); // NOI18N
-        }
+        try {
+            // enter to readAccess to prevent firing another event before all listeners receive current event
+            Children.PR.enterReadAccess();
+            if (err.isLoggable(Level.FINER)) {
+                err.finer("fireSubNodesChange() " + this); // NOI18N
+                err.finer("    added: " + addAction); // NOI18N
+                err.finer("    delta: " + Arrays.toString(delta)); // NOI18N
+                err.finer("    from: " + Arrays.toString(from)); // NOI18N
+            }
 
-        NodeMemberEvent ev = null;
-        Object[] listeners = this.listeners.getListenerList();
+            NodeMemberEvent ev = null;
+            Object[] listeners = this.listeners.getListenerList();
 
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == NodeListener.class) {
-                // Lazily create the event:
-                if (ev == null) {
-                    ev = new NodeMemberEvent(this, addAction, delta, from);
-                }
+            // Process the listeners last to first, notifying
+            // those that are interested in this event
+            for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == NodeListener.class) {
+                    // Lazily create the event:
+                    if (ev == null) {
+                        ev = new NodeMemberEvent(this, addAction, delta, from);
+                    }
 
-                if (addAction) {
-                    ((NodeListener) listeners[i + 1]).childrenAdded(ev);
-                } else {
-                    ((NodeListener) listeners[i + 1]).childrenRemoved(ev);
+                    if (addAction) {
+                        ((NodeListener) listeners[i + 1]).childrenAdded(ev);
+                    } else {
+                        ((NodeListener) listeners[i + 1]).childrenRemoved(ev);
+                    }
                 }
             }
+        } finally {
+            Children.PR.exitReadAccess();
         }
     }
     
