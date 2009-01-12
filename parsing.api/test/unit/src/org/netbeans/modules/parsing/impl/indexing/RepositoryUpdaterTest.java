@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,6 +129,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject unknown2;
     private FileObject unknownSrc2;
     private FileObject srcRootWithFiles1;
+
+    FileObject f3;
+
     private URL[] customFiles;
     private URL[] embeddedFiles;
 
@@ -198,7 +202,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         customFiles = new URL[] {f1.getURL(), f2.getURL()};
 
         FileUtil.setMIMEType("emb", EMIME);
-        FileObject f3 = FileUtil.createData(srcRootWithFiles1,"folder/a.emb");
+        f3 = FileUtil.createData(srcRootWithFiles1,"folder/a.emb");
         assertNotNull(f3);
         assertEquals(EMIME, f3.getMIMEType());
         FileObject f4 = FileUtil.createData(srcRootWithFiles1,"folder/b.emb");
@@ -439,6 +443,37 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getCount());
         assertEquals(1, eindexerFactory.indexer.getCount());
         assertEquals(0, eindexerFactory.indexer.expectedDeleted.size());
+    }
+
+
+    public void testFileChanges() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0]);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
+
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{f3.getURL()}, new URL[0]);
+        final OutputStream out = f3.getOutputStream();
+        try {
+            out.write(0);
+        } finally {
+            out.close();
+        }
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
     }
 
 
