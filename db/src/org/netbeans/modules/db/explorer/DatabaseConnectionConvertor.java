@@ -63,7 +63,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -257,7 +257,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      * used in 4.1 and previous to the SystemFileSystem.
      */
     public static void importOldConnections() {
-        Vector dbconns = RootNodeInfo.getOption().getConnections();
+        Vector dbconns = RootNode.getOption().getConnections();
         for (Iterator i = dbconns.iterator(); i.hasNext();) {
             try {
                 create((DatabaseConnection) i.next());

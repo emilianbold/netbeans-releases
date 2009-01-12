@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -91,13 +92,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     public Component getComponent () {
         if (panel == null) {
             panel = new ContentPanel (getBundle ("DescriptionPanel_Name"));
-            panel.addPropertyChangeListener (new PropertyChangeListener () {
-                        public void propertyChange (PropertyChangeEvent evt) {
-                            if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
-                                doFindingModues.run ();
-                            }
-                        }
-                    });
+            panel.addPropertyChangeListener (findModules);
         }
         return panel;
     }
@@ -129,31 +124,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
     }
     
-    private Runnable doFindingModues = new Runnable () {
+    private PresentModules findModules = new PresentModules();
+    private class PresentModules extends Object
+    implements Runnable, PropertyChangeListener {
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
+                RequestProcessor.getDefault().post(this);
+            }
+        }
         public void run () {
-            if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doFindingModues);
-                return;
-            }
-            RequestProcessor.Task findingTask = getFinder ().getFindingTask ();
-            if (findingTask != null && findingTask.isFinished ()) {
-                presentModulesForActivation ();
-            } else {
-                if (findingTask == null) {
-                    findingTask = getFinder ().createFindingTask ();
-                    findingTask.schedule (10);
-                }
-                if (findingTask.getDelay () > 0) {
-                    findingTask.schedule (10);
-                }
-                findingTask.addTaskListener (new TaskListener () {
-                            public void taskFinished (Task task) {
-                                presentModulesForActivation ();
-                                return;
-                            }
-                        });
-                findingTask.waitFinished();
-            }
+            assert !SwingUtilities.isEventDispatchThread ();
+            presentModulesForActivation ();
         }
     };
 
@@ -245,14 +226,19 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             o + " is not null and instanceof FileObject";
         final String templateResource = ((FileObject) o).getPath ();
         fo = null;
-        while (fo == null) {
+        WizardDescriptor.InstantiatingIterator<?> iterator = null;
+        while (fo == null && (iterator == null || iterator instanceof FeatureOnDemanWizardIterator)) {
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
                    fo = FileUtil.getConfigFile(templateResource);
                }
             }, 100).waitFinished ();
+            iterator = readWizard(fo);
+
+            // warn, seems like 100 millis isn't enough!
+            if (iterator instanceof FeatureOnDemanWizardIterator)
+                Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
         }
-        WizardDescriptor.InstantiatingIterator<?> iterator = readWizard(fo);
         iterator.initialize (wd);
         wd.putProperty (FeatureOnDemanWizardIterator.DELEGATE_ITERATOR, iterator);
         fireChange ();
@@ -277,10 +263,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     tw = (TemplateWizard)wizard;
                     try {
                         tw.setTemplate(DataObject.find(tw.getTemplate().getPrimaryFile()));
+                        it.initialize(tw);
                     } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger(DescriptionStep.class.getName()).severe(ex.toString());
                     }
-                    it.initialize(tw);
                 }
 
                 public void uninitialize(WizardDescriptor wizard) {

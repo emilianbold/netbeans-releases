@@ -452,7 +452,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             return ;
         }
 
-        Document doc = result.getSnapshot().getSource().getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument(false);
         
         if (doc == null) {
             Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

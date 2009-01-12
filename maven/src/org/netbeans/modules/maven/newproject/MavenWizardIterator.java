@@ -80,7 +80,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ChooseWizardPanel(),
-            new BasicWizardPanel(false)
+            new BasicWizardPanel()
         };
     }
     

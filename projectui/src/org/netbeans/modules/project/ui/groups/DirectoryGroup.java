@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -52,8 +53,10 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -105,20 +108,10 @@ public class DirectoryGroup extends Group {
             } catch (IOException x) {
                 Exceptions.printStackTrace(x);
             }
-            Enumeration<? extends FileObject> e = fo.getFolders(true);
-            while (e.hasMoreElements()) {
-                try {
-                    Project p = ProjectManager.getDefault().findProject(e.nextElement());
-                    if (p != null) {
-                        projects.add(p);
-                        if (h != null) {
-                            h.progress(progressMessage(p), Math.min(++start, end));
-                        }
-                    }
-                } catch (IOException x) {
-                    Exceptions.printStackTrace(x);
-                }
-            }
+            Counter counter = new Counter();
+            counter.start = start;
+            counter.end = end;
+            processFolderChildren(fo, projects, h, counter, true);
         }
     }
 
@@ -136,6 +129,41 @@ public class DirectoryGroup extends Group {
 
     public GroupEditPanel createPropertiesPanel() {
         return new DirectoryGroupEditPanel(this);
+    }
+
+    private void processFolderChildren(FileObject fo, Set<Project> projects, ProgressHandle h, Counter counter, boolean checkShare) throws IllegalArgumentException {
+        Enumeration<? extends FileObject> e = fo.getFolders(false);
+        while (e.hasMoreElements()) {
+            try {
+                FileObject em = e.nextElement();
+                File f = FileUtil.toFile(fo);
+                int share = SharabilityQuery.UNKNOWN;
+                if (checkShare) {
+                    share = SharabilityQuery.getSharability(f);
+                    if (share == SharabilityQuery.NOT_SHARABLE) {
+                        continue;
+                    }
+                }
+                Project p = ProjectManager.getDefault().findProject(em);
+                if (p != null) {
+                    projects.add(p);
+                    if (h != null) {
+                        h.progress(progressMessage(p), Math.min(++counter.start, counter.end));
+                    }
+                }
+                checkShare = share != SharabilityQuery.SHARABLE;
+                // don't need to check the sharability if the current folder is marked as recursively sharable
+                
+                processFolderChildren(em, projects, h, counter, checkShare);
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+    }
+
+    private static class Counter {
+        int start;
+        int end;
     }
 
 }

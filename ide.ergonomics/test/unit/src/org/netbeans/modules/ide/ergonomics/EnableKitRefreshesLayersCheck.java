@@ -77,7 +77,8 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
 
     
     public void testJavaCanBeTurnedOn() throws Exception {
-
+        Logger.getLogger("org.netbeans.JarClassLoader").setLevel(Level.OFF);
+        Logger.getLogger("org.netbeans.Archive").setLevel(Level.OFF);
         
         FileObject root = FileUtil.getConfigFile("Menu");
         FileObject edit = root.getFileObject("Edit");
@@ -123,6 +124,13 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
             for (FileObject fo : root.getChildren()) {
                 sb.append(fo.getPath()).append('\n');
             }
+
+            FileObject fodRoot = FoDFileSystem.getInstance().findResource("Menu");
+            sb.append("\nContent of FOD:\n");
+            for (FileObject fo : fodRoot.getChildren()) {
+                sb.append(fo.getPath()).append('\n');
+            }
+
             fail(sb.toString());
         }
     }

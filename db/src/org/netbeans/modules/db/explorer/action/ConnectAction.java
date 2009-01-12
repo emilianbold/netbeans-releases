@@ -93,6 +93,12 @@ public class ConnectAction extends BaseAction {
         return bundle().getString("Connect"); // NOI18N
     }
 
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectAction.class);
+    }
+
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
         if (activatedNodes.length == 1) {

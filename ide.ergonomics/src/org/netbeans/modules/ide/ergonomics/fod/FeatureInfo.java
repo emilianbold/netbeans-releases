@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -51,8 +52,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor.Internal;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -64,7 +65,7 @@ import org.openide.util.Lookup;
  */
 public final class FeatureInfo {
     private final URL delegateLayer;
-    private final Internal internal = new Internal(this);
+    private XMLFileSystem fs;
     private final Set<String> cnbs;
     final Map<String,String> nbproject = new HashMap<String,String>();
     final Map<String,String> files = new HashMap<String,String>();
@@ -107,24 +108,6 @@ public final class FeatureInfo {
         }
         return info;
     }
-    static {
-        FeatureInfoAccessor.DEFAULT = new FeatureInfoAccessor() {
-            @Override
-            public Set<String> getCodeName(FeatureInfo info) {
-                return info.getCodeNames();
-            }
-
-            @Override
-            public URL getDelegateLayer(FeatureInfo info) {
-                return info.delegateLayer;
-            }
-
-            @Override
-            public Internal getInternal(FeatureInfo info) {
-                return info.internal;
-            }
-        };
-    }
 
     public String getAttachTypeName() {
         return properties.getProperty("attachTypeName");
@@ -140,6 +123,32 @@ public final class FeatureInfo {
 
     String getPreferredCodeNameBase() {
         return properties.getProperty("mainModule");
+    }
+
+    boolean isEnabled() {
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (cnbs.contains(mi.getCodeNameBase())) {
+                return mi.isEnabled();
+            }
+        }
+        return false;
+    }
+
+    public synchronized XMLFileSystem getXMLFileSystem() {
+        if (fs == null) {
+            URL url = delegateLayer;
+            fs = new XMLFileSystem();
+            if (url != null) {
+                try {
+                    fs.setXmlUrl(url);
+                } catch (IOException ex) {
+                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);Exceptions.printStackTrace(ex);
+                } catch (PropertyVetoException ex) {
+                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return fs;
     }
 
     boolean isProject(FileObject dir, boolean deepCheck) {

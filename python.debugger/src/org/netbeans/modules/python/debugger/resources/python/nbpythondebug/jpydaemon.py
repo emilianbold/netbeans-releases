@@ -115,6 +115,7 @@ class UntracedSources :
               'sre_parse.py':1,
               'sre_compile.py':1,
               'string.py':1,
+              'UserDict.py':1,
               #things from jpydbg that we don't want to trace
               'jpydaemon.py':1,
               'dbgutils.py':1

@@ -15,9 +15,9 @@ and open the template in the editor.
             <tocitem text="Python Platforms" target="org.netbeans.modules.python.help.platforms"/>
            
         
-            <tocitem text="Using Python Console" target="org.netbeans.modules.python.help.pyconsole"/>
+            <tocitem text="Using Python Interactive Console" target="org.netbeans.modules.python.help.pyconsole"/>
         </tocitem>
-                <tocitem text="Debugging Python applications" target="org.netbeans.modules.python.help.pydebug"/>
+                <tocitem text="Debugging Python Applications" target="org.netbeans.modules.python.help.pydebug"/>
     </tocitem>
 
 </toc>

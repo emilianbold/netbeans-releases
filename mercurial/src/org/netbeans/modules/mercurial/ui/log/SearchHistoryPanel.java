@@ -134,6 +134,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return showMergesChkBox.isSelected();
     }
 
+    boolean isShowInfo() {
+        return fileInfoCheckBox.isSelected();
+    }
+
     
     void setIncomingSearch() {
         criteria.setForIncoming();
@@ -215,6 +219,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpPrev", prevAction); // NOI18N
         
         showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
+        if(roots.length == 1) {
+            File file = roots[0];
+            if(!file.isFile()) fileInfoCheckBox.setEnabled(false);
+        }
+        if(fileInfoCheckBox.isEnabled()) {
+            fileInfoCheckBox.setSelected(HgModuleConfig.getDefault().getShowFileInfo());
+        } else {
+            fileInfoCheckBox.setSelected(true);
+        }
         showMergesChkBox.setOpaque(false);
     }
 
@@ -495,12 +508,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jSeparator2.setMaximumSize(new java.awt.Dimension(2, 32767));
         jToolBar1.add(jSeparator2);
         jToolBar1.add(bNext);
-        bNext.getAccessibleContext().setAccessibleName("null");
-        bNext.getAccessibleContext().setAccessibleDescription("null");
+        bNext.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_NextDifference")); // NOI18N
+        bNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_NextDifference")); // NOI18N
 
         jToolBar1.add(bPrev);
-        bPrev.getAccessibleContext().setAccessibleName("null");
-        bPrev.getAccessibleContext().setAccessibleDescription("null");
+        bPrev.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_PrevDifference")); // NOI18N
+        bPrev.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_PrevDifference")); // NOI18N
 
         jToolBar1.add(jSeparator3);
 
@@ -516,6 +529,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
         jToolBar1.add(showMergesChkBox);
+
+        org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, "Show All Change Paths");
+        fileInfoCheckBox.setFocusable(false);
+        fileInfoCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        fileInfoCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        fileInfoCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileInfoCheckBoxActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(fileInfoCheckBox);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
@@ -543,6 +567,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_showMergesChkBoxStateChanged
         HgModuleConfig.getDefault().setShowHistoryMerges( showMergesChkBox.isSelected());
 }//GEN-LAST:event_showMergesChkBoxStateChanged
+
+private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileInfoCheckBoxActionPerformed
+        HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected());
+}//GEN-LAST:event_fileInfoCheckBoxActionPerformed
 
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
@@ -575,6 +603,7 @@ private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//
     private javax.swing.JButton bPrev;
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
+    final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;

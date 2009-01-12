@@ -96,15 +96,19 @@ public class InvocationExceptionTranslated extends ApplicationException {
             try {
                 Method getMessageMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getMessage", "()Ljava/lang/String;");  // NOI18N
-                try {
-                    StringReference sr = (StringReference) debugger.invokeMethod (
-                            exeption,
-                            getMessageMethod,
-                            new Value [0]
-                        );
-                    message = sr != null ? StringReferenceWrapper.value(sr) : ""; // NOI18N
-                } catch (InvalidExpressionException ex) {
-                    return ex.getMessage();
+                if (getMessageMethod == null) {
+                    message = "Unknown exception message";
+                } else {
+                    try {
+                        StringReference sr = (StringReference) debugger.invokeMethod (
+                                exeption,
+                                getMessageMethod,
+                                new Value [0]
+                            );
+                        message = sr != null ? StringReferenceWrapper.value(sr) : ""; // NOI18N
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getMessage();
+                    }
                 }
             } catch (InternalExceptionWrapper iex) {
                 return iex.getMessage();
@@ -130,15 +134,19 @@ public class InvocationExceptionTranslated extends ApplicationException {
             try {
                 Method getMessageMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getLocalizedMessage", "()Ljava/lang/String;");  // NOI18N
-                try {
-                    StringReference sr = (StringReference) debugger.invokeMethod (
-                            exeption,
-                            getMessageMethod,
-                            new Value [0]
-                        );
-                    localizedMessage = sr == null ? "" : StringReferenceWrapper.value(sr); // NOI18N
-                } catch (InvalidExpressionException ex) {
-                    return ex.getLocalizedMessage();
+                if (getMessageMethod == null) {
+                    localizedMessage = "Unknown exception message";
+                } else {
+                    try {
+                        StringReference sr = (StringReference) debugger.invokeMethod (
+                                exeption,
+                                getMessageMethod,
+                                new Value [0]
+                            );
+                        localizedMessage = sr == null ? "" : StringReferenceWrapper.value(sr); // NOI18N
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getLocalizedMessage();
+                    }
                 }
             } catch (InternalExceptionWrapper iex) {
                 return iex.getMessage();
@@ -172,11 +180,16 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 Method getCauseMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getCause", "()Ljava/lang/Throwable;");  // NOI18N
                 try {
-                    ObjectReference or = (ObjectReference) debugger.invokeMethod (
+                    ObjectReference or;
+                    if (getCauseMethod == null) {
+                        or = null;
+                    } else {
+                        or = (ObjectReference) debugger.invokeMethod (
                             exeption,
                             getCauseMethod,
                             new Value [0]
                         );
+                    }
                     if (or != null) {
                         cause = new InvocationExceptionTranslated(null, or, debugger);
                     } else {
@@ -307,6 +320,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
             try {
                 Method getStackTraceMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getStackTrace", "()[Ljava/lang/StackTraceElement;");  // NOI18N
+                if (getStackTraceMethod == null) {
+                    return new StackTraceElement[0];
+                }
                 ArrayReference ar = (ArrayReference) debugger.invokeMethod (
                         exeption,
                         getStackTraceMethod,
@@ -343,55 +359,71 @@ public class InvocationExceptionTranslated extends ApplicationException {
             Method getMethod;
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
                     "getClassName", "()Ljava/lang/String;");  // NOI18N
-            try {
-                StringReference sr = (StringReference) debugger.invokeMethod (
-                        stElement,
-                        getMethod,
-                        new Value [0]
-                    );
-                declaringClass = StringReferenceWrapper.value(sr);
-            } catch (InvalidExpressionException ex) {
-                declaringClass = ex.getLocalizedMessage();
+            if (getMethod == null) {
+                declaringClass = "unknown";
+            } else {
+                try {
+                    StringReference sr = (StringReference) debugger.invokeMethod (
+                            stElement,
+                            getMethod,
+                            new Value [0]
+                        );
+                    declaringClass = StringReferenceWrapper.value(sr);
+                } catch (InvalidExpressionException ex) {
+                    declaringClass = ex.getLocalizedMessage();
+                }
             }
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
                     "getMethodName", "()Ljava/lang/String;");  // NOI18N
-            try {
-                StringReference sr = (StringReference) debugger.invokeMethod (
-                        stElement,
-                        getMethod,
-                        new Value [0]
-                    );
-                methodName = StringReferenceWrapper.value(sr);
-            } catch (InvalidExpressionException ex) {
-                methodName = ex.getLocalizedMessage();
+            if (getMethod == null) {
+                methodName = "unknown";
+            } else {
+                try {
+                    StringReference sr = (StringReference) debugger.invokeMethod (
+                            stElement,
+                            getMethod,
+                            new Value [0]
+                        );
+                    methodName = StringReferenceWrapper.value(sr);
+                } catch (InvalidExpressionException ex) {
+                    methodName = ex.getLocalizedMessage();
+                }
             }
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
                     "getFileName", "()Ljava/lang/String;");  // NOI18N
-            try {
-                StringReference sr = (StringReference) debugger.invokeMethod (
-                        stElement,
-                        getMethod,
-                        new Value [0]
-                    );
-                if (sr == null) {
-                    fileName = null;
-                } else {
-                    fileName = StringReferenceWrapper.value(sr);
+            if (getMethod == null) {
+                fileName = "unknown";
+            } else {
+                try {
+                    StringReference sr = (StringReference) debugger.invokeMethod (
+                            stElement,
+                            getMethod,
+                            new Value [0]
+                        );
+                    if (sr == null) {
+                        fileName = null;
+                    } else {
+                        fileName = StringReferenceWrapper.value(sr);
+                    }
+                } catch (InvalidExpressionException ex) {
+                    fileName = ex.getLocalizedMessage();
                 }
-            } catch (InvalidExpressionException ex) {
-                fileName = ex.getLocalizedMessage();
             }
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
                         "getLineNumber", "()I");  // NOI18N
-            try {
-                IntegerValue iv = (IntegerValue) debugger.invokeMethod (
-                        stElement,
-                        getMethod,
-                        new Value [0]
-                    );
-                lineNumber = IntegerValueWrapper.value(iv);
-            } catch (InvalidExpressionException ex) {
+            if (getMethod == null) {
                 lineNumber = -1;
+            } else {
+                try {
+                    IntegerValue iv = (IntegerValue) debugger.invokeMethod (
+                            stElement,
+                            getMethod,
+                            new Value [0]
+                        );
+                    lineNumber = IntegerValueWrapper.value(iv);
+                } catch (InvalidExpressionException ex) {
+                    lineNumber = -1;
+                }
             }
             return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
         } catch (InternalExceptionWrapper ex) {

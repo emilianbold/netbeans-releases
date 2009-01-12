@@ -141,7 +141,7 @@ public class JaxWsRootNode extends AbstractNode {
         public String[] getPrivilegedTemplates() {
             return new String[] {
                 "Templates/WebServices/WebService.java",    // NOI18N
-                //"Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
+                "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
                 //"Templates/WebServices/MessageHandler.java", // NOI18N
                 //"Templates/WebServices/LogicalHandler.java" // NOI18N
             };

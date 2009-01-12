@@ -4,3 +4,7 @@ self.|mysupersupermethod()
 METHOD     mymethod()                                 
 METHOD     mysupermethod()                            
 METHOD     mysupersupermethod()                       
+------------------------------------
+ATTRIBUTE  __dict__                                   
+ATTRIBUTE  ---__members__             ---             
+ATTRIBUTE  ---__methods__             ---             

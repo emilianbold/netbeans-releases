@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.spi;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
@@ -53,6 +54,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.UserQuestionException;
 
 /**
  * Container holding RefactoringElements
@@ -201,7 +203,7 @@ public final class RefactoringElementsBag {
             DataObject dob = DataObject.find(el.getParentFile());
             EditorCookie e = dob.getCookie(EditorCookie.class);
             if (e!=null) {
-                GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
+                GuardedSectionManager manager = GuardedSectionManager.getInstance(openDocument(e));
                 if (manager != null) {
                     Position elementStart = el.getPosition().getBegin().getPosition();
                     Position elementEnd = el.getPosition().getEnd().getPosition();
@@ -221,5 +223,21 @@ public final class RefactoringElementsBag {
                     ex.getMessage(), ex);
         }
         return false;
+    }
+
+    private static StyledDocument openDocument(EditorCookie ec) throws IOException {
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (UserQuestionException ex) {
+            // issue #156068 - open even big file
+            if (ex.getMessage().startsWith("The file is too big.")) { // NOI18N
+                ex.confirmed();
+                doc = ec.openDocument();
+            } else {
+                throw ex;
+            }
+        }
+        return doc;
     }
 }

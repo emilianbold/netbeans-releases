@@ -7,18 +7,23 @@
   <body>
     <?php
     
-    if (true){
+    if (true)
+    {
       echo "test";
-    } else {
+    } else
+    {
       echo "test";
     }
     
-    function function_name() {
+    function function_name()
+    {
       echo "test";
     
-      if (true){
+      if (true)
+      {
         echo "test";
-      } else {
+      } else
+      {
         echo "test";
       }
     }

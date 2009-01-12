@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -178,6 +178,111 @@ made subject to such option by the copyright holder.
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-editor-java-JavaBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+
+                <folder name="Actions">
+                    <file name="default-typed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="make-getter.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="make-setter.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="make-is.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="abbrev-debug-line.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="toggle-comment.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="generate-goto-popup.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="insert-break.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="delete-previous.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="delete-next.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="expand-all-javadoc-folds.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="collapse-all-javadoc-folds.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="expand-all-code-block-folds.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="collapse-all-code-block-folds.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="generate-fold-popup.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="goto-declaration.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="goto-source.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="goto-help.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="in-place-refactoring.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="fix-imports.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="complete-line-newline.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="complete-line.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="select-element-next.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="select-element-previous.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="caret-next-word.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="caret-previous-word.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="selection-next-word.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="selection-previous-word.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="remove-word-next.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="remove-word-previous.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="fast-import.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="goto-super-implementation.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="java-prev-marked-occurrence.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
+                    </file>
+                    <file name="java-next-marked-occurrence.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
                     </file>
                 </folder>
                 

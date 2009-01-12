@@ -167,7 +167,9 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         String charsetName = null;
         desc = new RubyExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
-        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
+
+        TestRunnerUtilities.addProperties(desc, project);
+        desc.addInitialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();
