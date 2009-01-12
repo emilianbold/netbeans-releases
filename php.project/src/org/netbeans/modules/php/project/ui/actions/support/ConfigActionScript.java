@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,10 +21,22 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.BufferedWriter;
@@ -32,28 +44,30 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.Command;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -66,30 +80,91 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * Action implementation for SCRIPT configuration.
+ * It means running and debugging scripts.
+ * @author Tomas Mysik
  */
-public class RunScript extends Command implements Displayable {
-    public static final String ID = "run.local"; // NOI18N
+public class ConfigActionScript extends ConfigAction {
 
-    public RunScript(PhpProject project) {
-        super(project);
+    @Override
+    public boolean isRunProjectEnabled(PhpProject project) {
+        return isRunProjectEnabled();
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public boolean isDebugProjectEnabled(PhpProject project) {
+        return isDebugProjectEnabled();
+    }
+
+    @Override
+    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
+        FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
+        return file != null && CommandUtils.isPhpFile(file);
+    }
+
+    @Override
+    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
+        if (XDebugStarterFactory.getInstance() == null) {
+            return false;
+        }
+        return isRunFileEnabled(project, context);
+    }
+
+    @Override
+    public void runProject(PhpProject project) {
+        run(project, null);
+    }
+
+    @Override
+    public void debugProject(PhpProject project) {
+        debug(project, null);
+    }
+
+    @Override
+    public void runFile(PhpProject project, Lookup context) {
+        run(project, context);
+    }
+
+    @Override
+    public void debugFile(PhpProject project, Lookup context) {
+        debug(project, context);
+    }
+
+    private void run(PhpProject project, Lookup context) {
         try {
-            getCallable(context).call();
+            getCallable(project, context, true, Collections.<String, String>emptyMap(), null).call();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    public final Callable<Cancellable> getCallable(final Lookup context)  {
+    private void debug(PhpProject project, Lookup context) {
+        //temporary; after narrowing deps. will be changed
+        Callable<Cancellable> callable = getCallable(project, context, false, getDebugEnvironmentVariables(),
+                NbBundle.getMessage(ConfigActionScript.class, "MSG_Suffix_Debug"));
+        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        if (dbgStarter != null) {
+            if (dbgStarter.isAlreadyRunning()) {
+                if (CommandUtils.warnNoMoreDebugSession()) {
+                    dbgStarter.stop();
+                    debug(project, context);
+                }
+            } else {
+                dbgStarter.start(project, callable, getStartFile(project, context), true);
+            }
+        }
+    }
+
+    private final Callable<Cancellable> getCallable(final PhpProject project, final Lookup context,
+            final boolean isControllable, final Map<String, String> environmentVariables, final String displayNameSuffix)  {
         return new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
-                PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(getProject());
-                final FileObject scriptFo = (context == null) ? fileForProject(false) : fileForContext(context);
+
+                FileObject scriptFo = getStartFile(project, context);
                 final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
+
+                PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(project);
                 if (!phpInterpreter.isValid() || scriptFile == null) {
                     return new Cancellable() {
                         public boolean cancel() {
@@ -97,8 +172,21 @@ public class RunScript extends Command implements Displayable {
                         }
                     };
                 }
+
+                ExternalProcessBuilder processBuilder = getBuilder(project, phpInterpreter, scriptFile);
+                for (Map.Entry<String, String> entry : environmentVariables.entrySet()) {
+                    processBuilder = processBuilder.addEnvironmentVariable(entry.getKey(), entry.getValue());
+                }
+
+                StringBuilder displayName = new StringBuilder();
+                displayName.append(getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
+                if (displayNameSuffix != null) {
+                    displayName.append(" "); // NOI18N
+                    displayName.append(displayNameSuffix);
+                }
+
                 ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                        .controllable(isControllable())
+                        .controllable(isControllable)
                         .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
                         .inputVisible(true)
                         .showProgress(true)
@@ -106,18 +194,15 @@ public class RunScript extends Command implements Displayable {
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
-                final ExecutionService service = ExecutionService.newService(getBuilder(phpInterpreter, scriptFile),
-                        descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
+                final ExecutionService service = ExecutionService.newService(processBuilder,
+                        descriptor, displayName.toString());
                 final Future<Integer> result = service.run();
-                // #155251
-                /*try {
-                    result.get();
-                } catch (ExecutionException exc) {
-                    Throwable cause = exc.getCause();
-                    assert cause != null;
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(
-                            cause, NbBundle.getMessage(RunScript.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
-                }*/
+                // #155251, #155741
+//                try {
+//                    result.get();
+//                } catch (ExecutionException exc) {
+//                    CommandUtils.processExecutionException(exc);
+//                }
                 return new Cancellable() {
                     public boolean cancel() {
                         return result.cancel(true);
@@ -127,39 +212,30 @@ public class RunScript extends Command implements Displayable {
         };
     }
 
-    private ExternalProcessBuilder getBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
+    private FileObject getStartFile(PhpProject project, Lookup context) {
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+        FileObject startFile = null;
+        if (context == null) {
+            startFile = CommandUtils.fileForProject(project, sources);
+        } else {
+            startFile = CommandUtils.fileForContextOrSelectedNodes(context, sources);
+        }
+        return startFile;
+    }
+
+    private ExternalProcessBuilder getBuilder(PhpProject project, PhpInterpreter phpInterpreter, File scriptFile) {
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter.getInterpreter());
         for (String param : phpInterpreter.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
         }
         processBuilder = processBuilder.addArgument(scriptFile.getName());
-        String argProperty = ProjectPropertiesSupport.getArguments(getProject());
-        if (argProperty != null && argProperty.length() > 0) {
+        String argProperty = ProjectPropertiesSupport.getArguments(project);
+        if (PhpProjectUtils.hasText(argProperty)) {
             for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                 processBuilder = processBuilder.addArgument(argument);
             }
         }
         processBuilder = processBuilder.workingDirectory(scriptFile.getParentFile());
-        processBuilder = initProcessBuilder(processBuilder);
-        return processBuilder;
-    }
-
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null;
-    }
-
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    protected boolean isControllable() {
-        return true;
-    }
-
-    //designed to set env.variables for debugger to resuse this code
-    protected  ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
         return processBuilder;
     }
 
@@ -169,11 +245,15 @@ public class RunScript extends Command implements Displayable {
         return retval;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(DebugScript.class, "LBL_RunScript");
+    private String getOutputTabTitle(String command, File scriptFile) {
+        return String.format("%s - %s", command, scriptFile.getName());
     }
 
-    private static class InOutPostRedirector implements InputProcessorFactory, Runnable {
+    private Map<String, String> getDebugEnvironmentVariables() {
+        return Collections.<String, String>singletonMap("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
+    }
+
+    private static final class InOutPostRedirector implements InputProcessorFactory, Runnable {
         private BufferedWriter fileWriter;
         private final File tmpFile;
         private Charset encoding;
@@ -231,7 +311,7 @@ public class RunScript extends Command implements Displayable {
          */
         public synchronized BufferedWriter getFileWriter() throws FileNotFoundException {
             if (fileWriter == null) {
-                fileWriter = writer(new FileOutputStream(tmpFile), encoding);
+                fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile), encoding));
             }
             return fileWriter;
         }

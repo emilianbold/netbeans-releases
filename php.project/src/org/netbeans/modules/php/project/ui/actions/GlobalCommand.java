@@ -52,12 +52,12 @@ public abstract class GlobalCommand extends Command {
     }
 
     @Override
-    public final void invokeAction(Lookup context) throws IllegalArgumentException {
+    public final void invokeAction(Lookup context) {
         invokeAction();
     }
 
     @Override
-    public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+    public final boolean isActionEnabled(Lookup context) {
         return true;
     }
 

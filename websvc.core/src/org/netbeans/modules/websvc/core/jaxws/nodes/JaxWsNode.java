@@ -98,7 +98,7 @@ import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
 import org.netbeans.modules.websvc.core.ConfigureHandlerAction;
-import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
+import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
