@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core;
 
+import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
