@@ -55,16 +55,29 @@ import org.openide.filesystems.FileObject;
 public class FileObjectCrawler extends Crawler {
     
     private final FileObject root;
+    private final FileObject[] files;
 
     public FileObjectCrawler (final FileObject root) throws IOException {
         super (root.getURL());
         this.root = root;
+        this.files = null;
+    }
+
+    public FileObjectCrawler (final FileObject root, final FileObject[] files) throws IOException {
+        super (root.getURL());
+        this.root = root;
+        this.files = files;
     }
 
     @Override
     protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
-        collect (root, root, result, supportedMimeTypes);
+        if (files != null) {
+            collect (files,root,result,supportedMimeTypes);
+        }
+        else {
+            collect (root, root, result, supportedMimeTypes);
+        }
         return result;
     }
 
@@ -72,6 +85,12 @@ public class FileObjectCrawler extends Crawler {
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes) {
         final FileObject[] fos = dir.getChildren();
+        collect(fos, root, cache, supportedMimeTypes);
+    }
+
+    private void collect (FileObject[] fos, FileObject root,
+            final Map<String, Collection<Indexable>> cache,
+            final Set<? extends String> supportedMimeTypes) {
         for (FileObject fo : fos) {
             if (fo.isFolder()) {
                 collect(fo, root, cache, supportedMimeTypes);
