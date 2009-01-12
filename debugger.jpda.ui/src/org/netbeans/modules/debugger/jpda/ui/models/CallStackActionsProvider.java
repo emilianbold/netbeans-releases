@@ -166,72 +166,17 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     public void removeModelListener (ModelListener l) {
     }
 
-    private static void popToHere (final CallStackFrame frame) {
-        try {
-            JPDAThread t = frame.getThread ();
-            CallStackFrame[] stack = t.getCallStack ();
-            int i, k = stack.length;
-            if (k < 2) return ;
-            for (i = 0; i < k; i++)
-                if (stack [i].equals (frame)) {
-                    if (i > 0) {
-                        stack [i - 1].popFrame ();
-                    }
-                    return;
-                }
-        } catch (AbsentInformationException ex) {
-        }
-    }
-    
     private void stackToCLBD() {
         JPDAThread t = debugger.getCurrentThread();
         if (t == null) return ;
         StringBuffer frameStr = new StringBuffer(50);
-        CallStackFrame[] stack;
-        try {
-            stack = t.getCallStack ();
-        } catch (AbsentInformationException ex) {
-            frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
-            stack = null;
-        }
-        if (stack != null) {
-            int i, k = stack.length;
-
-            for (i = 0; i < k; i++) {
-                frameStr.append(stack[i].getClassName());
-                frameStr.append(".");
-                frameStr.append(stack[i].getMethodName());
-                try {
-                    String sourceName = stack[i].getSourceName(null);
-                    frameStr.append("(");
-                    frameStr.append(sourceName);
-                    int line = stack[i].getLineNumber(null);
-                    if (line > 0) {
-                        frameStr.append(":");
-                        frameStr.append(line);
-                    }
-                    frameStr.append(")");
-                } catch (AbsentInformationException ex) {
-                    //frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
-                    // Ignore, do not provide source name.
-                }
-                if (i != k - 1) frameStr.append('\n');
-            }
-        }
-        Clipboard systemClipboard = getClipboard();
+        DebuggingActionsProvider.appendStackInfo(frameStr, t);
+        Clipboard systemClipboard = DebuggingActionsProvider.getClipboard();
         Transferable transferableText =
                 new StringSelection(frameStr.toString());
         systemClipboard.setContents(
                 transferableText,
                 null);
-    }
-    
-    private static Clipboard getClipboard() {
-        Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
-        if (clipboard == null) {
-            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        }
-        return clipboard;
     }
     
     private void makeCurrent (final CallStackFrame frame) {

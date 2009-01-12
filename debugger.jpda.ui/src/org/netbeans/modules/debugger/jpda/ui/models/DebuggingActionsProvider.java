@@ -83,7 +83,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
 
     private Action MAKE_CURRENT_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
-        new Models.ActionPerformer () {
+        new LazyActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread) {
                     return debugger.getCurrentThread () != node;
@@ -96,7 +96,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 return false;
             }
             
-            public void perform (Object[] nodes) {
+            public void run (Object[] nodes) {
                 if (nodes.length == 0) return ;
                 if (nodes[0] instanceof JPDAThread) {
                     ((JPDAThread) nodes [0]).makeCurrent ();
@@ -116,7 +116,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
 
     private final Action COPY_TO_CLBD_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
-        new Models.ActionPerformer () {
+        new LazyActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread) {
                     return !DebuggingTreeModel.isMethodInvoking((JPDAThread) node);
@@ -125,7 +125,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 }
                 return true;
             }
-            public void perform (Object[] nodes) {
+            public void run (Object[] nodes) {
                 List<JPDAThread> threads = new ArrayList<JPDAThread>(nodes.length);
                 for (Object node : nodes) {
                     if (node instanceof JPDAThread) {
@@ -192,9 +192,26 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         );
     }
 
+    private abstract class LazyActionPerformer implements Models.ActionPerformer {
+
+        public LazyActionPerformer() {}
+
+        public abstract boolean isEnabled (Object node);
+
+        public final void perform (final Object[] nodes) {
+            requestProcessor.post(new Runnable() {
+                public void run() {
+                    LazyActionPerformer.this.run(nodes);
+                }
+            });
+        }
+
+        public abstract void run(Object[] nodes);
+    }
+
     private Action SUSPEND_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Suspend_Label"),
-        new Models.ActionPerformer () {
+        new LazyActionPerformer () {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread) {
@@ -205,11 +222,11 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 }
                 return false;
             }
-            
-            public void perform (Object[] nodes) {
+
+            public void run(Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
-                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ?
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).suspend ();
@@ -219,12 +236,11 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             }
         },
         Models.MULTISELECTION_TYPE_ALL
-    
     );
 
     private Action RESUME_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Resume_Label"),
-        new Models.ActionPerformer () {
+        new LazyActionPerformer () {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread) {
@@ -236,10 +252,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 return false;
             }
             
-            public void perform (Object[] nodes) {
+            public void run (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
-                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ?
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).resume ();
@@ -254,7 +270,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         
     private Action INTERRUPT_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
-        new Models.ActionPerformer () {
+        new LazyActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
                 if (node instanceof JPDAThread)
@@ -263,10 +279,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                     return false;
             }
             
-            public void perform (Object[] nodes) {
+            public void run (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
-                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ?
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread) {
                         ((JPDAThread) node).interrupt();
@@ -312,6 +328,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         
     private JPDADebugger debugger;
     private Session session;
+    RequestProcessor requestProcessor;
     private Action POP_TO_HERE_ACTION;
     
     private Action LANGUAGE_SELECTION;
@@ -320,7 +337,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     public DebuggingActionsProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         session = lookupProvider.lookupFirst(null, Session.class);
-        RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
         POP_TO_HERE_ACTION = createPOP_TO_HERE_ACTION(requestProcessor);
         LANGUAGE_SELECTION = new LanguageSelection(session);
     }
@@ -380,19 +397,26 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         return new Action[] { LANGUAGE_SELECTION };
     }
     
-    public void performDefaultAction (Object node) throws UnknownTypeException {
+    public void performDefaultAction (final Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) {
             return;
         }
-        if (node instanceof JPDAThread) {
-            ((JPDAThread) node).makeCurrent ();
+        if (node instanceof JPDAThread || node instanceof CallStackFrame) {
+            requestProcessor.post(new Runnable() {
+                public void run() {
+                    if (node instanceof JPDAThread) {
+                        ((JPDAThread) node).makeCurrent ();
+                    } else if (node instanceof CallStackFrame) {
+                        CallStackFrame f = (CallStackFrame) node;
+                        f.getThread().makeCurrent();
+                        f.makeCurrent();
+                        goToSource(f);
+                    }
+                }
+            });
+            return ;
         } else if (node instanceof JPDAThreadGroup) {
             return;
-        } else if (node instanceof CallStackFrame) {
-            CallStackFrame f = (CallStackFrame) node;
-            f.getThread().makeCurrent();
-            f.makeCurrent();
-            goToSource(f);
         }
         throw new UnknownTypeException (node);
     }
@@ -428,15 +452,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         }
     }
 
-    private void stackToCLBD(List<JPDAThread> threads) {
-        StringBuffer frameStr = new StringBuffer(512);
-        for (JPDAThread t : threads) {
-            if (frameStr.length() > 0) {
-                frameStr.append('\n');
-            }
-            frameStr.append("\"");
-            frameStr.append(t.getName());
-            frameStr.append("\"\n");
+    static void appendStackInfo(StringBuffer frameStr, JPDAThread t) {
             CallStackFrame[] stack;
             try {
                 stack = t.getCallStack ();
@@ -468,6 +484,18 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                     if (i != k - 1) frameStr.append('\n');
                 }
             }
+    }
+
+    static void stackToCLBD(List<JPDAThread> threads) {
+        StringBuffer frameStr = new StringBuffer(512);
+        for (JPDAThread t : threads) {
+            if (frameStr.length() > 0) {
+                frameStr.append('\n');
+            }
+            frameStr.append("\"");
+            frameStr.append(t.getName());
+            frameStr.append("\"\n");
+            appendStackInfo(frameStr, t);
         }
         Clipboard systemClipboard = getClipboard();
         Transferable transferableText =
@@ -477,7 +505,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 null);
     }
 
-    private static Clipboard getClipboard() {
+    static Clipboard getClipboard() {
         Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
         if (clipboard == null) {
             clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
