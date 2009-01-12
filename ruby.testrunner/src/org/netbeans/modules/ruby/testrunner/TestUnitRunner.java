@@ -60,11 +60,8 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
-//import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
-//import org.netbeans.modules.ruby.testrunner.ui.TestSession;
-//import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,12 +81,6 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
     public static final String RUNNER_SCRIPT_NAME = "nb_test_runner.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
-    /**
-     * Sometimes, or rather for some projects (such as RubyGems), when running the test task the underlying
-     * stream stalls for some time in the middle of the test run. 5000ms seems to enough
-     * for most cases.
-     */
-    static final int DEFAULT_WAIT_TIME = 5000;
 
     static {
         // this env variable is referenced from nb_test_runner.rb, where it
