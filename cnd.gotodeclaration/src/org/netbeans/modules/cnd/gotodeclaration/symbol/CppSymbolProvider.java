@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
@@ -116,36 +117,42 @@ public class CppSymbolProvider implements SymbolProvider {
         if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
+        List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
 
+        long time = System.currentTimeMillis();
+        collect(context, nameAcceptor, symbols);
+        if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); }
+        if (!cancelled) {
+            result.addResult(symbols);
+        }
+        cancelled = false;
+    }
+
+    private void collect(Context context, NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
         if (context.getProject() == null) {
-            List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
             Set<CsmProject> libs = new HashSet<CsmProject>();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
-                collectLibs(csmProject, libs);                
+                collectLibs(csmProject, libs);
             }
-            for(CsmProject csmProject : libs) {
+            for (CsmProject csmProject : libs) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
             }
-            result.addResult(symbols);
         } else {
             NativeProject nativeProject = context.getProject().getLookup().lookup(NativeProject.class);
             if (nativeProject != null) {
                 CsmProject csmProject = CsmModelAccessor.getModel().getProject(nativeProject);
                 if (csmProject != null) {
-                    List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
                     collectSymbols(csmProject, nameAcceptor, symbols);
-                    result.addResult(symbols);
                 }
             }
         }
-        cancelled = false;
     }
 
     private void collectLibs(CsmProject project, Collection<CsmProject> libs) {
