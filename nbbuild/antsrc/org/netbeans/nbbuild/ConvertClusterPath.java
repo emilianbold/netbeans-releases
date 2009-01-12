@@ -93,10 +93,10 @@ public class ConvertClusterPath extends Task {
     public void execute() throws BuildException {
         try {
             if (from == null || from.length() == 0)
-                throw new BuildException("From parameter not specified.");
+                throw new BuildException("From parameter not specified.", getLocation());
             if ((id == null || id.length() == 0)
                     && (to == null && to.length() == 0))
-                throw new BuildException("Either 'to' or 'id' parameter for converted path must be specified.");
+                throw new BuildException("Either 'to' or 'id' parameter for converted path must be specified.", getLocation());
             if (basedir == null || basedir.length() == 0)
                 basedir = getProject().getBaseDir().getAbsolutePath();
 
@@ -118,7 +118,7 @@ public class ConvertClusterPath extends Task {
                 final Matcher cm = pat.matcher(fPath);
                 if (f.exists()) {
                     if (! f.isDirectory())
-                        throw new BuildException("Only directories can be elements of cluster.path. Got '" + fPath + "'");
+                        throw new BuildException("Only directories can be elements of cluster.path. Got '" + fPath + "'", getLocation());
                     convPath.createPathElement().setLocation(f);
                     continue;
                 }
@@ -133,6 +133,14 @@ public class ConvertClusterPath extends Task {
                                 return am.matches() && cm.group(1).equalsIgnoreCase(am.group(1));
                             }
                         });
+                        if (alternate == null) {
+                            Matcher matcher = Pattern.compile("^\\$\\{nbplatform\\.(.*)\\.netbeans\\.dest\\.dir\\}$").matcher(parent.getName());
+                            if (matcher.matches())
+                                throw new BuildException("Unknown platform name '" + matcher.group(1) + "'.", getLocation());
+                            else
+                                throw new BuildException("Parent dir '" + parent.getAbsolutePath()
+                                        + "' does not exist.", getLocation());
+                        }
                         if (alternate.length > 0 && alternate[0].isDirectory()) {
                             log("Cluster '" + fPath + "' not found, using '" + alternate[0].getAbsolutePath() + "' instead.", Project.MSG_WARN);
                             convPath.createPathElement().setLocation(alternate[0]);
@@ -141,7 +149,7 @@ public class ConvertClusterPath extends Task {
                     }
                 }
                 // no alternate cluster found
-                throw new BuildException("Cluster '" + fPath + "' not found.");
+                throw new BuildException("Cluster '" + fPath + "' not found.", getLocation());
             }
 
             if (id != null && id.length() > 0)
@@ -149,7 +157,7 @@ public class ConvertClusterPath extends Task {
             if (to != null && to.length() > 0)
                 getProject().setProperty(to, convPath.toString());
         } catch (Exception e) {
-            throw new BuildException(e);
+            throw new BuildException(e, getLocation());
         }
     }
 
