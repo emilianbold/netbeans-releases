@@ -21,6 +21,7 @@
     <fontcolor name="DOUBLE_LITERAL" default="number"/>
     <fontcolor name="LONG_LITERAL" default="number"/>
     <fontcolor name="REGEXP_LITERAL" foreColor="9933CC"/>
+    <fontcolor name="DECORATOR" foreColor="9933CC"/>
     <fontcolor name="ERROR" default="error"/>
     <fontcolor name="LINE_COMMENT" default="comment"/>
     <fontcolor name="CONSTANT" foreColor="black">

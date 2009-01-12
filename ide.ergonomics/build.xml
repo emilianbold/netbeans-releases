@@ -40,7 +40,6 @@
             <exclude name="ide1*"/>
             <exclude name="platform*"/>
             <exclude name="ergonomics*"/>
-            <exclude name="gsf*"/>
             <exclude name="nb*.*"/>
             <exclude name="bin"/>
             <exclude name="etc"/>
@@ -67,7 +66,7 @@
     <target name="-init-one-cluster-propeties">
         <pathconvert property="cluster.name">
             <path location="."/>
-            <mapper type="regexp" from=".*/([a-z]*)[0-9\.]*" to="\1"/>
+            <mapper type="regexp" from=".*[/\\]([a-z]*)[0-9\.]*" to="\1"/>
         </pathconvert>
 
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>

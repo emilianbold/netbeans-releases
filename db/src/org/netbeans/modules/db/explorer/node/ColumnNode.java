@@ -64,6 +64,7 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -93,6 +94,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private String icon;
     private final MetadataElementHandle<Column> columnHandle;
     private final DatabaseConnection connection;
+    private boolean isTableColumn = true;
 
     private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
@@ -153,6 +155,8 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                             }
                                         }
                                     }
+                                } else {
+                                    isTableColumn = false;
                                 }
                             }
                         }
@@ -224,8 +228,12 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     @Override
     public boolean canDestroy() {
-        DatabaseConnector connector = connection.getConnector();
-        return connector.supportsCommand(Specification.REMOVE_COLUMN);
+        if (isTableColumn) {
+            DatabaseConnector connector = connection.getConnector();
+            return connector.supportsCommand(Specification.REMOVE_COLUMN);
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -270,6 +278,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     @Override
     public String getShortDescription() {
         return bundle().getString("ND_Column"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ColumnNode.class);
     }
 
     public static String getColumnName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {

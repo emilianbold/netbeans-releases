@@ -44,15 +44,11 @@ package org.netbeans.modules.settings.convertors;
 import java.io.*;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-import junit.textui.TestRunner;
 
-import org.netbeans.modules.settings.convertors.FooSetting;
 import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;

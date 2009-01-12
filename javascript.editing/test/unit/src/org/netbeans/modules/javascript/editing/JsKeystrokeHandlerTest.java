@@ -814,4 +814,19 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
+
+    public void testIssue150103() throws Exception {
+        //    1. Create a new JS file
+        //    2. type "/*" (without ") and press enter
+        //    3. Delete the middle asterisk (press backspace 2x)
+        //    4. Press Enter
+        insertChar("^", '/', "/^/");
+        insertChar("/^/", '*', "/*^");
+        insertBreak("/*^", "/*\n * ^\n */");
+        deleteChar("/*\n * ^\n */", "/*\n *^\n */");
+        deleteChar("/*\n *^\n */", "/*\n ^\n */");
+
+        // This is the part that was broken:
+        insertBreak("/*\n ^\n */", "/*\n \n ^\n */");
+    }
 }

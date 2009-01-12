@@ -1,0 +1,109 @@
+
+
+Document 0
+Searchable Keys:
+  class : PickleError
+  class-ig : pickleerror
+  extends : Exception
+  in : pickle
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 1
+Searchable Keys:
+  class : Pickler
+  class-ig : pickler
+  in : pickle
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;file,protocol;
+  member : clear_memo;F;|DOCUMENTED|DOC_ONLY|;;
+  member : dump;F;|DOCUMENTED|DOC_ONLY|;obj;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 2
+Searchable Keys:
+  class : PicklingError
+  class-ig : picklingerror
+  extends : Exception
+  in : pickle
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 3
+Searchable Keys:
+  class : Unpickler
+  class-ig : unpickler
+  in : pickle
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;file;
+  member : load;F;|DOCUMENTED|DOC_ONLY|;;
+  member : noload;F;|DOCUMENTED|DOC_ONLY|;;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 4
+Searchable Keys:
+  class : UnpicklingError
+  class-ig : unpicklingerror
+  extends : Exception
+  in : pickle
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 5
+Searchable Keys:
+  class : object
+  class-ig : object
+  in : None
+  member : __getinitargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getnewargs__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __getstate__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce__;F;|DOCUMENTED|DOC_ONLY|;;
+  member : __reduce_ex__;F;|DOCUMENTED|DOC_ONLY|;protocol;
+  member : __setstate__;F;|DOCUMENTED|DOC_ONLY|;;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  item : HIGHEST_PROTOCOL;D;|DOCUMENTED|DOC_ONLY|;
+  item : dump;F;|DOCUMENTED|DOC_ONLY|;obj,file,protocol;
+  item : dumps;F;|DOCUMENTED|DOC_ONLY|;obj,protocol;
+  item : load;F;|DOCUMENTED|DOC_ONLY|;file;
+  item : loads;F;|DOCUMENTED|DOC_ONLY|;string;
+  module : pickle
+
+Not Searchable Keys:
+  modattrs : S
+
+
+Document 7
+Searchable Keys:
+  item : PickleError;C;|DOCUMENTED|DOC_ONLY|;
+  item : Pickler;C;|DOCUMENTED|DOC_ONLY|;
+  item : PicklingError;C;|DOCUMENTED|DOC_ONLY|;
+  item : Unpickler;C;|DOCUMENTED|DOC_ONLY|;
+  item : UnpicklingError;C;|DOCUMENTED|DOC_ONLY|;
+  item : object;C;|DOCUMENTED|DOC_ONLY|;
+  module : cPickle
+
+Not Searchable Keys:
+  modattrs : S
+
+
+Document 8
+Searchable Keys:
+  module : None
+
+Not Searchable Keys:
+  modattrs : S

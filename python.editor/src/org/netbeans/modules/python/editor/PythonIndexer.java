@@ -174,7 +174,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public boolean acceptQueryPath(String url) {
-        return true;
+        return url.indexOf("jsstubs") == -1; // NOI18N
     }
 
     public String getPersistentUrl(File file) {
@@ -191,7 +191,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.115"; // NOI18N
+        return "0.121"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -235,13 +235,13 @@ public class PythonIndexer implements Indexer {
             this.factory = factory;
 
             module = PythonUtils.getModuleName(null, file);
-        //PythonTree root = PythonAstUtils.getRoot(result);
-        //if (root instanceof Module) {
-        //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
-        //    if (moduleDoc != null) {
-        //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
-        //    }
-        //}
+            //PythonTree root = PythonAstUtils.getRoot(result);
+            //if (root instanceof Module) {
+            //    Str moduleDoc = PythonAstUtils.getDocumentationNode(root);
+            //    if (moduleDoc != null) {
+            //        moduleAttributes = "d(" + moduleDoc.getCharStartIndex() + ")";
+            //    }
+            //}
         }
 
         private IndexTask(PythonParserResult result, IndexDocumentFactory factory, String overrideUrl) {
@@ -477,12 +477,29 @@ public class PythonIndexer implements Indexer {
         StringBuilder sb = new StringBuilder();
         sb.append(name);
         char type;
+        int flags = 0;
         if ("__init__".equals(name)) { // NOI18N
             type = 'c';
         } else {
             type = 'F';
+
+            List<expr> decorators = def.getInternalDecorator_list();
+            if (decorators != null && decorators.size() > 0) {
+                for (expr decorator : decorators) {
+                    String decoratorName = PythonAstUtils.getExprName(decorator);
+                    if ("property".equals(decoratorName)) { // NOI18N
+                        type = 'A';
+                    } else if ("classmethod".equals(decoratorName)) { // NOI18N
+                        // Classmethods seem to be used mostly for constructors/inherited factories
+                        type = 'c';
+                        flags |= IndexedElement.CONSTRUCTOR | IndexedElement.STATIC;
+                    } else if ("staticmethod".equals(decoratorName)) { // NOI18N
+                        flags |= IndexedElement.STATIC;
+                    }
+                }
+            }
         }
-        appendFlags(sb, type, sym, 0);
+        appendFlags(sb, type, sym, flags);
 
         List<String> params = PythonAstUtils.getParameters(def);
         boolean first = true;
@@ -592,8 +609,30 @@ public class PythonIndexer implements Indexer {
         return false;
     }
 
+    private static class CachedIndexDocument {
+        private List<CachedIndexDocumentEntry> entries = new ArrayList<CachedIndexDocumentEntry>(DEFAULT_DOC_SIZE);
+
+        private void addPair(String key, String value, boolean index) {
+            entries.add(new CachedIndexDocumentEntry(key, value, index));
+        }
+    }
+
+    private static class CachedIndexDocumentEntry {
+        private String key;
+        private String value;
+        private boolean index;
+
+        public CachedIndexDocumentEntry(String key, String value, boolean index) {
+            this.key = key;
+            this.value = value;
+            this.index = index;
+        }
+    }
+
     private List<IndexDocument> scanRst(FileObject fo, IndexDocumentFactory factory, String overrideUrl) {
-        List<IndexDocument> documents = new ArrayList<IndexDocument>();
+        List<CachedIndexDocument> documents = new ArrayList<CachedIndexDocument>();
+
+        List<IndexDocument> docs = new ArrayList<IndexDocument>();
 
         if (fo != null) {
             String module = fo.getNameExt();
@@ -623,7 +662,7 @@ public class PythonIndexer implements Indexer {
                         //} catch (IOException ex) {
                         //    Exceptions.printStackTrace(ex);
                         //}
-                        return documents;
+                        return Collections.emptyList();
                     }
                 }
             }
@@ -636,19 +675,19 @@ public class PythonIndexer implements Indexer {
                     name.equals("fl") || name.equals("imgfile") || // NOI18N
                     name.equals("jpeg") || // NOI18N
                     name.equals("sunau") || name.equals("sunaudio")) { // NOI!8N
-                return documents;
+                return Collections.emptyList();
             }
 
             Pattern PATTERN = Pattern.compile("\\s*\\.\\.\\s+(.*)::\\s*(.+)\\s*"); // NOI18N
 
             BaseDocument doc = GsfUtilities.getDocument(fo, true);
             if (doc != null) {
+                Map<String, CachedIndexDocument> classDocs = new HashMap<String, CachedIndexDocument>();
+                CachedIndexDocument document = null;
                 try {
                     String text = doc.getText(0, doc.getLength());
                     String[] lines = text.split("\n");
                     String currentClass = null;
-                    Map<String, IndexDocument> classDocs = new HashMap<String, IndexDocument>();
-                    IndexDocument document = null;
 
                     for (int lineno = 0, maxLines = lines.length; lineno < maxLines; lineno++) {
                         String line = lines[lineno];
@@ -673,7 +712,7 @@ public class PythonIndexer implements Indexer {
                                 if (key.equals("module") || key.equals("currentmodule")) {  // NOI18N
                                     // TODO - determine package name
                                     module = m.group(2);
-                                    document = factory.createDocument(DEFAULT_DOC_SIZE, overrideUrl);
+                                    document = new CachedIndexDocument();
                                     documents.add(document);
                                     document.addPair(FIELD_MODULE_NAME, module, true);
                                     String moduleAttrs = "S";
@@ -684,7 +723,7 @@ public class PythonIndexer implements Indexer {
                                 } else {
                                     // Methods described in an rst without an actual module definition...
                                     if (document == null) {
-                                        document = factory.createDocument(DEFAULT_DOC_SIZE, overrideUrl);
+                                        document = new CachedIndexDocument();
                                         documents.add(document);
                                         document.addPair(FIELD_MODULE_NAME, module, true);
                                         document.addPair(FIELD_MODULE_ATTR_NAME, "S", false); // NOI18N
@@ -692,19 +731,32 @@ public class PythonIndexer implements Indexer {
                                     if (key.equals("method") || key.equals("attribute")) { // NOI18N) { // NOI18N
                                         String signature = m.group(2);
 
+                                        if ("string.template".equals(signature)) { // NOI18N
+                                            // Wrong - ignore this one (ends up on the String class)
+                                            continue;
+                                        }
+                                        if (signature.startsWith("somenamedtuple.")) {
+                                            // Ditto
+                                            continue;
+                                        }
+                                        // Error in mailbox.rst - Python 2.6
+                                        if (".et_folder(folder)".equals(signature)) {
+                                            signature = "get_folder(folder)";
+                                        }
+
                                         int dot = signature.indexOf('.');
                                         if (dot != -1) {
                                             int paren = signature.indexOf('(');
                                             if (paren == -1 || paren > dot) {
                                                 assert signature.matches("\\w+\\.\\w+.*") : signature;
                                                 String dottedName = signature.substring(0, dot);
-                                                IndexDocument dottedDoc = classDocs.get(dottedName);
+                                                CachedIndexDocument dottedDoc = classDocs.get(dottedName);
                                                 if (dottedDoc != null) {
                                                     currentClass = dottedName;
-                                                } else if (currentClass == null) {
+                                                } else /*if (currentClass == null)*/ {
                                                     currentClass = dottedName;
                                                     // New class without class:: declaration first.
-                                                    IndexDocument classDocument = factory.createDocument(DEFAULT_DOC_SIZE, overrideUrl);
+                                                    CachedIndexDocument classDocument = new CachedIndexDocument();
                                                     documents.add(classDocument);
                                                     classDocs.put(currentClass, classDocument);
                                                     classDocument.addPair(FIELD_IN, module, true);
@@ -717,7 +769,7 @@ public class PythonIndexer implements Indexer {
                                         }
 
 
-                                        IndexDocument classDocument = classDocs.get(currentClass);
+                                        CachedIndexDocument classDocument = classDocs.get(currentClass);
                                         assert classDocs != null;
 
                                         if (key.equals("method")) {
@@ -794,7 +846,7 @@ public class PythonIndexer implements Indexer {
                                         }
                                         currentClass = cls;
 
-                                        IndexDocument classDocument = factory.createDocument(DEFAULT_DOC_SIZE, overrideUrl);
+                                        CachedIndexDocument classDocument = new CachedIndexDocument();
                                         classDocs.put(currentClass, classDocument);
                                         documents.add(classDocument);
                                         classDocument.addPair(FIELD_IN, module, true);
@@ -825,7 +877,8 @@ public class PythonIndexer implements Indexer {
                                             int lparen = signature.indexOf('(');
                                             int rparen = signature.indexOf(')', lparen + 1);
                                             if (lparen != -1 && rparen != -1) {
-                                                String methodName = signature.substring(0, lparen);
+                                                //String methodName = signature.substring(0, lparen);
+                                                String methodName = "__init__"; // The constructor is always __init__ !
                                                 String args = signature.substring(lparen + 1, rparen);
                                                 StringBuilder sig = new StringBuilder();
                                                 sig.append(methodName);
@@ -849,52 +902,24 @@ public class PythonIndexer implements Indexer {
                                             }
 
                                         }
-                                    } else if (key.equals("function") || key.equals("data") && m.group(2).contains("(")) { // NOI18N
+                                    } else if (key.equals("function") || (key.equals("data") && m.group(2).contains("("))) { // NOI18N
                                         // constants.rst for example registers a data item for "quit" which is really a function
 
                                         String signature = m.group(2);
-                                        int dot = signature.indexOf('.');
-                                        if (dot != -1) {
-                                            int paren = signature.indexOf('(');
-                                            if (paren == -1 || paren > dot) {
-                                                assert signature.matches("\\w+\\.\\w+.*") : signature;
-                                                signature = signature.substring(dot + 1);
+                                        indexRstFunction(signature, lines, lineno, document);
+
+                                        // See if we have any additional lines with signatures
+                                        for (int lookahead = lineno + 1; lookahead < maxLines; lookahead++) {
+                                            String l = lines[lookahead];
+                                            String trimmed = l.trim();
+                                            if (trimmed.length() == 0 || trimmed.startsWith(":")) { // NOI18N
+                                                break;
                                             }
+                                            lineno++;
+
+                                            indexRstFunction(trimmed, lines, lookahead, document);
                                         }
-                                        signature = cleanupSignature(signature);
-                                        if (signature.indexOf('(') == -1) {
-                                            signature = signature + "()";
-                                        } else if (signature.indexOf(')') == -1) {
-                                            //signature = signature + ")";
-                                            assert signature.indexOf(')') != -1;
-                                        }
-                                        int lparen = signature.indexOf('(');
-                                        int rparen = signature.indexOf(')', lparen + 1);
-                                        if (lparen != -1 && rparen != -1) {
-                                            String methodName = signature.substring(0, lparen);
-                                            String args = signature.substring(lparen + 1, rparen);
 
-                                            StringBuilder sig = new StringBuilder();
-                                            sig.append(methodName);
-                                            int symFlags = 0;
-                                            if (SymInfo.isPrivateName(methodName)) {
-                                                symFlags |= ScopeConstants.PRIVATE;
-                                            }
-                                            // TODO - look up deprecated etc.
-                                            SymInfo fakeSym = new SymInfo(symFlags);
-
-                                            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
-                                            if (isDeprecated(lines, lineno)) {
-                                                flags |= IndexedElement.DEPRECATED;
-                                            }
-
-
-                                            appendFlags(sig, 'F', fakeSym, flags);
-                                            sig.append(args);
-                                            sig.append(';');
-
-                                            document.addPair(FIELD_ITEM, sig.toString(), true);
-                                        }
                                     } else if (key.equals("data")) { // NOI18N
                                         String data = m.group(2);
 
@@ -943,7 +968,7 @@ public class PythonIndexer implements Indexer {
                                     }
                                 }
                             }
-                        } else if (line.startsWith(".. _bltin-file-objects:")) { // NOI18N
+                        } else if (line.startsWith(".. _bltin-file-objects:") || line.startsWith(".. _string-methods:")) { // NOI18N
                             if (currentClass != null) {
                                 currentClass = null;
                             }
@@ -967,10 +992,276 @@ public class PythonIndexer implements Indexer {
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+
+                // Post processing: Add missing attributes not found in the .rst files
+                // but introspected using dir() in a python console
+                if (document != null) {
+                    if ("operator".equals(module)) { // Fill in missing operators!
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__abs__", "__add__", "__and__", "__div__", "__floordiv__", "__index__", "__invert__", "__lshift__", "__mod__", "__mul__", "__neg__", "__or__", "__pos__", "__pow__", "__rshift__", "__sub__", "__truediv__", "__xor__" },
+                                document, classDocs, "int", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__abs__", "__add__", "__and__", "__div__", "__floordiv__", "__index__", "__invert__", "__lshift__", "__mod__", "__mul__", "__neg__", "__or__", "__pos__", "__pow__", "__rshift__", "__sub__", "__truediv__", "__xor__" },
+                                document, classDocs, "long", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__abs__", "__add__", "__div__", "__eq__", "__floordiv__", "__ge__", "__gt__", "__le__", "__lt__", "__mod__", "__mul__", "__ne__", "__neg__", "__pos__", "__pow__", "__sub__", "__truediv__" },
+                                document, classDocs, "float", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__abs__", "__add__", "__div__", "__eq__", "__floordiv__", "__ge__", "__gt__", "__le__", "__lt__", "__mod__", "__mul__", "__ne__", "__neg__", "__pos__", "__pow__", "__sub__", "__truediv__" },
+                                document, classDocs, "complex", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__abs__", "__add__", "__and__", "__div__", "__floordiv__", "__index__", "__invert__", "__lshift__", "__mod__", "__mul__", "__neg__", "__or__", "__pos__", "__pow__", "__rshift__", "__sub__", "__truediv__", "__xor__" },
+                                document, classDocs, "bool", documents, module, false, true);
+
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__add__", "__contains__", "__eq__", "__ge__", "__getitem__", "__getslice__", "__gt__", "__le__", "__lt__", "__mod__", "__mul__", "__ne__", "index" },
+                                document, classDocs, "str", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__add__", "__contains__", "__delitem__", "__delslice__", "__eq__", "__ge__", "__getitem__", "__getslice__", "__gt__", "__iadd__", "__imul__", "__le__", "__lt__", "__mul__", "__ne__", "__setitem__", "__setslice__", "index" },
+                                document, classDocs, "list", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__contains__", "__delitem__", "__eq__", "__ge__", "__getitem__", "__gt__", "__le__", "__lt__", "__ne__", "__setitem__" },
+                                document, classDocs, "dict", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__add__", "__contains__", "__eq__", "__ge__", "__getitem__", "__getslice__", "__gt__", "__le__", "__lt__", "__mul__", "__ne__", "index" },
+                                document, classDocs, "tuple", documents, module, false, true);
+                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+                                new String[] { "__add__", "__contains__", "__eq__", "__ge__", "__getitem__", "__getslice__", "__gt__", "__le__", "__lt__", "__mod__", "__mul__", "__ne__", "index" },
+                                document, classDocs, "unicode", documents, module, false, true);
+//                    } else if ("stdtypes".equals(module)) {
+//                        // Found no definitions for these puppies
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__cmp__", "__coerce__", "__delattr__", "__divmod__", "__doc__", "__float__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__hex__", "__init__", "__int__", "__long__", "__new__", "__nonzero__", "__oct__", "__radd__", "__rand__", "__rdiv__", "__rdivmod__", "__reduce__", "__reduce_ex__", "__repr__", "__rfloordiv__", "__rlshift__", "__rmod__", "__rmul__", "__ror__", "__rpow__", "__rrshift__", "__rsub__", "__rtruediv__", "__rxor__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "__trunc__", "conjugate", "denominator", "imag", "numerator", "real" },
+//                                document, classDocs, "int", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__cmp__", "__coerce__", "__delattr__", "__divmod__", "__doc__", "__float__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__hex__", "__init__", "__int__", "__long__", "__new__", "__nonzero__", "__oct__", "__radd__", "__rand__", "__rdiv__", "__rdivmod__", "__reduce__", "__reduce_ex__", "__repr__", "__rfloordiv__", "__rlshift__", "__rmod__", "__rmul__", "__ror__", "__rpow__", "__rrshift__", "__rsub__", "__rtruediv__", "__rxor__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "__trunc__", "conjugate", "denominator", "imag", "numerator", "real" },
+//                                document, classDocs, "long", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__coerce__", "__delattr__", "__divmod__", "__doc__", "__float__", "__format__", "__getattribute__", "__getformat__", "__getnewargs__", "__hash__", "__init__", "__int__", "__long__", "__new__", "__nonzero__", "__radd__", "__rdiv__", "__rdivmod__", "__reduce__", "__reduce_ex__", "__repr__", "__rfloordiv__", "__rmod__", "__rmul__", "__rpow__", "__rsub__", "__rtruediv__", "__setattr__", "__setformat__", "__sizeof__", "__str__", "__subclasshook__", "__trunc__", "conjugate", "imag", "is_integer", "real" },
+//                                document, classDocs, "float", documents, module, true, false);
+//
+//
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__coerce__", "__delattr__", "__divmod__", "__doc__", "__float__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__init__", "__int__", "__long__", "__new__", "__nonzero__", "__radd__", "__rdiv__", "__rdivmod__", "__reduce__", "__reduce_ex__", "__repr__", "__rfloordiv__", "__rmod__", "__rmul__", "__rpow__", "__rsub__", "__rtruediv__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "conjugate", "imag", "real" },
+//                                document, classDocs, "complex", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__cmp__", "__coerce__", "__delattr__", "__divmod__", "__doc__", "__float__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__hex__", "__init__", "__int__", "__long__", "__new__", "__nonzero__", "__oct__", "__radd__", "__rand__", "__rdiv__", "__rdivmod__", "__reduce__", "__reduce_ex__", "__repr__", "__rfloordiv__", "__rlshift__", "__rmod__", "__rmul__", "__ror__", "__rpow__", "__rrshift__", "__rsub__", "__rtruediv__", "__rxor__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "__trunc__", "conjugate", "denominator", "imag", "numerator", "real" },
+//                                document, classDocs, "bool", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__delattr__", "__doc__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__init__", "__len__", "__new__", "__repr__", "__rmod__", "__rmul__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "_formatter_field_name_split", "_formatter_parser" },
+//                                document, classDocs, "str", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__delattr__", "__doc__", "__format__", "__getattribute__", "__hash__", "__init__", "__iter__", "__len__", "__new__", "__repr__", "__reversed__", "__rmul__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "append", "count", "extend", "insert", "pop", "remove", "reverse", "sort" },
+//                                document, classDocs, "list", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__cmp__", "__delattr__", "__doc__", "__format__", "__getattribute__", "__hash__", "__iter__", "__len__", "__new__", "__repr__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__" },
+//                                document, classDocs, "dict", documents, module, true, false);
+//
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__delattr__", "__doc__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__init__", "__iter__", "__len__", "__new__", "__reduce__", "__reduce_ex__", "__repr__", "__rmul__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "count" },
+//                                document, classDocs, "tuple", documents, module, true, false);
+//                        addMissing(PythonIndexer.FIELD_ITEM, PythonIndexer.FIELD_MEMBER,
+//                              new String[] { "__class__", "__delattr__", "__doc__", "__format__", "__getattribute__", "__getnewargs__", "__hash__", "__init__", "__len__", "__new__", "__reduce__", "__reduce_ex__", "__repr__", "__rmod__", "__rmul__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__", "_formatter_field_name_split", "_formatter_parser", "capitalize", "center", "count", "decode", "encode", "endswith", "expandtabs", "find", "format", "isalnum", "isalpha", "isdecimal", "isdigit", "islower", "isnumeric", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "partition", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill" },
+//                                document, classDocs, "unicode", documents, module, true, false);
+//
+                    }
+                }
+
+                // And convert to a proper GSF search document. I didn't do this directly
+                // because I want to modify the documents after adding documents and pairs.
+                for (CachedIndexDocument cid : documents) {
+                    List<CachedIndexDocumentEntry> entries = cid.entries;
+                    IndexDocument indexedDoc = factory.createDocument(entries.size(), overrideUrl);
+                    docs.add(indexedDoc);
+                    for (CachedIndexDocumentEntry entry : entries) {
+                        indexedDoc.addPair(entry.key, entry.value, entry.index);
+                    }
+                }
             }
         }
 
-        return documents;
+        return docs;
+    }
+
+    /** Add the given list of names, found in the given document with a given key, and add it
+     * to the specified class (possibly found in the classDocs list - if not, add one to the
+     * documents list)
+     */
+    private void addMissing(String key, String newKey, String[] names, CachedIndexDocument doc,
+            Map<String, CachedIndexDocument> classDocs, String clz, List<CachedIndexDocument> documents, String module,
+            boolean addUnknown, boolean search) {
+
+        CachedIndexDocument classDocument = classDocs.get(clz);
+        if (classDocument == null) {
+            // New class without class:: declaration first.
+            classDocument = new CachedIndexDocument();
+            documents.add(classDocument);
+            classDocs.put(clz, classDocument);
+            classDocument.addPair(FIELD_IN, module, true);
+
+            classDocument.addPair(FIELD_CLASS_NAME, clz, true);
+            classDocument.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clz.toLowerCase(), true);
+        }
+
+        assert classDocument != doc;
+
+        List<String> namesFound = new ArrayList<String>();
+        List<String> namesMissing = new ArrayList<String>();
+        boolean noneFound = true;
+
+        // Look for each of the given functions
+        Search:
+        for (String name : names) {
+            boolean found = false;
+            if (search) {
+                int nameLength = name.length();
+
+                // DEBUGGING: Look to make sure I don't already have it in the class doc!
+                for (CachedIndexDocumentEntry entry : classDocument.entries) {
+                    if (newKey.equals(entry.key)) {
+                        if (entry.value.startsWith(name) &&
+                                (entry.value.length() <= nameLength || entry.value.charAt(nameLength) == ';')) {
+                             // Uh oh - what do I do here?
+                            System.err.println("WARNING: I already have a definition for name " + name + " in class " + clz);
+                            continue Search;
+                        }
+                    }
+                }
+
+                for (CachedIndexDocumentEntry entry : doc.entries) {
+                    if (key.equals(entry.key)) {
+                        if (entry.value.startsWith(name) &&
+                                (entry.value.length() <= nameLength || entry.value.charAt(nameLength) == ';')) {
+                            // Found it!
+                            classDocument.addPair(newKey, entry.value, entry.index);
+                            found = true;
+                            namesFound.add(name);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!found) {
+                if (addUnknown) {
+                    // TODO - see if I can find a way to extract the signature too!
+                    String args = "";
+                    String signature = name + "()"; //
+
+                    assert signature.indexOf('(') != -1 && signature.indexOf(')') != -1 &&
+                            signature.indexOf(')') > signature.indexOf('(') : signature;
+                    char type;
+                    if (name.equals("__init__")) { // NOI18N
+                        type = 'c';
+                    } else {
+                        type = 'F';
+                    }
+                    StringBuilder sig = new StringBuilder();
+                    sig.append(name);
+
+                    int symFlags = 0;
+                    if (SymInfo.isPrivateName(name)) {
+                        symFlags |= ScopeConstants.PRIVATE;
+                    }
+                    // TODO - look up deprecated etc.
+                    SymInfo fakeSym = new SymInfo(symFlags);
+
+                    int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
+                    appendFlags(sig, type, fakeSym, flags);
+                    sig.append(args);
+                    sig.append(';');
+
+                    classDocument.addPair(newKey, sig.toString(), true);
+                } else {
+                    namesMissing.add(name);
+                }
+            } else {
+                noneFound = false;
+            }
+        }
+
+        if (namesFound.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("FOUND for ");
+            sb.append(clz);
+            sb.append(" in ");
+            sb.append(module);
+            sb.append(": ");
+            appendList(sb, namesFound);
+            System.err.println(sb.toString());
+        }
+
+        if (noneFound && search) {
+            System.err.println("ERROR: NONE of the passed in names for " + clz + " were found!");
+        }
+
+        if (namesMissing.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("WARNING: Missing these names from ");
+            sb.append(module);
+            sb.append(" for use by class ");
+            sb.append(clz);
+            sb.append(" : ");
+            appendList(sb, namesMissing);
+            System.err.println(sb.toString());
+        }
+    }
+
+    private static void appendList(StringBuilder sb, List<String> list) {
+        sb.append("{ ");
+        boolean first = true;
+        for (String m : list) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append('"');
+            sb.append(m);
+            sb.append('"');
+        }
+        sb.append(" }");
+    }
+
+    private void indexRstFunction(String signature, String[] lines, int lineno, CachedIndexDocument document) {
+        int dot = signature.indexOf('.');
+        if (dot != -1) {
+            int paren = signature.indexOf('(');
+            if (paren == -1 || paren > dot) {
+                assert signature.matches("\\w+\\.\\w+.*") : signature; // NOI18N
+                signature = signature.substring(dot + 1);
+            }
+        }
+        signature = cleanupSignature(signature);
+        if (signature.indexOf('(') == -1) {
+            signature = signature + "()"; // NOI18N
+        } else if (signature.indexOf(')') == -1) {
+            //signature = signature + ")";
+            assert signature.indexOf(')') != -1;
+        }
+        int lparen = signature.indexOf('(');
+        int rparen = signature.indexOf(')', lparen + 1);
+        if (lparen != -1 && rparen != -1) {
+            String methodName = signature.substring(0, lparen);
+            String args = signature.substring(lparen + 1, rparen);
+            StringBuilder sig = new StringBuilder();
+            sig.append(methodName);
+            int symFlags = 0;
+            if (SymInfo.isPrivateName(methodName)) {
+                symFlags |= ScopeConstants.PRIVATE;
+            }
+            // TODO - look up deprecated etc.
+            SymInfo fakeSym = new SymInfo(symFlags);
+            int flags = IndexedElement.DOCUMENTED | IndexedElement.DOC_ONLY;
+            if (isDeprecated(lines, lineno)) {
+                flags |= IndexedElement.DEPRECATED;
+            }
+            appendFlags(sig, 'F', fakeSym, flags);
+            sig.append(args);
+            sig.append(';');
+
+            document.addPair(FIELD_ITEM, sig.toString(), true);
+        }
     }
 
     private List<IndexDocument> scanEgg(ParserResult result, IndexDocumentFactory factory) {

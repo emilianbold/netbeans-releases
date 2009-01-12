@@ -58,7 +58,7 @@ public class ErgonomicInfastructureTest extends Object {
             clusters("ergonomics.*").
             clusters(".*").
             enableModules("ide[0-9]*", ".*").
-            enableModules("gsf.*", ".*")
+            enableClasspathModules(false)
         );
 
         all.addTest(ergonomics);

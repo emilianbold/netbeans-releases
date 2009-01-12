@@ -280,7 +280,7 @@ class OutWriter extends PrintWriter {
                 int[] listenerLines = lines.allListenerLines();
                 Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
                 for (int i=0; i < listenerLines.length; i++) {
-                    OutputListener ol = (OutputListener) lines.getListenerForLine(listenerLines[i]);
+                    OutputListener ol = lines.getListenerForLine(listenerLines[i]);
                     if (Controller.LOG) {
                         Controller.log("Clearing listener " + ol);
                     }

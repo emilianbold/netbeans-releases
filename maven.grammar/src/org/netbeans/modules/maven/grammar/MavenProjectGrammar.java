@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;

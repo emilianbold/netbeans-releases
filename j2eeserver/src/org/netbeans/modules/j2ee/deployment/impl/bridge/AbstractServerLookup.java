@@ -110,7 +110,9 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
 
     @Override
     protected final void beforeLookup(Template<?> template) {
-        init();
+        if (!Thread.currentThread().getName().equals("Folder recognizer")) { // NOI18N
+            init();
+        }
         super.beforeLookup(template);
     }
 

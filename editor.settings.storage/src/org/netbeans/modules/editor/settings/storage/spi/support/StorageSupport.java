@@ -95,7 +95,7 @@ public final class StorageSupport {
         for (Iterator<? extends KeyStroke> it = keys.iterator(); it.hasNext(); ) {
             KeyStroke keyStroke = it.next();
             if (emacsStyle) {
-                sb.append(Utilities.keyToString(keyStroke));
+                sb.append(Utilities.keyToString(keyStroke, true));
                 if (it.hasNext()) {
                     sb.append('$'); //NOI18N
                 }

@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -78,7 +78,7 @@ public class ConnectionList {
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
             DatabaseConnectionConvertor.importOldConnections();
-            RootNodeInfo.getOption().save();
+            RootNode.getOption().save();
             DEFAULT = new ConnectionList();
         }
         return DEFAULT;

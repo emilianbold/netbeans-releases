@@ -18,12 +18,12 @@ Searchable Keys:
   fqn : Ape
   method : check(uri,username,password,requested_e_coll,requested_m_coll)|DOCUMENTED|
   method : check_new_entry(as_posted,new_entry,desc)
-  method : check_resource(uri,name,content_type,report)|DOCUMENTED|
-  method : compare1(e1,e2,e1Name,e2Name,field)
-  method : compare_entries(e1,e2,e1Name,e2Name)
+  method : check_resource(uri,name,content_type,report)|DOCUMENTED|;;NilClass|Getter;
+  method : compare1(e1,e2,e1Name,e2Name,field);;TrueClass;
+  method : compare_entries(e1,e2,e1Name,e2Name);;TrueClass|FalseClass;
   method : end_list
   method : error(message,crumb_key)
-  method : find_entry(feed_uri,name,id,report)|DOCUMENTED|
+  method : find_entry(feed_uri,name,id,report)|DOCUMENTED|;;String;
   method : footer(message)
   method : good(message,crumb_key)
   method : header(uri)
@@ -36,12 +36,12 @@ Searchable Keys:
   method : report(output)
   method : report_html(output)
   method : report_li(dialog,marker,text)
-  method : report_text
+  method : report_text;;Array;
   method : save_dialog(name,actor)|DOCUMENTED|
   method : show_crumbs(key)
   method : show_message(crumb,tf)
   method : start_list(message)
-  method : step(message)
+  method : step(message);;Array;
   method : test_entry_posts(entry_collection)
   method : test_media_linkage(coll)
   method : test_media_posts(media_collection)

@@ -1001,16 +1001,26 @@ public class SvnUtils {
         TY9_LOG.log(Level.FINEST, msg);
     }
 
+    /**
+     * Opens a dialog to pick a file if there is more then one root in a Context
+     *
+     * @param ctx the given context the choose the root from
+     * @return the only root available in the context the one picked by the user
+     */
     public static File getActionRoot(Context ctx) {
         File[] roots = ctx.getRootFiles();
         List<File> l = new ArrayList<File>();
+
+        // filter managed roots
         for (File file : roots) {
             if(isManaged(file)) {
                 l.add(file);
             }
         }
+
         roots = l.toArray(new File[l.size()]);
         if(roots.length > 1) {
+            // more than one managed root => need a dlg
             FileSelector fs = new FileSelector();
             if(fs.show(roots)) {
                 return fs.getSelectedFile();
@@ -1022,9 +1032,18 @@ public class SvnUtils {
         }
     }
 
-    public static String getHash(String alg, byte[] encoded) throws NoSuchAlgorithmException {
+    /**
+     * Returns hash value for the given byte array and algoritmus in a hex string form.
+     * @param alg Algoritmus to compute the hash value (see also Appendix A in the
+     * Java Cryptography Architecture API Specification &amp; Reference </a>
+     * for information about standard algorithm names.)
+     * @param bytes byte array
+     * @return hash value as a string
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public static String getHash(String alg, byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md5 = MessageDigest.getInstance(alg);
-        md5.update(encoded);
+        md5.update(bytes);
         byte[] md5digest = md5.digest();
         String ret = ""; // NOI18N
         for (int i = 0; i < md5digest.length; i++) {

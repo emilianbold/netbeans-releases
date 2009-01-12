@@ -1,8 +1,6 @@
 Code completion result for source line:
 myothervar.|x
 (QueryType=COMPLETION, NameKind=PREFIX)
-CONSTRUCTO __init__(file, mode, compressi             
-METHOD     __del__()                                  
 METHOD     close()                                    
 METHOD     getinfo(name)                              
 METHOD     infolist()                                 
@@ -12,4 +10,18 @@ METHOD     read(name)
 METHOD     testzip()                                  
 METHOD     write(filename, arcname, compr             
 METHOD     writestr(zinfo_or_arcname, byt             
+VARIABLE   NameToInfo                                 
+VARIABLE   comment                                    
+VARIABLE   compression                                
+VARIABLE   debug                                      
+VARIABLE   filelist                                   
+VARIABLE   filename                                   
 VARIABLE   fp                                         
+VARIABLE   mode                                       
+VARIABLE   start_dir                                  
+------------------------------------
+CONSTRUCTO __init__(file, mode, compressi             
+METHOD     __del__()                                  
+ATTRIBUTE  __dict__                                   
+ATTRIBUTE  ---__members__             ---             
+ATTRIBUTE  ---__methods__             ---             

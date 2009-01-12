@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.web.wizards;
 
-class FileType {
+public class FileType {
     private String name, suffix;
 
     private FileType(String name, String suffix) {

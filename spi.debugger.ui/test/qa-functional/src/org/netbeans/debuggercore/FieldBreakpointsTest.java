@@ -181,6 +181,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
             new EventTool().waitNoEvent(500);
             dialog.ok();
+            new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
         } catch (Throwable th) {

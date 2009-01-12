@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.newproject;
 
+import hidden.org.codehaus.plexus.util.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
@@ -241,10 +242,10 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 }
             }
             File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
-                    arch.getGroupId().replace('.', File.separatorChar) + File.separatorChar + arch.getArtifactId() 
-                  + File.separatorChar + arch.getVersion());
+                    arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() 
+                  + File.separator + arch.getVersion());
             if (path.exists()) {
-                path.delete();
+                FileUtils.deleteDirectory(path);
             }
         } catch (Exception e) {
             e.printStackTrace();

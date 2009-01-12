@@ -44,9 +44,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -81,7 +78,7 @@ public class ConfigurationPanel extends JPanel {
     private Callable<JComponent> callable;
 
     public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info) {
-        Feature2LayerMapping.logUI("ERGO_QUESTION", info.clusterName, displayName);
+        FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
         initComponents();
         this.callable = callable;
         String lblMsg = null;
@@ -97,13 +94,14 @@ public class ConfigurationPanel extends JPanel {
 
         infoLabel.setText(lblMsg);
         downloadButton.setText(btnMsg);
+        downloadButton.setMnemonic(btnMsg.charAt(0));
         setError(" "); // NOI18N
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        Feature2LayerMapping.logUI("ERGO_CLOSE");
+        FeatureManager.logUI("ERGO_CLOSE");
     }
 
     void setError(String msg) {
@@ -168,7 +166,7 @@ public class ConfigurationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-        Feature2LayerMapping.logUI("ERGO_DOWNLOAD");
+        FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
         final boolean[] success = new boolean[1];
         final FeatureInfo info = featureInfo;

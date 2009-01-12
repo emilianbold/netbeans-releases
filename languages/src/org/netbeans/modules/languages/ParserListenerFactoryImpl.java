@@ -72,7 +72,7 @@ public class ParserListenerFactoryImpl extends TaskFactory {
 
     @Override
     public Collection<SchedulerTask> create (Snapshot snapshot) {
-        Document document = snapshot.getSource ().getDocument ();
+        Document document = snapshot.getSource ().getDocument (false);
         String mimeType = snapshot.getMimeType ();
         if (!LanguagesManager.getDefault ().isSupported (mimeType)) return null;
         //System.out.println("\nASTEvaluators: ");

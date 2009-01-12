@@ -5,7 +5,7 @@ Searchable Keys:
   class : BZ2Compressor
   class-ig : bz2compressor
   in : bz2
-  member : BZ2Compressor;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;compresslevel;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;compresslevel;
   member : compress;F;|DOCUMENTED|DOC_ONLY|;data;
   member : flush;F;|DOCUMENTED|DOC_ONLY|;;
 
@@ -18,7 +18,7 @@ Searchable Keys:
   class : BZ2Decompressor
   class-ig : bz2decompressor
   in : bz2
-  member : BZ2Decompressor;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;
   member : decompress;F;|DOCUMENTED|DOC_ONLY|;data;
 
 Not Searchable Keys:
@@ -30,7 +30,7 @@ Searchable Keys:
   class : BZ2File
   class-ig : bz2file
   in : bz2
-  member : BZ2File;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,buffering,compresslevel;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,buffering,compresslevel;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : read;F;|DOCUMENTED|DOC_ONLY|;size;
   member : readline;F;|DOCUMENTED|DOC_ONLY|;size;

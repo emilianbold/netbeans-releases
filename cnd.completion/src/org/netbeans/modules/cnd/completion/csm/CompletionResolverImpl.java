@@ -102,7 +102,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private int contextOffset = 0;
+    private static int NOT_INITIALIZED = -1;
+    private int contextOffset = NOT_INITIALIZED;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
     private final FileReferencesContext fileReferncesContext;
@@ -179,8 +180,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return refresh();
     }
 
-    public boolean resolve(int offset, String strPrefix, boolean match) {
-        offset += contextOffset;
+    public boolean resolve(int docOffset, String strPrefix, boolean match) {
+        int offset = contextOffset == NOT_INITIALIZED ? docOffset : contextOffset;
         if (file == null) {
             return false;
         }

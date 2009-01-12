@@ -64,39 +64,30 @@ import org.openide.util.RequestProcessor;
  * @author Jirka Rechtacek
  */
 public final class FindComponentModules {
+    private static final RequestProcessor RP = new RequestProcessor("Find Modules");
+    
     private final Collection<String> codeNames;
     private final FeatureInfo info;
+    public final String DO_CHECK = "do-check";
+    private final String ENABLE_LATER = "enable-later";
+    private RequestProcessor.Task findingTask;
+    private Collection<UpdateElement> forInstall = null;
+    private Collection<UpdateElement> forEnable = null;
     
     public FindComponentModules(FeatureInfo info) {
         this.info = info;
         codeNames = info.getCodeNames();
+        findingTask = RP.post(doFind);
     }
     
-    public final String DO_CHECK = "do-check";
-    
-    private final String ENABLE_LATER = "enable-later";
-    private Collection<UpdateElement> forInstall = null;
-    private Collection<UpdateElement> forEnable = null;
-    private RequestProcessor.Task componentModulesFindingTask = null;
 
-    public RequestProcessor.Task getFindingTask () {
-        return componentModulesFindingTask;
-    }
-    
-    public RequestProcessor.Task createFindingTask () {
-        assert componentModulesFindingTask == null || componentModulesFindingTask.isFinished () : "The Finding Task cannot be started nor scheduled.";
-        componentModulesFindingTask = RequestProcessor.getDefault ().create (doFind);
-        return componentModulesFindingTask;
-    }
-    
     public Collection<UpdateElement> getModulesForInstall () {
-        assert forInstall != null : "candidates cannot be null if getModulesForInstall() is called.";
+        findingTask.waitFinished();
         return forInstall;
     }
-    
-    public void clearModulesForInstall () {
-        forInstall = null;
-        componentModulesFindingTask = null;
+    public Collection<UpdateElement> getModulesForEnable () {
+        findingTask.waitFinished();
+        return forEnable;
     }
     
     public void writeEnableLater (Collection<UpdateElement> modules) {
@@ -116,15 +107,11 @@ public final class FindComponentModules {
         }
     }
 
-    public Collection<UpdateElement> getModulesForEnable () {
-        assert forEnable != null : "candidates cannot be null if getModulesForInstall() is called.";
-        return forEnable;
-    }
 
     private Set<String> clusterClosure(Collection<UpdateElement> all) {
         HashSet<String> closure = new HashSet<String>();
         for (UpdateElement ue : all) {
-            for (FeatureInfo featureInfo : Feature2LayerMapping.features()) {
+            for (FeatureInfo featureInfo : FeatureManager.features()) {
                 if (featureInfo.getCodeNames().contains(ue.getCodeName())) {
                     closure.addAll(featureInfo.getCodeNames());
                 }

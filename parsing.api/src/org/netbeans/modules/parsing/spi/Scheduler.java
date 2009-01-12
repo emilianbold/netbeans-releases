@@ -45,9 +45,11 @@ import java.util.Map;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
 import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
+import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
+
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -156,6 +158,8 @@ public abstract class Scheduler {
         task.schedule (reparseDelay);
     }
 
+    protected abstract SchedulerEvent createSchedulerEvent (SourceModificationEvent event);
+
     private static boolean  notNull (final Iterable<?> it) {
         for (Object o : it) {
             if (o == null) {
@@ -163,6 +167,18 @@ public abstract class Scheduler {
             }
         }
         return true;
+    }
+
+    static {
+        SchedulerAccessor.set (new Accessor ());
+    }
+    
+    private static class Accessor extends SchedulerAccessor {
+
+        @Override
+        public SchedulerEvent createSchedulerEvent (Scheduler scheduler, SourceModificationEvent event) {
+            return scheduler.createSchedulerEvent (event);
+        }
     }
 }
 

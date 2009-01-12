@@ -48,8 +48,7 @@ import org.openide.util.Lookup;
 /**
  * Interface that allows to put additional items to project's popup plus to provide specific
  * implementations of ActionProvider actions.
- * Implementations should be registered in default lookup.
- * (Using META-INF/services/MavenActionsProvider file in the module's jar.)
+ * Implementations should be registered in default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  * or some other custom aspect of the project from dependant modules..
  * 
  * @author  Milos Kleint

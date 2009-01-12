@@ -140,7 +140,7 @@ public class EditorTestCase extends JellyTestCase {
         
         /* 1. check if project is open  */
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator.invoke();
         boolean isOpen = true;
         try {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT);
