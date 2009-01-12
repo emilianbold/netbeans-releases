@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,6 +108,8 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
 
+        phpOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
+
         changed = false;
     }
 
@@ -128,6 +129,8 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
+
+        getPhpOptions().setPhpUnit(phpOptionsPanel.getPhpUnit());
 
         changed = false;
     }
@@ -158,8 +161,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
             }
         }
 
-        if (getPhpOptions().getPhpInterpreter() != null
-                && !getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())) {
+        if (!phpOptionsPanel.getPhpInterpreter().equals(getPhpOptions().getPhpInterpreter())) {
             return true;
         }
         if (getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()) {
@@ -181,6 +183,10 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
             return true;
         }
         if (getPhpOptions().isDebuggerStoppedAtTheFirstLine() != phpOptionsPanel.isDebuggerStoppedAtTheFirstLine()) {
+            return true;
+        }
+
+        if (!phpOptionsPanel.getPhpUnit().equals(getPhpOptions().getPhpUnit())) {
             return true;
         }
 
@@ -244,9 +250,15 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         }
 
         // warnings
+        // #144680
         String warning = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
         if (warning != null) {
-            // #144680
+            phpOptionsPanel.setWarning(warning);
+            return true;
+        }
+
+        warning = Utils.validatePhpUnit(phpOptionsPanel.getPhpUnit());
+        if (warning != null) {
             phpOptionsPanel.setWarning(warning);
             return true;
         }
