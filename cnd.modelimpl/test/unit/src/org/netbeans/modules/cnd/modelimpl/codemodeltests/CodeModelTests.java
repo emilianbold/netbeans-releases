@@ -66,6 +66,11 @@ public class CodeModelTests extends BaseTestSuite {
 
         String file;
 
+        // public constructor to be created by reflection
+        public MyTest() {
+            super("MyTest"); // NOI18N
+        }
+
         MyTest(String name, String file) {
             super(name);
             this.file = file;
