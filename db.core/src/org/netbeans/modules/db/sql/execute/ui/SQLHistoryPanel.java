@@ -83,6 +83,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.history.SQLHistoryException;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
@@ -368,6 +369,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             for (SQLHistory sqlHistory : sqlHistoryList) {
                 if (sqlHistoryTable.isRowSelected(i)) {
                     sqlToInsert = sqlHistory.getSql().trim();
+                    JEditorPane pane = (JEditorPane)EditorRegistry.lastFocusedComponent();
+                    String mime = pane.getContentType();
+                    if (mime.equals("text/x-sql")) {  // NOI18N
+                        editorPane = pane;
+                    }
                     insertUtility.insert(sqlToInsert, editorPane);
                 }
                 // increment for the next row
