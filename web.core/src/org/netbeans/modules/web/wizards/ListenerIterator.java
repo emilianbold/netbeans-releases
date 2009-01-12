@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -190,6 +191,14 @@ public class ListenerIterator implements TemplateWizard.Iterator {
                 }
             }
             if (result!=null) {
+                //#150274, #153790
+                Project project = Templates.getProject(wiz);
+                ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+                if (modifier != null) {
+                    modifier.extendClasspath(result.getPrimaryFile(), new String[]{
+                                ContainerClassPathModifier.API_SERVLET
+                            });
+                }
                 JavaSource clazz = JavaSource.forFileObject(result.getPrimaryFile());
                 if (clazz!=null) {
                     ListenerGenerator gen = new ListenerGenerator(
