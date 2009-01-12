@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -398,7 +397,7 @@ public class OpenProjectListTest extends NbTestCase {
     
     private static class TestOpenCloseProjectDocument implements ProjectUtilities.OpenCloseProjectDocument {
         public Set<String> openFiles = new HashSet<String>();
-        public Map<Project,SortedSet<String>> urls4project = new HashMap<Project,SortedSet<String>>();
+        public Map<Project,Set<String>> urls4project = new HashMap<Project,Set<String>>();
         
         public boolean open (FileObject fo) {
             Project owner = FileOwnerQuery.getOwner (fo);
@@ -421,10 +420,10 @@ public class OpenProjectListTest extends NbTestCase {
             return true;
         }
         
-        public Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI) {
+        public Map<Project,Set<String>> close(Project[] projects, boolean notifyUI) {
             
             for (int i = 0; i < projects.length; i++) {
-                SortedSet<String> projectOpenFiles = urls4project.get(projects [i]);
+                Set<String> projectOpenFiles = urls4project.get(projects [i]);
                 if (projectOpenFiles != null) {
                     projectOpenFiles.retainAll (openFiles);
                     urls4project.put (projects [i], projectOpenFiles);
