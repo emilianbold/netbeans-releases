@@ -77,15 +77,6 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
         }
     }
 
-    @Override
-    protected void setCellRenderer(NavigatorView view, JTree tree) {
-        if (view == null) {
-            return;
-        }
-        Map map = view.getHelpSet().getCombinedMap();
-        tree.setCellRenderer(new ModifiedBasicSearchCellRenderer(map));
-    }
-
     private boolean isTagged(SearchTOCItem item) {
         Enumeration searchHits = item.getSearchHits();
         while (searchHits.hasMoreElements()) {
