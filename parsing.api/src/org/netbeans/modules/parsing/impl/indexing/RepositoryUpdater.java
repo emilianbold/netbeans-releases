@@ -258,21 +258,21 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     private static class FileListWork extends Work {
 
         private final URL root;
-        private final List<? extends FileObject> files;
+        private final FileObject[] files;
 
         public FileListWork (final WorkType type, final URL root, final FileObject file) {
             super (type);
             assert root != null;
             assert file != null;
             this.root = root;
-            this.files = Collections.singletonList(file);
+            this.files = new FileObject[] {file};
         }
 
         public URL getRoot () {
             return root;
         }
 
-        public List<? extends FileObject> getFiles () {
+        public FileObject[] getFiles () {
             return this.files;
         }
 
@@ -350,31 +350,15 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             return !empty;
         }
 
-        private void compile (final List<? extends FileObject> affected, final URL root) {
+        private void compile (final FileObject[] affected, final URL root) {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
             }
-            final Map<String,Collection<Indexable>> resources = new HashMap<String, Collection<Indexable>>();
-            //todo: timestamps
-            for (FileObject af : affected) {
-                if (af.isFolder()) {
-                    //todo:
-                }
-                else {
-                    String mimeType = FileUtil.getMIMEType(af);
-                    if (mimeType != null) {
-                        Collection<Indexable> indexables = resources.get(mimeType);
-                        if (indexables == null) {
-                            indexables = new LinkedList<Indexable>();
-                            resources.put(mimeType, indexables);
-                        }
-                        indexables.add(SPIAccessor.getInstance().create(new FileObjectIndexable(rootFo, af)));
-                    }
-                }
-            }
             try {
-                index(resources, Collections.<Indexable>emptySet(), root);
+                final Crawler crawler = new FileObjectCrawler(rootFo, affected);
+                final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                index (resources, Collections.<Indexable>emptyList(), root);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
