@@ -47,7 +47,7 @@ import java.util.NoSuchElementException;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
@@ -108,7 +108,7 @@ public class EmptyScanningScopeTest extends NbTestCase {
 
     public void testIsInScope() throws IOException {
         EmptyScanningScope scope = new EmptyScanningScope();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fo = FileUtil.getConfigRoot();
         assertNotNull( fo );
         assertFalse( scope.isInScope( fo ) );
     }

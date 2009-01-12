@@ -59,8 +59,6 @@ import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.mobility.project.security.KeyStoreRepository.KeyStoreBean.KeyAliasBean;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import sun.security.tools.KeyTool;
 
 /**
@@ -99,8 +97,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
     public synchronized static KeyStoreRepository getDefault() {
         if (repo == null) {
             defaultKeyStoreInitialized = true;
-            final FileObject foRoot = Repository.getDefault().getDefaultFileSystem().getRoot();
-            File file = FileUtil.toFile(foRoot);
+            File file = FileUtil.toFile(FileUtil.getConfigRoot());
 
             if (file != null)
                 file = new File(file, "j2me" + File.separator + "builtin.ks");

@@ -71,8 +71,7 @@ public class LayersTest extends NbTestCase {
     public void testFastParsingOfXMLFiles() throws Exception {
         CharSequence chars = Log.enable(XMLSettingsSupport.class.getName(), Level.FINE);
         int len = 0;
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject dir = sfs.getRoot();
+        FileObject dir = FileUtil.getConfigRoot();
         Enumeration<? extends FileObject> en = dir.getChildren(true);
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();

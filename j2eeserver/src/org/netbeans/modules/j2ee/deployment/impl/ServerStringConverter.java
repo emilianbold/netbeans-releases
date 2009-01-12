@@ -70,7 +70,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
         FileLock lock = null;
         Writer writer = null;
         try {
-            FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(destDir);
+            FileObject dir = FileUtil.getConfigFile(destDir);
             FileObject fo = FileUtil.createData(dir, destFile);
             lock = fo.lock();
             writer = new OutputStreamWriter(fo.getOutputStream(lock));
@@ -94,7 +94,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
     public static ServerString readServerInstance(String fromDir, String fromFile) {
         Reader reader = null;
         try {
-            FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(fromDir);
+            FileObject dir = FileUtil.getConfigFile(fromDir);
             if (dir == null) {
                 return null;
             }

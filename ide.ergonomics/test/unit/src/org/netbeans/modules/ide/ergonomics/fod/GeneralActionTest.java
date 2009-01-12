@@ -49,11 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -124,8 +121,7 @@ public class GeneralActionTest extends NbTestCase {
         
         FoDFileSystem.getInstance().refresh();
 
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        actionFile = fs.findResource("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");
+        actionFile = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");
         assertNotNull("testing layer is loaded: ", actionFile);
     }
     

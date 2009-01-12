@@ -48,7 +48,6 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -142,7 +141,7 @@ final class Utils {
             return true;
         }
 
-        FileObject templatesFolder = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Templates"); // NOI18N
+        FileObject templatesFolder = FileUtil.getConfigFile("Templates"); // NOI18N
         if(templatesFolder != null) {
             return FileUtil.isParentOf(templatesFolder, fo);
         } else {

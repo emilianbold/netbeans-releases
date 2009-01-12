@@ -102,12 +102,10 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -822,7 +820,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             } else {
                 base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB); // #70263
                 if (base == null) { // fallback to our owns                
-                    final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+                    final Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
                     base = n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
                 }
             }

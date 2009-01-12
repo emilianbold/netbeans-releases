@@ -42,7 +42,6 @@ package org.netbeans.modules.diff;
 
 import org.openide.util.NbPreferences;
 import org.openide.util.Lookup;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -54,6 +53,7 @@ import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
 import java.util.prefs.Preferences;
 import java.util.*;
 import java.awt.Color;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Module settings for Diff module.
@@ -169,8 +169,7 @@ public class DiffModuleConfig {
      private void setDefaultProvider(DiffProvider ds) {
         // TODO: Diff providers are registered in the layer so that we can change the order in which they
         // TODO: appear in the lookup programmatically during runtime
-        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-        FileObject services = dfs.findResource("Services/DiffProviders");
+        FileObject services = FileUtil.getConfigFile("Services/DiffProviders");
         DataFolder df = DataFolder.findFolder(services);
         DataObject[] children = df.getChildren();
         for (int i = 0; i < children.length; i++) {

@@ -81,7 +81,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.openide.filesystems.Repository;
 import org.netbeans.modules.db.util.Base64;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
@@ -241,7 +240,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      * Creates the XML file describing the specified database connection.
      */
     public static DataObject create(DatabaseConnection dbconn) throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(CONNECTIONS_PATH);
+        FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
         AtomicWriter writer = new AtomicWriter(dbconn, df, convertToFileName(dbconn.getName()));
@@ -274,7 +273,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      */
     public static void remove(DatabaseConnection dbconn) throws IOException {
         String name = dbconn.getName();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(CONNECTIONS_PATH); //NOI18N
+        FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH); //NOI18N
         DataFolder folder = DataFolder.findFolder(fo);
         DataObject[] objects = folder.getChildren();
         

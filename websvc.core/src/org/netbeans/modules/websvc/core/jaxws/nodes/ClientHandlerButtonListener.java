@@ -106,7 +106,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -172,8 +171,7 @@ public class ClientHandlerButtonListener implements ActionListener {
             final FileObject bindingHandlerFO = FileUtil.createData(bindingsFolder, bindingsHandlerFile);
             //if bindingsModel is null, create it
             if (bindingsModel == null) {
-                InputStream is = Repository.getDefault().getDefaultFileSystem().
-                        findResource("jax-ws/default-binding-handler.xml").getInputStream();
+                InputStream is = FileUtil.getConfigFile("jax-ws/default-binding-handler.xml").getInputStream();
                 final String bindingsContent = readResource(is); //NOI18N
                 is.close();
 

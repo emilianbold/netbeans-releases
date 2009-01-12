@@ -53,8 +53,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -224,8 +223,7 @@ public class JavaClassPathUi {
         private static ImageIcon getFolderIcon() {
         
             if ( ICON_FOLDER == null ) {
-                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-                DataFolder dataFolder = DataFolder.findFolder( root );
+                DataFolder dataFolder = DataFolder.findFolder( FileUtil.getConfigRoot() );
                 ICON_FOLDER = new ImageIcon( dataFolder.getNodeDelegate().getIcon( BeanInfo.ICON_COLOR_16x16 ) );            
             }
 

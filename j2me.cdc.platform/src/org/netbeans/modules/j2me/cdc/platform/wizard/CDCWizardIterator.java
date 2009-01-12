@@ -55,7 +55,7 @@ import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -129,7 +129,7 @@ public class CDCWizardIterator implements WizardDescriptor.InstantiatingIterator
         this.detectPanel.storeSettings (this.wizard);
         CDCPlatform newPlatform = getPlatform();
         final String systemName = platform.getAntName();
-        FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
+        FileObject platformsFolder = FileUtil.getConfigFile(
                 "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
         if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
             String msg = NbBundle.getMessage(CDCWizardIterator.class,"ERROR_InvalidName");

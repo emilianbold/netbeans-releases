@@ -61,9 +61,9 @@ import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
@@ -440,8 +440,13 @@ public class OutputWindowOutputStream extends OutputStream {
         public HyperlinkFactory() {
             fss0 = new HashMap<String,FileSystem>();
             fss = new TreeMap<String,FileSystem>(this);
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject root = fs.getRoot();
+            FileObject root = FileUtil.getConfigRoot();
+            FileSystem fs = null;
+            try {
+                fs = root.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
             File path = FileUtil.toFile(root);
             if (path != null) {
                 String prefix = path.getAbsolutePath();

@@ -60,10 +60,9 @@ import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaUIContext;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -84,8 +83,7 @@ public class PrimitiveSimpleTypesNode extends AbstractNode
 	}
 
 	private Node getFolderNode() {
-	    FileObject fo =
-		Repository.getDefault().getDefaultFileSystem().getRoot();
+	    FileObject fo = FileUtil.getConfigRoot();
 	    Node n = null;
 	    try {
 		DataObject dobj = DataObject.find(fo);

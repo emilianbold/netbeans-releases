@@ -30,7 +30,7 @@ package org.netbeans.core.startup.layers;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -48,10 +48,11 @@ public class CustomWritableSystemFileSystemTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", "memory");
         System.setProperty("org.netbeans.core.systemfilesystem.custom", PoohFileSystem.class.getName());
-        sfs = (SystemFileSystem) Repository.getDefault().getDefaultFileSystem();
+        sfs = (SystemFileSystem) FileUtil.getConfigRoot().getFileSystem();
     }
 
     public void testCustomSFSWritableLayerPresent() throws Exception {

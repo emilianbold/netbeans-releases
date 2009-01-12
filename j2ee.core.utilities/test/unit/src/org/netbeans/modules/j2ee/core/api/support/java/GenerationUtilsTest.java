@@ -71,9 +71,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -106,14 +104,13 @@ public class GenerationUtilsTest extends NbTestCase {
     }
 
     private void initTemplates() throws Exception{
-        FileSystem systemFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject interfaceTemplate = FileUtil.createData(systemFS.getRoot(), "Templates/Classes/Interface.java");
+        FileObject interfaceTemplate = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Interface.java");
         interfaceTemplate.setAttribute("javax.script.ScriptEngine", "freemarker");
         TestUtilities.copyStringToFileObject(interfaceTemplate,
                 "package ${package};" +
                 "public interface ${name} {\n" +
                 "}");
-        FileObject classTemplate = FileUtil.createData(systemFS.getRoot(), "Templates/Classes/Class.java");
+        FileObject classTemplate = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
         classTemplate.setAttribute("javax.script.ScriptEngine", "freemarker");
         TestUtilities.copyStringToFileObject(classTemplate,
                 "package ${package};" +

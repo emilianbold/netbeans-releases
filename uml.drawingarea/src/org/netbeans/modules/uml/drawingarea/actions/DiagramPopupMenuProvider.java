@@ -45,10 +45,8 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -65,8 +63,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -206,10 +203,8 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
     {
 
         TreeMap<Integer, Action> actions = new TreeMap<Integer, Action>();
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
 
-
-        FileObject fo = system.findResource(path);
+        FileObject fo = FileUtil.getConfigFile(path);
         if (fo == null)
         {
             return actions;
@@ -290,9 +285,7 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
     
     private boolean isOverriding(String path)
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-        FileObject fo = system.findResource(path);
+        FileObject fo = FileUtil.getConfigFile(path);
         if (fo == null)
         {
             return false;
@@ -309,14 +302,9 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
     {
         DataFolder retVal = null;
 
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-        if (system != null)
-        {
-            FileObject fo = system.findResource(path);
-            retVal = fo != null ? DataFolder.findFolder(fo) : null;
-        }
-
+        FileObject fo = FileUtil.getConfigFile(path);
+        retVal = fo != null ? DataFolder.findFolder(fo) : null;
+ 
         return retVal;
     }
 

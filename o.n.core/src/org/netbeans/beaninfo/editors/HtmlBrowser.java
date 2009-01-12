@@ -48,7 +48,7 @@ import org.netbeans.core.UIExceptions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -126,8 +126,7 @@ public class HtmlBrowser extends Object {
             }
             
             // PENDING need to get rid of this filtering
-            FileObject fo = Repository.getDefault ()
-            .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
+            FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
             if (fo != null) {
                 DataFolder folder = DataFolder.findFolder (fo);
                 DataObject [] dobjs = folder.getChildren ();

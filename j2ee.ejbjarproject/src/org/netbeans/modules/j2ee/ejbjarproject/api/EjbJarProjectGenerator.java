@@ -56,7 +56,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -150,7 +149,7 @@ public class EjbJarProjectGenerator {
         FileObject confRoot = srcRoot.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
         
         //create a default manifest
-        FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/MANIFEST.MF"), confRoot, "MANIFEST"); //NOI18N
+        FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-modules-j2ee-ejbjarproject/MANIFEST.MF"), confRoot, "MANIFEST"); //NOI18N
         
         final String realServerLibraryName = configureServerLibrary(librariesDefinition,
                 serverInstanceID, projectDir, serverLibraryName != null);
@@ -186,7 +185,7 @@ public class EjbJarProjectGenerator {
         // create ejb-jar.xml
         if (!J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";
-            FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "ejb-jar"); //NOI18N
+            FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "ejb-jar"); //NOI18N
             EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
             ejbJar.setDisplayName(name);
             ejbJar.write(ddFile);

@@ -104,9 +104,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
@@ -501,8 +499,7 @@ public class Util {
             // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
             // therefore remains valid even if Tomcat version changes. (issue# 40659)
             if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
+                FileObject fo = FileUtil.getConfigFile(BUNDLED_TOMCAT_SETTING);
                 if (fo != null) {
                     catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
                     if (catalinaBase != null && catalinaBase.length() > 0 
@@ -587,11 +584,10 @@ public class Util {
             try {
                 FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
                 DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject foClientKey = fs.findResource("Templates/WebServices/client-keystore.jks"); // NOI18N
-                FileObject foClientTrust = fs.findResource("Templates/WebServices/client-truststore.jks"); // NOI18N
-                FileObject foServerKey = fs.findResource("Templates/WebServices/server-keystore.jks"); // NOI18N
-                FileObject foServerTrust = fs.findResource("Templates/WebServices/server-truststore.jks"); // NOI18N
+                FileObject foClientKey = FileUtil.getConfigFile("Templates/WebServices/client-keystore.jks"); // NOI18N
+                FileObject foClientTrust = FileUtil.getConfigFile("Templates/WebServices/client-truststore.jks"); // NOI18N
+                FileObject foServerKey = FileUtil.getConfigFile("Templates/WebServices/server-keystore.jks"); // NOI18N
+                FileObject foServerTrust = FileUtil.getConfigFile("Templates/WebServices/server-truststore.jks"); // NOI18N
                 FileObject[] filesToCreate = {foClientKey, foClientTrust, foServerKey, foServerTrust };
                 for (FileObject fo : filesToCreate) {
                     if (fo != null) {
@@ -678,11 +674,10 @@ public class Util {
                 try {
                     FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
                     DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
-                    FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                    FileObject foClientKey = fs.findResource("Templates/WebServices/client-keystore.jks"); // NOI18N
-                    FileObject foClientTrust = fs.findResource("Templates/WebServices/client-truststore.jks"); // NOI18N
-                    FileObject foServerKey = fs.findResource("Templates/WebServices/server-keystore.jks"); // NOI18N
-                    FileObject foServerTrust = fs.findResource("Templates/WebServices/server-truststore.jks"); // NOI18N
+                    FileObject foClientKey = FileUtil.getConfigFile("Templates/WebServices/client-keystore.jks"); // NOI18N
+                    FileObject foClientTrust = FileUtil.getConfigFile("Templates/WebServices/client-truststore.jks"); // NOI18N
+                    FileObject foServerKey = FileUtil.getConfigFile("Templates/WebServices/server-keystore.jks"); // NOI18N
+                    FileObject foServerTrust = FileUtil.getConfigFile("Templates/WebServices/server-truststore.jks"); // NOI18N
                     FileObject[] filesToCreate = {foClientKey, foClientTrust, foServerKey, foServerTrust };
                     for (FileObject fo : filesToCreate) {
                         if (fo != null) {

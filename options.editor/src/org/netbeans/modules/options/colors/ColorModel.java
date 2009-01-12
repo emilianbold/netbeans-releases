@@ -86,8 +86,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -435,12 +434,11 @@ public final class ColorModel {
         }
         
         private String [] loadPreviewExample(String mimeType) {
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject exampleFile = null;
             String exampleMimeType = null;
             
             if (mimeType == null || mimeType.length() == 0) {
-                FileObject f = fs.findResource("OptionsDialog/PreviewExamples"); //NOI18N
+                FileObject f = FileUtil.getConfigFile("OptionsDialog/PreviewExamples"); //NOI18N
                 if (f != null && f.isFolder()) {
                     FileObject [] ff = f.getChildren();
                     for(int i = 0 ; i < ff.length; i++) {
@@ -458,7 +456,7 @@ public final class ColorModel {
                     }
                 }
             } else {
-                exampleFile = fs.findResource("OptionsDialog/PreviewExamples/" + mimeType); //NOI18N
+                exampleFile = FileUtil.getConfigFile("OptionsDialog/PreviewExamples/" + mimeType); //NOI18N
                 exampleMimeType = mimeType;
             }
             

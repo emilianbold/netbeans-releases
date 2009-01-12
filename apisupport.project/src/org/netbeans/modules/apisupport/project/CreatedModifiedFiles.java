@@ -54,7 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.modules.SpecificationVersion;
 
@@ -226,7 +226,7 @@ public final class CreatedModifiedFiles {
      * @return that file from the <code>Templates/NetBeansModuleDevelopment-files</code> layer folder
      */
     public static FileObject getTemplate(String name) {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Templates/NetBeansModuleDevelopment-files/" + name);
+        FileObject f = FileUtil.getConfigFile("Templates/NetBeansModuleDevelopment-files/" + name);
         assert f != null : name;
         return f;
     }

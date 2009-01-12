@@ -59,7 +59,7 @@ import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -117,8 +117,7 @@ public final class GuiUtils {
      * @return  non-editable combo-box displaying names of templates
      */
     public static JComboBox createTemplateChooser(String defaultTemplate) {
-        FileObject templatesDir = Repository.getDefault().getDefaultFileSystem()
-                                  .findResource(TEMPLATES_DIR);
+        FileObject templatesDir = FileUtil.getConfigFile(TEMPLATES_DIR);
         if (templatesDir == null) {
             throw new RuntimeException("Not found: " + TEMPLATES_DIR);  //NOI18N
         }

@@ -45,7 +45,6 @@ import java.util.Enumeration;
 import junit.framework.TestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /** Mostly to test the correct behaviour of AWTTask.waitFinished.
  *
@@ -61,7 +60,7 @@ public class DataFolderCopyMoreWindowsLikeTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject[] arr = root.getChildren ();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete ();
@@ -86,7 +85,7 @@ public class DataFolderCopyMoreWindowsLikeTest extends TestCase {
     }
 
     public void testCopyIntoDifferentNonEmptyFolderCreatesSibling () throws Exception {
-        FileUtil.createData (Repository.getDefault ().getDefaultFileSystem ().getRoot(), "Target/Sub/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), "Target/Sub/A.txt");
         
         sub.copy (target);
        
@@ -102,12 +101,12 @@ public class DataFolderCopyMoreWindowsLikeTest extends TestCase {
     }
     
     private static void assertFO (String msg, String name) {
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (name);
+        FileObject fo = FileUtil.getConfigFile(name);
         if (fo == null) {
             StringBuffer sb = new StringBuffer (msg);
             sb.append (" - cannot find ");
             sb.append (name);
-            Enumeration en = Repository.getDefault ().getDefaultFileSystem ().getRoot ().getChildren (true);
+            Enumeration en = FileUtil.getConfigRoot().getChildren (true);
             while (en.hasMoreElements ()) {
                 sb.append ('\n');
                 sb.append ("    ");

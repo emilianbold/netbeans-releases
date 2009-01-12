@@ -73,8 +73,7 @@ public class NbCollabletFactoryManager extends CollabletFactoryManager implement
         results.addLookupListener(this);
 
         // Workaround for not finding objects registered through lookup
-        //		FileObject fileObject=Repository.getDefault().getDefaultFileSystem()
-        //			.findResource("Services/Collaboration/Channels"); // NOI18N
+        //		FileObject fileObject=FileUtil.getConfigFile("Services/Collaboration/Channels"); // NOI18N
         //		FileObject[] children=fileObject.getChildren();
         //
         //Debug.out.println("Number of children = "+children.length);

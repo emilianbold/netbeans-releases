@@ -185,9 +185,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             }
             
             Repository r = Repository.getDefault();
-            FileSystem rfs = r.getDefaultFileSystem();
-            FileObject rootFolder = rfs.getRoot();
-            FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
+            FileObject databaseFileObject = FileUtil.getConfigFile("Database"); //NOI18N
             if (databaseFileObject != null) {
                 FileObject adaptorsFolder = databaseFileObject.getFileObject("Adaptors"); //NOI18N
                 DataObject dbdo = DataFolder.findFolder(adaptorsFolder);

@@ -9,26 +9,9 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.URI;
-import javax.swing.text.Document;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -42,7 +25,7 @@ public class Util {
     
     public static void registerXMLKit() {
         String[] path = new String[] { "Editors", "text", "x-jsf+xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         try {
             for (int i=0; i<path.length; i++) {
                 FileObject f = target.getFileObject(path[i]);

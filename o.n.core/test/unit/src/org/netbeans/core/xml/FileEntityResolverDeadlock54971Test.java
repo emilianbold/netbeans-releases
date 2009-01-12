@@ -48,7 +48,6 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
@@ -75,7 +74,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
         
         // register Env as a handler for PublicIDs "-//NetBeans//Test//EN" which
         // is will contain the settings file we create
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject register = FileUtil.createData (root, "/xml/lookups/NetBeans/Test.instance");
         register.setAttribute("instanceCreate", Env.INSTANCE);
         assertTrue (register.getAttribute("instanceCreate") instanceof Environment.Provider);

@@ -50,7 +50,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -81,8 +80,7 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
     }
     
     public void testUnmodifiedDocumentSaveAs() throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
         
         DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
         assertEquals( MyDataObject.class, obj.getClass());
@@ -105,10 +103,9 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
     }
     
     public void testModifiedDocumentSaveAs() throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
         
-        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.obj"));
         assertEquals( MyDataObject.class, obj.getClass());
         assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
         
@@ -117,11 +114,11 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         MyEnv env = new MyEnv( obj );
         MyDataEditorSupport des = new MyDataEditorSupport( obj, env );
         
-        FileObject newFolder = FileUtil.createFolder(fs.getRoot(), "otherFolder");
+        FileObject newFolder = FileUtil.createFolder(FileUtil.getConfigRoot(), "otherFolder");
         
         des.saveAs( newFolder, "newFile.newExt" );
         
-        DataObject newObj = DataObject.find(fs.findResource("otherFolder/newFile.newExt"));
+        DataObject newObj = DataObject.find(FileUtil.getConfigFile("otherFolder/newFile.newExt"));
         assertEquals( MyDataObject.class, newObj.getClass());
         MyDataObject myObj = (MyDataObject)newObj;
         
@@ -133,10 +130,9 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
     }
     
 //    public void testEnvAddsSaveAsImpl() throws IOException {
-//        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-//        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
+//        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
 //        
-//        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
+//        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.obj"));
 //        assertEquals( MyDataObject.class, obj.getClass());
 //        assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
 //        
@@ -147,11 +143,10 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
 //    }
 //    
 //    public void testNoSaveAsImpl() throws IOException {
-//        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-//        FileUtil.createData(fs.getRoot(), "someFolder/x.prima");
-//        FileUtil.createData(fs.getRoot(), "someFolder/x.seconda");
+//        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/x.prima");
+//        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/x.seconda");
 //        
-//        DataObject obj = DataObject.find(fs.findResource("someFolder/x.prima"));
+//        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/x.prima"));
 //        assertEquals( MyMultiFileDataObject.class, obj.getClass());
 //        assertEquals( "we need an object with MultiFileLoader", MyMultiFileLoader.class, obj.getLoader().getClass());
 //        
