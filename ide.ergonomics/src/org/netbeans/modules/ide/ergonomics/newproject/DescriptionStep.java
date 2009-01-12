@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -66,7 +67,7 @@ import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -225,14 +226,19 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             o + " is not null and instanceof FileObject";
         final String templateResource = ((FileObject) o).getPath ();
         fo = null;
-        while (fo == null) {
+        WizardDescriptor.InstantiatingIterator<?> iterator = null;
+        while (fo == null && (iterator == null || iterator instanceof FeatureOnDemanWizardIterator)) {
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
-                   fo = Repository.getDefault ().getDefaultFileSystem ().findResource (templateResource);
+                   fo = FileUtil.getConfigFile(templateResource);
                }
             }, 100).waitFinished ();
+            iterator = readWizard(fo);
+
+            // warn, seems like 100 millis isn't enough!
+            if (iterator instanceof FeatureOnDemanWizardIterator)
+                Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
         }
-        WizardDescriptor.InstantiatingIterator<?> iterator = readWizard(fo);
         iterator.initialize (wd);
         wd.putProperty (FeatureOnDemanWizardIterator.DELEGATE_ITERATOR, iterator);
         fireChange ();
@@ -257,10 +263,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     tw = (TemplateWizard)wizard;
                     try {
                         tw.setTemplate(DataObject.find(tw.getTemplate().getPrimaryFile()));
+                        it.initialize(tw);
                     } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger(DescriptionStep.class.getName()).severe(ex.toString());
                     }
-                    it.initialize(tw);
                 }
 
                 public void uninitialize(WizardDescriptor wizard) {

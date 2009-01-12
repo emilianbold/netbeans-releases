@@ -42,22 +42,30 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -68,8 +76,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class FeatureProjectFactory implements ProjectFactory {
 
     public boolean isProject(FileObject projectDirectory) {
-        for (FeatureInfo info : Feature2LayerMapping.features()) {
-            if (info.isProject(projectDirectory, false)) {
+        for (FeatureInfo info : FeatureManager.features()) {
+            if (!info.isEnabled() && info.isProject(projectDirectory, false)) {
                 return true;
             }
         }
@@ -77,8 +85,8 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        for (FeatureInfo info : Feature2LayerMapping.features()) {
-            if (info.isProject(projectDirectory, true)) {
+        for (FeatureInfo info : FeatureManager.features()) {
+            if (!info.isEnabled() && info.isProject(projectDirectory, true)) {
                 return new FeatureNonProject(projectDirectory, info, state);
             }
         }
@@ -89,19 +97,22 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
 
-    private static final class FeatureNonProject extends ProjectOpenedHook
-    implements Project, Runnable {
+    private static final class FeatureNonProject 
+    implements Project, ChangeListener {
         private final FeatureDelegate delegate;
         private final FeatureInfo info;
         private final Lookup lookup;
-        private final ProjectState state;
+        private ProjectState state;
         private boolean success = false;
+        private final ChangeListener weakL;
 
         public FeatureNonProject(FileObject dir, FeatureInfo info, ProjectState state) {
             this.delegate = new FeatureDelegate(dir, this);
             this.info = info;
             this.lookup = Lookups.proxy(delegate);
             this.state = state;
+            this.weakL = WeakListeners.change(this, FeatureManager.getInstance());
+            FeatureManager.getInstance().addChangeListener(weakL);
         }
         
         public FileObject getProjectDirectory() {
@@ -110,51 +121,6 @@ public class FeatureProjectFactory implements ProjectFactory {
 
         public Lookup getLookup() {
             return lookup;
-        }
-
-        @Override
-        protected void projectOpened() {
-            RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
-            ProjectOpenedHook hook;
-            if (success) {
-                try {
-                    state.notifyDeleted();
-                    Project p = ProjectManager.getDefault().findProject(getProjectDirectory());
-                    if (p == this) {
-                        throw new IllegalStateException("New project shall be found! " + p); // NOI18N
-                    }
-                    delegate.associate(p);
-
-                    hook = p.getLookup().lookup(ProjectOpenedHook.class);
-                    Method m = ProjectOpenedHook.class.getDeclaredMethod("projectOpened"); // NOI18N
-                    m.setAccessible(true);
-                    m.invoke(hook);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-
-        @Override
-        protected void projectClosed() {
-        }
-        
-        public void run () {
-            Feature2LayerMapping.logUI("ERGO_PROJECT_OPEN", info.clusterName);
-            FindComponentModules findModules = new FindComponentModules(info);
-            Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
-            Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
-            if (toInstall != null && ! toInstall.isEmpty ()) {
-                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                installer.getInstallTask ().waitFinished ();
-                success = true;
-            } else if (toEnable != null && ! toEnable.isEmpty ()) {
-                ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
-                enabler.getEnableTask ().waitFinished ();
-                success = true;
-            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                success = true;
-            }
         }
 
         @Override
@@ -170,18 +136,96 @@ public class FeatureProjectFactory implements ProjectFactory {
             return getProjectDirectory().hashCode();
         }
 
+        public void stateChanged(ChangeEvent e) {
+            if (info.isEnabled()) {
+                switchToReal();
+            }
+        }
+        final void switchToReal() {
+            ProjectState s = state;
+            if (s != null) {
+                try {
+                    s.notifyDeleted();
+                    Project p = ProjectManager.getDefault().findProject(getProjectDirectory());
+                    if (p == FeatureNonProject.this) {
+                        throw new IllegalStateException("New project shall be found! " + p); // NOI18N
+                    }
+                    delegate.associate(p);
+                    state = null;
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
 
+        private final class FeatureOpenHook extends ProjectOpenedHook
+        implements Runnable {
+            @Override
+            protected void projectOpened() {
+                if (state == null) {
+                    return;
+                }
+                RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
+                if (success) {
+                    switchToReal();
+                    // make sure support for projects we depend on are also enabled
+                    SubprojectProvider sp = getLookup().lookup(SubprojectProvider.class);
+                    if (sp != null) {
+                        for (Project subP : sp.getSubprojects()) {
+                            FeatureNonProject toOpen;
+                            toOpen = subP.getLookup().lookup(FeatureNonProject.class);
+                            if (toOpen != null) {
+                                toOpen.delegate.hook.projectOpened();
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            protected void projectClosed() {
+            }
+
+            public void run() {
+                FeatureManager.logUI("ERGO_PROJECT_OPEN", info.clusterName);
+                FindComponentModules findModules = new FindComponentModules(info);
+                Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
+                Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
+                if (toInstall != null && ! toInstall.isEmpty ()) {
+                    ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
+                    installer.getInstallTask ().waitFinished ();
+                    success = true;
+                } else if (toEnable != null && ! toEnable.isEmpty ()) {
+                    ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
+                    enabler.getEnableTask ().waitFinished ();
+                    success = true;
+                } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
+                    success = true;
+                }
+            }
+        } // end of FeatureOpenHook
     } // end of FeatureNonProject
     private static final class FeatureDelegate 
     implements Lookup.Provider, ProjectInformation {
         private final FileObject dir;
         private final PropertyChangeSupport support;
         Lookup delegate;
+        private final InstanceContent ic = new InstanceContent();
+        private final Lookup hooks = new AbstractLookup(ic);
+        private final FeatureNonProject.FeatureOpenHook hook;
 
 
-        public FeatureDelegate(FileObject dir, Project feature) {
+        public FeatureDelegate(FileObject dir, FeatureNonProject feature) {
             this.dir = dir;
-            this.delegate = Lookups.fixed(feature, this);
+            this.hook = feature.new FeatureOpenHook();
+            ic.add(UILookupMergerSupport.createProjectOpenHookMerger(hook));
+            this.delegate = new ProxyLookup(
+                Lookups.fixed(feature, this),
+                LookupProviderSupport.createCompositeLookup(
+                    hooks, "../nonsence" // NOI18N
+                )
+            );
             this.support = new PropertyChangeSupport(this);
         }
 
@@ -229,6 +273,10 @@ public class FeatureProjectFactory implements ProjectFactory {
         }
 
         final void associate(Project p) {
+            if (p == null) {
+                delegate = Lookup.EMPTY;
+                return;
+            }
             assert dir.equals(p.getProjectDirectory());
             ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
             if (info != null) {
@@ -237,6 +285,9 @@ public class FeatureProjectFactory implements ProjectFactory {
                 }
             }
             delegate = p.getLookup();
+            for (ProjectOpenedHook h : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
+                ic.add(h);
+            }
             support.firePropertyChange(null, null, null);
         }
     }

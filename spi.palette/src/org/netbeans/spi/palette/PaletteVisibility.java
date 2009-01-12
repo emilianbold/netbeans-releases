@@ -45,11 +45,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.util.Exceptions;
 
 /**
  * A class that listens to changes to the set of opened TopComponents and to the
@@ -91,16 +88,15 @@ final class PaletteVisibility {
     }
 
     private static FileObject findPaletteTopComponentSettings() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject res = fs.findResource("Windows2Local/Modes/commonpalette");
+        FileObject res = FileUtil.getConfigFile("Windows2Local/Modes/commonpalette");
         if( null == res ) {
             try {
                 //for unit-testing
-                res = fs.findResource("Windows2Local/Modes");
+                res = FileUtil.getConfigFile("Windows2Local/Modes");
                 if( null == res ) {
-                    res = fs.findResource("Windows2Local");
+                    res = FileUtil.getConfigFile("Windows2Local");
                     if( null == res )
-                        res = fs.getRoot().createFolder("Windows2Local");
+                        res = FileUtil.getConfigRoot().createFolder("Windows2Local");
                     res = res.createFolder("Modes");
                 }
                 

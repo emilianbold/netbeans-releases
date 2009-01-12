@@ -47,6 +47,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.palette.Model;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
@@ -80,12 +81,11 @@ public abstract class AbstractPaletteTestHid extends NbTestCase {
         System.setProperty ("org.openide.util.Lookup", "org.netbeans.spi.palette.AbstractPaletteTestHid$Lkp");
 //        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
         
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-//        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
+//        paletteRootFolder = FileUtil.getConfigFile( PALETTE_ROOT_FOLDER_NAME );
 //        if( null != paletteRootFolder )
 //            paletteRootFolder.delete();
         rootFolderName = PALETTE_ROOT_FOLDER_NAME+System.currentTimeMillis();
-        paletteRootFolder = fs.getRoot().createFolder( rootFolderName );
+        paletteRootFolder = FileUtil.getConfigRoot().createFolder( rootFolderName );
         
 //        NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).removeNode();
         

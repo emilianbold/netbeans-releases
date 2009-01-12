@@ -64,6 +64,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.modules.web.taglib.TLDDataObject;
@@ -143,6 +144,17 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
                 LOG.log(Level.INFO, null, ex);
             }
         }
+
+        //#150274
+        Project project = Templates.getProject( wiz );
+        ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+        if (modifier != null) {
+            modifier.extendClasspath(dobj.getPrimaryFile(), new String[] {
+                ContainerClassPathModifier.API_JSP
+            });
+        }
+
+
         
         // writing to TLD file
         if (tldPanel.writeToTLD()) {

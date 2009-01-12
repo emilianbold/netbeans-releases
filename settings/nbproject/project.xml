@@ -156,6 +156,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
+                <package>org.netbeans.api.settings</package>
                 <package>org.netbeans.spi.settings</package>
             </public-packages>
         </data>

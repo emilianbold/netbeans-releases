@@ -53,7 +53,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -178,7 +177,7 @@ public final class ShortcutWizard extends WizardDescriptor {
     }
 
     void finish() throws IOException {
-        final FileObject actionsBuild = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Actions/Build"); // NOI18N
+        final FileObject actionsBuild = FileUtil.createFolder(FileUtil.getConfigRoot(), "Actions/Build"); // NOI18N
         actionsBuild.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 // First create Actions/Build/*.xml, so it appears in action pool:
@@ -204,7 +203,7 @@ public final class ShortcutWizard extends WizardDescriptor {
                     DataShadow.create((DataFolder) getProperty(PROP_FOLDER_TOOL), shortcutFO);
                 }
                 if (it.showing(PROP_SHOW_KEYB)) {
-                    FileObject currentKeymapDir = Repository.getDefault().getDefaultFileSystem().findResource("Shortcuts"); // NOI18N
+                    FileObject currentKeymapDir = FileUtil.getConfigFile("Shortcuts"); // NOI18N
                     String stroke = Utilities.keyToString((KeyStroke) getProperty(PROP_STROKE));
                     DataShadow.create(DataFolder.findFolder(currentKeymapDir), stroke, shortcutFO);
                 }

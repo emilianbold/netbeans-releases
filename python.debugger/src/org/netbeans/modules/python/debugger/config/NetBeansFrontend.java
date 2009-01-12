@@ -195,14 +195,11 @@ public class NetBeansFrontend {
   public File getFile(String fName) throws PythonDebugException {
 
     // enter home
-    FileObject sfo =
-            Repository.getDefault().getDefaultFileSystem().findResource(
-            _NBPYTHON_DEBUG_HOME_);
+    FileObject sfo = FileUtil.getConfigFile(_NBPYTHON_DEBUG_HOME_);
     try {
       if (sfo == null) {
         // first time inexisting create the directory
-        sfo = Repository.getDefault().getDefaultFileSystem().getRoot();
-        sfo = FileUtil.createFolder(sfo, _NBPYTHON_DEBUG_HOME_);
+        sfo = FileUtil.createFolder(FileUtil.getConfigRoot(), _NBPYTHON_DEBUG_HOME_);
       }
 
       FileObject myFileObj = FileUtil.createData(sfo, fName);

@@ -75,7 +75,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
     private static final InstanceContent ic = new InstanceContent();
 
     static {
-        Feature2LayerMapping.assignFeatureTypesLookup(new AbstractLookup(ic));
+        FeatureManager.assignFeatureTypesLookup(new AbstractLookup(ic));
     }
     private int change;
     
@@ -143,10 +143,15 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         );
         ic.add(info);
         
-        File dbp = new File(getWorkDir(), "dbproject");
+        File dbp = new File(new File(getWorkDir(), "1st"), "dbproject");
         File db = new File(dbp, "project.properties");
         dbp.mkdirs();
         db.createNewFile();
+
+        File dbp2 = new File(new File(getWorkDir(), "2nd"), "dbproject");
+        File db2 = new File(dbp2, "project.properties");
+        dbp2.mkdirs();
+        db2.createNewFile();
 
         root = FileUtil.toFileObject(getWorkDir());
         assertNotNull("fileobject found", root);
@@ -161,9 +166,16 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
     }
 
     public void testRecognizeDocBookProject() throws Exception {
-        assertTrue("Recognized as project", ProjectManager.getDefault().isProject(root));
-        Project p = ProjectManager.getDefault().findProject(root);
+        FileObject prjFO1 = root.getFileObject("1st");
+        FileObject prjFO2 = root.getFileObject("2nd");
+
+        assertTrue("Recognized as project", ProjectManager.getDefault().isProject(prjFO1));
+        Project p = ProjectManager.getDefault().findProject(prjFO1);
         assertNotNull("Project found", p);
+
+        assertTrue("Recognized as project", ProjectManager.getDefault().isProject(prjFO2));
+        Project p2 = ProjectManager.getDefault().findProject(prjFO2);
+        assertNotNull("Project found", p2);
         
         ProjectOpenedHook open = p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("Open hook found", open);
@@ -173,7 +185,11 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertNotNull("Icon provided", info.getIcon());
         info.addPropertyChangeListener(this);
 
-        TestFactory.recognize = root;
+        assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
+        assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
+
+        TestFactory.recognize.add(prjFO1);
+        TestFactory.recognize.add(prjFO2);
         OpenProjects.getDefault().open(new Project[] { p }, false);
         
         assertEquals("No Dialog currently created", 0, DD.cnt);
@@ -198,6 +214,9 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         if (OpenProjects.getDefault().getOpenProjects().length != 0) {
             fail("All projects shall be closed: " + Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
         }
+
+        assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
+        assertNotNull("Test factory in not yet opened project", p2.getLookup().lookup(TestFactory.class));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

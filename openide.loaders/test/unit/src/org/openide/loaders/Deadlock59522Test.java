@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.RequestProcessor;
 
 /** MDR listens on FileChanges and wants to acquire its lock then.
@@ -77,7 +76,7 @@ public class Deadlock59522Test extends NbTestCase implements FileChangeListener 
     }
     
     protected void setUp() throws Exception {
-        fs = Repository.getDefault ().getDefaultFileSystem ();
+        fs = FileUtil.getConfigRoot().getFileSystem();
         FileObject root = fs.getRoot ();
         toolbars = FileUtil.createFolder (root, "Toolbars");
         toolbarsFolder = DataFolder.findFolder (toolbars);

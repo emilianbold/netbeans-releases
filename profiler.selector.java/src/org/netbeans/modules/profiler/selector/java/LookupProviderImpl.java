@@ -57,7 +57,7 @@ import org.netbeans.spi.project.LookupProvider;
     "org-netbeans-modules-web-project",
      "org-netbeans-modules-apisupport-project",
     "org-netbeans-modules-apisupport-project-suite"
-})
+}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=1200))
 public class LookupProviderImpl extends AbstractProjectLookupProvider {
 
     @Override

@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -42,7 +42,7 @@ public class Util {
     
     public static void registerXMLKit() {
         String[] path = new String[] { "Editors", "text", "x-xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         try {
             for (int i=0; i<path.length; i++) {
                 FileObject f = target.getFileObject(path[i]);

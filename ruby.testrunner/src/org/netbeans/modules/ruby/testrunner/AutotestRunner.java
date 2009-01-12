@@ -119,7 +119,6 @@ public class AutotestRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
         RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
         if (coverageProvider != null && coverageProvider.isEnabled()) {

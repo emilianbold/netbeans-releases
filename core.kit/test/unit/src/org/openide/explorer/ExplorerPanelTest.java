@@ -58,7 +58,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -330,7 +330,7 @@ public class ExplorerPanelTest extends NbTestCase {
     public void skipForNowtestSelectedNodesInDeserializedPanel () throws Exception {
         ExplorerPanel panel = new ExplorerPanel ();
 
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject fo = FileUtil.getConfigRoot();
         
         Node root = new SerializableNode ();
         panel.getExplorerManager ().setRootContext (root);

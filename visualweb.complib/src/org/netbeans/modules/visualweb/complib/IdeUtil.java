@@ -63,7 +63,6 @@ import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -489,7 +488,7 @@ public class IdeUtil {
      */
     public static File getComplibStateDir() {
         if (complibStateDir == null) {
-            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
             // Follow NetBeans convention of replacing dots with dashes
             String stateDirName = getCodeNameBase().replace('.', '-');
             complibStateDir = new File(root, stateDirName);

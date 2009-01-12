@@ -58,7 +58,6 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -479,7 +478,7 @@ public class MapActionUtility {
             //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
             //            FileObject parentFolder = project.getProjectDirectory();
             //            FileObject webFileObject = parentFolder.getFileObject("web");
-            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JSP_Servlet/JSP.jsp"); // NOI18N
+            FileObject jspTemplate = FileUtil.getConfigFile("Templates/JSP_Servlet/JSP.jsp"); // NOI18N
             if (jspTemplate == null) {
                 return; // Don't know the template
             }

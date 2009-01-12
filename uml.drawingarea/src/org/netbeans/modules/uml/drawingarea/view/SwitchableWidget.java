@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,8 +57,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -259,31 +257,26 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     
     protected void buildViewInformation()
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile("UML/Nodes/" + getMetaType() + "/Views");
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource("UML/Nodes/" + getMetaType() + "/Views");
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] viewObjects = df.getChildren();
+            for (int i = 0; i < viewObjects.length; i++)
             {
-                DataObject[] viewObjects = df.getChildren();
-                for (int i = 0; i < viewObjects.length; i++)
-                {
-                    DataObject dObj = viewObjects[i];
-                    FileObject fObj = dObj.getPrimaryFile();
-                    
-                    String name = dObj.getNodeDelegate().getDisplayName();
-                    String stereotypes = (String)fObj.getAttribute("stereotypes");
-                    String id = (String)fObj.getAttribute("id");
-                    
-                    ViewInformation info = new ViewInformation(name, stereotypes, id);
-                    avaliableViews.add(info);
-                    
-                    InstanceCookie cookie = dObj.getCookie(InstanceCookie.class);
-                    info.setInstanceCookie(cookie);
-                    
-                }
+                DataObject dObj = viewObjects[i];
+                FileObject fObj = dObj.getPrimaryFile();
+
+                String name = dObj.getNodeDelegate().getDisplayName();
+                String stereotypes = (String)fObj.getAttribute("stereotypes");
+                String id = (String)fObj.getAttribute("id");
+
+                ViewInformation info = new ViewInformation(name, stereotypes, id);
+                avaliableViews.add(info);
+
+                InstanceCookie cookie = dObj.getCookie(InstanceCookie.class);
+                info.setInstanceCookie(cookie);
+
             }
         }
     }
@@ -291,23 +284,18 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     
     protected String getDefaultViewName()
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile("UML/Nodes/" + getMetaType() + "/Views");
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource("UML/Nodes/" + getMetaType() + "/Views");
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] views = df.getChildren();
+            for (DataObject view: views)
             {
-                DataObject[] views = df.getChildren();
-                for (DataObject view: views)
+                if (this.getObject().getFirstSubject().getAppliedStereotypesList().equals(view.getPrimaryFile().getAttribute("stereotypes")))
                 {
-                    if (this.getObject().getFirstSubject().getAppliedStereotypesList().equals(view.getPrimaryFile().getAttribute("stereotypes")))
-                    {
-                        return (String)view.getPrimaryFile().getAttribute("id");
-                    }
+                    return (String)view.getPrimaryFile().getAttribute("id");
                 }
-            }   
+            }
         }
         return DEFAULT;
     }

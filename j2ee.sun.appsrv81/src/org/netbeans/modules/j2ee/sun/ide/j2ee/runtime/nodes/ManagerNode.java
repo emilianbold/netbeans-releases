@@ -57,13 +57,12 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -110,8 +109,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
     }
     
     public javax.swing.Action[] getActions(boolean context) {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_ACTION_EXTENSION);
+        FileObject dir = FileUtil.getConfigFile(DIR_ACTION_EXTENSION);
         int nbextraoptions=0;
         FileObject[] ch =null;
         if(dir!=null){

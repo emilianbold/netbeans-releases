@@ -53,7 +53,6 @@ import org.netbeans.modules.palette.Item;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
@@ -186,7 +185,7 @@ public class PaletteItemTest extends NbTestCase {
         
     
     private FileObject createItemsFolder() throws IOException {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject fooCategory = FileUtil.createFolder(root, ITEMS_FOLDER);
         return fooCategory;
     }

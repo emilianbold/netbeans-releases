@@ -35,7 +35,7 @@ import org.netbeans.modules.web.jsf.JSFConfigLoader;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
@@ -72,7 +72,7 @@ public class JSFConfigUtils {
     
     private static void registerXMLKit() {
         String[] path = new String[] { "Editors", "text", "x-jsf+xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         try {
             for (int i=0; i<path.length; i++) {
                 FileObject f = target.getFileObject(path[i]);

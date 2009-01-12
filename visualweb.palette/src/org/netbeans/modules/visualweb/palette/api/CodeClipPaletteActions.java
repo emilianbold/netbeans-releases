@@ -143,8 +143,7 @@ public class CodeClipPaletteActions extends PaletteActions {
 
         public void actionPerformed(ActionEvent e) {
             String msg;
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject paletteFileObject = fs.findResource( folderName );
+            FileObject paletteFileObject = FileUtil.getConfigFile( folderName );
             FileObject paletteParent = paletteFileObject.getParent();
 
             String nbUserDir = System.getProperty("netbeans.user");

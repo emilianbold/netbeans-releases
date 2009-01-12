@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -87,7 +87,7 @@ public abstract class JspContextInfo {
         JspContextInfo instance = instances.get(fo.getMIMEType());
         
         if (instance == null) {
-            FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(CONTEXT_NAME + fo.getMIMEType()); // NOI18N
+            FileObject f = FileUtil.getConfigFile(CONTEXT_NAME + fo.getMIMEType()); // NOI18N
             if (f != null) {
                 try {
                     DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);

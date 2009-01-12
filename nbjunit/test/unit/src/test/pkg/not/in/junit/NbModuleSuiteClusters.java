@@ -15,8 +15,8 @@ public class NbModuleSuiteClusters extends TestCase {
 
         StringBuilder sb = new StringBuilder();
         String sep = "";
-        for (String d : dirs.split(File.pathSeparator)) {
-            String sd = d.replaceFirst(".*" + File.separator, "");
+        for (String d : dirs.replace(File.separatorChar, '/').split(File.pathSeparator)) {
+            String sd = d.replaceFirst(".*/", "");
             if (sd.matches("platform[0-9]*")) {
                 continue;
             }

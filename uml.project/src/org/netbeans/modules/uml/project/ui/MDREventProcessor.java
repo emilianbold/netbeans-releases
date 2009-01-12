@@ -45,18 +45,16 @@
 package org.netbeans.modules.uml.project.ui;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Vector;
 
 import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -83,55 +81,50 @@ public class MDREventProcessor
     }
     public void fireChanged(SourceGroup[] oldValue , SourceGroup[] newValue)
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
         try
         {
-            if (system != null)
+            FileObject lookupDir = FileUtil.getConfigFile("uml/source-roots-listeners");
+            if (lookupDir != null)
             {
-                FileObject lookupDir = system.findResource("uml/source-roots-listeners");                
-                if (lookupDir != null)
+                FileObject[] children = lookupDir.getChildren();
+                for (FileObject curObj : children)
                 {
-                    FileObject[] children = lookupDir.getChildren();                    
-                    for (FileObject curObj : children)
+                    try
                     {
-                        try
+                        DataObject dObj = DataObject.find(curObj);
+                        if (dObj != null)
                         {
-                            DataObject dObj = DataObject.find(curObj);                            
-                            if (dObj != null)
+                            InstanceCookie cookie = (InstanceCookie)dObj
+                                    .getCookie(InstanceCookie.class);
+
+                            if (cookie != null)
                             {
-                                InstanceCookie cookie = (InstanceCookie)dObj
-                                        .getCookie(InstanceCookie.class);
-                                
-                                if (cookie != null)
+                                Object obj = cookie.instanceCreate();
+
+                                if (obj instanceof IMDRListener)
                                 {
-                                    Object obj = cookie.instanceCreate();
-                                    
-                                    if (obj instanceof IMDRListener)
+                                    IMDRListener listener = (IMDRListener)obj;
+                                    if(oldValue!=null)
                                     {
-                                        IMDRListener listener = (IMDRListener)obj;
-                                        if(oldValue!=null)
-                                        {
-                                            listener.removeJMI(oldValue);
-                                        }
-                                        
-                                        if(newValue!=null)
-                                        {
-                                            listener.registerJMI(newValue);
-                                        }
+                                        listener.removeJMI(oldValue);
+                                    }
+
+                                    if(newValue!=null)
+                                    {
+                                        listener.registerJMI(newValue);
                                     }
                                 }
-                            } // dObj != null
-                        }
-                        
-                        catch (ClassNotFoundException e)
-                        {
-                            // Unable to create the instance for some reason.  So the
-                            // do not worry about adding the instance to the list.
-                        }
-                    } // for-each FileObject
-                } // if lookupDir != null
-            } // if system != null
+                            }
+                        } // dObj != null
+                    }
+
+                    catch (ClassNotFoundException e)
+                    {
+                        // Unable to create the instance for some reason.  So the
+                        // do not worry about adding the instance to the list.
+                    }
+                } // for-each FileObject
+            } // if lookupDir != null
         }        
         catch (DataObjectNotFoundException e)
         {

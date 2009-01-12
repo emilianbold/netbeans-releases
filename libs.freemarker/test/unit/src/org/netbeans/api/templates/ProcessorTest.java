@@ -53,7 +53,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -73,7 +72,7 @@ public class ProcessorTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        root = FileUtil.getConfigRoot();
         for (FileObject f : root.getChildren()) {
             f.delete();
         }

@@ -44,16 +44,10 @@ package org.netbeans.upgrade;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -61,9 +55,7 @@ import org.netbeans.upgrade.XMLStorage.Attribs;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -313,9 +305,8 @@ class ColoringStorage {
         String          profile,
         String          fileName
     ) {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         try {
-            FileObject fo = getFO (fs.getRoot (), "Editors");
+            FileObject fo = getFO (FileUtil.getConfigRoot (), "Editors");
             int i, k = mimeTypes.length;
             for (i = 0; i < k; i++)
                 fo = getFO (fo, mimeTypes [i]);

@@ -28,7 +28,6 @@
 
 package org.netbeans.modules.favorites.templates;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -38,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -53,8 +52,7 @@ import org.openide.util.Exceptions;
 public final class PropertiesProvider implements CreateFromTemplateAttributesProvider {
 
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject dir = root.getFileObject("Templates/Properties");
+        FileObject dir = FileUtil.getConfigFile("Templates/Properties");
         if (dir == null) {
             return Collections.emptyMap();
         }

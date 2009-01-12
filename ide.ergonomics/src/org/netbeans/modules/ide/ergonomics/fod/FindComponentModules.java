@@ -111,7 +111,7 @@ public final class FindComponentModules {
     private Set<String> clusterClosure(Collection<UpdateElement> all) {
         HashSet<String> closure = new HashSet<String>();
         for (UpdateElement ue : all) {
-            for (FeatureInfo featureInfo : Feature2LayerMapping.features()) {
+            for (FeatureInfo featureInfo : FeatureManager.features()) {
                 if (featureInfo.getCodeNames().contains(ue.getCodeName())) {
                     closure.addAll(featureInfo.getCodeNames());
                 }

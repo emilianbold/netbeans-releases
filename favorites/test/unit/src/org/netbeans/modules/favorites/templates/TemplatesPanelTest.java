@@ -74,7 +74,7 @@ public class TemplatesPanelTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
         try {
-            templateFolder = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
+            templateFolder = FileUtil.getConfigRoot ().createFolder ("TestTemplates");
         } catch (IOException ioe) {
             fail (ioe.getMessage ());
         }
@@ -125,7 +125,7 @@ public class TemplatesPanelTest extends NbTestCase {
         assertTrue ("Name is derived from original.", dupl.getNodeDelegate ().getName ().startsWith (dobj.getNodeDelegate ().getName ()));
     }
     public void testIgnoresSimplefolders() throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject fo = FileUtil.createFolder(root, "Templates/SimpleFolder");
         fo.setAttribute("simple", Boolean.FALSE);
         Node n = TemplatesPanel.getTemplateRootNode();
@@ -133,7 +133,7 @@ public class TemplatesPanelTest extends NbTestCase {
         assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
     }
     public void testIgnoresSimpleNonFolders() throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject fo = FileUtil.createData(root, "Templates/SimpleFolder.java");
         fo.setAttribute("simple", Boolean.FALSE);
         fo.setAttribute("template", Boolean.TRUE);

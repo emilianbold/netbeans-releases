@@ -41,14 +41,12 @@
 package org.netbeans.modules.uml.diagrams.options;
 
 import java.awt.Point;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateVertex;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
@@ -66,8 +64,7 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -95,83 +92,79 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
     static
     {
 
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
         ICreationFactory factory = FactoryRetriever.instance().getCreationFactory();
 
-        if (system != null && factory != null)
+        String diagramTypeName;
+        List<IPresentationElement> list = new ArrayList<IPresentationElement>();
+
+        String[] path = new String[diagramTypes.length + 1];
+        path[0] = "UML/Nodes";
+
+        int index = 1;
+
+        for (int t : diagramTypes)
         {
-            String diagramTypeName;
-            List<IPresentationElement> list = new ArrayList<IPresentationElement>();
+            diagramTypeName = DiagramTypesManager.instance().getDiagramTypeNameNoSpaces(t);
+            path[index++] = "UML/" + diagramTypeName + "/Nodes";
+        }
 
-            String[] path = new String[diagramTypes.length + 1];
-            path[0] = "UML/Nodes";
-
-            int index = 1;
-
-            for (int t : diagramTypes)
+        for (String p : path)
+        {
+            FileObject fo = FileUtil.getConfigFile(p);
+            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+            if (df != null)
             {
-                diagramTypeName = DiagramTypesManager.instance().getDiagramTypeNameNoSpaces(t);
-                path[index++] = "UML/" + diagramTypeName + "/Nodes";
-            }
-
-            for (String p : path)
-            {
-                FileObject fo = system.findResource(p);
-                DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-                if (df != null)
+                DataObject[] nodes = df.getChildren();
+                String[] types = new String[nodes.length];
+                for (int i = 0; i < nodes.length; i++)
                 {
-                    DataObject[] nodes = df.getChildren();
-                    String[] types = new String[nodes.length];
-                    for (int i = 0; i < nodes.length; i++)
+                    types[i] = nodes[i].getName();
+                    Object presentationObj = factory.retrieveMetaType("NodePresentation", null);
+                    if (presentationObj instanceof IPresentationElement)
                     {
-                        types[i] = nodes[i].getName();
-                        Object presentationObj = factory.retrieveMetaType("NodePresentation", null);
-                        if (presentationObj instanceof IPresentationElement)
+                        IPresentationElement pe = ((IPresentationElement) presentationObj);
+                        IElement element = (IElement) FactoryRetriever.instance().createType(types[i], null);
+
+                        // todo: should we  use general approach for those element that define
+                        // expanded element type?
+                        if (element instanceof IStateVertex)
                         {
-                            IPresentationElement pe = ((IPresentationElement) presentationObj);
-                            IElement element = (IElement) FactoryRetriever.instance().createType(types[i], null);
-
-                            // todo: should we  use general approach for those element that define
-                            // expanded element type?
-                            if (element instanceof IStateVertex)
+                            FileObject f = FileUtil.getConfigFile(p + "/" + element.getElementType());
+                            DataFolder d = f != null ? DataFolder.findFolder(f) : null;
+                            if (d != null)
                             {
-                                FileObject f = system.findResource(p + "/" + element.getElementType());
-                                DataFolder d = f != null ? DataFolder.findFolder(f) : null;
-                                if (d != null)
+                                DataObject[] subs = d.getChildren();
+                                for (DataObject o : subs)
                                 {
-                                    DataObject[] subs = d.getChildren();
-                                    for (DataObject o : subs)
+                                    Object showPreference = o.getPrimaryFile().getAttribute("showPreference");
+                                    if (showPreference instanceof Boolean && ((Boolean)showPreference).booleanValue() == false)
+                                        continue;
+                                    presentationObj = factory.retrieveMetaType("NodePresentation", null);
+                                    pe = ((IPresentationElement) presentationObj);
+                                    element = (IElement) FactoryRetriever.instance().createType(types[i], null);
+                                    Object init = o.getPrimaryFile().getAttribute("initializer");
+                                    if (init instanceof NodeInitializer)
                                     {
-                                        Object showPreference = o.getPrimaryFile().getAttribute("showPreference");
-                                        if (showPreference instanceof Boolean && ((Boolean)showPreference).booleanValue() == false)
-                                            continue;
-                                        presentationObj = factory.retrieveMetaType("NodePresentation", null);
-                                        pe = ((IPresentationElement) presentationObj);
-                                        element = (IElement) FactoryRetriever.instance().createType(types[i], null);
-                                        Object init = o.getPrimaryFile().getAttribute("initializer");
-                                        if (init instanceof NodeInitializer)
-                                        {
-                                            ((NodeInitializer) init).initialize(element);
-                                        }
-                                        pe.addSubject(element);
+                                        ((NodeInitializer) init).initialize(element);
+                                    }
+                                    pe.addSubject(element);
 
-                                        initConstructors(p + "/" + types[i] + "/" + o.getName(), pe);
-                                        if (map.containsKey(element.getExpandedElementType()))
-                                        {
-                                            list.add(pe);
-                                        }
+                                    initConstructors(p + "/" + types[i] + "/" + o.getName(), pe);
+                                    if (map.containsKey(element.getExpandedElementType()))
+                                    {
+                                        list.add(pe);
                                     }
                                 }
                             }
-                            else
+                        }
+                        else
+                        {
+                            pe.addSubject(element);
+
+                            initConstructors(p + "/" + types[i], pe);
+                            if (map.containsKey(element.getExpandedElementType()))
                             {
-                                pe.addSubject(element);
-                                
-                                initConstructors(p + "/" + types[i], pe);
-                                if (map.containsKey(element.getExpandedElementType()))
-                                {
-                                    list.add(pe);
-                                }
+                                list.add(pe);
                             }
                         }
                     }
@@ -254,37 +247,32 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
 
     private static void initConstructors(String path, IPresentationElement pe)
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] engineObjects = df.getChildren();
+            for (int i = 0; i < engineObjects.length; i++)
             {
-                DataObject[] engineObjects = df.getChildren();
-                for (int i = 0; i < engineObjects.length; i++)
+                InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
+                if (ic != null)
                 {
-                    InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
-                    if (ic != null)
+                    try
                     {
-                        try
+                        Class cl = ic.instanceClass();
+                        if (cl != null)
                         {
-                            Class cl = ic.instanceClass();
-                            if (cl != null)
+                            //Constructor constructor = cl.getConstructor(Scene.class);
+                            if (cl.isAssignableFrom(NodeWidgetFactory.class));
                             {
-                                //Constructor constructor = cl.getConstructor(Scene.class);
-                                if (cl.isAssignableFrom(NodeWidgetFactory.class));
-                                {
-                                    map.put(pe.getFirstSubject().getExpandedElementType(),(NodeWidgetFactory) cl.getConstructor().newInstance());
-                                }
+                                map.put(pe.getFirstSubject().getExpandedElementType(),(NodeWidgetFactory) cl.getConstructor().newInstance());
                             }
-                        } catch (Exception e)
-                        {
-                            //Exceptions.printStackTrace(e);
-                            e.printStackTrace();
-                            continue;
                         }
+                    } catch (Exception e)
+                    {
+                        //Exceptions.printStackTrace(e);
+                        e.printStackTrace();
+                        continue;
                     }
                 }
             }
