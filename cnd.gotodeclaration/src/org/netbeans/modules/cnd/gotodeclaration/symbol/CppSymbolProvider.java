@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -55,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
@@ -191,9 +194,28 @@ public class CppSymbolProvider implements SymbolProvider {
     }
 
     private void collectSymbols(CsmNamespace namespace, CsmSelect.CsmFilter filter, List<CppSymbolDescriptor> symbols) {
-        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(namespace, filter);
+        collectSymbols(CsmSelect.getDefault().getDeclarations(namespace, filter), filter, symbols);
+        for (CsmNamespace child : namespace.getNestedNamespaces()) {
+            collectSymbols(child, filter, symbols);
+        }
+    }
+
+    private void collectSymbols(Iterator<? extends CsmOffsetableDeclaration> declarations, CsmSelect.CsmFilter filter, List<CppSymbolDescriptor> symbols) {
         while (declarations.hasNext() && ! cancelled) {
-            symbols.add(new CppSymbolDescriptor(declarations.next()));
+            CsmOffsetableDeclaration decl = declarations.next();
+            if (CsmKindUtilities.isClass(decl)) {
+                collectSymbols(((CsmClass) decl).getMembers().iterator(), filter, symbols);
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
+            else if(CsmKindUtilities.isEnum(decl)) {
+                collectSymbols(((CsmEnum) decl).getEnumerators().iterator(), filter, symbols);
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
+            else if(CsmKindUtilities.isFunction(decl) || 
+                    CsmKindUtilities.isVariable(decl) ||
+                    CsmKindUtilities.isTypedef(decl)) {
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
         }
     }
 
