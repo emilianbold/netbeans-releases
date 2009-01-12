@@ -52,8 +52,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.Environment.Provider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -98,7 +96,7 @@ implements Node.Cookie {
     
     private void doTest(String switches) throws IOException {
         FileObject res = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(), 
+            FileUtil.getConfigRoot(),
             getName() + "/R.xml"
         );
         

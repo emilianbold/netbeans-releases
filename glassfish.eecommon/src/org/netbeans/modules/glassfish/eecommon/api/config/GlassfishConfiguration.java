@@ -83,7 +83,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -361,7 +360,7 @@ public abstract class GlassfishConfiguration implements
         boolean isPreAS90 = false; // FIXME (ASDDVersion.SUN_APPSERVER_9_0.compareTo(appServerVersion) > 0);
         String resource = "org-netbeans-modules-j2ee-sun-ddui" + // NOI18N
                 (isPreAS90 ? "-version-8_2/" : "/") + sunDDFile.getName(); // NOI18N
-        FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
+        FileObject sunDDTemplate = FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
             FileSystem fs = configFolder.getFileSystem();

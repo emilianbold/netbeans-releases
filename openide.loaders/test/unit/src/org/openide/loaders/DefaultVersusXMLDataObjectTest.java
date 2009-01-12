@@ -41,17 +41,9 @@
 
 package org.openide.loaders;
 
-import java.io.PrintStream;
 import java.lang.ref.WeakReference;
-import javax.swing.Action;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
-import org.openide.DialogDescriptor;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
-import org.openide.util.actions.SystemAction;
 
 /** To check issue 61600
  *
@@ -64,7 +56,7 @@ public final class DefaultVersusXMLDataObjectTest extends NbTestCase {
     }
     
     public void testCreateFromTemplateResultsInXMLDataObject() throws Exception {
-        FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "Templates/Unknown/EmptyFile");
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Unknown/EmptyFile");
         DataObject obj = DataObject.find(fo);
         obj.setTemplate(true);
         
@@ -76,7 +68,7 @@ public final class DefaultVersusXMLDataObjectTest extends NbTestCase {
         assertEquals ("Right type", DefaultDataObject.class, obj.getClass());
         assertTrue ("Is the template", obj.isTemplate());
         
-        FileObject ff = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "CreateAt");
+        FileObject ff = FileUtil.createFolder(FileUtil.getConfigRoot(), "CreateAt");
         DataFolder f = DataFolder.findFolder(ff);
         
         DataObject result = obj.createFromTemplate(f, "my.xml");

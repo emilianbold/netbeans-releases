@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -63,7 +62,6 @@ import org.w3c.dom.NodeList;
  * @author  Jan Pokorsky
  */
 public class DOMConvertorTest extends NbTestCase {
-    FileSystem fs;
     
     /** Creates a new instance of EnvTest */
     public DOMConvertorTest(String name) {
@@ -74,13 +72,12 @@ public class DOMConvertorTest extends NbTestCase {
         super.setUp();
         
         Lookup.getDefault().lookup(ModuleInfo.class);
-        fs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     
     public void testCreateSetting() throws Exception {
         try {
-        org.openide.filesystems.FileUtil.createFolder(fs.getRoot(), "testCreateSetting");
-        DataFolder folder = DataFolder.findFolder(fs.findResource("testCreateSetting"));
+        org.openide.filesystems.FileUtil.createFolder(FileUtil.getConfigRoot(), "testCreateSetting");
+        DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile("testCreateSetting"));
         
         ComposedSetting cs = new ComposedSetting();
         cs.b1 = new java.awt.Button();
@@ -90,7 +87,7 @@ public class DOMConvertorTest extends NbTestCase {
         DataObject dobj = InstanceDataObject.create(folder, "testCreateSetting", cs, null);
         
         // test reading
-        FileObject fo = dobj.getPrimaryFile().copy(fs.getRoot(), dobj.getPrimaryFile().getName() + "_copy", "settings");
+        FileObject fo = dobj.getPrimaryFile().copy(FileUtil.getConfigRoot(), dobj.getPrimaryFile().getName() + "_copy", "settings");
         org.openide.cookies.InstanceCookie ic = DataObject.find(fo).getCookie(org.openide.cookies.InstanceCookie.class);
         assertNotNull("missing InstanceCookie", ic);
         assertEquals(cs.getClass(), ic.instanceClass());
@@ -111,8 +108,8 @@ public class DOMConvertorTest extends NbTestCase {
     
     public void testCreateSetting_XML() throws Exception {
         try {
-        org.openide.filesystems.FileUtil.createFolder(fs.getRoot(), "testCreateSetting");
-        DataFolder folder = DataFolder.findFolder(fs.findResource("testCreateSetting"));
+        org.openide.filesystems.FileUtil.createFolder(FileUtil.getConfigRoot(), "testCreateSetting");
+        DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile("testCreateSetting"));
 
         ComposedSetting cs = new ComposedSetting();
         cs.b1 = new java.awt.Button();
@@ -122,7 +119,7 @@ public class DOMConvertorTest extends NbTestCase {
         DataObject dobj = InstanceDataObject.create(folder, "testCreateSetting", cs, null);
 
         // test reading
-        FileObject fo = dobj.getPrimaryFile().copy(fs.getRoot(), dobj.getPrimaryFile().getName() + "_copy", "xml");
+        FileObject fo = dobj.getPrimaryFile().copy(FileUtil.getConfigRoot(), dobj.getPrimaryFile().getName() + "_copy", "xml");
         fo.getParent().setAttribute("recognizeXML", Boolean.TRUE);
         org.openide.cookies.InstanceCookie ic = DataObject.find(fo).getCookie(org.openide.cookies.InstanceCookie.class);
         assertNotNull("missing InstanceCookie", ic);

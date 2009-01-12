@@ -55,7 +55,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
@@ -120,7 +119,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
 
         if(configFolder != null) {
             String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFileName; // NOI18N
-            FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
+            FileObject sunDDTemplate = FileUtil.getConfigFile(resource);
             if(sunDDTemplate != null) {
                 FileSystem fs = configFolder.getFileSystem();
                 XmlFileCreator creator = new XmlFileCreator(sunDDTemplate, configFolder, 

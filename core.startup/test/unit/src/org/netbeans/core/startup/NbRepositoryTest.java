@@ -47,7 +47,6 @@ import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * @author Jaroslav Tulach
@@ -62,9 +61,7 @@ public class NbRepositoryTest extends NbTestCase {
         System.getProperties().remove("netbeans.home");
         System.setProperty("netbeans.user", getWorkDirPath());
         
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
-        
-        FileObject ahoj = FileUtil.createData(fo, "ahoj.jardo");
+        FileObject ahoj = FileUtil.createData(FileUtil.getConfigRoot(), "ahoj.jardo");
         
         OutputStream os = ahoj.getOutputStream();
         os.write("Ahoj".getBytes());

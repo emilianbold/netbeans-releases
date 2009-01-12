@@ -92,7 +92,6 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -941,13 +940,13 @@ public class InstallSupportImpl {
                 }
             } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
-                final FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource(ModuleDeactivator.MODULES);
+                final FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 err.log(Level.FINE,
                         "It\'s a hack: Call refresh on " + modulesRoot +
                         " file object.");
                 if (modulesRoot != null) {
                     try {
-                        Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                             public void run() throws IOException {
                                 modulesRoot.getParent().refresh();
                                 modulesRoot.refresh();

@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Look up proper settings convertor registrations.
  *
@@ -105,7 +105,7 @@ final class ConvertorResolver {
         // at least for now
         sb.append (".instance"); // NOI18N 
 
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(sb.toString());
+        FileObject fo = FileUtil.getConfigFile(sb.toString());
         return (fo == null)? null: getConvertor(fo);
     }
     

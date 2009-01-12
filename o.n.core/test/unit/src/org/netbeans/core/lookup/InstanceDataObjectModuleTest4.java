@@ -42,25 +42,13 @@
 package org.netbeans.core.lookup;
 
 import org.netbeans.core.LoaderPoolNode;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 
-import java.io.File;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
-import org.netbeans.core.startup.ModuleHistory;
 import org.openide.util.Lookup;
 import javax.swing.Action;
-import java.util.Iterator;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.util.Mutex;
 import org.openide.cookies.InstanceCookie;
-import org.openide.util.MutexException;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
+import org.openide.filesystems.FileUtil;
 
 /** A test.
  * @author Jesse Glick
@@ -107,7 +95,7 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
                 existsSomeAction(c2));
         } finally {
             ERR.log("Verify why it failed");
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/Misc/inst-1.instance");
+            FileObject fo = FileUtil.getConfigFile("Services/Misc/inst-1.instance");
             ERR.log("File object found: " + fo);
             if (fo != null) {
                 DataObject obj = DataObject.find(fo);

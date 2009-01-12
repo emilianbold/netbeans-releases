@@ -315,8 +315,7 @@ public class J2MEActionProvider implements ActionProvider {
     }
     
     protected String getJadURL() {
-        final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject fo = fs.findResource("HTTPServer_DUMMY"); // NOI18N
+        final FileObject fo = FileUtil.getConfigFile("HTTPServer_DUMMY"); // NOI18N
         final URL base = URLMapper.findURL(fo, URLMapper.NETWORK);
         if (base == null)
             return null;

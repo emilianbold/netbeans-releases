@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import org.netbeans.modules.xslt.mapper.methoid.Constants;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -48,8 +48,7 @@ public class CategoryNode extends AbstractNode {
         String metainfoRef = (String)myFolder.getPrimaryFile().
                 getAttribute(Constants.METAINFO_REF);
         if (metainfoRef != null && metainfoRef.length() != 0) {
-            FileObject metainfoFo = Repository.getDefault().
-                    getDefaultFileSystem().findResource(metainfoRef);
+            FileObject metainfoFo = FileUtil.getConfigFile(metainfoRef);
             if (metainfoFo != null) {
                 String bundleRef = (String)metainfoFo.
                         getAttribute(Constants.BUNDLE_CLASS);

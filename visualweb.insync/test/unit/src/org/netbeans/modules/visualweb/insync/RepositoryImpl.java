@@ -36,7 +36,7 @@ import org.openide.filesystems.XMLFileSystem;
 import org.xml.sax.SAXException;
 
 /**
- * Repository whose getDefaultFileSystem() returns a writeable FS containing
+ * Repository whose getDefaultFileSystem returns a writeable FS containing
  * the layers of j2seplatform and visual jsf web project. It is put in the 
  * default lookup, thus it is returned by Repository.getDefault().
  *

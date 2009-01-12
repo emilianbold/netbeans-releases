@@ -349,7 +349,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
                 xp.parse(systemId);
             }
-            urlsToXml = (URL[]) urls.clone();
+            urlsToXml = urls.clone();
             refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem);
         } catch (IOException iox) {
             Exceptions.attachMessage(iox, Arrays.toString(urls));

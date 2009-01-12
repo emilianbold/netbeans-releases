@@ -46,7 +46,6 @@ import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -63,7 +62,7 @@ public class DatabaseModuleTest extends TestBase {
     }
 
     public void testRuntimesAreStopped() throws Exception {
-        FileObject runtimeFolder = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases/Runtimes");
+        FileObject runtimeFolder = FileUtil.getConfigFile("Databases/Runtimes");
         FileObject runtime1 = FileUtil.createData(runtimeFolder, "runtime1.instance");
         runtime1.setAttribute("instanceOf", DatabaseRuntime.class.getName());
         runtime1.setAttribute("instanceCreate", new DatabaseRuntimeImpl());

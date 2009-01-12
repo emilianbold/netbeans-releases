@@ -83,7 +83,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         };
     }
 
-    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
+    private void invokeActionImpl(Lookup context) {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Download action";
 

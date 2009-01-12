@@ -64,9 +64,8 @@ import java.util.Set;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 
@@ -465,10 +464,9 @@ public abstract class Properties {
         }
         
         private static FileObject findSettings() throws IOException {
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject r = fs.findResource("Services"); // NOI18N
+            FileObject r = FileUtil.getConfigFile("Services"); // NOI18N
             if (r == null) {
-                r = fs.getRoot ().createFolder("Services"); // NOI18N
+                r = FileUtil.getConfigRoot().createFolder("Services"); // NOI18N
             }
             FileObject fo = r.getFileObject 
                 ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N

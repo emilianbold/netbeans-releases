@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
@@ -61,7 +60,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -95,7 +93,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         CreateOnlyOnceAction.pw = new PrintWriter(CreateOnlyOnceAction.w);
 
         FileObject fo = FileUtil.createFolder(
-            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            FileUtil.getConfigRoot(),
             "Folder" + getName()
         );
         df = DataFolder.findFolder(fo);

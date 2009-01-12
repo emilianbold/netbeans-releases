@@ -82,7 +82,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.ChildFactory;
@@ -90,9 +90,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -579,7 +577,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
 
     //!!!!!!!!!   HelpCtx !!!!!!!!!!!!!!!!
     private Node createRootNode() {
-        DataFolder df = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(REGISTRATION_FOLDER));
+        DataFolder df = DataFolder.findFolder(FileUtil.getConfigFile(REGISTRATION_FOLDER));
         return new FNode(df.getNodeDelegate(), Children.create(new ConfigurationChildFactory(df), true));
     }
 

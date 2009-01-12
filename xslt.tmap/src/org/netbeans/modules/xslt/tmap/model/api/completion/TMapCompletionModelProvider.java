@@ -29,7 +29,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.tmap.TMapConstants;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -85,8 +85,7 @@ public class TMapCompletionModelProvider extends CompletionModelProvider {
     private SchemaModel getTMapSchemaModel() {
         try {
             
-            FileObject tmapSchemaFo = Repository.getDefault().
-                    getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xsd"); // NOI18N
+            FileObject tmapSchemaFo = FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xsd"); // NOI18N
             if (tmapSchemaFo == null) {
                 return null;
             }

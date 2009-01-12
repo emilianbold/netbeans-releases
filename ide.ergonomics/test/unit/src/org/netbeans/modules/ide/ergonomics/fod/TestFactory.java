@@ -2,41 +2,53 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
+@ServiceProvider(service=ProjectFactory.class, position=29998)
 public final class TestFactory extends ProjectOpenedHook
-implements ProjectFactory, Project, ProjectInformation {
+implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
 
-    static FileObject recognize;
+    static Set<FileObject> recognize = new HashSet<FileObject>();
+    static Set<Project> subprojects = new HashSet<Project>();
     int closed;
     int opened;
     int listenerCount;
+    final FileObject dir;
 
     public TestFactory() {
-        super();
+        dir = null;
+    }
+
+    private TestFactory(FileObject dir) {
+        this.dir = dir;
     }
 
     public boolean isProject(FileObject projectDirectory) {
-        return projectDirectory.equals(recognize);
+        return recognize.contains(projectDirectory);
     }
 
-    public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        return isProject(projectDirectory) ? new TestFactory() : null;
+    public Project loadProject(FileObject pd, ProjectState state) throws IOException {
+        return isProject(pd) ? new TestFactory(pd) : null;
     }
 
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
     public FileObject getProjectDirectory() {
-        return recognize;
+        return dir;
     }
 
     public Lookup getLookup() {
@@ -79,12 +91,26 @@ implements ProjectFactory, Project, ProjectInformation {
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (obj instanceof TestFactory) {
+            return super.equals(obj);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    public Set<? extends Project> getSubprojects() {
+        return subprojects;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
     }
 
 

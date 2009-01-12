@@ -44,9 +44,7 @@ package org.netbeans.core;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -130,11 +128,10 @@ public final class NbPlaces extends Object {
      */
      public static DataFolder findSessionFolder (String name) {
         try {
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
-            FileObject fo = fs.findResource(name);
+            FileObject fo = FileUtil.getConfigFile(name);
             if (fo == null) {
                 // resource not found, try to create new folder
-                fo = FileUtil.createFolder(fs.getRoot(), name);
+                fo = FileUtil.createFolder(FileUtil.getConfigRoot(), name);
             }
             return DataFolder.findFolder(fo);
         } catch (IOException ex) {

@@ -1655,7 +1655,7 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
 			}
 			catch (FileNotFoundException e)
 			{
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			catch (IOException e)
 			{

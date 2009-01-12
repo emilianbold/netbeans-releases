@@ -96,7 +96,7 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME enterprise "enterprise*"
     rm -rf enterprise*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME enterprise "ergonomics*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME ergonomics "ergonomics*"
     rm -rf ergonomics*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
