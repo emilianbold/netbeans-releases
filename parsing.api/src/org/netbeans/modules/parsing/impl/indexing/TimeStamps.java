@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -64,6 +63,7 @@ public class TimeStamps {
     private Set<String> unseen = new HashSet<String>();
     private final URL root;
     private FileObject rootFoCache;
+    private boolean changed;
 
     private TimeStamps (final URL root) throws IOException {
         assert root != null;
@@ -93,21 +93,24 @@ public class TimeStamps {
     }
 
     public Set<String> store () throws IOException {
-        FileObject cacheDir = getCacheDir();
-        FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
-        assert f != null;
-        try {
-            final OutputStream out = f.getOutputStream();
+        if (true) {
+            FileObject cacheDir = getCacheDir();
+            FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
+            assert f != null;
             try {
-                props.keySet().removeAll(unseen);
-                props.store(out, "");
-            } finally {
-                out.close();
+                final OutputStream out = f.getOutputStream();
+                try {
+                    props.keySet().removeAll(unseen);
+                    props.store(out, "");
+                } finally {
+                    out.close();
+                }
+            } catch (IOException e) {
+                //In case of IOException props are not stored, everything is scanned next time
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            //In case of IOException props are not stored, everything is scanned next time
-            e.printStackTrace();
         }
+        changed = false;
         return this.unseen;
     }
 
@@ -135,11 +138,14 @@ public class TimeStamps {
         long fts = f.lastModified().getTime();
         String value = (String) props.setProperty(relative,Long.toString(fts));
         if (value == null) {
+            changed|=true;
             return false;
         }
         unseen.remove(relative);
-        long lts = Long.parseLong(value);        
-        return lts >= fts;
+        long lts = Long.parseLong(value);
+        boolean isUpToDate = lts >= fts;
+        changed|=!isUpToDate;
+        return isUpToDate;
     }    
 
     public static TimeStamps forRoot (final URL root) throws IOException {

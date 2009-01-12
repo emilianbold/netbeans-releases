@@ -73,7 +73,7 @@ public class FileObjectCrawler extends Crawler {
     protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
         if (files != null) {
-            collect (files,root,result,supportedMimeTypes);
+            collect (files,root,result,supportedMimeTypes,true);
         }
         else {
             collect (root, root, result, supportedMimeTypes);
@@ -85,12 +85,12 @@ public class FileObjectCrawler extends Crawler {
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes) {
         final FileObject[] fos = dir.getChildren();
-        collect(fos, root, cache, supportedMimeTypes);
+        collect(fos, root, cache, supportedMimeTypes,false);
     }
 
     private void collect (FileObject[] fos, FileObject root,
             final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes) {
+            final Set<? extends String> supportedMimeTypes, final boolean force) {
         for (FileObject fo : fos) {
             if (fo.isFolder()) {
                 collect(fo, root, cache, supportedMimeTypes);
@@ -103,7 +103,7 @@ public class FileObjectCrawler extends Crawler {
                         indexable = new LinkedList<Indexable>();
                         cache.put(mime, indexable);
                     }
-                    if (!timeStamps.isUpToDate(fo)) {
+                    if (force || !timeStamps.isUpToDate(fo)) {
                         indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
                     }
                 }
