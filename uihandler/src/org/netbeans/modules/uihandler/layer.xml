@@ -27,7 +27,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="ReporterResultTopComponent.wstcref" url="ReporterResultTopComponentWstcref.xml"/>
+                <file name="ReporterResultTopComponent.wstcref" url="ReporterResultTopComponentWstcref.xml">
+                    <attr name="position" intvalue="3300"/>
+                </file>
             </folder>
         </folder>
     </folder>
