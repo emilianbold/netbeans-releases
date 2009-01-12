@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.gotodeclaration.symbol;
 import java.io.File;
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * SymbolDescriptor implementation for C/C++
@@ -74,7 +76,10 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
         absPath = csmFile.getAbsolutePath();
         offset = csmObj.getStartOffset();
         project = csmFile.getProject();
-        if (CsmKindUtilities.isNamedElement(csmObj)) {
+        if (CsmKindUtilities.isFunction(csmObj)) {
+            name = ((CsmFunction) csmObj).getSignature();
+        }
+        else if (CsmKindUtilities.isNamedElement(csmObj)) {
             name = ((CsmNamedElement) csmObj).getName();
         } else {
             throw new IllegalArgumentException("should be CsmNamedElement, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
@@ -82,15 +87,21 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
         if (CsmKindUtilities.isMacro(csmObj)) {
             //CsmMacro macro = (CsmMacro)  csmObj;
-            ownerName = absPath;
-        } else if (CsmKindUtilities.isDeclaration(csmObj)) {
+            ownerName = getBriefFileName(absPath);
+        } else if (CsmKindUtilities.isOffsetableDeclaration(csmObj)) {
             CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObj;
             CsmScope scope = decl.getScope();
             if (CsmKindUtilities.isFile(scope)) {
-                ownerName = ((CsmFile) scope).getName();
+                ownerName = getBriefFileName(absPath);
             }
             else if (CsmKindUtilities.isQualified(scope)) {
-                ownerName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+                CharSequence fileName = getBriefFileName(absPath);
+                CharSequence qName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+                if (qName.length() > 0) {
+                    ownerName = NbBundle.getMessage(getClass(), "CPP_Descriptor_In_Compound", qName, fileName);
+                } else {
+                    ownerName = fileName;
+                }
             } else {
                 throw new IllegalArgumentException("should be either CsmFile or CsmQualifiedNamedElement, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
             }
@@ -98,6 +109,16 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
             throw new IllegalArgumentException("should be either CsmMacro or CsmDeclaration, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
         }
         icon = CsmImageLoader.getIcon(csmObj);
+    }
+
+    private CharSequence getBriefFileName(CharSequence fileName) {
+        for (int i = fileName.length() - 1; i >= 0; i-- ) {
+            char c = fileName.charAt(i);
+            if (c == '/' || c == '\\') {
+                return fileName.subSequence(i + 1, fileName.length());
+            }
+        }
+        return fileName;
     }
 
     @Override
