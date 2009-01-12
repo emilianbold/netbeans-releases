@@ -109,7 +109,7 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
     
     
     @Override
-    public Node.Cookie getCookie (Class type) {
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         if(realNode != null) {
             return realNode.getCookie(type);
         }

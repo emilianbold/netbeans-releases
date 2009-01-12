@@ -54,7 +54,7 @@ public class WatchesTestSuite extends JellyTestCase {
         super(name);
     }
     
-    @Override
+    @Override 
     protected void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
     }

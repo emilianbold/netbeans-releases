@@ -103,12 +103,6 @@ public class RubyExecutionDescriptor {
      * once that issue has been solved</i>.
      */
     private boolean rerun = true;
-    /**
-     * The max time in ms for waiting a stream to become ready
-     * before considering the process to be stalling.
-     */
-    private int readMaxWaitTime = 50;
-
 
     public RubyExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
@@ -242,13 +236,38 @@ public class RubyExecutionDescriptor {
 
     /**
      * Arguments that will be parsed and prepended <em>BEFORE</em> the target.
-     * Usually arguments and options for the Ruby interpreter.
+     * Usually arguments and options for the Ruby interpreter. <strong>Note
+     * that any already existing <code>initialArgs</code> will be wiped out</strong>.
+     *
+     * @see #addInitialArgs(java.lang.String)
      */
     public RubyExecutionDescriptor initialArgs(String initialArgs) {
-        this.initialArgs = initialArgs;
+            this.initialArgs = initialArgs;
+            return this;
+        }
+
+    /**
+     * Adds the given <code>initialArgs</code> as an initial arg for this
+     * descriptor. In contrast with {@link #initialArgs(java.lang.String)} this
+     * method does not erase existing <code>initialArgs</code>.
+     *
+     * @param initialArgs the args to add. May be <code>null</code>; in that
+     * case the arg is ignored.
+     * 
+     * @return
+     */
+    public RubyExecutionDescriptor addInitialArgs(String initialArgs) {
+        if (initialArgs == null || "".equals(initialArgs)) { //NOI18N
+            return this;
+        }
+        if (this.initialArgs == null || "".equals(this.initialArgs)) { //NOI18N
+            this.initialArgs = initialArgs;
+        } else {
+            this.initialArgs += " " + initialArgs; //NOI18N
+        }
         return this;
     }
-    
+
     public RubyExecutionDescriptor jvmArguments(final String jvmArgs) {
         this.jvmArgs = jvmArgs;
         return this;
@@ -408,20 +427,6 @@ public class RubyExecutionDescriptor {
 
     public void useInterpreter(final boolean useInterpreter) {
         this.useInterpreter = useInterpreter;
-    }
-
-    /**
-     * @see #readMaxWaitTime
-     */
-    public int getReadMaxWaitTime() {
-        return readMaxWaitTime;
-    }
-
-    /**
-     * @see #readMaxWaitTime
-     */
-    public void setReadMaxWaitTime(int readMaxWaitTime) {
-        this.readMaxWaitTime = readMaxWaitTime;
     }
 
     /**

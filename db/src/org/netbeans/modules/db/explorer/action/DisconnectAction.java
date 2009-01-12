@@ -44,6 +44,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -53,6 +54,11 @@ public class DisconnectAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("Disconnect"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DisconnectAction.class);
     }
 
     protected boolean enable(Node[] activatedNodes) {

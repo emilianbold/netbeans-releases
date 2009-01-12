@@ -52,7 +52,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
@@ -67,7 +66,6 @@ import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -190,7 +188,8 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 FileUtil.toFile(project.getProjectDirectory()),
                 getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
-        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
+        TestRunnerUtilities.addProperties(desc, project);
+        desc.addInitialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();

@@ -2,7 +2,7 @@
 =========
 Debug Project               D   - Debug Project (project-name) - Debug Main Project
 Debug File                  g
-Debug Test for File         r
+Debug Test File             l
 Attach Debugger...          A
 Finish Debugger Session     F
 =========================

@@ -361,7 +361,7 @@ public class LogReader {
         } else {
             StringBuilder out = new StringBuilder();
             if (i > 0) {
-                out.append(line.substring(0, i-1));
+                out.append(line.substring(0, i));
             }
             line = line.substring(i+1);
             int j = line.indexOf('`'); //NOI18N

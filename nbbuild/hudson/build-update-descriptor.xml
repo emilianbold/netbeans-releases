@@ -17,6 +17,7 @@
         <!-- lexer/editor bridge really unused, yet kept in build for tutorials -->
         <!-- deprecated modules may also need to be listed because although ConsistencyVerifier would ignore them, <makenbm> skips OpenIDE-Module-Deprecated as of #427a127b88b7 -->
         <property name="disabled.autoloads" value="
+            org.netbeans.api.annotations.common
             org.netbeans.lib.terminalemulator
             org.netbeans.modules.ide.branding
             org.netbeans.modules.jellytools

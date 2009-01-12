@@ -216,6 +216,10 @@ public class MavenExecutionSettings  {
     
     static String getDefaultMavenInstanceVersion() {
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
+        return getMavenVersion(ex);
+    }
+
+    private static String getMavenVersion(String ex) {
         Commandline cmdline = new Commandline();
         cmdline.setExecutable(ex);
         Arg arg = cmdline.createArg();
@@ -230,6 +234,20 @@ public class MavenExecutionSettings  {
             return null;
         }
         
+    }
+
+    public static String getCommandLineMavenVersion() {
+        File path = getDefault().getCommandLinePath();
+        if (path == null) {
+            return getDefaultMavenInstanceVersion();
+        }
+        String pathString = path.getAbsolutePath() + File.separator + "bin" + File.separator + (Utilities.isWindows() ? "mvn.bat" : "mvn"); //NOI18N
+        String ver = getMavenVersion(pathString);
+        if (ver != null) {
+            return ver;
+        }
+        //TODO examine the version's lib folder and the prop file in there.. see SettingsPanel.java
+        return null;
     }
     
     private static class RegExpConsumer implements StreamConsumer {

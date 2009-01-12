@@ -47,7 +47,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
 import org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -61,6 +60,7 @@ public final class PhpSourcePath {
     public static final String  MIME_TYPE = "text/x-php5"; // NOI18N
 
     private static final DefaultPhpSourcePath DEFAULT_PHP_SOURCE_PATH = new DefaultPhpSourcePath();
+    // @GuardedBy(PhpSourcePath.class)
     private static FileObject phpStubsFolder = null;
 
     /**
@@ -73,6 +73,8 @@ public final class PhpSourcePath {
         INCLUDE,
         /** Project sources. */
         SOURCE,
+        /** Project test sources. */
+        TEST,
         /** Unknown file type. */
         UNKNOWN,
     }
@@ -101,7 +103,7 @@ public final class PhpSourcePath {
      * These files are also preindexed.
      * @return list of folders
      */
-    public static List<FileObject> getPreindexedFolders() {
+    public static synchronized List<FileObject> getPreindexedFolders() {
         if (phpStubsFolder == null) {
             // Core classes: Stubs generated for the "builtin" php runtime and extenstions.
             File clusterFile = InstalledFileLocator.getDefault().locate(
@@ -216,9 +218,7 @@ public final class PhpSourcePath {
 
         // XXX cache?
         private List<FileObject> getPlatformPath() {
-            String phpGlobalIncludePath = PhpOptions.getInstance().getPhpGlobalIncludePath();
-            assert phpGlobalIncludePath != null;
-            String[] paths = PropertyUtils.tokenizePath(phpGlobalIncludePath);
+            String[] paths = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
             List<FileObject> dirs = new ArrayList<FileObject>(paths.length);
             for (String path : paths) {
                 FileObject resolvedFile = FileUtil.toFileObject(new File(path));

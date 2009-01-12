@@ -48,7 +48,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.db.explorer.actions.AddDriverAction;
+import org.netbeans.modules.db.explorer.action.AddDriverAction;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;

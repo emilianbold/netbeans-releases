@@ -110,9 +110,6 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         private List<String> output;
-        // package private for tests
-        static final Pattern STRING_COMPARISON = Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*");
-
 
         public TestFailedHandler(String regex) {
             super(regex);
@@ -122,13 +119,6 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
-        private Trouble.ComparisonFailure getComparisonFailure(String msg) {
-            Matcher comparisonMatcher = STRING_COMPARISON.matcher(msg);
-            if (!comparisonMatcher.matches()) {
-                return null;
-            }
-            return new Trouble.ComparisonFailure(comparisonMatcher.group(1), comparisonMatcher.group(2));
-        }
 
         @Override
         void updateUI( Manager manager, TestSession session) {

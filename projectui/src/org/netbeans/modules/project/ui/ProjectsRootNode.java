@@ -298,7 +298,7 @@ public class ProjectsRootNode extends AbstractNode {
                 }
             } else {
                 node = lvp.createLogicalView();
-                if (node.getLookup().lookup(Project.class) != project) {
+                if (!project.equals(node.getLookup().lookup(Project.class))) {
                     // Various actions, badging, etc. are not going to work.
                     LOG.warning("Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
                     //#114664

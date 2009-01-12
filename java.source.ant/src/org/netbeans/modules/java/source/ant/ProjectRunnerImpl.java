@@ -74,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 import org.openide.windows.InputOutput;
@@ -159,7 +160,16 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                 p = JavaPlatform.getDefault();
             }
             
-            javaTool = FileUtil.toFile(p.findTool("java")).getAbsolutePath();
+            FileObject javaToolFO = p.findTool("java");
+
+            if (javaToolFO == null) {
+                IllegalArgumentException iae = new IllegalArgumentException("Cannot find java");
+
+                Exceptions.attachLocalizedMessage(iae, NbBundle.getMessage(ProjectRunnerImpl.class, "ERR_CannotFindJava"));
+                throw iae;
+            }
+            
+            javaTool = FileUtil.toFile(javaToolFO).getAbsolutePath();
         }
         if (projectName == null) {
             Project project = getValue(properties, "project", Project.class);

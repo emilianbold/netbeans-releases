@@ -16,11 +16,11 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 
 <p>The IDE categorizes all files by type.
-The Files node displays the file types recognized by the IDE, the mime resolver for that type and the location of the file types listed as belonging to that type.</p>
+The Files tab displays the file types recognized by the IDE, the mime resolver for that type and the location of the file types listed as belonging to that type.</p>
 <p>You can view all your existing file types by choosing Tools &gt; Options from the main menu and clicking Miscellaneous in the Options window.
 Click Files and then set your file associations.</p>
 
-<h3>Properties</h3>
+<h3>File Associations</h3>
 <ul>
 	<li><b>File Extension.</b> Specifies name of mime
         resolver for files of this type. </li>
@@ -28,9 +28,18 @@ Click Files and then set your file associations.</p>
         Specifies the related MIME type for the selected file type.</li>
 </ul>
 
+<h3>Files Ignored by the IDE</h3>
+<ul>
+	<li><b>Ignored Files Pattern.</b>
+  Type POSIX-style regular expressions to specify the files you want the IDE to ignore.
+  The IDE includes some default patterns for files that are ignored by default.
+  Click the Default button to restore the default patterns.</li>
+</ul>
+
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
         <dd><a href="../files/files_unknown.html">Working with Unknown File Extensions</a></dd>
+        <dd><a href="../files/files_ignore-files.html">Specifying Files to Ignore</a></dd>
         <dd><a href="configure_options.html">Using the Options Window</a></dd>
 </dl>
 <hr>

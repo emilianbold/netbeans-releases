@@ -125,7 +125,7 @@ public class KeyMapOperator extends JDialogOperator {
 
     public void searchActionName(String actionName) {
         actionSearchByName().setText(actionName);
-        sleep(2000);
+        sleep(1000);
     }
 
     public TableModel getActionsTableModel() {
@@ -217,7 +217,7 @@ public class KeyMapOperator extends JDialogOperator {
                         new NbDialogOperator("Conflicting Shortcut Dialog").cancel();
                     }
                 }
-                sleep(500);
+                sleep(100);
                 break;
             }
         }

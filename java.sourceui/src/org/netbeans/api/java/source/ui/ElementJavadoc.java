@@ -390,17 +390,19 @@ public class ElementJavadoc {
                     for (Type exc : mdoc.thrownExceptionTypes())
                         throwsTypes.add(exc.qualifiedTypeName());
                     for(ThrowsTag tag : mdoc.throwsTags()) {
-                        throwsTypes.remove(tag.exceptionType().qualifiedTypeName());
+                        Type exceptionType = tag.exceptionType();
+                        String exceptionName = exceptionType != null ? exceptionType.qualifiedTypeName() : tag.exceptionName();
+                        throwsTypes.remove(exceptionName);
                         List<Tag> tags = new ArrayList<Tag>();
                         throwsTags.add(tag);
-                        throwsInlineTags.put(tag.exceptionName(), tags);
+                        throwsInlineTags.put(exceptionName, tags);
                         for(Tag t : tag.inlineTags()) {
                             if (INHERIT_DOC_TAG.equals(t.kind())) {
                                 if (inheritedThrowsTags == null)
                                     inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
                                 if (inheritedThrowsInlineTags == null)
                                     inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
-                                throwsTypes.add(tag.exceptionType().qualifiedTypeName());
+                                throwsTypes.add(exceptionName);
                             } else {
                                 tags.add(t);
                             }
@@ -475,10 +477,12 @@ public class ElementJavadoc {
                     }
                     if (inheritedThrowsTags != null && !inheritedThrowsTags.isEmpty()) {
                         for (ThrowsTag throwsTag : throwsTags) {
-                            inheritedThrowsTags.remove(throwsTag.exceptionName());
-                            List<Tag> tags = inheritedThrowsInlineTags.get(throwsTag.exceptionName());
+                            Type exceptionType = throwsTag.exceptionType();
+                            String exceptionName = exceptionType != null ? exceptionType.qualifiedTypeName() : throwsTag.exceptionName();
+                            inheritedThrowsTags.remove(exceptionName);
+                            List<Tag> tags = inheritedThrowsInlineTags.get(exceptionName);
                             if (tags != null && !tags.isEmpty()) {
-                                List<Tag> inTags = throwsInlineTags.get(throwsTag.exceptionName());
+                                List<Tag> inTags = throwsInlineTags.get(exceptionName);
                                 inTags.clear();
                                 for (Tag tag : throwsTag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(tag.kind()))
@@ -799,7 +803,7 @@ public class ElementJavadoc {
                     thr.append(throwsTag.exceptionName());
                 }
                 thr.append("</code>"); //NOI18N
-                List<Tag> tags = throwsInlineTags.get(throwsTag.exceptionName());
+                List<Tag> tags = throwsInlineTags.get(exType != null ? exType.qualifiedTypeName() : throwsTag.exceptionName());
                 Tag[] its = tags == null ? throwsTag.inlineTags() : tags.toArray(new Tag[tags.size()]);                
                 if (its.length > 0) {
                     CharSequence cs = inlineTags(doc, its);
@@ -1203,10 +1207,12 @@ public class ElementJavadoc {
                     Map<String, List<Tag>> inheritedThrowsInlineTags = null;
                     if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
                         for(ThrowsTag tag : methodDoc.throwsTags()) {
-                            if (throwsTypes.remove(tag.exceptionType().qualifiedTypeName())) {
+                            Type exceptionType = tag.exceptionType();
+                            String exceptionName = exceptionType != null ? exceptionType.qualifiedTypeName() : tag.exceptionName();
+                            if (throwsTypes.remove(exceptionName)) {
                                 List<Tag> tags = new ArrayList<Tag>();
-                                throwsTags.put(tag.exceptionName(), tag);
-                                throwsInlineTags.put(tag.exceptionName(), tags);
+                                throwsTags.put(exceptionName, tag);
+                                throwsInlineTags.put(exceptionName, tags);
                                 for(Tag t : tag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(t.kind())) {
                                         if (inheritedThrowsTypes == null)
@@ -1215,7 +1221,7 @@ public class ElementJavadoc {
                                             inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
                                         if (inheritedThrowsInlineTags == null)
                                             inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
-                                        inheritedThrowsTypes.add(tag.exceptionName());
+                                        inheritedThrowsTypes.add(exceptionName);
                                     } else {
                                         tags.add(t);
                                     }
@@ -1353,10 +1359,12 @@ public class ElementJavadoc {
                     Map<String, List<Tag>> inheritedThrowsInlineTags = null;
                     if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
                         for(ThrowsTag tag : methodDoc.throwsTags()) {
-                            if (throwsTypes.remove(tag.exceptionType().qualifiedTypeName())) {
+                            Type exceptionType = tag.exceptionType();
+                            String exceptionName = exceptionType != null ? exceptionType.qualifiedTypeName() : tag.exceptionName();
+                            if (throwsTypes.remove(exceptionName)) {
                                 List<Tag> tags = new ArrayList<Tag>();
-                                throwsTags.put(tag.exceptionName(), tag);
-                                throwsInlineTags.put(tag.exceptionName(), tags);
+                                throwsTags.put(exceptionName, tag);
+                                throwsInlineTags.put(exceptionName, tags);
                                 for(Tag t : tag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(t.kind())) {
                                         if (inheritedThrowsTypes == null)
@@ -1365,7 +1373,7 @@ public class ElementJavadoc {
                                             inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
                                         if (inheritedThrowsInlineTags == null)
                                             inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
-                                        inheritedThrowsTypes.add(tag.exceptionName());
+                                        inheritedThrowsTypes.add(exceptionName);
                                     } else {
                                         tags.add(t);
                                     }
