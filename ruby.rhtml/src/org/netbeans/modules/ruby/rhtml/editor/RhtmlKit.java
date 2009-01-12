@@ -53,22 +53,21 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
+import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.csl.core.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.csl.core.GsfEditorKitFactory;
+import org.netbeans.modules.csl.core.NextCamelCasePosition;
+import org.netbeans.modules.csl.core.PreviousCamelCasePosition;
+import org.netbeans.modules.csl.core.SelectCodeElementAction;
+import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
+import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
+import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.html.editor.HTMLKit;
-import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.gsf.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.gsf.GsfEditorKitFactory;
-import org.netbeans.modules.gsf.NextCamelCasePosition;
-import org.netbeans.modules.gsf.PreviousCamelCasePosition;
-import org.netbeans.modules.gsf.SelectCodeElementAction;
-import org.netbeans.modules.gsf.SelectNextCamelCasePosition;
-import org.netbeans.modules.gsf.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;
@@ -89,6 +88,7 @@ import org.openide.util.Exceptions;
  */
 
 public class RhtmlKit extends HTMLKit {
+    
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(RhtmlKit.class);
@@ -314,7 +314,9 @@ public class RhtmlKit extends HTMLKit {
         }
     }
     
-    private class RhtmlDeleteCharAction extends ExtDeleteCharAction implements NextCharProvider {
+    private class RhtmlDeleteCharAction extends ExtDeleteCharAction {
+        //implements NextCharProvider { XXX - Parsing API
+        
         private DeleteCharAction htmlAction;
 
         public RhtmlDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
@@ -324,7 +326,7 @@ public class RhtmlKit extends HTMLKit {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            target.putClientProperty(NextCharProvider.class, this);
+            target.putClientProperty(ExtDeleteCharAction.class, this);
             try {
                 Caret caret = target.getCaret();
                 BaseDocument doc = (BaseDocument)target.getDocument();
@@ -335,7 +337,7 @@ public class RhtmlKit extends HTMLKit {
 
                 htmlAction.actionPerformed(evt, target);
             } finally {
-                target.putClientProperty(NextCharProvider.class, null);
+                target.putClientProperty(ExtDeleteCharAction.class, null);
             }
         }
 

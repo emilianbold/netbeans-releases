@@ -35,13 +35,14 @@ import javax.swing.JComponent;
 import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -66,7 +67,7 @@ public class ConstantNames extends RubyAstRule {
     
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         assert (node.nodeId == NodeType.CONSTDECLNODE);
         String name = ((ConstDeclNode)node).getName();
@@ -78,7 +79,7 @@ public class ConstantNames extends RubyAstRule {
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = Collections.emptyList();
-                    Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1600);
+                    Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixList, 1600);
                     result.add(desc);
                 }
                 return;
