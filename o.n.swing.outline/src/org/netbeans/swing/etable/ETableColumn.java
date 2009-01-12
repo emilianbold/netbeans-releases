@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -137,11 +137,12 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * This method marks this column as sorted. Value 0 of the parameter rank
      * means that this column is not sorted.
-     * @param int rank value 1 means that this is the most important sorted
+     * @param rank value 1 means that this is the most important sorted
      *        column, number 2 means second etc.
-     * @param comparator operates over ETable.RowMapping objects
+     * @param ascending true means ascending
+     * @since 1.3
      */
-    void setSorted(int rank, boolean ascending) {
+    public void setSorted(int rank, boolean ascending) {
         if (!isSortingAllowed() && (rank != 0 || comparator != null)) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }
@@ -164,8 +165,11 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Rank value 1 means that this is the most important column
      * (with respect to the table sort), value 2 means second etc.
+     * @param newRank value 1 means that this is the most important sorted
+     *        column, number 2 means second etc.
+     * @since 1.3
      */
-    void setSortRank(int newRank) {
+    public void setSortRank(int newRank) {
         if (!isSortingAllowed() && newRank != 0) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }
@@ -193,6 +197,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Checks whether the sort order is ascending (true means ascending,
      * false means descending).
+     * @return true for ascending order
      */
     public boolean isAscending() {
         return ascending;
@@ -202,8 +207,10 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      * Sets the sort order. Please note: the column has to be already
      * sorted when calling this method otherwise IllegalStateException
      * is thrown.
+     * @param ascending true means ascending
+     * @since 1.3
      */
-    void setAscending(boolean ascending) {
+    public void setAscending(boolean ascending) {
         if (!isSortingAllowed()) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }

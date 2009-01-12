@@ -68,7 +68,6 @@ import javax.swing.JRadioButtonMenuItem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
 import org.openide.util.Task;
@@ -120,7 +119,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
      */
     public static synchronized ToolbarPool getDefault () {
         if (defaultPool == null) {
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject root = FileUtil.getConfigRoot();
             FileObject fo = null;
             try {
                 fo = FileUtil.createFolder(root, "Toolbars"); // NOI18N

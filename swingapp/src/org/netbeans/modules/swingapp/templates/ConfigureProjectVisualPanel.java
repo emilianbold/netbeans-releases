@@ -63,7 +63,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -240,8 +239,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
 
     private Node getTemplatesRootNode() {
         try {
-            FileObject shellFolder = Repository.getDefault().getDefaultFileSystem().findResource(
-                "org-netbeans-modules-swingapp/appshells"); // NOI18N
+            FileObject shellFolder = FileUtil.getConfigFile("org-netbeans-modules-swingapp/appshells"); // NOI18N
             DataObject dobj = DataObject.find(shellFolder);
             return new FilterNode(dobj.getNodeDelegate(), new FilterNode.Children(dobj.getNodeDelegate()) {
                 @Override

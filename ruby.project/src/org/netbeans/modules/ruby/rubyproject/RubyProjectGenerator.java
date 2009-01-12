@@ -60,7 +60,6 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
@@ -318,7 +317,7 @@ public final class RubyProjectGenerator {
             return null;
         }
         
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( templateName );
+        FileObject mainTemplate = FileUtil.getConfigFile( templateName );
 
         if ( mainTemplate == null ) {
             return null; // Don't know the template

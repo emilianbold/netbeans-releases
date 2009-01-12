@@ -63,7 +63,6 @@ import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -71,6 +70,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.openide.filesystems.FileUtil;
 
 
 /** XXX <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
@@ -221,7 +221,7 @@ public final class UpdateUnitProviderImpl {
     public static List<UpdateUnitProvider> getUpdateUnitProviders (boolean onlyEnabled) {
         
         // try to load Update Center from old autoupdate for backward compatibility
-        FileObject auTypeFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Services/AutoupdateType");
+        FileObject auTypeFolder = FileUtil.getConfigFile("Services/AutoupdateType");
         if (auTypeFolder != null) {
             FileObject [] auTypes = auTypeFolder.getChildren ();
             for (int i = 0; i < auTypes.length; i++) {

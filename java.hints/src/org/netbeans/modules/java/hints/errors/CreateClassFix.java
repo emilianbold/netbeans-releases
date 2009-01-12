@@ -67,7 +67,6 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -280,7 +279,7 @@ public abstract class CreateClassFix implements Fix {
 
         public ChangeInfo implement() throws IOException {
             FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/')); // NOI18N
-            FileObject classTemplate/*???*/ = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(template(kind));
+            FileObject classTemplate/*???*/ = FileUtil.getConfigFile(template(kind));
             DataObject classTemplateDO = DataObject.find(classTemplate);
             DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
             FileObject target = od.getPrimaryFile();

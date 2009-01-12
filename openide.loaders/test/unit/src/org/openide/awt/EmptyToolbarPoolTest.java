@@ -74,7 +74,7 @@ public class EmptyToolbarPoolTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         toolbars = root.getFileObject("Toolbars");
         assertNull("Not created yet", toolbars);
     }

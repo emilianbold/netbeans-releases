@@ -40,7 +40,6 @@
  */
 
 package org.netbeans.modules.mobility.project;
-import java.awt.EventQueue;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
@@ -66,9 +65,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -103,7 +100,6 @@ import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Configur
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * Create a fresh J2MEProject from scratch.
@@ -1154,10 +1150,9 @@ public class J2MEProjectGenerator {
                         hello = src;
                     }
                     final DataFolder helloFolder = DataFolder.findFolder(hello);
-                    final FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-                    FileObject foTemplate = dfs.findResource("Templates/MIDP/HelloMIDlet.java"); //NOI18N
+                    FileObject foTemplate = FileUtil.getConfigFile("Templates/MIDP/HelloMIDlet.java"); //NOI18N
                     if (foTemplate == null) {
-                        foTemplate = dfs.findResource("Templates/MIDP/Midlet.java"); //NOI18N
+                        foTemplate = FileUtil.getConfigFile("Templates/MIDP/Midlet.java"); //NOI18N
                     }
                     if (foTemplate != null) {
                         final DataObject template = DataObject.find(foTemplate);

@@ -54,7 +54,6 @@ import org.w3c.dom.DocumentType;
 
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Lookup;
@@ -67,6 +66,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 
@@ -113,7 +113,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         sb.append (ENTITY_PREFIX);
         sb.append (id);
         
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
+        FileObject fo = FileUtil.getConfigFile (sb.toString ());
         if (fo != null) {
             
             // fill in InputSource instance
@@ -326,10 +326,8 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         // at least for now
         sb.append (".instance"); // NOI18N 
 
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
-     
         String toSearch1 = sb.toString ();
-        int indx = searchFolder (root, toSearch1, last);
+        int indx = searchFolder (FileUtil.getConfigRoot(), toSearch1, last);
         if (indx == -1) {
             // not possible to find folders
             return null;
@@ -440,7 +438,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 try {
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
-                    if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
+                    if (src.getFileSystem().isDefault()) {
                         ERR.log(Level.WARNING, null, new IOException("Parsing " + src + ": " + ex.getMessage()).initCause(ex)); // NOI18N
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {

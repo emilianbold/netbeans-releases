@@ -21,7 +21,7 @@ package org.netbeans.modules.xslt.mapper.xpatheditor;
 import java.awt.Image;
 import org.netbeans.modules.xslt.mapper.methoid.Constants;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -46,8 +46,7 @@ public class ItemNode extends AbstractNode {
         String metainfoRef = (String)itemFo.getAttribute(
                 Constants.METAINFO_REF);
         if (metainfoRef != null && metainfoRef.length() != 0) {
-            FileObject metainfoFo = Repository.getDefault().
-                    getDefaultFileSystem().findResource(metainfoRef);
+            FileObject metainfoFo = FileUtil.getConfigFile(metainfoRef);
             if (metainfoFo != null) {
                 Object literalObj = metainfoFo.getAttribute(Constants.LITERAL_FLAG);
                 if (literalObj != null && literalObj instanceof Boolean) {
@@ -64,8 +63,7 @@ public class ItemNode extends AbstractNode {
         String metainfoRef = (String)itemFo.getAttribute(
                 Constants.METAINFO_REF);
         if (metainfoRef != null && metainfoRef.length() != 0) {
-            FileObject metainfoFo = Repository.getDefault().
-                    getDefaultFileSystem().findResource(metainfoRef);
+            FileObject metainfoFo = FileUtil.getConfigFile(metainfoRef);
             if (metainfoFo != null) {
                 return new XpathPaletteItemInfo(metainfoFo);
             }

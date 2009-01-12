@@ -64,7 +64,6 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
@@ -285,7 +284,7 @@ public class PluginIndexManager {
         if (userdir != null) {
             cacheDir = new File(new File(new File(userdir, "var"), "cache"), INDEX_PATH);//NOI18N
         } else {
-            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheDir = new File(root, INDEX_PATH);//NOI18N
         }
         cacheDir.mkdirs();

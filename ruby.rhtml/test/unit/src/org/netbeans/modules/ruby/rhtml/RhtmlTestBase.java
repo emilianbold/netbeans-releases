@@ -51,9 +51,7 @@ import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.RubyLanguage;
@@ -123,11 +121,10 @@ public abstract class RhtmlTestBase extends RubyTestBase {
             languages.add(dl);
             registry.addLanguages(languages);
 
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
             String mimeFolder = "Editors/" + dl.getMimeType();
-            final FileObject root = fs.findResource(mimeFolder); // NOI18N
+            final FileObject root = FileUtil.getConfigFile(mimeFolder); // NOI18N
             if (root == null) {
-                FileUtil.createFolder(fs.getRoot(), mimeFolder);
+                FileUtil.createFolder(FileUtil.getConfigRoot(), mimeFolder);
             }
         }
     }

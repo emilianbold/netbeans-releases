@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.awt.Image;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -60,8 +58,8 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 
@@ -132,7 +130,7 @@ public class VerifyFullIDETest extends NbTestCase {
         }
 
         MultiFileSystem mfs = new MultiFileSystem(all.toArray(new FileSystem[0]));
-        FileObject orig = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
+        FileObject orig = FileUtil.getConfigFile("Templates/Project");
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();

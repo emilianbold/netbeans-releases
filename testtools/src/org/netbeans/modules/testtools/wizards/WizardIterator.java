@@ -352,7 +352,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     static DataObject[] getSuiteTemplates() {
-        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false); // NOI18N
+        Enumeration enum=FileUtil.getConfigFile("Templates").getFileObject("TestTools").getData(false); // NOI18N
         ArrayList list=new ArrayList();
         DataObject o;
         while (enum.hasMoreElements()) try {
@@ -366,7 +366,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     static DataObject[] getTestTypeTemplates() {
-        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false); // NOI18N
+        Enumeration enum=FileUtil.getConfigFile("Templates").getFileObject("TestTools").getData(false); // NOI18N
         ArrayList list=new ArrayList();
         DataObject o;
         while (enum.hasMoreElements()) try {

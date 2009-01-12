@@ -81,7 +81,7 @@ public class FileUtilTest extends NbTestCase {
     @Override
     public void setUp() throws IOException {
         // folder of declarative resolvers must exist before MIME resolvers tests
-        FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver");
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
@@ -372,5 +372,22 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("Wrong MIME type.", unknownMIMEType, g2FO.getMIMEType());
         assertEquals("Wrong list of extensions.", Arrays.asList("g1"), FileUtil.getMIMETypeExtensions(gifMIMEType));
         assertEquals("Wrong list of extensions.", Collections.EMPTY_LIST, FileUtil.getMIMETypeExtensions(bmpMIMEType));
+    }
+
+    /** Tests getConfigFile method (see #91534). */
+    public void testGetConfigFile() throws IOException {
+        @SuppressWarnings("deprecation")
+        FileObject rootDFS = Repository.getDefault().getDefaultFileSystem().getRoot();
+        assertNotNull("Sample FileObject not created.", rootDFS.createFolder("folder1").createFolder("folder2").createData("file.ext"));
+        assertNotNull("Existing FileObject not found.", FileUtil.getConfigFile("folder1/folder2/file.ext"));
+        assertNull("Path with backslashes is not valid.", FileUtil.getConfigFile("folder1\\folder2\\file.ext"));
+        assertEquals("Root should be returned for empty path.", rootDFS, FileUtil.getConfigFile(""));
+        assertEquals("Root should be returned from getConfigRoot", rootDFS, FileUtil.getConfigRoot());
+        try {
+            FileUtil.getConfigFile(null);
+            fail("NullPointerException should be thrown for null path.");
+        } catch (NullPointerException npe) {
+            // OK
+        }
     }
 }

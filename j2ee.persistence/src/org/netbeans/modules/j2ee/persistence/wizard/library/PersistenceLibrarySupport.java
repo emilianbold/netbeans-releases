@@ -63,7 +63,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 
@@ -110,9 +109,8 @@ public class PersistenceLibrarySupport  {
     }
     
     private static final FileObject createStorage() {
-        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();
         try {
-            return FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
+            return FileUtil.createFolder(FileUtil.getConfigRoot(), LIBRARIES_REPOSITORY);
         } catch (IOException e) {
             return null;
         }

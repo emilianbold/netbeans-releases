@@ -66,7 +66,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
@@ -91,10 +90,10 @@ public class DefaultEmulatorInstall extends ModuleInstall {
 
     //new way of WTK2.5.2 installation - the old way should be removed after WTK 2.5.2 binaries integration
     private void installDescriptors() {
-        FileObject descRoot = Repository.getDefault().getDefaultFileSystem().findResource("emulator-descriptor-inst"); //NOI18N
+        FileObject descRoot = FileUtil.getConfigFile("emulator-descriptor-inst"); //NOI18N
         FileObject platformsFolder;
         try {
-            platformsFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
+            platformsFolder = FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
             return;
@@ -201,7 +200,7 @@ public class DefaultEmulatorInstall extends ModuleInstall {
         if (desc == null  ||  desc.length != 2)
             return false;
         
-        final FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
+        final FileObject platformsFolder = FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
         final FileObject df=platformsFolder.getFileObject(desc[0]);
         
         if (df!=null) {
@@ -252,7 +251,7 @@ public class DefaultEmulatorInstall extends ModuleInstall {
     private File getTargetFolder(final File emulatorPack) {
         if (emulatorPack == null)
             return null;
-        final FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        final FileObject root = FileUtil.getConfigRoot();
         if (root == null)
             return null;
         File rootFolder = FileUtil.toFile(root);
@@ -331,7 +330,7 @@ public class DefaultEmulatorInstall extends ModuleInstall {
         final String desc[] = getDescriptionFile(emulatorPack);
         if (desc == null  ||  desc.length != 2)
             return false;
-        final FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
+        final FileObject platformsFolder = FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
         if (platformsFolder.getFileObject(desc[0]) != null) {
             ErrorManager.getDefault().log("Emulator description file already installed: " + emulatorPack.getAbsolutePath()); // NOI18N
             return false;

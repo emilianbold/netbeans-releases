@@ -68,7 +68,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -138,7 +138,7 @@ public class ComplibsRootNode extends AbstractNode {
     }
 
     private static Image computeIcon(boolean opened, int type) {
-        Node iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         Image image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
         Image badge = ImageUtilities.loadImage(IMAGE_PATH_BADGE, true); // NOI18N
         return ImageUtilities.mergeImages(image, badge, 7, 7);

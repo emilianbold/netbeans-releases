@@ -39,30 +39,72 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans;
+package org.openide.filesystems;
 
-import junit.framework.AssertionFailedError;
-import junit.textui.TestRunner;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.net.URL;
+import junit.framework.Test;
 import org.netbeans.junit.*;
-import java.io.InputStream;
-import java.lang.reflect.*;
 
-/** Sample class to pass to PatchByteCodeTest to see what changes can be done.
+/**
+ *
+ * @author  rm111737
+ * @version
  */
-public class Sample2 extends Object {
-    private static Object member;
-    private final Object field = null;
+public class MultiFileSystemXMLTest extends FileSystemFactoryHid
+implements XMLFileSystemTestHid.Factory {
 
-    Sample2 () {
+    /** Creates new XMLFileSystemTest */
+    public MultiFileSystemXMLTest(Test test) {
+        super(test);
     }
 
-    protected synchronized void member (Object x) {
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(XMLFileSystemTestHid.class);        
+                
+        return new MultiFileSystemXMLTest(suite);
     }
 
-    private final Object method () {
-        return null;
+    protected void destroyFileSystem(String testName) throws IOException {}
+    
+    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
+        return new FileSystem[] {TestUtilHid.createXMLFileSystem(testName, resources)};
     }
 
-    protected static void staticmethod () {
+    public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
+        MFS mfs = new MFS();
+        try {
+            mfs.xfs.setXmlUrls(layers);
+        } catch (PropertyVetoException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
+        return mfs;
+    }
+
+    public boolean setXmlUrl(org.openide.filesystems.FileSystem fs, URL[] layers) throws IOException {
+        MFS mfs = (MFS)fs;
+        try {
+            mfs.xfs.setXmlUrls(layers);
+        } catch (PropertyVetoException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
+        return true;
+    }
+    
+
+    private static final class MFS extends MultiFileSystem {
+        private XMLFileSystem xfs;
+        public MFS() {
+            this(new XMLFileSystem());
+        }
+
+        private MFS(XMLFileSystem fs) {
+            super(new FileSystem[] { fs });
+            this.xfs = fs;
+        }
     }
 }

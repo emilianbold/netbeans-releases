@@ -56,7 +56,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -113,7 +112,7 @@ public class PropertiesProviderTest extends NbTestCase {
     }
 
     public void testWeDefineTemplatesPropertiesUserProperties() throws Exception {
-        FileObject props = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(
+        FileObject props = FileUtil.getConfigFile(
             "Templates/Properties/User.properties"
         );
         if (props.getSize() < 100) {
@@ -137,7 +136,7 @@ public class PropertiesProviderTest extends NbTestCase {
         fo.setAttribute("javax.script.ScriptEngine", "freemarker");
         
         
-        FileObject props = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), 
+        FileObject props = FileUtil.createData(FileUtil.getConfigRoot(),
             "Templates/Properties/my.properties"
         );
         

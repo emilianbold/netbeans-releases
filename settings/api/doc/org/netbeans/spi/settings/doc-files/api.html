@@ -183,7 +183,7 @@ associated with a proper entity registration.
 </pre>
 
 To create a persistent instance use method
-<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html#create(org.openide.loaders.DataFolder, java.lang.String, java.lang.Object, org.openide.modules.ModuleInfo)">
+<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html#create(org.openide.loaders.DataFolder,%20java.lang.String,%20java.lang.Object,%20org.openide.modules.ModuleInfo)">
 org.openide.loaders.InstanceDataObject.create</a>. The framework will
 look up the provider registration for the exact class of the object passed
 into the method.
@@ -291,8 +291,7 @@ Otherwise you can place the file under own folder and use
 <a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">DataSystem API
 </a> to get the object.
 <pre>
-<font class="type">FileSystem</font> <font class="variable-name">fs</font> = Repository.getDefault().getDefaultFileSystem();
-<font class="type">FileObject</font> <font class="variable-name">fo</font> = fs.findResource(<font class="string">"YourFolder/YourSetting.settings"</font>);
+<font class="type">FileObject</font> <font class="variable-name">fo</font> = FileUtil.getConfigFile(<font class="string">"YourFolder/YourSetting.settings"</font>);
 <font class="type">DataObject</font> <font class="variable-name">dobj</font> = DataObject.find(fo);
 <font class="type">InstanceCookie</font> <font class="variable-name">ic</font> = (<font class="type">InstanceCookie</font>) dobj.getCookie(InstanceCookie.<font class="keyword">class</font>);
 <font class="type">Object</font> <font class="variable-name">setting</font> = ic.instanceCreate();
@@ -331,8 +330,10 @@ and
 <pre>
 &lt;ANY-ACCESS-MODIFIER&gt; <font class="type">void</font> <font class="function-name">writeProperties</font>(java.util.<font class="type">Properties</font> <font class="variable-name">p</font>)
 </pre>
-
-It is the setting object concern to collect all properties of its super classes. 
+It is the setting object concern to collect all properties of its super classes.
+Since version 1.18, the <code>readProperties</code> can also return an Object.
+In such case, the <code>XMLPropertiesConvertor</code> replaces the current object
+with the returned one.
 <p>
 The XMLProperties convertor also makes possible to prevent automatic storing
 of the setting object by using file attribute <code>xmlproperties.preventStoring</code>

@@ -60,7 +60,7 @@ import org.netbeans.modules.python.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Exceptions;
@@ -224,7 +224,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
 private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
 //Workaround, Needs an API to display platform customizer
-    final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
+    final FileObject fo = FileUtil.getConfigFile("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
     if (fo != null) {
         try {
             InstanceDataObject ido = (InstanceDataObject) DataObject.find(fo);

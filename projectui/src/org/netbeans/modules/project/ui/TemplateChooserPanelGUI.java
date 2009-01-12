@@ -60,7 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -494,7 +494,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     public void construct () {
-        this.templatesFolder = Repository.getDefault().getDefaultFileSystem().findResource("Templates");
+        this.templatesFolder = FileUtil.getConfigFile("Templates");
         ((TemplatesPanelGUI)this.templatesPanel).warmUp(this.templatesFolder);
     }
     

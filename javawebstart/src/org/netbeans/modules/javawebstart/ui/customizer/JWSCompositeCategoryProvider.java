@@ -69,9 +69,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -378,8 +376,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             }
             
             if (jnlpBuildFile == null) {
-                FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-                FileObject templateFO = sfs.findResource("Templates/JWS/jnlp-impl.xml"); // NOI18N
+                FileObject templateFO = FileUtil.getConfigFile("Templates/JWS/jnlp-impl.xml"); // NOI18N
                 if (templateFO != null) {
                     FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jnlp-impl"); // NOI18N
                 }

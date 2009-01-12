@@ -70,7 +70,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -246,7 +245,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             if (rootModuleFolder == null) {
                 rootModuleFolder = FileUtil.createFolder(
-                    Repository.getDefault().getDefaultFileSystem().getRoot(), ROOT_MODULE_FOLDER
+                    FileUtil.getConfigRoot(), ROOT_MODULE_FOLDER
                 );
             }
             return rootModuleFolder;
@@ -262,7 +261,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             if (rootLocalFolder == null) {
                 rootLocalFolder = FileUtil.createFolder(
-                    Repository.getDefault().getDefaultFileSystem().getRoot(), ROOT_LOCAL_FOLDER
+                    FileUtil.getConfigRoot(), ROOT_LOCAL_FOLDER
                 );
             }
             return rootLocalFolder;

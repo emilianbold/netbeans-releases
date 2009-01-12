@@ -81,13 +81,10 @@ public class PaletteKit implements Runnable, LookupListener {
     private boolean isValidationRunning;
     private LinkedList<Lookup> validationQueue;
     private DataFolder rootFolder;
-    private FileSystem fs;
     private Result<PaletteProvider> lookupResult;
     private final AtomicBoolean requiresPaletteInit = new AtomicBoolean(false);
 
     PaletteKit(final String projectType) {
-        this.fs = Repository.getDefault().getDefaultFileSystem();
-
         validationQueue = new LinkedList<Lookup>();
         lookupResult = Lookup.getDefault().lookupResult(PaletteProvider.class);
         lookupResult.addLookupListener(this);
@@ -95,11 +92,11 @@ public class PaletteKit implements Runnable, LookupListener {
         String rootFolderPath = projectType + '/' + PALETTE_FOLDER_NAME; // NOI18N
         nodesMap = new HashMap<String, PaletteItemDataNode>();
         try {
-            FileObject rootFolderFO = fs.findResource(rootFolderPath);
+            FileObject rootFolderFO = FileUtil.getConfigFile(rootFolderPath);
             if (rootFolderFO == null) {
-                FileObject projectTypeFO = fs.findResource(projectType);
+                FileObject projectTypeFO = FileUtil.getConfigFile(projectType);
                 if (projectTypeFO == null) {
-                    projectTypeFO = fs.getRoot().createFolder(projectType);
+                    projectTypeFO = FileUtil.getConfigRoot().createFolder(projectType);
                 }
                 rootFolderFO = FileUtil.createFolder(projectTypeFO, PALETTE_FOLDER_NAME);
             }
@@ -262,7 +259,7 @@ public class PaletteKit implements Runnable, LookupListener {
             path.append(producerID);
             path.append('.'); // NOI18N
             path.append(PaletteItemDataLoader.EXTENSION);
-            if (fs.findResource(path.toString()) == null) {
+            if (FileUtil.getConfigFile(path.toString()) == null) {
                 try {
                     FileObject itemFO = catFO.createData(producerID, PaletteItemDataLoader.EXTENSION);
 
@@ -465,7 +462,7 @@ public class PaletteKit implements Runnable, LookupListener {
                 public void actionPerformed(ActionEvent evt) {
                     refreshDescriptorRegistry();
                     try {
-                        fs.runAtomicAction(new AtomicAction() {
+                        FileUtil.runAtomicAction(new AtomicAction() {
 
                             public void run() {
                                 clean();

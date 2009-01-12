@@ -27,7 +27,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -117,7 +116,7 @@ public class NewPythonProjectWizardIterator implements WizardDescriptor.Progress
             // main file
             final String mainName = (String) descriptor.getProperty(NewPythonProjectWizardIterator.MAIN_FILE);        
             if (mainName != null) {            
-                resultSet.add(createMainFile(Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Python/_module.py"),
+                resultSet.add(createMainFile(FileUtil.getConfigFile( "Templates/Python/_module.py"),
                         sourceDir,mainName).getPrimaryFile());
             }
         }

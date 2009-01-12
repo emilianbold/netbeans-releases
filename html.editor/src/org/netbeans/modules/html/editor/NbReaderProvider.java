@@ -61,7 +61,7 @@ public class NbReaderProvider implements ReaderProvider {
     //hopefully no need to call the method twice
     public static synchronized void setupReaders() {
         if (!setUp) {
-            FileObject rootFolder = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject rootFolder = FileUtil.getConfigRoot();
             rootFolder.addFileChangeListener(new RootFolderListener());
 
             FileObject dtdFolder = rootFolder.getFileObject(DTD_FOLDER);

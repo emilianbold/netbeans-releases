@@ -55,7 +55,6 @@ import org.openide.filesystems.FileLock;
 import java.io.OutputStream;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -504,8 +503,7 @@ public class WebServiceGenerator {
         //Create webservices.xml skeleton file if required
         if(wsSupport.getWebservicesDD() == null) {
             try {
-                final FileObject wsxmlTemplate = Repository.getDefault().getDefaultFileSystem().
-                        findResource("org-netbeans-modules-websvc-jaxrpc/webservices.xml"); //NOI18N
+                final FileObject wsxmlTemplate = FileUtil.getConfigFile("org-netbeans-modules-websvc-jaxrpc/webservices.xml"); //NOI18N
                 final FileObject wsddFolder = wsSupport.getWsDDFolder();
                 FileSystem fs = wsddFolder.getFileSystem();
                 fs.runAtomicAction(new FileSystem.AtomicAction() {

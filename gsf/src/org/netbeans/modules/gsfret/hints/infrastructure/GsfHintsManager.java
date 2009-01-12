@@ -82,8 +82,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -285,8 +284,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initErrors() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         //errorsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + ERRORS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + ERRORS ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules( folder );
         categorizeErrorRules(rules, errors, folder, rootNode);
 
@@ -296,8 +294,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         //hintsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + HINTS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + HINTS ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeAstRules( rules, hints, folder, rootNode );
 
@@ -308,8 +305,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initSuggestions() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         //suggestionsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + SUGGESTIONS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + SUGGESTIONS ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeAstRules(rules, suggestions, folder, rootNode);
 
@@ -319,8 +315,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initSelectionHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         //suggestionsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + SELECTION ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + SELECTION ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeSelectionRules(rules, selectionHints, folder, rootNode);
         selectionsRoot = rootNode;

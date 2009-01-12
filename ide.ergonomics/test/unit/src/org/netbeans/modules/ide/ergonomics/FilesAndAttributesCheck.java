@@ -49,8 +49,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -63,7 +62,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
     }
 
     public void testGetAllTemplates() throws Exception {
-        FileObject orig = Repository.getDefault().getDefaultFileSystem().findResource("Templates");
+        FileObject orig = FileUtil.getConfigFile("Templates");
 
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         StringBuilder errors = new StringBuilder();
@@ -108,8 +107,6 @@ public class FilesAndAttributesCheck extends NbTestCase {
         testCheckAllTemplatesReal();
     }
     public void testCheckAllTemplatesReal() throws Exception {
-        FileSystem mfs = Repository.getDefault().getDefaultFileSystem();
-
         Map<String, List<String>> filesAndAttribs = new TreeMap<String, List<String>>();
         for (Object o : System.getProperties().keySet()) {
             String f = (String)o;
@@ -141,7 +138,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
         StringBuilder errors = new StringBuilder();
         while (allTemplates.hasNext()) {
             String fo = allTemplates.next();
-            FileObject clone = mfs.findResource(fo);
+            FileObject clone = FileUtil.getConfigFile(fo);
 
             if (clone == null) {
                 errors.append("Both files exist: " + fo + "\n");

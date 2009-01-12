@@ -65,7 +65,7 @@ import org.netbeans.modules.editor.settings.storage.MimeTypesTracker;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -103,7 +103,7 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
         Main.initializeURLFactory();
 
         // Sanity check
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-java/NetBeans/Defaults/coloring.xml");
+        FileObject f = FileUtil.getConfigFile("Editors/text/x-java/NetBeans/Defaults/coloring.xml");
         assertNotNull("Corrupted SystemFileSystem!", f);
     }
     

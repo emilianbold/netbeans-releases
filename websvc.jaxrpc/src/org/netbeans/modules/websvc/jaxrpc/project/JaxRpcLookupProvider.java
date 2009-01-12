@@ -49,11 +49,13 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
+@LookupProvider.Registration(projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
 public class JaxRpcLookupProvider implements LookupProvider {
-
-    /** Creates a new instance of JaxRpcLookupProvider */
-    public JaxRpcLookupProvider() {
-    }
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);

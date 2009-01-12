@@ -51,7 +51,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -101,12 +100,11 @@ public class JSFUtils {
                 || !collectionsJar.exists() || !beanutilsJar.exists())
             return false;
         
-        final FileSystem sysFs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject libsFolder = sysFs.findResource(LIBS_FOLDER);
+        final FileObject libsFolder = FileUtil.getConfigFile(LIBS_FOLDER);
         final String convertedVersion = convertLibraryVersion(version);
         assert libsFolder != null && libsFolder.isFolder();
         
-        sysFs.runAtomicAction(new FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 String fileName = LIB_JSF_NAME + "-" + convertedVersion; //NOI18N
                 FileObject jsf = libsFolder.getFileObject(fileName + ".xml");

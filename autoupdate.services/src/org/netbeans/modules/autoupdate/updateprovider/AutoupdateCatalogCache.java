@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -86,7 +85,7 @@ public class AutoupdateCatalogCache {
         if (userDir != null) {
             cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
         } else {
-            File dir = FileUtil.toFile (Repository.getDefault ().getDefaultFileSystem ().getRoot());
+            File dir = FileUtil.toFile (FileUtil.getConfigRoot());
             cacheDir = new File(dir, "catalogcache"); // NOI18N
         }
         cacheDir.mkdirs();

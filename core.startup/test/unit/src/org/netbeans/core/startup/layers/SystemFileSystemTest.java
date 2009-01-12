@@ -63,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
@@ -74,7 +73,6 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class SystemFileSystemTest extends SetupHid
 implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener {
-    FileSystem fs;
     FileSystem fs1 = FileUtil.createMemoryFileSystem();
     FileSystem fs2 = FileUtil.createMemoryFileSystem();
     private List<FileEvent> events;
@@ -86,15 +84,14 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        fs = Repository.getDefault().getDefaultFileSystem();
         Lookup.getDefault().lookup(ModuleInfo.class);
         
-        for (FileObject fo : fs.getRoot().getChildren()) {
+        for (FileObject fo : FileUtil.getConfigRoot().getChildren()) {
             fo.delete();
         }
         events = new LinkedList<FileEvent>();
         
-        fs.addFileChangeListener(this);
+        FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(this);
     }
     
     @Override
@@ -110,7 +107,7 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
     }
 
     public void testUserHasPreferenceOverFSs() throws Exception {
-        FileObject global = FileUtil.createData(fs.getRoot(), "dir/file.txt");
+        FileObject global = FileUtil.createData(FileUtil.getConfigRoot(), "dir/file.txt");
         global.setAttribute("global", 3);
         write(global, "global");
         
@@ -166,7 +163,7 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         assertFalse("not empty", events.isEmpty());
         events.clear();
         
-        FileObject global = FileUtil.createData(fs.getRoot(), "dir/file.txt");
+        FileObject global = FileUtil.createData(FileUtil.getConfigRoot(), "dir/file.txt");
         global.setAttribute("global", 3);
         write(global, "global");
         
@@ -201,7 +198,7 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         try {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
-            global = fs.findResource("foo/file2.txt");
+            global = FileUtil.getConfigFile("foo/file2.txt");
             assertNotNull("File Object installed: " + global, global);
             assertEquals("base contents", read(global));
             
@@ -241,7 +238,7 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         try {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             mgr.enable(m1);
-            FileObject global = fs.findResource("foo/file2.txt");
+            FileObject global = FileUtil.getConfigFile("foo/file2.txt");
             assertNotNull("File Object installed: " + global, global);
             assertEquals("base contents", read(global));
             

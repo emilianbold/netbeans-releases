@@ -151,8 +151,7 @@ class NbApplicationAdapter implements ApplicationListener {
     }
     
     private Action findAction (String key) {
-        FileObject fo = 
-            Repository.getDefault().getDefaultFileSystem().findResource(key);
+        FileObject fo = FileUtil.getConfigFile(key);
         
         if (fo != null && fo.isValid()) {
             try {

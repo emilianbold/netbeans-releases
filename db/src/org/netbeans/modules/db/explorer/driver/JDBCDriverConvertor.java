@@ -73,10 +73,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.openide.filesystems.Repository;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -252,7 +249,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      * Creates the XML file describing the specified JDBC driver.
      */
     public static DataObject create(JDBCDriver drv) throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(DRIVERS_PATH);
+        FileObject fo = FileUtil.getConfigFile(DRIVERS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
         String fileName = drv.getClassName().replace('.', '_'); //NOI18N
@@ -267,12 +264,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      * used in 4.1 and previous to the new one.
      */
     public static void importOldDrivers() {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject oldRoot = sfs.findResource(JDBCDriverConvertor.OLD_DRIVERS_PATH);
+        FileObject oldRoot = FileUtil.getConfigFile(JDBCDriverConvertor.OLD_DRIVERS_PATH);
         if (oldRoot == null) {
             return;
         }
-        FileObject newRoot = sfs.findResource(JDBCDriverConvertor.DRIVERS_PATH);
+        FileObject newRoot = FileUtil.getConfigFile(JDBCDriverConvertor.DRIVERS_PATH);
         FileObject[] children = oldRoot.getChildren();
         for (int i = 0; i < children.length; i++) {
             try {
@@ -316,7 +312,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      */
     public static void remove(JDBCDriver drv) throws IOException {
         String name = drv.getName();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(DRIVERS_PATH); //NOI18N
+        FileObject fo = FileUtil.getConfigFile(DRIVERS_PATH); //NOI18N
         DataFolder folder = DataFolder.findFolder(fo);
         DataObject[] objects = folder.getChildren();
         

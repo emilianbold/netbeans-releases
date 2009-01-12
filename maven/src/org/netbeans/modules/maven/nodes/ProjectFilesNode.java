@@ -62,7 +62,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -230,7 +229,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             try {
                 DataFolder folder = DataFolder.findFolder(project.getProjectDirectory());
                 // path to template...
-                FileObject temp = Repository.getDefault().getDefaultFileSystem().findResource("Maven2Templates/profiles.xml"); //NOI18N
+                FileObject temp = FileUtil.getConfigFile("Maven2Templates/profiles.xml"); //NOI18N
                 DataObject dobj = DataObject.find(temp);
                 DataObject newOne = dobj.createFromTemplate(folder);
                 EditCookie cook = newOne.getCookie(EditCookie.class);
@@ -258,7 +257,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
                 
                 DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(fil));
                 // path to template...
-                FileObject temp = Repository.getDefault().getDefaultFileSystem().findResource("Maven2Templates/settings.xml"); //NOI18N
+                FileObject temp = FileUtil.getConfigFile("Maven2Templates/settings.xml"); //NOI18N
                 DataObject dobj = DataObject.find(temp);
                 DataObject newOne = dobj.createFromTemplate(folder);
                 EditCookie cook = newOne.getCookie(EditCookie.class);

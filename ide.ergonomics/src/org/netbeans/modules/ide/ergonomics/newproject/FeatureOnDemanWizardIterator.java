@@ -55,7 +55,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,7 +93,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         if (FoDFileSystem.getInstance().getDelegateFileSystem (template) != null) {
             return null;
         }
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (template.getPath ());
+        FileObject fo = FileUtil.getConfigFile(template.getPath ());
         if (fo != null) {
             Object o = fo.getAttribute ("instantiatingIterator");
             if (o == null) {

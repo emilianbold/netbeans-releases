@@ -60,8 +60,6 @@ import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
 import org.netbeans.modules.identity.server.manager.spi.ServerInstanceListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 
 
 /**
@@ -275,8 +273,7 @@ public class ServerManager {
     }
     
     private static FileObject getConfiguredServersDirectory() {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        return rep.getDefaultFileSystem().findResource(DIR_CONFIGURED_SERVERS);
+        return FileUtil.getConfigFile(DIR_CONFIGURED_SERVERS);
     }
 }
 

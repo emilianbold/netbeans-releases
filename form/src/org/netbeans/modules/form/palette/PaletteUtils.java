@@ -115,11 +115,9 @@ public final class PaletteUtils {
             return paletteFolder;
         
         try {
-            paletteFolder = Repository.getDefault().getDefaultFileSystem()
-                    .findResource("FormDesignerPalette"); // NOI18N
+            paletteFolder = FileUtil.getConfigFile("FormDesignerPalette"); // NOI18N
             if (paletteFolder == null) // not found, create new folder
-                paletteFolder = Repository.getDefault().getDefaultFileSystem()
-                        .getRoot().createFolder("FormDesignerPalette"); // NOI18N
+                paletteFolder = FileUtil.getConfigRoot().createFolder("FormDesignerPalette"); // NOI18N
         }
         catch (java.io.IOException ex) {
             throw new IllegalStateException("Palette folder not found and cannot be created."); // NOI18N

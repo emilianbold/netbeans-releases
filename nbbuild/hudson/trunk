@@ -118,22 +118,15 @@ sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
 sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
 ant -f soa.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 ant -f xml.schema/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 # CND UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
 # Profiler UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
 # J2EE UI validation tests
-#ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
 # Mobility UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
 ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 # UML UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI validation tests
-# ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI, Profiler UI and CND UI validation tests
 ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
 # PHP UI validation tests
