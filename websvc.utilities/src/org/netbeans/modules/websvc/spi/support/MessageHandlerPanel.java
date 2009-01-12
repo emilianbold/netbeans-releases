@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.webservices.ui.panels;
+package org.netbeans.modules.websvc.spi.support;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -66,7 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.core.webservices.ui.WSHandlerDialog;
+import org.netbeans.modules.websvc.utilities.ui.WSHandlerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -265,11 +265,10 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         handlerTable = new HandlerTable();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/core/webservices/ui/panels/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(addBtn, bundle.getString("Add_DotDotDot_label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(MessageHandlerPanel.class, "Add_DotDotDot_label")); // NOI18N
         addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(MessageHandlerPanel.class, "HINT_Add")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, bundle.getString("Remove_label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(MessageHandlerPanel.class, "Remove_label")); // NOI18N
         removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(MessageHandlerPanel.class, "HINT_Remove")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(upBtn, org.openide.util.NbBundle.getMessage(MessageHandlerPanel.class, "LBL_Move_Up")); // NOI18N
@@ -301,13 +300,13 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(addBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                    .add(upBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                    .add(removeBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                    .add(downBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(addBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                    .add(upBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                    .add(removeBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                    .add(downBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

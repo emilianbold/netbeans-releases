@@ -41,7 +41,6 @@
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -66,7 +65,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;

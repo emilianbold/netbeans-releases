@@ -39,15 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.webservices.ui;
+package org.netbeans.modules.websvc.utilities.ui;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -60,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.SelectHandlerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;

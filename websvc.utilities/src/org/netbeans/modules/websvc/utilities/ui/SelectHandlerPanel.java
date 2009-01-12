@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.webservices.ui.panels;
+package org.netbeans.modules.websvc.utilities.ui;
 
 import javax.swing.JPanel;
 import org.openide.explorer.ExplorerManager;

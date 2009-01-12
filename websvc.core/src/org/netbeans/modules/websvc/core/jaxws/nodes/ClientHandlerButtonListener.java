@@ -88,7 +88,7 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;

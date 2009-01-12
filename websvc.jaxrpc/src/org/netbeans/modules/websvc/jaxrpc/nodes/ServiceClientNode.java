@@ -52,7 +52,7 @@ import org.openide.nodes.Sheet.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
-import org.netbeans.modules.websvc.core.ConfigureHandlerAction;
+import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
