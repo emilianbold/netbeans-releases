@@ -212,7 +212,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     
     @SuppressWarnings ("unchecked")
     public WizardDescriptor.Panel<WizardDescriptor> current () {
-        if (getDelegateIterator () != null) {
+        if (getDelegateIterator () != null && getDelegateIterator() != this) {
             return getDelegateIterator ().current ();
         }
         assert panels != null;

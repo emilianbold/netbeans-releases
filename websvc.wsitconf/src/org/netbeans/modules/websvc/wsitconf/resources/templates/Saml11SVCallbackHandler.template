@@ -8,21 +8,37 @@
 package ${package};
 </#if>
 
-import java.io.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
-
 import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.sun.xml.wss.impl.callback.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import com.sun.xml.wss.saml.*;
-
-import org.w3c.dom.*;
+import com.sun.org.apache.xml.internal.security.keys.KeyInfo;
+import com.sun.xml.wss.impl.callback.SAMLCallback;
+import com.sun.xml.wss.impl.callback.SignatureKeyCallback;
+import com.sun.xml.wss.saml.Assertion;
+import com.sun.xml.wss.saml.Conditions;
+import com.sun.xml.wss.saml.NameIdentifier;
+import com.sun.xml.wss.saml.SAMLAssertionFactory;
+import com.sun.xml.wss.saml.Subject;
+import com.sun.xml.wss.saml.SubjectConfirmation;
 
 /** 
  *

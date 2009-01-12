@@ -127,6 +127,8 @@ public abstract class SourceAccessor {
 
     public abstract void setSourceModification (Source source, int startOffset, int endOffset);
 
+    public abstract void parsed (Source source);
+
     public abstract void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events);
     
     public abstract SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType);

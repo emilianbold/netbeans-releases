@@ -68,7 +68,6 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -138,6 +137,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
             ElementKind kind = item.getKind();
             if (kind == ElementKind.PARAMETER || kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
                 // These types of elements aren't ever instant substituted in Java - use same behavior here
+                return false;
+            }
+
+            if (getInsertPrefix().length() == 0) {
                 return false;
             }
 
@@ -350,7 +353,20 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
             
             super.substituteText(c, offset, len, toAdd);
-        }        
+        }
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            if (getInsertPrefix().length() == 0) {
+                completionResult.beforeInsert(item);
+                completionResult.insert(item);
+                completionResult.afterInsert(item);
+
+                return;
+            }
+
+            super.defaultAction(component);
+        }
     }
 
     public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {

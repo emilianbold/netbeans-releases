@@ -436,8 +436,12 @@ class GroovyParser implements Parser {
                 // but for now it is faster to use javac only for sources
 
                 // null happens in GSP
-                bootPath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : bootPath,
-                compilePath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : compilePath,
+                // FIXME real classpath is passed in NbCompilationUnit all classes
+                // are found by Java and field completion does not work
+                // this has to evaluated and fixed - due to need of super
+                // ClassNode for exceptions
+                /*bootPath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /* : bootPath*/,
+                /*compilePath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /*: compilePath*/,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 

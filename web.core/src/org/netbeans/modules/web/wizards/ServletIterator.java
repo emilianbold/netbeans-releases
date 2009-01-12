@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.util.HelpCtx;
@@ -199,6 +200,15 @@ public class ServletIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ), templateParameters  );
 
+        //#150274
+        Project project = Templates.getProject( wizard );
+        ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+        if (modifier != null) {
+            modifier.extendClasspath(dobj.getPrimaryFile(), new String[] {
+                ContainerClassPathModifier.API_SERVLET
+            });
+        }
+
 	// If the user does not want to add the file to the
 	// deployment descriptor, return
 	if(!deployData.makeEntry()) { 
@@ -212,7 +222,6 @@ public class ServletIterator implements TemplateWizard.Iterator {
             String targetName = wizard.getTargetName();
             FileObject targetFolder = Templates.getTargetFolder(wizard);
             String packageName = null;
-            Project project = Templates.getProject( wizard );
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int i = 0; i < groups.length && packageName == null; i++) {

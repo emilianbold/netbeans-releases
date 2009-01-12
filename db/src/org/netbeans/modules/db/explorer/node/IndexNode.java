@@ -49,7 +49,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.infos.DDLHelper;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -59,6 +58,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -121,6 +121,16 @@ public class IndexNode extends BaseNode {
 
     public String getTableName() {
         return getTableName(connection, indexHandle);
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Index"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(IndexNode.class);
     }
 
     @Override

@@ -397,6 +397,18 @@ public class IndexedElementTest extends PythonTestBase {
         checkCreate("testfiles/unittest.py");
     }
 
+    public void testIndex14() throws Exception {
+        checkCreate("testfiles/properties.py");
+    }
+
+    public void testIndex15() throws Exception {
+        checkCreate("testfiles/tarfile.py");
+    }
+
+    public void testIndex16() throws Exception {
+        checkCreate("testfiles/rst/pickle.rst");
+    }
+
     public void testRstIndex1() throws Exception {
         checkCreate("testfiles/rst/zipfile.rst.indexed");
     }
@@ -435,8 +447,24 @@ public class IndexedElementTest extends PythonTestBase {
         checkCreate("testfiles/rst/constants.rst");
     }
 
-   public void testIndexEgg() throws Exception {
-        checkCreate("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
+    public void testRstIndex10() throws Exception {
+        checkCreate("testfiles/rst/operator.rst");
     }
+
+    public void testRstIndex11() throws Exception {
+        checkCreate("testfiles/rst/collections.rst");
+    }
+
+    public void testRstIndex12() throws Exception {
+        checkCreate("testfiles/rst/ctypes.rst");
+    }
+
+    public void testRstIndex13() throws Exception {
+        checkCreate("testfiles/rst/stub_missing.rst");
+    }
+
+//   public void testIndexEgg() throws Exception {
+//        checkCreate("testfiles/antlr_python_runtime-3.1.1-py2.5.egg");
+//    }
 
 }

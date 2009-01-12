@@ -5,7 +5,7 @@ Searchable Keys:
   class : BufferingHandler
   class-ig : bufferinghandler
   in : logging
-  member : BufferingHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;capacity;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;capacity;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : flush;F;|DOCUMENTED|DOC_ONLY|;;
   member : shouldFlush;F;|DOCUMENTED|DOC_ONLY|;record;
@@ -19,7 +19,7 @@ Searchable Keys:
   class : DatagramHandler
   class-ig : datagramhandler
   in : logging
-  member : DatagramHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,port;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,port;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;;
   member : makeSocket;F;|DOCUMENTED|DOC_ONLY|;;
   member : send;F;|DOCUMENTED|DOC_ONLY|;s;
@@ -33,7 +33,7 @@ Searchable Keys:
   class : FileHandler
   class-ig : filehandler
   in : logging
-  member : FileHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,encoding,delay;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,encoding,delay;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
 
@@ -46,7 +46,7 @@ Searchable Keys:
   class : Filter
   class-ig : filter
   in : logging
-  member : Filter;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;name;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;name;
   member : filter;F;|DOCUMENTED|DOC_ONLY|;record;
 
 Not Searchable Keys:
@@ -58,7 +58,7 @@ Searchable Keys:
   class : Formatter
   class-ig : formatter
   in : logging
-  member : Formatter;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;fmt,datefmt;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;fmt,datefmt;
   member : format;F;|DOCUMENTED|DOC_ONLY|;record;
   member : formatException;F;|DOCUMENTED|DOC_ONLY|;exc_info;
   member : formatTime;F;|DOCUMENTED|DOC_ONLY|;record,datefmt;
@@ -72,7 +72,7 @@ Searchable Keys:
   class : HTTPHandler
   class-ig : httphandler
   in : logging
-  member : HTTPHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,url,method;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,url,method;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
 
 Not Searchable Keys:
@@ -81,77 +81,86 @@ Not Searchable Keys:
 
 Document 6
 Searchable Keys:
+  class : Handler
+  class-ig : handler
+  in : logging
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;level;
+  member : acquire;F;|DOCUMENTED|DOC_ONLY|;;
+  member : addFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
+  member : close;F;|DOCUMENTED|DOC_ONLY|;;
+  member : createLock;F;|DOCUMENTED|DOC_ONLY|;;
+  member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
+  member : filter;F;|DOCUMENTED|DOC_ONLY|;record;
+  member : flush;F;|DOCUMENTED|DOC_ONLY|;;
+  member : format;F;|DOCUMENTED|DOC_ONLY|;record;
+  member : handle;F;|DOCUMENTED|DOC_ONLY|;record;
+  member : handleError;F;|DOCUMENTED|DOC_ONLY|;record;
+  member : release;F;|DOCUMENTED|DOC_ONLY|;;
+  member : removeFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
+  member : setFormatter;F;|DOCUMENTED|DOC_ONLY|;form;
+  member : setLevel;F;|DOCUMENTED|DOC_ONLY|;lvl;
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
   class : LogRecord
   class-ig : logrecord
   in : logging
-  member : LogRecord;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;name,lvl,pathname,lineno,msg,args,exc_info,func;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;name,lvl,pathname,lineno,msg,args,exc_info,func;
   member : getMessage;F;|DOCUMENTED|DOC_ONLY|;;
 
 Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 7
+Document 8
 Searchable Keys:
   class : Logger
   class-ig : logger
   in : logging
-  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;level;
-  member : acquire;F;|DOCUMENTED|DOC_ONLY|;;
-  member : addFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
   member : addFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
   member : addHandler;F;|DOCUMENTED|DOC_ONLY|;hdlr;
-  member : close;F;|DOCUMENTED|DOC_ONLY|;;
-  member : createLock;F;|DOCUMENTED|DOC_ONLY|;;
   member : critical;F;|DOCUMENTED|DOC_ONLY|;msg,*args,**kwargs;
   member : debug;F;|DOCUMENTED|DOC_ONLY|;msg,*args,**kwargs;
-  member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : error;F;|DOCUMENTED|DOC_ONLY|;msg,*args,**kwargs;
   member : exception;F;|DOCUMENTED|DOC_ONLY|;msg,*args;
   member : filter;F;|DOCUMENTED|DOC_ONLY|;record;
-  member : filter;F;|DOCUMENTED|DOC_ONLY|;record;
   member : findCaller;F;|DOCUMENTED|DOC_ONLY|;;
-  member : flush;F;|DOCUMENTED|DOC_ONLY|;;
-  member : format;F;|DOCUMENTED|DOC_ONLY|;record;
   member : getEffectiveLevel;F;|DOCUMENTED|DOC_ONLY|;;
   member : handle;F;|DOCUMENTED|DOC_ONLY|;record;
-  member : handle;F;|DOCUMENTED|DOC_ONLY|;record;
-  member : handleError;F;|DOCUMENTED|DOC_ONLY|;record;
   member : info;F;|DOCUMENTED|DOC_ONLY|;msg,*args,**kwargs;
   member : isEnabledFor;F;|DOCUMENTED|DOC_ONLY|;lvl;
   member : log;F;|DOCUMENTED|DOC_ONLY|;lvl,msg,*args,**kwargs;
   member : makeRecord;F;|DOCUMENTED|DOC_ONLY|;name,lvl,fn,lno,msg,args,exc_info,func,extra;
   member : propagate;A;|DOCUMENTED|DOC_ONLY|;
-  member : release;F;|DOCUMENTED|DOC_ONLY|;;
-  member : removeFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
   member : removeFilter;F;|DOCUMENTED|DOC_ONLY|;filt;
   member : removeHandler;F;|DOCUMENTED|DOC_ONLY|;hdlr;
-  member : setFormatter;F;|DOCUMENTED|DOC_ONLY|;form;
-  member : setLevel;F;|DOCUMENTED|DOC_ONLY|;lvl;
   member : setLevel;F;|DOCUMENTED|DOC_ONLY|;lvl;
   member : warning;F;|DOCUMENTED|DOC_ONLY|;msg,*args,**kwargs;
 
 Not Searchable Keys:
 
 
-Document 8
+Document 9
 Searchable Keys:
   class : LoggerAdapter
   class-ig : loggeradapter
   in : logging
-  member : LoggerAdapter;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;logger,extra;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;logger,extra;
   member : process;F;|DOCUMENTED|DOC_ONLY|;msg,kwargs;
 
 Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 9
+Document 10
 Searchable Keys:
   class : MemoryHandler
   class-ig : memoryhandler
   in : logging
-  member : MemoryHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;capacity,flushLevel,target;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;capacity,flushLevel,target;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : flush;F;|DOCUMENTED|DOC_ONLY|;;
   member : setTarget;F;|DOCUMENTED|DOC_ONLY|;target;
@@ -161,12 +170,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 10
+Document 11
 Searchable Keys:
   class : NTEventLogHandler
   class-ig : nteventloghandler
   in : logging
-  member : NTEventLogHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;appname,dllname,logtype;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;appname,dllname,logtype;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : getEventCategory;F;|DOCUMENTED|DOC_ONLY|;record;
@@ -177,12 +186,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 11
+Document 12
 Searchable Keys:
   class : RotatingFileHandler
   class-ig : rotatingfilehandler
   in : logging
-  member : RotatingFileHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,maxBytes,backupCount,encoding,delay;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,maxBytes,backupCount,encoding,delay;
   member : doRollover;F;|DOCUMENTED|DOC_ONLY|;;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
 
@@ -190,12 +199,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 12
+Document 13
 Searchable Keys:
   class : SMTPHandler
   class-ig : smtphandler
   in : logging
-  member : SMTPHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;mailhost,fromaddr,toaddrs,subject,credentials;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;mailhost,fromaddr,toaddrs,subject,credentials;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : getSubject;F;|DOCUMENTED|DOC_ONLY|;record;
 
@@ -203,12 +212,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 13
+Document 14
 Searchable Keys:
   class : SocketHandler
   class-ig : sockethandler
   in : logging
-  member : SocketHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,port;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;host,port;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;;
   member : handleError;F;|DOCUMENTED|DOC_ONLY|;;
@@ -220,12 +229,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 14
+Document 15
 Searchable Keys:
   class : StreamHandler
   class-ig : streamhandler
   in : logging
-  member : StreamHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;strm;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;strm;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : flush;F;|DOCUMENTED|DOC_ONLY|;;
 
@@ -233,12 +242,12 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 15
+Document 16
 Searchable Keys:
   class : SysLogHandler
   class-ig : sysloghandler
   in : logging
-  member : SysLogHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;address,facility;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;address,facility;
   member : close;F;|DOCUMENTED|DOC_ONLY|;;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
   member : encodePriority;F;|DOCUMENTED|DOC_ONLY|;facility,priority;
@@ -247,25 +256,13 @@ Not Searchable Keys:
   clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
 
 
-Document 16
+Document 17
 Searchable Keys:
   class : TimedRotatingFileHandler
   class-ig : timedrotatingfilehandler
   in : logging
-  member : TimedRotatingFileHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,when,interval,backupCount,encoding,delay,utc;
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,when,interval,backupCount,encoding,delay,utc;
   member : doRollover;F;|DOCUMENTED|DOC_ONLY|;;
-  member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
-
-Not Searchable Keys:
-  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
-
-
-Document 17
-Searchable Keys:
-  class : WatchedFileHandler
-  class-ig : watchedfilehandler
-  in : logging
-  member : WatchedFileHandler;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,encoding,delay;
   member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
 
 Not Searchable Keys:
@@ -274,12 +271,25 @@ Not Searchable Keys:
 
 Document 18
 Searchable Keys:
+  class : WatchedFileHandler
+  class-ig : watchedfilehandler
+  in : logging
+  member : __init__;c;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;filename,mode,encoding,delay;
+  member : emit;F;|DOCUMENTED|DOC_ONLY|;record;
+
+Not Searchable Keys:
+  clzattrs : ;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;
+
+
+Document 19
+Searchable Keys:
   item : BufferingHandler;C;|DOCUMENTED|DOC_ONLY|;
   item : DatagramHandler;C;|DOCUMENTED|DOC_ONLY|;
   item : FileHandler;C;|DOCUMENTED|DOC_ONLY|;
   item : Filter;C;|DOCUMENTED|DOC_ONLY|;
   item : Formatter;C;|DOCUMENTED|DOC_ONLY|;
   item : HTTPHandler;C;|DOCUMENTED|DOC_ONLY|;
+  item : Handler;C;|DOCUMENTED|DOC_ONLY|;
   item : LogRecord;C;|DOCUMENTED|DOC_ONLY|;
   item : Logger;C;|DOCUMENTED|DOC_ONLY|;
   item : LoggerAdapter;C;|DOCUMENTED|DOC_ONLY|;

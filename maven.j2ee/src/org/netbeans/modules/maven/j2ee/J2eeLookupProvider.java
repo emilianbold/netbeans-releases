@@ -77,6 +77,7 @@ public class J2eeLookupProvider implements LookupProvider {
         ic.add(new SessionContent());
         Provider prov = new Provider(project, ic);
         ic.add(new POHImpl(project, prov));
+        ic.add(new ContainerCPModifierImpl(project));
         return prov;
     }
     

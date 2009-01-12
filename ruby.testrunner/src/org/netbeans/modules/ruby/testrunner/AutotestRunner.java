@@ -109,7 +109,8 @@ public class AutotestRunner implements TestRunner {
                 FileUtil.toFile(project.getProjectDirectory()),
                 platform.getAutoTest());
 
-        desc.initialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
+        TestRunnerUtilities.addProperties(desc, project);
+        desc.addInitialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);
         AutotestRunner.addRspecMediatorOptionsToEnv(env);
         TestUnitRunner.addTestUnitRunnerToEnv(env);
@@ -118,7 +119,6 @@ public class AutotestRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
         RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
         if (coverageProvider != null && coverageProvider.isEnabled()) {

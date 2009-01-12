@@ -105,6 +105,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.sonatype.nexus.index.ArtifactAvailablility;
+import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactContextProducer;
 import org.sonatype.nexus.index.ArtifactInfo;
 import org.sonatype.nexus.index.FlatSearchRequest;
@@ -343,7 +344,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
             IndexingContext indexingContext = indexingContexts.get(repo.getId());
             if (indexingContext == null) {
-                LOGGER.warning("Indexing context chould not be created :" + repo.getId());//NOI18N
+                LOGGER.info("Indexing context could not be found :" + repo.getId());//NOI18N
                 return;
             }
             if (repo.isRemoteDownloadable()) {
@@ -376,6 +377,11 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
 
                 public Object run() throws Exception {
+                    //need to delete the index and recreate? the scan(update) parameter doesn't work?
+                    IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
+                    if (cntx != null) {
+                        indexer.removeIndexingContext(cntx, true);
+                    }
                     loadIndexingContext(repo);
                     indexLoadedRepo(repo, false);
                     return null;
@@ -452,7 +458,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
-                        LOGGER.warning("Indexing context chould not be created :" + repo.getId());//NOI18N
+                        LOGGER.warning("Indexing context could not be created :" + repo.getId());//NOI18N
                         return null;
                     }
 
@@ -466,13 +472,14 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                         } else {
                             continue;
                         }
-                        String extension = artifact.getArtifactHandler().getExtension();
-
-                        String pomPath = absolutePath.substring(0, absolutePath.length() - extension.length());
-                        pomPath += "pom"; //NOI18N
-                        File pom = new File(pomPath);
-                        if (pom.exists()) {
-                            indexer.addArtifactToIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
+                        File art = new File(absolutePath);
+                        if (art.exists()) {
+                            ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
+//                            System.out.println("ac gav=" + ac.getGav());
+//                            System.out.println("ac pom=" + ac.getPom());
+//                            System.out.println("ac art=" + ac.getArtifact());
+//                            System.out.println("ac info=" + ac.getArtifactInfo());
+                            indexer.addArtifactToIndex(ac, indexingContext);
                         }
 
                     }
@@ -501,9 +508,11 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                     String absolutePath;
                     if (artifact.getFile() != null) {
                         absolutePath = artifact.getFile().getAbsolutePath();
-                    } else {
+                    } else if (artifact.getVersion() != null) { //#129025 avoid a NPE down the road
                         //well sort of hack, assume the default repo layout in the repository..
                         absolutePath = repo.getRepositoryPath() + File.separator + repository.pathOf(artifact);
+                    } else {
+                        return null;
                     }
                     String extension = artifact.getArtifactHandler().getExtension();
 

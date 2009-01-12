@@ -63,7 +63,7 @@ public class ATTIdentResolver implements IdentResolver {
     
     private static Set<String> directives;
     
-    {
+    static {
          String []dnames = new String[] {
             ".align", ".ascii", ".bcd", ".bss", ".byte", ".2byte", ".4byte", // NOI18N
             ".8byte", ".comm", ".data", ".double", ".even", ".file", ".float", // NOI18N

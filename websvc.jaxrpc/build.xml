@@ -84,8 +84,6 @@ made subject to such option by the copyright holder.
         <mkdir dir="${wsdevcodegenroot}"/>
         <!--mddFile="src/org/netbeans/modules/websvc/dev/dd/jax-rpc-ri-config.mdd" -->
         <schema2beans schema="src/org/netbeans/modules/websvc/jaxrpc/dev/dd/jax-rpc-ri-config.xsd"
-                    readBeanGraph="src/org/netbeans/modules/websvc/jaxrpc/dev/dd/beangraph.xml" 
-                    
                     package="org.netbeans.modules.websvc.jaxrpc.dev.dd.gen"
                     rootDir="src"
                     attrProp="true"

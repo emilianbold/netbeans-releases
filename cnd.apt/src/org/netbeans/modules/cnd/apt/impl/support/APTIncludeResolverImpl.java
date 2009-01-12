@@ -95,12 +95,8 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
-                String baseFolder = null;
-                if (system && baseFile != null) {
-                    baseFolder = new File(baseFile).getParent();
-                }
                 PathsCollectionIterator paths = 
-                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset, baseFolder);
+                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
                 result = APTIncludeUtils.resolveFilePath(paths, file, startOffset);
             }
             if ( result == null && system && !includeNext) {

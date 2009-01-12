@@ -530,8 +530,8 @@ public class WebServiceGenerator {
                 PortComponent portComponent =
                         (PortComponent)webServices.createBean("PortComponent"); //NOI18N
                 portComponent.setPortComponentName(wsName);
-                org.netbeans.modules.schema2beans.QName wsdlPortQName =
-                        new org.netbeans.modules.schema2beans.QName(targetNS.toString(), //NOI18N
+                javax.xml.namespace.QName wsdlPortQName =
+                        new javax.xml.namespace.QName(targetNS.toString(), //NOI18N
                         ((portTypeName == null) ? wsgenUtil.getBaseName(seiClassName) + "Port" : portTypeName + "Port"), //NOI18N
                         "wsdl-port_ns"); //TO-DO: get this from user(??)
                 portComponent.setWsdlPort(wsdlPortQName);

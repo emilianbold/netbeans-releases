@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -54,9 +53,6 @@ import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.editor.codecoverage.PythonCoverageProvider;
 import org.netbeans.modules.python.project.PythonProject;
 import org.netbeans.modules.python.project.spi.TestRunner;
-//import org.netbeans.modules.python.testrunner.ui.Manager;
-//import org.netbeans.modules.python.testrunner.ui.TestSession;
-//import org.netbeans.modules.python.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.python.project.ui.customizer.PythonProjectProperties;
 import org.netbeans.modules.python.testrunner.ui.PyUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
@@ -77,12 +73,6 @@ public final class PyUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
     //public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.py";  //NOI18N
     public static final String RUNNER_SCRIPT_NAME = "nb_test_runner.py";  //NOI18N
     private static final TestRunner INSTANCE = new PyUnitRunner();
-    /**
-     * Sometimes, or rather for some projects (such as PythonGems), when running the test task the underlying
-     * stream stalls for some time in the middle of the test run. 5000ms seems to enough
-     * for most cases.
-     */
-    static final int DEFAULT_WAIT_TIME = 5000;
 
     static {
         // this env variable is referenced from nb_test_runner.py, where it
@@ -281,23 +271,8 @@ public final class PyUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
         final TestSession session = new TestSession(name,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST, new PythonTestRunnerNodeFactory());
-        // Deadlock avoidance; remove later. Currently, if you try to run a unit test
-        // on a new user directory (when the Test Results window hasn't yet been shown)
-        // you could run into a deadlock. This avoids that.
-        boolean redispatch = true;
-        if (SwingUtilities.isEventDispatchThread()) {
-            redispatch = false;
-        }
-        if (redispatch) {
-            final PythonExecution descriptor = desc;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    TestExecutionManager.getInstance().start(descriptor, new PyUnitHandlerFactory(), session);
-                }
-            });
-        } else {
-            TestExecutionManager.getInstance().start(desc, new PyUnitHandlerFactory(), session);
-        }
+
+        TestExecutionManager.getInstance().start(desc, new PyUnitHandlerFactory(), session);
     }
 
     public boolean supports(TestType type) {

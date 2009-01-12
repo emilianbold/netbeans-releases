@@ -59,10 +59,7 @@ import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.ide.ergonomics.newproject.RestartNotifier;
-import org.netbeans.modules.ide.ergonomics.newproject.RestartNotifier.RestartIcon;
 import org.openide.DialogDisplayer;
-import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -109,15 +106,13 @@ public class ModulesInstaller {
         boolean success = false;
         
         FindComponentModules findModules = new FindComponentModules(info);
-        findModules.createFindingTask().waitFinished();
-        
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
         Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
         if (toInstall != null && !toInstall.isEmpty()) {
             ModulesInstaller installer = new ModulesInstaller(toInstall, findModules, monitor);
             installer.getInstallTask ().schedule (10);
             installer.getInstallTask ().waitFinished();
-            findModules.createFindingTask().waitFinished();
+            findModules = new FindComponentModules(info);
             success = findModules.getModulesForInstall ().isEmpty ();
         } else if (toEnable != null && !toEnable.isEmpty()) {
             ModulesActivator enabler = new ModulesActivator(toEnable, findModules, monitor);
@@ -261,15 +256,6 @@ public class ModulesInstaller {
         Restarter r = installSupport.doInstall (i, installHandle);
         if (r != null) {
             installSupport.doRestartLater (r);
-            // XXX FindBrokenModules.writeEnableLater (modules4repair);
-            RestartIcon restartIcon = RestartNotifier.getFlasher (new Runnable () {
-               public void run () {
-                    LifecycleManager.getDefault ().exit ();
-                }
-            });
-            assert restartIcon != null : "Restart Icon cannot be null.";
-            restartIcon.setToolTipText (getBundle ("InstallerMissingModules_NeedsRestart"));
-            restartIcon.startFlashing ();
         } else {
             waitToModuleLoaded ();
         }
