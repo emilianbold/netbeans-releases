@@ -40,7 +40,7 @@
  */
 
 // <RAVE> Copy of org.netbeans.modules.java.j2seplatform.libraries.JavadocForBinaryQueryLibraryImpl
-package org.netbeans.modules.visualweb.project.jsf.libraries;
+package org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider;
 import java.beans.PropertyChangeEvent;
 
 import java.beans.PropertyChangeListener;
@@ -69,7 +69,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 // <RAVE>
 // import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
-import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
 
 
 

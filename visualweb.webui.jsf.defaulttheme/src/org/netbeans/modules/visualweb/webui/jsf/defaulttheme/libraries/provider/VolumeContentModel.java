@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.visualweb.project.jsf.libraries.provider;
+package org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider;
 
 import java.net.URI;
 import javax.swing.AbstractListModel;

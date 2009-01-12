@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.visualweb.project.jsf.libraries.provider;
+package org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider;
 
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -70,22 +70,22 @@ import org.openide.util.NbBundle;
  * with the library. The resouce in such a case must specify path to .jsc file.</li>
  * </lu>
  */
-public final class ThemeLibraryTypeProvider implements LibraryTypeProvider {
+public final class ComponentLibraryTypeProvider implements LibraryTypeProvider {
 
-    private ThemeLibraryTypeProvider () {
+    private ComponentLibraryTypeProvider () {
     }
 
     private static final String LIB_PREFIX = "libs.";
-    public static final String LIBRARY_TYPE = "theme";       //NOI18N
+    public static final String LIBRARY_TYPE = "complib";       //NOI18N
     public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
-    public static final String VOLUME_TYPE_RUNTIME = "runtime";       //NOI18N
+    public static final String VOLUME_TYPE_DESIGNTIME = "visual-web-designtime";       //NOI18N
     public static final String[] VOLUME_TYPES = new String[] {
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC,
-        VOLUME_TYPE_RUNTIME,
+        VOLUME_TYPE_DESIGNTIME,
     };
 
     public String getLibraryType() {
@@ -93,7 +93,7 @@ public final class ThemeLibraryTypeProvider implements LibraryTypeProvider {
     }
 
     public String getDisplayName () {
-        return NbBundle.getMessage (ThemeLibraryTypeProvider.class,"TXT_ThemeLibraryType");
+        return NbBundle.getMessage (ComponentLibraryTypeProvider.class,"TXT_ComponentLibraryType");
     }
 
     public String[] getSupportedVolumeTypes () {
@@ -147,7 +147,7 @@ public final class ThemeLibraryTypeProvider implements LibraryTypeProvider {
             VOLUME_TYPES[1].equals(volumeType)||
             VOLUME_TYPES[2].equals(volumeType)||
             VOLUME_TYPES[3].equals(volumeType)) {
-            return new ThemeVolumeCustomizer (volumeType);
+            return new ComponentVolumeCustomizer (volumeType);
         }
         else {
             return null;
@@ -160,7 +160,7 @@ public final class ThemeLibraryTypeProvider implements LibraryTypeProvider {
     }
 
     public static LibraryTypeProvider create () {
-        return new ThemeLibraryTypeProvider();
+        return new ComponentLibraryTypeProvider();
     }
 
     private static boolean addLibraryIntoBuild(LibraryImplementation impl, EditableProperties props) {

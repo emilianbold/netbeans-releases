@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.visualweb.project.jsf.libraries.provider;
+package org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider;
 
 import java.beans.Customizer;
 import java.io.File;
@@ -64,7 +64,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
-import org.netbeans.modules.visualweb.project.jsf.libraries.JavadocForBinaryQueryLibraryImpl;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
