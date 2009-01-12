@@ -57,7 +57,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.jruby.nb.ast.CallNode;
-
 import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.CommentNode;
@@ -86,17 +85,17 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.elements.AstElement;
@@ -104,6 +103,7 @@ import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -128,7 +128,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private Set<String> requires;
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
-    private CompilationInfo info;
+    private RubyParseResult result;
     private RubyIndex index;
     private RubyTypeInferencer typeInferencer;
     private boolean isTestFile;
@@ -139,20 +139,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
     public RubyStructureAnalyzer() {
     }
 
-    public List<?extends StructureItem> scan(final CompilationInfo info) {
-        if (RubyUtils.isRhtmlOrYamlFile(info.getFileObject())) {
-            return scanRhtml(info);
+    public List<?extends StructureItem> scan(final ParserResult result) {
+        if (RubyUtils.isRhtmlOrYamlFile(RubyUtils.getFileObject(result))) {
+            return scanRhtml(result);
         }
 
-        RubyParseResult result = AstUtilities.getParseResult(info);
-        this.info = info;
+        this.result = AstUtilities.getParseResult(result);
 
-        AnalysisResult ar = result.getStructure();
+        AnalysisResult ar = this.result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            itemList.add(new RubyStructureItem(e, info));
+            itemList.add(new RubyStructureItem(e, result));
         }
 
         return itemList;
@@ -235,7 +234,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         isTestFile = false;
-        String name = result.getFile().getNameExt();
+        String name = RubyUtils.getFileObject(result).getNameExt();
         int dot = name.lastIndexOf('.');
         if (dot != -1) {
             name = name.substring(0, dot);
@@ -276,7 +275,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 // Add unique fields
                 for (InstAsgnNode field : names.values()) {
-                    AstFieldElement co = new AstFieldElement(info, field);
+                    AstFieldElement co = new AstFieldElement(result, field);
                     //co.setIn(AstUtilities.getClassOrModuleName(clz));
                     co.setIn(clz.getFqn());
 
@@ -317,7 +316,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             for (String globalName : sortedNames) {
                 GlobalAsgnNode global = globals.get(globalName);
-                AstElement co = new AstNameElement(info, global, globalName,
+                AstElement co = new AstNameElement(result, global, globalName,
                         ElementKind.GLOBAL);
                 structure.add(co);
             }
@@ -391,18 +390,18 @@ public class RubyStructureAnalyzer implements StructureScanner {
 //        cache.put(file, scan);
     }
 
-    public Map<String, List<OffsetRange>> folds(final CompilationInfo info) {
-        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+    public Map<String, List<OffsetRange>> folds(final ParserResult result) {
+        if (RubyUtils.isRhtmlFile(RubyUtils.getFileObject(result))) {
             return Collections.emptyMap();
         }
 
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(result);
 
         if (root == null) {
             return Collections.emptyMap();
         }
 
-        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        RubyParseResult rpr = AstUtilities.getParseResult(result);
         AnalysisResult analysisResult = rpr.getStructure();
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
@@ -410,7 +409,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         folds.put("codeblocks", codefolds); // NOI18N
 
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(result);
             if (doc != null) {
                 try {
                     doc.readLock(); // For Utilities.getRowStart access
@@ -488,7 +487,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         // Recursively search for methods or method calls that match the name and arity
         switch (node.nodeId) {
         case CLASSNODE: {
-            AstClassElement co = new AstClassElement(info, node);
+            AstClassElement co = new AstClassElement(result, node);
             co.setIn(in);
 
             String fqn = AstUtilities.getFqnName(path);
@@ -508,7 +507,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case MODULENODE: {
-            AstModuleElement co = new AstModuleElement(info, node);
+            AstModuleElement co = new AstModuleElement(result, node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
             in = AstUtilities.getClassOrModuleName((ModuleNode)node);
@@ -527,7 +526,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
         case SCLASSNODE: {
             // Singleton class, e.g.   class << self, or class << File, etc.
-            AstClassElement co = new AstClassElement(info, node);
+            AstClassElement co = new AstClassElement(result, node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
 
@@ -555,7 +554,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
         case DEFNNODE:
         case DEFSNODE: {
-            AstMethodElement co = new AstMethodElement(info, node);
+            AstMethodElement co = new AstMethodElement(result, node);
             methods.add(co);
             co.setIn(in);
 
@@ -609,7 +608,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         case CONSTDECLNODE: {
             ConstDeclNode constNode = (ConstDeclNode) node;
 
-            AstElement co = new AstNameElement(info, node, AstUtilities.getName(node),
+            AstElement co = new AstNameElement(result, node, AstUtilities.getName(node),
                     ElementKind.CONSTANT);
 
             co.setType(typeInferencer.inferTypesOfRHS(constNode));
@@ -624,7 +623,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case CLASSVARDECLNODE: {
-            AstFieldElement co = new AstFieldElement(info, node);
+            AstFieldElement co = new AstFieldElement(result, node);
             co.setIn(in);
 
             if (parent != null) {
@@ -690,7 +689,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     }
                 }
                 if (!found) {
-                    AstElement co = new AstNameElement(info, node, name,
+                    AstElement co = new AstNameElement(result, node, name,
                             ElementKind.VARIABLE);
                     assert node instanceof LocalAsgnNode : "LocalAsgnNode expected";
                     co.setType(typeInferencer.inferTypesOfRHS(node));
@@ -751,7 +750,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 if ((symbols != null) && (symbols.length > 0)) {
                     for (SymbolNode s : symbols) {
-                        AstAttributeElement co = new AstAttributeElement(info, s, node);
+                        AstAttributeElement co = new AstAttributeElement(result, s, node);
                         
                         if (parent instanceof AstClassElement) {
                             Set<AstAttributeElement> attrsInClass = attributes.get(parent);
@@ -806,7 +805,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 if (method != null) {
                                     // Make a new static version of the named function
                                     Node dupeNode = method.getNode();
-                                    AstMethodElement co = new AstMethodElement(info, dupeNode);
+                                    AstMethodElement co = new AstMethodElement(result, dupeNode);
                                     co.setIn(in);
 
                                     // "initialize" methods are private
@@ -866,7 +865,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 }
                             }
                         }
-                        AstElement co = new AstNameElement(info, node, desc,
+                        AstElement co = new AstNameElement(result, node, desc,
                                 ElementKind.TEST);
 
                         if (parent != null) {
@@ -984,19 +983,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
     private static Set<FileObject> currentlyAnalyzingWithIndex = new HashSet<FileObject>();
 
-    AnalysisResult analyze(final RubyParseResult result, final CompilationInfo info) {
+    AnalysisResult analyze(final RubyParseResult result) {
         AnalysisResult scan = getCachedAnalysis(result);
         if (scan != null) {
             return scan;
         }
         boolean addedWithIndex = false; // prevent stack-overflow
-        FileObject toAnalyze = result.getFile().getFileObject();
+        FileObject toAnalyze = RubyUtils.getFileObject(result);
         try {
             addedWithIndex = currentlyAnalyzingWithIndex.add(toAnalyze);
-            if (addedWithIndex && info != null) {
-                this.index = RubyIndex.get(info);
+            if (addedWithIndex && result != null) {
+                this.index = RubyIndex.get(result);
             }
-            this.info = info;
+            this.result = result;
             scan = scan(result);
             cacheAnalysis(result, scan);
             return scan;
@@ -1063,11 +1062,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
         
         AstElement node;
         ElementKind kind;
-        CompilationInfo info;
+        ParserResult result;
 
-        private RubyStructureItem(AstElement node, CompilationInfo info) {
+        private RubyStructureItem(AstElement node, ParserResult result) {
             this.node = node;
-            this.info = info;
+            this.result = result;
 
             kind = node.getKind();
         }
@@ -1172,7 +1171,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 List<RubyStructureItem> children = new ArrayList<RubyStructureItem>(nested.size());
 
                 for (Element co : nested) {
-                    children.add(new RubyStructureItem((AstElement)co, info));
+                    children.add(new RubyStructureItem((AstElement)co, result));
                 }
 
                 return children;
@@ -1280,9 +1279,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
     
-    private List<? extends StructureItem> scanRhtml(CompilationInfo info) {
+    private List<? extends StructureItem> scanRhtml(ParserResult result) {
         List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
-        AbstractDocument doc = (AbstractDocument) info.getDocument();
+        AbstractDocument doc = RubyUtils.getDocument(result);
         if (doc == null) {
             return Collections.emptyList();
         }

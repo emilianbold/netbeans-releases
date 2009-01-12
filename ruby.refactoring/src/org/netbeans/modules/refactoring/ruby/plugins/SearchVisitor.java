@@ -41,27 +41,17 @@
 
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import java.io.IOException;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
-import org.openide.ErrorManager;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
- *
  * @author Jan Becicka
  */
 public abstract class SearchVisitor {
-    
-    protected WorkingCopy workingCopy;
-    
-    public void setWorkingCopy(WorkingCopy workingCopy) {
+    protected ParserResult workingCopy;
+
+    public void setWorkingCopy(ParserResult workingCopy) {
         this.workingCopy = workingCopy;
-        try {
-            this.workingCopy.toPhase(Phase.RESOLVED);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
     }
-    
+
     public abstract void scan();
 }

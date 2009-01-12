@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -37,16 +36,15 @@ import javax.swing.JComponent;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
@@ -69,8 +67,8 @@ public class RailsViews extends RubyAstRule {
     }
 
     public boolean appliesTo(RuleContext context) {
-        CompilationInfo info = context.compilationInfo;
-        return info.getFileObject().getName().endsWith("_controller"); // NOI18N
+        ParserResult info = context.parserResult;
+        return RubyUtils.getFileObject(info).getName().endsWith("_controller"); // NOI18N
     }
 
     public Set<NodeType> getKinds() {
@@ -79,10 +77,10 @@ public class RailsViews extends RubyAstRule {
     
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         
         // See if this ia an action method and see if it has a view
-        FileObject file = info.getFileObject();
+        FileObject file = RubyUtils.getFileObject(info);
         assert file.getName().endsWith("_controller"); // NOI18N
 
         // Methods with arguments aren't actions
@@ -121,7 +119,7 @@ public class RailsViews extends RubyAstRule {
      * Determine whether an action method should have an associated view file.
      * For example, methods that contain a redirect method probably don't need one.
      */
-    private boolean shouldHaveView(CompilationInfo info, Node node) {
+    private boolean shouldHaveView(ParserResult info, Node node) {
         if (node.nodeId == NodeType.FCALLNODE) {
             String method = ((INameNode)node).getName();
             

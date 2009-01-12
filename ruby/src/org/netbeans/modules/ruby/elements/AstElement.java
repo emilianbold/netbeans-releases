@@ -49,9 +49,9 @@ import java.util.Set;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.RubyType;
 
 /**
@@ -62,14 +62,14 @@ import org.netbeans.modules.ruby.RubyType;
 public abstract class AstElement extends RubyElement {
 
     protected Node node;
-    protected CompilationInfo info;
+    protected ParserResult info;
     protected ArrayList<AstElement> children;
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
     private RubyType type;
 
-    public AstElement(CompilationInfo info, Node node) {
+    public AstElement(ParserResult info, Node node) {
         super();
         this.info = info;
         this.node = node;
@@ -126,7 +126,7 @@ public abstract class AstElement extends RubyElement {
         children.add(child);
     }
 
-    public static AstElement create(CompilationInfo info, Node node) {
+    public static AstElement create(ParserResult info, Node node) {
         switch (node.nodeId) {
         case DEFNNODE:
         case DEFSNODE:
@@ -185,7 +185,7 @@ public abstract class AstElement extends RubyElement {
         return Collections.emptySet();
     }
 
-    public CompilationInfo getInfo() {
+    public ParserResult getInfo() {
         return info;
     }
 

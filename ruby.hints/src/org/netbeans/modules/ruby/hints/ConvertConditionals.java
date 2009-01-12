@@ -47,17 +47,17 @@ import javax.swing.text.BadLocationException;
 import org.jruby.nb.ast.IfNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
@@ -82,7 +82,7 @@ public class ConvertConditionals extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         IfNode ifNode = (IfNode) node;
         if (ifNode.getCondition() == null) {
@@ -175,7 +175,7 @@ public class ConvertConditionals extends RubyAstRule {
         List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
 
         String displayName = NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
-        Hint desc = new Hint(this, displayName, info.getFileObject(), range,
+        Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
                 fixes, 500);
         result.add(desc);
     }
@@ -241,7 +241,7 @@ public class ConvertConditionals extends RubyAstRule {
                 if (bodyNode == null) {
                     bodyNode = ifNode.getElseBody();
                 }
-                CompilationInfo info = context.compilationInfo;
+                ParserResult info = context.parserResult;
                 OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
                 bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
                 if (bodyRange == OffsetRange.NONE) {

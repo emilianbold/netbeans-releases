@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.refactoring.ruby;
 
-
 import java.util.Iterator;
 import javax.swing.text.Document;
 import org.jruby.nb.ast.ArgumentNode;
@@ -46,18 +45,18 @@ import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.SymbolNode;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.ruby.RubyType;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.ContextKnowledge;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.RubyType;
 import org.netbeans.modules.ruby.RubyTypeInferencer;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -71,7 +70,7 @@ import org.openide.filesystems.FileObject;
  * context - used in various places in the refactoring classes.
  * These need to be able to be mapped from one AST to another,
  * and correspond (roughly) to the TreePath, RubyElementCtx,
- * Element and ElementHandle classes (plus some friends like CompilationInfo
+ * Element and ElementHandle classes (plus some friends like ParserResult
  * and FileObject) passed around in the equivalent Java refactoring code.
  *
  * @author Tor Norbye
@@ -80,7 +79,7 @@ public class RubyElementCtx {
     
     private Node node;
     private Node root;
-    private CompilationInfo info;
+    private ParserResult info;
     private FileObject fileObject;
     private AstPath path;
     private int caret;
@@ -97,15 +96,15 @@ public class RubyElementCtx {
     private String defClass;
 
     public RubyElementCtx(Node root, Node node, Element element, FileObject fileObject,
-        CompilationInfo info) {
+        ParserResult info) {
         initialize(root, node, element, fileObject, info);
     }
 
     /** Create a new element holder representing the node closest to the given caret offset in the given compilation job */
-    public RubyElementCtx(CompilationInfo info, int caret) {
-        Node _root = AstUtilities.getRoot(info);
+    public RubyElementCtx(ParserResult parserResult, int caret) {
+        Node _root = AstUtilities.getRoot(parserResult);
 
-        int astOffset = AstUtilities.getAstOffset(info, caret);
+        int astOffset = AstUtilities.getAstOffset(parserResult, caret);
         path = new AstPath(_root, astOffset);
 
         Node leaf = path.leaf();
@@ -144,9 +143,9 @@ public class RubyElementCtx {
                 break;
             }
         }
-        Element _element = AstElement.create(info, leaf);
+        Element _element = AstElement.create(parserResult, leaf);
 
-        initialize(_root, leaf, _element, info.getFileObject(), info);
+        initialize(_root, leaf, _element, RubyUtils.getFileObject(parserResult), parserResult);
     }
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
@@ -157,9 +156,9 @@ public class RubyElementCtx {
     }
 
     public RubyElementCtx(IndexedElement element) {
-        CompilationInfo[] infoHolder = new CompilationInfo[1];
+        ParserResult[] infoHolder = new ParserResult[1];
         Node _node = AstUtilities.getForeignNode(element, infoHolder);
-        CompilationInfo _info = infoHolder[0];
+        ParserResult _info = infoHolder[0];
 
         Element e = AstElement.create(_info, _node);
 
@@ -170,7 +169,7 @@ public class RubyElementCtx {
     }
 
     private void initialize(Node root, Node node, Element element, FileObject fileObject,
-        CompilationInfo info) {
+        ParserResult info) {
         this.root = root;
         this.node = node;
         this.element = element;
@@ -302,7 +301,7 @@ public class RubyElementCtx {
         this.node = node;
     }
 
-    public CompilationInfo getInfo() {
+    public ParserResult getInfo() {
         return info;
     }
 
@@ -361,7 +360,7 @@ public class RubyElementCtx {
 
     public BaseDocument getDocument() {
         if (document == null) {
-            document = RetoucheUtils.getDocument(info, info.getFileObject());
+            document = RetoucheUtils.getDocument(info, RubyUtils.getFileObject(info));
         }
 
         return document;
@@ -409,7 +408,7 @@ public class RubyElementCtx {
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
-                    RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
+                    RubyIndex index = RubyIndex.get(info);
                     String fqn = AstUtilities.getFqnName(getPath());
 
                     if ((fqn == null) || (fqn.length() == 0)) {

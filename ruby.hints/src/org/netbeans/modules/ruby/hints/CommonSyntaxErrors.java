@@ -35,17 +35,18 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.nb.common.IRubyWarnings.ID;
 import org.jruby.nb.lexer.yacc.SyntaxException.PID;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.RubyParser.RubyError;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyErrorRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -66,7 +67,7 @@ public class CommonSyntaxErrors extends RubyErrorRule {
     }
 
     public void run(RubyRuleContext context, RubyError error, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         PID pid = (PID) error.getParameters()[0];
         if (pid != PID.GRAMMAR_ERROR) {
@@ -93,7 +94,7 @@ public class CommonSyntaxErrors extends RubyErrorRule {
                 HintFix fix = new FixDocIndent(context, lexOffset-1);
                 List<HintFix> fixList = Collections.singletonList(fix);
                 String displayName = NbBundle.getMessage(CommonSyntaxErrors.class, "DontIndentDocs");
-                Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 500);
+                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixList, 500);
                 result.add(desc);
             }
         } catch (BadLocationException ex) {

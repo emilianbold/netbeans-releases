@@ -44,27 +44,30 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.refactoring.ruby.RefactoringModule;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
+import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyParseResult;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.refactoring.ruby.RefactoringModule;
-import javax.swing.JPanel;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.ruby.elements.IndexedMethod;
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
@@ -94,108 +97,108 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public void initialize() {
-        if (initialized) return;
-        Source source = RetoucheUtils.getSource(element.getFileObject());
-        CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            // TODO - handle methods in modules!!!!
-            private String getClassName(RubyElementCtx element) {
-                return element.getDefClass();
-            }
-            
-            /**
-             * @todo For method calls, try to figure out the call type with the type analyzer
-             */
-            public void run(CompilationController info) throws Exception {
-                info.toPhase(Phase.RESOLVED);
-                String m_isBaseClassText = null;
-                final String labelText;
-                Set<Modifier> modif = new HashSet<Modifier>();
-                // TODO - resolve elements against the current info?
-                if (element.getKind() == ElementKind.METHOD) {
-                    if (element.getElement() != null) {
-                        modif = element.getElement().getModifiers();
-                    }
-                    String methodName = element.getName();
-                    String className = getClassName(element);
-                    String displayClassName = RubyIndex.UNKNOWN_CLASS.equals(className) ? "&lt;Unknown&gt;" : className;
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", methodName, displayClassName);
-                    
-                    methodDeclaringClass = className;
+        if (initialized) {
+            return;
+        }
+        Source source = Source.create(element.getFileObject());
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                    IndexedMethod method = RetoucheUtils.getOverridingMethod(element, info);
-                    if (method != null) {
-                        m_isBaseClassText =
-                                new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
-                                new Object[] {
-                            methodDeclaringSuperClass = method.getIn()
-                        }
-                        );
-                        newElement = new RubyElementCtx(method);
-                    }
-                } else if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.MODULE) {
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getName()); // NOI18N
-                } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                    String methodName = element.getName();
-                    String className = getClassName(element);
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", methodName, className); // NOI18N
-                } else if (element.getKind() == ElementKind.FIELD) {
-                    String fieldName = element.getName();
-                    String className = getClassName(element);
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", fieldName, className); // NOI18N
-                } else {
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getName()); // NOI18N
+                // TODO - handle methods in modules!!!!
+                private String getClassName(RubyElementCtx element) {
+                    return element.getDefClass();
                 }
-                
-                final Set<Modifier> modifiers = modif;
-                final String isBaseClassText = m_isBaseClassText;
-                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        remove(classesPanel);
-                        remove(methodsPanel);
-                        // WARNING for now since this feature is not ready yet
-                        //label.setText(labelText);
-                        String combinedLabelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_WhereUsedWarningInDevelopment", labelText);
-                        label.setText(combinedLabelText);
-                        if (element.getKind() == ElementKind.METHOD) {
-                            add(methodsPanel, BorderLayout.CENTER);
-                            methodsPanel.setVisible(true);
-                            m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                            // TODO - worry about frozen?                            
-                            m_overriders.setVisible(/*!modifiers.contains(Modifier.FINAL) ||*/ modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
-                            if (methodDeclaringSuperClass != null ) {
-                                m_isBaseClass.setVisible(true);
-                                m_isBaseClass.setSelected(true);
-                                Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
-                            } else {
-                                m_isBaseClass.setVisible(false);
-                                m_isBaseClass.setSelected(false);
-                            }
-                        } else if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.MODULE)) {
-                            add(classesPanel, BorderLayout.CENTER);
-                            classesPanel.setVisible(true);
-                        } else {
+
+                /**
+                 * @todo For method calls, try to figure out the call type with the type analyzer
+                 */
+                @Override
+                public void run(ResultIterator ri) throws Exception {
+                    RubyParseResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
+                    String m_isBaseClassText = null;
+                    final String labelText;
+                    Set<Modifier> modif = new HashSet<Modifier>();
+                    // TODO - resolve elements against the current info?
+                    if (element.getKind() == ElementKind.METHOD) {
+                        if (element.getElement() != null) {
+                            modif = element.getElement().getModifiers();
+                        }
+                        String methodName = element.getName();
+                        String className = getClassName(element);
+                        String displayClassName = RubyIndex.UNKNOWN_CLASS.equals(className) ? "&lt;Unknown&gt;" : className;
+                        labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", methodName, displayClassName);
+
+                        methodDeclaringClass = className;
+
+                        IndexedMethod method = RetoucheUtils.getOverridingMethod(element, parserResult);
+                        if (method != null) {
+                            m_isBaseClassText =
+                                    new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
+                                    new Object[]{
+                                        methodDeclaringSuperClass = method.getIn()
+                                    });
+                            newElement = new RubyElementCtx(method);
+                        }
+                    } else if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.MODULE) {
+                        labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getName()); // NOI18N
+                    } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                        String methodName = element.getName();
+                        String className = getClassName(element);
+                        labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", methodName, className); // NOI18N
+                    } else if (element.getKind() == ElementKind.FIELD) {
+                        String fieldName = element.getName();
+                        String className = getClassName(element);
+                        labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", fieldName, className); // NOI18N
+                    } else {
+                        labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getName()); // NOI18N
+                    }
+
+                    final Set<Modifier> modifiers = modif;
+                    final String isBaseClassText = m_isBaseClassText;
+
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
                             remove(classesPanel);
                             remove(methodsPanel);
-                            c_subclasses.setVisible(false);
-                            m_usages.setVisible(false);
-                            c_usages.setVisible(false);
-                            c_directOnly.setVisible(false);
+                            // WARNING for now since this feature is not ready yet
+                            //label.setText(labelText);
+                            String combinedLabelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_WhereUsedWarningInDevelopment", labelText);
+                            label.setText(combinedLabelText);
+                            if (element.getKind() == ElementKind.METHOD) {
+                                add(methodsPanel, BorderLayout.CENTER);
+                                methodsPanel.setVisible(true);
+                                m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
+                                // TODO - worry about frozen?
+                                m_overriders.setVisible(/*!modifiers.contains(Modifier.FINAL) ||*/modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
+                                if (methodDeclaringSuperClass != null) {
+                                    m_isBaseClass.setVisible(true);
+                                    m_isBaseClass.setSelected(true);
+                                    Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+                                } else {
+                                    m_isBaseClass.setVisible(false);
+                                    m_isBaseClass.setSelected(false);
+                                }
+                            } else if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.MODULE)) {
+                                add(classesPanel, BorderLayout.CENTER);
+                                classesPanel.setVisible(true);
+                            } else {
+                                remove(classesPanel);
+                                remove(methodsPanel);
+                                c_subclasses.setVisible(false);
+                                m_usages.setVisible(false);
+                                c_usages.setVisible(false);
+                                c_directOnly.setVisible(false);
+                            }
+                            validate();
                         }
-                        validate();
-                    }
-                });
-            }};
-            try {
-                source.runUserActionTask(task, true);
-            } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
-            }
-            initialized = true;
+                    });
+                }
+            });
+        } catch (ParseException pe) {
+            throw (RuntimeException) new RuntimeException().initCause(pe);
+        }
+        initialized = true;
     }
         
     public RubyElementCtx getBaseMethod() {

@@ -27,30 +27,30 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.openide.filesystems.FileObject;
 
-
 /**
- *
  * @author Tor Norbye
  */
 public class IndexedField extends IndexedElement {
+
     private boolean smart;
     private String name;
     private boolean inherited;
 
-    private IndexedField(String name, RubyIndex index, String fileUrl, String fqn,
+    private IndexedField(String name, RubyIndex index, IndexResult result, String fqn,
         String clz, String require, String attributes, int flags, FileObject context) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
+        super(index, result, fqn, clz, require, attributes, flags, context);
         this.name = name;
     }
 
     public static IndexedField create(RubyIndex index, String name, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags, FileObject context) {
+        IndexResult result, String require, String attributes, int flags, FileObject context) {
         IndexedField m =
-            new IndexedField(name, index, fileUrl, fqn, clz, require, attributes, flags, context);
+            new IndexedField(name, index, result, fqn, clz, require, attributes, flags, context);
 
         return m;
     }

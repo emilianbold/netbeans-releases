@@ -46,7 +46,7 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -116,7 +116,7 @@ final class RubyMethodTypeInferencer {
 
         RubyType resultType = new RubyType();
         if (getIndex() != null) {
-            Set<IndexedMethod> methods = getIndex().getInheritedMethods(receiverType, name, NameKind.EXACT_NAME);
+            Set<IndexedMethod> methods = getIndex().getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
             for (IndexedMethod indexedMethod : methods) {
                 RubyType type = indexedMethod.getType();
                 if (!type.isKnown()) {

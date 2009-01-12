@@ -41,20 +41,20 @@
 package org.netbeans.modules.ruby;
 
 import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.modules.ruby.options.CodeStyle;
-import org.openide.filesystems.FileObject;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.options.CodeStyle;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
