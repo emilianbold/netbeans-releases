@@ -519,6 +519,7 @@ public class ActionsTest extends JellyTestCase {
             }
 
             eo = new EditorOperator("MemoryView.java");
+
             boolean found = false;
             for (int i = 79; i < 87; i++) {
                 if (Utilities.checkAnnotation(eo, i, "CallSite")) {
