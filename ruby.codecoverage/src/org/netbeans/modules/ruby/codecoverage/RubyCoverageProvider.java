@@ -614,8 +614,6 @@ public final class RubyCoverageProvider implements CoverageProvider {
         SKIP_EXCLUSIONS = exclude != null && "true".equals(exclude);
         String rails = System.getProperty("coverage.rcov-rails");
         RCOV_RAILS = rails == null || "true".equals(rails);
-        System.err.println("SKIP_EXCLUSIONS=" + SKIP_EXCLUSIONS);
-        System.err.println("RCOV_RAILS=" + RCOV_RAILS);
     }
 
     private void buildRcovArgs(StringBuilder sb, List<String> args, boolean isAggregating, String includeName, RubyExecutionDescriptor original) {
