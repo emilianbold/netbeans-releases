@@ -383,7 +383,7 @@
 
 	<if property="gf.ml.build.type" value="">
         	<set property="glassfish.build.number" value="20080411"/>
-		<set property="sjsas.build.number" value="20081216"/>
+		<set property="sjsas.build.number" value="20090109"/>
 	</if>
 
 	<if property="gf.ml.build.type" value="ml">
