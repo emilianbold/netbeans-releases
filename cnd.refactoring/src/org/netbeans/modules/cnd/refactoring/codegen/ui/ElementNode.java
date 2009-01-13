@@ -289,6 +289,11 @@ public class ElementNode extends AbstractNode {
             return hash;
         }
 
+        @Override
+        public String toString() {
+            return this.name + " " + this.isSelected; // NOI18N
+        }
+
         public String getName() {
             return name;
         }

@@ -41,42 +41,70 @@
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author  Petr Hrebejk, Dusan Balek
  * @author Vladimir Voskresensky
  */
-public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider {
+public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider, ActionListener {
 
-    private ExplorerManager manager = new ExplorerManager();
-    private CheckTreeView elementView;
-
+    private final ExplorerManager manager = new ExplorerManager();
+    private final CheckTreeView elementView;
+    private final JCheckBox inline = new JCheckBox();
+    private static final String INLINE_PROPERTY = "inline_method"; // NOI18N
+    private boolean inlineMethod;
     /** Creates new form ElementSelectorPanel */
-    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection) {
+    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean supportInline) {
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
         elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
+        if (supportInline) {
+            Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N
+            inlineMethod = NbPreferences.forModule(ElementSelectorPanel.class).getBoolean(INLINE_PROPERTY, false);
+            inline.setSelected(inlineMethod);
+            add(inline, BorderLayout.SOUTH);
+        } else {
+            inlineMethod = false;
+        }
         setRootElement(elementDescription, singleSelection);
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
         Node[] children = root.getChildren().getNodes();
         if (null != children && children.length > 0) {
             try {
-                manager.setSelectedNodes(new org.openide.nodes.Node[]{children[0]});
+                manager.setSelectedNodes(new org.openide.nodes.Node[]{getSelectedNode(children)});
             } catch (PropertyVetoException ex) {
                 //ignore
             }
         }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e != null && e.getSource() == inline) {
+            inlineMethod = inline.isSelected();
+            NbPreferences.forModule(ElementSelectorPanel.class).putBoolean(INLINE_PROPERTY, inlineMethod);
+        }
+    }
+
+    public boolean isMethodInline() {
+        return inlineMethod;
     }
 
     public List<CsmDeclaration> getTreeSelectedElements() {
@@ -181,5 +209,16 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
                 getSelectedHandles(d, target);
             }
         }
+    }
+
+    private Node getSelectedNode(Node[] children) {
+        assert children.length > 0 : "array must have elements";
+        for (Node node : children) {
+            Description descr = node.getLookup().lookup(ElementNode.Description.class);
+            if (descr != null && descr.isSelected()) {
+                return node;
+            }
+        }
+        return children[0];
     }
 }

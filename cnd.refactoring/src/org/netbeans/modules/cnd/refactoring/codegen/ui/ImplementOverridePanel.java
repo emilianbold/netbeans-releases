@@ -58,7 +58,7 @@ public class ImplementOverridePanel extends JPanel {
     /** Creates new form ConstructorPanel */
     public ImplementOverridePanel(ElementNode.Description description, boolean isImplement) {
         initComponents();
-        elementSelector = new ElementSelectorPanel(description, false);
+        elementSelector = new ElementSelectorPanel(description, false, true);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
