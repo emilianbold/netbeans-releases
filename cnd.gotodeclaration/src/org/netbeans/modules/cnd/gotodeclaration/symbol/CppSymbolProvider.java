@@ -149,13 +149,13 @@ public class CppSymbolProvider implements SymbolProvider {
                         symbols.add(desc);
                     }
                 }
-                if (TRACE) { trace("Narrowing %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); }
+                if (TRACE) { trace("Narrowing %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
             }
         }
         if (!filled) {
             long time = System.currentTimeMillis();
             collect(context, nameAcceptor, symbols);
-            if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); }
+            if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
         }
         
         if (cancelled) {

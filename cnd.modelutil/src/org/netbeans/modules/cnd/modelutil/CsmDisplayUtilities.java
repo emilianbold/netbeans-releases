@@ -395,7 +395,7 @@ public class CsmDisplayUtilities {
     }
 
     public static String shrinkPath(CharSequence path, boolean shrink, String separator, int maxDisplayedDirLen, int nrDisplayedFrontDirs, int nrDisplayedTrailingDirs) {
-        final String SLASH = "/";
+        final String SLASH = "/"; //NOI18N
         StringBuilder builder = new StringBuilder(path);
         String toReplace = null;
         if (SLASH.equals(separator)) {
