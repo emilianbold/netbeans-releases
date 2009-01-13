@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.php.editor.sql;
 
+import org.netbeans.modules.php.editor.sql.PHPSQLCompletion;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
