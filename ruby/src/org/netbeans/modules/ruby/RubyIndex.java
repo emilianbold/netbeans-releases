@@ -119,7 +119,7 @@ public final class RubyIndex {
 
     public static RubyIndex get(Collection<FileObject> roots) {
         try {
-            return new RubyIndex(QuerySupport.forRoots(RubyUtils.RUBY_MIME_TYPE, roots.toArray(new FileObject[roots.size()])));
+            return new RubyIndex(QuerySupport.forRoots("ruby", 8, roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
             return EMPTY;
