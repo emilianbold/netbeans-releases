@@ -161,6 +161,16 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
         return name.toString();
     }
 
+    /** gets name as such */
+    public CharSequence getRawName() {
+        for (int i = 0; i < name.length(); i++) {
+            if (name.charAt(i) == '(') {
+                return name.subSequence(0, i);
+            }
+        }
+        return name;
+    }
+
     @Override
     public void open() {
         CsmUtilities.openSource(getFileObject(), offset);
