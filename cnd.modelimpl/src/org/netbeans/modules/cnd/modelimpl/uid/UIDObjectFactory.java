@@ -97,11 +97,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         super.writeSelfPersistent((SelfPersistent)anUID, aStream);
     }
     
-    public CsmUID readUID(DataInput aStream) throws IOException {
+    public <T> CsmUID<T> readUID(DataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out == null || out instanceof CsmUID;
-        return (CsmUID)out;
+        return (CsmUID<T>)out;
     }
     
     public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, DataOutput aStream , boolean sync) throws IOException {
@@ -210,10 +210,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
-    private static Collection copySyncCollection(Collection col) {
-        Collection out;
+    private static <T> Collection<CsmUID<T>> copySyncCollection(Collection<CsmUID<T>> col) {
+        Collection<CsmUID<T>> out;
         synchronized (col) {
-            out = new ArrayList(col);
+            out = new ArrayList<CsmUID<T>>(col);
         }
         return out;
     }
@@ -236,7 +236,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CharSequence key = PersistentUtils.readUTF(aStream);
             key = manager == null ? key : manager.getString(key);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }
@@ -251,7 +251,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (int i = 0; i < collSize; ++i) {
             FileImpl.OffsetSortedKey key = new FileImpl.OffsetSortedKey(aStream);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }
@@ -266,7 +266,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (int i = 0; i < collSize; ++i) {
             FileImpl.NameSortedKey key = new FileImpl.NameSortedKey(aStream);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }
