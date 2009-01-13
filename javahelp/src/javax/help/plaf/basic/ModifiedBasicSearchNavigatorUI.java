@@ -89,6 +89,15 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
         }
     }
 
+    @Override
+    protected void setCellRenderer(NavigatorView view, JTree tree) {
+        if (view == null) {
+            return;
+        }
+        Map map = view.getHelpSet().getCombinedMap();
+        tree.setCellRenderer(new ModifiedBasicSearchCellRenderer(map));
+    }
+
     private boolean isTagged(SearchTOCItem item) {
         Enumeration searchHits = item.getSearchHits();
         while (searchHits.hasMoreElements()) {
@@ -100,20 +109,6 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
         return false;
     }
 
-    /** This is a version of C.A.R Hoare's Quick Sort
-     * algorithm.  This will handle arrays that are already
-     * sorted, and arrays with duplicate keys.<BR>
-     *
-     * If you think of a one dimensional array as going from
-     * the lowest index on the left to the highest index on the right
-     * then the parameters to this function are lowest index or
-     * left and highest index or right.  The first time you call
-     * this function it will be with the parameters 0, a.length - 1.
-     *
-     * @param a       a DefaultMutableTreeNode array
-     * @param lo0     left boundary of array partition
-     * @param hi0     right boundary of array partition
-     */
     @Override
     void quickSort(DefaultMutableTreeNode a[], int lo0, int hi0) {
         if (hi0 > lo0)
