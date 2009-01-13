@@ -55,12 +55,14 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -226,13 +228,23 @@ public class CppSymbolProvider implements SymbolProvider {
             // static functions
             Iterator<CsmFunction> funcs = CsmSelect.getDefault().getStaticFunctions(csmFile, nameFilter);
             while (funcs.hasNext() && !cancelled) {
-                symbols.add(new CppSymbolDescriptor(funcs.next()));
+                CsmFunction func = funcs.next();
+                if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
+                    symbols.add(new CppSymbolDescriptor(func));
+                } else {
+                    // static functions definitions are not returned by Select;
+                    // neither do they reside in namespace
+                    CsmFunctionDefinition definition = func.getDefinition();
+                    if (definition != null ) {
+                        symbols.add(new CppSymbolDescriptor(definition));
+                    }
+                }
             }
             if (cancelled) {
                 break;
             }
             // static variables
-            Iterator<CsmFunction> vars = CsmSelect.getDefault().getStaticFunctions(csmFile, nameFilter);
+            Iterator<CsmVariable> vars = CsmSelect.getDefault().getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled) {
                 symbols.add(new CppSymbolDescriptor(vars.next()));
             }
@@ -258,7 +270,19 @@ public class CppSymbolProvider implements SymbolProvider {
         Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(namespace, simpleNameAndKindFilter);
         while (declarations.hasNext()) {
             CsmOffsetableDeclaration decl = declarations.next();
-            symbols.add(new CppSymbolDescriptor(decl));
+            if (CsmKindUtilities.isFunction(decl)) {
+                // do not add declarations if their definitions exist
+                if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                    symbols.add(new CppSymbolDescriptor(decl));
+                } else {
+                    CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
+                    if (definition == null || definition == decl) {
+                        symbols.add(new CppSymbolDescriptor(decl));
+                    }
+                }
+            } else {
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
         }
 
         // instantiate classes and enums to check them and their members as well
@@ -276,6 +300,11 @@ public class CppSymbolProvider implements SymbolProvider {
         }
     }
 
+    /**
+     * Is called for classes, enums and their members.
+     * Checks name, if it suites, adds result to symbols collection.
+     * Does the same recursively (with members/enumerators)
+     */
     private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
         if (nameAcceptor.accept(decl.getName())) {
             symbols.add(new CppSymbolDescriptor(decl));
@@ -300,7 +329,6 @@ public class CppSymbolProvider implements SymbolProvider {
     public String name() {
         return "C/C++"; //NOI18N
     }
-
 
     private String toString(Context context) {
         return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText()); //NOI18N
