@@ -49,7 +49,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *

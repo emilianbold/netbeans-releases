@@ -393,6 +393,7 @@ public class PythonWhereUsedQueryPlugin extends PythonRefactoringPlugin {
                         PythonElementCtx matchCtx = new PythonElementCtx(searchCtx, n);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    // TODO - @type declarations!
                 }
             } else if (isFindOverridingMethods()) {
                 // TODO

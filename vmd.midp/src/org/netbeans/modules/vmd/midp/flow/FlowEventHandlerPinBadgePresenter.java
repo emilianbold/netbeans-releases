@@ -88,6 +88,9 @@ public class FlowEventHandlerPinBadgePresenter extends FlowPinBadgePresenter {
 
     public final void updateDescriptors () {
         final DesignComponent component = getComponent ();
+        if (component == null) {
+            return;
+        }
         if (! isBadgeAvailable ()) {
             pinBadgeDescriptor = null;
         } else if (component != null)  {

@@ -42,16 +42,18 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.IOException;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.ImageUtilities;
 
 /**
  * Factory for simple J2SE projects.
  * @author Jesse Glick
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class J2SEProjectType implements AntBasedProjectType {
+public final class J2SEProjectType implements AntBasedProjectType2 {
 
     public static final String TYPE = "org.netbeans.modules.java.j2seproject"; // NOI18N
     private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
@@ -76,6 +78,10 @@ public final class J2SEProjectType implements AntBasedProjectType {
     
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
+    }
+
+    public Icon getIcon() {
+        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", true));
     }
     
 }

@@ -116,8 +116,8 @@ public abstract class CsmErrorProvider implements NamedEntity {
     // Implementation part
     //
 
-    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true); //NOI18N
-    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true); //NOI18N
+    private static final boolean ENABLE = CndUtils.getBoolean("cnd.csm.errors", true); //NOI18N
+    private static final boolean ASYNC = CndUtils.getBoolean("cnd.csm.errors.async", true); //NOI18N
 
     private static abstract class BaseMerger extends CsmErrorProvider {
 
@@ -189,14 +189,6 @@ public abstract class CsmErrorProvider implements NamedEntity {
     
     public static final synchronized  CsmErrorProvider getDefault() {
         return DEFAULT;
-    }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String value = System.getProperty(name);
-        if (value != null) {
-            result = Boolean.parseBoolean(value);
-        }
-        return result;
     }
 
     /**

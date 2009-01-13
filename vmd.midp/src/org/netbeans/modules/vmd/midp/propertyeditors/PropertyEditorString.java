@@ -243,6 +243,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             } else {
                 initElements(Collections.<PropertyEditorElement>singleton(this));
             }
+        } else {
+            PropertyValue value = (PropertyValue) getValue();
+            updateState(value);
         }
         return super.getCustomEditor();
     }

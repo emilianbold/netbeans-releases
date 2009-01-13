@@ -111,7 +111,7 @@ public enum PythonStringTokenId implements TokenId {
 
                 @Override
                 public String mimeType() {
-                    return "text/x-python-string";
+                    return "text/x-python-string"; // NOI18N
                 }
             }.language();
 
