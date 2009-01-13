@@ -55,11 +55,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.core.WSStackUtils;
@@ -90,8 +88,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     //private boolean jwsdpSupported;
     private boolean jaxWsInJ2ee14Supported;
     private boolean noMetroInstalledOnGlassFishV3;
-    private WebModule wm;
-    private EjbJar em;
+    private boolean isWebModule;
     
     /** Creates new form WebServiceTypePanel */
     public WebServiceTypePanel(Project project) {
@@ -116,9 +113,11 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         jButtonConvert.setVisible(false);
         
         //disable encapsulate session bean for j2se project
-        wm = WebModule.getWebModule(project.getProjectDirectory());
-        em = EjbJar.getEjbJar(project.getProjectDirectory());
-        if ((em == null && wm == null)
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            isWebModule = J2eeModule.WAR.equals(j2eeModuleProvider.getJ2eeModule().getModuleType());
+        }
+                if ((j2eeModuleProvider == null)
         ||  //disable encapsulate session beans for Tomcat
                 ((!jsr109Supported && !jsr109oldSupported ||
                 (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/ ))) ) {
@@ -295,8 +294,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         if(!checkNonJsr109Valid(wizardDescriptor)){
             return false;
         }
-        boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
-        boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
+        boolean noJsr109InWeb = isWebModule && !jsr109Supported && !jsr109oldSupported;
+        boolean jaxWsInWeb14 = isWebModule && jaxWsInJ2ee14Supported;
         if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N

@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.php.project.util;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+
 /**
  * Utility methods.
  * @author Tomas Mysik
@@ -48,7 +55,36 @@ public final class PhpProjectUtils {
     private PhpProjectUtils() {
     }
 
+    /**
+     * Return <code>true</code> if the String is not <code>null</code>
+     * and has any character after trimming.
+     * @param input input String.
+     * @return <code>true</code> if the String is not <code>null</code>
+     *         and has any character after trimming.
+     */
     public static boolean hasText(String input) {
         return input != null && input.trim().length() > 0;
+    }
+
+    /**
+     * Get a PHP project for the given node.
+     * @return a PHP project or <code>null</code>.
+     */
+    public static PhpProject getPhpProject(Node node) {
+        return getPhpProject(CommandUtils.getFileObject(node));
+    }
+
+    /**
+     * Get a PHP project for the given FileObject.
+     * @return a PHP project or <code>null</code>.
+     */
+    public static PhpProject getPhpProject(FileObject fo) {
+        assert fo != null;
+
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        return project.getLookup().lookup(PhpProject.class);
     }
 }

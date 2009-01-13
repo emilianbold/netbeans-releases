@@ -178,14 +178,25 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         });
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
+                WebFrameworkProvider webFrameworkProvider = null;
                 if (success[0]) {
-                    // XXX to jarda tulach: remove this nasty hack
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                    // can be a bit dangerous ;)
+                    int i = 0;
+                    while (webFrameworkProvider == null) {
+                        if (++i > 10) {
+                            // no success?! this should never happen but will try to handle it
+                            break;
+                        }
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        webFrameworkProvider = getWebFrameworkProvider();
                     }
-                    setRealWebFrameworkProvider();
+                }
+                if (webFrameworkProvider != null) {
+                    setRealWebFrameworkProvider(webFrameworkProvider);
                     setRealWebFrameworkConfigurationPanel();
 
                     // update & fire events
@@ -213,8 +224,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         task.schedule(0);
     }//GEN-LAST:event_downloadButtonActionPerformed
 
-    private void setRealWebFrameworkProvider() {
-        WebFrameworkProvider webFrameworkProvider = getWebFrameworkProvider();
+    private void setRealWebFrameworkProvider(WebFrameworkProvider webFrameworkProvider) {
         assert webFrameworkProvider != null : String.format("Web framework provider must be found for %s (%s)", name, codeNameBase);
         assert !(webFrameworkProvider instanceof FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl) : "Fake web framework provider found";
         fakeExtender.setWebFrameworkProvider(webFrameworkProvider);
