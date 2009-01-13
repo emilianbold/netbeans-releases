@@ -64,7 +64,7 @@ public class PaletteFactoryTest extends TestCase {
         paletteRootFolder = FileUtil.getConfigFile( PALETTE_ROOT_FOLDER_NAME );
         if( null != paletteRootFolder )
             paletteRootFolder.delete();
-        paletteRootFolder = fs.getRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
+        paletteRootFolder = FileUtil.getConfigRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
     }
 
     protected void tearDown() throws Exception {
