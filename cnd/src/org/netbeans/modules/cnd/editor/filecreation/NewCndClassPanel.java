@@ -94,7 +94,7 @@ public class NewCndClassPanel extends CndPanel {
         if (errorMessage == null) {
             errorMessage = canUseFileName(getGui().getTargetGroup().getRootFolder(), getGui().getTargetFolder(), getGui().getHeaderFileName(), false);
         }
-        setErrorMessage(errorMessage); // NOI18N
+        setErrorMessage(errorMessage);
 
         return errorMessage == null;
     }

@@ -41,6 +41,7 @@
 package org.netbeans.modules.maven.jaxws.nodes;
 
 import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -75,10 +76,19 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.maven.jaxws.ServerType;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
+import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.maven.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.maven.jaxws.actions.WsTesterPageAction;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
+import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -86,12 +96,10 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -105,7 +113,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsNode extends AbstractNode {
+public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 
     JaxWsService service;
     FileObject srcRoot;
@@ -253,7 +261,7 @@ public class JaxWsNode extends AbstractNode {
 //                null,
 //                SystemAction.get(WSEditAttributesAction.class),
 //                null,
-//                SystemAction.get(ConfigureHandlerAction.class),
+                SystemAction.get(ConfigureHandlerAction.class),
 //                null,
 //                SystemAction.get(JaxWsGenWSDLAction.class),
 //                null,
@@ -894,5 +902,87 @@ public class JaxWsNode extends AbstractNode {
         }
         return null;
     }
+
+    public void configureHandler() {
+        FileObject implBeanFo = getImplBean();
+        List<String> handlerClasses = new ArrayList<String>();
+        FileObject handlerFO = null;
+        HandlerChains handlerChains = null;
+        //obtain the handler config file, if any from annotation in implbean
+        final String[] handlerFileName = new String[1];
+        final boolean[] isNew = new boolean[]{true};
+        JavaSource implBeanJavaSrc = JavaSource.forFileObject(implBeanFo);
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                AnnotationMirror handlerAnnotation = _RetoucheUtil.getAnnotation(controller, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                if (handlerAnnotation != null) {
+                    isNew[0] = false;
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
+                    for (ExecutableElement ex : expressions.keySet()) {
+                        if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
+                            handlerFileName[0] = (String) expressions.get(ex).getValue();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        try {
+            implBeanJavaSrc.runUserActionTask(task, true);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
+        if (!isNew[0] && handlerFileName[0] != null) {
+            try {
+                // look for handlerFile
+                FileObject parent = implBeanFo.getParent();
+                File parentFile = FileUtil.toFile(parent);
+
+                File file = new File(parentFile, handlerFileName[0]);
+                if (file.exists()) {
+                    file = file.getCanonicalFile();
+                    handlerFO = FileUtil.toFileObject(file);
+                }
+                if (handlerFO != null) {
+                    try {
+                        handlerChains = HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(e);
+                        return; //TODO handle this
+                    }
+                    HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
+                    //there is always only one, so get the first one
+                    HandlerChain chain = handlerChainArray[0];
+                    Handler[] handlers = chain.getHandlers();
+                    for (int i = 0; i < handlers.length; i++) {
+                        handlerClasses.add(handlers[i].getHandlerClass());
+                    }
+                } else {
+                    //unable to find the handler file, display a warning
+                    NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(dialogDesc);
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        final MessageHandlerPanel panel = new MessageHandlerPanel(project, handlerClasses, true, service.getServiceName());
+        String title = NbBundle.getMessage(JaxWsNode.class, "TTL_MessageHandlerPanel");
+        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
+        dialogDesc.setButtonListener(new HandlerButtonListener(panel, handlerChains, handlerFO, implBeanFo, service, isNew[0]));
+        DialogDisplayer.getDefault().notify(dialogDesc);
+//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+//        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
+//        dialog.setVisible(true);
+    }
+
+
 
 }

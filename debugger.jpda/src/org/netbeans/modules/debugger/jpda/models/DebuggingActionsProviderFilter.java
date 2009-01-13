@@ -62,29 +62,25 @@ import org.openide.util.RequestProcessor;
  */
 public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter {
 
-    private RequestProcessor rp;
-
-    private synchronized RequestProcessor getRP() {
-        if (rp == null) {
-            rp = new RequestProcessor("Debugging Actions", 1);
-        }
-        return rp;
-    }
-
     private Action SUSPEND_ALL_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Suspend_All_Label"),
         new Models.ActionPerformer () {
+            RequestProcessor.Task task;
             public boolean isEnabled (Object node) {
                 return node == TreeModel.ROOT &&
                        debugger.getThreadsCollector().isSomeThreadRunning();
             }
 
-            public void perform (Object[] nodes) {
-                getRP().post(new Runnable() {
-                    public void run() {
-                        debugger.suspend();
-                    }
-                });
+            public synchronized void perform (Object[] nodes) {
+                if (task == null) {
+                    task = debugger.getRequestProcessor().post(new Runnable() {
+                        public void run() {
+                            debugger.suspend();
+                        }
+                    });
+                } else {
+                    task.schedule(1);
+                }
             }
         },
         Models.MULTISELECTION_TYPE_ALL
@@ -93,17 +89,22 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
     private Action RESUME_ALL_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Resume_All_Label"),
         new Models.ActionPerformer () {
+            RequestProcessor.Task task;
             public boolean isEnabled (Object node) {
                 return node == TreeModel.ROOT &&
                        debugger.getThreadsCollector().isSomeThreadSuspended();
             }
 
-            public void perform (Object[] nodes) {
-                getRP().post(new Runnable() {
-                    public void run() {
-                        debugger.resume();
-                    }
-                });
+            public synchronized void perform (Object[] nodes) {
+                if (task == null) {
+                    task = debugger.getRequestProcessor().post(new Runnable() {
+                        public void run() {
+                            debugger.resume();
+                        }
+                    });
+                } else {
+                    task.schedule(1);
+                }
             }
         },
         Models.MULTISELECTION_TYPE_ALL
@@ -112,16 +113,21 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
     private Action DEADLOCK_DETECT_ACTION = Models.createAction (
         CheckDeadlocksAction.getDisplayName(),
         new Models.ActionPerformer () {
+            RequestProcessor.Task task;
             public boolean isEnabled (Object node) {
                 return node == TreeModel.ROOT;
             }
 
-            public void perform (Object[] nodes) {
-                getRP().post(new Runnable() {
-                    public void run() {
-                        CheckDeadlocksAction.checkForDeadlock(debugger);
-                    }
-                });
+            public synchronized void perform (Object[] nodes) {
+                if (task == null) {
+                    task = debugger.getRequestProcessor().post(new Runnable() {
+                        public void run() {
+                            CheckDeadlocksAction.checkForDeadlock(debugger);
+                        }
+                    });
+                } else {
+                    task.schedule(1);
+                }
             }
         },
         Models.MULTISELECTION_TYPE_ALL

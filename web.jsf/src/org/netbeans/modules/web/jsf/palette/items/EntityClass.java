@@ -182,16 +182,6 @@ public abstract class EntityClass {
                 );
     }
     
-    static boolean hasModuleJsf(JTextComponent target) {
-        FileObject fileObject = getFO(target);
-        if (fileObject != null) {
-            WebModule webModule = WebModule.getWebModule(fileObject);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
-            return configFiles != null && configFiles.length > 0;
-        }
-        return false;
-    }
-    
     public static boolean isEntityClass(TypeElement typeElement) {
         if (JpaControllerUtil.isAnnotatedWith(typeElement, "javax.persistence.Entity")) {
             return true;

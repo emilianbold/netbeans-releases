@@ -54,14 +54,11 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.awt.Mnemonics;
 
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 

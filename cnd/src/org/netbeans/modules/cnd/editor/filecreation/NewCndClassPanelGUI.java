@@ -136,15 +136,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
                 if (currentFolder != null) {
-                    int index = 0;
-                    while (true) {
-                        FileObject _tmpS = currentFolder.getFileObject(getFileName(documentName), sourceExt);
-                        FileObject _tmpH = currentFolder.getFileObject(getFileName(documentName), headerExt);
-                        if (_tmpS == null && _tmpH == null) {
-                            break;
-                        }
-                        documentName = baseName + ++index;
-                    }
+                    documentName += generateUniqueSuffix(
+                            currentFolder, getFileName(documentName),
+                            sourceExt, headerExt);
                 }
                 
             }

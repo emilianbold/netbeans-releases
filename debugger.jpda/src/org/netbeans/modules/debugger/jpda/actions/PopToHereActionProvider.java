@@ -108,23 +108,24 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
             return;
         }
         JPDAThread t;
-        synchronized (getDebuggerImpl().LOCK) {
-            if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
-                t = getDebuggerImpl ().getCurrentThread ();
-            } else {
-                t = null;
-            }
+        if (debuggerState == JPDADebugger.STATE_STOPPED) {
+            t = getDebuggerImpl ().getCurrentThread ();
+        } else {
+            t = null;
         }
         boolean enabled;
         if (t == null) {
             enabled = false;
         } else {
-            synchronized (t) {
+            t.getReadAccessLock().lock();
+            try {
                 if (!t.isSuspended()) {
                     enabled = false;
                 } else {
                     enabled = t.getStackDepth () > 1;
                 }
+            } finally {
+                t.getReadAccessLock().unlock();
             }
         }
         setEnabled (

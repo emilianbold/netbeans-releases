@@ -46,7 +46,7 @@
         </copy>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.8.3.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.3-java.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.2.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.4.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-postgres-8.2.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcmysql-adapter-0.9.gem"/>

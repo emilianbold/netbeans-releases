@@ -43,11 +43,13 @@ package org.netbeans.modules.maven;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -55,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  * @author  Milos Kleint
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=666)
-public class NbMavenProjectFactory implements ProjectFactory {
+public class NbMavenProjectFactory implements ProjectFactory2 {
     
     /** Creates a new instance of NbMavenProjectFactory */
     public NbMavenProjectFactory() {
@@ -76,6 +78,14 @@ public class NbMavenProjectFactory implements ProjectFactory {
         }
         return project.isFile() &&  !"nbproject".equalsIgnoreCase(projectDir.getName()); //NOI18N
     }
+
+    public ProjectManager.Result isProject2(FileObject projectDirectory) {
+        if (isProject(projectDirectory)) {
+            return new ProjectManager.Result(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif", true))); //NOI18N
+        }
+        return null;
+    }
+
     
     public Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException
     {
@@ -110,7 +120,5 @@ public class NbMavenProjectFactory implements ProjectFactory {
     
     public void saveProject(Project project) throws IOException {
         // what to do here??
-    }
-    
-    
+    }    
 }

@@ -178,6 +178,8 @@ public enum PythonTokenId implements TokenId {
                     PythonTokenId id = token.id();
                     if (id == STRING_LITERAL) {
                         return LanguageEmbedding.create(PythonStringTokenId.language, 0, 0);
+                    } else if (id == COMMENT) {
+                        return LanguageEmbedding.create(PythonCommentTokenId.language(), 1, 0);
                     }
 
                     return null; // No embedding

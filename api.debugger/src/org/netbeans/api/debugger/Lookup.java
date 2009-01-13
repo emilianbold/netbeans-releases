@@ -128,8 +128,8 @@ abstract class Lookup implements ContextProvider {
     }
     
     static class Compound extends Lookup {
-        private ContextProvider l1;
-        private ContextProvider l2;
+        ContextProvider l1;
+        ContextProvider l2;
         
         Compound(ContextProvider l1, ContextProvider l2) {
             this.l1 = l1;

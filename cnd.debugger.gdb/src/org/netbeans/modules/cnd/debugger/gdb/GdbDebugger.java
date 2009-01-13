@@ -1436,10 +1436,16 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     public void runToCursor() {
         // TODO: better use until debugger command
+        String file = EditorContextBridge.getContext().getCurrentURL();
+        if (file.length() == 0) {
+            return;
+        }
+        int line = EditorContextBridge.getContext().getCurrentLineNumber();
+        if (line < 0) {
+            return;
+        }
         removeRTCBreakpoint();
-        rtcBreakpoint = LineBreakpoint.create(
-                EditorContextBridge.getContext().getCurrentURL(),
-                EditorContextBridge.getContext().getCurrentLineNumber());
+        rtcBreakpoint = LineBreakpoint.create(file, line);
         rtcBreakpoint.setTemporary();
         rtcBreakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint(rtcBreakpoint);

@@ -46,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 
 /**
  * Base class for test recognizer handlers. 
@@ -55,6 +56,16 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 abstract class TestRecognizerHandler {
 
     private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
+
+    /**
+     * Patterns for recognizing comparison failures.
+     */
+    private static final Pattern[] STRING_COMPARISON = new Pattern[]{
+        // test/unit
+        Pattern.compile("<\"(.*)\"> expected but was <\"(.*)\">.*"),//NOI18N
+        // rspec
+        Pattern.compile(".*expected \"(.*)\", got \"(.*)\".*")//NOI18N
+    };
     
     protected final Pattern pattern;
     protected Matcher matcher;
@@ -106,5 +117,24 @@ abstract class TestRecognizerHandler {
             LOGGER.log(Level.WARNING, "Could not parse time, returning 0", nfe);
         }
         return 0;
+    }
+
+    protected static Trouble.ComparisonFailure getComparisonFailure(String msg) {
+        if (msg == null) {
+            return null;
+        }
+        for (Pattern pattern : STRING_COMPARISON) {
+            Matcher comparisonMatcher = pattern.matcher(msg);
+            if (!comparisonMatcher.matches()) {
+                continue;
+            }
+            return new Trouble.ComparisonFailure(toMultipleLines(comparisonMatcher.group(1)),
+                    toMultipleLines(comparisonMatcher.group(2)));
+        }
+        return null;
+    }
+
+    private static String toMultipleLines(String toConvert) {
+        return toConvert.replace("\\n", "\n"); //NOI18N
     }
 }
