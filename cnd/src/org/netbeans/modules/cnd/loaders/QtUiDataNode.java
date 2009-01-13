@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 
 /**
  * @author Alexey Vladykin
  */
-public class QtUiDataObject extends MultiDataObject {
+public class QtUiDataNode extends CndDataNode {
 
-    public QtUiDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+    public QtUiDataNode(DataObject obj) {
+        super(obj, Children.LEAF, ICON);
     }
 
-    @Override
-    protected Node createNodeDelegate() {
-        return new QtUiDataNode(this);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
+    private static final String ICON =
+            "org/netbeans/modules/cnd/loaders/QtUiIcon.png"; // NOI18N
 
 }
