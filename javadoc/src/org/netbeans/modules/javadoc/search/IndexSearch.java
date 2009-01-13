@@ -456,7 +456,7 @@ public final class IndexSearch
                 evt.consume();
             }
             else
-                showHelp();
+                showHelpExternal();
         }
     }//GEN-LAST:event_resultsListMouseClicked
 
