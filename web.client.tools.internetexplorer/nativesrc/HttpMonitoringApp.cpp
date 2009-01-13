@@ -145,7 +145,7 @@ STDMETHODIMP CTestSink::BeginningTransaction(
         if (splitPos != tstring::npos) {
             std::wstring params = url.substr(splitPos + 1);
             size_t idx;
-            while( (idx=params.find_first_of('&')) >= 0 ) {
+            while( (idx=params.find_first_of('&')) != string::npos ) {
                 params.replace( idx, 1, L" " );
             }
             msg.addChildTagWithValue(_T("urlParams"), params.c_str());
@@ -281,11 +281,11 @@ STDMETHODIMP CTestSink::OnResponse(
 
 
     // For Debug output message
-    /*tstring response = m_redirects;
-    response += L"----szResponseHeaders----\r\n";
-    response += W2CT(szResponseHeaders);
-    EnsureCRLF(response);
-    response += L"----/szResponseHeaders----\r\n";*/
+    //tstring response = m_redirects;
+    //response += L"----szResponseHeaders----\r\n";
+    //response += W2CT(szResponseHeaders);
+    //EnsureCRLF(response);
+    //response += L"----/szResponseHeaders----\r\n";
 
     tstring headerSet1 = W2CT(szResponseHeaders);
     // First line of headers contains the HTTP status response.
@@ -295,21 +295,21 @@ STDMETHODIMP CTestSink::OnResponse(
     msg.addChildTagWithValue(_T("status"),dwResponseCode); // HTTP response code
 
     addAllHeaders(headerSet1, msg); //parse & add headers from szResponseHeaders
-/*
-    if (szRequestHeaders)
-    {
-        response += _T("(Repeat request)\r\n");
-        response += W2CT(szRequestHeaders);
-        EnsureCRLF(response);
-        if (SUCCEEDED(hr) && pszAdditionalRequestHeaders &&
-            *pszAdditionalRequestHeaders)
-        {
-            response += L"----pszAdditionalRequestHeaders----\r\n";
-            response += W2CT(*pszAdditionalRequestHeaders);
-            EnsureCRLF(response);
-        }
-    }
-    response += _T("\r\n");*/
+
+    //if (szRequestHeaders)
+    //{
+    //    response += _T("(Repeat request)\r\n");
+    //    response += W2CT(szRequestHeaders);
+    //    EnsureCRLF(response);
+    //    if (SUCCEEDED(hr) && pszAdditionalRequestHeaders &&
+    //        *pszAdditionalRequestHeaders)
+    //    {
+    //        response += L"----pszAdditionalRequestHeaders----\r\n";
+    //        response += W2CT(*pszAdditionalRequestHeaders);
+    //        EnsureCRLF(response);
+    //    }
+    //}
+    //response += _T("\r\n");
 
     //TODO - response URL
     msg.addChildTagWithValue(_T("url"), _T("http://"));
@@ -357,8 +357,9 @@ STDMETHODIMP CTestSink::OnResponse(
     }
 
     //if (categoryString.find(L"text") != tstring::npos) {
-    //MessageBox(0,response.c_str(),_T("Netbeans BHO - Response Received"),MB_OK);
+    //MessageBox(0,_T("response")/*response.c_str()*/,_T("Netbeans BHO - Response Received"),MB_OK);
     //}
+
     return hr;
 }
 
