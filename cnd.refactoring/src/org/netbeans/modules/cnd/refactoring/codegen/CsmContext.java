@@ -132,6 +132,7 @@ public final class CsmContext {
                             break;
                         } else {
                             objectUnderOffset = elem;
+                            cont = false;
                         }
                     }
                 }
