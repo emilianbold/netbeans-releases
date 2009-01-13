@@ -158,37 +158,6 @@ made subject to such option by the copyright holder.
         </folder>        
     </folder> <!-- Templates -->
 
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="jsf12-support.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsf12-support.xml"/>
-            <file name="webui.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui.xml"/>
-            <file name="exceptionhandler-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/exceptionhandler-runtime.xml"/>
-            <file name="theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default.xml"/>
-            <file name="theme-default-green.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-green.xml"/>
-            <file name="theme-default-gray.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-gray.xml"/>
-            <!-- Deprecated libraries below for backward compatible -->
-            <file name="jsfsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-designtime.xml"/>
-            <file name="jsfsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-runtime.xml"/>
-            <file name="webui-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui-designtime.xml"/>
-            <file name="webui-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui-runtime.xml"/>
-            <file name="jdbcsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-designtime.xml"/>
-            <file name="jdbcsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-runtime.xml"/>
-        </folder>
-        <folder name="LibraryTypeProviders">
-            <file name="component_library_provider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider.create"/>
-                <attr name="position" intvalue="200"/>
-            </file>
-            <file name="theme_library_provider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider.create"/>
-                <attr name="position" intvalue="300"/>
-            </file>
-        </folder>
-    </folder>
 <!--
     <folder name="CreatorJavaPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.codeclips.Bundle"/>

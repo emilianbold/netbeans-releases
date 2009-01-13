@@ -59,5 +59,13 @@ made subject to such option by the copyright holder.
                 </file>
                 </folder>
         </folder>
+        <folder name="org-netbeans-modules-ruby-merbproject">
+            <folder name="Customizer">
+                <file name="Java.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.javaint.RubyCompositePanelProvider.createJava"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

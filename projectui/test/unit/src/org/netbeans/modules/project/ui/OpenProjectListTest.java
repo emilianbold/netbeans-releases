@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -82,6 +81,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails
 public class OpenProjectListTest extends NbTestCase {
     FileObject f1_1_open, f1_2_open, f1_3_close;
     FileObject f2_1_open;
@@ -135,7 +135,6 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
 
-    @RandomlyFails // NB-Core-Build #1691
     public void testOpen () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);
         CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
@@ -152,7 +151,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
 
-    @RandomlyFails // NB-Core-Build #1767
     public void testListenerOpenClose () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0); 
         ChangeListener list = new ChangeListener();
@@ -177,7 +175,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals(0, list.newCount);
     }
 
-    @RandomlyFails // NB-Core-Build #1855
     public void testClose () throws Exception {
         testOpen ();
         
@@ -208,7 +205,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f2_1_open is still loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
 
-    @RandomlyFails // NB-Core-Build #810
     public void testSerialize() throws Exception {
         testOpen();
         
@@ -320,7 +316,6 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
     }
     
-    @RandomlyFails
     public void testMainProject() throws Exception {
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         
@@ -402,7 +397,7 @@ public class OpenProjectListTest extends NbTestCase {
     
     private static class TestOpenCloseProjectDocument implements ProjectUtilities.OpenCloseProjectDocument {
         public Set<String> openFiles = new HashSet<String>();
-        public Map<Project,SortedSet<String>> urls4project = new HashMap<Project,SortedSet<String>>();
+        public Map<Project,Set<String>> urls4project = new HashMap<Project,Set<String>>();
         
         public boolean open (FileObject fo) {
             Project owner = FileOwnerQuery.getOwner (fo);
@@ -425,10 +420,10 @@ public class OpenProjectListTest extends NbTestCase {
             return true;
         }
         
-        public Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI) {
+        public Map<Project,Set<String>> close(Project[] projects, boolean notifyUI) {
             
             for (int i = 0; i < projects.length; i++) {
-                SortedSet<String> projectOpenFiles = urls4project.get(projects [i]);
+                Set<String> projectOpenFiles = urls4project.get(projects [i]);
                 if (projectOpenFiles != null) {
                     projectOpenFiles.retainAll (openFiles);
                     urls4project.put (projects [i], projectOpenFiles);

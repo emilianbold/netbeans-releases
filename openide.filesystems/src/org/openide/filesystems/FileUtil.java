@@ -52,13 +52,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Dictionary;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -108,16 +109,6 @@ public final class FileUtil extends Object {
         transientAttributes.add("SystemFileSystem.icon"); // NOI18N
         transientAttributes.add("SystemFileSystem.icon32"); // NOI18N
         transientAttributes.add("position"); // NOI18N
-    }
-
-    /* mapping of file extensions to content-types */
-    private static Dictionary<String, String> map = new Hashtable<String, String>();
-
-    static {
-        // Set up at least this one statically, because it is so basic;
-        // we do not want to rely on Lookup, MIMEResolver, declarative resolvers,
-        // XML layers, etc. just to find this.
-        setMIMEType("xml", "text/xml"); // NOI18N
     }
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
@@ -165,7 +156,11 @@ public final class FileUtil extends Object {
      */
     public static void refreshAll() {
         refreshFor(File.listRoots());
-        Repository.getDefault().getDefaultFileSystem().refresh(true);
+        try {
+            getConfigRoot().getFileSystem().refresh(true);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }         
     
     /**
@@ -212,6 +207,7 @@ public final class FileUtil extends Object {
      * @throws java.io.IOException
      * @since 7.5
      */
+    @SuppressWarnings("deprecation")
     public static final void runAtomicAction(final AtomicAction atomicCode) throws IOException {
         Repository.getDefault().getDefaultFileSystem().runAtomicAction(atomicCode);
     }
@@ -1080,102 +1076,103 @@ public final class FileUtil extends Object {
     */
     @Deprecated
     public static String getMIMEType(String ext) {
-        String s = map.get(ext);
-
-        if (s != null) {
-            return s;
-        } else {
-            return map.get(ext.toLowerCase());
+        assert false : "FileUtil.getMIMEType(String extension) is deprecated. Please, use FileUtil.getMIMEType(FileObject).";  //NOI18N
+        if (ext.toLowerCase().equals("xml")) {  //NOI18N
+            return "text/xml"; // NOI18N
         }
+        return null;
     }
 
     /** Resolves MIME type. Registered resolvers are invoked and used to achieve this goal.
-    * Resolvers must subclass MIMEResolver. If resolvers don't recognize MIME type then
-    * MIME type is obtained  for a well-known extension.
+    * Resolvers must subclass MIMEResolver.
     * @param fo whose MIME type should be recognized
-    * @return the MIME type for the FileObject, or <code>null</code> if the FileObject is unrecognized
+    * @return the MIME type for the FileObject, or {@code null} if the FileObject is unrecognized.
+     * It may return {@code content/unknown} instead of {@code null}.
     */
     public static String getMIMEType(FileObject fo) {
-        String retVal = MIMESupport.findMIMEType(fo, null);
-
-        if (retVal == null) {
-            retVal = getMIMEType(fo.getExt());
-        }
-
-        return retVal;
+        return MIMESupport.findMIMEType(fo);
     }
 
     /** Resolves MIME type. Registered resolvers are invoked and used to achieve this goal.
-     * Resolvers must subclass MIMEResolver. If resolvers don't recognize MIME type then
-     * MIME type is obtained  for a well-known extension.
+     * Resolvers must subclass MIMEResolver.
      * @param fo whose MIME type should be recognized
      * @param withinMIMETypes an array of MIME types. Only resolvers whose
      * {@link MIMEResolver#getMIMETypes} contain one or more of the requested
      * MIME types will be asked if they recognize the file. It is possible for
      * the resulting MIME type to not be a member of this list.
      * @return the MIME type for the FileObject, or <code>null</code> if 
-     * the FileObject is unrecognized. It is possible for the resulting MIME type
-     * to not be a member of given list.
+     * the FileObject is unrecognized. It may return {@code content/unknown} instead of {@code null}.
+     * It is possible for the resulting MIME type to not be a member of given list.
      * @since 7.13
      */
     public static String getMIMEType(FileObject fo, String... withinMIMETypes) {
         Parameters.notNull("withinMIMETypes", withinMIMETypes);  //NOI18N
-        String retVal = MIMESupport.findMIMEType(fo, null, withinMIMETypes);
-
-        if (retVal == null) {
-            retVal = getMIMEType(fo.getExt());
-        }
-
-        return retVal;
+        return MIMESupport.findMIMEType(fo, withinMIMETypes);
     }
     
-    /** Finds mime type by calling getMIMEType, but
-     * instead of returning null it fallbacks to default type
-     * either text/plain or content/unknown (even for folders)
-     */
-    static String getMIMETypeOrDefault(FileObject fo) {
-        String def = getMIMEType(fo.getExt());
-        String t = MIMESupport.findMIMEType(fo, def);
-
-        if (t == null) {
-            // #42965: never allowed
-            t = "content/unknown"; // NOI18N
-        }
-
-        return t;
-    }
-
-    /**
-     * Register MIME type for a new extension.
+    /** Registers specified extension to be recognized as specified MIME type.
+     * If MIME type parameter is null, it cancels previous registration.
      * Note that you may register a case-sensitive extension if that is
-     * relevant (for example <samp>*.C</samp> for C++) but if you register
+     * relevant (for example {@literal *.C} for C++) but if you register
      * a lowercase extension it will by default apply to uppercase extensions
-     * too (for use on Windows or generally for situations where filenames
-     * become accidentally uppercase).
-     * @param ext the file extension (should be lowercase unless you specifically care about case)
-     * @param mimeType the new MIME type
-     * @throws IllegalArgumentException if this extension was already registered with a <em>different</em> MIME type
-     * @see #getMIMEType
-     * @deprecated You should instead use the more general {@link MIMEResolver} system.
+     * too on Windows.
+     * @param extension the file extension to be registered
+     * @param mimeType the MIME type to be registered for the extension or {@code null} to deregister
+     * @see #getMIMEType(FileObject)
+     * @see #getMIMETypeExtensions(String)
      */
-    @Deprecated
-    public static void setMIMEType(String ext, String mimeType) {
-        synchronized (map) {
-            String old = map.get(ext);
-
-            if (old == null) {
-                map.put(ext, mimeType);
-            } else {
-                if (!old.equals(mimeType)) {
-                    throw new IllegalArgumentException(
-                        "Cannot overwrite existing MIME type mapping for extension `" + // NOI18N
-                        ext + "' with " + mimeType + " (was " + old + ")"
-                    ); // NOI18N
-                }
-
-                // else do nothing
+    public static void setMIMEType(String extension, String mimeType) {
+        Parameters.notEmpty("extension", extension);  //NOI18N
+        final Map<String, Set<String>> mimeToExtensions = new HashMap<String, Set<String>>();
+        FileObject userDefinedResolverFO = MIMEResolverImpl.getUserDefinedResolver();
+        if (userDefinedResolverFO != null) {
+            // add all previous content
+            mimeToExtensions.putAll(MIMEResolverImpl.getMIMEToExtensions(userDefinedResolverFO));
+            // exclude extension possibly registered for other MIME types
+            for (Set<String> extensions : mimeToExtensions.values()) {
+                extensions.remove(extension);
             }
         }
+        if (mimeType != null) {
+            // add specified extension to our structure
+            Set<String> previousExtensions = mimeToExtensions.get(mimeType);
+            if (previousExtensions != null) {
+                previousExtensions.add(extension);
+            } else {
+                mimeToExtensions.put(mimeType, Collections.singleton(extension));
+            }
+        }
+        MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+    }
+
+    /** Returns list of file extensions associated with specified MIME type. In
+     * other words files with those extensions are recognized as specified MIME type
+     * in NetBeans' filesystem. It never returns {@code null}.
+     * @param mimeType the MIME type (e.g. image/gif)
+     * @return list of file extensions associated with specified MIME type, never {@code null}
+     * @see #setMIMEType(String, String)
+     * @since org.openide.filesystems 7.18
+     */
+    public static List<String> getMIMETypeExtensions(String mimeType) {
+        Parameters.notEmpty("mimeType", mimeType);  //NOI18N
+        HashMap<String, String> extensionToMime = new HashMap<String, String>();
+        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
+            Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
+            for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
+                String mimeKey = entry.getKey();
+                Set<String> extensions = entry.getValue();
+                for (String extension : extensions) {
+                    extensionToMime.put(extension, mimeKey);
+                }
+            }
+        }
+        List<String> registeredExtensions = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : extensionToMime.entrySet()) {
+            if (entry.getValue().equals(mimeType)) {
+                registeredExtensions.add(entry.getKey());
+            }
+        }
+        return registeredExtensions;
     }
 
     /**
@@ -1769,6 +1766,36 @@ public final class FileUtil extends Object {
      */
     public static boolean affectsOrder(FileAttributeEvent event) {
         return Ordering.affectsOrder(event);
+    }
+
+    /**
+     * Returns {@code FileObject} from the NetBeans default (system, configuration)
+     * filesystem or {@code null} if does not exist.
+     * If you wish to create the file/folder when it does not already exist,
+     * start with {@link #getConfigRoot} and use {@link #createData(FileObject, String)}
+     * or {@link #createFolder(FileObject, String)} methods.
+     * @param path the path from the root of the NetBeans default (system, configuration)
+     * filesystem delimited by '/' or empty string to get root folder.
+     * @throws NullPointerException if the path is {@code null}
+     * @return a {@code FileObject} for given path in the NetBeans default (system, configuration)
+     * filesystem or {@code null} if does not exist
+     * @since org.openide.filesystems 7.19
+     */
+    @SuppressWarnings("deprecation")
+    public static FileObject getConfigFile(String path) {
+        Parameters.notNull("path", path);  //NOI18N
+        return Repository.getDefault().getDefaultFileSystem().findResource(path);
+    }
+
+    /**
+     * Returns the root of the NetBeans default (system, configuration)
+     * filesystem.
+     * @return a {@code FileObject} for the root of the NetBeans default (system, configuration)
+     * filesystem
+     * @since org.openide.filesystems 7.19
+     */
+    public static FileObject getConfigRoot() {
+        return getConfigFile("");  //NOI18N
     }
 
     private static File wrapFileNoCanonicalize(File f) {

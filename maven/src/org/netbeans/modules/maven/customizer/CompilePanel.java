@@ -39,8 +39,24 @@
 
 package org.netbeans.modules.maven.customizer;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -48,19 +64,23 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
+import org.netbeans.modules.maven.classpath.BootClassPathImpl;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.options.MavenExecutionSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author mkleint
  */
-public class CompilePanel extends javax.swing.JPanel {
+public class CompilePanel extends javax.swing.JPanel implements WindowFocusListener {
     private ModelHandle handle;
     private static final String[] LABELS = new String[] {
         NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
@@ -74,6 +94,10 @@ public class CompilePanel extends javax.swing.JPanel {
         "test",//NOI18N
         "none"//NOI18N
     };
+
+    private static final String PARAM_DEBUG = "debug";//NOI18N
+    private static final String PARAM_DEPRECATION = "showDeprecation";
+
     private static final int COS_ALL = 0;
     private static final int COS_APP = 1;
     private static final int COS_TESTS = 2;
@@ -84,6 +108,8 @@ public class CompilePanel extends javax.swing.JPanel {
     private CheckBoxUpdater debugUpdater;
     private CheckBoxUpdater deprecateUpdater;
 
+    private Color origComPlatformFore;
+
     /** Creates new form CompilePanel */
     public CompilePanel(ModelHandle handle, Project prj) {
         initComponents();
@@ -91,6 +117,11 @@ public class CompilePanel extends javax.swing.JPanel {
         project = prj;
         ComboBoxModel mdl = new DefaultComboBoxModel(LABELS);
         comCompileOnSave.setModel(mdl);
+        comJavaPlatform.setModel(new PlatformsModel());
+        comJavaPlatform.setRenderer(new PlatformsRenderer());
+
+        origComPlatformFore = comJavaPlatform.getForeground();
+
         initValues();
     }
 
@@ -187,7 +218,7 @@ public class CompilePanel extends javax.swing.JPanel {
         };
         debugUpdater = new CheckBoxUpdater(cbDebug) {
             public Boolean getValue() {
-                String val = getCompilerParam(handle, "debug");
+                String val = getCompilerParam(handle,PARAM_DEBUG);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -199,11 +230,11 @@ public class CompilePanel extends javax.swing.JPanel {
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "true";
+                    text = "true";//NOI18N
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, "debug", text);
+                checkCompilerParam(handle, PARAM_DEBUG, text);
             }
 
             public boolean getDefaultValue() {
@@ -213,7 +244,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
         deprecateUpdater = new CheckBoxUpdater(cbDeprecate) {
             public Boolean getValue() {
-                String val = getCompilerParam(handle, "showDeprecation");
+                String val = getCompilerParam(handle,PARAM_DEPRECATION);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -225,17 +256,132 @@ public class CompilePanel extends javax.swing.JPanel {
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "false";
+                    text = "false";//NOI18N
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, "showDeprecation", text);
+                checkCompilerParam(handle, PARAM_DEPRECATION, text);
             }
 
             public boolean getDefaultValue() {
                 return false;
             }
         };
+
+        // java platform updater
+        new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
+
+            @Override
+            public JavaPlatform getValue() {
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                String val = null;
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
+                    if (props != null && props.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
+                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
+                    }
+                }
+                if (val == null) {
+                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    if (props != null) {
+                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
+                    }
+                }
+                if (val == null) {
+                    MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
+                    val = props.get(Constants.HINT_JDK_PLATFORM, true, false);
+                }
+                if (val != null) {
+                    return BootClassPathImpl.getActivePlatform(val);
+                } else {
+                    return getSelPlatform();
+                }
+            }
+
+            @Override
+            public JavaPlatform getDefaultValue() {
+                return getSelPlatform();
+            }
+
+            @Override
+            public void setValue(JavaPlatform value) {
+                JavaPlatform platf = value == null ? JavaPlatformManager.getDefault().getDefaultPlatform() : value;
+                String platformId = platf.getProperties().get("platform.ant.name"); //NOI18N
+                if (JavaPlatformManager.getDefault().getDefaultPlatform().equals(platf)) {
+                    platformId = null;
+                }
+
+                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
+                boolean hasConfig = props.get(Constants.HINT_JDK_PLATFORM, true, false) != null;
+                //TODO also try to take the value in pom vs inherited pom value into account.
+
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
+                        profprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId);
+                        if (hasConfig) {
+                            // in this case clean up the auxiliary config
+                            props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                        }
+                        handle.markAsModified(handle.getProfileModel());
+                        return;
+                    }
+                }
+
+                if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
+                    Properties modprops = handle.getPOMModel().getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId); //NOI18N
+                    handle.markAsModified(handle.getPOMModel());
+                    if (hasConfig) {
+                        // in this case clean up the auxiliary config
+                        props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                    }
+                    return;
+                }
+                props.put(Constants.HINT_JDK_PLATFORM, platformId, true);
+            }
+        };
+
+        checkExternalMaven();
+        
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // for external maven availability checking
+        SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
+    }
+
+    private JavaPlatform getSelPlatform () {
+        String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
+                get(Constants.HINT_JDK_PLATFORM, true);
+        return BootClassPathImpl.getActivePlatform(platformId);
+    }
+
+    private boolean isExternalMaven () {
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String val = props.get(Constants.HINT_USE_EXTERNAL, true);
+        boolean useEmbedded = "false".equalsIgnoreCase(val);
+
+        return !useEmbedded && MavenExecutionSettings.canFindExternalMaven();
+    }
+
+    private void checkExternalMaven () {
+        if (isExternalMaven()) {
+            lblWarnPlatform.setVisible(false);
+            btnSetupHome.setVisible(false);
+            comJavaPlatform.setEnabled(true);
+        } else {
+            comJavaPlatform.setEnabled(false);
+            lblWarnPlatform.setVisible(true);
+            btnSetupHome.setVisible(true);
+        }
 
     }
 
@@ -254,6 +400,13 @@ public class CompilePanel extends javax.swing.JPanel {
         lblHint2 = new javax.swing.JLabel();
         cbDebug = new javax.swing.JCheckBox();
         cbDeprecate = new javax.swing.JCheckBox();
+        lblJavaPlatform = new javax.swing.JLabel();
+        comJavaPlatform = new javax.swing.JComboBox();
+        btnMngPlatform = new javax.swing.JButton();
+        lblWarnPlatform = new javax.swing.JLabel();
+        btnSetupHome = new javax.swing.JButton();
+
+        setPreferredSize(new java.awt.Dimension(576, 303));
 
         lblCompileOnSave.setLabelFor(comCompileOnSave);
         org.openide.awt.Mnemonics.setLocalizedText(lblCompileOnSave, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblCompileOnSave.text")); // NOI18N
@@ -266,25 +419,58 @@ public class CompilePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDeprecate, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDeprecate.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblJavaPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblJavaPlatform.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnMngPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.text")); // NOI18N
+        btnMngPlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMngPlatformActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblWarnPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblWarnPlatform.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSetupHome, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnSetupHome.text")); // NOI18N
+        btnSetupHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSetupHomeActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(lblCompileOnSave)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comCompileOnSave, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
                     .add(cbDebug)
-                    .add(cbDeprecate))
+                    .add(cbDeprecate)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblCompileOnSave)
+                            .add(lblJavaPlatform))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(comJavaPlatform, 0, 266, Short.MAX_VALUE)
+                            .add(comCompileOnSave, 0, 266, Short.MAX_VALUE))
+                        .add(16, 16, 16)
+                        .add(btnMngPlatform))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnSetupHome)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblJavaPlatform)
+                    .add(comJavaPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnMngPlatform))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblCompileOnSave)
                     .add(comCompileOnSave, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -296,18 +482,37 @@ public class CompilePanel extends javax.swing.JPanel {
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addContainerGap(170, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 72, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btnSetupHome)
+                    .add(lblWarnPlatform))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
+        // TODO add your handling code here:
+        PlatformsCustomizer.showCustomizer(getSelPlatform());
+}//GEN-LAST:event_btnMngPlatformActionPerformed
+
+    private void btnSetupHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupHomeActionPerformed
+        // TODO add your handling code here:
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+}//GEN-LAST:event_btnSetupHomeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMngPlatform;
+    private javax.swing.JButton btnSetupHome;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbDeprecate;
     private javax.swing.JComboBox comCompileOnSave;
+    private javax.swing.JComboBox comJavaPlatform;
     private javax.swing.JLabel lblCompileOnSave;
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
+    private javax.swing.JLabel lblJavaPlatform;
+    private javax.swing.JLabel lblWarnPlatform;
     // End of variables declaration//GEN-END:variables
 
     private static final String CONFIGURATION_EL = "configuration";//NOI18N
@@ -376,4 +581,82 @@ public class CompilePanel extends javax.swing.JPanel {
         }
         return null;
     }
+
+    public void windowGainedFocus(WindowEvent e) {
+        checkExternalMaven();
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+        // no op
+    }
+
+    private static class PlatformsModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
+
+        private JavaPlatform[] data;
+        private Object sel;
+
+        public PlatformsModel() {
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            data = jpm.getInstalledPlatforms();
+            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+        }
+
+        public int getSize() {
+            return data.length;
+        }
+
+        public Object getElementAt(int index) {
+            return data[index];
+        }
+
+        public void setSelectedItem(Object anItem) {
+            sel = anItem;
+            fireContentsChanged(this, 0, data.length);
+        }
+
+        public Object getSelectedItem() {
+            return sel;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            data = jpm.getInstalledPlatforms();
+            fireContentsChanged(this, 0, data.length);
+        }
+
+    }
+
+    private class PlatformsRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public PlatformsRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected,
+                boolean cellHasFocus) {
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            setText(((JavaPlatform)value).getDisplayName());
+
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(isExternalMaven() ? list.getSelectionForeground() : java.awt.SystemColor.textInactiveText);
+            } else {
+                setBackground(list.getBackground());
+                setForeground(isExternalMaven() ? list.getForeground() : java.awt.SystemColor.textInactiveText);
+            }
+
+            return this;
+        }
+
+        // #89393: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    } // end of PlatformsRenderer
+
 }

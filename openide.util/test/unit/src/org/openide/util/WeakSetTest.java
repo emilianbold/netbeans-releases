@@ -41,6 +41,7 @@
 
 package org.openide.util;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,17 +49,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 public class WeakSetTest extends NbTestCase {
 
-    public WeakSetTest(java.lang.String testName) {
+    public WeakSetTest(String testName) {
         super(testName);
-    }
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(WeakSetTest.class));
     }
 
     public void testToArrayMayContainNullsIssue42271 () {
@@ -70,14 +67,14 @@ public class WeakSetTest extends NbTestCase {
                 int cnt = 10;
                 arr = new Object[cnt];
                 for (int i = 0; i < cnt; i++) {
-                    arr[i] = new Integer (i);
+                    arr[i] = new Integer(i); // autoboxing makes test fail!
                 }
             }
             
             
             public void run () {
                 
-                WeakReference r = new WeakReference (last);
+                Reference<?> r = new WeakReference<Object>(last);
                 for (int i = 0; i < arr.length; i++) {
                     arr[i] = null;
                 }
@@ -91,7 +88,7 @@ public class WeakSetTest extends NbTestCase {
                     s.add (arr[i]);
                 }
                 assertEquals (arr.length, s.size ());
-                Iterator it = s.superIterator ();
+                Iterator<Object> it = s.superIterator();
                 Object prev = it.next ();
                 while (it.hasNext ()) {
                     prev = it.next ();
@@ -113,7 +110,7 @@ public class WeakSetTest extends NbTestCase {
         }
     }
     
-    private static final class NotifyWhenIteratedSet extends WeakSet {
+    private static final class NotifyWhenIteratedSet extends WeakSet<Object> {
         private Runnable run;
         private int cnt;
         
@@ -122,13 +119,14 @@ public class WeakSetTest extends NbTestCase {
             this.cnt = cnt;
         }
         
-        public Iterator superIterator () {
+        public Iterator<Object> superIterator() {
             return super.iterator ();
         }
         
-        public Iterator iterator () {
-            final Iterator it = super.iterator ();
-            class I implements Iterator {
+        @Override
+        public Iterator<Object> iterator() {
+            final Iterator<Object> it = super.iterator();
+            class I implements Iterator<Object> {
                 public boolean hasNext() {
                     return it.hasNext ();
                 }
@@ -200,6 +198,7 @@ public class WeakSetTest extends NbTestCase {
      * test for issue #106218
      * @throws java.lang.Exception
      */
+    @RandomlyFails // OOME in NB-Core-Build #1908
     public void testWeakSetIntegrity() throws Exception {
         //CharSequence log = Log.enable(WeakSet.class.getName(), Level.FINE);
         ArrayList<WeakReference<TestObj>> awr = new ArrayList<WeakReference<TestObj>>();

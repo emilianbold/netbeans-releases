@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview.model;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.NameCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.*;
 
 /**
@@ -51,7 +52,7 @@ import org.openide.nodes.*;
  * @author Vladimir Kvasihn
  */
 public class CVUtil {
-    private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
+    private static final boolean showParamNames = CndUtils.getBoolean("cnd.classview.show-param-names", true); // NOI18N
     
     public static CharSequence getSignature(CsmFunction fun) {
 	return NameCache.getManager().getString(CsmUtilities.getSignature(fun, showParamNames));
@@ -73,13 +74,5 @@ public class CVUtil {
     public static Node createLoadingNode() {
         BaseNode node = new LoadingNode();
         return node;
-    }
-    
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }
+    }    
 }

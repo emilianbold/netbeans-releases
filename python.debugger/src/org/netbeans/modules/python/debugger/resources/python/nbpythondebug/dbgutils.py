@@ -1,28 +1,72 @@
-""" misc utility modules used by jpydbg stuff """
-
-__version__='$Revision: 1.1 $'
-__date__='$Date: 2006/05/01 10:17:14 $'
-# $Source: /cvsroot/jpydbg/jpydebugforge/src/python/jpydbg/dbgutils.py,v $
-
+"""
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+*
+* Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+*
+* The contents of this file are subject to the terms of either the GNU
+* General Public License Version 2 only ("GPL") or the Common
+* Development and Distribution License("CDDL") (collectively, the
+* "License"). You may not use this file except in compliance with the
+* License. You can obtain a copy of the License at
+* http://www.netbeans.org/cddl-gplv2.html
+* or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+* specific language governing permissions and limitations under the
+* License.  When distributing the software, include this License Header
+* Notice in each file and include the License file at
+* nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Sun in the GPL Version 2 section of the License file that
+* accompanied this code. If applicable, add the following below the
+* License Header, with the fields enclosed by brackets [] replaced by
+* your own identifying information:
+* "Portions Copyrighted [year] [name of copyright owner]"
+*
+* If you wish your version of this file to be governed by only the CDDL
+* or only the GPL Version 2, indicate your decision by adding
+* "[Contributor] elects to include this software in this distribution
+* under the [CDDL or GPL Version 2] license." If you do not indicate a
+* single choice of license, a recipient has the option to distribute
+* your version of this file under either the CDDL, the GPL Version 2 or
+* to extend the choice of license to its licensees as provided above.
+* However, if you add GPL Version 2 code and therefore, elected the GPL
+* Version 2 license, then the option applies only if the new code is
+* made subject to such option by the copyright holder.
+*
+* Contributor(s):
+*
+* Portions Copyrighted 2009 Sun Microsystems, Inc.
+"""
+import Queue
 import sys
 import traceback
 import os
 import socket
 import string
+import threading
+import time
 
 
-class jpyutils :
-  
+""" misc utility modules used by jpydbg stuff """
+
+__version__='$Revision: 1.1 $'
+__date__='$Date: 2006/05/01 10:17:14 $'
+__author__= 'Jean-Yves Mengant'
+
+# $Source: /cvsroot/jpydbg/jpydebugforge/src/python/jpydbg/dbgutils.py,v $
+
+
+class JpyUtils :
+
     def __init__( self ):
         if ( os.name == 'java' ):
-            self.isJython = 1 
+            self.isJython = 1
         else:
             self.isJython = 0
- 
-    def parsedReturned( self , 
-                        command = 'COMMAND' , 
-                        argument = None , 
-                        message = None , 
+
+    def parsedReturned( self ,
+                        command = 'COMMAND' ,
+                        argument = None ,
+                        message = None ,
                         details = None ):
         parsedCommand = []
         parsedCommand.append(command)
@@ -40,11 +84,11 @@ class jpyutils :
         return self.parsedReturned( argument = arg ,
                                     message = "Error on CMD" ,
                                     details = excTrace
-                                  )  
-                              
+                                  )
+
     def removeForXml( self , strElem , keepLinefeed = 0 ):
         "replace unsuported xml encoding characters"
-        if (not  keepLinefeed ):       
+        if (not  keepLinefeed ):
             strElem = strElem.replace('\n','')
         strElem = strElem.replace('&',"&amp;")
         strElem = strElem.replace('"',"&quot;")
@@ -52,7 +96,7 @@ class jpyutils :
         strElem = strElem.replace('>','&gt;')
         # strElem = string.replace(strElem,'&','&amp;')
         return strElem
-    
+
     def getArg( self , toParse ):
         toParse = toParse.strip()
         if len(toParse) == 0:
@@ -72,7 +116,7 @@ class jpyutils :
                 # check matching
                 if returned.find(containing) == -1:
                     return None #don't match
-            #  consume and return value    
+            #  consume and return value
             sys.argv =  [sys.argv[0]] + sys.argv[2:]
             return returned
         else:
@@ -81,7 +125,7 @@ class jpyutils :
     def nextArg( self , toParse ):
         """ get next arg back on command buffer """
         if toParse == None :
-            return None , None  
+            return None , None
         toParse = string.strip(toParse)
         separator = " "
         if len(toParse) == 0:
@@ -97,35 +141,18 @@ class jpyutils :
             return string.strip(toParse) , None
         else:
             return string.strip(toParse[:nextSpace]) , string.strip(toParse[nextSpace+1:])
-    
+
+
+
+# common global instance
+jpyutils = JpyUtils()
+
+
 
 class PythonPathHandler:
     "store the python path in a text file for jpydebug usage"
     def __init__(self , pyPathFName):
         self.PyPathFName = pyPathFName
-        
-
-#
-# OBSOLETED
-#
-#    def getPyPathFromFile( self ):
-#        "read PYTHONPATH file and set python path variable out of it"
-#        try:
-#            pyPathFile = open( self.PyPathFName )
-#            pyPath = pyPathFile.read()
-#            # cleanly take care of previous ';' convention
-#            if os.pathsep != ';':
-#                pyPath.replace(';' , os.pathsep)
-#            if pyPath.find(os.pathsep) != -1:
-#                sys.path = pyPath.split(os.pathsep)
-#                # remove empty nodes first
-#                for element in sys.path:
-#                    if ( len(element.strip())==0 ):
-#                        sys.path.remove(element)
-#            pyPathFile.close()
-#        except:
-#            # go ahead on exception on file access
-#            pass
 
     def getPyPathFromEnv( self ):
         "PYTHONPATH env and set sys.path out of it "
@@ -152,29 +179,59 @@ class PythonPathHandler:
         except:
             # go ahead on exception on file access
             pass
-    
+
+_debugPath = os.path.dirname( sys._getframe(0).f_code.co_filename )
+_DEBUGLOG = _debugPath + "/jpydbg.log"
+
+class DebugLogger :
+
+  def __init__( self  ) :
+      f = file( _DEBUGLOG ,"w") ;
+      f.close() # reset log on startup
+
+  def debug( self , toWrite ) :
+      f = file( _DEBUGLOG ,"a+") ;
+      f.write( toWrite + '\n')
+      f.close()
+
+###############################################################################
+# do a touch of jpydbg.log in same directory as jpydebug.py to get debug traces on
+###############################################################################
+debugLogger = None
+if os.path.exists(_DEBUGLOG) :
+    debugLogger = DebugLogger()
+    debugLogger.debug("***** Debug Session Started ******")
+
 class NetworkSession:
     """ handle network session for JpyDbg and Completion engine """
-    
+
     def __init__( self , connection ) :
         self._connection = connection
         self._lastBuffer = ''
-        
+        self._threadQ = Queue.Queue()
+        self.lock = threading.Lock()
+        self._acquire_lock = self.lock.acquire
+        self._release_lock = self.lock.release
+
+    def _DBG( self , toWrite ):
+        if debugLogger :
+            debugLogger.debug(toWrite)
+
     def populateToClient( self , bufferList ) :
         """ populate back bufferList to client side """
-        #print buffer
+        self._DBG( "populateXmlToClient --> " + buffer )
         self._connection.send( ''.join(bufferList) )
 
     def populateXmlToClient( self , bufferList ) :
         """ populate JpyDbg Xml buffer back """
-        mbuffer = '<JPY>'   
+        mbuffer = '<JPY>'
         for element in bufferList:
             mbuffer = mbuffer + ' ' + str(element)
         mbuffer = mbuffer + '</JPY>\n'
-        #print buffer
+        self._DBG( "populateToClient --> " + mbuffer )
         self._connection.send( mbuffer )
-    
-        
+
+
     def readNetBuffer( self ):
         """ reading on network socket """
         try:
@@ -188,10 +245,11 @@ class NetworkSession:
         except socket.error, (errno,strerror):
             print "recv interupted errno(%s) : %s" % ( errno , strerror )
             return None
-          
-    
-    def receiveCommand( self ):
+
+
+    def _receiveCommand( self ):
         """ receive a command back """
+        self._DBG(">Wait on NET ... ")
         data = self.readNetBuffer() ;
         # data reception from Ip
         while ( data != None and data):
@@ -199,17 +257,50 @@ class NetworkSession:
             nextPos = eocPos ;
             while (  nextPos < len(data) and \
                    ( data[nextPos] == '\n' or data[nextPos] == '\r') ): # ignore consecutive \n\r
-                nextPos = nextPos+1     
+                nextPos = nextPos+1
             if ( eocPos != -1 ): # full command received in buffer
                 self._lastBuffer = data[nextPos:] # cleanup received command from buffer
                 returned = data[:eocPos]
+                self._DBG( "<-- received Command " + returned )
                 if (returned[-1] == '\r'):
                     return returned[:-1]
-                return returned  
-            data = self.readNetBuffer() ; 
+                return returned
+            data = self.readNetBuffer() ;
         # returning None on Ip Exception
-        return None 
+        return None
+
+    def sendInternalThreadCommand(self , command ):
+        """ send threadQ a command ( internal usage by DebugCommander only ) """
+        self._threadQ.put(command)
+
+    def deprecatedReceiveCommand( self ):
+        """ Threads dispatched commands => just wait on Q"""
+        self._DBG(">Wait on Q ... ")
+        while True :
+            try :
+                returned = self._threadQ.get(timeout=1)
+                self._DBG("< got from Q : %s " %(returned) )
+                return returned
+            except Queue.Empty :
+                time.sleep(.100)
+
+    def receiveCommand(self ):
+        """ Network dbg command main entry dispatch to commander or Q"""
+        self._acquire_lock()
+        try :
+            self._DBG( "Waiting incomming commands ..."  )
+            command = self._receiveCommand()
+            self._DBG( "<-- Network command = %s" % (command)  )
+        finally :
+            self._release_lock()
+        # handle dispatching
+        verb , arg = jpyutils.nextArg(command)
+        if verb == 'GLBCMD' :
+            return arg
+        else :
+            return command
 
     def close( self ):
         """ close the associated ip session """
+        self._DBG( "**** DEBUGGER CONNECTION CLOSED ***" )
         self._connection.close()

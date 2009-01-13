@@ -47,8 +47,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.ForeignKey;
+import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
@@ -56,16 +63,22 @@ import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.jdbc.mysql.MySQLMetadata;
-import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCMetadataMySQLTest extends MetadataTestBase {
+public class JDBCMetadataMySQLTest extends JDBCMetadataTest {
 
     private JDBCMetadata metadata;
     private String defaultCatalogName;
+    private Connection conn;
+    private Statement stmt;
+    private String mysqlHost;
+    private Integer mysqlPort;
+    private String mysqlUser;
+    private String mysqlPassword;
+    private String mysqlDatabase;
 
     public JDBCMetadataMySQLTest(String name) {
         super(name);
@@ -73,29 +86,51 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
 
     @Override
     public void setUp() throws Exception {
-        String mysqlHost = System.getProperty("mysql.host", "localhost");
-        int mysqlPort = Integer.getInteger("mysql.port", 3306);
-        String mysqlDatabase = System.getProperty("mysql.database", "test");
-        String mysqlUser = System.getProperty("mysql.user", "test");
-        String mysqlPassword = System.getProperty("mysql.password", "test");
+        mysqlHost = System.getProperty("mysql.host", "localhost");
+        mysqlPort = Integer.getInteger("mysql.port", 3306);
+        mysqlDatabase = System.getProperty("mysql.database", "test");
+        mysqlUser = System.getProperty("mysql.user", "test");
+        mysqlPassword = System.getProperty("mysql.password", "test");
         clearWorkDir();
         Class.forName("com.mysql.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + mysqlDatabase, mysqlUser, mysqlPassword);
-        Statement stmt = conn.createStatement();
-        stmt.executeUpdate("DROP DATABASE test");
+        conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+        stmt = conn.createStatement();
+        stmt.executeUpdate("DROP DATABASE IF EXISTS test");
+        stmt.executeUpdate("DROP DATABASE IF EXISTS test2");
         stmt.executeUpdate("CREATE DATABASE test");
+        stmt.executeUpdate("CREATE DATABASE test2");
+
+        conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + mysqlDatabase, mysqlUser, mysqlPassword);
         stmt.executeUpdate("USE test");
+        
+        stmt.executeUpdate("CREATE TABLE groucho (id INT NOT NULL, id2 INT NOT NULL, " +
+                "CONSTRAINT groucho_pk PRIMARY KEY (id2, id)) Engine=InnoDB");
+
+        // Create a table in another database with references, let's see if this works
+        stmt.executeUpdate("CREATE TABLE test2.harpo (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT) ENGINE=InnoDB");
+        
         stmt.executeUpdate("CREATE TABLE foo (" +
                 "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-                "FOO_NAME VARCHAR(16))");
+                "FOO_NAME VARCHAR(16), harpo_id INT NOT NULL, FOREIGN KEY(harpo_id) REFERENCES test2.harpo(id)) ENGINE=InnoDB");
+        
         stmt.executeUpdate("CREATE TABLE bar (" +
                 "`i+d` INT NOT NULL PRIMARY KEY, " +
                 "foo_id INT NOT NULL, " +
                 "bar_name  VARCHAR(16), " +
                 "bar_digit DECIMAL(12,2) NOT NULL, " +
-                "FOREIGN KEY (foo_id) REFERENCES foo(id))");
+                "FOREIGN KEY (foo_id) REFERENCES foo(id)) Engine=InnoDB");
+
+        stmt.executeUpdate("CREATE TABLE chico (id INT NOT NULL, groucho_id2 INT, groucho_id INT, foo_id INT, " +
+                "CONSTRAINT groucho_fk FOREIGN KEY (groucho_id2, groucho_id) REFERENCES groucho(id2, id), " +
+                "CONSTRAINT foo_fk FOREIGN KEY (foo_id) REFERENCES foo(id)) Engine=InnoDB");
+        
         stmt.executeUpdate("CREATE VIEW barview AS SELECT * FROM bar");
-        // TODO - test precision, scale, radix
+
+        stmt.executeUpdate("CREATE UNIQUE INDEX groucho_index ON groucho(id2)");
+
+        stmt.executeUpdate("CREATE INDEX bar_name_index ON bar(bar_name, bar_digit)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX bar_foo_index ON bar(foo_id)");
+        
         stmt.executeUpdate("CREATE PROCEDURE barproc(IN param1 INT, OUT result VARCHAR(255), INOUT param2 DECIMAL(5,2)) " +
                 "BEGIN SELECT * from bar; END");
         stmt.executeUpdate("CREATE PROCEDURE fooproc(IN param1 INT) " +
@@ -104,7 +139,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         defaultCatalogName = mysqlDatabase;
     }
 
-    public void testRunReadAction() throws Exception {
+    public void testBasic() throws Exception {
         Collection<Catalog> catalogs = metadata.getCatalogs();
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(defaultCatalogName, defaultCatalog.getName());
@@ -123,12 +158,161 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertSame(defaultCatalog, schema.getParent());
 
         Collection<Table> tables = schema.getTables();
-        assertNames(new HashSet<String>(Arrays.asList("foo", "bar")), tables);
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho", "chico")), tables);
         Table barTable = schema.getTable("bar");
         assertTrue(tables.contains(barTable));
         assertSame(schema, barTable.getParent());
 
         checkColumns(barTable);
+    }
+
+    /**
+     * In MySQL it's possible to connect without specifying a database name, in which
+     * case there should be no default catalog and we should be able to get the full
+     * list of catalogs
+     *
+     * @throws java.lang.Exception
+     */
+    public void testNoDatabaseSpecified() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+        JDBCMetadata md = new MySQLMetadata(connection, null);
+
+        Collection<Catalog> catalogs = md.getCatalogs();
+        assertNull(md.getDefaultCatalog().getName());
+        assertFalse(catalogs.contains(md.getDefaultCatalog()));
+    }
+
+    public void testSchemaRefresh() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+        Collection<Table> tables = schema.getTables();
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho", "chico")), tables);
+
+        stmt.executeUpdate("CREATE TABLE testSchemaRefresh (" +
+        "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
+        "FOO_NAME VARCHAR(16))");
+
+        schema.refresh();
+
+        tables = schema.getTables();
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho", "chico", "testSchemaRefresh")), tables);
+
+    }
+
+    public void testIndexes() {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("groucho");
+        Collection<Index> indexes = table.getIndexes();
+        assertNames(new HashSet<String>(Arrays.asList("groucho_index", "PRIMARY")), indexes);
+
+        Index index = table.getIndex("groucho_index");
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        Collection<IndexColumn> columns = index.getColumns();
+        assertEquals(1, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("id2")), columns);
+        IndexColumn col = index.getColumn("id2");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        index = table.getIndex("PRIMARY");
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        columns = index.getColumns();
+        assertEquals(2, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("id2", "id")), columns);
+        col = index.getColumn("id2");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        col = index.getColumn("id");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(2, col.getPosition());
+        
+        table = schema.getTable("bar");
+        indexes = table.getIndexes();
+        assertNames(new HashSet<String>(Arrays.asList("bar_name_index", "bar_foo_index", "PRIMARY")), indexes);
+
+        index = table.getIndex("bar_name_index");
+        assertEquals(index.getParent(), table);
+        assertFalse(index.isUnique());
+        columns = index.getColumns();
+        assertNames(new HashSet<String>(Arrays.asList("bar_name", "bar_digit")), columns);
+        col = index.getColumn("bar_name");
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+        assertEquals(col.getColumn(), table.getColumn("bar_name"));
+    }
+
+    public void testForeignKey() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("chico");
+
+        Collection<ForeignKey> fkeys = table.getForeignKeys();
+        assertNames(new HashSet<String>(Arrays.asList("groucho_fk", "foo_fk")), fkeys);
+
+        for (ForeignKey key : fkeys) {
+            Collection<ForeignKeyColumn> cols = key.getColumns();
+
+            if ("groucho_fk".equals(key.getName())) {
+                assertNames(new HashSet<String>(Arrays.asList("groucho_id2", "groucho_id")), cols);
+                Table referredTable = schema.getTable("groucho");
+                checkForeignKeyColumn(key, referredTable, "groucho_id2", "id2", 1);
+                checkForeignKeyColumn(key, referredTable, "groucho_id", "id", 2);
+            } else {
+                assertNames(new HashSet<String>(Arrays.asList("foo_id")), cols);
+                checkForeignKeyColumn(key, schema.getTable("foo"), "foo_id", "id", 1);
+            }
+        }
+
+        table = schema.getTable("bar");
+        fkeys = table.getForeignKeys();
+        ForeignKey[] keys = table.getForeignKeys().toArray(new ForeignKey[0]);
+        assertEquals(1, keys.length);
+        
+        ForeignKey key = keys[0];
+        // Don't know the name of this one, it's generated...
+        assertNotNull(key.getName());
+        checkForeignKeyColumn(key, schema.getTable("foo"), "foo_id", "id", 1);
+    }
+
+    public void testForeignKeyAcrossCatalogs() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("foo");
+
+        Collection<ForeignKey> fkeys = table.getForeignKeys();
+        assertEquals(1, fkeys.size());
+        ForeignKey key = fkeys.toArray(new ForeignKey[1])[0];
+        Table referredTable = metadata.getCatalog("test2").getSyntheticSchema().getTable("harpo");
+        checkForeignKeyColumn(key, referredTable, "harpo_id", "id", 1);
+    }
+
+    public void testPrimaryKey() {
+        Schema schema = metadata.getDefaultSchema();
+        Table grouchoTable = schema.getTable("groucho");
+        PrimaryKey key = grouchoTable.getPrimaryKey();
+
+        // In MySQL, it doesn't matter what identifier you use when you create
+        // the primary key, it is always named "PRIMARY"
+        assertEquals("PRIMARY", key.getName());
+        Column[] pkcols = key.getColumns().toArray(new Column[0]);
+        Column col1 = grouchoTable.getColumn("id");
+        Column col2 = grouchoTable.getColumn("id2");
+        assertEquals(pkcols.length, 2);
+
+        // In MySQL, it doesn't matter how you order the columns in your primary
+        // key definition, they are always ordered in the same order as the
+        // ordering in th table definition
+        assertEquals(col1, pkcols[0]);
+        assertEquals(col2, pkcols[1]);
     }
 
     public void testViews() throws Exception {
@@ -199,7 +383,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertEquals(10, col.getRadix());
         assertEquals(10, col.getPrecision());
         assertEquals(0, col.getScale());
-        assertEquals(1, col.getOrdinalPosition());
+        assertEquals(1, col.getPosition());
 
         col = colarray[1];
         assertEquals("JDBCColumn[name=foo_id, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());

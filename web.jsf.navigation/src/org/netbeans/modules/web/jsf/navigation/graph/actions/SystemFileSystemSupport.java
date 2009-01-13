@@ -52,7 +52,7 @@ import javax.swing.JSeparator;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
 
@@ -121,7 +121,7 @@ public final class SystemFileSystemSupport {
 
 
     private static DataFolder getDataFolder(String folderPath) {
-        FileObject fileObject = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
+        FileObject fileObject = FileUtil.getConfigFile(folderPath);
         if (fileObject == null) {
             return null;
         }

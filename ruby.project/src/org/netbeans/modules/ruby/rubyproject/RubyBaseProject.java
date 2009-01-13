@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -386,6 +387,12 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         
         protected void projectOpened() {
             open();
+
+            // Ensure that code coverage is initialized in case it's enabled...
+            RubyCoverageProvider provider = RubyCoverageProvider.get(RubyBaseProject.this);
+            if (provider.isEnabled()) {
+                provider.notifyProjectOpened();
+            }
         }
         
         protected void projectClosed() {

@@ -1,8 +1,8 @@
 help:METHOD:[PUBLIC]:ESCAPED{help}:
 Test:CLASS:[]:ESCAPED{Test}:
-  CLASS_CONSTANT:CONSTANT:[]:ESCAPED{CLASS_CONSTANT} : ESCAPED{Fixnum}:
+  CLASS_CONSTANT:CONSTANT:[]:ESCAPED{CLASS_CONSTANT}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   testtest:METHOD:[PUBLIC]:ESCAPED{testtest}:
-show:VARIABLE:[]:ESCAPED{show} : ESCAPED{Fixnum}:
-a:VARIABLE:[]:ESCAPED{a} : ESCAPED{String}:
-b:VARIABLE:[]:ESCAPED{b}:
-CONSTANT:CONSTANT:[]:ESCAPED{CONSTANT} : ESCAPED{Fixnum}:
+show:VARIABLE:[]:ESCAPED{show}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+a:VARIABLE:[]:ESCAPED{a}<font color='#777777'> : ESCAPED{String}</font>:
+b:VARIABLE:[]:ESCAPED{b}<font color='#777777'> : ESCAPED{String}</font>:
+CONSTANT:CONSTANT:[]:ESCAPED{CONSTANT}<font color='#777777'> : ESCAPED{Fixnum}</font>:

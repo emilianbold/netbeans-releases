@@ -52,6 +52,7 @@ CLASS      AttributeList
 CLASS      AttributeMap                               
 CLASS      Attributes                                 
 CLASS      AttributesImpl                             
+CLASS      AttributesNS                               
 CLASS      AttributesNSImpl                           
 CLASS      AugAssign                                  
 CLASS      AugGetattr                                 
@@ -172,12 +173,14 @@ CLASS      ContentHandler
 CLASS      Context                                    
 CLASS      Continue                                   
 CLASS      Control                                    
+CLASS      ControlsWindow                             
 CLASS      ConversionError                            
 CLASS      Cookie                                     
 CLASS      CookieError                                
 CLASS      CookieJar                                  
 CLASS      CookiePolicy                               
 CLASS      CoverageResults                            
+CLASS      Cursor                                     
 CLASS      CygwinCCompiler                            
 CLASS      D                                          
 CLASS      DOMBuilder                                 
@@ -190,6 +193,7 @@ CLASS      DOMInputSource
 CLASS      DOMStringSizeErr                           
 CLASS      DTDHandler                                 
 CLASS      Data                                       
+CLASS      Database                                   
 CLASS      DatagramHandler                            
 CLASS      DatagramRequestHandler                     
 CLASS      DateTime                                   
@@ -208,6 +212,7 @@ CLASS      DeprecationWarning
 CLASS      DeprecationWarning                         
 CLASS      Dialect                                    
 CLASS      Dialog                                     
+CLASS      DialogWindow                               
 CLASS      Dict                                       
 CLASS      DictMixin                                  
 CLASS      DictReader                                 
@@ -456,7 +461,6 @@ CLASS      Invert
 CLASS      IsqlCmd                                    
 CLASS      IsqlExit                                   
 CLASS      IterableUserDict                           
-CLASS      ItimerError                                
 CLASS      JSONDecoder                                
 CLASS      JSONEncoder                                
 CLASS      JavaSAXParser                              
@@ -466,6 +470,7 @@ CLASS      JyEntityResolverWrapper
 CLASS      JyErrorHandlerWrapper                      
 CLASS      JyInputSourceWrapper                       
 CLASS      JythonCompiler                             
+CLASS      JythonSignalHandler                        
 CLASS      KeyError                                   
 CLASS      KeyError                                   
 CLASS      KeyboardInterrupt                          
@@ -493,7 +498,6 @@ CLASS      ListNoteBook
 CLASS      Listener                                   
 CLASS      LittleEndianStructure                      
 CLASS      LoadError                                  
-CLASS      LoadSet                                    
 CLASS      LocalNameFinder                            
 CLASS      Location                                   
 CLASS      Locator                                    
@@ -694,6 +698,7 @@ CLASS      RawIOBase
 CLASS      RawTurtle                                  
 CLASS      ReadOnlySequentialNamedNodeMap             
 CLASS      Real                                       
+CLASS      Record                                     
 CLASS      ReferenceError                             
 CLASS      ReferenceError                             
 CLASS      Repr                                       
@@ -708,6 +713,7 @@ CLASS      RobotFileParser
 CLASS      RootLogger                                 
 CLASS      RotatingFileHandler                        
 CLASS      Rounded                                    
+CLASS      Row                                        
 CLASS      RuntimeError                               
 CLASS      RuntimeError                               
 CLASS      RuntimeWarning                             
@@ -735,6 +741,8 @@ CLASS      SMTPServerDisconnected
 CLASS      SQLServerSPTest                            
 CLASS      SQLTestCase                                
 CLASS      SSLError                                   
+CLASS      SSLSocket                                  
+CLASS      ST                                         
 CLASS      SafeConfigParser                           
 CLASS      SafeTransport                              
 CLASS      Schema                                     
@@ -742,6 +750,7 @@ CLASS      Scope
 CLASS      Screen                                     
 CLASS      ScrolledCavas                              
 CLASS      ScrolledText                               
+CLASS      ScrolledWindow                             
 CLASS      Select                                     
 CLASS      Semaphore                                  
 CLASS      SequenceMatcher                            
@@ -793,6 +802,7 @@ CLASS      Sub
 CLASS      SubPattern                                 
 CLASS      Subnormal                                  
 CLASS      Subscript                                  
+CLASS      SummaryInformation                         
 CLASS      Super                                      
 CLASS      SuperSuper                                 
 CLASS      SvFormContentDict                          
@@ -873,7 +883,6 @@ CLASS      TypeError
 CLASS      TypeInfo                                   
 CLASS      UDPServer                                  
 CLASS      URLError                                   
-CLASS      URLopener                                  
 CLASS      UUID                                       
 CLASS      UnaryAdd                                   
 CLASS      UnarySub                                   
@@ -923,15 +932,19 @@ CLASS      Vec2D
 CLASS      Vendor                                     
 CLASS      Version                                    
 CLASS      VersionPredicate                           
+CLASS      View                                       
 CLASS      WSGIRequestHandler                         
 CLASS      WSGIServer                                 
 CLASS      Warning                                    
 CLASS      Warning                                    
+CLASS      Wave_read                                  
+CLASS      Wave_write                                 
 CLASS      WeakKeyDictionary                          
 CLASS      WeakValueDictionary                        
 CLASS      While                                      
 CLASS      WichmannHill                               
 CLASS      WinDLL                                     
+CLASS      Window                                     
 CLASS      WindowsError                               
 CLASS      WindowsError                               
 CLASS      With                                       
@@ -964,6 +977,7 @@ CLASS      bdist_dumb
 CLASS      bdist_msi                                  
 CLASS      bdist_rpm                                  
 CLASS      bdist_wininst                              
+CLASS      bool                                       
 CLASS      bsddbobject                                
 CLASS      build                                      
 CLASS      build_clib                                 
@@ -998,14 +1012,23 @@ CLASS      c_ushort
 CLASS      c_void_p                                   
 CLASS      c_wchar                                    
 CLASS      c_wchar_p                                  
+CLASS      class                                      
+CLASS      class                                      
 CLASS      clean                                      
 CLASS      closing                                    
+CLASS      complex                                    
 CLASS      compressobj                                
 CLASS      config                                     
+CLASS      container                                  
+CLASS      container                                  
+CLASS      contextmanager                             
+CLASS      contextmanager                             
+CLASS      controller                                 
 CLASS      date                                       
 CLASS      datetime                                   
 CLASS      dbexts                                     
 CLASS      dbextsTestCase                             
+CLASS      dbhash                                     
 CLASS      decompressobj                              
 CLASS      deque                                      
 CLASS      dict                                       
@@ -1013,11 +1036,11 @@ CLASS      dict
 CLASS      dircmp                                     
 CLASS      dispatcher                                 
 CLASS      dispatcher_with_send                       
+CLASS      dl                                         
 CLASS      error                                      
 CLASS      error_data                                 
 CLASS      error_proto                                
 CLASS      error_reply                                
-CLASS      error_temp                                 
 CLASS      excel                                      
 CLASS      excel_tab                                  
 CLASS      executor                                   
@@ -1038,7 +1061,15 @@ CLASS      install_headers
 CLASS      install_lib                                
 CLASS      install_misc                               
 CLASS      install_scripts                            
+CLASS      instance                                   
+CLASS      instance                                   
+CLASS      int                                        
+CLASS      iterator                                   
+CLASS      iterator                                   
+CLASS      list                                       
 CLASS      local                                      
+CLASS      lock                                       
+CLASS      long                                       
 CLASS      main                                       
 CLASS      mbox                                       
 CLASS      mboxMessage                                
@@ -1048,6 +1079,10 @@ CLASS      multiprocessing.Pool
 CLASS      mutex                                      
 CLASS      mxODBCProxy                                
 CLASS      netrc                                      
+CLASS      object                                     
+CLASS      object                                     
+CLASS      oss_audio_device                           
+CLASS      oss_mixer_device                           
 CLASS      poll                                       
 CLASS      py_object                                  
 CLASS      register                                   
@@ -1059,6 +1094,8 @@ CLASS      shlex
 CLASS      simple_producer                            
 CLASS      socket                                     
 CLASS      stat_result                                
+CLASS      str                                        
+CLASS      str                                        
 CLASS      test_dist                                  
 CLASS      test_zxjdbc                                
 CLASS      time                                       
@@ -1066,8 +1103,13 @@ CLASS      timedelta
 CLASS      timeout                                    
 CLASS      tixCommand                                 
 CLASS      tmxxx                                      
+CLASS      tuple                                      
 CLASS      tzinfo                                     
+CLASS      unicode                                    
+CLASS      unicode                                    
 CLASS      upload                                     
+CLASS      window                                     
+CLASS      xmlparser                                  
 CLASS      zipimporter                                
 CLASS      zxAPITestCase                              
 CLASS      zxCoreTestCase                             
@@ -1078,6 +1120,7 @@ METHOD     all(iterable)
 METHOD     any(iterable)                              
 METHOD     ---apply(function, args, ke---             
 METHOD     basestring()                               
+METHOD     bin(x)                                     
 METHOD     bool(x)                                    
 METHOD     buffer(object, offset, size)               
 METHOD     callable(object)                           
@@ -1094,6 +1137,7 @@ METHOD     divmod(a, b)
 METHOD     enumerate(sequence, start)                 
 METHOD     eval(expression, globals, loca             
 METHOD     execfile(filename, globals, lo             
+METHOD     exit(code)                                 
 METHOD     file(filename, mode, bufsize)              
 METHOD     filter(function, iterable)                 
 METHOD     float(x)                                   

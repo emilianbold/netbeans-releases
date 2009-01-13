@@ -1,6 +1,7 @@
 Code completion result for source line:
 unknown.fai|
 (QueryType=COMPLETION, NameKind=PREFIX)
+OTHER      Specify type of <code>unknown<             
 ------------------------------------
 METHOD     fail(msg)                                  
 METHOD     fail(object, name, args)                   
@@ -11,4 +12,7 @@ METHOD     failUnless(expr, msg)
 METHOD     failUnlessAlmostEqual(first, s             
 METHOD     failUnlessEqual(first, second,             
 METHOD     failUnlessRaises(excClass, cal             
+VARIABLE   fail                                       
 VARIABLE   failureException                           
+VARIABLE   failures                                   
+VARIABLE   failures                                   

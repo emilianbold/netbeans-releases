@@ -97,7 +97,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -2089,8 +2088,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         String path = NbBundle.getMessage(DefaultPlugin.class,
                                           templateID);
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem()
-                            .findResource(path);
+            FileObject fo = FileUtil.getConfigFile(path);
             if (fo == null) {
                 noTemplateMessage(path);
                 return null;

@@ -74,11 +74,9 @@ import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.InstanceSupport;
@@ -662,10 +660,9 @@ public final class LoaderPoolNode extends AbstractNode {
     }
     private static final String LOADER_POOL_NAME = "loaders.ser"; // NOI18N
     private static FileObject getLoaderPoolStorage(boolean create) throws IOException {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = sfs.findResource(LOADER_POOL_NAME);
+        FileObject fo = FileUtil.getConfigFile(LOADER_POOL_NAME);
         if (fo == null && create) {
-            fo = sfs.getRoot().createData(LOADER_POOL_NAME);
+            fo = FileUtil.getConfigRoot().createData(LOADER_POOL_NAME);
         }
         return fo;
     }
@@ -884,6 +881,8 @@ public final class LoaderPoolNode extends AbstractNode {
         private transient RequestProcessor.Task fireTask;
 
         private transient Lookup.Result mimeResolvers;
+        // holds reference to not loose FileChangeListener
+        private transient FileObject declarativeResolvers;
         private static RequestProcessor rp = new RequestProcessor("Refresh Loader Pool"); // NOI18N
         
         public NbLoaderPool() {
@@ -901,9 +900,9 @@ public final class LoaderPoolNode extends AbstractNode {
             }
         };
         private void listenToDeclarativeResolvers() {
-            FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
-            if (resolvers != null) { // might be inside test which overrides SFS?
-                resolvers.addFileChangeListener(listener);
+            declarativeResolvers = FileUtil.getConfigFile("Services/MIMEResolver"); // NOI18N
+            if (declarativeResolvers != null) { // might be inside test which overrides SFS?
+                declarativeResolvers.addFileChangeListener(listener);
             }
         }
 

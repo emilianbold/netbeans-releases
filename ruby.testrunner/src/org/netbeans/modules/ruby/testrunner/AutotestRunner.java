@@ -47,11 +47,12 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -108,7 +109,8 @@ public class AutotestRunner implements TestRunner {
                 FileUtil.toFile(project.getProjectDirectory()),
                 platform.getAutoTest());
 
-        desc.initialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
+        TestRunnerUtilities.addProperties(desc, project);
+        desc.addInitialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);
         AutotestRunner.addRspecMediatorOptionsToEnv(env);
         TestUnitRunner.addTestUnitRunnerToEnv(env);
@@ -117,11 +119,16 @@ public class AutotestRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
+
+        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+        if (coverageProvider != null && coverageProvider.isEnabled()) {
+            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+        }
 
         TestSession session = new TestSession(displayName,
                 project,
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                debug ? SessionType.DEBUG : SessionType.TEST,
+                new RubyTestRunnerNodeFactory());
         TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
     

@@ -41,23 +41,28 @@
 
 package org.netbeans.core.windows.actions;
 
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.NbTopManager;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceHandler;
+import org.netbeans.core.windows.TopComponentGroupImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
 
 /**
  * Resets the window system to its default state.
@@ -72,21 +77,25 @@ public class ResetWindowsAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        final NbTopManager.WindowSystem ws = (NbTopManager.WindowSystem)Lookup.getDefault().lookup( NbTopManager.WindowSystem.class );
+        final NbTopManager.WindowSystem ws = Lookup.getDefault().lookup( NbTopManager.WindowSystem.class );
         if( null == ws ) {
             //unsupported window system implementation
-            //TODO log a warning
+            Logger.getLogger(ResetWindowsAction.class.getName()).log(Level.INFO,
+                    "Reset Windows action does not support custom WindowSystem implementations."); //NOI18N
             return;
         }
         
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        final WindowManagerImpl wm = WindowManagerImpl.getInstance();
         
         if( wm.getMainWindow() instanceof MainWindow ) {
             //cancel full-screen mode
-            ((MainWindow) wm.getMainWindow()).setFullScreenMode( false );;
+            ((MainWindow) wm.getMainWindow()).setFullScreenMode( false );
         }
         
         wm.getMainWindow().setExtendedState( JFrame.NORMAL );
+
+        TopComponentGroupImpl projectTCGroup = (TopComponentGroupImpl) wm.findTopComponentGroup("OpenedProjects"); //NOI18N
+        final boolean isProjectsTCGroupOpened = null != projectTCGroup && projectTCGroup.isOpened();
         
         //get a list of editor windows that should stay open even after the reset
         final TopComponent[] editors = wm.getEditorTopComponents();
@@ -106,8 +115,7 @@ public class ResetWindowsAction extends AbstractAction {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 //find the local folder that must be deleted
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
+                FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
                 if( null != rootFolder ) {
                     try {
                         for( FileObject fo : rootFolder.getChildren() ) {
@@ -128,10 +136,23 @@ public class ResetWindowsAction extends AbstractAction {
                 ws.load();
                 ws.show();        
 
+                if( isProjectsTCGroupOpened ) {
+                    TopComponentGroup tcGroup = wm.findTopComponentGroup("OpenedProjects"); //NOI18N
+                    if( null != tcGroup )
+                        tcGroup.open();
+                }
+                ModeImpl editorMode = (ModeImpl) wm.findMode("editor"); //NOI18N
                 //re-open editor windows that were opened before the reset
                 for( int i=0; i<editors.length; i++ ) {
-                    editors[i].open();
+                    editorMode.addOpenedTopComponentNoNotify(editors[i]);
                 }
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        Frame mainWindow = wm.getMainWindow();
+                        mainWindow.invalidate();
+                        mainWindow.repaint();
+                    }
+                });
                 //activate some editor window
                 if( null != activeEditor ) {
                     SwingUtilities.invokeLater( new Runnable() {

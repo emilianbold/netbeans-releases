@@ -37,7 +37,7 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Vector;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -45,9 +45,16 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
+import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.netbeans.modules.db.explorer.node.SchemaNode;
+import org.netbeans.modules.db.explorer.node.TableListNode;
+import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.explorer.node.ViewListNode;
+import org.netbeans.modules.db.explorer.node.ViewNode;
+import org.openide.nodes.Node;
+//import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+//import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
+//import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 
 /**
  * This class is a useful base test class that provides initial setup
@@ -150,26 +157,94 @@ public abstract class DBTestBase extends TestBase {
         return jdbcDriver;
     }
 
-    protected TableNodeInfo getTableNodeInfo(String tablename) throws Exception {
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(
+    protected TableNode getTableNode(String tablename) throws Exception {
+        ConnectionNode connectionNode = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNode(
                 getDatabaseConnection(true).getName());
 
-        assertNotNull(cinfo);
+        assertNotNull(connectionNode);
 
-        Vector children = cinfo.getChildren();
+        //Since the node updates asynchronously, we need
+        //to give it some time to let that happen before trying to find the
+        // table node
+        Thread.sleep(2000);
+
+
+        Collection<? extends Node> children = connectionNode.getChildNodesSync();
         // DatabaseNodeInfo.printChildren("connection children", children);
-        
-        for (Object child : children) {
-            if (child instanceof TableListNodeInfo) {
-                TableListNodeInfo tableList = (TableListNodeInfo)child;
 
-                Vector<TableNodeInfo> tables = tableList.getChildren();
+
+        for (Node child : children) {
+            if (child instanceof TableListNode) {
+                Collection<? extends Node> tables = ((TableListNode)child).getChildNodesSync();
 
                 // DatabaseNodeInfo.printChildren("tables", tables);
 
-                for (TableNodeInfo table : tables) {
+                for (Node table : tables) {
                     if (tablename.toLowerCase().equals(table.getDisplayName().toLowerCase())) {
-                        return table;
+                        return (TableNode)table;
+                    }
+                }
+            } else if (child instanceof SchemaNode) {
+                Collection<? extends Node> list = ((SchemaNode)child).getChildNodesSync();
+                for (Node c : list) {
+                    if (c instanceof TableListNode) {
+                        Collection<? extends Node> tables = ((TableListNode)c).getChildNodesSync();
+
+                        // DatabaseNodeInfo.printChildren("tables", tables);
+
+                        for (Node table : tables) {
+                            if (tablename.toLowerCase().equals(table.getDisplayName().toLowerCase())) {
+                                return (TableNode)table;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected ViewNode getViewNode(String viewname) throws Exception {
+        ConnectionNode connectionNode = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNode(
+                getDatabaseConnection(true).getName());
+
+        assertNotNull(connectionNode);
+
+        //Since the node updates asynchronously, we need
+        //to give it some time to let that happen before trying to find the
+        // table node
+        Thread.sleep(2000);
+
+
+        Collection<? extends Node> children = connectionNode.getChildNodesSync();
+        // DatabaseNodeInfo.printChildren("connection children", children);
+
+
+        for (Node child : children) {
+            if (child instanceof ViewListNode) {
+                Collection<? extends Node> views = ((ViewListNode)child).getChildNodesSync();
+
+                // DatabaseNodeInfo.printChildren("tables", tables);
+
+                for (Node view : views) {
+                    if (viewname.toLowerCase().equals(view.getDisplayName().toLowerCase())) {
+                        return (ViewNode)view;
+                    }
+                }
+            } else if (child instanceof SchemaNode) {
+                Collection<? extends Node> list = ((SchemaNode)child).getChildNodesSync();
+                for (Node c : list) {
+                    if (c instanceof ViewListNode) {
+                        Collection<? extends Node> views = ((ViewListNode)c).getChildNodesSync();
+
+                        // DatabaseNodeInfo.printChildren("tables", tables);
+
+                        for (Node view : views) {
+                            if (viewname.toLowerCase().equals(view.getDisplayName().toLowerCase())) {
+                                return (ViewNode)view;
+                            }
+                        }
                     }
                 }
             }
@@ -402,7 +477,7 @@ public abstract class DBTestBase extends TestBase {
         DatabaseMetaData md = getConnection().getMetaData();
         ResultSet rs = md.getPrimaryKeys(null, getSchema(), tablename);
         
-        // printResults(rs, "columnInPrimaryKey(" + tablename + ", " +
+        // printResults(rs, "columnInPrimaryKey(" + viewname + ", " +
         //        colname + ")");
                 
         while ( rs.next() ) {
@@ -436,7 +511,7 @@ public abstract class DBTestBase extends TestBase {
         DatabaseMetaData md = getConnection().getMetaData();
         ResultSet rs = md.getIndexInfo(null, getSchema(), tablename, false, false);
 
-        // printResults(rs, "columnInIndex(" + tablename + ", " + colname + 
+        // printResults(rs, "columnInIndex(" + viewname + ", " + colname +
         //    ", " + indexname + ")");
 
         while ( rs.next() ) {

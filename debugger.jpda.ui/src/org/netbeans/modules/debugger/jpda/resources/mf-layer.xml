@@ -284,11 +284,24 @@ made subject to such option by the copyright holder.
     <folder name="Windows2">
         <folder name="Components">
             <file name="debugging.settings" url="debugging.settings"/>
+            <file name="evaluator.settings" url="evaluator.settings"/>
+            <file name="evaluator_result.settings" url="evaluator_result.settings"/>
         </folder>
         <folder name="Modes">
+            <file name = "code_evaluator.wsmode" url="code_evaluator.wsmode"/>
+            <folder name="code_evaluator">
+                <file name="evaluator.wstcref" url="evaluator.wstcref">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
             <folder name="explorer">
                 <file name="debugging.wstcref" url="debugging.wstcref">
                     <attr name="position" intvalue="700"/>
+                </file>
+            </folder>
+            <folder name="output">
+                <file name="evaluator_result.wstcref" url="evaluator_result.wstcref">
+                    <attr name="position" intvalue="250"/>
                 </file>
             </folder>
         </folder>

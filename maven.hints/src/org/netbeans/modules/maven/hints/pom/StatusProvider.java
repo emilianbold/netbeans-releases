@@ -64,12 +64,16 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -94,11 +98,26 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private Document document;
         private POMModel model;
         private Project project;
+        private FileChangeListener listener;
 
         StatusProviderImpl(Document doc) {
             this.document = doc;
+            listener = new FileChangeAdapter() {
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            checkHints();
+                        }
+                    });
+                }
+            };
             initializeModel();
-            checkHints();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    checkHints();
+                }
+            });
         }
 
 
@@ -143,17 +162,11 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private void initializeModel() {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             if (fo != null) {
-                ModelSource ms = Utilities.createModelSource(fo, true);
+                ModelSource ms = Utilities.createModelSource(fo);
                 model = POMModelFactory.getDefault().getModel(ms);
                 model.setAutoSyncActive(false);
                 project = FileOwnerQuery.getOwner(fo);
-//                //TODO weak listener
-                fo.addFileChangeListener(new FileChangeAdapter() {
-                    @Override
-                    public void fileChanged(FileEvent fe) {
-                        checkHints();
-                    }
-                });
+                fo.addFileChangeListener(FileUtil.weakFileChangeListener(listener, fo));
             }
         }
 

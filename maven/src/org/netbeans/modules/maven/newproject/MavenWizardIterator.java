@@ -39,37 +39,18 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import org.netbeans.modules.maven.api.archetype.Archetype;
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,7 +67,6 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     private final List<ChangeListener> listeners;
-    private ArchetypeProviderImpl ngprovider;
     
     public MavenWizardIterator() {
         listeners = new ArrayList<ChangeListener>();
@@ -117,63 +97,11 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     }
     
     public Set instantiate(ProgressHandle handle) throws IOException {
-        try {
-            handle.start(4);
-            handle.progress(1);
-            final File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); //NOI18N
-            final File parent = dirF.getParentFile();
-            if (parent != null && parent.exists()) {
-                ProjectChooser.setProjectsFolder(parent);
-            }
-            
-            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-//            final Archetype archetype = (Archetype)wiz.getProperty("archetype"); //NOI18N<
-            dirF.getParentFile().mkdirs();
-            
-            handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), 2);
-            ngprovider.runArchetype(dirF.getParentFile(), wiz);
-//            } else {
-//                final String art = (String)wiz.getProperty("artifactId"); //NOI18N
-//                final String ver = (String)wiz.getProperty("version"); //NOI18N
-//                final String gr = (String)wiz.getProperty("groupId"); //NOI18N
-//                final String pack = (String)wiz.getProperty("package"); //NOI18N
-//                runArchetype(dirF.getParentFile(), gr, art, ver, pack, archetype);
-//            }
-            handle.progress(3);
-            // Always open top dir as a project:
-            FileObject fDir = FileUtil.toFileObject(dirF);
-            if (fDir != null) {
-                // the archetype generation didn't fail.
-                resultSet.add(fDir);
-                addJavaRootFolders(fDir);
-                // Look for nested projects to open as well:
-                Enumeration e = fDir.getFolders(true);
-                while (e.hasMoreElements()) {
-                    FileObject subfolder = (FileObject) e.nextElement();
-                    if (ProjectManager.getDefault().isProject(subfolder)) {
-                        resultSet.add(subfolder);
-                        addJavaRootFolders(subfolder);
-                    }
-                }
-                Project prj = ProjectManager.getDefault().findProject(fDir);
-                if (prj != null) {
-                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-                    if (nbprj != null) { //#147006 how can this happen?
-                        // maybe when the archetype contains netbeans specific project files?
-                        prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-                    }
-                }
-            }
-            return resultSet;
-        } finally {
-            handle.finish();
-        }
+        return ArchetypeWizardUtils.instantiate(handle, wiz);
     }
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        ngprovider = new ArchetypeProviderImpl();
-        wiz.putProperty(PROPERTY_CUSTOM_CREATOR, ngprovider);
         index = 0;
         panels = createPanels();
         updateSteps();
@@ -236,73 +164,6 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
             for (ChangeListener list : listeners) {
                 list.stateChanged(new ChangeEvent(this));
             }
-        }
-    }
-
-    private int runArchetype(File dirF, String gr, String art, String ver, String pack, Archetype arch) {
-        BeanRunConfig config = new BeanRunConfig();
-        config.setActivatedProfiles(Collections.<String>emptyList());
-        config.setExecutionDirectory(dirF);
-        config.setExecutionName(NbBundle.getMessage(MavenWizardIterator.class, "RUN_Project_Creation"));
-        config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPE))); //NOI18N
-        Properties props = new Properties();
-        props.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
-        props.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
-        props.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
-        if (arch.getRepository() != null) {
-            props.setProperty("remoteRepositories", arch.getRepository()); //NOI18N
-        }
-        props.setProperty("artifactId", art); //NOI18N
-        props.setProperty("groupId", gr); //NOI18N
-        props.setProperty("version", ver); //NOI18N
-        if (pack != null && pack.trim().length() > 0) {
-            props.setProperty("packageName", pack); //NOI18N
-        }
-        config.setProperties(props);
-        config.setTaskDisplayName(NbBundle.getMessage(MavenWizardIterator.class, "RUN_Project_Creation"));
-        // setup executor now..
-        //hack - we need to setup the user.dir sys property..
-        String oldUserdir = System.getProperty(USER_DIR_PROP); //NOI18N
-        System.setProperty(USER_DIR_PROP, dirF.getAbsolutePath()); //NOI18N
-        try {
-            ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
-            return task.result();
-        } finally {
-            if (oldUserdir == null) {
-                System.getProperties().remove(USER_DIR_PROP); //NOI18N
-            } else {
-                System.setProperty(USER_DIR_PROP, oldUserdir); //NOI18N
-            }
-        }
-        
-    }
-    
-    private void addJavaRootFolders(FileObject fo) {
-        try {
-            Project prj = ProjectManager.getDefault().findProject(fo);
-            if (prj == null) { //#143596
-                return;
-            }
-            NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
-            if (watch != null) {
-                // do not create java/test for pom type projects.. most probably not relevant.
-                if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
-                    URI mainJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getSourceDirectory());
-                    URI testJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getTestSourceDirectory());
-                    File file = new File(mainJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                    file = new File(testJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 

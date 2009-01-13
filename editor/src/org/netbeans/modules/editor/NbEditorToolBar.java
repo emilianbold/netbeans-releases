@@ -96,7 +96,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
@@ -259,7 +258,7 @@ import org.openide.util.lookup.ProxyLookup;
             }
         };
 
-        FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
+        FileObject moduleRegistry = FileUtil.getConfigFile("Modules"); //NOI18N
 
         if (moduleRegistry !=null){
             moduleRegistry.addFileChangeListener(

@@ -96,6 +96,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
+                <friend>org.netbeans.modules.visualweb.runtime.kit</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <package>com.sun.rave.web.ui.component</package>
                 <package>com.sun.rave.web.ui.component.util</package>

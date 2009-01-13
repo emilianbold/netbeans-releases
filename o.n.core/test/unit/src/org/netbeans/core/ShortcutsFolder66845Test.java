@@ -46,9 +46,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 
 public class ShortcutsFolder66845Test extends NbTestCase {
@@ -71,8 +69,7 @@ public class ShortcutsFolder66845Test extends NbTestCase {
     }
 
     public void testLogging() throws Exception {
-        final FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileUtil.createData(fs.getRoot(), "Keymaps/NetBeans/org-nb-Neznam.instance");
+        FileUtil.createData(FileUtil.getConfigRoot(), "Keymaps/NetBeans/org-nb-Neznam.instance");
 
         ShortcutsFolder.waitFinished ();
 

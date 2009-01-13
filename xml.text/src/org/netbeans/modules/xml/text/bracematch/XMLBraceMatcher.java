@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
  * The brace matching algorithm is invokes by the brace matcher framework.
@@ -74,11 +75,14 @@ public class XMLBraceMatcher implements BracesMatcher {
     private static final String DECLARATION_START   = "<!DOCTYPE";  //NOI18N
     private static final String DECLARATION_END     = ">";          //NOI18N
     
-    int searchOffset;
-    javax.swing.text.Document document;
+    private int searchOffset;
+    private javax.swing.text.Document document;
+    private MatcherContext context;
+    private BracesMatcher defaultMatcher;
     
     public XMLBraceMatcher(MatcherContext context) {
         this(context.getDocument(), context.getSearchOffset());
+        this.context = context;
     }
     
     //so that we could use it from unit test code
@@ -93,12 +97,12 @@ public class XMLBraceMatcher implements BracesMatcher {
             return null;
         }
         //so that we could use this from unit tests
-        try {
-            return doFindOrigin();
-        } catch (Exception e) {
-            //do nothing
-        }
-        return null;
+        int[] origin = doFindOrigin();
+        if(origin != null)
+            return origin;
+
+        defaultMatcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
+        return defaultMatcher.findOrigin();
     }
 
     public int[] doFindOrigin() throws InterruptedException, BadLocationException {
@@ -157,13 +161,12 @@ public class XMLBraceMatcher implements BracesMatcher {
         if (MatcherContext.isTaskCanceled()) {
             return null;
         }
-        try {
-            //so that we could use this from unit tests
-            return doFindMatches();
-        } catch (Exception e) {
-            //do nothing
+
+        if(defaultMatcher != null) {
+            return defaultMatcher.findMatches();
         }
-        return null;
+
+        return doFindMatches();
     }
     
     public int[] doFindMatches() throws InterruptedException, BadLocationException {

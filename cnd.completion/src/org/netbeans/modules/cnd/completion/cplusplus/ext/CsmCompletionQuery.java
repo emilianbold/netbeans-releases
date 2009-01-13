@@ -65,8 +65,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -74,10 +72,8 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -91,10 +87,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateP
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
-import org.netbeans.modules.cnd.completion.csm.CsmContext;
-import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
-import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
-import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -1749,36 +1741,7 @@ abstract public class CsmCompletionQuery {
         }
 
         private CsmType findExactVarType(final String var, final int varPos) {
-            //return  (CsmType)sup.findType(var, varPos);
-            CsmFile file = finder.getCsmFile();
-            if (file == null) {
-                return null;
-            }
-            CsmContext context = CsmOffsetResolver.findContext(file, varPos, getFileReferencesContext());
-            if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject())) {
-                // probably in initializer of variable, like
-                // struct AAA a[] = { { .field = 1}, { .field = 2}};
-                CsmVariable varObj = (CsmVariable) context.getLastObject();
-                if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), varPos)) {
-                    CsmType type = varObj.getType();
-                    if (type.getArrayDepth() > 0) {
-                        CsmClassifier cls = type.getClassifier();
-                        if (cls != null) {
-                            type = CsmCompletion.getType(cls, 0);
-                        }
-                    }
-                    return type;
-                }
-            }
-            for (CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)) {
-                if (decl instanceof CsmVariable) {
-                    CsmVariable v = (CsmVariable) decl;
-                    if (v.getName().toString().equals(var)) {
-                        return v.getType();
-                    }
-                }
-            }
-            return null;
+            return sup.findExactVarType(finder.getCsmFile(), var, varPos, getFileReferencesContext());   
         }
 
         private List<CsmType> getTypeList(CsmCompletionExpression item, int firstChildIdx) {
@@ -2222,6 +2185,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createTypedefResultItem((CsmTypedef) csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isStatement(csmObj)) {
                 return getCsmItemFactory().createLabelResultItem((CsmLabel) csmObj);
+            } else if (CsmKindUtilities.isNamespaceAlias(csmObj)) {
+                return getCsmItemFactory().createNamespaceAliasResultItem((CsmNamespaceAlias) csmObj, false);
             }
         }
         return null;

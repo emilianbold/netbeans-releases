@@ -1,12 +1,12 @@
 Code completion result for source line:
 var.to_i|
 (QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     to_i                                       NilClass
 ------------------------------------
 METHOD     to_i                                       BigDecimal
 METHOD     to_i                                       Float
 METHOD     to_i                                       IO
 METHOD     to_i                                       Integer
-METHOD     to_i                                       NilClass
 METHOD     to_i                                       OpenSSL::BN
 METHOD     to_i                                       Process::Status
 METHOD     to_i                                       Symbol

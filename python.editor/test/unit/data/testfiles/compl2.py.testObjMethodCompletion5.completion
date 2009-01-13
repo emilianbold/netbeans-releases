@@ -141,6 +141,7 @@ METHOD     reload(module, path)
 METHOD     remainder(a, b)                            
 METHOD     remainder_near(a, b)                       
 METHOD     remainder_near(other, context)             
+METHOD     remove()                                   
 METHOD     remove(elem)                               
 METHOD     remove(element)                            
 METHOD     remove(elt)                                
@@ -186,6 +187,7 @@ METHOD     renameNode(n, namespaceURI, na
 METHOD     repeat(repeat, number)                     
 METHOD     replace(hour, minute, second,              
 METHOD     replace(hour, minute, second,              
+METHOD     replace(old, new)                          
 METHOD     replace(old, new, count)                   
 METHOD     replace(old, new, maxsplit)                
 METHOD     replace(win)                               
@@ -286,16 +288,20 @@ METHOD     return_ok_version(cookie, requ
 METHOD     return_stmt(nodelist)                      
 METHOD     reverse()                                  
 METHOD     reverse()                                  
+METHOD     reverse()                                  
 METHOD     reverse_order()                            
 METHOD     revert(filename, ignore_discar             
 METHOD     rewind()                                   
 METHOD     rewind()                                   
 METHOD     rewindbody()                               
 METHOD     rfind(string, start, end)                  
+METHOD     rfind(sub)                                 
 METHOD     rfind(sub, start, end)                     
 METHOD     rfind(sub, start, end)                     
+METHOD     rindex(sub)                                
 METHOD     rindex(sub, start, end)                    
 METHOD     rindex(sub, start, end)                    
+METHOD     rjust(width)                               
 METHOD     rjust(width, args)                         
 METHOD     rjust(width, fillchar)                     
 METHOD     rmd(dirname)                               
@@ -306,11 +312,14 @@ METHOD     rotate(other, context)
 METHOD     rowxfer(line)                              
 METHOD     rpartition(sep)                            
 METHOD     rpartition(sep)                            
+METHOD     rpartition(sep)                            
 METHOD     rpop(user)                                 
 METHOD     rset()                                     
 METHOD     rset()                                     
+METHOD     rsplit()                                   
 METHOD     rsplit(sep, maxsplit)                      
 METHOD     rsplit(sep, maxsplit)                      
+METHOD     rstrip()                                   
 METHOD     rstrip(chars)                              
 METHOD     rstrip(chars)                              
 METHOD     run()                                      
@@ -375,24 +384,109 @@ METHOD     runtime_library_dir_option(dir
 METHOD     runtime_library_dir_option(dir             
 METHOD     runtime_library_dir_option(dir             
 METHOD     runtime_library_dir_option(dir             
+VARIABLE   rargs                                      
+VARIABLE   raw                                        
+VARIABLE   raw_requestline                            
+VARIABLE   raw_requestline                            
+VARIABLE   rawdata                                    
+VARIABLE   rawdata                                    
+VARIABLE   rawdata                                    
+VARIABLE   rawq                                       
 VARIABLE   rbufsize                                   
 VARIABLE   rbufsize                                   
+VARIABLE   rc                                         
+VARIABLE   rcLines                                    
+VARIABLE   re_var                                     
 VARIABLE   read                                       
+VARIABLE   read                                       
+VARIABLE   read                                       
+VARIABLE   read                                       
+VARIABLE   read_func                                  
+VARIABLE   reader                                     
+VARIABLE   reader                                     
+VARIABLE   reader                                     
+VARIABLE   readfile                                   
 VARIABLE   readline                                   
+VARIABLE   readline                                   
+VARIABLE   readline                                   
+VARIABLE   readlines                                  
+VARIABLE   readlines                                  
+VARIABLE   realpos                                    
+VARIABLE   realsock                                   
+VARIABLE   reason                                     
+VARIABLE   reason                                     
+VARIABLE   recipients                                 
+VARIABLE   record                                     
+VARIABLE   records                                    
+VARIABLE   recv                                       
+VARIABLE   recvfrom                                   
 VARIABLE   reference                                  
+VARIABLE   relative                                   
+VARIABLE   relativeCreated                            
+VARIABLE   release                                    
+VARIABLE   repeat                                     
+VARIABLE   replace_paths                              
+VARIABLE   replace_whitespace                         
+VARIABLE   repository                                 
+VARIABLE   repository                                 
 VARIABLE   repr                                       
 VARIABLE   request                                    
 VARIABLE   request_queue_size                         
+VARIABLE   request_version                            
+VARIABLE   requestline                                
+VARIABLE   requires                                   
+VARIABLE   requires                                   
 VARIABLE   res_extension                              
 VARIABLE   res_extension                              
 VARIABLE   res_extension                              
+VARIABLE   reserved                                   
+VARIABLE   response                                   
 VARIABLE   response_class                             
 VARIABLE   responses                                  
+VARIABLE   restkey                                    
+VARIABLE   restval                                    
+VARIABLE   restype                                    
 VARIABLE   result                                     
+VARIABLE   results                                    
+VARIABLE   results                                    
+VARIABLE   retried                                    
+VARIABLE   retryFactor                                
+VARIABLE   retryMax                                   
+VARIABLE   retryPeriod                                
+VARIABLE   retryStart                                 
+VARIABLE   retryTime                                  
+VARIABLE   returncode                                 
+VARIABLE   returnframe                                
+VARIABLE   rfc2109                                    
+VARIABLE   rfc2109_as_netscape                        
+VARIABLE   rfc2965                                    
 VARIABLE   rfile                                      
+VARIABLE   right                                      
+VARIABLE   right                                      
+VARIABLE   right_list                                 
+VARIABLE   right_only                                 
+VARIABLE   rlen                                       
+VARIABLE   rng                                        
+VARIABLE   rng                                        
+VARIABLE   rolloverAt                                 
+VARIABLE   root                                       
+VARIABLE   root                                       
+VARIABLE   root                                       
+VARIABLE   roots                                      
+VARIABLE   rounding                                   
+VARIABLE   row                                        
+VARIABLE   rows                                       
+VARIABLE   rpath                                      
 VARIABLE   rpc_paths                                  
+VARIABLE   rpm3_mode                                  
+VARIABLE   rpm_base                                   
+VARIABLE   rs                                         
+VARIABLE   rulelines                                  
 VARIABLE   ruler                                      
+VARIABLE   runtime_library_dirs                       
+VARIABLE   runtime_library_dirs                       
 VARIABLE   rx                                         
+ATTRIBUTE  real                                       
 ATTRIBUTE  real                                       
 ATTRIBUTE  restype                                    
 ATTRIBUTE  returns_unicode                            

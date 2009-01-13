@@ -56,7 +56,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
@@ -154,7 +154,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
     }
     
     private static String[] loadPermissions() {
-        final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("j2me/permissions.txt"); // NOI18N
+        final FileObject fo = FileUtil.getConfigFile("j2me/permissions.txt"); // NOI18N
         if (fo != null) {
             InputStream is = null;
             try {

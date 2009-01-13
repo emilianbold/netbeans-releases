@@ -219,7 +219,9 @@ public class AstRenderer {
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                    container.addDeclaration(new NamespaceAliasImpl(token, file));
+                    NamespaceAliasImpl alias = new NamespaceAliasImpl(token, file, currentNamespace);
+                    container.addDeclaration(alias);
+                    currentNamespace.addDeclaration(alias);
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE: {
                     UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
@@ -674,7 +676,9 @@ public class AstRenderer {
         if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
 
             AST classNode = typedefNode.getNextSibling();
-
+            if (isVolatileQualifier(classNode.getType())) {
+                classNode = classNode.getNextSibling();
+            }
             switch (classNode.getType()) {
 
                 case CPPTokenTypes.LITERAL_class:
@@ -1421,7 +1425,9 @@ public class AstRenderer {
         }
         switch (token.getType()) {
             case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                container.addDeclaration(new NamespaceAliasImpl(token, file));
+                NamespaceAliasImpl alias = new NamespaceAliasImpl(token, file, currentNamespace);
+                container.addDeclaration(alias);
+                currentNamespace.addDeclaration(alias);
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE: {
                 UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);

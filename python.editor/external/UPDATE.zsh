@@ -16,7 +16,7 @@
 #
 # Configure the following parameters:
 #
-NBHGHOME=~/netbeans/hg/python65
+NBHGHOME=~/netbeans/hg/newrhino
 NATIVEPYTHONHOME=/usr
 VMFLAGS=-J-Xmx1024m
 INDEXING_PROJECT=/Users/tor/NetBeansProjects/NewPythonProject
@@ -72,8 +72,8 @@ mv preindexed-python.zip $NBHGHOME/python.editor/external/preindexed.zip
 rm -f preindexed-python.zip
 
 cd $PYTHON
-#rm $NBHGHOME/python.editor/external/pythonstubs-2_6.egg
-#zip -r $NBHGHOME/python.editor/external/pythonstubs-2_6.egg pythonstubs
+#rm $NBHGHOME/python.editor/external/pythonstubs-2_6_1.egg
+#zip -r $NBHGHOME/python.editor/external/pythonstubs-2_6_1.egg pythonstubs
 
 fi
 
@@ -116,8 +116,8 @@ fi
 # Update binaries-list -- manual upload is still necessary!
 # Python
 rm -f $TMP_BINARIES
-cat $NBHGHOME/python.editor/external/binaries-list | sed '/preindexed.zip/d' | sed '/pythonstubs-2_6.egg/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
-echo `openssl dgst -sha1 $NBHGHOME/python.editor/external/pythonstubs-2_6.egg | awk '{ print toupper($2) }'` pythonstubs-2_6.egg >> $TMP_BINARIES
+cat $NBHGHOME/python.editor/external/binaries-list | sed '/preindexed.zip/d' | sed '/pythonstubs-2_6_1.egg/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/python.editor/external/pythonstubs-2_6_1.egg | awk '{ print toupper($2) }'` pythonstubs-2_6_1.egg >> $TMP_BINARIES
 echo `openssl dgst -sha1 $NBHGHOME/python.editor/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
 #echo `openssl dgst -sha1 $NBHGHOME/python.editor/external/preindexed-native.zip | awk '{ print toupper($2) }'` preindexed-native.zip >> $TMP_BINARIES
 mv $TMP_BINARIES $NBHGHOME/python.editor/external/binaries-list

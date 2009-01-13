@@ -86,7 +86,7 @@ import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -343,7 +343,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                 // create new file
                 
                 // XXX not nice; user might modify the template to something entirely different from the interface
-                FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Interface.java"); // NOI18N
+                FileObject tempFO = FileUtil.getConfigFile("Templates/Classes/Interface.java"); // NOI18N
                 
                 DataFolder folder = (DataFolder) DataObject.find(folderFO);
                 DataObject template = DataObject.find(tempFO);

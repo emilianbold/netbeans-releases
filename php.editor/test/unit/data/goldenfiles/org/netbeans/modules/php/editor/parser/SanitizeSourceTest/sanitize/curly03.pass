@@ -1,4 +1,6 @@
 <Program start='0' end='89'>
+    <Comments>
+    </Comments>
     <Statements>
         <FunctionDeclaration start='6' end='89' isReference='false'>
             <Identifier start='15' end='16' name='f'/>

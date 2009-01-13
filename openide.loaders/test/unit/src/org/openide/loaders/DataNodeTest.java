@@ -52,9 +52,9 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -98,8 +98,7 @@ public class DataNodeTest extends NbTestCase {
         // outside a running IDE.
 //        TopManager tm = TopManager.getDefault();
         // Now scan SFS for all DO's and check the assertion.
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        DataFolder top = DataFolder.findFolder(sfs.getRoot());
+        DataFolder top = DataFolder.findFolder(FileUtil.getConfigRoot());
         Enumeration e = top.children(true);
         while (e.hasMoreElements()) {
             DataObject o = (DataObject)e.nextElement();
@@ -180,8 +179,7 @@ public class DataNodeTest extends NbTestCase {
     
     public void testDataNodeGetDataFromLookup() throws Exception {
 
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        DataFolder rootFolder = DataFolder.findFolder(sfs.getRoot());
+        DataFolder rootFolder = DataFolder.findFolder(FileUtil.getConfigRoot());
         
         class C implements Node.Cookie {
         }

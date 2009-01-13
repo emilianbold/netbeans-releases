@@ -384,6 +384,8 @@ final class DummyWindowManager extends WindowManager {
     }
     
     protected void topComponentClose(TopComponent tc) {
+        if( !tc.canClose() )
+            return;
         componentHidden(tc);
         componentCloseNotify(tc);
 
@@ -438,7 +440,7 @@ final class DummyWindowManager extends WindowManager {
     @Override
     public boolean isEditorTopComponent(TopComponent tc) {
         Mode md = findMode(tc);
-        if (md != null && "editor".equals(md.getName())) {
+        if (md != null && isEditorMode(md)) {
             return true;
         }
         return false;
@@ -447,10 +449,15 @@ final class DummyWindowManager extends WindowManager {
     @Override
     public boolean isOpenedEditorTopComponent(TopComponent tc) {
         Mode md = findMode(tc);
-        if (md != null && "editor".equals(md.getName())) {
+        if (md != null && isEditorMode(md)) {
             return tc.isOpened();
         }
         return super.isOpenedEditorTopComponent(tc);
+    }
+
+    @Override
+    public boolean isEditorMode(Mode mode) {
+        return "editor".equals(mode.getName());
     }
 
     private final class W implements Workspace {

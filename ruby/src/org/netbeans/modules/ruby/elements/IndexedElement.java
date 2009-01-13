@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 
@@ -87,11 +88,11 @@ public abstract class IndexedElement extends RubyElement {
     private Document document;
     private FileObject fileObject;
     private final FileObject context;
-    private final String type;
+    protected RubyType type;
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
             String clz, String require, String attributes,
-            int flags, FileObject context, String type) {
+            int flags, FileObject context, RubyType type) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
@@ -124,7 +125,7 @@ public abstract class IndexedElement extends RubyElement {
         return fqn;
     }
 
-    public String getType() {
+    public RubyType getType() {
         return type;
     }
 

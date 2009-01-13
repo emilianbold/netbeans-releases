@@ -83,10 +83,10 @@ public class YamlScanner implements StructureScanner {
     }
 
     List<? extends StructureItem> scanStructure(YamlParserResult result) {
-        Node node = result.getObject();
-        if (node != null) {
+        List<Node> nodes = result.getRootNodes();
+        if (nodes.size() > 0) {
             // Skip root node
-            return YamlStructureItem.initialize(result, node);
+            return YamlStructureItem.initialize(result, nodes);
         }
 
         return Collections.emptyList();
@@ -197,14 +197,18 @@ public class YamlScanner implements StructureScanner {
             return getNestedItems().size() == 0;
         }
 
-        private static List<? extends StructureItem> initialize(YamlParserResult result, Node root) {
+        private static List<? extends StructureItem> initialize(YamlParserResult result, List<Node> roots) {
             // Really need IdentitySet or IdentityHashSet but there isn't one built in
             // or in our available libraries...
             IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
             //return new YamlStructureItem(root, null).getNestedItems();
-            YamlStructureItem fakeRoot = new YamlStructureItem(root, null, OffsetRange.NONE);
-            initializeChildren(result, fakeRoot, seen, 0);
-            return fakeRoot.children;
+            List<StructureItem> children = new ArrayList<StructureItem>();
+            for (Node root : roots) {
+                YamlStructureItem fakeRoot = new YamlStructureItem(root, null, OffsetRange.NONE);
+                initializeChildren(result, fakeRoot, seen, 0);
+                children.addAll(fakeRoot.children);
+            }
+            return children;
         }
 
         @SuppressWarnings("unchecked")

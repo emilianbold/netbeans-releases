@@ -237,11 +237,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 public void run() {
 
             final List<Project> projects = new ArrayList<Project>( projectDirs.length );
+            //#155766 load the display names off the AWT thead.
+            final List<String> projectNames = new ArrayList<String>(projectDirs.length);
             for (File dir : projectDirs) {
                 if (dir != null) {
                     Project project = getProject(FileUtil.normalizeFile(dir));
                     if ( project != null ) {
                         projects.add( project );
+                        projectNames.add(ProjectUtils.getInformation(project).getDisplayName());
                     }
                 }
             }
@@ -254,7 +257,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 setAccessoryEnablement( true, projects.size() );
 
                 if ( projects.size() == 1 ) {
-                    String projectName = ProjectUtils.getInformation(projects.get(0)).getDisplayName();
+                    String projectName = projectNames.get(0);
                     jTextFieldProjectName.setText( projectName );
                     jTextFieldProjectName.setToolTipText( projectName );
                 }
@@ -262,13 +265,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     jTextFieldProjectName.setText(NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Multiselection", projects.size()));
 
                     StringBuffer toolTipText = new StringBuffer( "<html>" ); // NOI18N
-                    for(Iterator<Project> it = projects.iterator(); it.hasNext();) {
-                        Project p = it.next();
-                        toolTipText.append( ProjectUtils.getInformation( p ).getDisplayName() );
-                        if ( it.hasNext() ) {
-                            toolTipText.append( "<br>" ); // NOI18N
-                        }
+                    for(String str : projectNames) {
+                        toolTipText.append( str );
+                        toolTipText.append( "<br>" ); // NOI18N
                     }
+                    toolTipText.setLength(toolTipText.length() - "<br>".length());
                     toolTipText.append( "</html>" ); // NOI18N
                     jTextFieldProjectName.setToolTipText( toolTipText.toString() );
                 }
@@ -385,6 +386,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private static Project getProject( File dir ) {
         return OpenProjectList.fileToProject( dir );
+    }
+
+    private static ProjectManager.Result getProjectResult(File dir) {
+        FileObject fo = FileUtil.toFileObject(dir);
+        if (fo != null && /* #60518 */ fo.isFolder()) {
+            return ProjectManager.getDefault().isProject2(fo);
+        } else {
+            return null;
+        }
+
     }
 
     private void setAccessoryEnablement( boolean enable, int numberOfProjects ) {
@@ -605,10 +616,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
 
         public void run() {
-            Project p = OpenProjectList.fileToProject(lookingForIcon);
+            ProjectManager.Result r = getProjectResult(lookingForIcon);
             Icon icon;
-            if (p != null) {
-                icon = ProjectUtils.getInformation(p).getIcon();
+            if (r != null) {
+                icon = r.getIcon();
+                if (icon == null) {
+                    Project p = getProject(lookingForIcon);
+                    if (p != null) {
+                        icon = ProjectUtils.getInformation(p).getIcon();
+                    } else {
+                        // Could also badge with an error icon:
+                        icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                    }
+                }
             } else {
                 // Could also badge with an error icon:
                 icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);

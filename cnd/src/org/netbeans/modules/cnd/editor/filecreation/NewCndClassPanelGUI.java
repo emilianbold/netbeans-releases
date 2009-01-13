@@ -49,8 +49,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -127,8 +127,8 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         
         
-        sourceExt = ExtensionsSettings.getInstance(CCDataLoader.getInstance()).getDefaultExtension();
-        headerExt = ExtensionsSettings.getInstance(HDataLoader.getInstance()).getDefaultExtension();
+        sourceExt = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getDefaultExtension();
+        headerExt = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getDefaultExtension();
         
         if (template != null) {
             if (documentName == null) {
@@ -136,15 +136,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
                 if (currentFolder != null) {
-                    int index = 0;
-                    while (true) {
-                        FileObject _tmpS = currentFolder.getFileObject(getFileName(documentName), sourceExt);
-                        FileObject _tmpH = currentFolder.getFileObject(getFileName(documentName), headerExt);
-                        if (_tmpS == null && _tmpH == null) {
-                            break;
-                        }
-                        documentName = baseName + ++index;
-                    }
+                    documentName += generateUniqueSuffix(
+                            currentFolder, getFileName(documentName),
+                            sourceExt, headerExt);
                 }
                 
             }

@@ -288,16 +288,16 @@ def noproblem3():
 
 </FunctionDef><TryExcept>try:
     <Expr><Call><Name>errorInOuter</Name>()</Call></Expr>
-except <Name>UnboundLocalError</Name>:
+<ExceptHandler>except <Name>UnboundLocalError</Name>:
     <Pass>pass</Pass>
-else:
+</ExceptHandler>else:
     <Raise>raise <Name>TestFailed</Name></Raise>
 
 </TryExcept><TryExcept>try:
     <Expr><Call><Name>errorInInner</Name>()</Call></Expr>
-except <Name>NameError</Name>:
+<ExceptHandler>except <Name>NameError</Name>:
     <Pass>pass</Pass>
-else:
+</ExceptHandler>else:
     <Raise>raise <Name>TestFailed</Name></Raise>
 
 </TryExcept><Print>print <Str>"14. complex definitions"</Str></Print>
@@ -479,8 +479,8 @@ else:
 <Expr><Call><Attribute><Name>sys</Name>.settrace</Attribute>(<Name>None</Name>)</Call></Expr>
 
 <TryExcept>try: <Expr><Call><Attribute><Name>sys</Name>.settrace</Attribute>()</Call></Expr>
-except <Name>TypeError</Name>: <Pass>pass</Pass>
-else: <Raise>raise <Name>TestFailed</Name>, <Str>'sys.settrace() did not raise TypeError'</Str></Raise>
+<ExceptHandler>except <Name>TypeError</Name>: <Pass>pass</Pass>
+</ExceptHandler>else: <Raise>raise <Name>TestFailed</Name>, <Str>'sys.settrace() did not raise TypeError'</Str></Raise>
 
 </TryExcept><Print>print <Str>"20. eval and exec with free variables"</Str></Print>
 
@@ -490,25 +490,25 @@ else: <Raise>raise <Name>TestFailed</Name>, <Str>'sys.settrace() did not raise T
 </FunctionDef><Assign><Name>g</Name> = <Call><Name>f</Name>(<Num>3</Num>)</Call></Assign>
 <TryExcept>try:
     <Expr><Call><Name>eval</Name>(<Attribute><Name>g</Name>.func_code</Attribute>)</Call></Expr>
-except <Name>TypeError</Name>:
+<ExceptHandler>except <Name>TypeError</Name>:
     <Pass>pass</Pass>
-else:
+</ExceptHandler>else:
     <Print>print <Str>"eval() should have failed, because code contained free vars"</Str></Print>
 
 </TryExcept><TryExcept>try:
     <Exec>exec <Attribute><Name>g</Name>.func_code</Attribute></Exec>
-except <Name>TypeError</Name>:
+<ExceptHandler>except <Name>TypeError</Name>:
     <Pass>pass</Pass>
-else:
+</ExceptHandler>else:
     <Print>print <Str>"exec should have failed, because code contained free vars"</Str></Print>
 
 </TryExcept><Print>print <Str>"21. list comprehension with local variables"</Str></Print>
 
 <TryExcept>try:
     <Print>print <Name>bad</Name></Print>
-except <Name>NameError</Name>:
+<ExceptHandler>except <Name>NameError</Name>:
     <Pass>pass</Pass>
-else:
+</ExceptHandler>else:
     <Print>print <Str>"bad should not be defined"</Str></Print>
 
 </TryExcept><FunctionDef>def x():
@@ -517,10 +517,10 @@ else:
 </FunctionDef><Expr><Call><Name>x</Name>()</Call></Expr>
 <TryExcept>try:
     <Print>print <Name>bad</Name></Print>
-except <Name>NameError</Name>:
+<ExceptHandler>except <Name>NameError</Name>:
     <Pass>pass</Pass>
 
-</TryExcept><Print>print <Str>"22. eval with free variables"</Str></Print>
+</ExceptHandler></TryExcept><Print>print <Str>"22. eval with free variables"</Str></Print>
 
 <FunctionDef>def f(<Name>x</Name>):
     <FunctionDef>def g():

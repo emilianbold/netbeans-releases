@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -94,7 +95,7 @@ public final class RepositoryPreferences {
 
     //#138102
     private FileObject getSystemFsRoot() {
-        return org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource("Projects/org-netbeans-modules-maven/Repositories"); //NOI18N
+        return FileUtil.getConfigFile("Projects/org-netbeans-modules-maven/Repositories"); //NOI18N
     }
 
     public synchronized static RepositoryPreferences getInstance() {

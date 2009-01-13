@@ -44,11 +44,15 @@ package org.netbeans.modules.openide.filesystems.declmime;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeAdapter;
@@ -57,8 +61,11 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -80,7 +87,12 @@ public final class MIMEResolverImpl {
     private static final int READ_LIMIT = 4000;
     private static Set<String> readLimitReported = new HashSet<String>();
 
-    
+    // constants for user defined declarative MIME resolver
+    private static final String MIME_RESOLVERS_PATH = "Services/MIMEResolver";  //NOI18N
+    private static final String USER_DEFINED_MIME_RESOLVER = "user-defined-mime-resolver";  //NOI18N
+    /** Position of user-defined mime resolver. Need to very low to override all other resolvers. */
+    private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
+
     public static MIMEResolver forDescriptor(FileObject fo) {
         return new Impl(fo);
     }
@@ -94,43 +106,166 @@ public final class MIMEResolverImpl {
     public static String[] getMIMETypes(MIMEResolver resolver) {
         return ((Impl)resolver).implResolvableMIMETypes;
     }
-    
 
-    /** Returns list of extension and MIME type pairs for given MIMEResolver
-     * FileObject. The list can contain duplicates and also [null, MIME] pairs.
-     * @param fo MIMEResolver FileObject
-     * @return list of extension and MIME type pairs. The list can contain 
-     * duplicates and also [null, MIME] pairs.
+    /** Check whether given resolver's FileObject is user defined.
+     * @param mimeResolverFO resolver's FileObject
+     * @return true if specified FileObject is user defined MIME resolver, false otherwise
      */
-    public static List<String[]> getExtensionsAndMIMETypes(FileObject fo) {
-        assert fo.getPath().startsWith("Services/MIMEResolver");  //NOI18N
+    public static boolean isUserDefined(FileObject mimeResolverFO) {
+        return mimeResolverFO.getAttribute(USER_DEFINED_MIME_RESOLVER) != null;
+    }
+
+    /** Returns mapping of MIME type to set of extensions. It never returns null,
+     * it can return empty set of extensions.
+     * @param fo MIMEResolver FileObject
+     * @return mapping of MIME type to set of extensions like
+     * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
+     */
+    public static Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
         if (!fo.hasExt("xml")) { // NOI18N
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
-        ArrayList<String[]> result = new ArrayList<String[]>();
+        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
         Impl impl = new Impl(fo);
         impl.parseDesc();
         FileElement[] elements = impl.smell;
-        if(elements != null) {
+        if (elements != null) {
             for (FileElement fileElement : elements) {
                 String mimeType = fileElement.getMimeType();
                 if (mimeType != null) {  // can be null if <exit/> element is used
                     String[] extensions = fileElement.getExtensions();
+                    Set<String> extensionsSet = new HashSet<String>();
                     if (extensions != null) {
                         for (String extension : extensions) {
                             if (extension.length() > 0) {  // ignore empty extension
-                                result.add(new String[] {extension, mimeType});
+                                extensionsSet.add(extension);
                             }
                         }
-                    } else {
-                        result.add(new String[] {null, mimeType});
                     }
+                    Set<String> previous = result.get(mimeType);
+                    if (previous != null) {
+                        extensionsSet.addAll(previous);
+                    }
+                    result.put(mimeType, extensionsSet);
                 }
             }
         }
         return result;
     }
-    
+
+    /** Returns FileObject representing declarative user defined MIME resolver
+     * or null if not yet created.
+     * @return FileObject representing declarative user defined MIME resolver
+     * or null if not yet created.
+     */
+    public static FileObject getUserDefinedResolver() {
+        FileObject resolversFolder = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
+        if (resolversFolder != null) {
+            FileObject[] resolvers = resolversFolder.getChildren();
+            for (FileObject resolverFO : resolvers) {
+                if (resolverFO.getAttribute(USER_DEFINED_MIME_RESOLVER) != null) {
+                    return resolverFO;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Stores declarative resolver corresponding to specified mapping of MIME type
+     * and set of extensions. This resolver has the highest priority. Usually
+     * it resides in userdir/config/Servicer/MIMEResolver.
+     * @param mimeToExtensions mapping of MIME type to set of extensions like
+     * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
+     */
+    public static void storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
+        Parameters.notNull("mimeToExtensions", mimeToExtensions);  //NOI18N
+        FileObject userDefinedResolverFO = getUserDefinedResolver();
+        if (userDefinedResolverFO != null) {
+            try {
+                // delete previous resolver because we need to refresh MIMEResolvers
+                userDefinedResolverFO.delete();
+            } catch (IOException e) {
+                ERR.log(Level.SEVERE, "Cannot delete resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                return;
+            }
+        }
+        if (mimeToExtensions.isEmpty()) {
+            // nothing to write
+            return;
+        }
+        FileUtil.runAtomicAction(new Runnable() {
+
+            public void run() {
+                Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.1//EN", "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd");  //NOI18N
+                for (String mimeType : mimeToExtensions.keySet()) {
+                    Set<String> extensions = mimeToExtensions.get(mimeType);
+                    if (!extensions.isEmpty()) {
+                        Element fileElement = document.createElement("file");  //NOI18N
+                        for (String extension : mimeToExtensions.get(mimeType)) {
+                            Element extElement = document.createElement("ext");  //NOI18N
+                            extElement.setAttribute("name", extension);  //NOI18N
+                            fileElement.appendChild(extElement);
+                        }
+                        Element resolverElement = document.createElement("resolver");  //NOI18N
+                        resolverElement.setAttribute("mime", mimeType);  //NOI18N
+                        fileElement.appendChild(resolverElement);
+                        document.getDocumentElement().appendChild(fileElement);
+                    }
+                }
+                if (!document.getDocumentElement().hasChildNodes()) {
+                    // nothing to write
+                    return;
+                }
+                OutputStream os = null;
+                FileObject userDefinedResolverFO = null;
+                try {
+                    FileObject resolversFolder = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
+                    if (resolversFolder == null) {
+                        resolversFolder = FileUtil.createFolder(FileUtil.getConfigRoot(), MIME_RESOLVERS_PATH);
+                    }
+                    userDefinedResolverFO = resolversFolder.createData(USER_DEFINED_MIME_RESOLVER, "xml");  //NOI18N
+                    userDefinedResolverFO.setAttribute(USER_DEFINED_MIME_RESOLVER, Boolean.TRUE);
+                    userDefinedResolverFO.setAttribute("position", USER_DEFINED_MIME_RESOLVER_POSITION);  //NOI18N
+                    os = userDefinedResolverFO.getOutputStream();
+                    XMLUtil.write(document, os, "UTF-8"); //NOI18N
+                } catch (IOException e) {
+                    ERR.log(Level.SEVERE, "Cannot write resolver " + (userDefinedResolverFO == null ? "" : FileUtil.toFile(userDefinedResolverFO)), e);  //NOI18N
+                } finally {
+                    if (os != null) {
+                        try {
+                            os.close();
+                        } catch (IOException e) {
+                            ERR.log(Level.SEVERE, "Cannot close OutputStream of file " + (userDefinedResolverFO == null ? "" : FileUtil.toFile(userDefinedResolverFO)), e);  //NOI18N
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /** Returns map of all registered MIMEResolver instances in revers order,
+     * i.e. first are ones with lower priority (position attribute higher)
+     * and last are ones with highest prority (position attribute lower).
+     * @return map of all registered MIMEResolver instances in revers order
+     * (highest priority last)
+     */
+    public static Map<Integer, FileObject> getOrderedResolvers() {
+        // scan resolvers and order them to be able to assign extension to mime type from resolver with the lowest position
+        FileObject[] resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH).getChildren();
+        TreeMap<Integer, FileObject> orderedResolvers = new TreeMap<Integer, FileObject>(Collections.reverseOrder());
+        for (FileObject mimeResolverFO : resolvers) {
+            Integer position = (Integer) mimeResolverFO.getAttribute("position");  //NOI18N
+            if (position == null) {
+                position = Integer.MAX_VALUE;
+            }
+            while (orderedResolvers.containsKey(position)) {
+                position--;
+            }
+            orderedResolvers.put(position, mimeResolverFO);
+        }
+        return orderedResolvers;
+    }
+
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     private static class Impl extends MIMEResolver {
@@ -161,7 +296,7 @@ public final class MIMEResolverImpl {
         }
 
         public String findMIMEType(FileObject fo) {
-            if (fo.hasExt("xml") && fo.getPath().startsWith("Services/MIMEResolver")) { // NOI18N
+            if (fo.hasExt("xml") && fo.getPath().startsWith(MIME_RESOLVERS_PATH)) { // NOI18N
                 // do not try to check ourselves!
                 return null;
             }
@@ -890,7 +1025,7 @@ public final class MIMEResolverImpl {
 
             if (mimes != null) {
                 boolean match = false;
-                String s = getMIMEType(fo.getExt());
+                String s = getMIMEType(fo.getExt());  //from the very first implementation there is still question "how to obtain resource MIME type as classified by lower layers?"
                 if (s == null) return false;
 
                 // RFC2045; remove content type paramaters and ignore case

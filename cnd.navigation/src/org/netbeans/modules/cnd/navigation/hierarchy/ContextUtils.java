@@ -51,29 +51,24 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 
 public class ContextUtils {
-    public static final boolean USE_REFERENCE_RESOLVER = getBoolean("hierarchy.use.reference", true); // NOI18N
+    public static final boolean USE_REFERENCE_RESOLVER = CndUtils.getBoolean("hierarchy.use.reference", true); // NOI18N
     
     private ContextUtils() {
     }
 
-    public static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }
-    
     public static CsmFile findFile(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
@@ -202,5 +197,49 @@ public class ContextUtils {
         }
         return false;
     }
+
+    public static CsmScope findScope(Node activatedNode) {
+        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
+        if (c != null) {
+            JEditorPane[] panes = c.getOpenedPanes();
+            if (panes != null && panes.length>0) {
+                int offset = panes[0].getCaret().getDot();
+                CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
+                if (file != null){
+                    return findInnerFileScope(file, offset);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static CsmScope findInnerFileScope(CsmFile file, int offset) {
+        CsmScope innerScope = null;
+        for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
+            CsmDeclaration decl = (CsmDeclaration) it.next();
+            if (CsmKindUtilities.isScope(decl) && isInObject(decl, offset)) {
+                innerScope = findInnerScope((CsmScope)decl, offset);
+                innerScope = innerScope != null ? innerScope : (CsmScope)decl;
+                break;
+            }
+        }
+        return innerScope;
+    }
+
+    private static CsmScope findInnerScope(CsmScope outScope, int offset) {
+        for (CsmScopeElement item : outScope.getScopeElements()) {
+            if(CsmKindUtilities.isScope(item) && isInObject(item, offset)) {
+                CsmScope inScope = findInnerScope((CsmScope) item, offset);
+                if(inScope != null) {
+                    return inScope;
+                } else {
+                    return (CsmScope) item;
+                }
+            }
+        }
+        return null;
+    }
+
+
 
 }

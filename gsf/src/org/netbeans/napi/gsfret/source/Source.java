@@ -438,8 +438,16 @@ public final class Source {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
-        
-        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "Source.runCompileControlTask called under Document write lock.";    //NOI18N
+
+        boolean assertionsEnabled = false;
+        assert assertionsEnabled = true;
+        if (assertionsEnabled) {
+            if (!(javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files))) {
+                String msg = "Source.runCompileControlTask called under Document write lock."; // NOI18N
+                Logger.getLogger(Source.class.getName()).log(Level.INFO, msg,
+                        new IllegalStateException(msg));
+            }
+        }
         
         if (this.files.size()<=1) {                        
             final Source.Request request = currentRequest.getTaskToCancel();

@@ -45,23 +45,15 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 import java.util.Hashtable;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentFactory;
-import org.dom4j.Element;
 import org.dom4j.dom.DOMDocumentFactory;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
-import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -72,7 +64,6 @@ public class CreationFactory implements ICreationFactory {
 	private ICreationFactory m_CreationFactory = null;
 	private long m_RevokeNumber = 0;
 	private boolean m_CreateState = false;
-	private boolean m_OwnsConfigMan = false;
 	private Document m_FragDocument = null;
 	private IConfigManager m_ConfigMan = null;
 	
@@ -175,7 +166,6 @@ public class CreationFactory implements ICreationFactory {
 					{
 						vEle.prepareNode(m_FragDocument.getRootElement());
 					}
-					//m_FragDocument.setRootElement(frag);
 				}
 			} catch (Exception e)
 			{
@@ -255,8 +245,6 @@ public class CreationFactory implements ICreationFactory {
 			if (prod != null)
 			{
 				m_ConfigMan = prod.getConfigManager();
-				//m_ConfigMan = (IConfigManager)(new IConfigManagerProxy((Dispatch)m_ConfigMan));
-				m_OwnsConfigMan = true;
 			}
 		}
 	}
@@ -302,7 +290,7 @@ public class CreationFactory implements ICreationFactory {
                 }
                 catch (IllegalAccessException e)
                 {
-                } //createInstance(outer);
+                }
             }
             else if (definingFileObject != null)
             {
@@ -365,13 +353,9 @@ public class CreationFactory implements ICreationFactory {
                     // Trey - If we are not able to find the type in the
                     //        EssentialConfig.etc file (old way), look
                     //        In the layer file system (new way).
-                    FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-                    if (system != null)
-                    {
 //                            try
 //                            {
-                        definingFileObject = system.findResource("MetaData/" + subKey + "/" + typeName);
+                        definingFileObject = FileUtil.getConfigFile("MetaData/" + subKey + "/" + typeName);
 //                                DataObject dObj = fo != null ? DataObject.find(fo) : null;
 //                                if (dObj != null)
 //                                {
@@ -385,7 +369,6 @@ public class CreationFactory implements ICreationFactory {
 //                            {
 //                                Exceptions.printStackTrace(e);
 //                            }
-                    }
                 }
 
                 if (createID.length() > 0)
@@ -406,7 +389,5 @@ public class CreationFactory implements ICreationFactory {
             return createState && m_TransitionClass != null ? m_TransitionClass : m_Class;
         }
     }
-
-
 }
 

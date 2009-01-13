@@ -52,95 +52,30 @@ import org.openide.util.Lookup;
  */
 public abstract class CoreBridge {
 
-    private static boolean lookupInitialized;
-
     public static CoreBridge getDefault () {
         CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
         if (b == null) {
-            assert lookupInitialized; // XXX does it matter?
             b = new FakeBridge();
         }
         return b;
     }
     
-    static void lookupInitialized() {
-        lookupInitialized = true;
-    }
-    
-    static void conditionallyLoaderPoolTransaction(boolean begin) {
-        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
-        if (b != null) {
-            b.loaderPoolTransaction(begin);
-        }
-    }
-    static Lookup conditionallyLookupCacheLoad () {
-        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
-        if (b != null) {
-            return b.lookupCacheLoad (); 
-        } else {
-            return Lookup.EMPTY;
-        }
-    }
-    
-    static void conditionallyPrintStatus (String txt) {
-        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
-        if (b != null) {
-            b.setStatusText(txt);
-        } else {
-            System.err.println(txt);
-        }
-        
-    }
-    
     /** Attaches or detaches to current category of actions.
      * @param category name or null
      */
-    protected abstract void attachToCategory (Object category);/*
-        ModuleActions.attachTo(category);
-    */
+    protected abstract void attachToCategory(Object category);
     
     protected abstract void loadDefaultSection (
         ManifestSection ms, 
         org.openide.util.lookup.InstanceContent.Convertor<ManifestSection,Object> convertor, 
         boolean add
-    ); /*
-        if (load) {
-            if (convert) {
-                NbTopManager.get().register(s, convertor);
-            } else {
-                NbTopManager.get().register(s);
-            }
-        } else {
-            if (convert) {
-                NbTopManager.get().unregister(s, convertor);
-            } else {
-                NbTopManager.get().unregister(s);
-            }
-        }
-    */                                         
+    );                                         
     
-    protected abstract void loadActionSection(ManifestSection.ActionSection s, boolean load) throws Exception;/* {
-        if (load) {
-            ModuleActions.add(s);
-        } else {
-            ModuleActions.remove(s);
-        }
-    }
-    */
+    protected abstract void loadActionSection(ManifestSection.ActionSection s, boolean load) throws Exception;
     
-    protected abstract void loadLoaderSection(ManifestSection.LoaderSection s, boolean load) throws Exception;/* {
-        if (load) {
-            LoaderPoolNode.add(s);
-        } else {
-            LoaderPoolNode.remove((DataLoader)s.getInstance());
-        }
-    }
-*/
+    protected abstract void loadLoaderSection(ManifestSection.LoaderSection s, boolean load) throws Exception;
     
-    protected abstract void loaderPoolTransaction (boolean begin); /*
-        LoaderPoolNode.beginUpdates();
-        LoaderPoolNode.endUpdates();
-    */
+    protected abstract void loaderPoolTransaction (boolean begin);
 
     /** Abstracts away from definition of property editors. 
      * @since 1.7 */
@@ -210,7 +145,7 @@ public abstract class CoreBridge {
         }
 
         public void setStatusText (String status) {
-            System.err.println("STATUS: " + status);
+            System.err.println(status);
         }
 
         public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {

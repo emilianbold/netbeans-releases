@@ -41,6 +41,8 @@
         </token>
     </scanner>
     <Program start='0' end='343'>
+        <Comments>
+        </Comments>
         <Statements>
             <InLineHtml start='0' end='213'/>
             <EchoStatement start='231' end='274'>

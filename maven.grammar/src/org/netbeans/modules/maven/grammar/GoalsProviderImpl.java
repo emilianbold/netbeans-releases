@@ -39,22 +39,14 @@
 
 package org.netbeans.modules.maven.grammar;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import hidden.org.codehaus.plexus.util.IOUtil;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
-import org.jdom.input.SAXBuilder;
-import org.openide.modules.InstalledFileLocator;
+import java.util.Collections;
+import java.util.HashSet;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -67,75 +59,20 @@ public class GoalsProviderImpl implements GoalsProvider {
     public GoalsProviderImpl() {
     }
     
-    private WeakReference<Set<String>> goalsRef = null;
     
     public Set<String> getAvailableGoals() {
-        Set<String> cached = goalsRef != null ? goalsRef.get() :null;
-        if (cached == null) {
-            File expandedPath = InstalledFileLocator.getDefault().locate("maven2/maven-plugins-xml", null, false); //NOI18N
-            assert expandedPath != null : "Shall have path expanded.."; //NOI18N
-            //TODO we should have a "resolved instance here with defaults injected correctly
-            List<String> groups = MavenSettingsSingleton.getInstance().getSettings().getPluginGroups();
-            groups.add("org.apache.maven.plugins"); //NOI18N
-            groups.add("org.codehaus.mojo"); //NOI18N
-            cached = new TreeSet<String>();
-            for (String group : groups) {
-                File folder = new File(expandedPath, group.replace('.', File.separatorChar));
-                checkFolder(folder, cached, false);
-            }
-            goalsRef = new WeakReference<Set<String>>(cached);
+        //TODO we should have a "resolved instance here with defaults injected correctly
+        @SuppressWarnings("unchecked")
+        List<String> groups = MavenSettingsSingleton.getInstance().getSettings().getPluginGroups();
+        Set<String> grps = new HashSet<String>(groups);
+        grps.add("org.apache.maven.plugins"); //NOI18N
+        grps.add("org.codehaus.mojo"); //NOI18N
+        try {
+            return PluginIndexManager.getPluginGoalNames(grps);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return cached;
-        
+        return Collections.<String>emptySet();
     }
 
-    private void checkFolder(File parent, Set<String> list, boolean recurs) {
-        File[] files = parent.listFiles();
-        if (files == null) {
-            //fix for #100894, happens when a plugin group is defined but not in our list.
-            return;
-        }
-        boolean hasFile = false;
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.isDirectory() && recurs) {
-                checkFolder(file, list, recurs);
-            }
-            if (file.isFile()) {
-                InputStream str = null;
-                try {
-                    str = new FileInputStream(file);
-                    SAXBuilder builder = new SAXBuilder();
-                    //TODO jdom document tree is probably not the most memory effective way of doing things..
-                    Document doc = builder.build(str);
-                    Iterator it = doc.getRootElement().getDescendants(new Filter() {
-                        public boolean matches(Object object) {
-                            if (object instanceof Element) {
-                                Element el = (Element)object;
-                                if ("goal".equals(el.getName()) &&  //NOI18N
-                                        el.getParentElement() != null && 
-                                        "mojo".equals(el.getParentElement().getName())) { //NOI18N
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    });
-                    String prefix = doc.getRootElement().getChildTextTrim("goalPrefix"); //NOI18N
-                    assert prefix != null : "No prefix for " + file.getAbsolutePath(); //NOI18N
-                    while (it.hasNext()) {
-                        Element goal = (Element)it.next();
-                        list.add(prefix + ":" + goal.getText());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    IOUtil.close(str);
-                }
-                
-            }
-        }
-    }
-    
-    
 }

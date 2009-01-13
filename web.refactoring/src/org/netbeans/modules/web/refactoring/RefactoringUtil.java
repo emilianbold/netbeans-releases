@@ -266,7 +266,16 @@ public class RefactoringUtil {
                     public void run(CompilationController parameter) throws Exception {
                         parameter.toPhase(JavaSource.Phase.RESOLVED);
                         Element element = handle.resolveElement(parameter);
-                        result.add(element.asType().toString());
+
+                        // if the class is a generic then the <...> will also be
+                        // returned.  We just want the class name.
+                        String type = element.asType().toString();
+                        if(type.contains("<") == true)
+                        {
+                            type = type.substring(0, type.indexOf("<"));
+                        }
+                        result.add(type);
+//                        result.add(element.asType().toString());
                     }
                 }, true);
             } catch (IOException ioe) {

@@ -267,15 +267,17 @@ final class Manager {
      */
     void displayReport(final AntSession session,
                        final TaskType sessionType,
-                       final Report report) {
+                       final Report report,
+                       final boolean promote,
+                       final int[] statistics) {
 
         /* Called from the AntLogger's thread */
-        
+
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
-        displayHandler.displayReport(report);
-        displayInWindow(session, sessionType, displayHandler);
+        displayHandler.displayReport(report, statistics);
+        displayInWindow(session, sessionType, displayHandler, promote);
     }
-    
+
     /**
      * Displays a message in the JUnit results window.
      * If this is the first display in the window, it also promotes

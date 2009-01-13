@@ -49,7 +49,6 @@ import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.*;
@@ -148,7 +147,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             CatalogListener listener = (CatalogListener)it.next();
             listener.notifyInvalidate();
         }
-        FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+        FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         userCatalog.refresh();
         publicIds=null;
     }
@@ -168,7 +167,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     private Map getPublicIdMap() {
         if (publicIds==null) {
             try {
-                FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+                FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
                 publicIds = parse(userCatalog);
             } catch (java.io.IOException ex) {
                 publicIds = new HashMap();
@@ -182,7 +181,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void addEntry (int entryType, String key, String value) throws IOException {
-        FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+        FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
         FileLock lock = userCatalog.lock();
@@ -224,7 +223,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void removeEntry (int entryType, String key) throws IOException {
-        FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+        FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
         FileLock lock = userCatalog.lock();
@@ -273,7 +272,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
     
     private void updateEntry (int entryType, String key, String value) throws IOException {
-        FileObject userCatalog = Repository.getDefault().getDefaultFileSystem().findResource(catalogResource);
+        FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
         FileLock lock = userCatalog.lock();

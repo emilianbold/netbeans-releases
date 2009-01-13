@@ -49,6 +49,11 @@ made subject to such option by the copyright holder.
                     <file name="org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v2.GlassFishV2LookupProvider.instance"/>
                 </folder>
             </folder>
+            <folder name="gfv3">
+                <folder name="Lookup">
+                    <file name="org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v3.GlassFishV3LookupProvider.instance"/>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

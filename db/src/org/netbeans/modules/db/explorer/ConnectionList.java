@@ -44,13 +44,15 @@ package org.netbeans.modules.db.explorer;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -76,7 +78,7 @@ public class ConnectionList {
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
             DatabaseConnectionConvertor.importOldConnections();
-            RootNodeInfo.getOption().save();
+            RootNode.getOption().save();
             DEFAULT = new ConnectionList();
         }
         return DEFAULT;
@@ -117,6 +119,13 @@ public class ConnectionList {
         if (dbconn == null) {
             throw new NullPointerException();
         }
+
+        if (contains(dbconn)) {
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+
+            throw new DatabaseException(bundle.getString("EXC_ConnectionAlreadyExists")); // NOI18N
+        }
+
         try {
             DatabaseConnectionConvertor.create(dbconn);
         } catch (IOException e) {

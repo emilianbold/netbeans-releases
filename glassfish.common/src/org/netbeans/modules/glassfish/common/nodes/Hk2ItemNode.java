@@ -62,7 +62,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceAct
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -311,30 +311,29 @@ public class Hk2ItemNode extends AbstractNode {
      * @return standard folder node
      */
     private static Node getIconDelegate() {
-        return DataFolder.findFolder(Repository.getDefault().
-                getDefaultFileSystem().getRoot()).getNodeDelegate();
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
     
     private static final String RESOURCES_ICON = 
             "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
     
-    public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
+    public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
     };
     
-    public static Decorator RESOURCES_FOLDER = new Decorator() {
+    public static final Decorator RESOURCES_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
         @Override public Image getOpenedIcon(int type) { return getIcon(type); }
     };
     
-    public static Decorator J2EE_APPLICATION = new Decorator() { 
+    public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canShowBrowser() { return true; }
     };
     
-    public static Decorator REFRESHABLE_FOLDER = new Decorator() { 
+    public static final Decorator REFRESHABLE_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
     };

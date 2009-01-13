@@ -40,61 +40,34 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.support.RunScript;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
-public class RunFileCommand extends RunProjectCommand {
+public class RunFileCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
     public static final String DISPLAY_NAME = RunProjectCommand.DISPLAY_NAME;
-    private final RunScript runScript;
 
-    /**
-     * @param project
-     */
     public RunFileCommand(PhpProject project) {
         super(project);
-        runScript = new RunScript(project);
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    public void invokeAction(Lookup context) {
         if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }
-        if (isScriptSelected()) {
-            runScript.invokeAction(context);
-        } else {
-            try {
-                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-                final URL url = urlForContext(context, true);
-
-                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-                showURL(url);
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        getConfigAction().runFile(getProject(), context);
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject file = fileForContext(context);
-        if (isScriptSelected()) {
-            return isPhpFileSelected(file);
-        }
-        return file != null;
+    public boolean isActionEnabled(Lookup context) {
+        return getConfigAction().isRunFileEnabled(getProject(), context);
     }
 
     @Override
@@ -104,6 +77,6 @@ public class RunFileCommand extends RunProjectCommand {
 
     @Override
     public String getDisplayName() {
-        return RunFileCommand.DISPLAY_NAME;
+        return DISPLAY_NAME;
     }
 }

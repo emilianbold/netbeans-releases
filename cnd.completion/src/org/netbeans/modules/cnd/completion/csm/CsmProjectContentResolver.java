@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -727,7 +728,7 @@ public final class CsmProjectContentResolver {
     private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
             Collection<CsmScopeElement> out) {
         CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
-        CsmFilter filter = builder.createKindFilter(new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_DEFINITION});
+        CsmFilter filter = builder.createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDefault().getDeclarations(file, filter); itFile.hasNext();) {
             CsmOffsetableDeclaration decl = itFile.next();
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
@@ -832,6 +833,21 @@ public final class CsmProjectContentResolver {
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, memberKinds, strPrefix, match, false);
         res = filterFunctionDefinitions(res);
+        if (sort && res != null) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+
+    public List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        return getNamespaceAliases(ns, strPrefix, match, isSortNeeded(), searchNested);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.NAMESPACE_ALIAS, strPrefix, match, searchNested, false);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS}, strPrefix, match, false);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -1170,19 +1186,18 @@ public final class CsmProjectContentResolver {
         return getNamespaceMembers(ns, new CsmDeclaration.Kind[]{kind}, strPrefix, match, searchNested, returnUnnamedMembers);
     }
 
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
-        List res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet(), searchNested, returnUnnamedMembers);
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
+        List<CsmDeclaration> res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet<CsmNamespace>(), searchNested, returnUnnamedMembers);
         return res;
     }
 
-    @SuppressWarnings("unchecked")
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set handledNS, boolean searchNested, boolean returnUnnamedMembers) {
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set<CsmNamespace> handledNS, boolean searchNested, boolean returnUnnamedMembers) {
         if (handledNS.contains(ns)) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmDeclaration>emptyList();
         }
 
         handledNS.add(ns);
-        List res = new ArrayList();
+        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         Iterator it;
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);

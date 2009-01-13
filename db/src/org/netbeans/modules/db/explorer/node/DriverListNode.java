@@ -45,6 +45,8 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -63,14 +65,14 @@ public class DriverListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the DriverListNode instance
      */
-    public static DriverListNode create(NodeDataLookup dataLookup) {
-        DriverListNode node = new DriverListNode(dataLookup);
+    public static DriverListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        DriverListNode node = new DriverListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DriverListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private DriverListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
         
     protected void initialize() {
@@ -133,5 +135,15 @@ public class DriverListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_DriverList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverListNode.class);
     }
 }

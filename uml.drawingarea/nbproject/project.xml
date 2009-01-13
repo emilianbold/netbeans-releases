@@ -207,7 +207,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2.1</specification-version>
+                        <specification-version>7.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -269,6 +269,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.uml.drawingarea.border</package>
                 <package>org.netbeans.modules.uml.drawingarea.dataobject</package>
                 <package>org.netbeans.modules.uml.drawingarea.engines</package>
+                <package>org.netbeans.modules.uml.drawingarea.layout</package>
                 <package>org.netbeans.modules.uml.drawingarea.palette</package>
                 <package>org.netbeans.modules.uml.drawingarea.palette.context</package>
                 <package>org.netbeans.modules.uml.drawingarea.persistence</package>

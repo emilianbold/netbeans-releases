@@ -653,7 +653,7 @@ final class MatchingObject implements PropertyChangeListener {
             while (currLine < matchLine) {
                 int lfOffset = content.indexOf("\n",currLineOffset);//NOI18N
                 if (lfOffset == -1) {
-                    assert false;       //PENDING - should notify user
+//                    assert false;       //PENDING - should notify user
                     break mainloop;
                 }
 

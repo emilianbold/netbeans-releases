@@ -1227,8 +1227,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 //#33130 - enable IndexCookie only on SystemFileSystem
                 // (also on apisupport layers...)
                 try {
-                    if (DataFolder.this.getPrimaryFile().getFileSystem() ==
-                                Repository.getDefault().getDefaultFileSystem() ||
+                    if (DataFolder.this.getPrimaryFile().getFileSystem().isDefault() ||
                             Boolean.TRUE.equals(DataFolder.this.getPrimaryFile().getAttribute("DataFolder.Index.reorderable"))) { // NOI18N
                         return clazz.cast(new Index (DataFolder.this, this));
                     }
@@ -1660,8 +1659,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         protected boolean handleCanPaste (DataObject obj) {
                             // #42888 - disable "Create as Link" action on non-SystemFileSystem
                             try {
-                                if (!DataFolder.this.getPrimaryFile().getFileSystem().equals(
-                                        Repository.getDefault().getDefaultFileSystem())) {
+                                if (!DataFolder.this.getPrimaryFile().getFileSystem().isDefault()) {
                                     return false;
                                 }
                             } catch (FileStateInvalidException ex) {

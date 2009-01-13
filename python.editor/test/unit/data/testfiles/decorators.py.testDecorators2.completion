@@ -1,0 +1,5 @@
+Code completion result for source line:
+@c|lassmethod
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     classmethod                                
+METHOD     contextmanager                             

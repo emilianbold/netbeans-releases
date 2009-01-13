@@ -62,8 +62,7 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.core.actions.HTMLViewAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class ProductInformationPanel extends JPanel implements HyperlinkListener {
@@ -254,8 +253,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         
         String copyrighttext = org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_Copyright"); // NOI18N
         
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject licenseFolder = fs.findResource("About/Licenses");   // NOI18N
+        FileObject licenseFolder = FileUtil.getConfigFile("About/Licenses");   // NOI18N
         if (licenseFolder != null) {
             FileObject[] foArray = licenseFolder.getChildren();
             if (foArray.length > 0) {

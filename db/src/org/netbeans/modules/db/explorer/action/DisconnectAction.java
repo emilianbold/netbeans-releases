@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.sql.Connection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 public class DisconnectAction extends BaseAction {
@@ -53,6 +54,11 @@ public class DisconnectAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("Disconnect"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DisconnectAction.class);
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -65,13 +71,8 @@ public class DisconnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                Connection j = dbconn.getJDBCConnection();
-                try {
-                    if (j == null || j.isClosed()) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    
+                if (dbconn.getConnector().isDisconnected()) {
+                    return false;
                 }
             } else {
                 return false;
@@ -81,21 +82,24 @@ public class DisconnectAction extends BaseAction {
         return true;
     }
     
-    public void performAction (Node[] activatedNodes) {
-        if (activatedNodes == null || activatedNodes.length == 0)
-            return;
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Lookup lookup = activatedNodes[i].getLookup();
-            ConnectionNode node = lookup.lookup(ConnectionNode.class);
-            if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                try {
-                    dbconn.disconnect();
-                } catch (DatabaseException dbe) {
+    public void performAction (final Node[] activatedNodes) {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    for (int i = 0; i < activatedNodes.length; i++) {
+                        Lookup lookup = activatedNodes[i].getLookup();
+                        ConnectionNode node = lookup.lookup(ConnectionNode.class);
+                        if (node != null) {
+                            DatabaseConnection connection = lookup.lookup(DatabaseConnection.class);
+                            try {
+                                connection.disconnect();
+                            } catch (DatabaseException dbe) {
 
+                            }
+                        }
+                    }
                 }
             }
-        }
+        );
     }
 }

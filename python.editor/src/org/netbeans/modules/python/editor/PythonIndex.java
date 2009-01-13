@@ -50,6 +50,7 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.api.PythonPlatformManager;
 import org.netbeans.modules.python.editor.elements.IndexedPackage;
+import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -57,7 +58,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
 
 /**
  *
@@ -69,6 +70,7 @@ public class PythonIndex {
     public static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     static final String CLUSTER_URL = "cluster:"; // NOI18N
     static final String PYTHONHOME_URL = "python:"; // NOI18N
+    private static final String STUB_MISSING = "stub_missing"; // NOI18N
     private final Index index;
     private final FileObject context;
 
@@ -137,6 +139,10 @@ public class PythonIndex {
                 continue;
             }
             String module = map.getValue(PythonIndexer.FIELD_MODULE_NAME);
+            if (STUB_MISSING.equals(module)) {
+                continue;
+            }
+
             IndexedElement element = new IndexedElement(module, ElementKind.MODULE, url, null, null, null);
 
             String attrs = map.getValue(PythonIndexer.FIELD_MODULE_ATTR_NAME);
@@ -246,7 +252,7 @@ public class PythonIndex {
             }
             String url = map.getPersistentUrl();
             String module = map.getValue(PythonIndexer.FIELD_IN);
-            boolean isBuiltin = BUILTIN_MODULES.contains(module);
+            boolean isBuiltin = isBuiltinModule(module);
 
             String fqn = clz; // No further namespaces in Python, right?
             if (!includeDuplicates) {
@@ -381,11 +387,8 @@ public class PythonIndex {
     public Set<IndexedElement> getInheritedElements(String classFqn, String prefix, NameKind kind, boolean includeOverrides) {
         boolean haveRedirected = false;
 
-        if ((classFqn == null) || classFqn.equals(OBJECT)) {
-            // Redirect inheritance tree to Class to pick up methods in Class and Module
-            classFqn = CLASS;
-            haveRedirected = true;
-        } else if (MODULE.equals(classFqn) || CLASS.equals(classFqn)) {
+        if (classFqn == null) {
+            classFqn = OBJECT;
             haveRedirected = true;
         }
 
@@ -412,10 +415,8 @@ public class PythonIndex {
 
         return elements;
     }
+
     public static final String OBJECT = "object"; // NOI18N
-    private static final String CLASS = "class"; // NOI18N
-    // TODO - remove!
-    private static final String MODULE = "module"; // NOI18N
 
     /** Return whether the specific class referenced (classFqn) was found or not. This is
      * not the same as returning whether any classes were added since it may add
@@ -522,15 +523,8 @@ public class PythonIndex {
         }
 
         if (extendsClasses == null || extendsClasses.size() == 0) {
-            if (haveRedirected) {
-                addMethodsFromClass(prefix, kind, OBJECT, elements, seenSignatures, scannedClasses,
-                        true, true, includeOverrides, depth + 1);
-            } else {
-                // Rather than inheriting directly from object,
-                // let's go via Class (and Module) up to Object
-                addMethodsFromClass(prefix, kind, CLASS, elements, seenSignatures, scannedClasses,
-                        true, true, includeOverrides, depth + 1);
-            }
+            addMethodsFromClass(prefix, kind, OBJECT, elements, seenSignatures, scannedClasses,
+                    true, true, includeOverrides, depth + 1);
         } else {
             // We're not sure we have a fully qualified path, so try some different candidates
             for (String extendsClass : extendsClasses) {
@@ -800,7 +794,7 @@ public class PythonIndex {
     }
 
     public static boolean isBuiltinModule(String module) {
-        return BUILTIN_MODULES.contains(module);
+        return BUILTIN_MODULES.contains(module) || STUB_MISSING.equals(module);
     }
 
     @SuppressWarnings("unchecked")
@@ -900,12 +894,16 @@ public class PythonIndex {
 
         // ImportsFrom require no index lookup
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            if (ImportManager.isFutureImport(from)) {
+                continue;
+            }
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
 //                    } else {
-//                        String name = at.asname != null ? at.asname : at.name;
+//                        String name = at.getInternalAsname() != null ? at.getInternalAsname() : at.getInternalName();
 //                        assert name.length() > 0;
 //                        imported.add(name);
                     }
@@ -915,13 +913,13 @@ public class PythonIndex {
 
 //        for (Import imp : imports) {
 //            if (imp.names != null) {
-//                for (aliasType at : imp.names) {
-//                    if (at.asname != null) {
-//                        String name = at.asname;
+//                for (alias at : imp.getInternalNames()) {
+//                    if (at.getInternalAsname() != null) {
+//                        String name = at.getInternalAsname();
 //                        assert name.length() > 0;
 //                        imported.add(name);
 //                    } else {
-//                        imported.add(at.name);
+//                        imported.add(at.getInternalName());
 //                    }
 //                }
 //            }
@@ -979,10 +977,11 @@ public class PythonIndex {
 
         // ImportsFrom require no index lookup
         for (ImportFrom from : importsFrom) {
-            if (from.names != null) {
-                for (aliasType at : from.names) {
-                    if ("*".equals(at.name)) { // NOI18N
-                        modules.add(from.module);
+            List<alias> names = from.getInternalNames();
+            if (names != null) {
+                for (alias at : names) {
+                    if ("*".equals(at.getInternalName())) { // NOI18N
+                        modules.add(from.getInternalModule());
                     }
                 }
             }
@@ -1113,7 +1112,7 @@ public class PythonIndex {
 
         // Look up all symbols
         for (String module : modules) {
-            boolean isBuiltin = BUILTIN_MODULES.contains(module);
+            boolean isBuiltin = isBuiltinModule(module);
             boolean isSystem = isBuiltin;
 
             final Set<SearchResult> result = new HashSet<SearchResult>();

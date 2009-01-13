@@ -118,14 +118,12 @@ public class ForkedJavaOverride extends Java {
                     try {
                         errTask.join();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
                 }
                 if (outTask != null) {
                     try {
                         outTask.join();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
                 }
             }

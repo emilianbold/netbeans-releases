@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
@@ -139,7 +140,26 @@ public class SubAntJUnitReport extends Task {
                 log("Exiting: " + path);
             }
         }
-        JUnitReportWriter.writeReport(this, SubAntJUnitReport.class.getName() + "." + targetToRun, report, pseudoTests);
+        JUnitReportWriter.writeReport(this, SubAntJUnitReport.class.getName() + "." + targetToRun, report, deleteCommonKeyPrefixes(pseudoTests));
+    }
+
+    private static <T> Map<String,T> deleteCommonKeyPrefixes(Map<String,T> m) {
+        Iterator<String> keys = m.keySet().iterator();
+        if (!keys.hasNext()) {
+            return m;
+        }
+        String prefix = keys.next();
+        while (keys.hasNext()) {
+            String k = keys.next();
+            while (!k.startsWith(prefix)) {
+                prefix = prefix.substring(0, prefix.length() - 1);
+            }
+        }
+        Map<String,T> m2 = new HashMap<String,T>();
+        for (Map.Entry<String,T> entry : m.entrySet()) {
+            m2.put(entry.getKey().substring(prefix.length()), entry.getValue());
+        }
+        return m2;
     }
 
 }

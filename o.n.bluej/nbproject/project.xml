@@ -173,7 +173,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.4.1</specification-version>
+                        <specification-version>7.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -231,7 +231,7 @@
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${ant.home}/lib/ant.jar</classpath>
+                <classpath>${ant.core.lib}:${module.classpath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>

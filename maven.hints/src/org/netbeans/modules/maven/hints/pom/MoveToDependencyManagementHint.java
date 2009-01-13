@@ -177,7 +177,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                 if (fo.equals(current)) {
                     depMdl = mdl;
                 } else {
-                    ModelSource depSource = Utilities.createModelSource(fo, true);
+                    ModelSource depSource = Utilities.createModelSource(fo);
                     depMdl = POMModelFactory.getDefault().getModel(depSource);
                 }
                 int oldpos = -1;

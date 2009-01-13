@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -59,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Jancura
  */
 @ServiceProvider(service=Scheduler.class)
-public class SelectedNodesScheduler extends FileObjectsTaskScheduler {
+public class SelectedNodesScheduler extends Scheduler {
     
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
@@ -84,6 +85,11 @@ public class SelectedNodesScheduler extends FileObjectsTaskScheduler {
     @Override
     public String toString () {
         return "SelectedNodesScheduller";
+    }
+
+    @Override
+    protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
+        return new SchedulerEvent (this) {};
     }
     
     private class AListener implements PropertyChangeListener {

@@ -36,14 +36,17 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.python.editor.elements.Element;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.elements.IndexedMethod;
+import org.netbeans.modules.python.editor.lexer.Call;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.netbeans.api.lexer.Token;
@@ -72,6 +75,7 @@ import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.python.editor.PythonParser.Sanitize;
 import org.netbeans.modules.python.editor.elements.IndexedPackage;
 import org.netbeans.modules.python.editor.imports.ImportManager;
+import org.netbeans.modules.python.editor.lexer.PythonCommentTokenId;
 import org.netbeans.modules.python.editor.lexer.PythonLexer;
 import org.netbeans.modules.python.editor.options.CodeStyle;
 import org.netbeans.modules.python.editor.scopes.SymbolTable;
@@ -79,11 +83,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
-import org.python.antlr.ast.aliasType;
+import org.python.antlr.ast.alias;
+import org.python.antlr.base.expr;
 
 /**
  * Code completion for Python.
@@ -185,6 +192,23 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 request.searchUrl = "";
             }
 
+            if (root != null) {
+                int offset = astOffset;
+
+                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
+                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
+                    offset = sanitizedRange.getStart();
+                }
+
+                final AstPath path = AstPath.get(root, offset);
+                request.path = path;
+                //request.fqn = PythonAstUtils.getFqn(path, null, null);
+
+                final PythonTree closest = path.leaf();
+                request.root = root;
+                request.node = closest;
+            }
+
             TokenSequence<? extends PythonTokenId> ts = PythonLexerUtils.getPositionedSequence(doc, lexOffset);
             if (ts == null || ts.token() == null) {
                 if (PythonUtils.isPythonFile(fileObject)) {
@@ -197,8 +221,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 request.prefix = prefix = "";
             } else {
                 TokenId id = ts.token().id();
+                if (id == PythonTokenId.NEWLINE && ts.offset() == lexOffset && ts.movePrevious()) {
+                    id = ts.token().id();
+                }
                 if (id == PythonTokenId.COMMENT) {
-                    // No completion here at this point... Perhaps if we support epydoc
+                    completeComments(proposals, request, ts);
                     return completionResult;
                 } else if (id == PythonTokenId.STRING_LITERAL || id == PythonTokenId.STRING_END) {
                     // Comment completion - rst tags and such
@@ -234,21 +261,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 }
             }
 
-            if (root != null) {
-                int offset = astOffset;
-
-                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
-                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
-                    offset = sanitizedRange.getStart();
-                }
-
-                final AstPath path = AstPath.get(root, offset);
-                request.path = path;
-//                request.fqn = PythonAstUtils.getFqn(path, null, null);
-
-                final PythonTree closest = path.leaf();
-                request.root = root;
-                request.node = closest;
+            if (completeContextual(proposals, request)) {
+                return completionResult;
             }
 
             // See if we should do a simple override completion
@@ -277,10 +291,6 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                         }
                     }
                 }
-            }
-
-            if (completeContextual(proposals, request)) {
-                return completionResult;
             }
 
             // Don't do empty-completion for parameters
@@ -352,6 +362,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             // Text is packaged as the name
             String rst = element.getName();
             return RstFormatter.document(rst);
+        } else if (element instanceof SpecifyTypeItem) {
+            SpecifyTypeItem item = (SpecifyTypeItem)element;
+            return NbBundle.getMessage(PythonCodeCompleter.class, "SpecifyTypeHtml", item.call.getLhs());
         }
 
         return RstFormatter.document(info, element);
@@ -512,7 +525,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             } finally {
                 doc.readUnlock();
             }
-        // Else: normal identifier: just return null and let the machinery do the rest
+            // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -658,7 +671,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
     private boolean completeOverrides(ClassDef classDef, List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
         PythonIndex index = request.index;
-        String className = classDef.name;
+        String className = classDef.getInternalName();
         String prefix = request.prefix;
         NameKind kind = request.kind;
         Set<IndexedElement> methods = index.getInheritedElements(className, prefix, kind);
@@ -709,13 +722,120 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         if (element instanceof IndexedMethod) {
             IndexedMethod method = (IndexedMethod)element;
             item = new PythonMethodItem(method, request);
-            item.setSmart(method.isSmart());
         } else {
             item = new PythonCompletionItem(request, element);
-            item.setSmart(element.isSmart());
         }
+        String name = element.getName();
+        // Internal names should not be shown as smart - don't emphasize these
+        boolean smart = element.isSmart() && !(name.startsWith("__") && name.endsWith("__")); // NOI18N
+
+        item.setSmart(smart);
 
         return item;
+    }
+    private static final String[] BUILTIN_TYPES =
+            new String[]{
+        "str", "StringType",
+        "tuple", "TupleType",
+        "list", "ListType",
+        "dict", "DictType",
+        "int", "IntegerType",
+        "long", "LongType",
+        "float", "FloatType",
+        "bool", "BooleanType",
+        "complex", "ComplexType",
+        "unicode", "UnicodeType",
+        "file", "FileType",
+        "buffer", "BufferType",
+        "xrange", "XRangeType",
+        "slice", "SliceType",
+        "ModuleType", "ModuleType",
+        "MethodType", "MethodType",
+        "None", "NoneType",
+        "object", "ObjectType",};
+
+    private boolean completeComments(List<CompletionProposal> proposals, CompletionRequest request, TokenSequence<? extends PythonTokenId> ts) throws BadLocationException {
+        assert ts.token().id() == PythonTokenId.COMMENT;
+        TokenSequence<PythonCommentTokenId> embedded = ts.embedded(PythonCommentTokenId.language());
+        if (embedded == null) {
+            return false;
+        }
+
+        embedded.move(request.lexOffset);
+        if (embedded.moveNext() || embedded.movePrevious()) {
+            Token<? extends PythonCommentTokenId> token = embedded.token();
+            TokenId id = token.id();
+            TokenId complete = null;
+            String prefix = null;
+            if (id == PythonCommentTokenId.VARNAME || id == PythonCommentTokenId.TYPE) {
+                complete = id;
+                prefix = request.prefix;
+            } else if (id == PythonCommentTokenId.SEPARATOR) {
+                prefix = "";
+
+                // Look backwards to see what we're completing
+                if (embedded.movePrevious()) {
+                    id = embedded.token().id();
+                    if (id == PythonCommentTokenId.VARNAME) {
+                        complete = PythonCommentTokenId.TYPE;
+                    } else if (id == PythonCommentTokenId.TYPEKEY) {
+                        complete = PythonCommentTokenId.VARNAME;
+                    }
+                }
+            }
+            if (complete == PythonCommentTokenId.VARNAME) {
+                // Complete variable names!
+                SymbolTable symbolTable = request.result.getSymbolTable();
+                PythonTree scope = PythonAstUtils.getLocalScope(request.path);
+                Set<String> names = symbolTable.getVarNames(scope, true);
+                for (String name : names) {
+                    if (!name.startsWith(prefix)) {
+                        continue;
+                    }
+
+                    KeywordItem item = new KeywordItem(name, null, request, name);
+                    item.setKind(ElementKind.VARIABLE);
+                    item.setInsertPrefix(name + ": "); // NOI18N
+                    proposals.add(item);
+                    item.smart = true;
+                }
+            } else if (complete == PythonCommentTokenId.TYPE) {
+                // Complete type
+
+                // Builtin/core
+                for (int j = 0, n = BUILTIN_TYPES.length; j < n; j += 2) {
+                    String word = BUILTIN_TYPES[j];
+                    String desc = BUILTIN_TYPES[j + 1];
+
+                    if (!word.startsWith(prefix)) {
+                        continue;
+                    }
+
+                    KeywordItem item = new KeywordItem(word, desc, request, Integer.toString(10000 + j));
+                    proposals.add(item);
+                    item.smart = true;
+                }
+
+                // User defined and library classes
+                PythonIndex index = request.index;
+                Set<IndexedElement> elements = index.getClasses(prefix, request.kind, PythonIndex.ALL_SCOPE, request.result, false);
+                for (IndexedElement element : elements) {
+                    if (element.isNoDoc()) {
+                        continue;
+                    }
+
+                    PythonCompletionItem item = createItem(element, request);
+                    item.setSmart(false);
+                    proposals.add(item);
+                }
+
+                request.completionResult.setFilterable(false);
+            }
+        }
+
+        // No other completions here at this point... Perhaps if we support epydoc
+
+        return true;
     }
 
     /**
@@ -808,6 +928,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         //    return false;
         //}
 
+        if (id == PythonTokenId.DECORATOR) {
+            completeDecorators(proposals, request);
+            return true;
+        }
+
         if (id != PythonTokenId.ERROR && id != PythonTokenId.NEWLINE &&
                 id != PythonTokenId.WHITESPACE) {
             return false;
@@ -849,7 +974,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 if (library != null) {
                     if (id == PythonTokenId.WHITESPACE &&
                             ts.movePrevious() && ts.token().id() == PythonTokenId.FROM) {
-                        if (prefix.length() == 0 || "*".equals(prefix)) {
+
+                        boolean isFutureImport = "__future__".equals(library); // NOI18N
+                        if ("*".equals(prefix) || (prefix.length() == 0 && !isFutureImport)) { // NOI18N
                             KeywordItem item = new KeywordItem("*", "Import All Exported Symbols", request, "*");
                             proposals.add(item);
                             item.sortPrioOverride = -10000;
@@ -872,10 +999,19 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                                 continue;
                             }
 
+                            // The __future__ module imports some stuff we don't want to see in imports...
+                            if (isFutureImport) {
+                                char first = moduleName.charAt(0);
+                                if (first == '_' || Character.isUpperCase(first)) {
+                                    continue;
+                                }
+                            }
+
                             PythonCompletionItem item = createItem(symbol, request);
                             item.setSmart(true);
                             item.setAddImport(""); // No extra imports of these
                             item.setAnchorOffset(anchor);
+                            item.setInImport(true);
                             proposals.add(item);
                         }
                         request.completionResult.setFilterable(false);
@@ -1095,6 +1231,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
             String type = call.getType();
             String lhs = call.getLhs();
+            boolean addSpecifyTypeItem = false;
 
             if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 PythonTree method = PythonAstUtils.getLocalScope(path);
@@ -1104,6 +1241,10 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     // up and do it a bit more cleverly
                     PythonTypeAnalyzer analyzer = new PythonTypeAnalyzer(request.info, index, method, node, astOffset, lexOffset, fileObject);
                     type = analyzer.getType(lhs);
+
+                    if (type == null) {
+                        addSpecifyTypeItem = true;
+                    }
                 }
             }
 
@@ -1138,24 +1279,25 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (elements.isEmpty()) {
-                        elements = index.getInheritedElements(fqn + "::" + type, prefix, kind);
-
-                        int f = fqn.lastIndexOf("::");
-
-                        if (f == -1) {
-                            break;
-                        } else {
-                            fqn = fqn.substring(0, f);
-                        }
-                    }
+                    //while (elements.isEmpty()) {
+                    //    elements = index.getInheritedElements(fqn + "::" + type, prefix, kind);
+                    //
+                    //    int f = fqn.lastIndexOf("::");
+                    //
+                    //    if (f == -1) {
+                    //        break;
+                    //    } else {
+                    //        fqn = fqn.substring(0, f);
+                    //    }
+                    //}
 
                     // Add methods in the class (without an FQN)
-                    Set<IndexedElement> m = index.getInheritedElements(type, prefix, kind);
+                    //Set<IndexedElement> m = index.getInheritedElements(type, prefix, kind);
+                    elements = index.getInheritedElements(type, prefix, kind);
 
-                    if (!m.isEmpty()) {
-                        elements.addAll(m);
-                    }
+                    //if (!m.isEmpty()) {
+                    //    elements.addAll(m);
+                    //}
                 }
             }
 
@@ -1171,18 +1313,23 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     List<Import> imports = symbolTable.getImports();
                     if (imports != null && imports.size() > 0) {
                         for (Import imp : imports) {
-                            if (imp.names != null) {
-                                for (aliasType at : imp.names) {
-                                    if (at.asname != null && at.asname.equals(lhs)) {
+                            List<alias> names = imp.getInternalNames();
+                            if (names != null) {
+                                for (alias at : names) {
+                                    if (at.getInternalAsname() != null && at.getInternalAsname().equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+
                                         // Yes, imported symbol
-                                        moduleName = at.name;
+                                        moduleName = at.getInternalName();
                                         moduleCompletion = true;
                                         break;
-                                    } else if (at.name.equals(lhs)) {
-                                        if (at.asname != null) {
+                                    } else if (at.getInternalName().equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+
+                                        if (at.getInternalAsname() != null) {
                                             moduleCompletion = false;
                                         } else {
-                                            moduleName = at.name;
+                                            moduleName = at.getInternalName();
                                             moduleCompletion = true;
                                         }
                                         break;
@@ -1238,6 +1385,11 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             // left hand side because we can't resolve it.
             if ((elements.isEmpty())) {
                 elements = index.getAllMembers(prefix, kind, PythonIndex.ALL_SCOPE, request.result, false);
+
+                if (addSpecifyTypeItem) {
+                    // Add a special code completion item to TELL us the type
+                    proposals.add(new SpecifyTypeItem(request, call, lexOffset));
+                }
             }
 
             for (IndexedElement element : elements) {
@@ -1308,6 +1460,73 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             item.setSmart(true);
             proposals.add(item);
         }
+
+        return true;
+    }
+
+    /**
+     * Complete decorators. These are functions that (a) take a function as an argument, and
+     * (b) return a function. Some may even take additional arguments.
+     * See http://www.python.org/dev/peps/pep-0318
+     */
+    private boolean completeDecorators(List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
+        PythonIndex index = request.index;
+        String prefix = request.prefix;
+        NameKind kind = request.kind;
+
+        boolean found = false;
+        Set<IndexedElement> elements = index.getAllElements(prefix, kind, PythonIndex.ALL_SCOPE, request.result, false);
+        for (IndexedElement element : elements) {
+            if (element.isNoDoc()) {
+                continue;
+            }
+            if (!(element instanceof IndexedMethod)) {
+                continue;
+            }
+            // Filter out anything that doesn't take at least one argument
+            IndexedMethod method = (IndexedMethod)element;
+            String[] params = method.getParams();
+            if (params == null || params.length != 1) {
+                continue;
+            }
+            String name = params[0];
+            if (!name.startsWith("func")) { // NOI18N
+                continue;
+            }
+
+            // TODO - filter out anything that doesn't return a method
+            PythonCompletionItem item = new PythonCompletionItem(request, element);
+            item.setSmart(true);
+
+            proposals.add(item);
+            found = true;
+        }
+
+        if (!found) {
+            // No matches - add all functions regardless of argument names
+            for (IndexedElement element : elements) {
+                if (element.isNoDoc()) {
+                    continue;
+                }
+                if (!(element instanceof IndexedMethod)) {
+                    continue;
+                }
+                // Filter out anything that doesn't take at least one argument
+                IndexedMethod method = (IndexedMethod)element;
+                String[] params = method.getParams();
+                if (params == null || params.length < 1) {
+                    continue;
+                }
+
+                // TODO - filter out anything that doesn't return a method
+
+                PythonCompletionItem item = createItem(element, request);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+
+        request.completionResult.setFilterable(false);
 
         return true;
     }
@@ -1534,8 +1753,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             if (call != null && callMethod != null) {
                 // Try to set the anchor on the arg list instead of on the
                 // call itself
-                if (call.args != null && call.args.length > 0) {
-                    anchorOffset = PythonAstUtils.getRange(call.args[0]).getStart();
+                List<expr> args = call.getInternalArgs();
+                if (args != null && args.size() > 0) {
+                    anchorOffset = PythonAstUtils.getRange(args.get(0)).getStart();
                 }
             }
 
@@ -1599,7 +1819,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         @Override
         public String getCustomInsertTemplate() {
             String[] params = method.getParams();
-            if (params == null) {
+            if (params == null || isInImport()) {
                 return getInsertPrefix() + "${cursor}"; // NOI18N
             }
 
@@ -1741,14 +1961,15 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         protected IndexedElement indexedElement;
         protected short smartFlag;
         private String addImport;
+        private boolean inImport;
 
         private PythonCompletionItem(Element element, CompletionRequest request) {
             this.element = element;
             this.request = request;
             this.anchorOffset = request.anchor;
 
-        // Should be a PythonMethodItem:
-        //assert this instanceof PythonMethodItem || (element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR) : element;
+            // Should be a PythonMethodItem:
+            //assert this instanceof PythonMethodItem || (element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR) : element;
         }
 
         private PythonCompletionItem(CompletionRequest request, IndexedElement element) {
@@ -1762,6 +1983,14 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
         public void setAddImport(String addImport) {
             this.addImport = addImport;
+        }
+
+        public boolean isInImport() {
+            return inImport;
+        }
+
+        public void setInImport(boolean inImport) {
+            this.inImport = inImport;
         }
 
         @Override
@@ -1805,7 +2034,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             formatter.appendText(getName());
             formatter.name(kind, false);
 
-            assert element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR : element; // Should be in a PythonMethodItem
+            // For decorators we use completion items
+            //assert element.getKind() != ElementKind.METHOD && element.getKind() != ElementKind.CONSTRUCTOR : element; // Should be in a PythonMethodItem
 
             if (strike) {
                 formatter.deprecated(false);
@@ -1837,7 +2067,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
             String in = element.getIn();
 
-            if (in != null) {
+            if (in != null) { // NOI18N
                 formatter.appendText(in);
                 return formatter.getText();
             } else if (element instanceof IndexedElement) {
@@ -1997,6 +2227,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         private int sortPrioOverride = 0;
         private boolean smart;
         private boolean deprecated;
+        private ElementKind kind;
+        private String insertPrefix;
 
         KeywordItem(String keyword, String description, CompletionRequest request, String sort) {
             this.keyword = keyword;
@@ -2010,12 +2242,20 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             this.handle = handle;
         }
 
+        public void setInsertPrefix(String insertPrefix) {
+            this.insertPrefix = insertPrefix;
+        }
+
+        public void setKind(ElementKind kind) {
+            this.kind = kind;
+        }
+
         public String getName() {
             return keyword;
         }
 
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return kind != null ? kind : ElementKind.KEYWORD;
         }
 
         public String getRhsHtml(final HtmlFormatter formatter) {
@@ -2041,6 +2281,10 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         public ImageIcon getIcon() {
+            if (kind != null && kind != ElementKind.KEYWORD) {
+                return null;
+            }
+
             if (keywordIcon == null) {
                 keywordIcon = new ImageIcon(ImageUtilities.loadImage(PYTHON_KEYWORD));
             }
@@ -2066,7 +2310,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         public String getInsertPrefix() {
-            return keyword;
+            return insertPrefix != null ? insertPrefix : keyword;
         }
 
         public String getSortText() {
@@ -2110,6 +2354,146 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
     }
 
+    private static class SpecifyTypeItem implements CompletionProposal, ElementHandle, Runnable {
+        CompletionRequest request;
+        private int lexOffset;
+        private Call call;
+
+        private SpecifyTypeItem(CompletionRequest request, Call call, int lexOffset) {
+            this.request = request;
+            this.call = call;
+            this.lexOffset = lexOffset;
+        }
+
+        public String getVariableName() {
+            return call.getLhs();
+        }
+
+        public int getAnchorOffset() {
+            return request.anchor;
+        }
+
+        public ElementHandle getElement() {
+            return this;
+        }
+
+        public String getName() {
+            return "";
+        }
+
+        public String getInsertPrefix() {
+            // Return the prefix to ensure that when the prefix is nonempty we still
+            // show this item first
+            return request.prefix;
+        }
+
+        public String getSortText() {
+            return request.prefix;
+        }
+
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return NbBundle.getMessage(PythonCodeCompleter.class, "SpecifyTypeOf", getVariableName());
+        }
+
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsfret/source/resources/icons/implement-glyph.gif")); // NOI18N
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isSmart() {
+            return true;
+        }
+
+        public int getSortPrioOverride() {
+            // Sort to the very top
+            return -30000;
+        }
+
+        public String getCustomInsertTemplate() {
+            return null;
+        }
+
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        public String getMimeType() {
+            return PythonTokenId.PYTHON_MIME_TYPE;
+        }
+
+        public String getIn() {
+            return null;
+        }
+
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        private void apply() {
+            request.doc.runAtomic(this);
+        }
+
+        public void run() {
+            BaseDocument doc = request.doc;
+            try {
+
+                // Compute the best place to insert the string
+                String var = call.getLhs();
+
+                int indent = 0;
+                int offset = Utilities.getRowFirstNonWhite(doc, lexOffset);
+                if (offset == -1) {
+                    offset = lexOffset;
+                } else {
+                    indent = IndentUtils.lineIndent(doc, IndentUtils.lineStartOffset(doc, offset));
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("# @type "); // NOI18N
+                sb.append(var);
+                sb.append(" "); // NOI18N
+                int typeDelta = sb.length();
+                //sb.append("string"); // NOI18N
+                sb.append("\n"); // NOI18N
+                if (indent > 0) {
+                    sb.append(IndentUtils.createIndentString(doc, indent));
+                }
+
+                doc.insertString(offset, sb.toString(), null); // NOI18N
+
+                final JTextComponent target = GsfUtilities.getPaneFor(request.fileObject);
+                if (target != null) {
+                    target.getCaret().setDot(offset + typeDelta);
+
+                    // Invoke code completion again at the new location!
+                    // Can't do this immediately, or even in an invokeLater -
+                    // the current completion session has to be completely finished
+                    // first.
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            if (target instanceof JEditorPane) {
+                                Completion.get().showCompletion();
+                            }
+                        }
+                    }, 100);
+                }
+            } catch (BadLocationException e) {
+                // Can't update
+            }
+        }
+    }
+
     public class PythonCompletionResult extends DefaultCompletionResult {
         private CodeCompletionContext context;
 
@@ -2119,7 +2503,23 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
+        public boolean insert(CompletionProposal item) {
+            if (item instanceof SpecifyTypeItem) {
+                SpecifyTypeItem specify = (SpecifyTypeItem)item;
+                specify.apply();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
         public void afterInsert(CompletionProposal item) {
+            if (item.getKind() == ElementKind.CALL) {
+                return;
+            }
+
             if (item instanceof PythonCompletionItem) {
                 PythonCompletionItem pythonItem = (PythonCompletionItem)item;
                 org.netbeans.modules.python.editor.lexer.Call call = pythonItem.request.call;

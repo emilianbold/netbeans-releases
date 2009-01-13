@@ -57,7 +57,7 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        Document doc = snapshot.getSource().getDocument();
+        Document doc = snapshot.getSource().getDocument(true);
         try {
             LanguagePath path = LanguagePath.get(MimeLookup.getLookup(snapshot.getMimeType()).lookup(Language.class));
             InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);

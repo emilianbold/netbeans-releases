@@ -58,10 +58,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.animator.AnimatorEvent;
-import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -94,13 +91,13 @@ import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;
 import org.netbeans.modules.uml.drawingarea.actions.UMLHoverProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetMoveActionMenu;
+import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -500,41 +497,37 @@ abstract public class DiagramEngine {
     {
         Object retVal = null;
         
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] engineObjects = df.getChildren();
+            for (int i = 0; i < engineObjects.length; i++)
             {
-                DataObject[] engineObjects = df.getChildren();
-                for (int i = 0; i < engineObjects.length; i++)
+                InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
+                if(ic != null)
                 {
-                    InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
-                    if(ic != null)
+                    try
                     {
-                        try
+                        Object obj = ic.instanceCreate();
+                        if (obj instanceof NodeWidgetFactory)
                         {
-                            Object obj = ic.instanceCreate();
-                            if (obj instanceof NodeWidgetFactory)
-                            {
-                                NodeWidgetFactory factory = (NodeWidgetFactory) obj;
-                                retVal = factory.createNode(scene);
-                                break;
-                            }
-                            else if (obj instanceof ConnectionWidgetFactory)
-                            {
-                                ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
-                                retVal = factory.createConnection(scene);
-                                break;
-                            }
+                            NodeWidgetFactory factory = (NodeWidgetFactory) obj;
+                            retVal = factory.createNode(scene);
+                            break;
                         }
-                        catch(Exception ex)
+                        else if (obj instanceof ConnectionWidgetFactory)
                         {
-                            Exceptions.printStackTrace(ex);
+                            ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
+                            retVal = factory.createConnection(scene);
+                            break;
                         }
-                        
+                    }
+                    catch(Exception ex)
+                    {
+                        Exceptions.printStackTrace(ex);
+                    }
+
 //                        try
 //                        {
 //                            Class cl = ic.instanceClass();
@@ -552,11 +545,10 @@ abstract public class DiagramEngine {
 //                            Exceptions.printStackTrace(e);
 //                            continue;
 //                        }
-                    }
-                    else
-                    {
-                        
-                    }
+                }
+                else
+                {
+
                 }
             }
         }
@@ -585,67 +577,29 @@ abstract public class DiagramEngine {
 
         RelationshipFactory retVal = null;
 
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-        if (system != null)
+        String path = "modeling/relationships/" + type + ".context_palette_item";
+        FileObject fo = FileUtil.getConfigFile(path);
+        if(fo != null)
         {
-            String path = "modeling/relationships/" + type + ".context_palette_item";
-            FileObject fo = system.findResource(path);
-            if(fo != null)
-            {
-                retVal = (RelationshipFactory)fo.getAttribute("factory");
-            }
+            retVal = (RelationshipFactory)fo.getAttribute("factory");
         }
-
         return retVal;
     }
     
     public void layout(boolean save)
     {
         DesignerScene diagramScene = getScene();
-        GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(diagramScene, true);
-//        GraphLayout gLayout = GraphLayoutFactory.createOrthogonalGraphLayout(scene, true);
-        if (save)
-        {
-            diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
-        }
+        GraphLayout gLayout = new HierarchicalLayout();
         gLayout.layoutGraph(diagramScene);
-
-    }
-
-    private class MyAnimatorListener implements AnimatorListener
-    {
-
-        public void animatorStarted(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorReset(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorFinished(AnimatorEvent event)
-        {
-            saveDiagram();
-            scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
-        }
-
-        public void animatorPreTick(AnimatorEvent event)
-        {            
-        }
-
-        public void animatorPostTick(AnimatorEvent event)
-        {           
-        }
-
+        saveDiagram();
     }
 
     private void saveDiagram()
     {
-        DesignerScene scene = getScene();
-        if (scene != null)
+        DesignerScene sc = getScene();
+        if ( sc != null)
         {
-            IDiagram diagram = scene.getDiagram();
+            IDiagram diagram =  sc.getDiagram();
             if (diagram != null)
             {
                 try

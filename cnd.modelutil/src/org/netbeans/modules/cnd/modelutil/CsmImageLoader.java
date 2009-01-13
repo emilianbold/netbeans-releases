@@ -49,7 +49,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -124,6 +123,10 @@ public class CsmImageLoader implements CsmImageName {
         return getCachedImageIcon(iconPath);        
     }
 
+    public static ImageIcon getPreprocessorDirectiveIcon() {
+        return getCachedImageIcon(MACRO);
+    }
+    
     public static ImageIcon getTempleteParameterIcon() {
         return getCachedImageIcon(TEMPLATE_PARAMETER);        
     }

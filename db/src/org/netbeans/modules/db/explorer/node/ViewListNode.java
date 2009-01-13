@@ -41,6 +41,11 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -49,26 +54,31 @@ import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 public class ViewListNode extends BaseNode {
     private static final String NAME = "Views"; // NOI18N
     private static final String DISPLAYNAME = "Views"; // NOI18N
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "ViewList"; //NOI18N
     
+    private MetadataElementHandle<Schema> schemaHandle;
+    private final DatabaseConnection connection;
+
     /** 
      * Create an instance of ViewListNode.
      * 
      * @param dataLookup the lookup to use when creating node providers
      * @return the ViewListNode instance
      */
-    public static ViewListNode create(NodeDataLookup dataLookup) {
-        ViewListNode node = new ViewListNode(dataLookup);
+    public static ViewListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ViewListNode node = new ViewListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private ViewListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ViewListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
 
     protected void initialize() {
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
     
     @Override
@@ -84,5 +94,15 @@ public class ViewListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ViewList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewListNode.class);
     }
 }

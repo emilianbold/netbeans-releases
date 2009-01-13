@@ -319,6 +319,7 @@ final class JUnitOutputReader {
                     }
                     progressLogger.finest("test finished");             //NOI18N
                     updateProgress();
+                    manager.displayReport(session, sessionType, report, true, statistics);
                 }
                 return;
             }
@@ -328,9 +329,7 @@ final class JUnitOutputReader {
                     return;
                 }
                 int lastCharIndex = testListenerMsg.length() - 1;
-                if (testListenerMsg.charAt(lastCharIndex) != ')') {
-                    return;
-                }
+
                 String insideBrackets = testListenerMsg.substring(
                                                         shortMsg.length() + 1,
                                                         lastCharIndex);
@@ -676,7 +675,7 @@ final class JUnitOutputReader {
             return null;
         }
 
-        File resultsDir = (todirPath != ".") ? new File(todirPath)      //NOI18N
+        File resultsDir = (!todirPath.equals(".")) ? new File(todirPath)      //NOI18N
                                              : null;
         return findAbsolutePath(resultsDir, taskStruct, event);
     }
@@ -717,21 +716,6 @@ final class JUnitOutputReader {
         return new File(event.getProperty("basedir"));                  //NOI18N
     }
 
-    /**
-     */
-    private Report createReport(final String suiteName) {
-        Report report = new Report(suiteName);
-        report.antScript = antScript;
-        
-        report.classpath = classpath;
-        report.platformSources = platformSources;
-        
-        this.classpath = null;
-        this.platformSources = null;
-        
-        return report;
-    }
-    
     /**
      */
     private ClassPath findPlatformSources(final String javaExecutable) {
@@ -867,6 +851,35 @@ final class JUnitOutputReader {
         } else if (message != null) {
             progressHandle.progress(message);
         }
+
+        if (report != oldReport) {
+            savedTotalTests = totalTests;
+            savedFailures = failures;
+            savedErrors = errors;
+            savedDetectedPassedTests = detectedPassedTests;
+            savedInterruptedTests = interruptedTests;
+            savedElapsedTimeMillis = elapsedTimeMillis;
+
+            statistics = new int[] {
+                totalTests + report.totalTests,
+                failures + report.failures,
+                errors + report.errors,
+                detectedPassedTests + report.detectedPassedTests,
+                interruptedTests + report.interruptedTests,
+                elapsedTimeMillis + report.elapsedTimeMillis
+            };
+            oldReport = report;
+        } else {
+            statistics = new int[] {
+                totalTests = savedTotalTests + report.totalTests,
+                failures = savedFailures + report.failures,
+                errors = savedErrors + report.errors,
+                detectedPassedTests = savedDetectedPassedTests  + report.detectedPassedTests,
+                interruptedTests = savedInterruptedTests + report.interruptedTests,
+                elapsedTimeMillis = savedElapsedTimeMillis + report.elapsedTimeMillis
+            };
+        }
+
     }
     
     /**
@@ -955,7 +968,14 @@ final class JUnitOutputReader {
      */
     private Report suiteStarted(final String suiteName) {
         closePreviousReport();
-        report = createReport(suiteName);
+        report = new Report(suiteName);
+        report.antScript = antScript;
+
+        report.classpath = classpath;
+        report.platformSources = platformSources;
+
+        this.classpath = null;
+        this.platformSources = null;
         
         String stepMessage = getProgressStepMessage(suiteName);
         expectedOneSuiteTests = 0;
@@ -980,8 +1000,9 @@ final class JUnitOutputReader {
             progressLogger.finer("actual # of tests in a suite: " + executedOneSuiteTests);
         }
         executedSuitesCount++;
-        
-        manager.displayReport(session, sessionType, report);
+
+        updateProgress();
+        manager.displayReport(session, sessionType, report, true, statistics);
     }
     
     private void buildFinished(final Throwable exception) {
@@ -1255,5 +1276,19 @@ final class JUnitOutputReader {
         
         return result;
     }
-    
+
+    private volatile int totalTests = 0;
+    private volatile int failures = 0;
+    private volatile int errors = 0;
+    private volatile int interruptedTests = 0;
+    private volatile int elapsedTimeMillis = 0;
+    private volatile int detectedPassedTests = 0;
+    private volatile int savedTotalTests = 0;
+    private volatile int savedFailures = 0;
+    private volatile int savedErrors = 0;
+    private volatile int savedInterruptedTests = 0;
+    private volatile int savedElapsedTimeMillis = 0;
+    private volatile int savedDetectedPassedTests = 0;
+    private volatile Report oldReport;
+    private volatile int[] statistics;
 }

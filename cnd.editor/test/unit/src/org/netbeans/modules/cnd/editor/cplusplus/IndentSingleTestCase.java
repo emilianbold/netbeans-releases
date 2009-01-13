@@ -32,33 +32,12 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
- * Class was taken from java
- * Links point to java IZ.
- * C/C++ specific tests begin from testReformatSimpleClass
- *
+ * Place holder for single test
  * @author Alexander Simon
  */
 public class IndentSingleTestCase extends EditorBase {
 
     public IndentSingleTestCase(String testMethodName) {
         super(testMethodName);
-    }
-    public void testEnterAfterIfBraceHalf() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace,
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        setLoadDocumentText(
-                "if (true)\n" +
-                "  {|\n" +
-                "  }\n"
-                );
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line indent",
-                "if (true)\n" +
-                "  {\n" +
-                "    |\n" +
-                "  }\n"
-                );
     }
 }

@@ -16,7 +16,7 @@ testJSPElements.jsp
 --%>
 
 <%-- completion for Java beans --%>
-<%--CC
+<%-- issue 155528
 <jsp:useBean id="myBean" scope="request" class="java.lang.S|"
 String
 <jsp:useBean id="myBean" scope="request" class="java.lang.String"

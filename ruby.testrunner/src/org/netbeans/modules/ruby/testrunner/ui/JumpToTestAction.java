@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 
 /**
@@ -59,7 +60,7 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
         this.jumpToClass = clazz;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    protected void doActionPerformed(ActionEvent e) {
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), jumpToClass);
         if (!(DeclarationLocation.NONE == location)) {
             GsfUtilities.open(location.getFileObject(), location.getOffset(), null);

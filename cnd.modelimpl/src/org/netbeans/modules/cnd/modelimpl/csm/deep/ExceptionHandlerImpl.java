@@ -89,13 +89,10 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
     
     /** overrides parent method */
     @Override
-    protected void renderStatements(AST ast) {
-        ast = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_COMPOUND_STATEMENT);
-        if( ast != null ) {
-            super.renderStatements(ast);
-        }
+    protected AST getStartRenderingAst() {
+        return AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_COMPOUND_STATEMENT);
     }
-   
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getParameter(), getStatements());

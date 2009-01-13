@@ -196,7 +196,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));           // NOI18N                    
         Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),          // NOI18N                    
                                         new HelpCtx(this.getClass()),
-                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")});    // NOI18N  
+                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")},     // NOI18N
+                                        retryButton);
                 
 
         boolean ret = (option == retryButton);

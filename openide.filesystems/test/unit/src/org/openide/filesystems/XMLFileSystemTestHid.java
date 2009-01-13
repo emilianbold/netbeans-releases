@@ -487,6 +487,22 @@ public class XMLFileSystemTestHid extends TestBaseHid {
       assertNotNull("Value returned", obj);
       assertEquals("works for bundle key", "Hello World!", obj);
     }
+    public void testPeerAttribute() throws Exception {
+      URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
+      assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);
+      FileSystem fs = FileSystemFactoryHid.createXMLSystem(getName(), this, fsURLDef);
+      root = fs.getRoot();
+      FileObject fo = fs.findResource("peer/base");
+      FileObject peer = fs.findResource("peer/snd");
+      assertTrue ("Cannot acces  FileObject named testMethodValue", fo != null);
+
+      Object obj = fo.getAttribute("testPeer");
+      assertNotNull("methodValue failed", obj);
+      assertEquals(Data.class, obj.getClass());
+      Data data = (Data)obj;
+      assertEquals("it is the top most fileobject", peer, data.peer);
+
+    }
 
     
     public void testChangeOfAnAttributeInLayerIsFiredIfThereIsRealChange() throws Exception {
@@ -729,6 +745,17 @@ public class XMLFileSystemTestHid extends TestBaseHid {
 
 
         return attrs.get("value1") + attrName;
+    }
+    private static FileObject root;
+    public static final class Data {
+        Object peer;
+        public Data() {
+            FileObject fo = root.getFileObject("peer/snd");
+            peer = fo.getAttribute("testPeer");
+        }
+    }
+    private static Object getFO(FileObject fo) {
+        return fo;
     }
     
 }

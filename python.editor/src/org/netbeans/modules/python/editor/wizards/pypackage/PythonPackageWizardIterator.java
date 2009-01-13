@@ -5,7 +5,6 @@
 package org.netbeans.modules.python.editor.wizards.pypackage;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -19,7 +18,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -74,17 +72,36 @@ public final class PythonPackageWizardIterator implements WizardDescriptor.Insta
 
     public Set instantiate() throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
-        FileObject template =
-                Repository.getDefault().getDefaultFileSystem().findResource(
-                "Templates/Python/init.py");
+        FileObject template = FileUtil.getConfigFile("Templates/Python/_init.py"); // NOI18N
         FileObject dir = Templates.getTargetFolder(wizard);
         String targetName = Templates.getTargetName(wizard);
-        File parent = FileUtil.toFile(dir);
-        File packageFile = new File(parent.getAbsolutePath() + File.separator + targetName);
-        FileObject newPackage = createPackage(packageFile);
-        resultSet.add(newPackage);
-        FileObject initFile = createInitFile(template, newPackage, "__init__.py").getPrimaryFile();
-        resultSet.add(initFile);
+
+        String subdir = targetName.replace('.', '/');
+        FileObject pkgDir = dir.getFileObject(subdir);
+        if (pkgDir == null) {
+            // Must create the directories first
+            pkgDir = FileUtil.createFolder(dir, subdir);
+        }
+
+        // Create __init__ files. This has to be done in EACH of the
+        // directories up to the root!! Otherwise packages cannot
+        // be imported.
+        if (pkgDir != null) {
+            FileObject curr = pkgDir;
+            while (curr != dir) {
+                if (curr.getFileObject("__init__.py") == null) { // NOI18N
+                    if (curr == pkgDir) {
+                        FileObject initFile = createInitFile(template, curr, "__init__.py").getPrimaryFile(); // NOI18N
+                        resultSet.add(initFile);
+                    } else {
+                        // Just create empty package files in the intermediate directories
+                        curr.createData("__init__", "py"); // NOI18N
+                    }
+                }
+                curr = curr.getParent();
+            }
+        }
+
         return resultSet;
     }
 
@@ -184,11 +201,6 @@ public final class PythonPackageWizardIterator implements WizardDescriptor.Insta
             }
         }
         return res;
-    }
-
-    private FileObject createPackage(File dir) throws IOException {
-        FileObject packageFO = FileUtil.createFolder(dir);
-        return packageFO;
     }
 
     private DataObject createInitFile(FileObject template, FileObject sourceDir, String name) throws IOException {

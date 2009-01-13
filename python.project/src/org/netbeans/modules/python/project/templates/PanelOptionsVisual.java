@@ -60,7 +60,7 @@ import org.netbeans.modules.python.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Exceptions;
@@ -129,10 +129,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     public void propertyChange (PropertyChangeEvent event) {
+        // The project name isn't very python'y
         if (NewPythonProjectWizardIterator.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
             String newProjectName = (String) event.getNewValue();            
             this.mainFileTextField.setText (MessageFormat.format(
-                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_MainFileName"), new Object[] {newProjectName}
+                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_MainFileName"), new Object[] {newProjectName.toLowerCase()}
             ));
         }
         if (NewPythonProjectWizardIterator.PROP_PROJECT_LOCATION.equals(event.getPropertyName())) {
@@ -158,7 +159,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
 
-        mainFileTextField.setText("Main");
+        mainFileTextField.setText("main");
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
@@ -223,7 +224,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
 private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
 //Workaround, Needs an API to display platform customizer
-    final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
+    final FileObject fo = FileUtil.getConfigFile("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
     if (fo != null) {
         try {
             InstanceDataObject ido = (InstanceDataObject) DataObject.find(fo);

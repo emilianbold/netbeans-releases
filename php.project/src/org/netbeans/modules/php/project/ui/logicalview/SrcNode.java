@@ -80,16 +80,6 @@ public class SrcNode extends FilterNode {
 
     /**
      * creates source root node based on specified DataFolder.
-     * Name is taken from bundle by 'LBL_PhpFiles' key.
-     * <br/>
-     * TODO : if we support several source roots, remove this constructor
-     */
-    SrcNode(PhpProject project, DataFolder folder, DataFilter filter) {
-        this(project, folder, filter, NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_PhpFiles"));
-    }
-
-    /**
-     * creates source root node based on specified DataFolder.
      * Uses specified name.
      */
     SrcNode(PhpProject project, DataFolder folder, DataFilter filter, String name) {

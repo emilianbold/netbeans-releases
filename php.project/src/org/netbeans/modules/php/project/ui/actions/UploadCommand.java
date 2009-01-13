@@ -87,14 +87,14 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         };
     }
 
-    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
+    private void invokeActionImpl(Lookup context) {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
         uploadFiles(selectedFiles, (FileObject[]) null);
     }
 
-    void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
+    public void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 

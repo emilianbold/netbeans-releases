@@ -61,7 +61,6 @@ import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -88,7 +87,7 @@ public class BracketCompletion {
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        if (!completionSettingEnabled()) {
+        if (!completionSettingEnabled(doc)) {
             return;
         }
         TokenItem<CppTokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos, true);
@@ -218,9 +217,15 @@ public class BracketCompletion {
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        if (completionSettingEnabled()) {
+        if (completionSettingEnabled(doc)) {
+            if (doc.getLength() == 0) {
+                return;
+            }
             if (ch == '(' || ch == '[') {
                 TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, dotPos, true);
+                if (token == null) {
+                    return;
+                }
                 if ((token.id() == CppTokenId.RBRACKET && tokenBalance(doc, CppTokenId.LBRACKET, CppTokenId.RBRACKET, dotPos) != 0)
                     || (token.id() == CppTokenId.RPAREN && tokenBalance(doc, CppTokenId.LPAREN, CppTokenId.RPAREN, dotPos) != 0)) {
                     doc.remove(dotPos, 1);
@@ -270,7 +275,7 @@ public class BracketCompletion {
      *  or false if not.
      */
     static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
-        if (!completionSettingEnabled()) {
+        if (!completionSettingEnabled(doc)) {
             return false;
         }
         if (tokenBalance(doc, CppTokenId.LBRACE, CppTokenId.RBRACE, caretOffset) <= 0) {
@@ -642,8 +647,8 @@ public class BracketCompletion {
     /**
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled() {
-        Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+    private static boolean completionSettingEnabled(Document doc) {
+        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
     }
 

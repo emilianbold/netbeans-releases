@@ -368,7 +368,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public boolean registerDeclaration(CsmOffsetableDeclaration decl) {
 
         if( !ProjectBase.canRegisterDeclaration(decl) ) {
-            if (TraceFlags.TRACE_REGISTRATION) traceRegistration("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
+            if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + decl.getUID());} //NOI18N
             return false;
         }
 
@@ -382,12 +382,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (old != null) {
                     // don't register if the new one is weaker
                     if (cls.shouldBeReplaced(old)) {
-                        if (TraceFlags.TRACE_REGISTRATION) traceRegistration("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
+                        if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + decl.getUID());} //NOI18N
                         return false;
                     }
                     // remove the old one if the new one is stronger
                     if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
-                        if (TraceFlags.TRACE_REGISTRATION) System.err.println("disposing old decl " + old + " UID " + decl.getUID()); //NOI18N
+                        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("disposing old decl " + old + " UID " + decl.getUID());} //NOI18N
                         ((ClassEnumBase) old).dispose();
                     }
                 }
@@ -404,7 +404,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getDeclarationsSorage().putDeclaration(decl);
         }
 
-        if (TraceFlags.TRACE_REGISTRATION) System.err.println("registered " + decl + " UID " + decl.getUID()); //NOI18N
+        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("registered " + decl + " UID " + decl.getUID());} //NOI18N
         return true;
     }
 
@@ -617,7 +617,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             if( disposing ) {
-                if( TraceFlags.TRACE_MODEL_STATE ) System.err.printf("filling parser queue interrupted for %s\n", getName());
+                if( TraceFlags.TRACE_MODEL_STATE ) {System.err.printf("filling parser queue interrupted for %s\n", getName());}
                 return;
             }
 
@@ -652,21 +652,29 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
 
+        List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
+        List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
         for( NativeFileItem nativeFileItem : items ) {
             if( disposing ) {
-                if( TraceFlags.TRACE_MODEL_STATE ) System.err.printf("filling parser queue interrupted for %s\n", getName());
+                if( TraceFlags.TRACE_MODEL_STATE ) {System.err.printf("filling parser queue interrupted for %s\n", getName());}
                 return;
             }
             if (removedFiles.contains(nativeFileItem)){
                 continue;
             }
             assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.trace(nativeFileItem);
+            if( TraceFlags.DEBUG ) {ModelSupport.trace(nativeFileItem);}
             try {
-                createIfNeed(nativeFileItem, sources, validator);
+                createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
             } catch (Exception ex){
                 DiagnosticExceptoins.register(ex);
             }
+        }
+        if (!reparseOnEdit.isEmpty()){
+            DeepReparsingUtils.reparseOnEdit(reparseOnEdit, this, true);
+        }
+        if (!reparseOnPropertyChanged.isEmpty()){
+            DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, this);
         }
     }
 
@@ -675,7 +683,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * Is called when initializing the project or new file is added to project.
      * Isn't intended to be used in #included file processing.
      */
-    protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, ProjectSettingsValidator validator) {
+    final protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
+        createIfNeed(nativeFile, isSourceFile, null, null, null) ;
+    }
+
+    private void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile,
+            ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
 
         assert (nativeFile != null && nativeFile.getFile() != null);
         if( ! acceptNativeItem(nativeFile)) {
@@ -691,25 +704,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if( fileAndHandler.preprocHandler == null ) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
         }
-        if (isSourceFile || needParseOrphan) {
-            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-        }
-
+        boolean done = false;
         if( validator != null ) {
             if( fileAndHandler.fileImpl.validate() ) {
                 if( validator.arePropertiesChanged(nativeFile) ) {
-                    if( TraceFlags.TRACE_VALIDATION ) System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
-                    DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
+                    if( TraceFlags.TRACE_VALIDATION ) {System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());}
+                    reparseOnPropertyChanged.add(nativeFile);
+                    done = true;
                 }
-// clients should listen for ProjectLoaded instead
-//		else if( fileAndHandler.fileImpl.isParsed() ) {
-//		    //ProgressSupport.instance().fireFileParsingStarted(fileAndHandler.fileImpl);
-//		    ProgressSupport.instance().fireFileParsingFinished(fileAndHandler.fileImpl);
-//		}
             } else {
-                if( TraceFlags.TRACE_VALIDATION ) System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());
-                DeepReparsingUtils.reparseOnEdit(fileAndHandler.fileImpl, this, true);
+                if( TraceFlags.TRACE_VALIDATION ) {System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());}
+                reparseOnEdit.add(fileAndHandler.fileImpl);
+                done = true;
             }
+        }
+        if (!done && (isSourceFile || needParseOrphan)) {
+            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
         }
     }
 
@@ -838,9 +848,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        for( FileImpl file : removedPhysically ) {
-            if( TraceFlags.TRACE_VALIDATION ) System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
-            onFileRemoved(file);
+        if (!removedPhysically.isEmpty()) {
+            if (TraceFlags.TRACE_VALIDATION){
+                for( FileImpl file : removedPhysically ) {
+                    System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
+                }
+            }
+            onFileImplRemoved(new ArrayList<FileImpl>(removedPhysically));
         }
         for( FileImpl file : candidates ) {
             boolean remove = true;
@@ -852,7 +866,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             if( remove ) {
-                if( TraceFlags.TRACE_VALIDATION ) System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath()); //NOI18N
+                if( TraceFlags.TRACE_VALIDATION ) {System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath());} //NOI18N
                 onFileRemoved(file);
             }
         }
@@ -931,12 +945,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if( state.isCleaned() ) {
                 return restorePreprocHandler(file, preprocHandler, state);
             } else {
-		if (TRACE_PP_STATE_OUT) System.err.println("copying state for " + file);
+		if (TRACE_PP_STATE_OUT) {System.err.println("copying state for " + file);}
                 preprocHandler.setState(state);
                 return preprocHandler;
             }
 	}
-        if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
+        if (TRACE_PP_STATE_OUT) {System.err.printf("null state for %s, returning default one", file);}
 	return preprocHandler;
     }
     
@@ -950,11 +964,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if( state.isCleaned() ) {
                     preprocHandler = restorePreprocHandler(file, preprocHandler, state);
                 } else {
-                    if (TRACE_PP_STATE_OUT) System.err.println("copying state for " + file);
+                    if (TRACE_PP_STATE_OUT) {System.err.println("copying state for " + file);}
                     preprocHandler.setState(state);
                 }
             }
-            if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
+            if (TRACE_PP_STATE_OUT) {System.err.printf("null state for %s, returning default one", file);}
             result.add(preprocHandler);
         }
         return result;
@@ -1408,6 +1422,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileAdded(List<NativeFileItem> items);
     //public abstract void onFileRemoved(NativeFileItem nativeFile);
     public abstract void onFileRemoved(FileImpl fileImpl);
+    public abstract void onFileImplRemoved(List<FileImpl> files);
     public abstract void onFileRemoved(List<NativeFileItem> items);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     public abstract void onFilePropertyChanged(List<NativeFileItem> items);
@@ -1646,7 +1661,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param name offset that contains unresolved name (used for the purpose of statictics)
      */
     public CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
-        if (Diagnostic.needStatistics()) Diagnostic.onUnresolvedError(nameTokens, file, offset);
+        if (Diagnostic.needStatistics()) {Diagnostic.onUnresolvedError(nameTokens, file, offset);}
         return getUnresolved().getDummyForUnresolved(nameTokens);
     }
 
@@ -1924,10 +1939,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
 	assert (reverseInclStack != null);
 	if (reverseInclStack.isEmpty()) {
-	    if (TRACE_PP_STATE_OUT) System.err.println("stack is empty; return default for " + interestedFile);
+	    if (TRACE_PP_STATE_OUT) {System.err.println("stack is empty; return default for " + interestedFile);}
 	    return getStartEntryInfo(preprocHandler, state).preprocHandler;
 	} else {
-	    if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
+	    if (TRACE_PP_STATE_OUT) {System.err.println("restoring for " + interestedFile);}
 	    // we need to reverse includes stack
 	    assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
 	    Stack<APTIncludeHandler.IncludeInfo> inclStack = reverse(reverseInclStack);

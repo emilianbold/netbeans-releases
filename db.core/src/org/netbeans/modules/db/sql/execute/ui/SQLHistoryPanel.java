@@ -91,7 +91,6 @@ import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.netbeans.modules.db.sql.history.SQLHistoryPersistenceManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -108,7 +107,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final int SAVE_STATEMENTS_MAX_LIMIT = 10000; 
     public static final int TABLE_DATA_WIDTH_SQL = 125;
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
-    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
+    private static final FileObject USERDIR = FileUtil.getConfigRoot();
     private static final FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
     private static String historyFilePath;
     private static Object[][] data;
@@ -248,12 +247,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         connectionUrlComboBox.setModel(new UrlComboBoxModel());
         connectionUrlComboBox.setRenderer(new ConnectionUrlRenderer());
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
+        jLabel2.setLabelFor(searchTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
 
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
         org.openide.awt.Mnemonics.setLocalizedText(insertSQLButton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
-        insertSQLButton.setActionCommand("&Insert");
         insertSQLButton.setEnabled(false);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -267,13 +266,13 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSN_History")); // NOI18N
         sqlHistoryTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_History")); // NOI18N
 
-        sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
+        sqlLimitLabel.setLabelFor(sqlLimitTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(sqlLimitLabel, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
 
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
 
         org.openide.awt.Mnemonics.setLocalizedText(sqlLimitButton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ApplyButton")); // NOI18N
-        sqlLimitButton.setActionCommand("&Apply");
         sqlLimitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlLimitButtonActionPerformed(evt);
@@ -294,11 +293,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 203, Short.MAX_VALUE)
+                                .add(connectionUrlComboBox, 0, 212, Short.MAX_VALUE)
                                 .add(18, 18, 18)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)

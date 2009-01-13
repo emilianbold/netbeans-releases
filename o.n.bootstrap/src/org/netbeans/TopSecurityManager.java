@@ -551,7 +551,10 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     public static void makeSwingUseSpecialClipboard (java.awt.datatransfer.Clipboard clip) {
         try {
             synchronized (TopSecurityManager.class) {
-                assert System.getSecurityManager() instanceof TopSecurityManager : "Our manager has to be active: " + System.getSecurityManager(); // NOI18N
+                if (! (System.getSecurityManager() instanceof TopSecurityManager)) {
+                    LOG.warning("Our manager has to be active: " + System.getSecurityManager());
+                    return;
+                } // NOI18N
                 if (CLIPBOARD_FORBIDDEN != null) {
                     return;
                 }

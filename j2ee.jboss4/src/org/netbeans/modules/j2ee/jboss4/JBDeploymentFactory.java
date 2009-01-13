@@ -66,10 +66,9 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -127,11 +126,14 @@ public class JBDeploymentFactory implements DeploymentFactory {
     public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot) {
         try {
 
+            Version JBVer = JBPluginUtils.getServerVersion(new File (serverRoot));
+             boolean version5 = (JBVer != null && JBVer.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
+
             // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
-            File domFile = new File(serverRoot + "/lib/dom4j.jar"); // NOI18N
+            File domFile = new File(serverRoot , JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
             if (!domFile.exists()) {
                 // dom4j.jar library for JBoss Application Server 4.0.5
-                domFile = new File(domainRoot + "/lib/dom4j.jar"); // NOI18N
+                domFile = new File(domainRoot, JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
             }
             if (!domFile.exists()) {
                 domFile = null;
@@ -139,48 +141,64 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
 
             // jbosssx-client.jar JBoss Application Server 5.0
-            File sxClient50 = new File(serverRoot + "/client/jbosssx-client.jar"); // NOI18N
-
-            // jboss-common-client.jar JBoss Application Server 4.x
-            File client40 = new File(serverRoot + "/client/jboss-common-client.jar"); // NOI18N
-
-            // jboss-client.jar JBoss Application Server 5.0
-            File client50 = new File(serverRoot + "/client/jboss-client.jar"); // NOI18N
-
-            // jboss-common-core.jar for JBoss Application Server 5.0
-            File core50 = new File(serverRoot + "/client/jboss-common-core.jar"); // NOI18N
-
-            // jboss-logging-spi.jar for JBoss Application Server 5.0
-            File logging50 = new File(serverRoot + "/client/jboss-logging-spi.jar"); // NOI18N
+//            File sxClient50 = new File(serverRoot + "/client/jbosssx-client.jar"); // NOI18N
+//
+//            // jboss-client.jar JBoss Application Server 5.0
+//            File client50 = new File(serverRoot + "/client/jboss-client.jar"); // NOI18N
+//
+//            // jboss-common-core.jar for JBoss Application Server 5.0
+//            File core50 = new File(serverRoot + "/client/jboss-common-core.jar"); // NOI18N
+//
+//            // jboss-logging-spi.jar for JBoss Application Server 5.0
+//            File logging50 = new File(serverRoot + "/client/jboss-logging-spi.jar"); // NOI18N
 
             List<URL> urlList = new ArrayList<URL>();
 
-            urlList.add(new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL());      //NOI18N
-            urlList.add(new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL());     //NOI18N
-            urlList.add(new File(serverRoot + "/client/jnp-client.jar").toURI().toURL());           //NOI18N
-            if (domFile != null) {
+              if (domFile != null) {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            if (sxClient50.exists()) {
-                urlList.add(sxClient50.toURI().toURL());
+            if  (version5) {
+                // get lient class path for Jboss 5.0
+                List<URL> clientClassUrls = JBPluginUtils.getJB5ClientClasspath(
+                        serverRoot);
+                urlList.addAll(clientClassUrls);
+
+                File runFile = new File(serverRoot, "bin" + File.separator + "run.jar"); // NOI18N
+                if ( runFile.exists()) {
+                    urlList.add(runFile.toURI().toURL());
+                }
+
+            } else {  // version < 5.0
+                urlList.add(
+                        new File(serverRoot , JBPluginUtils.CLIENT + "jbossall-client.jar").toURI().toURL());      //NOI18N
+                urlList.add(
+                        new File(serverRoot , JBPluginUtils.CLIENT + "jboss-deployment.jar").toURI().toURL());     //NOI18N
+                urlList.add(
+                        new File(serverRoot, JBPluginUtils.CLIENT + "jnp-client.jar").toURI().toURL());           //NOI18N
+
+                // jboss-common-client.jar JBoss Application Server 4.x
+                File client40 = new File(serverRoot , JBPluginUtils.CLIENT + "jboss-common-client.jar"); // NOI18N
+                if (client40.exists()) {
+                    urlList.add(client40.toURI().toURL());
+                }
             }
 
-            if (client40.exists()) {
-                urlList.add(client40.toURI().toURL());
-            }
-
-            if (client50.exists()) {
-                urlList.add(client50.toURI().toURL());
-            }
-
-            if (core50.exists()) {
-                urlList.add(core50.toURI().toURL());
-            }
-
-            if (logging50.exists()) {
-                urlList.add(logging50.toURI().toURL());
-            }
+//            if (sxClient50.exists()) {
+//                urlList.add(sxClient50.toURI().toURL());
+//            }
+//
+//            if (client50.exists()) {
+//                urlList.add(client50.toURI().toURL());
+//            }
+//
+//            if (core50.exists()) {
+//                urlList.add(core50.toURI().toURL());
+//            }
+//
+//            if (logging50.exists()) {
+//                urlList.add(logging50.toURI().toURL());
+//            }
 
             URLClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
@@ -397,8 +415,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
     }
 
     private static FileObject getServerInstanceDir() {
-        Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
         return dir;
     }
 

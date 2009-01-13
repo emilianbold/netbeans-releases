@@ -58,9 +58,7 @@ import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -337,11 +335,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private FileObject getRepositoryDir(String path, boolean create) {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject dir = fs.findResource(path);
+        FileObject dir = FileUtil.getConfigFile(path);
         if(dir == null && create) {
             try {
-                dir = FileUtil.createFolder(fs.getRoot(), path);
+                dir = FileUtil.createFolder(FileUtil.getConfigRoot(), path);
             } catch(IOException ex) {
                 getLogger().log(Level.INFO, null, ex);
             }
@@ -426,7 +423,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
                                 NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
-                            String domainNameValue = "GlassfishV3Domain";    // NOI18N
+                            String domainNameValue = "Glassfishv3Domain";    // NOI18N
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             

@@ -90,7 +90,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -135,7 +134,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
         if (userDir != null) {
             cacheStore = new File(new File(new File (userDir, "var"), "cache"), "welcome"); // NOI18N
         } else {
-            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheStore = new File(cachedir, "welcome"); // NOI18N
         }
         cacheStore = new File(cacheStore, path);

@@ -83,14 +83,12 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
         super(new GraphContainerKey(project.getUniqueName().toString()));
-        graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
         put();
     }
 
     public GraphContainer(final DataInput input) throws IOException {
         super(input);
         assert input != null;
-        graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
         readUIDToNodeLinkMap(input, graph);
     }
 
@@ -398,7 +396,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         
     }
     
-    private Map<CsmUID<CsmFile>,NodeLink> graph;
+    private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
     
     private static class NodeLink implements SelfPersistent, Persistent {
         

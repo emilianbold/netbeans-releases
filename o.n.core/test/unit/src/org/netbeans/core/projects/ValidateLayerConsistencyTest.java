@@ -78,7 +78,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -160,7 +159,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public void testAreAttributesFine () {
         List<String> errors = new ArrayList<String>();
         
-        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
@@ -222,7 +221,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         // might be better to move into editor/options tests as it is valid only if there are options
         List<String> errors = new ArrayList<String>();
         
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         
         Enumeration<? extends FileObject> en = root.getChildren(true);
         int cnt = 0;
@@ -283,7 +282,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> errors = new ArrayList<String>();
         byte[] buffer = new byte[4096];
         
-        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
@@ -321,7 +320,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public void testInstantiateAllInstances () {
         List<String> errors = new ArrayList<String>();
         
-        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
@@ -607,13 +606,12 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
 
-    public void testFolderOrdering() {
+    public void testFolderOrdering() throws Exception {
         LayerParseHandler h = new LayerParseHandler();
         Logger.getLogger("org.openide.filesystems.Ordering").addHandler(h);
         Set<List<String>> editorMultiFolders = new HashSet<List<String>>();
         Pattern editorFolder = Pattern.compile("Editors/(application|text)/([^/]+)(/.+|$)");
-        final FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        Enumeration<? extends FileObject> files = sfs.getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             if (fo.isFolder()) {
@@ -637,9 +635,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         for (List<String> multiPath : editorMultiFolders) {
             List<FileSystem> layers = new ArrayList<FileSystem>(3);
             for (final String path : multiPath) {
-                FileObject folder = sfs.findResource(path);
+                FileObject folder = FileUtil.getConfigFile(path);
                 if (folder != null) {
-                    layers.add(new MultiFileSystem(new FileSystem[] {sfs}) {
+                    layers.add(new MultiFileSystem(new FileSystem[] {folder.getFileSystem()}) {
                         protected @Override FileObject findResourceOn(FileSystem fs, String res) {
                             FileObject f = fs.findResource(path + '/' + res);
                             return Boolean.TRUE.equals(f.getAttribute("hidden")) ? null : f;

@@ -41,12 +41,12 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.BasicStroke;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,14 +55,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.JViewport;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.router.Router;
-import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -85,10 +83,10 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -460,42 +458,37 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private DiagramEngine attachEngine(IDiagram diagram) {
         String path="UML/DiagramEngines/"+diagram.getDiagramKindAsString().replaceAll(" ", "");
         DiagramEngine ret=null;
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] engineObjects = df.getChildren();
+            for (int i = 0; i < engineObjects.length; i++)
             {
-                DataObject[] engineObjects = df.getChildren();
-                for (int i = 0; i < engineObjects.length; i++)
+                InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
+                //if (ic == null) continue;
+                Object instance;
+                try
                 {
-                    InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
-                    //if (ic == null) continue;
-                    Object instance;
-                    try
-                    {
-                        instance = ic.instanceCreate();
-                    }
-                    catch (IOException ex)
-                    {
-                        ex.printStackTrace();
-                        continue;
-                    }
-                    catch (ClassNotFoundException ex)
-                    {
-                        ex.printStackTrace();
-                        continue;
-                    }
-                    
-                    if (instance instanceof DiagramEngineFactory)
-                    {
-                        DiagramEngineFactory factory = (DiagramEngineFactory)instance;
-                        ret = factory.createEngine(this);
-                        break;
-                    }
-                 }
+                    instance = ic.instanceCreate();
+                }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                    continue;
+                }
+                catch (ClassNotFoundException ex)
+                {
+                    ex.printStackTrace();
+                    continue;
+                }
+
+                if (instance instanceof DiagramEngineFactory)
+                {
+                    DiagramEngineFactory factory = (DiagramEngineFactory)instance;
+                    ret = factory.createEngine(this);
+                    break;
+                }
             }
         }
         //which way to use? assign here or use return value
@@ -518,6 +511,14 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         nodeWriter.setLocation(this.getLocation());
         nodeWriter.setSize(this.getBounds().getSize());
         nodeWriter.setHasPositionSize(true);
+        try {
+            if(getDiagram().getDocumentation()!=null)
+            {
+                nodeWriter.setDocumentation(URLEncoder.encode(getDiagram().getDocumentation(), "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         //populate properties key/val
         HashMap<String, String> properties = new HashMap();
         if (getEngine() instanceof SQDDiagramEngineExtension) {

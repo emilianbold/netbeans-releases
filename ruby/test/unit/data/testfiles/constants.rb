@@ -1,3 +1,5 @@
+GLOBAL_CONSTANT = 'Global Constant'
+
 module Colors
 
   module Converter
@@ -15,8 +17,9 @@ module Colors
 
 end
 
-Colors::RED.byte
+Colors::RED.bytes
 Colors::Converter::VERSION
+puts GLOBAL_CONSTANT
 
-require 'rexml/rexml'
-REXML::COPYRIGHT.ls
+b = Colors::BLUE
+puts b.downcase

@@ -56,7 +56,16 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.dataprovider</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.rowset</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -65,7 +74,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.rowset</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.web.ui.appbase</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -82,6 +98,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
+                <friend>org.netbeans.modules.visualweb.runtime.kit</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <package>com.sun.jsfcl.app</package>

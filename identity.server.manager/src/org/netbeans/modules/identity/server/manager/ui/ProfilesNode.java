@@ -50,7 +50,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanismHelper;
 import org.netbeans.modules.identity.server.manager.api.ServerInstance;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -107,7 +107,7 @@ public class ProfilesNode extends AbstractNode {
      */
     static synchronized Icon getFolderIcon(boolean opened) {
         if (openedFolderIconCache == null) {
-            Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
             openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
             folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
         }

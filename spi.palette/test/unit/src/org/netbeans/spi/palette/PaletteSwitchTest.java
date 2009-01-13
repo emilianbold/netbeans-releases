@@ -47,9 +47,8 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -85,19 +84,18 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
     
     protected void setUp() throws Exception {
         super.setUp();
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         
         lookupPaletteRootName = "lookupPalette" + System.currentTimeMillis();
-        lookupPaletteRootFolder = fs.getRoot().createFolder( lookupPaletteRootName );
+        lookupPaletteRootFolder = FileUtil.getConfigRoot().createFolder( lookupPaletteRootName );
         createDefaultPaletteContentInFolder( lookupPaletteRootFolder );
         
         if( null == mimePaletteRootName ) {
             mimePaletteRootName = "mimePalette" + System.currentTimeMillis();
-            mimePaletteRootFolder = fs.getRoot().createFolder( mimePaletteRootName );
+            mimePaletteRootFolder = FileUtil.getConfigRoot().createFolder( mimePaletteRootName );
             createDefaultPaletteContentInFolder( mimePaletteRootFolder );
         }
         
-        dummyDocumentFile = fs.getRoot().createData( "dummyDocumentFile" + System.currentTimeMillis(), DUMMY_DOCUMENT_FILE_EXTENSION );
+        dummyDocumentFile = FileUtil.getConfigRoot().createData( "dummyDocumentFile" + System.currentTimeMillis(), DUMMY_DOCUMENT_FILE_EXTENSION );
     }
 
     @Override

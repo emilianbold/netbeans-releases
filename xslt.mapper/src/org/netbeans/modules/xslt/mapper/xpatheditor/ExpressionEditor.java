@@ -52,8 +52,7 @@ import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -201,8 +200,7 @@ public class ExpressionEditor extends JPanel
     
     private static FileObject getPaletteFolder(String folderName) {
         FileObject paletteFolder = null;
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteFolder = fs.findResource( folderName );
+        paletteFolder = FileUtil.getConfigFile( folderName );
         return paletteFolder;
     }
     

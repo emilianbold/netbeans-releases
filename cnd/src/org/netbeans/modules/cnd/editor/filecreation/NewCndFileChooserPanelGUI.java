@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
@@ -56,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -71,10 +71,10 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
   
     
     private String expectedExtension;
-    private final ExtensionsSettings es;
+    private final MIMEExtensions es;
     
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, ExtensionsSettings es) {
+    NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es) {
         super(project, folders);
         
         this.es = es;
@@ -281,11 +281,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     }
 
     private DefaultComboBoxModel getExtensionsCBModel() {
-        Enumeration<String> enExt = es.getExtensionList().extensions();
-        Vector<String> vExt = new Vector<String>();
-        while (enExt.hasMoreElements()) {
-            vExt.add(enExt.nextElement());
-        }
+        Vector<String> vExt = new Vector<String>(es.getValues());
         return new javax.swing.DefaultComboBoxModel(vExt);
     }
     /** This method is called from within the constructor to

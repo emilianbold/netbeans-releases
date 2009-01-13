@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.text.AttributeSet;
@@ -191,10 +192,10 @@ public class CsmDisplayUtilities {
             tooltipText = getHtmlizedString("DSC_FieldTooltip", fieldName, displayClassName, ((CsmField) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isParamVariable(item)) {
             CharSequence varName = ((CsmParameter) item).getName();
-            tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, htmlize(((CsmParameter) item).getText())); // NOI18N
+            tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, ((CsmParameter) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isVariable(item)) {
             CharSequence varName = ((CsmVariable) item).getName();
-            tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, htmlize(((CsmVariable) item).getText())); // NOI18N
+            tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, ((CsmVariable) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isFile(item)) {
             CharSequence fileName = ((CsmFile) item).getName();
             tooltipText = getHtmlizedString("DSC_FileTooltip", fileName); // NOI18N
@@ -208,7 +209,7 @@ public class CsmDisplayUtilities {
             CsmInclude incl = (CsmInclude)item;
             CsmFile target = incl.getIncludeFile();
             if (target == null) {
-                tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", htmlize(incl.getText()));  // NOI18N
+                tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", incl.getText());  // NOI18N
             } else {
                 if (target.getProject().isArtificial()) {
                     tooltipText = getHtmlizedString("DSC_IncludeLibraryTooltip", target.getAbsolutePath());// NOI18N
@@ -256,7 +257,7 @@ public class CsmDisplayUtilities {
                 txt.append(" = 0"); // NOI18N
             }
         }
-        return htmlize(txt.toString());
+        return txt.toString();
     }
 
     private static String getHtmlizedString(String key, CharSequence value) {
@@ -312,7 +313,7 @@ public class CsmDisplayUtilities {
                 }
                 if (settings != null) {
                     AttributeSet set = settings.getTokenFontColors(category);
-                    buf.append(color(htmlize(text), set));
+                    buf.append(addHTMLColor(htmlize(text), set));
                 } else {
                     buf.append(htmlize(text));
                 }
@@ -331,7 +332,7 @@ public class CsmDisplayUtilities {
         return temp;
     }
 
-    private static String color(String string, AttributeSet set) {
+    public static String addHTMLColor(String string, AttributeSet set) {
         if (set == null) {
             return string;
         }
@@ -387,5 +388,60 @@ public class CsmDisplayUtilities {
             }
         }
         return "";
-    }    
+    }
+
+    public static String shrinkPath(CharSequence path, int maxDisplayedDirLen, int nrDisplayedFrontDirs, int nrDisplayedTrailingDirs) {
+        return shrinkPath(path, true, File.separator, maxDisplayedDirLen, nrDisplayedFrontDirs, nrDisplayedTrailingDirs);
+    }
+
+    public static String shrinkPath(CharSequence path, boolean shrink, String separator, int maxDisplayedDirLen, int nrDisplayedFrontDirs, int nrDisplayedTrailingDirs) {
+        final String SLASH = "/"; //NOI18N
+        StringBuilder builder = new StringBuilder(path);
+        String toReplace = null;
+        if (SLASH.equals(separator)) {
+            if (builder.indexOf("\\") >= 0) { // NOI18N
+                toReplace = "\\"; // NOI18N
+            }
+        } else {
+            if (builder.indexOf(SLASH) >= 0) {
+                toReplace = SLASH;
+            }
+        }
+        if (toReplace != null) {
+            // replace all "/" or "\" to system separator
+            builder = new StringBuilder(builder.toString().replace(toReplace, separator));
+        }
+        int len = builder.length();
+        if (shrink && len > maxDisplayedDirLen) {
+
+            StringBuilder reverse = new StringBuilder(builder).reverse();
+            int st = builder.indexOf(separator);
+            if (st < 0) {
+                st = 0;
+            } else {
+                st++;
+            }
+            int end = 0;
+            while (reverse.charAt(end) == separator.charAt(0)) {
+                end++;
+            }
+            int firstSlash = nrDisplayedFrontDirs > 0 ? Integer.MAX_VALUE : -1;
+            for (int i = nrDisplayedFrontDirs; i > 0 && firstSlash > 0; i--) {
+                firstSlash = builder.indexOf(separator, st);
+                st = firstSlash + 1;
+            }
+            int lastSlash = nrDisplayedTrailingDirs > 0 ? Integer.MAX_VALUE : -1;
+            for (int i = nrDisplayedTrailingDirs; i > 0 && lastSlash > 0; i--) {
+                lastSlash = reverse.indexOf(separator, end);
+                end = lastSlash + 1;
+            }
+            if (lastSlash > 0 && firstSlash > 0) {
+                lastSlash = len - lastSlash;
+                if (firstSlash < lastSlash - 1) {
+                    builder.replace(firstSlash, lastSlash - 1, "..."); // NOI18N
+                }
+            }
+        }
+        return builder.toString(); // NOI18N
+    }
 }

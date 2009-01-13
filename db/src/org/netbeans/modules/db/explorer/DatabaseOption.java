@@ -57,11 +57,9 @@ import java.util.jar.JarFile;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -70,7 +68,6 @@ import org.openide.util.NbBundle;
 * directory owned by Database node.
 */
 public class DatabaseOption {
-
      /** The support for firing property changes */
     private PropertyChangeSupport propertySupport;
 
@@ -102,17 +99,6 @@ public class DatabaseOption {
 
     public PropertyChangeSupport getPropertySupport() {
         return propertySupport;
-    }
-
-    /** Returns vector of registered drivers */
-    public Vector getAvailableDrivers() {
-        if (drivers.size() == 0) {
-            //get serialized drivers
-            Map xxx = (Map) DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
-            drivers = createDrivers(xxx);
-        }
-        
-        return drivers;
     }
 
     public boolean getDebugMode() {
@@ -254,7 +240,7 @@ public class DatabaseOption {
     }
     
     private void deleteAdaptorsFolder() {    
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Database"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Database"); //NOI18N
         try {
             if (fo != null)
                 fo.delete();

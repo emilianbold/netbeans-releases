@@ -41,10 +41,12 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
 public class ForeignKeyListNode extends BaseNode {
     private static final String NAME = "Foreign Keys"; // NOI18N
@@ -58,14 +60,14 @@ public class ForeignKeyListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ForeignKeyListNode instance
      */
-    public static ForeignKeyListNode create(NodeDataLookup dataLookup) {
-        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup);
+    public static ForeignKeyListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private ForeignKeyListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ForeignKeyListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -84,5 +86,15 @@ public class ForeignKeyListNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ForeignKeyList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ForeignKeyListNode.class);
     }
 }

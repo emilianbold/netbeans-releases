@@ -188,6 +188,7 @@ public class JarClassLoader extends ProxyClassLoader {
         return val;
     }
 
+    private Boolean patchingBytecode;
     @Override
     protected Class doLoadClass(String pkgName, String name) {
         String path = name.replace('.', '/').concat(".class"); // NOI18N
@@ -197,10 +198,22 @@ public class JarClassLoader extends ProxyClassLoader {
             Source src = sources[i];
             byte[] data = src.getClassData(path);
             if (data == null) continue;
-            
-            // do the enhancing
-            byte[] d = PatchByteCode.patch (data, name);
-            data = d;
+
+            synchronized (sources) {
+                if (patchingBytecode == null) {
+                    patchingBytecode = findResource("META-INF/.bytecodePatched") != null; // NOI18N
+                    if (patchingBytecode) {
+                        LOGGER.log(Level.FINE, "Patching bytecode in {0}", this);
+                    }
+                }
+            }
+            if (patchingBytecode) {
+                try {
+                    data = PatchByteCode.patch(data);
+                } catch (Exception x) {
+                    LOGGER.log(Level.INFO, "Could not bytecode-patch " + name, x);
+                }
+            }
             
             // Note that we assume that if we are defining a class in this package,
             // we should also define the package! Thus recurse==false.
@@ -214,7 +227,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
             } else {
                 Manifest man = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
-                definePackage (pkgName, man, src.getURL());
+                try {
+                    definePackage(pkgName, man, src.getURL());
+                } catch (IllegalArgumentException x) {
+                    // #156478: possibly a race condition defining packages in parallel parents? Ignore.
+                    LOGGER.log(Level.FINE, null, x);
+                }
             }
 
             return defineClass (name, data, 0, data.length, src.getProtectionDomain());

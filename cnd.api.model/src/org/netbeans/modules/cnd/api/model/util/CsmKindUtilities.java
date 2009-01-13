@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
@@ -224,7 +225,15 @@ public class CsmKindUtilities {
             return true;
         } else {
             return false;
-        }        
+        }
+    }
+
+    public static boolean isOffsetableDeclaration(Object obj) {
+        if (obj instanceof CsmOffsetableDeclaration) {
+            return true;
+        } else {
+            return false;
+        }
     }
       
     public static boolean isNamedElement(CsmObject obj) {
@@ -513,7 +522,8 @@ public class CsmKindUtilities {
     
     /**
      * checks if passed object is method definition or method declaration
-     * after this check it is safe to cast only to CsmFunction (not CsmMethod)
+     * after this check it is safe to cast only to CsmFunction (not CsmMethod),
+     * but it is guaranteed that CsmBaseUtilities.getFunctionDeclaration((CsmFunction) obj) is CsmMethod
      * @see isMethodDeclaration
      */
     public static boolean isMethod(CsmObject obj) {

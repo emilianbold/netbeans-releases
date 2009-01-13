@@ -2042,7 +2042,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitReturn(ReturnTree arg0, EvaluationContext evaluationContext) {
         ExpressionTree exprTree = arg0.getExpression();
-        Mirror result = exprTree.accept(this, evaluationContext);
+        Mirror result;
+        if (exprTree == null) {
+            VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+            // vm.mirrorOfVoid(); [TODO]
+            result = null;
+        } else {
+            result = exprTree.accept(this, evaluationContext);
+        }
         return new Return(result);
     }
 
@@ -2072,11 +2079,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         if (currentPath == null) {
-            Mirror expression = arg0.getExpression().accept(this, evaluationContext);
+            Mirror expr = arg0.getExpression().accept(this, evaluationContext);
             String name = arg0.getIdentifier().toString();
             // try field:
-            if (expression instanceof ClassType) {
-                ClassType clazz = (ClassType) expression;
+            if (expr instanceof ClassType) {
+                ClassType clazz = (ClassType) expr;
                 if (name.equals("this")) {
                     ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                     while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
@@ -2102,25 +2109,25 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     evaluationContext.putField(arg0, f, null);
                     return clazz.getValue(f);
                 }
-            } else if (expression instanceof InterfaceType) {
+            } else if (expr instanceof InterfaceType) {
                 if (name.equals("class")) {
-                    return ((InterfaceType) expression).classObject();
+                    return ((InterfaceType) expr).classObject();
                 }
-            } else if (expression instanceof ObjectReference) {
-                if (expression instanceof ArrayReference && "length".equals(name)) {
-                    return expression.virtualMachine().mirrorOf(((ArrayReference) expression).length());
+            } else if (expr instanceof ObjectReference) {
+                if (expr instanceof ArrayReference && "length".equals(name)) {
+                    return expr.virtualMachine().mirrorOf(((ArrayReference) expr).length());
                 }
                 ReferenceType type = (ReferenceType) getSubExpressionType(arg0.getExpression());
                 if (type == null) {
-                    type = ((ObjectReference) expression).referenceType();
+                    type = ((ObjectReference) expr).referenceType();
                 }
                 Field f = type.fieldByName(name);
                 if (f != null) {
-                    evaluationContext.putField(arg0, f, (ObjectReference) expression);
-                    return ((ObjectReference) expression).getValue(f);
+                    evaluationContext.putField(arg0, f, (ObjectReference) expr);
+                    return ((ObjectReference) expr).getValue(f);
                 }
             }
-            if (expression == null) {
+            if (expr == null) {
                 Assert2.error(arg0, "fieldOnNull", name);
             }
             // try class
@@ -2139,9 +2146,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             case FIELD:
                 VariableElement ve = (VariableElement) elm;
                 String fieldName = ve.getSimpleName().toString();
-                Mirror expression = arg0.getExpression().accept(this, evaluationContext);
-                if (expression instanceof ClassType) {
-                    ClassType clazz = (ClassType) expression;
+                Mirror expr = arg0.getExpression().accept(this, evaluationContext);
+                if (expr instanceof ClassType) {
+                    ClassType clazz = (ClassType) expr;
                     if (fieldName.equals("this")) {
                         ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                         while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
@@ -2175,8 +2182,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return null;
                     }
                 }
-                if (expression instanceof InterfaceType) {
-                    InterfaceType intrfc = (InterfaceType) expression;
+                if (expr instanceof InterfaceType) {
+                    InterfaceType intrfc = (InterfaceType) expr;
                     if (fieldName.equals("class")) {
                         return intrfc.classObject();
                     }
@@ -2188,29 +2195,30 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return null;
                     }
                 }
-                if (expression instanceof ObjectReference) {
-                    if (expression instanceof ArrayReference && "length".equals(fieldName)) {
-                        return expression.virtualMachine().mirrorOf(((ArrayReference) expression).length());
+                if (expr instanceof ObjectReference) {
+                    if (expr instanceof ArrayReference && "length".equals(fieldName)) {
+                        return expr.virtualMachine().mirrorOf(((ArrayReference) expr).length());
                     }
                     ReferenceType type = (ReferenceType) getSubExpressionType(arg0.getExpression());
                     if (type == null) {
-                        type = ((ObjectReference) expression).referenceType();
+                        type = ((ObjectReference) expr).referenceType();
                     }
                     Field f = type.fieldByName(fieldName);
                     if (f != null) {
-                        evaluationContext.putField(arg0, f, (ObjectReference) expression);
-                        return ((ObjectReference) expression).getValue(f);
+                        evaluationContext.putField(arg0, f, (ObjectReference) expr);
+                        return ((ObjectReference) expr).getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
                     }
                 }
-                if (expression == null) {
+                if (expr == null) {
                     Assert2.error(arg0, "fieldOnNull", fieldName);
                 }
-                throw new IllegalArgumentException("Wrong expression value: "+expression);
+                throw new IllegalArgumentException("Wrong expression value: "+expr);
             case CLASS:
             case INTERFACE:
+            case ENUM:
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -2238,15 +2246,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         CaseTree defaultTree = null;
         Mirror result = null;
         boolean caseMatched = false;
+        outer:
         for (CaseTree caseTree : arg0.getCases()) {
             Tree caseExpr = caseTree.getExpression();
             if (caseExpr == null) {
-                defaultTree =  caseTree;
+                defaultTree = caseTree;
                 continue;
             }
             if (!caseMatched) {
                 Mirror value = caseExpr.accept(this, evaluationContext);
-                if (switchValue.equals(value)) {
+                if (isEqual(switchValue, value, evaluationContext)) {
                     caseMatched = true;
                 } // if
             } // if
@@ -2257,6 +2266,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         Mirror res = tree.accept(this, evaluationContext);
                         if (res != null) {
                             result = res;
+                            if (result instanceof CommandMirror) {
+                                break outer;
+                            }
                         }
                     } // for
                 } finally {
@@ -2264,16 +2276,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             } // if
         } // for
-        try {
-            evaluationContext.pushBlock();
-            for (StatementTree tree : defaultTree.getStatements()) {
-                Mirror res = tree.accept(this, evaluationContext);
-                if (res != null) {
-                    result = res;
-                }
-            } // for
-        } finally {
-            evaluationContext.popBlock();
+        if (!caseMatched && defaultTree != null) {
+            try {
+                evaluationContext.pushBlock();
+                for (StatementTree tree : defaultTree.getStatements()) {
+                    Mirror res = tree.accept(this, evaluationContext);
+                    if (res != null) {
+                        result = res;
+                    }
+                } // for
+            } finally {
+                evaluationContext.popBlock();
+            }
         }
         return result;
     }
@@ -3056,6 +3070,37 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
+    private boolean isEqual(Mirror left, Mirror right, EvaluationContext evaluationContext) {
+        if (left instanceof ObjectReference) {
+            return left.equals(right);
+        }
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return false;
+        if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
+            boolean op1 = ((BooleanValue) left).booleanValue();
+            boolean op2 = ((BooleanValue) right).booleanValue();
+            return op1 == op2;
+        }
+        boolean isLeftNumeric = left instanceof PrimitiveValue && !(left instanceof BooleanValue);
+        boolean isRightNumeric = right instanceof PrimitiveValue && !(right instanceof BooleanValue);
+        if (isLeftNumeric && isRightNumeric) {
+            if ((left instanceof DoubleValue) || (right instanceof DoubleValue)) {
+                double l = ((PrimitiveValue) left).doubleValue();
+                double r = ((PrimitiveValue) right).doubleValue();
+                return l == r;
+            }
+            if ((left instanceof FloatValue) || (right instanceof FloatValue)) {
+                float l = ((PrimitiveValue) left).floatValue();
+                float r = ((PrimitiveValue) right).floatValue();
+                return l == r;
+            }
+            long l = ((PrimitiveValue) left).longValue();
+            long r = ((PrimitiveValue) right).longValue();
+            return l == r;
+        }
+        return false; // [TODO]
+    }
+
     private String toString(Tree arg0, Mirror v, EvaluationContext evaluationContext) {
         if (v instanceof PrimitiveValue) {
             PrimitiveValue pv = (PrimitiveValue) v;
@@ -3194,7 +3239,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
         @Override
         public String toString() {
-            return "continue"; // NOI18N
+            return "return"; // NOI18N
         }
 
     }

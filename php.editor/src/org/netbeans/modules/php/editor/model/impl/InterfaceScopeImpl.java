@@ -38,10 +38,18 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 
 /**
  *
@@ -85,7 +93,21 @@ final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     }
 
     public List<? extends MethodScope> getAllInheritedMethods() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<MethodScope> allMethods = new ArrayList<MethodScope>();
+        allMethods.addAll(getAllMethods());
+        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
+        if (indexScopeImpl == null) {
+            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
+        }
+        PHPIndex index = indexScopeImpl.getIndex();
+        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        interfaceScopes.addAll(getInterfaces());
+        for (InterfaceScope iface : interfaceScopes) {
+            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            for (IndexedFunction indexedFunction : indexedFunctions) {
+                allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction, PhpKind.METHOD));
+            }
+        }
+        return allMethods;
     }
-
 }

@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -72,8 +71,8 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.RequestProcessor;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
@@ -228,13 +227,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public void fireFilesAdded(List<NativeFileItem> nativeFileIetms) {
         //System.out.println("fireFileAdded ");
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
-        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         // Remove non C/C++ items
         Iterator iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
             NativeFileItem nativeFileIetm = (NativeFileItem) iter.next();
             int tool = ((Item) nativeFileIetm).getDefaultTool();
-            if (tool == Tool.CustomTool && !hlist.isRegistered(((Item) nativeFileIetm).getPath())) {
+            if (tool == Tool.CustomTool 
+                // check of mime type is better to support headers without extensions
+                && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
@@ -255,16 +255,17 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public void fireFilesRemoved(List<NativeFileItem> nativeFileIetms) {
         //System.out.println("fireFilesRemoved ");
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
-        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         // Remove non C/C++ items
         Iterator iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
             NativeFileItem nativeFileIetm = (NativeFileItem) iter.next();
-            ItemConfiguration itemConfiguration = ((Item) nativeFileIetm).getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
+            ItemConfiguration itemConfiguration = ((Item) nativeFileIetm).getItemConfiguration(getMakeConfiguration());
             if (itemConfiguration == null) {
                 continue;
             }
-            if ((!itemConfiguration.isCompilerToolConfiguration() && !hlist.isRegistered(((Item) nativeFileIetm).getPath())) /*|| itemConfiguration.getExcluded().getValue()*/) {
+            if ((!itemConfiguration.isCompilerToolConfiguration() 
+                // check of mime type is better to support headers without extensions
+                && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType()))) {
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
@@ -526,6 +527,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
+            cFiles = true;
+            ccFiles = true;
         }
 
         if (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||

@@ -70,7 +70,6 @@ import org.netbeans.modules.uml.core.IQueryManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IAliasedType;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Abstraction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.CreationFactory;
@@ -103,11 +102,9 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Implementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Realization;
@@ -120,7 +117,6 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLPa
 import org.netbeans.modules.uml.core.reverseengineering.reframework.ClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IDependencyEvent;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.IPackageEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IPackageEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IParserData;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREClass;
@@ -139,7 +135,6 @@ import org.netbeans.modules.uml.core.scm.ISCMItemGroup;
 import org.netbeans.modules.uml.core.scm.ISCMMaskKind;
 import org.netbeans.modules.uml.core.scm.ISCMTool;
 import org.netbeans.modules.uml.core.scm.SCMObjectCreator;
-import org.netbeans.modules.uml.core.support.Debug;
 import org.netbeans.modules.uml.core.support.Debug;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.MsgCoreConstants;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
@@ -184,7 +179,6 @@ import org.openide.util.NbPreferences;
  */
 public class UMLParsingIntegrator
         implements IUMLParsingIntegrator, IUMLParserEventsSink, ITaskWorker
-        //, IProgressDialogListener
 {
     public UMLParsingIntegrator()
     {
@@ -294,10 +288,7 @@ public class UMLParsingIntegrator
             boolean displayProgress,
             boolean extractClasses)
     {
-        m_Cancelled = false;
-        boolean wasCancelled = false;
-        logEnabled = displayProgress;
-        
+        m_Cancelled = false;        
         try
         {
             boolean ableToWrite = true;
@@ -424,13 +415,10 @@ public class UMLParsingIntegrator
                                 
                                 if (m_Dispatcher != null)
                                 {
-                                    //m_Dispatcher.revokeUMLParserSink(m_Cookie);
                                     m_Dispatcher.revokeUMLParserSink(this);
                                 }
                                 
                                 m_Dispatcher = null;
-                                //m_Cookie = null;
-                                m_Integrator = null;
                             }
                             
                             catch (OutOfMemoryError oome)
@@ -733,7 +721,6 @@ public class UMLParsingIntegrator
             
             if (dataNode != null)
             {
-                //DEBUG_XML_NODE(dataNode, _T("C:\\OnClassFound_DEBUG.xml"), false );
                 proceed = true;
                 isAliased = checkAliasedType(dataNode);
                 
@@ -856,7 +843,7 @@ public class UMLParsingIntegrator
                         String name = XMLManip.getAttributeValue(searchNode, "name"); // NOI18N
                         if (name != null)
                         {
-                            if (name == value)
+                            if (name.equals(value))
                             {
                                 foundNode = searchNode;
                             }
@@ -864,13 +851,13 @@ public class UMLParsingIntegrator
                     }
                     else
                     {
-                        ; // We've got an ambiguous match. Bailing for now...
+                        // We've got an ambiguous match. Bailing for now...
                     }
                 }
             }
             else
             {
-                ; // This is not an element that is named. For now, we're bailing....
+                // This is not an element that is named. For now, we're bailing....
             }
         }
         catch (Exception e)
@@ -1059,10 +1046,6 @@ public class UMLParsingIntegrator
             ensureXMLAttrValues(childInDestinationNamespace, elementBeingInjected, "appliedStereotype"); // NOI18N
             ensureXMLAttrValues(childInDestinationNamespace, elementBeingInjected, "isTransient"); // NOI18N
             ensureOwnedMetaElementsAreMoved(childInDestinationNamespace, elementBeingInjected, "UML:Constraint", true); // NOI18N
-            //         if (m_ReplaceDocs == false)
-            //         {
-            //            ensureOwnedMetaElementsAreMoved(childInDestinationNamespace, elementBeingInjected, "UML:TaggedValue", false);
-            //         }
         }
         
     }
@@ -1115,44 +1098,6 @@ public class UMLParsingIntegrator
         return isContainer;
     }
     
-    //   public void verifyInMemoryStatus()
-    //   {
-    ////   /**
-    ////    *
-    ////    * Makes sure that the passed in element has not been 'orphaned' from its original
-    ////    * document. This can happen when a modify of the element causes this SCMIntegrator
-    ////    * to unload it's outer document. ( this can happen when moving a versioned element
-    ////    * from one package to another, where those packages themselves have been versioned ).
-    ////    * Essentially, the check is made to ensure that the element still has a parent
-    ////    * xml node. If not, it has been orphaned.
-    ////    *
-    ////    * @param element[in]      The element to check for validity
-    ////    * @param elementProj[in]  The Project the element is ultimately owned by.
-    ////    */
-    ////   protected void verifyInMemoryStatus( IElement element, IProject elementProj )
-    ////   {
-    ////      if( null == element )
-    ////      {
-    ////         throw new IllegalArgumentException();
-    ////      }
-    ////
-    ////      if( elementProj != null)
-    ////      {
-    ////         ITypeManager man = elementProj.getTypeManager();
-    ////
-    ////         if( man != null)
-    ////         {
-    ////            boolean modified = man.verifyInMemoryStatus( element);
-    ////         }
-    ////      }
-    ////   }
-    //
-    //      for (int i = 0; i < count; ++i)
-    //      {
-    //         m_ItemsToSink.get(i)
-    //      }
-    //   }
-    
     public void broadCastDiagramSync()
     {
         try
@@ -1167,14 +1112,10 @@ public class UMLParsingIntegrator
                     int count = m_ItemsToSink.size();
                     
                     // Create a broadcast to update the open diagrams
-//                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
-//                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
                     
                     for (int i = 0; i < count; ++i)
                     {
                         IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
-//                         // Add this model element to our broadcast
-//                        elementAction.add(element);
                         reinitializePresentationElement(element);
                         
                         for(IPresentationElement presentation : element.getPresentationElements())
@@ -1182,8 +1123,6 @@ public class UMLParsingIntegrator
                             proxyMan.refresh(presentation,true);
                         }
                     }
-
-//                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
                     m_ItemsToSink.clear();
 
                     for(IPresentationElement pe : m_PresElemsToSink) 
@@ -1226,7 +1165,6 @@ public class UMLParsingIntegrator
                 
                 removeTokenDescriptors(node, true);
             }
-            //         verifyInMemoryStatus();
             broadCastDiagramSync();
         }
         catch (Exception e)
@@ -1262,16 +1200,7 @@ public class UMLParsingIntegrator
             Node presNode = childInDestinationNamespace.selectSingleNode("./UML:Element.presentation"); // NOI18N
             if (presNode != null)
             {
-                //            String xmiID = UMLXMLManip.getAttributeValue(presNode, "xmi.id");
-                //
-                //            FactoryRetriever fr = FactoryRetriever.instance();
-                //            IVersionableElement inMemory = fr.retrieveObject(xmiID);
-                //            if (inMemory instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
-                //            {
-                //               ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)inMemory).setModelElement(null);
-                //            }
-                
-                presNode.detach();
+                 presNode.detach();
                 // This moves the presentation elements from the destination ( which is being wholly replaced )
                 // to the replacing element
                 ((Element) elementBeingInjected).add(presNode);
@@ -1721,7 +1650,7 @@ public class UMLParsingIntegrator
 	String attrName;
 
 	public BySpecificAttributeNodeComparator(String attrNamem) {
-	    this.attrName = attrName;
+	    this.attrName = attrNamem;
 	}
 
 	public boolean compare(Node n1, Node n2) {
@@ -1845,9 +1774,6 @@ public class UMLParsingIntegrator
                     // found).  So, PerformPreAttributeTypeResolution will basically override
                     // the m_Types setting that we just made.  So, also update the symbol
                     // table.
-                    //                ETPairT<Node,String> entry = m_SymbolTable.get(typeName);
-                    //                if (entry != null)
-                    //                    entry.setParamTwo(finalXMIID);
                     
                     // QUESTION: Why set all of the entries to the same ID.
                     ArrayList < ETPairT < Node, String > > entries = m_SymbolTable.get(typeName);
@@ -1859,7 +1785,6 @@ public class UMLParsingIntegrator
                             ETPairT<Node, String> entry = iter.next();
                             entry.setParamTwo(finalXMIID);
                         }
-                        //entry.setParamTwo(finalXMIID);
                     }
                     
                     resolved = true;
@@ -2707,9 +2632,6 @@ public class UMLParsingIntegrator
                     ETPairT<Node, String> curSymbol = symbolIter.next();
                     Node curNode = curSymbol.getParamOne();
                     
-                    //                    if (!supervisor.proceed(1))
-                    //                        onCancelled();
-                    
                     supervisor.log(ITaskSupervisor.VERBOSE,
                             INDENT + INDENT + "Analyzing " + curNode.getName());
                     
@@ -3163,10 +3085,7 @@ public class UMLParsingIntegrator
             
             ArrayList < ETPairT < Node, String > > result = m_SymbolTable.get(symName);
             if (result != null)
-            {
-                //            SymbolTable : : iterator lowerIter = m_SymbolTable.lower_bound(symName);
-                //            SymbolTable : : iterator upperIter = m_SymbolTable.upper_bound(symName);
-                
+            {   
                 for (Iterator < ETPairT < Node, String > > iter = result.iterator(); iter.hasNext();)
                 {
                     ETPairT < Node, String > curEntry = iter.next();
@@ -3177,7 +3096,6 @@ public class UMLParsingIntegrator
                     {
                         // Now lets see if the owning namespace is our owner
                         String ownerID = XMLManip.getAttributeValue(symNode, "owner");
-                        //Debug.assertFalse(ownerID.length() > 0);
                         
                         long numSyms = result.size();
                         
@@ -3218,14 +3136,6 @@ public class UMLParsingIntegrator
                                 spaceID = curID;
                             }
                         }
-                        //                  The C++ version incremented there iterator to check if
-                        //                  typeNameIsComplete == true.  Since I did not have to
-                        //                  increment the tokens to check if we where complete, I do not
-                        //                  have to back up the tokenizer.
-                        //                  if(tokens != null)
-                        //                  {
-                        //                     --iter;
-                        //                  }
                     }
                 }
             }
@@ -3358,10 +3268,6 @@ public class UMLParsingIntegrator
             
             if (value != null)
             {
-                //value.setXMIID(xmiID);
-                //value.setNumberOfTypes(1);
-                //value.setDataType(isDatatype);
-                
                 value.reset(xmiID, 1, isDatatype, needSearch, namedElement);
             }
             else
@@ -3485,13 +3391,11 @@ public class UMLParsingIntegrator
                                 // We have a direct match in terms of name. Now make sure we
                                 // don't have a Package name matching a type name
                                 
-                                //Node tDesc = dep.selectSingleNode( "./TokenDescriptors/TDescriptor[@type='Class Dependency']" );
                                 Node tDesc = dep.selectSingleNode("./TokenDescriptors[@type='Class Dependency']");
                                 if (tDesc == null)
                                 {
                                     tDesc = dep.selectSingleNode("./TokenDescriptors/TDescriptor[@type='Class Dependency']");
                                 }
-                                //Debug.assertNull(tDesc);
                                 
                                 if (tDesc != null)
                                 {
@@ -4610,13 +4514,12 @@ public class UMLParsingIntegrator
                 // We only want to remove attributes. It's possible to be in this
                 // routine with a Parameter node...
                 
-                if (nodeName == "UML:Attribute")
+                if (nodeName.equals("UML:Attribute"))
                 {
                     // Now remove the attribute, as we don't want to create an
                     // actual attribute now that it has been realized in an
                     // association
                     attr.detach();
-                    //         		XMLManip.removeNode( attr);
                 }
             }
         }
@@ -5459,12 +5362,7 @@ public class UMLParsingIntegrator
                         // Put the id of the symbol in this attribute entry;
                         id = symbols.get(0).getParamTwo();
                     }
-                    
                     type.setXMIID(id);
-                    
-                    //		    String id = m_SymbolTable.get(attrTypeName).getParamTwo();
-                    //		    if (id != null)
-                    //                      entry.setValue(id);
                 }
             }
         }
@@ -5609,8 +5507,6 @@ public class UMLParsingIntegrator
             if (!supervisor.start(size))
                 onCancelled();
             
-            //         adjustProgress(size);
-            
             String analyzeDependenciesMsg =
                     REIntegrationMessages.getString("IDS_ANALYZE_DEPENDENCIES");
             String analyzeAttributesMsg =
@@ -5630,12 +5526,8 @@ public class UMLParsingIntegrator
                     new TypedFactoryRetriever<IClassifier>();
             
             while (keyValues.hasNext() && (!m_Cancelled))
-            {
-                // ++index;
-                
+            {     
                 String key = keyValues.next();
-                String buffer = null;
-                String numFileBuffer = null;
                 
                 if (!supervisor.proceed(1))
                     onCancelled();
@@ -5682,16 +5574,6 @@ public class UMLParsingIntegrator
                                 continue;
                             }
                             
-                            //                     // Check Enumeration
-                            //                     if ("Enumeration".equals(XMLManip.retrieveSimpleName(clazz)))
-                            //                     {
-                            //                        analyzeEnumeration(clazz);
-                            //                        if (m_ProgDiag != null)
-                            //                           int pos = m_ProgDiag.increment();
-                            //
-                            //                        //continue;
-                            //                     }
-                            
                             // Regular class
                             IClassifier clazzObj =
                                     retreiver.createTypeAndFill(
@@ -5710,7 +5592,6 @@ public class UMLParsingIntegrator
                                 {
                                     analyzeEnumeration(
                                             clazz, clazzObj, classSpace);
-                                    //continue;
                                 }
                                 
                                 supervisor.log(ITaskSupervisor.VERBOSE,
@@ -5744,12 +5625,9 @@ public class UMLParsingIntegrator
                                 analyzeForInterfaces(
                                         clazz, clazzObj, classSpace);
                                 
-                                //AnalyzeForDerivations( clazz, clazzObj, classSpace ));
                                 handleReplacementIssues(clazzObj);
                                 scrubStereoTypes(clazz, clazzObj);
                             }
-                            
-                            // removeTokenDescriptors(clazz, true);
                         }
                         
                         catch (Exception e)
@@ -5870,8 +5748,6 @@ public class UMLParsingIntegrator
                 newEntry.add(new ETPairT<Node, String>(node, id));
                 m_SymbolTable.put(name, newEntry);
             }
-            
-            //  m_SymbolTable.put(name, new ETPairT < Node, String > (node, id));
         }
         
         catch (Exception e)
@@ -5923,11 +5799,6 @@ public class UMLParsingIntegrator
                     m_SymbolTable.remove(name);
                 }
             }
-            
-            //         if (tempPair != null && id != null && id.equals(tempPair.getParamTwo()))
-            //         {
-            //            m_SymbolTable.remove(name);
-            //         }
         }
         catch (Exception e)
         {
@@ -5959,8 +5830,6 @@ public class UMLParsingIntegrator
             // Analyze the attribute types before putting this node
             // on the rest of the tree to help keep the query size
             // smaller
-            //analyzeAttributeTypes(classNode);
-            //analyzeOperationTypes(classNode);
             if (m_ContextStack.size() > 0)
             {
                 Node packageValue = m_ContextStack.peek().getPackage();
@@ -6043,8 +5912,6 @@ public class UMLParsingIntegrator
     {
         try
         {
-            //Node element = XMLManip.ensureNodeExists(parent, "UML:Element.ownedElement", "UML:Element.ownedElement");
-            
             Node element = XMLManip.ensureNodeExists(parent, owningElementName, owningElementName);
             if (element != null)
             {
@@ -6146,7 +6013,6 @@ public class UMLParsingIntegrator
                     {
                         fullyQualified = token;
                     }
-                    //Packages::iterator iter = m_Packages.find( token );
                     Node nodeValue = m_Packages.get(fullyQualified);
                     if (nodeValue == null)
                     {
@@ -6221,7 +6087,6 @@ public class UMLParsingIntegrator
             List descriptors = null;
             if (all)
             {
-                // descriptors = node.selectNodes(".//TokenDescriptors");
                 descriptors = node.selectNodes(".//*[ name(.) = 'TokenDescriptors' or name(.) = 'UML:ResDeps']");
             }
             else
@@ -6287,7 +6152,6 @@ public class UMLParsingIntegrator
                         if (m_Dispatcher != null)
                         {
                             m_Dispatcher.registerForUMLParserEvents(this, " ");
-                            m_Integrator = this;
                         }
                         pVal = pParser;
                     }
@@ -6751,10 +6615,10 @@ public class UMLParsingIntegrator
             String msg = REIntegrationMessages.getString("IDS_READ_ONLY_MSG");
             String title = REIntegrationMessages.getString("IDS_READ_ONLY_TITLE");
             // QuestionDialog isn't yet implemented.
-            IQuestionDialog pDialog = null; // new QuestionDialog();
+            IQuestionDialog pDialog = null; 
             if (pDialog != null)
             {
-                int result = pDialog.displaySimpleQuestionDialog(SimpleQuestionDialogKind.SQDK_OK, ErrorDialogIconKind.EDIK_ICONINFORMATION, msg, SimpleQuestionDialogResultKind.SQDRK_RESULT_OK, null, title).getResult();
+                pDialog.displaySimpleQuestionDialog(SimpleQuestionDialogKind.SQDK_OK, ErrorDialogIconKind.EDIK_ICONINFORMATION, msg, SimpleQuestionDialogResultKind.SQDRK_RESULT_OK, null, title).getResult();
             }
         }
         catch (Exception e)
@@ -7035,7 +6899,7 @@ public class UMLParsingIntegrator
                 if (pCurNode != null)
                 {
                     String curNodeName = pCurNode.getName();
-                    if (curNodeName == wantedNodeName)
+                    if (curNodeName.equals(wantedNodeName))
                     {
                         pVal = pCurNode;
                         break;
@@ -8086,9 +7950,6 @@ public class UMLParsingIntegrator
             ArrayList < ETPairT < Node, String > > result = m_SymbolTable.get(shortName);
             if (result != null)
             {
-                //            SymbolTable : : iterator lowerIter = m_SymbolTable.lower_bound(symName);
-                //            SymbolTable : : iterator upperIter = m_SymbolTable.upper_bound(symName);
-                
                 for (Iterator < ETPairT < Node, String > > iter = result.iterator(); iter.hasNext();)
                 {
                     ETPairT < Node, String > curEntry = iter.next();
@@ -8459,8 +8320,6 @@ public class UMLParsingIntegrator
                             
                             if (m_SymbolTable.get(token) == null)
                             {
-                                IClass clazzObj = null;
-                                
                                 INamespace pPackage = new TypedFactoryRetriever < INamespace > ().createTypeAndFill(node);
                                 
                                 if (pPackage != null)
@@ -8599,17 +8458,13 @@ public class UMLParsingIntegrator
          */
         public void setXMIID(String id)
         {
-            //         if((mXMIID.length() > 0) && (mXMIID.equals(string) == false))
-            //         {
-            //            ETSystem.out.println("I already have an XMIID");
-            //         }
             mXMIID = id;
             
             if (mElement != null)
             {
                 String curID = mElement.getXMIID();
                 
-                if (curID.length() != 0 && curID != id)
+                if (curID.length() != 0 && !curID.equals(id))
                 {
                     mElement = null;
                 }
@@ -8728,7 +8583,6 @@ public class UMLParsingIntegrator
     
     private final static String INDENT = "  ";
     private final static String INDENT_DASH = "---|";
-    private boolean logEnabled = false;
     private ITaskSupervisor supervisor;
     private ETList < Node > m_ItemsToSink = new ETArrayList < Node > ();
     private List<IPresentationElement> m_PresElemsToSink = new ArrayList<IPresentationElement> ();
@@ -8738,8 +8592,6 @@ public class UMLParsingIntegrator
     private IStrings m_Files = null;
     private boolean m_Cancelled = false;
     private IUMLParserEventDispatcher m_Dispatcher = null;
-    private IUMLParsingIntegrator m_Integrator = null;
-    //private IUMLParserEventsSink m_Cookie;
     private boolean m_ReplaceDocs;
     private String mUnknownType = "";
     
@@ -8753,7 +8605,6 @@ public class UMLParsingIntegrator
     private ILanguageParserSettings m_LanguageParserSettings = null;
     private ETPairT < Node, String > Symbol;
     private HashMap < String, Node > m_Packages = new HashMap < String, Node > ();
-    //private HashMap<String, ETPairT<Node, String>> m_SymbolTable = new HashMap<String, ETPairT<Node, String>>();
     private HashMap < String, ArrayList < ETPairT < Node, String > > > m_SymbolTable = new HashMap < String, ArrayList < ETPairT < Node, String > > > ();
     private Stack < ParsingContext > m_ContextStack = new Stack < ParsingContext > ();
     private HashMap < String, UnresolvedType > m_Types = new HashMap < String, UnresolvedType > ();

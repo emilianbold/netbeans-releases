@@ -47,12 +47,11 @@ import java.util.Set;
  * @author mkleint
  */
 public interface GoalsProvider {
-    
+
     /**
      * list of goals that are known.
      * 
      * @return
      */
     Set<String> getAvailableGoals();
-    
 }

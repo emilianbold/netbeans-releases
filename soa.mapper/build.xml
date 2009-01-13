@@ -17,6 +17,6 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-<project name="org.netbeans.modules.soa.mapper" default="netbeans" basedir=".">
+<project name="soa.mapper" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

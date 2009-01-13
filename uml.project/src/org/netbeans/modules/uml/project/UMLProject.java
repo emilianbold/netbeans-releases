@@ -567,18 +567,7 @@ public class UMLProject implements Project, AntProjectListener
         }
         
         protected void projectOpened()
-        {
-            // Cause the helper to initialize the project if it has not already
-            // done so.
-//            RequestProcessor.getDefault().post(new Runnable()
-//            {
-//                public void run()
-//                {
-//                    IProject project = mHelper.getProject();
-//                    initializeProjectSettings(project);
-//                }
-//            });
-            
+        {            
             IProject project = verifyProjectIsInitialized();
             
             // Check up on build scripts.

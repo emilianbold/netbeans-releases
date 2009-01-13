@@ -50,10 +50,7 @@ import java.beans.PropertyEditor;
  * editor.
  *
  * <p>Typically, the IDE will provide at least one implementation. Implementations
- * are made available using the service provider interface. Within the module or
- * library JAR, the file
- * {@code META-INF/services/com.sun.rave.propertyeditors.resolver.PropertyEditorResolver}
- * contains the name of the Java class that implements {@link PropertyEditorResolver}.
+ * are made available using {@link org.openide.util.lookup.ServiceProvider}.
  * Each implementation discovered during the service provider lookup will be asked,
  * in turn, to provide an editor. The first editor returned is used. If an 
  * implementation is provided via a module, it may be given a numbered

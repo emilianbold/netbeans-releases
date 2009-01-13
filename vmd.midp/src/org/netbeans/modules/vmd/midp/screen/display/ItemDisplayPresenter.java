@@ -68,7 +68,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     
     private JPanel panel;
-    private JLabel label;
+    private WrappedLabel label;
     private JComponent contentComponent;
     
     public ItemDisplayPresenter() {
@@ -81,7 +81,16 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
         
-        label = new JLabel();
+        // Fix for #79636 - Screen designer tab traversal
+        ScreenSupport.addKeyboardSupport(this);
+        
+        label = new WrappedLabel(){
+
+            @Override
+            protected int getLabelWidth() {
+                return (int)panel.getSize().getWidth();
+            }
+        };
         Font bold = label.getFont().deriveFont(Font.BOLD);
         label.setFont(bold);
         
@@ -144,6 +153,13 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
             text = text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ItemCD.PROP_LABEL));
         }
         label.setText(text);
+
+        int width = Integer.parseInt( getComponent().readProperty(
+                ItemCD.PROP_PREFERRED_WIDTH).getPrimitiveValue().toString());
+        label.setPreferedWidth(width);
+
+        label.repaint();
+        label.revalidate();
     }
     
     public Shape getSelectionShape() {

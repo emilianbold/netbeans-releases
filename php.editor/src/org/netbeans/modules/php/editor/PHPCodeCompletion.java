@@ -82,8 +82,10 @@ import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -117,6 +119,7 @@ import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToAST
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+    private static final String GLOBAL_VAR_MARKER = "!GLOBAL";
 
 
     final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
@@ -1147,7 +1150,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableType(assignment);
 
                 getLocalVariables_indexVariable(variable, localVars, namePrefix,
                         localFileURL, varType);
@@ -1164,6 +1167,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         private Map<String, IndexedConstant> localVars = null;
         private String namePrefix;
         private String localFileURL;
+        private boolean foundGlobals = false;
 
         VarFinder(Map<String, IndexedConstant> localVars, String namePrefix, String localFileURL) {
             this.localVars = localVars;
@@ -1179,8 +1183,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         @Override
         public void visit(GlobalStatement node) {
+            foundGlobals = true;
+
             for (Variable var : node.getVariables()) {
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, GLOBAL_VAR_MARKER);
             }
             super.visit(node);
         }
@@ -1291,6 +1297,28 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
         varScopeNode.accept(varFinder);
+
+        // resolve global variable types
+        if (varFinder.foundGlobals){
+            Map<String, IndexedConstant> globalVars = new HashMap<String, IndexedConstant>();
+            VarFinder topLevelVars = new VarFinder(globalVars, namePrefix, localFileURL);
+            context.getProgram().accept(topLevelVars);
+
+            for (IndexedConstant localVar : localVars.values()){
+                if (GLOBAL_VAR_MARKER.equals(localVar.getTypeName())){
+                    String typeName = null;
+
+                    IndexedConstant globalVar = globalVars.get(localVar.getName());
+
+                    if (globalVar != null){
+                        typeName = globalVar.getTypeName();
+                    }
+
+                    localVar.setTypeName(typeName);
+                }
+            }
+        }
+
         LocalVariables result = new LocalVariables();
         result.globalContext = globalContext;
         result.vars = localVars.values();
@@ -1299,6 +1327,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
+        if (element instanceof ModelElement) {
+            ModelElement mElem = (ModelElement) element;
+            ModelElement parentElem = mElem.getInScope();
+            String fName = mElem.getFileObject().getNameExt();
+            String tooltip = null;
+            if (parentElem instanceof TypeScope) {
+                 tooltip = mElem.getPhpKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            } else {
+                tooltip = mElem.getPhpKind()+":<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+            }
+            return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
+        }
+            
         return (element instanceof MagicIndexedFunction) ? null :
             DocRenderer.document(info, element);
     }

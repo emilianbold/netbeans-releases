@@ -633,6 +633,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                            return;
                                                        }
                                                        // Prevent operating on top of no longer active document
+                                                       boolean fireEvent = false;
+                                                       StyledDocument d = null;
                                                        synchronized (getLock()) {
                                                            if (documentStatus ==
                                                                DOCUMENT_NO) {
@@ -650,8 +652,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                getListener().run();
                                                                // assign before fireDocumentChange() as listener should be able to access getDocument()
                                                                documentStatus = DOCUMENT_READY;
-                                                               fireDocumentChange(getDoc(),
-                                                                                  false);
+                                                               fireEvent = true;
+                                                               d = getDoc();
                                                                // Confirm that whole loading succeeded
                                                                targetStatus = DOCUMENT_READY;
                                                                // Add undoable listener when all work in
@@ -659,29 +661,28 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
                                                                getDoc().addUndoableEditListener(getUndoRedo());
-                                                           }
-                                                           catch (DelegateIOExc t) {
+                                                           } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
                                                                prepareTask = null;
-                                                           }
-                                                           catch (RuntimeException t) {
-                                                               prepareDocumentRuntimeException = t;
-                                                               prepareTask = null;
-                                                               Exceptions.printStackTrace(t);
-                                                               throw t;
-                                                           }
-                                                           catch (Error t) {
+                                                           } catch (RuntimeException t) {
                                                                prepareDocumentRuntimeException = t;
                                                                prepareTask = null;
                                                                Exceptions.printStackTrace(t);
                                                                throw t;
-                                                           }
-                                                           finally {
+                                                           } catch (Error t) {
+                                                               prepareDocumentRuntimeException = t;
+                                                               prepareTask = null;
+                                                               Exceptions.printStackTrace(t);
+                                                               throw t;
+                                                           } finally {
                                                                synchronized (getLock()) {
                                                                    documentStatus = targetStatus;
                                                                    getLock().notifyAll();
                                                                }
                                                            }
+                                                       }
+                                                       if (fireEvent) {
+                                                           fireDocumentChange(d, false);
                                                        }
                                                    }
                                                });
@@ -703,10 +704,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         return prepareTask;
     }
-
+    
     final void addRemoveDocListener(Document d, boolean add) {
+        if (d == null) {
+            return;
+        }
         if (Boolean.TRUE.equals(d.getProperty("supportsModificationListener"))) { // NOI18N
-
             if (add) {
                 d.putProperty("modificationListener", getListener()); // NOI18N
             } else {
@@ -2076,53 +2079,62 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Clears all data from memory.
     */
     private void closeDocument() {
-        synchronized (getLock()) {
-            while (true) {
-                switch (documentStatus) {
-                case DOCUMENT_NO:
-                    return;
-
-                case DOCUMENT_LOADING:
-                case DOCUMENT_RELOADING:
-                // let it flow to default:
-                //                        openDocumentImpl();
-                //                        break; // try to close again
-                default:
-                    doCloseDocument();
-
-                    return;
+        boolean fireEvent = false;
+        StyledDocument d = null;
+        try {
+            synchronized (getLock()) {
+                while (true) {
+                    switch (documentStatus) {
+                    case DOCUMENT_NO:
+                        return;
+                        
+                    case DOCUMENT_LOADING:
+                    case DOCUMENT_RELOADING:
+                    // let it flow to default:
+                    //                        openDocumentImpl();
+                    //                        break; // try to close again
+                    default:
+                        d = getDoc();
+                        fireEvent = doCloseDocument();
+                        return;
+                    }
                 }
+            }
+        } finally {
+            if (fireEvent) {
+                fireDocumentChange(d, true);
             }
         }
     }
 
     /** Is called under getLock () to close the document.
      */
-    private void doCloseDocument() {
+    private boolean doCloseDocument() {
+        boolean fireEvent = false;
         prepareTask = null;
 
         // notifies the support that 
         cesEnv().removePropertyChangeListener(getListener());
         callNotifyUnmodified();
 
-        if (getDoc() != null) {
-            getDoc().removeUndoableEditListener(getUndoRedo());
-            addRemoveDocListener(getDoc(), false);
+        StyledDocument d = getDoc();
+        if (d != null) {
+            d.removeUndoableEditListener(getUndoRedo());
+            addRemoveDocListener(d, false);
         }
 
         if (positionManager != null) {
             positionManager.documentClosed();
-            
-            documentStatus = DOCUMENT_NO;
-            fireDocumentChange(getDoc(), true);
         }
         
         documentStatus = DOCUMENT_NO;
+        fireEvent = true;
         setDoc(null, false);
         kit = null;
 
         getUndoRedo().discardAllEdits();
         updateLineSet(true);
+        return fireEvent;
     }
 
     /** Handles the actual reload of document.

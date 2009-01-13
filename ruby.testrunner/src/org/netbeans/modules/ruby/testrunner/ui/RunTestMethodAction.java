@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -62,19 +63,21 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         this.debug = debug;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+    protected void doActionPerformed(ActionEvent e) {
+        // XXX
+        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
+        if (TestRunner.TestType.RSPEC == type) {
             runRspec();
             return;
         }
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
         if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(),testcase.getName(), debug);
+            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getName(), debug);
         }
     }
 
     @Override
     protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
+        getTestRunner(TestRunner.TestType.valueOf(testcase.getType())).runSingleTest(testFile, String.valueOf(location.line), debug);
     }
 }

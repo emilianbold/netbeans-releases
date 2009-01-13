@@ -127,10 +127,36 @@ made subject to such option by the copyright holder.
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
             <attr name="position" intvalue="700"/>
+            <!-- JSP Page --> 
+            <file name="JSP.jsp" url="templates/JSP.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="10"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJspIterator"/>
+            </file>
+            <!-- JSP Document --> 
+            <file name="JSPX.jspx" url="templates/JSPDoc.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+            <!-- JSP Segment --> 
+            <file name="JSPF.jspf" url="templates/JSPF.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
+                <attr name="position" intvalue="0"/>
+            </file>
+            <!-- JSP XML segemnt --> 
+            <file name="JSPFX.jspf" url="templates/JSPDocX.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
+                <attr name="position" intvalue="0"/>
+            </file>
+            <!-- JSF Managed Bean --> 
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="50"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -138,7 +164,6 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>          
             </file>
         </folder>
-        <!--  Previously removed due to issue #91200. Now re-enabled. -->
         <folder name="Persistence">
             <file name="JsfFromDB" url="templates/dummy.template">
                 <attr name="position" intvalue="250"/>

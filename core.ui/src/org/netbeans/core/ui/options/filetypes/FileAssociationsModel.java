@@ -38,17 +38,14 @@
  */
 package org.netbeans.core.ui.options.filetypes;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileChangeAdapter;
@@ -56,12 +53,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.openide.util.Exceptions;
 
 /** Model holds mapping between extension and MIME type.
  *
@@ -70,9 +65,6 @@ import org.w3c.dom.Element;
 final class FileAssociationsModel {
 
     private static final String MIME_RESOLVERS_PATH = "Services/MIMEResolver";  //NOI18N
-    private static final String USER_DEFINED = "user-defined-mime-resolver";  //NOI18N
-    /** Position of user-defined mime resolver. Need to very low to override all other resolvers. */
-    private static final int USER_DEFINED_POSITION = 10;
     private static final Logger LOGGER = Logger.getLogger(FileAssociationsModel.class.getName());
     /** Maps both system and user-defined extensions to MIME type. */
     private HashMap<String, String> extensionToMimeAll = new HashMap<String, String>();
@@ -99,11 +91,10 @@ final class FileAssociationsModel {
             initialized = false;
         }
     };
-    private FileObject userDefinedResolverFO;
 
     /** Creates new model. */
     FileAssociationsModel() {
-        FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource(MIME_RESOLVERS_PATH);
+        FileObject resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
         if (resolvers != null) {
             resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
         }
@@ -153,8 +144,7 @@ final class FileAssociationsModel {
 
     /** Reads MIME types registered in Loaders folder and fills mimeTypes set. */
     private void readMimeTypesFromLoaders() {
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject[] children = defaultFS.findResource("Loaders").getChildren();  //NOI18N
+        FileObject[] children = FileUtil.getConfigFile("Loaders").getChildren();  //NOI18N
         for (int i = 0; i < children.length; i++) {
             FileObject child = children[i];
             String mime1 = child.getNameExt();
@@ -220,13 +210,18 @@ final class FileAssociationsModel {
     
         /** Returns localized display name of loader for given MIME type or null if not defined. */
     private static String getLoaderDisplayName(String mimeType) {
-        FileSystem root = Repository.getDefault().getDefaultFileSystem();
-        FileObject factoriesFO = root.findResource("Loaders/" + mimeType + "/Factories");  //NOI18N
+        FileSystem filesystem = null;
+        try {
+            filesystem = FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        FileObject factoriesFO = FileUtil.getConfigFile("Loaders/" + mimeType + "/Factories");  //NOI18N
         if(factoriesFO != null) {
             FileObject[] children = factoriesFO.getChildren();
             for (FileObject child : children) {
                 String childName = child.getNameExt();
-                String displayName = root.getStatus().annotateName(childName, Collections.singleton(child));
+                String displayName = filesystem.getStatus().annotateName(childName, Collections.singleton(child));
                 if(!childName.equals(displayName)) {
                     return displayName;
                 }
@@ -246,56 +241,18 @@ final class FileAssociationsModel {
     /** Stores current state of model. It deletes user-defined mime resolver
      * and writes a new one. */
     void store() {
-        if (userDefinedResolverFO != null) {
-            try {
-                // delete previous resolver because we need to refresh MIMEResolvers
-                userDefinedResolverFO.delete();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Cannot delete resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-                return;
+        Map<String, Set<String>> mimeToExtensions = new HashMap<String, Set<String>>();
+        for (Map.Entry<String, String> entry : extensionToMimeUser.entrySet()) {
+            String extension = entry.getKey();
+            String mimeType = entry.getValue();
+            Set<String> extensions = mimeToExtensions.get(mimeType);
+            if (extensions == null) {
+                extensions = new HashSet<String>();
+                mimeToExtensions.put(mimeType, extensions);
             }
+            extensions.add(extension);
         }
-        if (extensionToMimeUser.isEmpty()) {
-            // nothing to write
-            return;
-        }
-
-        FileUtil.runAtomicAction(new Runnable() {
-
-            public void run() {
-                Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.0//EN", "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd");  //NOI18N
-                for (String extension : extensionToMimeUser.keySet()) {
-                    Element fileElement = document.createElement("file");  //NOI18N
-                    Element extElement = document.createElement("ext");  //NOI18N
-                    Element resolverElement = document.createElement("resolver");  //NOI18N
-                    extElement.setAttribute("name", extension);  //NOI18N
-                    resolverElement.setAttribute("mime", extensionToMimeUser.get(extension));  //NOI18N
-                    fileElement.appendChild(extElement);
-                    fileElement.appendChild(resolverElement);
-                    document.getDocumentElement().appendChild(fileElement);
-                }
-
-                OutputStream os = null;
-                try {
-                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-                    userDefinedResolverFO = defaultFS.findResource(MIME_RESOLVERS_PATH).createData(USER_DEFINED + ".xml");  //NOI18N
-                    userDefinedResolverFO.setAttribute(USER_DEFINED, Boolean.TRUE);
-                    userDefinedResolverFO.setAttribute("position", USER_DEFINED_POSITION);  //NOI18N
-                    os = userDefinedResolverFO.getOutputStream();
-                    XMLUtil.write(document, os, "UTF-8"); //NOI18N
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Cannot write resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-                } finally {
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException e) {
-                            LOGGER.log(Level.SEVERE, "Cannot close OutputStreamof file " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-                        }
-                    }
-                }
-            }
-        });
+        MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
     }
 
     private void init() {
@@ -304,36 +261,13 @@ final class FileAssociationsModel {
         }
         LOGGER.fine("FileAssociationsModel.init");  //NOI18N
         initialized = true;
-        // scan resolvers and order them to be able to assign extension to mime type from resolver with the lowest position
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject[] resolvers = defaultFS.findResource(MIME_RESOLVERS_PATH).getChildren();
-        TreeMap<Integer, FileObject> orderedResolvers = new TreeMap<Integer, FileObject>(Collections.reverseOrder());
-        for (int i = 0; i < resolvers.length; i++) {
-            FileObject mimeResolverFO = resolvers[i];
-            Integer position = (Integer) mimeResolverFO.getAttribute("position");  //NOI18N
-            if (position == null) {
-                position = Integer.MAX_VALUE;
-            }
-            while (orderedResolvers.containsKey(position)) {
-                position--;
-            }
-            orderedResolvers.put(position, mimeResolverFO);
-        }
-        Iterator<FileObject> resolversIter = orderedResolvers.values().iterator();
-        while (resolversIter.hasNext()) {
-            FileObject mimeResolverFO = resolversIter.next();
-            boolean userDefined = mimeResolverFO.getAttribute(USER_DEFINED) != null;
-            if (userDefined) {
-                userDefinedResolverFO = mimeResolverFO;
-            }
-            assert mimeResolverFO.getPath().startsWith("Services/MIMEResolver");  //NOI18N
-            List<String[]> extAndMimePairs = MIMEResolverImpl.getExtensionsAndMIMETypes(mimeResolverFO);
-            Iterator<String[]> iter = extAndMimePairs.iterator();
-            while (iter.hasNext()) {
-                String[] pair = iter.next();
-                String extension = pair[0];
-                String mimeType = pair[1];
-                if (extension != null) {
+        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
+            boolean userDefined = MIMEResolverImpl.isUserDefined(mimeResolverFO);
+            Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
+            for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
+                String mimeType = entry.getKey();
+                Set<String> extensions = entry.getValue();
+                for (String extension : extensions) {
                     extensionToMimeAll.put(extension, mimeType);
                     if (userDefined) {
                         extensionToMimeUser.put(extension, mimeType);

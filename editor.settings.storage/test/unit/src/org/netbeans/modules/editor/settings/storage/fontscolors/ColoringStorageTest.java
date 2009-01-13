@@ -55,7 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -170,7 +170,7 @@ public class ColoringStorageTest extends NbTestCase {
         MimePath mimePath = MimePath.parse("text/x-type-A");
         ess.delete(mimePath, "MyProfileXyz", true);
         
-        FileObject profileHome = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-type-A/FontsColors/MyProfileXyz/Defaults");
+        FileObject profileHome = FileUtil.getConfigFile("Editors/text/x-type-A/FontsColors/MyProfileXyz/Defaults");
         assertNotNull("Can't find profileHome", profileHome);
         
         FileObject [] files = profileHome.getChildren();
@@ -195,7 +195,7 @@ public class ColoringStorageTest extends NbTestCase {
         EditorSettingsStorage<String, AttributeSet> ess = EditorSettingsStorage.<String, AttributeSet>get(ColoringStorage.ID);
         ess.save(mimePath, "MyProfileXyz", false, newColorings);
         
-        FileObject settingFile = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-type-A/FontsColors/MyProfileXyz/org-netbeans-modules-editor-settings-CustomFontsColors-tokenColorings.xml");
+        FileObject settingFile = FileUtil.getConfigFile("Editors/text/x-type-A/FontsColors/MyProfileXyz/org-netbeans-modules-editor-settings-CustomFontsColors-tokenColorings.xml");
         assertNotNull("Can't find custom settingFile", settingFile);
         assertEquals("Wrong mime type", ColoringStorage.MIME_TYPE, settingFile.getMIMEType());
         

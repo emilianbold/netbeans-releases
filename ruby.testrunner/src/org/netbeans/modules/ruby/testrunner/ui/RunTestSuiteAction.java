@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -60,20 +61,23 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
         this.debug = debug;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+    protected void doActionPerformed(ActionEvent e) {
+        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
+        if (TestRunner.TestType.RSPEC == type) {
             runRspec();
             return;
         }
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
         if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runTest(location.getFileObject(), debug);
+            getTestRunner(type).runTest(location.getFileObject(), debug);
         }
 
     }
 
+    @Override
     protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runTest(testFile, debug);
+        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
+        getTestRunner(type).runTest(testFile, debug);
 
     }
 }

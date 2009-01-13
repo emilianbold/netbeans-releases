@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -128,8 +130,29 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
                 }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                // XXX #155906 Cleanup of the finished process.
+                cleanupProcess(p);
             }
         }
     } // ProcessWatcher
 
+    private static void cleanupProcess(Process p) {
+        closeStream(p.getOutputStream());
+        closeStream(p.getInputStream());
+        closeStream(p.getErrorStream());
+        p.destroy();
+    }
+
+    private static void closeStream(Closeable stream) {
+        try {
+            stream.close();
+        } catch (IOException ioe) {
+            log(ioe);
+        }
+    }
+
+    private static void log(Exception e) {
+        Logger.getLogger(NbDefaultUnixBrowserImpl.class.getName()).log(Level.INFO, null, e);
+    }
 }

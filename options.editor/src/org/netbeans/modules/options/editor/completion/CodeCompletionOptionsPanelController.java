@@ -124,7 +124,6 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
                 prefs.remove(SimpleValueNames.SHOW_DEPRECATED_MEMBERS);
                 prefs.remove(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION);
                 prefs.remove(SimpleValueNames.COMPLETION_CASE_SENSITIVE);
-                prefs.remove("guessMethodArguments"); //NOI18N
             }
 
             pf.destroy();
