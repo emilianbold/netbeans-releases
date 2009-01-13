@@ -1998,7 +1998,8 @@ final class Central implements ControllerHandler {
         for( ModeImpl m : getModes() ) {
             if( m.getKind() == Constants.MODE_KIND_EDITOR 
                     && !"editor".equals(m.getName()) //NOI18N
-                    && !m.getOpenedTopComponentsIDs().isEmpty() )
+                    && !m.getOpenedTopComponentsIDs().isEmpty()
+                    && !m.isPermanent() )
                 return m;
         }
         return null;
