@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.repository.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.embedder.MavenEmbedder;
@@ -50,6 +51,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -112,6 +114,12 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 ic.add(prj);
             }
         });
+
+        Action[] toolbarActions = new Action[] {
+            CommonArtifactActions.createScmCheckoutAction(lookup)
+        };
+        ic.add(toolbarActions);
+
         MultiViewDescription artDesc = new BasicArtifactMD(lookup);
         MultiViewDescription prjDesc = new BasicProjectMD(lookup);
 //        MultiViewDescription depDesc = new BasicDependencyMD(lookup);

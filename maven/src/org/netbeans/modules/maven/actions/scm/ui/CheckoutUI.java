@@ -47,8 +47,8 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Scm;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
@@ -66,23 +66,23 @@ public class CheckoutUI extends javax.swing.JPanel {
 
     private final JButton checkoutButton;
     private Scm scm;
-    private Artifact artifact;
+    private MavenProject project;
 
     /** Creates new form CheckoutUI */
-    public CheckoutUI(Artifact artifact, Scm scm) {
-        this.scm = scm;
-        this.artifact = artifact;
+    public CheckoutUI(MavenProject proj) {
+        this.project = proj;
+        this.scm = proj.getScm();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<b>");//NOI18N
 
-        buffer.append(artifact.getArtifactId());
+        buffer.append(proj.getArtifactId());
         buffer.append("</b>");//NOI18N
 
         buffer.append(":");//NOI18N
 
         buffer.append("<b>");//NOI18N
 
-        buffer.append(artifact.getVersion().toString());
+        buffer.append(proj.getVersion());
         buffer.append("</b>");//NOI18N
 
         initComponents();
@@ -92,7 +92,7 @@ public class CheckoutUI extends javax.swing.JPanel {
         //checkoutButton.setEnabled(false);//TODO validate 
 
         load();
-        txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + artifact.getArtifactId());
+        txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + project.getArtifactId());
         validateFolder();
     }
 
@@ -351,7 +351,7 @@ private void txtFolderKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         List<String> goals = new ArrayList<String>();
         goals.add(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_SCM_CHECKOUT));//NOI18N
         brc.setGoals(goals);
-        brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", artifact.getArtifactId() + " : " + artifact.getVersion().toString()));
+        brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", project.getArtifactId() + " : " + project.getVersion()));
         brc.setExecutionName(brc.getTaskDisplayName());
         Properties properties = new Properties();
         String path = txtFolder.getText();

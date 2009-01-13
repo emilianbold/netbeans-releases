@@ -48,10 +48,12 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.actions.ViewBugTrackerAction;
 import org.netbeans.modules.maven.actions.ViewJavadocAction;
 import org.netbeans.modules.maven.actions.ViewProjectHomeAction;
+import org.netbeans.modules.maven.actions.scm.CheckoutAction;
 import org.netbeans.modules.maven.actions.scm.SCMActions;
 import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -119,6 +121,17 @@ public class CommonArtifactActions {
 
     public static Action createViewArtifactDetails(Artifact art, List<ArtifactRepository> remoteRepos) {
         return new ShowArtifactAction(art, remoteRepos);
+    }
+
+    /**
+     * create an action instance that performs scm checkout based on the MavenProject
+     * instance provided in the lookup parameter. If no MavenProject is provided
+     * up front it will listen on addition later. Without a MavenProject instance, it's disabled.
+     * @param lkp
+     * @return
+     */
+    public static Action createScmCheckoutAction(Lookup lkp) {
+        return new CheckoutAction(lkp);
     }
 
     private static class ShowArtifactAction extends AbstractAction {

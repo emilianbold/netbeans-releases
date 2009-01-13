@@ -40,12 +40,10 @@ package org.netbeans.modules.maven.actions.scm;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.List;
+import java.util.Iterator;
 import javax.swing.AbstractAction;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.actions.ActionsUtil;
 import org.netbeans.modules.maven.actions.scm.ui.CheckoutUI;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -59,6 +57,10 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -67,22 +69,38 @@ import org.openide.util.TaskListener;
  *
  * @author Anuradha G
  */
-public class CheckoutAction extends AbstractAction {
+public class CheckoutAction extends AbstractAction implements LookupListener {
 
-    private Artifact artifact;
-    private List<ArtifactRepository> repos;
+    private Lookup lookup;
+    private Lookup.Result<MavenProject> result;
 
-    public CheckoutAction(Artifact artifact, List<ArtifactRepository> repos) {
+    public CheckoutAction(Lookup lkp) {
+        this.lookup = lkp;
         putValue(NAME, NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
-        this.artifact = artifact;
-        this.repos = repos;
+        //TODO proper icon
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png", true)));
+        result = lookup.lookupResult(MavenProject.class);
+        setEnabled(getScm() != null);
+        result.addLookupListener(this);
+    }
 
+    private Scm getScm() {
+        Iterator<? extends MavenProject> prj = result.allInstances().iterator();
+        if (!prj.hasNext()) {
+            return null;
+        }
+        MavenProject project = prj.next();
+        return project.getScm();
     }
 
     public void actionPerformed(ActionEvent e) {
-        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
+        Iterator<? extends MavenProject> prj = result.allInstances().iterator();
+        if (!prj.hasNext()) {
+            return;
+        }
+        MavenProject project = prj.next();
 
-        CheckoutUI checkoutUI = new CheckoutUI(artifact, readMavenProject.getScm());
+        CheckoutUI checkoutUI = new CheckoutUI(project);
         DialogDescriptor dd = new DialogDescriptor(checkoutUI,  NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
         dd.setClosingOptions(new Object[]{
             checkoutUI.getCheckoutButton(),
@@ -119,11 +137,7 @@ public class CheckoutAction extends AbstractAction {
         }
     }
 
-  
-
-    @Override
-    public boolean isEnabled() {
-        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
-        return readMavenProject!=null && readMavenProject.getScm() != null;
+    public void resultChanged(LookupEvent ev) {
+        setEnabled(getScm() != null);
     }
 }
