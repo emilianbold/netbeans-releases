@@ -98,7 +98,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     public Iterator<Tfact> iterator() {
-        return allowNullsAndSkip ? new MySafeIterator<Tfact>() : new MyIterator();
+        return allowNullsAndSkip ? new MySafeIterator<Tfact>() : new MyIterator<Tfact>();
     }
 
     public Iterator<Tfact> iterator(CsmFilter filter) {
