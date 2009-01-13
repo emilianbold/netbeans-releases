@@ -95,15 +95,9 @@ public class MavenRepoProvider implements SearchProvider {
         List<String> fields = new ArrayList<String>();
         fields.add(QueryField.FIELD_GROUPID);
         fields.add(QueryField.FIELD_ARTIFACTID);
-        //TODO search based on all fields..
-
-//            fields.add(QueryField.FIELD_NAME);
-
-
-//            fields.add(QueryField.FIELD_DESCRIPTION);
-
-
-//            fields.add(QueryField.FIELD_CLASSES);
+        fields.add(QueryField.FIELD_NAME);
+        fields.add(QueryField.FIELD_DESCRIPTION);
+        fields.add(QueryField.FIELD_CLASSES);
 
         for (String one : splits) {
             for (String fld : fields) {
