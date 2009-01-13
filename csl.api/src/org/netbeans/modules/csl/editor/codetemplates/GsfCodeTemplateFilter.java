@@ -44,9 +44,9 @@ package org.netbeans.modules.csl.editor.codetemplates;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Future;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.util.Exceptions;
 
@@ -70,6 +71,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     private int startOffset;
     private int endOffset;
     private Set<String> templates;
+    private boolean cancelled;
     
     private GsfCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
@@ -77,13 +79,10 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         Source js = Source.create (component.getDocument());
         if (js != null) {
             try {
-// XXX: parsingapi
-//                if (SourceUtils.isScanInProgress()) {
-//                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
-//                    Toolkit.getDefaultToolkit().beep();
-//                } else {
-                    ParserManager.parse (Collections.<Source> singleton (js), this);
-//                }
+                Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
+                if (!f.isDone()) {
+                    f.cancel(true);
+                }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -102,15 +101,24 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         return true;
     }
     
-    public void cancel() {
+    public synchronized void cancel() {
+        cancelled = true;
     }
 
-    public synchronized void run (ResultIterator resultIterator) throws IOException, ParseException {
+    private synchronized boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void run (ResultIterator resultIterator) throws IOException, ParseException {
+        if (isCancelled()) {
+            return;
+        }
+
         ParserResult parserResult = (ParserResult) resultIterator.getParserResult (startOffset);
         Snapshot snapshot = parserResult.getSnapshot ();
         CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (true),  startOffset);
             
-        if (completer != null) {
+        if (completer != null && !isCancelled()) {
             templates = completer.getApplicableTemplates(parserResult, startOffset, endOffset);
         }
     }
