@@ -50,21 +50,22 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -388,6 +389,37 @@ public final class ProjectManager {
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
     public boolean isProject(final FileObject projectDirectory) throws IllegalArgumentException {
+        return isProject2(projectDirectory, false) != null;
+    }
+
+    /**
+     * Check whether a given directory is likely to contain a project without
+     * actually loading it. The returned {@link org.netbeans.api.project.ProjectManager.Result} object contains additional
+     * information about the found project.
+     * Should be faster and use less memory than {@link #findProject} when called
+     * on a large number of directories.
+     * <p>The result is not guaranteed to be accurate; there may be false positives
+     * (directories for which <code>isProject</code> is true but {@link #findProject}
+     * will return false), for example if there is trouble loading the project.
+     * False negatives are possible only if there are bugs in the project factory.</p>
+     * <p>Acquires read access.</p>
+     * <p class="nonnormative">
+     * You do <em>not</em> need to call this method if you just plan to call {@link #findProject}
+     * afterwards. It is intended for only those clients which would discard the
+     * result of {@link #findProject} other than to check for null, and which
+     * can also tolerate false positives.
+     * </p>
+     * @param projectDirectory a directory which may be some project's top directory
+     * @return Result object if the directory is likely to contain a project according to
+     *              some registered {@link ProjectFactory}, or null if not a project folder.
+     * @throws IllegalArgumentException if the supplied file object is null or not a folder
+     * @since org.netbeans.modules.projectapi 1.22
+     */
+    public Result isProject2(final FileObject projectDirectory) throws IllegalArgumentException {
+        return isProject2(projectDirectory, true);
+    }
+
+    private Result isProject2(final FileObject projectDirectory, final boolean preferResult) throws IllegalArgumentException {
         if (projectDirectory == null) {
             throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
         }
@@ -397,11 +429,11 @@ public final class ProjectManager {
             if (projectDirectory.isValid()) {
                 throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
             } else {
-                return false;
+                return null;
             }
         }
-        return mutex().readAccess(new Mutex.Action<Boolean>() {
-            public Boolean run() {
+        return mutex().readAccess(new Mutex.Action<Result>() {
+            public Result run() {
                 synchronized (dir2Proj) {
                     Union2<Reference<Project>,LoadStatus> o;
                     do {
@@ -416,26 +448,27 @@ public final class ProjectManager {
                     } while (LoadStatus.LOADING_PROJECT.is(o));
                     assert !LoadStatus.LOADING_PROJECT.is(o);
                     if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
-                        return false;
+                        return null;
                     } else if (o != null) {
                         // Reference<Project> or SOME_SUCH_PROJECT
-                        return true;
+                        // rather check for result than load project and lookup projectInformation for icon.
+                        return checkForProject(projectDirectory, preferResult);
                     }
                     // Not in cache.
                     dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
                 }
                 boolean resetLP = false;
                 try {
-                    boolean p = checkForProject(projectDirectory);
+                    Result p = checkForProject(projectDirectory, preferResult);
                     synchronized (dir2Proj) {
                         resetLP = true;
                         dir2Proj.notifyAll();
-                        if (p) {
+                        if (p != null) {
                             dir2Proj.put(projectDirectory, LoadStatus.SOME_SUCH_PROJECT.wrap());
-                            return true;
+                            return p;
                         } else {
                             dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
-                            return false;
+                            return null;
                         }
                     }
                 } finally {
@@ -448,19 +481,33 @@ public final class ProjectManager {
             }
         });
     }
-    
-    private boolean checkForProject(FileObject dir) {
+
+    /**
+     *
+     * @param dir
+     * @param preferResult, if false will not actually call the factory methods with populated Results, but
+     *                      create dummy ones and use the Result as boolean flag only.
+     * @return
+     */
+    private Result checkForProject(FileObject dir, boolean preferResult) {
         assert dir != null;
         assert dir.isFolder() : dir;
         assert mutex().isReadAccess();
-        Iterator it = factories.allInstances().iterator();
+        Iterator<? extends ProjectFactory> it = factories.allInstances().iterator();
         while (it.hasNext()) {
-            ProjectFactory factory = (ProjectFactory)it.next();
-            if (factory.isProject(dir)) {
-                return true;
+            ProjectFactory factory = it.next();
+            if (factory instanceof ProjectFactory2 && preferResult) {
+                Result res = ((ProjectFactory2)factory).isProject2(dir);
+                if (res != null) {
+                    return res;
+                }
+            } else {
+                if (factory.isProject(dir)) {
+                    return new Result((Icon)null);
+                }
             }
         }
-        return false;
+        return null;
     }
     
     /**
@@ -671,5 +718,28 @@ public final class ProjectManager {
         }
         
     }
+
+    /**
+     *  A result (immutable) object returned from {@link org.netbeans.api.project.ProjectManager#isProject2} method.
+     *  To be created by {@link org.netbeans.spi.project.ProjectFactory2} project factories.
+     *  @since org.netbeans.modules.projectapi 1.22
+     */
+    public static final class Result {
+        private Icon icon;
+
+
+        public Result(Icon icon) {
+            this.icon = icon;
+        }
+
+        /**
+         * Get the project icon.
+         * @return project type icon for the result or null if the icon cannot be found this way.
+         */
+        public Icon getIcon() {
+            return icon;
+        }
+    }
+
     
 }

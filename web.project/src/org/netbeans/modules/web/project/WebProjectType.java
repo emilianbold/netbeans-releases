@@ -43,14 +43,16 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.util.Collection;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.project.spi.WebProjectImplementationFactory;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class WebProjectType implements AntBasedProjectType {
+public final class WebProjectType implements AntBasedProjectType2 {
 
     public static final String TYPE = "org.netbeans.modules.web.project";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
@@ -90,5 +92,9 @@ public final class WebProjectType implements AntBasedProjectType {
 
     private Collection<? extends WebProjectImplementationFactory> getProjectFactories() {
         return Lookup.getDefault().lookupAll(WebProjectImplementationFactory.class);
+    }
+
+    public Icon getIcon() {
+        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", true));
     }
 }
