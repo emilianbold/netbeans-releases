@@ -127,8 +127,12 @@ public class CommonArtifactActions {
      * create an action instance that performs scm checkout based on the MavenProject
      * instance provided in the lookup parameter. If no MavenProject is provided
      * up front it will listen on addition later. Without a MavenProject instance, it's disabled.
+     *
+     * NOT to be used with global Lookup instances.
      * @param lkp
      * @return
+     *
+     *
      */
     public static Action createScmCheckoutAction(Lookup lkp) {
         return new CheckoutAction(lkp);
