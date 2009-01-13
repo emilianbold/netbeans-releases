@@ -62,7 +62,7 @@ public class GrammarQueryManagerTest extends TestCase {
     public void testGetDefault() throws Exception {
         System.out.println("testGetDefault");
 //
-//        FileSystem def = Repository.getDefault().getDefaultFileSystem();
+//        FileSystem def = FileUtil.getConfigRoot().getFileSystem();
 //        org.netbeans.core.projects.SystemFileSystem system =
 //            (org.netbeans.core.projects.SystemFileSystem) def;
 //        FileSystem[] original = system.getLayers();

@@ -56,6 +56,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.Strings;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author sumitabhk
@@ -204,49 +205,45 @@ public class Language implements ILanguage
     protected Object getInstanceFromRegistry(String path)
     {
         Object retVal = null;
-        org.openide.filesystems.FileSystem system = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
         try
         {
-            if(system != null)
+            org.openide.filesystems.FileObject lookupDir = FileUtil.getConfigFile(path);
+            if(lookupDir != null)
             {
-                org.openide.filesystems.FileObject lookupDir = system.findResource(path);
-                if(lookupDir != null)
+                org.openide.filesystems.FileObject[] children = lookupDir.getChildren();
+                for(org.openide.filesystems.FileObject curObj : children)
                 {
-                    org.openide.filesystems.FileObject[] children = lookupDir.getChildren();
-                    for(org.openide.filesystems.FileObject curObj : children)
+                    try
                     {
-                        try
+                        org.openide.loaders.DataObject dObj = org.openide.loaders.DataObject.find(curObj);
+                        if(dObj != null)
                         {
-                            org.openide.loaders.DataObject dObj = org.openide.loaders.DataObject.find(curObj);
-                            if(dObj != null)
+                            org.openide.cookies.InstanceCookie cookie = (org.openide.cookies.InstanceCookie)dObj.getCookie(org.openide.cookies.InstanceCookie.class);
+
+                            if(cookie != null)
                             {
-                                org.openide.cookies.InstanceCookie cookie = (org.openide.cookies.InstanceCookie)dObj.getCookie(org.openide.cookies.InstanceCookie.class);
-                                
-                                if(cookie != null)
+                                Object obj = cookie.instanceCreate();
+                                if(obj instanceof IParserFactory)
                                 {
-                                    Object obj = cookie.instanceCreate();
-                                    if(obj instanceof IParserFactory)
-                                    {
-                                        IParserFactory factory = (IParserFactory)obj;
-                                        retVal = factory.createParser();
-                                    }
-                                    //                           retVal = obj;
-                                    //                           if(obj instanceof Action)
-                                    //                           {
-                                    //                              actions.add((Action)obj);
-                                    //                           }
-                                    //                           else if(obj instanceof javax.swing.JSeparator)
-                                    //                           {
-                                    //                              actions.add(null);
-                                    //                           }
+                                    IParserFactory factory = (IParserFactory)obj;
+                                    retVal = factory.createParser();
                                 }
+                                //                           retVal = obj;
+                                //                           if(obj instanceof Action)
+                                //                           {
+                                //                              actions.add((Action)obj);
+                                //                           }
+                                //                           else if(obj instanceof javax.swing.JSeparator)
+                                //                           {
+                                //                              actions.add(null);
+                                //                           }
                             }
                         }
-                        catch(ClassNotFoundException e)
-                        {
-                            // Unable to create the instance for some reason.  So the
-                            // do not worry about adding the instance to the list.
-                        }
+                    }
+                    catch(ClassNotFoundException e)
+                    {
+                        // Unable to create the instance for some reason.  So the
+                        // do not worry about adding the instance to the list.
                     }
                 }
             }

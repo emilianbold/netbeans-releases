@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -66,13 +66,13 @@ final class ShortcutIterator implements WizardDescriptor.Iterator<ShortcutWizard
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_menu_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_menu"),
-                DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")), // NOI18N
+                DataFolder.findFolder(FileUtil.getConfigFile("Menu")), // NOI18N
                 true, ShortcutWizard.PROP_FOLDER_MENU));
         _panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_toolbar"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_toolbar_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_toolbar"),
-                DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")), // NOI18N
+                DataFolder.findFolder(FileUtil.getConfigFile("Toolbars")), // NOI18N
                 false, ShortcutWizard.PROP_FOLDER_TOOL));
         _panels.add(new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel());
         _panels.add(new CustomizeScriptPanel.CustomizeScriptWizardPanel());

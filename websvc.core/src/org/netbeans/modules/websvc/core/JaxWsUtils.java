@@ -143,9 +143,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Utilities;
 
@@ -1295,8 +1293,7 @@ public class JaxWsUtils {
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
 
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 

@@ -58,7 +58,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.settings.Settings;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -73,7 +72,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -668,7 +666,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Global"));
             Object retVal = DialogDisplayer.getDefault().notify(dd);
             if (retVal == DialogDescriptor.OK_OPTION) {
-                FileObject dir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Projects/org-netbeans-modules-maven"); //NOI18N
+                FileObject dir = FileUtil.getConfigFile("Projects/org-netbeans-modules-maven"); //NOI18N
                 // just make sure the name of the file is always nbactions.xml
                 CustomizerProviderImpl.writeNbActionsModel(dir, mappings, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
             }

@@ -50,7 +50,7 @@ import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -95,7 +95,7 @@ abstract class ProxyProfilerAction implements ActionListener {
     private void performRegular(final ActionEvent e) {
         try {
             FoDFileSystem.getInstance().waitFinished();
-            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource(actionInstance);
+            FileObject delegate = FileUtil.getConfigFile(actionInstance);
             InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
             final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {

@@ -58,7 +58,6 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -77,7 +76,7 @@ public class TestUtil{
     
     public static void registerXMLKit() {
         String[] path = new String[] { "Editors", "text", "x-xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         try {
             for (int i=0; i<path.length; i++) {
                 FileObject f = target.getFileObject(path[i]);

@@ -232,7 +232,7 @@ public class CatalogWSDLTest extends NbTestCase {
     public void testLoadCatalogWSDL() throws Exception {
 // *** DataObject org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject
 // *** Document typeorg.netbeans.modules.editor.NbEditorDocument
-////        FileObject xmlFSRoot = Repository.getDefault().getDefaultFileSystem().getRoot();
+////        FileObject xmlFSRoot = FileUtil.getConfigRoot();
 ////        assertNotNull(xmlFSRoot);
 ////        System.out.println("#### Default FileSystem path " + xmlFSRoot.getName());
 ////        Enumeration folders = xmlFSRoot.getFolders(true);

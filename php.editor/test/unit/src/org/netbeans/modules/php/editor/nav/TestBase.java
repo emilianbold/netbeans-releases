@@ -46,7 +46,6 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -62,7 +61,6 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /**
@@ -95,7 +93,7 @@ public class TestBase extends GsfTestBase {
 
     @Override
     public void setUp() throws Exception {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(FOLDER + "/text/html");
+        FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
         
         if (f != null) {
             f.delete();

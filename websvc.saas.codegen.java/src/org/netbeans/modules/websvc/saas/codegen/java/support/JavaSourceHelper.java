@@ -93,8 +93,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -362,8 +361,7 @@ public class JavaSourceHelper {
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
 
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 

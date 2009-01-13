@@ -174,6 +174,11 @@ public class SymInfo extends Object {
         return (flags & ALIAS) != 0;
     }
 
+    public boolean isVariable(boolean mustBeBound) {
+        int mask = mustBeBound ? BOUND : 0;
+        return (flags & (BOUND | CALLED | DEF | IMPORTED | CLASS | FUNCTION | MEMBER | GENERATOR)) == mask;
+    }
+
     public static boolean isPrivateName(String name) {
         // Private variables: start with __ but doesn't end with __
         // Section 9.6 Private Variables - http://docs.python.org/tut/node11.html

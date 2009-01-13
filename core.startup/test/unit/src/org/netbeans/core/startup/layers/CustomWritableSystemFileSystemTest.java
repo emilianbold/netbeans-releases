@@ -48,6 +48,8 @@ public class CustomWritableSystemFileSystemTest extends NbTestCase {
         super(testName);
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", "memory");
         System.setProperty("org.netbeans.core.systemfilesystem.custom", PoohFileSystem.class.getName());

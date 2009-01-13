@@ -46,7 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
@@ -104,7 +104,7 @@ public class EjbContainerNode extends AbstractNode {
 
     private Node getIconDelegate() {
         try {
-            return DataFolder.find(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            return DataFolder.find(FileUtil.getConfigRoot()).getNodeDelegate();
         } catch (DataObjectNotFoundException donfe) {
             return null;
         }

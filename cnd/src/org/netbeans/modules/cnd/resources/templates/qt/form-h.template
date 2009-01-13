@@ -1,0 +1,22 @@
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#ifndef _%<%GUARD_NAME%>%
+#define	_%<%GUARD_NAME%>%
+
+#include %<%QUOTES%>%ui_%<%NAME%>%.%<%DEFAULT_HEADER_EXT%>%%<%QUOTES%>%
+
+class %<%CLASSNAME%>% : public %<%WIDGETCLASSNAME%>% {
+    Q_OBJECT
+public:
+	%<%CLASSNAME%>%();
+	virtual ~%<%CLASSNAME%>%();
+private:
+    Ui::%<%CLASSNAME%>% widget;
+};
+
+#endif	/* _%<%GUARD_NAME%>% */

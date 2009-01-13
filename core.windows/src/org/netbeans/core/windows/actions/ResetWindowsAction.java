@@ -58,8 +58,7 @@ import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -116,8 +115,7 @@ public class ResetWindowsAction extends AbstractAction {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 //find the local folder that must be deleted
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
+                FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
                 if( null != rootFolder ) {
                     try {
                         for( FileObject fo : rootFolder.getChildren() ) {

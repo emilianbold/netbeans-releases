@@ -44,7 +44,7 @@ package org.netbeans.modules.compapp.projects.jbi.api;
 import java.util.ArrayList;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileStateInvalidException;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -60,6 +60,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -142,7 +143,12 @@ public class JbiInstalledExtensionInfo {
      */
     public static JbiInstalledExtensionInfo getInstalledExtensionInfo() {
         if (singleton == null) {
-            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
+            FileSystem fileSystem = null;
+            try {
+                fileSystem = FileUtil.getConfigRoot().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return getInstalledExtensionInfo(fileSystem);
         }
 

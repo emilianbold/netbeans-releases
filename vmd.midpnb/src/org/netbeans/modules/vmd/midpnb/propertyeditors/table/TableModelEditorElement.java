@@ -338,6 +338,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
         table.setModel(tableModel);
         table.setEnabled(false);
+        table.setGridColor(new java.awt.Color(0, 0, 0));
         table.setTableHeader(null);
         jScrollPane1.setViewportView(table);
 
@@ -346,12 +347,12 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(addColButton, org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addColButton.text")); // NOI18N
@@ -387,7 +388,6 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(headerCheckBox, org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.headerCheckBox.text")); // NOI18N
-        headerCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         headerCheckBox.setEnabled(false);
         headerCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -431,10 +431,10 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                         .add(rowsLabel)
                         .add(18, 18, 18)
                         .add(rowsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
-                    .add(removeColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
-                    .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(removeColButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, Short.MAX_VALUE)
+                    .add(removeRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, Short.MAX_VALUE)
                     .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
-                    .add(addColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
+                    .add(addColButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

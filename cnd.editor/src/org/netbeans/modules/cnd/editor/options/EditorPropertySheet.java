@@ -70,8 +70,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -481,8 +480,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
     }
 
     private String loadPreviewExample(String example) {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject exampleFile = fs.findResource("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
+        FileObject exampleFile = FileUtil.getConfigFile("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
         if (exampleFile != null && exampleFile.getSize() > 0) {
             StringBuilder sb = new StringBuilder((int) exampleFile.getSize());
             try {

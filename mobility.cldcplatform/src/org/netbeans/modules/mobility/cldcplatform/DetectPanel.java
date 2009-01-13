@@ -566,7 +566,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 return false;
             } 
             final String name = J2MEPlatform.computeUniqueName(component.getPlatformName());
-            final FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+            final FileObject platformsFolder = FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
             if (platformsFolder.getFileObject(name, "xml") != null) { // NOI18N
                 showError(NbBundle.getMessage(DetectPanel.class, "ERR_DetectPanel_PlatformAlreadyExists")); //NOI18N
                 return false;

@@ -72,8 +72,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -431,8 +430,7 @@ public final class EditorBridge extends KeymapManager {
 
     private static Map<String, String> readCategories() {
         Map<String, String> result = new HashMap<String, String>();
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.findResource("OptionsDialog/Actions"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("OptionsDialog/Actions"); //NOI18N
         if (fo == null) {
             return result;
         }

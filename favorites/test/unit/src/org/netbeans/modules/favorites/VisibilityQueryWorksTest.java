@@ -134,9 +134,9 @@ public class VisibilityQueryWorksTest extends NbTestCase {
             
             err.log("target created");
 
-            this.favoritesFO = FileUtil.createFolder (Repository.getDefault().getDefaultFileSystem().getRoot(), "Favorites");
+            this.favoritesFO = FileUtil.createFolder (FileUtil.getConfigRoot(), "Favorites");
             assertNotNull("Created favorites folder", this.favoritesFO);
-            assertEquals("One child", 1, Repository.getDefault().getDefaultFileSystem().getRoot().getChildren().length);
+            assertEquals("One child", 1, FileUtil.getConfigRoot().getChildren().length);
             
             err.log("Favorites created");
 

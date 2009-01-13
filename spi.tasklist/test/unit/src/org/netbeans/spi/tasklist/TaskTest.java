@@ -47,8 +47,7 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -96,7 +95,7 @@ public class TaskTest extends NbTestCase {
     public void testGetters() {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject resource = FileUtil.getConfigRoot();
         
         Task t = Task.create(resource, TASK_GROUP_NAME, description, lineNo );
         
@@ -124,7 +123,7 @@ public class TaskTest extends NbTestCase {
     public void testNullValues() {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject resource = FileUtil.getConfigRoot();
         
         try {
             Task.create(null, TASK_GROUP_NAME, description, lineNo );
@@ -151,7 +150,7 @@ public class TaskTest extends NbTestCase {
     public void testNegativeLineNumberAllowed() {
         String description = "task description";
         int lineNo = -1;
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject resource = FileUtil.getConfigRoot();
         
         Task t = Task.create(resource, TASK_GROUP_NAME, description, lineNo );
         
@@ -164,7 +163,7 @@ public class TaskTest extends NbTestCase {
     public void testUnknownTaskGroup() {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject resource = FileUtil.getConfigRoot();
         
         Task t = Task.create(resource, "unknown task group name", description, lineNo );
         
@@ -177,7 +176,7 @@ public class TaskTest extends NbTestCase {
     public void testEquals() {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject resource = FileUtil.getConfigRoot();
         
         Task t1 = Task.create(resource, TASK_GROUP_NAME, description, lineNo );
         Task t2 = Task.create(resource, TASK_GROUP_NAME, description, lineNo );

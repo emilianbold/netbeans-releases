@@ -107,13 +107,13 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _COMMAND_ = "CMD ";
   private final static String _BPSET_ = "BP+ ";
   private final static String _BPCLEAR_ = "BP- ";
-  private final static String _DBG_ = "DBG ";
-  private final static String _SETARGS_ = "SETARGS ";
-  private final static String _READSRC_ = "READSRC ";
+  private final static String _DBG_ = "GLBCMD DBG ";
+  private final static String _SETARGS_ = "GLBCMD SETARGS ";
+  private final static String _READSRC_ = "GLBCMD READSRC ";
   private final static String _NEXT_ = "NEXT ";
   private final static String _STEP_ = "STEP ";
   private final static String _RUN_ = "RUN ";
-  private final static String _STOP_ = "STOP ";
+  private final static String _STOP_ = "GLBCMD STOP ";
   private final static String _STACK_ = "STACK ";
   private final static String _THREAD_ = "THREAD ";
   private final static String _GLOBALS_ = "GLOBALS ";
@@ -122,6 +122,7 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _SILENT_ = "silent";
   private final static String _LOCALS_ = "LOCALS ";
   private final static String _COMPOSITE_ = "COMPOSITE ";
+  private final static String _LASTFRAME_ = "<LastFrame>";
   private final static String _SPACE_ = " ";
   private final static String _EMPTY_ = "";
   public final static PythonVariableTreeDataNode ROOTNODE =
@@ -289,10 +290,19 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
+  private String convertDosFiles(String candidate) {
+    // safelly convert dos \ in / to avoid later control character unwanted
+    // conversion
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      return candidate.replace('\\', '/');
+    }
+    return candidate;
+  }
+
   private void launchDebug(String candidate) {
     try {
       // send DBG fname
-      _pyClient.sendCommand(_DBG_ + candidate);
+      _pyClient.sendCommand(_DBG_ + convertDosFiles(candidate));
       _debugging = true;
     } catch (PythonDebugException ex) {
       _msgBar.setError("launchDebug failed : " + ex.getMessage());
@@ -479,8 +489,6 @@ public class PythonDebugContainer implements PythonContainer {
     /** remote local tmp source / remote source name location table */
     private Hashtable<String, String> _remoteHashSource = new Hashtable<String, String>();
     private int _currentLine = -1;
-    /** 0 => end of program */
-    private int _callLevel = 0;
 
     /* debug over FTP connection if not null */
     private String _ftpSource = null;
@@ -490,7 +498,6 @@ public class PythonDebugContainer implements PythonContainer {
     }
 
     private void dealWithCall(PythonDebugEvent e) {
-      _callLevel++;
       if (_plug == null) {
         _setoutPane.writeMessage(e.toString());
       }
@@ -507,10 +514,10 @@ public class PythonDebugContainer implements PythonContainer {
     }
 
     private void dealWithReturn(PythonDebugEvent e) {
-      _callLevel--;
+      //_callLevel--;
 
       // end of python Program Reached
-      if (_callLevel == 0) {
+      if ( e.get_retVal().equals(_LASTFRAME_) ) {
         _DEBUGGING_TERMINATOR_ terminator = new _DEBUGGING_TERMINATOR_();
         terminator.start();
       }

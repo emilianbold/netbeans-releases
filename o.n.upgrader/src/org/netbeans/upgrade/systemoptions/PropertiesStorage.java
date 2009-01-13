@@ -45,24 +45,18 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * @author Radek Matous
  */
 class PropertiesStorage  {
     private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
-    private final static FileObject SFS_ROOT =
-            Repository.getDefault().getDefaultFileSystem().getRoot();
+    private final static FileObject SFS_ROOT = FileUtil.getConfigRoot();
     
     private final String folderPath;
     private String filePath;

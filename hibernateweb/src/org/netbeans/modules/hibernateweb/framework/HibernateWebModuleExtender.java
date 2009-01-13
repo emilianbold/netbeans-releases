@@ -62,7 +62,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -212,7 +212,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
         public void run() throws IOException {
             DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
-            FileObject templateFileObject = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Hibernate/Hibernate.cfg.xml");  //NOI18N
+            FileObject templateFileObject = FileUtil.getConfigFile("Templates/Hibernate/Hibernate.cfg.xml");  //NOI18N
 
             DataObject templateDataObject = DataObject.find(templateFileObject);
 

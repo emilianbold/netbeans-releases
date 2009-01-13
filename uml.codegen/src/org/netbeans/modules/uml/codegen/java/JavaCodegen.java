@@ -42,7 +42,6 @@
 package org.netbeans.modules.uml.codegen.java;
 
 
-import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
@@ -51,9 +50,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
@@ -214,9 +211,7 @@ public class JavaCodegen implements ICodeGenerator
 
                 // 2 possible places to get templates from - 
                 // registry and teplates subdir of the project 
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-
-                FileObject root = fs.getRoot().getFileObject(
+                FileObject root = FileUtil.getConfigFile(
                     DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER); // NOI18N
 
                 String projTemplPath = clinfo.getOwningProject().getBaseDirectory() 

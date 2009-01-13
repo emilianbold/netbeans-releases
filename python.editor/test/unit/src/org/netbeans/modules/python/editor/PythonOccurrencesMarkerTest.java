@@ -105,6 +105,12 @@ public class PythonOccurrencesMarkerTest extends PythonTestBase {
         checkOccurrences("testfiles/datetime.py", caretLine, symmetric);
     }
 
+    public void testMarks11() throws Exception {
+        boolean symmetric = true;
+        String caretLine = "# @type ^xy str";
+        checkOccurrences("testfiles/typevars.py", caretLine, symmetric);
+    }
+
     public void testStress() throws Exception {
         List<FileObject> files = findJythonFiles();
 

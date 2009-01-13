@@ -61,7 +61,6 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
@@ -338,13 +337,13 @@ public class PluginImporter {
 
     private static void refreshModuleList () {
         // XXX: the modules list should be refresh automatically when config/Modules/ changes
-        final FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource (MODULES);
+        final FileObject modulesRoot = FileUtil.getConfigFile(MODULES);
         LOG.log (Level.FINE,
                 "It\'s a hack: Call refresh on " + modulesRoot +
                 " file object.");
         if (modulesRoot != null) {
             try {
-                Repository.getDefault ().getDefaultFileSystem ().runAtomicAction (new FileSystem.AtomicAction () {
+                FileUtil.runAtomicAction (new FileSystem.AtomicAction () {
 
                     public void run () throws IOException {
                         modulesRoot.getParent ().refresh ();

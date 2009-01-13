@@ -54,7 +54,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
@@ -65,8 +64,7 @@ import org.openide.util.Exceptions;
 class PropertiesStorage implements NbPreferences.FileStorage {
     private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
     private static final String SYSTEMROOT_PREFIX = "/SystemPreferences";//NOI18N
-    private final static FileObject SFS_ROOT =
-            Repository.getDefault().getDefaultFileSystem().getRoot();
+    private final static FileObject SFS_ROOT = FileUtil.getConfigRoot();
     
     private final String folderPath;
     private String filePath;

@@ -45,9 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -84,12 +82,12 @@ public class NbInstallerTest5 extends SetupHid {
             assertEquals("base contents", slurp("foo/file1.txt"));
             assertEquals("base contents", slurp("foo/file3.txt"));
             assertEquals("base contents", slurp("foo/file4.txt"));
-            assertEquals("someval", Repository.getDefault().getDefaultFileSystem().findResource("foo/file5.txt").getAttribute("myattr"));
+            assertEquals("someval", FileUtil.getConfigFile("foo/file5.txt").getAttribute("myattr"));
             mgr.enable(m2);
             assertEquals("base contents", slurp("foo/file1.txt"));
             assertEquals(null, slurp("foo/file4.txt"));
             assertEquals("customized contents", slurp("foo/file3.txt"));
-            assertEquals("someotherval", Repository.getDefault().getDefaultFileSystem().findResource("foo/file5.txt").getAttribute("myattr"));
+            assertEquals("someotherval", FileUtil.getConfigFile("foo/file5.txt").getAttribute("myattr"));
             mgr.disable(m2);
             assertEquals("base contents", slurp("foo/file3.txt"));
             mgr.disable(m1);

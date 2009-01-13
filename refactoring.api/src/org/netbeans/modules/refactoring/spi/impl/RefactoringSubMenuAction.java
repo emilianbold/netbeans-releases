@@ -42,20 +42,16 @@ package org.netbeans.modules.refactoring.spi.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.openide.awt.Actions;
 import org.openide.awt.JMenuPlus;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
@@ -125,8 +121,7 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
         private void createMenuItems() {
             actions = new ArrayList();
             removeAll();
-            FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = dfs.findResource("Menu/Refactoring"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Menu/Refactoring"); // NOI18N
             DataFolder df = DataFolder.findFolder(fo);
                 
             if (df != null) {

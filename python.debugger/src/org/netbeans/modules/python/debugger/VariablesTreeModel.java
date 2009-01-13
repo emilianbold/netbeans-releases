@@ -408,13 +408,11 @@ public class VariablesTreeModel
       PythonVariableTreeDataNode var = (PythonVariableTreeDataNode) node;
       return var.get_varType();
     }
-    /*
     if ((node instanceof PythonVariableTreeDataNode) &&
             (columnID.equals(Constants.LOCALS_TO_STRING_COLUMN_ID ))) {
       PythonVariableTreeDataNode var = (PythonVariableTreeDataNode) node;
       return var.get_toStringContent();
     }
-     */
     throw new UnknownTypeException(node);
   }
 }

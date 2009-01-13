@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 public abstract class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
@@ -120,7 +119,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
         FileObject projectDir = parentDir.createFolder(projectName);
 
         String bluePrintSourcePath = "org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName() + "/" + project.getName();
-        FileObject bluePrint = Repository.getDefault().getDefaultFileSystem().findResource(bluePrintSourcePath);      
+        FileObject bluePrint = FileUtil.getConfigFile(bluePrintSourcePath);
         Util.unZipFile(bluePrint.getInputStream(), projectDir);
         String type = (String) project.getAttribute("type");  // NOI18N
         Util.setProjectName(projectDir, type, projectName, project.getName());
@@ -132,7 +131,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     public Set<FileObject> instantiate() throws IOException {
         final Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
 
-        Repository.getDefault().getDefaultFileSystem().runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
 
             public void run() throws IOException {
                 File parentFile = FileUtil.normalizeFile((File) wiz.getProperty(PARENT_DIR));
@@ -141,7 +140,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
                 String prefix = (String) wiz.getProperty(NAME);
                 
                 FileObject bluePrintRoot = 
-                    Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName()); // NOI18N
+                    FileUtil.getConfigFile("org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName()); // NOI18N
                 
                 FileObject[] project = bluePrintRoot.getChildren();
                 FileObject jbi = null;

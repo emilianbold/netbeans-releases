@@ -58,7 +58,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /**
@@ -168,7 +167,7 @@ public class J2MEPlatformTest extends NbTestCase {
             }
         }
         
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         if (root.getFileObject("Services") == null) {
             try
             {

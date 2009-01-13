@@ -57,6 +57,7 @@ import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
@@ -168,6 +169,7 @@ public class EditorTestLookup extends ProxyLookup {
         setLookup(fs.toArray(new FileSystem [fs.size()]), instances, cl, exclude);
     }
     
+    @SuppressWarnings("deprecation")
     private static void setLookup(FileSystem [] fs, Object[] instances, ClassLoader cl, Class [] exclude)
     throws IOException, PropertyVetoException {
 
@@ -177,7 +179,7 @@ public class EditorTestLookup extends ProxyLookup {
         if (repository == null) {
             repository = new Repository(new SystemFileSystem(fs));
         } else {
-            ((SystemFileSystem) repository.getDefaultFileSystem()).setOrig(fs);
+            ((SystemFileSystem) FileUtil.getConfigRoot().getFileSystem()).setOrig(fs);
         }
         
         Object[] lookupContent = new Object[instances.length + 1];
@@ -185,9 +187,9 @@ public class EditorTestLookup extends ProxyLookup {
         System.arraycopy(instances, 0, lookupContent, 1, instances.length);
 
         // Create the Services folder (if needed}
-        FileObject services = repository.getDefaultFileSystem().findResource("Services");
+        FileObject services = FileUtil.getConfigFile("Services");
         if (services == null) {
-            services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
+            services = FileUtil.getConfigRoot().createFolder("Services");
         }
         
         EditorTestLookup.setLookup(lookupContent, cl, services, exclude);

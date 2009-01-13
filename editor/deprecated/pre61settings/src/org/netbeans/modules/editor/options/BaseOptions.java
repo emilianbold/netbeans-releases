@@ -84,7 +84,6 @@ import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
 
@@ -1464,11 +1463,11 @@ public class BaseOptions extends OptionSupport {
                     return settingsFolder;
                 }
 
-                FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER + "/" + name); //NOI18N
+                FileObject f = FileUtil.getConfigFile(AllOptionsFolder.FOLDER + "/" + name); //NOI18N
 
                 // MIME folder doesn't exist, let's create it
                 if (f == null) {
-                    FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER);
+                    FileObject fo = FileUtil.getConfigFile(AllOptionsFolder.FOLDER);
                     if (fo != null) {
                         try {
                             FileUtil.createFolder(fo, name);
@@ -1476,7 +1475,7 @@ public class BaseOptions extends OptionSupport {
                             LOG.log(Level.WARNING, null, ioe);
                         }
 
-                        f = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER + "/" + name); // NOI18N
+                        f = FileUtil.getConfigFile(AllOptionsFolder.FOLDER + "/" + name); // NOI18N
                     }
                 }
 
