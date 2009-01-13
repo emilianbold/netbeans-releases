@@ -165,40 +165,43 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     }
 
     public Result isProject2(FileObject projectDirectory) {
+        if (FileUtil.toFile(projectDirectory) == null) {
+            return null;
+        }
+        FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
+        //#54488: Added check for virtual
+        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
+            return null;
+        }
+        File projectDiskFile = FileUtil.toFile(projectFile);
+        //#63834: if projectFile exists and projectDiskFile does not, do nothing:
+        if (projectDiskFile == null) {
+            return null;
+        }
         try {
-            if (FileUtil.toFile(projectDirectory) == null) {
-                return null;
-            }
-            FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
-            //#54488: Added check for virtual
-            if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
-                return null;
-            }
-            File projectDiskFile = FileUtil.toFile(projectFile);
-            //#63834: if projectFile exists and projectDiskFile does not, do nothing:
-            if (projectDiskFile == null) {
-                return null;
-            }
             Document projectXml = loadProjectXml(projectDiskFile);
-            if (projectXml == null) {
-                return null;
-            }
-            Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
-            if (typeEl == null) {
-                return null;
-            }
-            String type = Util.findText(typeEl);
-            if (type == null) {
-                return null;
-            }
-            AntBasedProjectType provider = findAntBasedProjectType(type);
-            if (provider != null && provider instanceof AntBasedProjectType2) {
-                return new ProjectManager.Result(((AntBasedProjectType2)provider).getIcon());
+            if (projectXml != null) {
+                Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
+                if (typeEl != null) {
+                    String type = Util.findText(typeEl);
+                    if (type != null) {
+                        AntBasedProjectType provider = findAntBasedProjectType(type);
+                        if (provider != null) {
+                            if (provider instanceof AntBasedProjectType2) {
+                                return new ProjectManager.Result(((AntBasedProjectType2)provider).getIcon());
+                            } else {
+                                //put special icon?
+                                return new ProjectManager.Result(null);
+                            }
+                        }
+                    }
+                }
             }
         } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
+            Logger.getLogger(AntBasedProjectFactorySingleton.class.getName()).log(Level.FINE, "Failed to load the project.xml file.", ex);
         }
-        return null;
+        // better have false positives than false negatives (according to the ProjectManager.isProject/isProject2 javadoc.
+        return new ProjectManager.Result(null);
     }
 
     

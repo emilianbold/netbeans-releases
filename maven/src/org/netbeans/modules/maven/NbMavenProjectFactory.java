@@ -49,6 +49,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -80,7 +81,7 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
 
     public ProjectManager.Result isProject2(FileObject projectDirectory) {
         if (isProject(projectDirectory)) {
-            return new ProjectManager.Result("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
+            return new ProjectManager.Result(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif", true))); //NOI18N
         }
         return null;
     }

@@ -394,7 +394,7 @@ public final class ProjectManager {
 
     /**
      * Check whether a given directory is likely to contain a project without
-     * actually loading it. The returned {@link projectManager.Result} object contains additional
+     * actually loading it. The returned {@link org.netbeans.api.project.ProjectManager.Result} object contains additional
      * information about the found project.
      * Should be faster and use less memory than {@link #findProject} when called
      * on a large number of directories.
@@ -503,7 +503,7 @@ public final class ProjectManager {
                 }
             } else {
                 if (factory.isProject(dir)) {
-                    return new Result((String)null);
+                    return new Result((Icon)null);
                 }
             }
         }
@@ -726,22 +726,17 @@ public final class ProjectManager {
      */
     public static final class Result {
         private Icon icon;
-        private String path;
 
-        public Result(String iconpath) {
-            path = iconpath;
-        }
 
         public Result(Icon icon) {
             this.icon = icon;
         }
 
+        /**
+         * Get the project icon.
+         * @return project type icon for the result or null if the icon cannot be found this way.
+         */
         public Icon getIcon() {
-            if (icon == null) {
-                if (path != null) {
-                    icon = ImageUtilities.image2Icon(ImageUtilities.loadImage(path, true));
-                }
-            }
             return icon;
         }
     }
