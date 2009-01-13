@@ -40,12 +40,25 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import java.awt.Dialog;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -62,87 +75,95 @@ public class GetterSetterGenerator implements CodeGenerator {
 
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-//            JTextComponent component = context.lookup(JTextComponent.class);
+            JTextComponent component = context.lookup(JTextComponent.class);
 //            CompilationController controller = context.lookup(CompilationController.class);
-//            TreePath path = context.lookup(TreePath.class);
+            CsmContext path = context.lookup(CsmContext.class);
 //            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
-//            if (component == null || controller == null || path == null)
-//                return ret;
+            if (component == null || path == null) {
+                return ret;
+            }
 //            try {
 //                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 //            } catch (IOException ioe) {
 //                return ret;
 //            }
 //            Elements elements = controller.getElements();
-//            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-//            if (typeElement == null || !typeElement.getKind().isClass())
-//                return ret;
-//            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
-//            for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-//                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
-//                if (l == null) {
-//                    l = new ArrayList<ExecutableElement>();
-//                    methods.put(method.getSimpleName().toString(), l);
-//                }
-//                l.add(method);
-//            }
-//            Map<Element, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
-//            Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
-//            Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
-//            for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
-//                if (ERROR.contentEquals(variableElement.getSimpleName()))
-//                    continue;
-//                ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, false);
-//                boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
-//                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);
-//                if (!hasGetter) {
-//                    List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
-//                    if (descriptions == null) {
-//                        descriptions = new ArrayList<ElementNode.Description>();
-//                        gDescriptions.put(variableElement.getEnclosingElement(), descriptions);
-//                    }
-//                    descriptions.add(description);
-//                }
-//                if (!hasSetter) {
-//                    List<ElementNode.Description> descriptions = sDescriptions.get(variableElement.getEnclosingElement());
-//                    if (descriptions == null) {
-//                        descriptions = new ArrayList<ElementNode.Description>();
-//                        sDescriptions.put(variableElement.getEnclosingElement(), descriptions);
-//                    }
-//                    descriptions.add(description);
-//                }
-//                if (!hasGetter && !hasSetter) {
-//                    List<ElementNode.Description> descriptions = gsDescriptions.get(variableElement.getEnclosingElement());
-//                    if (descriptions == null) {
-//                        descriptions = new ArrayList<ElementNode.Description>();
-//                        gsDescriptions.put(variableElement.getEnclosingElement(), descriptions);
-//                    }
-//                    descriptions.add(description);
-//                }
-//            }
-//            if (!gDescriptions.isEmpty()) {
-//                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-//                for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
-//                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-//                Collections.reverse(descriptions);
-//                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
-//            }
-//            if (!sDescriptions.isEmpty()) {
-//                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-//                for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
-//                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-//                Collections.reverse(descriptions);
-//                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
-//            }
-//            if (!gsDescriptions.isEmpty()) {
-//                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-//                for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
-//                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-//                Collections.reverse(descriptions);
-//                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), 0));
-//            }
+            CsmClass typeElement = path.getEnclosingClass();
+            if (typeElement == null) {
+                return ret;
+            }
+            CsmObject objectUnderOffset = path.getObjectUnderOffset();
+            Map<String, List<CsmMethod>> methods = new HashMap<String, List<CsmMethod>>();
+            Map<CsmClass, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
+            Map<CsmClass, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
+            Map<CsmClass, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
+            for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
+                if (CsmKindUtilities.isMethod(member)) {
+                    CsmMethod method = (CsmMethod)member;
+                    List<CsmMethod> l = methods.get(method.getName().toString());
+                    if (l == null) {
+                        l = new ArrayList<CsmMethod>();
+                        methods.put(method.getName().toString(), l);
+                    }
+                    l.add(method);
+                } else if (CsmKindUtilities.isField(member)) {
+                    CsmField variableElement = (CsmField)member;
+                    ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset));
+                    boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods);
+                    boolean hasSetter = GeneratorUtils.isConstant(variableElement) || GeneratorUtils.hasSetter(variableElement, methods);
+                    if (!hasGetter) {
+                        List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getContainingClass());
+                        if (descriptions == null) {
+                            descriptions = new ArrayList<ElementNode.Description>();
+                            gDescriptions.put(variableElement.getContainingClass(), descriptions);
+                        }
+                        descriptions.add(description);
+                    }
+                    if (!hasSetter) {
+                        List<ElementNode.Description> descriptions = sDescriptions.get(variableElement.getContainingClass());
+                        if (descriptions == null) {
+                            descriptions = new ArrayList<ElementNode.Description>();
+                            sDescriptions.put(variableElement.getContainingClass(), descriptions);
+                        }
+                        descriptions.add(description);
+                    }
+                    if (!hasGetter && !hasSetter) {
+                        List<ElementNode.Description> descriptions = gsDescriptions.get(variableElement.getContainingClass());
+                        if (descriptions == null) {
+                            descriptions = new ArrayList<ElementNode.Description>();
+                            gsDescriptions.put(variableElement.getContainingClass(), descriptions);
+                        }
+                        descriptions.add(description);
+                    }
+                }
+            }
+            if (!gDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : gDescriptions.entrySet()) {
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                }
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
+            }
+            if (!sDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : sDescriptions.entrySet()) {
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                }
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
+            }
+            if (!gsDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : gsDescriptions.entrySet()) {
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                }
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), 0));
+            }
             return ret;
         }
+
     }
     private JTextComponent component;
     private ElementNode.Description description;
@@ -175,10 +196,10 @@ public class GetterSetterGenerator implements CodeGenerator {
         } else {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
         }
-//        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
-//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-//        dialog.setVisible(true);
-//        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.setVisible(true);
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
 //            JavaSource js = JavaSource.forDocument(component.getDocument());
 //            if (js != null) {
 //                try {
@@ -202,6 +223,6 @@ public class GetterSetterGenerator implements CodeGenerator {
 //                    Exceptions.printStackTrace(ex);
 //                }
 //            }
-//        }
+        }
     }
 }

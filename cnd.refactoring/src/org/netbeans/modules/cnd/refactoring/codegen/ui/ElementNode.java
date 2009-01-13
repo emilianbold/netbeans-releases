@@ -48,7 +48,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -157,8 +160,14 @@ public class ElementNode extends AbstractNode {
         }
 
         public static Description create(CsmDeclaration element, List<Description> subs, boolean isSelectable, boolean isSelected) {
-            return null;
-//            String htmlHeader = null;
+            String htmlHeader = element.getName().toString();
+            if (CsmKindUtilities.isVariable(element)) {
+                CsmField field = (CsmField) element;
+                htmlHeader = field.getName().toString() + " : " + field.getType().getText(); //NOI18N
+            } else if (CsmKindUtilities.isFunction(element)) {
+                CsmMethod method = (CsmMethod) element;
+                htmlHeader = method.getSignature() + " : " + method.getReturnType().getText(); //NOI18N
+            }
 //            switch (element.getKind()) {
 //                case ANNOTATION_TYPE:
 //                case CLASS:
@@ -175,13 +184,13 @@ public class ElementNode extends AbstractNode {
 //                    htmlHeader = createHtmlHeader((ExecutableElement) element);
 //                    break;
 //            }
-//            return new Description(element.getSimpleName().toString(),
-//                    ElementHandle.create(element),
-//                    element.getModifiers(),
-//                    subs,
-//                    htmlHeader,
-//                    isSelectable,
-//                    isSelected);
+            return new Description(element.getName().toString(),
+                    element,
+                    Collections.<CsmVisibility>emptySet(),
+                    subs,
+                    htmlHeader,
+                    isSelectable,
+                    isSelected);
         }
 
         private Description(String name, CsmDeclaration elementHandle,

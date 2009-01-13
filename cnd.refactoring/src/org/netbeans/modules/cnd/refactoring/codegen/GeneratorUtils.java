@@ -40,8 +40,19 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -52,7 +63,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class GeneratorUtils {
-    
+
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(GeneratorUtils.class.getName());
     private static final String ERROR = "<error>"; //NOI18N
     public static final int GETTERS_ONLY = 1;
@@ -60,7 +71,15 @@ public class GeneratorUtils {
 
     private GeneratorUtils() {
     }
-    
+
+    public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
+        // for now returns only current class elements, but in fact needs full hierarchy
+        return typeElement.getMembers();
+    }
+
+    public static boolean isConstant(CsmVariable var) {
+        return var.getType().isConst();
+    }
 //    public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
 //        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
 //        TreeUtilities tu = copy.getTreeUtilities();
@@ -274,39 +293,65 @@ public class GeneratorUtils {
 //        }
 //    }
 //
-//    public static boolean hasGetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
-//        CharSequence name = field.getSimpleName();
-//        assert name.length() > 0;
-//        TypeMirror type = field.asType();
-//        StringBuilder sb = getCapitalizedName(name);
-//        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+    public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
+        CharSequence name = field.getName();
+        assert name.length() > 0;
+        CsmType type = field.getType();
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
 //        Types types = info.getTypes();
-//        List<ExecutableElement> candidates = methods.get(sb.toString());
-//        if (candidates != null) {
-//            for (ExecutableElement candidate : candidates) {
-//                if (candidate.getParameters().isEmpty() && types.isSameType(candidate.getReturnType(), type))
-//                    return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    public static boolean hasSetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
-//        CharSequence name = field.getSimpleName();
-//        assert name.length() > 0;
-//        TypeMirror type = field.asType();
-//        StringBuilder sb = getCapitalizedName(name);
-//        sb.insert(0, "set"); //NOI18N
+        List<CsmMethod> candidates = methods.get(sb.toString());
+        if (candidates != null) {
+            for (CsmMethod candidate : candidates) {
+                Collection<CsmParameter> parameters = candidate.getParameters();
+                if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static enum TypeKind {
+        VOID,
+        BOOLEAN,
+        UNKNOWN
+    };
+    
+    private static TypeKind getTypeKind(CsmType type) {
+        if (CsmKindUtilities.isBuiltIn(type)) {
+            String text = type.getClassifierText().toString();
+            if ("void".equals(text)) { // NOI18N
+                return TypeKind.VOID;
+            } else if ("bool".equals(text) || "boolean".equals(text)) { // NOI18N
+                return TypeKind.BOOLEAN;
+            }
+        }
+        return TypeKind.UNKNOWN;
+    }
+
+    private static boolean isSameType(CsmType type1, CsmType type2) {
+        return type1.equals(type2);
+    }
+
+    public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {
+        CharSequence name = field.getName();
+        assert name.length() > 0;
+        CsmType type = field.getType();
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, "set"); //NOI18N
 //        Types types = info.getTypes();
-//        List<ExecutableElement> candidates = methods.get(sb.toString());
-//        if (candidates != null) {
-//            for (ExecutableElement candidate : candidates) {
-//                if (candidate.getReturnType().getKind() == TypeKind.VOID && candidate.getParameters().size() == 1 && types.isSameType(candidate.getParameters().get(0).asType(), type))
-//                    return true;
-//            }
-//        }
-//        return false;
-//    }
+        List<CsmMethod> candidates = methods.get(sb.toString());
+        if (candidates != null) {
+            for (CsmMethod candidate : candidates) {
+                Collection<CsmParameter> parameters = candidate.getParameters();
+                if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 //
 //    public static int findClassMemberIndex(WorkingCopy wc, ClassTree clazz, int offset) {
 //        int index = 0;
@@ -470,11 +515,12 @@ public class GeneratorUtils {
 //        return ((PackageElement) fromTopLevel.getEnclosingElement()).getQualifiedName().toString().contentEquals(((PackageElement) whatTopLevel.getEnclosingElement()).getQualifiedName());
 //    }
 //
-    static DialogDescriptor createDialogDescriptor( JComponent content, String label ) {
+
+    static DialogDescriptor createDialogDescriptor(JComponent content, String label) {
         JButton[] buttons = new JButton[2];
-        buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button") );
-	buttons[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GeneratorUtils.class, "A11Y_Generate"));
-        buttons[1] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_cancel_button") );
+        buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button"));
+        buttons[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GeneratorUtils.class, "A11Y_Generate"));
+        buttons[1] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_cancel_button"));
         return new DialogDescriptor(content, label, true, buttons, buttons[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
     }
@@ -494,14 +540,27 @@ public class GeneratorUtils {
 //            return false;
 //    }
 //
-//    public static StringBuilder getCapitalizedName(CharSequence cs) {
-//        StringBuilder sb = new StringBuilder(cs);
-//        while(sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
-//            sb.deleteCharAt(0);
-//        if (sb.length() > 0)
-//            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-//        return sb;
-//    }
+
+    public static StringBuilder getCapitalizedName(CharSequence cs) {
+        StringBuilder sb = new StringBuilder(cs);
+        // remove usual C++ prefixes
+        if (sb.toString().startsWith("m_")) { // NOI18N
+            sb.delete(0, 1);
+        } else if (sb.length() > 1) {
+            if (sb.charAt(0) == 'p' && Character.isUpperCase(sb.charAt(1))) {
+                // this is like pointer "pValue"
+                sb.deleteCharAt(0);
+            }
+        }
+        while (sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
+        {
+            sb.deleteCharAt(0);
+        }
+        if (sb.length() > 0) {
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+        }
+        return sb;
+    }
 //
 //    private static class ClassMemberComparator {
 //

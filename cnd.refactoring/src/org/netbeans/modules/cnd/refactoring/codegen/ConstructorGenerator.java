@@ -40,10 +40,21 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import java.awt.Dialog;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmConstructor;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
+import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -57,28 +68,27 @@ public class ConstructorGenerator implements CodeGenerator {
 
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-//            JTextComponent component = context.lookup(JTextComponent.class);
+            JTextComponent component = context.lookup(JTextComponent.class);
 //            CompilationController controller = context.lookup(CompilationController.class);
-//            TreePath path = context.lookup(TreePath.class);
-//            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
-//            if (component == null || controller == null || path == null) {
-//                return ret;
-//            }
+            CsmContext path = context.lookup(CsmContext.class);
+            if (component == null || path == null) {
+                return ret;
+            }
 //            try {
 //                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 //            } catch (IOException ioe) {
 //                return ret;
 //            }
-//            TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
-//            if (typeElement == null || !typeElement.getKind().isClass() || NestingKind.ANONYMOUS.equals(typeElement.getNestingKind())) {
-//                return ret;
-//            }
-//            final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
-//            final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
-//            final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
-//            final List<ExecutableElement> inheritedConstructors = new ArrayList<ExecutableElement>();
+            CsmClassifier typeElement = path.getEnclosingClass();
+            if (typeElement == null) {
+                return ret;
+            }
+            final Set<CsmField> initializedFields = new LinkedHashSet<CsmField>();
+            final Set<CsmField> uninitializedFields = new LinkedHashSet<CsmField>();
+            final List<CsmConstructor> constructors = new ArrayList<CsmConstructor>();
+            final List<CsmConstructor> inheritedConstructors = new ArrayList<CsmConstructor>();
 //            TypeMirror superClassType = typeElement.getSuperclass();
-//            TypeElement superClass = null;
+            CsmClassifier superClass = null;
 //            if (superClassType.getKind() == TypeKind.DECLARED) {
 //                superClass = (TypeElement) ((DeclaredType) superClassType).asElement();
 //                for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
@@ -86,69 +96,69 @@ public class ConstructorGenerator implements CodeGenerator {
 //                }
 //            }
 //            GeneratorUtils.scanForFieldsAndConstructors(controller, path, initializedFields, uninitializedFields, constructors);
-//            ElementHandle<? extends Element> constructorHandle = null;
-//            ElementNode.Description constructorDescription = null;
-//            if (typeElement.getKind() != ElementKind.ENUM && inheritedConstructors.size() == 1) {
-//                constructorHandle = ElementHandle.create(inheritedConstructors.get(0));
-//            } else if (inheritedConstructors.size() > 1) {
-//                List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();
-//                for (ExecutableElement constructorElement : inheritedConstructors) {
-//                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null, true, false));
-//                }
-//                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions, false, false);
-//            }
-//            ElementNode.Description fieldsDescription = null;
-//            if (!uninitializedFields.isEmpty()) {
-//                List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
-//                for (VariableElement variableElement : uninitializedFields) {
-//                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
-//                }
-//                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
-//            }
-//            if (constructorHandle != null || constructorDescription != null || fieldsDescription != null) {
-//                ret.add(new ConstructorGenerator(component, constructorHandle, constructorDescription, fieldsDescription));
-//            }
+            CsmConstructor constructorHandle = null;
+            ElementNode.Description constructorDescription = null;
+            if (!CsmKindUtilities.isEnum(typeElement) && inheritedConstructors.size() == 1) {
+                constructorHandle = inheritedConstructors.get(0);
+            } else if (inheritedConstructors.size() > 1) {
+                List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();
+                for (CsmConstructor constructorElement : inheritedConstructors) {
+                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null, true, false));
+                }
+                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions, false, false);
+            }
+            ElementNode.Description fieldsDescription = null;
+            if (!uninitializedFields.isEmpty()) {
+                List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
+                for (CsmField variableElement : uninitializedFields) {
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
+                }
+                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
+            }
+            if (constructorHandle != null || constructorDescription != null || fieldsDescription != null) {
+                ret.add(new ConstructorGenerator(component, constructorHandle, constructorDescription, fieldsDescription));
+            }
             return ret;
         }
     }
     private JTextComponent component;
-//    private ElementHandle<? extends Element> constructorHandle;
-//    private ElementNode.Description constructorDescription;
-//    private ElementNode.Description fieldsDescription;
-//
-//    /** Creates a new instance of ConstructorGenerator */
-//    private ConstructorGenerator(JTextComponent component, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
-//        this.component = component;
-//        this.constructorHandle = constructorHandle;
-//        this.constructorDescription = constructorDescription;
-//        this.fieldsDescription = fieldsDescription;
-//    }
+    private CsmConstructor constructorHandle;
+    private ElementNode.Description constructorDescription;
+    private ElementNode.Description fieldsDescription;
+
+    /** Creates a new instance of ConstructorGenerator */
+    private ConstructorGenerator(JTextComponent component, CsmConstructor constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+        this.component = component;
+        this.constructorHandle = constructorHandle;
+        this.constructorDescription = constructorDescription;
+        this.fieldsDescription = fieldsDescription;
+    }
 
     public String getDisplayName() {
         return NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor"); //NOI18N
     }
 
     public void invoke() {
-//        final List<ElementHandle<? extends Element>> fieldHandles;
-//        final List<ElementHandle<? extends Element>> constrHandles;
-//        if (constructorDescription != null || fieldsDescription != null) {
-//            ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
-//            DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
-//            Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-//            dialog.setVisible(true);
-//            if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
-//                return;
-//            }
-//            if (constructorHandle == null) {
-//                constrHandles = panel.getInheritedConstructors();
-//            } else {
-//                constrHandles = null;
-//            }
-//            fieldHandles = panel.getVariablesToInitialize();
-//        } else {
-//            fieldHandles = null;
-//            constrHandles = null;
-//        }
+        final List<CsmField> fieldHandles;
+        final List<CsmConstructor> constrHandles;
+        if (constructorDescription != null || fieldsDescription != null) {
+            ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
+            DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+            dialog.setVisible(true);
+            if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
+                return;
+            }
+            if (constructorHandle == null) {
+                constrHandles = panel.getInheritedConstructors();
+            } else {
+                constrHandles = null;
+            }
+            fieldHandles = panel.getVariablesToInitialize();
+        } else {
+            fieldHandles = null;
+            constrHandles = null;
+        }
 //        JavaSource js = JavaSource.forDocument(component.getDocument());
 //        if (js != null) {
 //            try {

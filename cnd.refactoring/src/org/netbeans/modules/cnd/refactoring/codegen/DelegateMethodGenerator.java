@@ -40,13 +40,18 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import java.awt.Dialog;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.refactoring.codegen.ui.DelegatePanel;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -95,11 +100,11 @@ public class DelegateMethodGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-//        final DelegatePanel panel = new DelegatePanel(component, description);
-//        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
-//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-//        dialog.setVisible(true);
-//        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
+        final DelegatePanel panel = new DelegatePanel(component, description);
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.setVisible(true);
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
 //            JavaSource js = JavaSource.forDocument(component.getDocument());
 //            if (js != null) {
 //                try {
@@ -123,7 +128,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
 //                    Exceptions.printStackTrace(ex);
 //                }
 //            }
-//        }
+        }
     }
 
     public static ElementNode.Description getAvailableMethods(final JTextComponent component, final CsmField elementHandle) {
