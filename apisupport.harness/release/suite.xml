@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-convert-old-project" unless="cluster.path.evaluated">
+        <!-- netbeans.dest.dir -> cluster.path.id translation for pre-7.0 modules -->
         <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
 
         <pathconvert property="old.project.update.tracking">
@@ -96,8 +97,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-init" depends="-taskdefs,-convert-old-project">
-        <!-- netbeans.dest.dir -> cluster.path.id translation for pre-7.0 modules -->
-        <!-- XXX Does not preserve order of clusters specified in etc/netbeans.clusters -->
         <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>

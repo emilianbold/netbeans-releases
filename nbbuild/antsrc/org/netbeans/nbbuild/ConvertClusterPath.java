@@ -135,11 +135,14 @@ public class ConvertClusterPath extends Task {
                         });
                         if (alternate == null) {
                             Matcher matcher = Pattern.compile("^\\$\\{nbplatform\\.(.*)\\.netbeans\\.dest\\.dir\\}$").matcher(parent.getName());
-                            if (matcher.matches())
+                            if (matcher.matches()) {
                                 throw new BuildException("Unknown platform name '" + matcher.group(1) + "'.", getLocation());
-                            else
-                                throw new BuildException("Parent dir '" + parent.getAbsolutePath()
-                                        + "' does not exist.", getLocation());
+                            } else {
+                                // cannot throw BuildException here, targets like 'clean' must run with nonexistent clusters as well
+                                log("Warning: parent dir '" + parent.getAbsolutePath()
+                                        + "' does not exist.", Project.MSG_WARN);
+                                continue;
+                            }
                         }
                         if (alternate.length > 0 && alternate[0].isDirectory()) {
                             if (cm.group(2) != null) // numbered cluster in cluster.path, found one with different number, warning
@@ -153,7 +156,7 @@ public class ConvertClusterPath extends Task {
                     }
                 }
                 // no alternate cluster found
-                throw new BuildException("No numbered cluster matching bare name '" + fPath + "' found.", getLocation());
+                log("Warning: no numbered cluster matching bare name '" + fPath + "' found.", Project.MSG_WARN);
             }
 
             if (id != null && id.length() > 0)

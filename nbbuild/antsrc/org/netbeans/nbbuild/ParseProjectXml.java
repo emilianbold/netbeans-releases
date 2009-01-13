@@ -972,7 +972,6 @@ public final class ParseProjectXml extends Task {
                 // no cluster name is specified for standalone or module in module suite
                 cluster = "cluster";
             }
-            // TODO - path probably composed wrongly with respect to cluster.path
             return ParseProjectXml.cachedTestDistLocation + sep + testtype + sep + cluster + sep + cnb.replace('.','-');
         }
 
@@ -1183,7 +1182,6 @@ public final class ParseProjectXml extends Task {
         if (cluster == null) {
             cluster = "cluster";
         }
-        // TODO - path probably composed wrongly with respect to cluster.path
         return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
     }
 
