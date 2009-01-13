@@ -47,6 +47,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Error provider based on parser errors
@@ -55,7 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=10)
 public class ParserErrorProvider extends CsmErrorProvider {
 
-    private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
+    private static final boolean ENABLE = CndUtils.getBoolean("cnd.parser.error.provider", true);
 
     @Override
     protected boolean validate(Request request) {
@@ -73,14 +74,6 @@ public class ParserErrorProvider extends CsmErrorProvider {
                 response.addError(iter.next());
             }
         }
-    }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
     }
 
     public String getName() {
