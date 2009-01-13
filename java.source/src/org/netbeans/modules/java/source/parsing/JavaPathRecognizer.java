@@ -64,7 +64,7 @@ public class JavaPathRecognizer extends PathRecognizer {
 
     @Override
     public Set<String> getSourcePathIds() {
-        return MIME_TYPES;
+        return SOURCES;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class JavaPathRecognizer extends PathRecognizer {
 
     @Override
     public Set<String> getMimeType() {
-        return SOURCES;
+        return MIME_TYPES;
     }
 
 }
