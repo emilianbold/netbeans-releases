@@ -36,15 +36,17 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.kenai;
 
+import java.net.URL;
+import java.util.HashMap;
 import org.codeviation.pojson.PojsonLoad;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.kenai.utils.Utils;
 import static org.junit.Assert.*;
 
 /**
@@ -74,164 +76,121 @@ public class KenaiRESTTest {
 
     @Test
     public void testParseProjectInfo() throws Exception {
+        System.out.println("testParseProjectInfo");
         PojsonLoad pl = PojsonLoad.create();
         ProjectData pinfo;
-
-        pinfo = pl.load(project_alice, ProjectData.class);
+        pinfo = pl.load(Utils.project_alice, ProjectData.class);
         assertEquals(pinfo.name, "alice");
-
-        pinfo = pl.load(project_json, ProjectData.class);
+        pinfo = pl.load(Utils.project_json, ProjectData.class);
         assertEquals(pinfo.name, "java-inline");
-        // TODO: verify all fields
+    // TODO: verify all fields
     }
 
     @Test
     public void testParseProjectList() throws Exception {
+        System.out.println("testParseProjectList");
         PojsonLoad pl = PojsonLoad.create();
-        JsonListProjects plist = pl.load(project_list_json, JsonListProjects.class);
+        JsonListProjects plist = pl.load(Utils.project_list_json, JsonListProjects.class);
         assertNull(plist.prev);
         assertNotNull(plist.next);
         assertEquals(plist.projects.length, 10);
-        // TODO: verify all fields
+    // TODO: verify all fields
     }
 
-    private static final String project_json = "" +
-            "{\n" +
-            "\"href\": \"http://testkenai.com/api/projects/java-inline\", \n" +
-            "\"name\": \"java-inline\", \n" +
-            "\"display_name\": \"JavaInline for JRuby\", \n" +
-            "\"image\": \"http://testkenai.com/images/defaultProjectImage.jpg\", \n" +
-            "\"owner\": \"headius\", \n" +
-            "\"description\": \"JavaInline provides a way to embed Java code into Ruby code under JRuby and have it compiled and available at runtime. Depends on Java 6 compiler API.\", \n" +
-            "\"created_at\": \"2008-09-09T22:14:35Z\", \n" +
-            "\"updated_at\": \"2008-09-12T22:03:10Z\", \n" +
-            "\"licenses\": [\n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/licenses/10\", \n" +
-            "\t\"name\": \"LGPL-2.1\", \n" +
-            "\t\"display_name\": \"GNU Lesser General Public License 2.1\", \n" +
-            "\t\"license_uri\": \"http://www.opensource.org/licenses/lgpl-2.1.php\", \n" +
-            "\t\"preference_level\": \"recommended\"\n" +
-            "\t}\n" +
-            "\t], \n" +
-            "\"features\": [\n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/mercurial\", \n" +
-            "\t\"name\": \"mercurial\", \n" +
-            "\t\"display_name\": \"Mercurial Source Code Repository\", \n" +
-            "\t\"type\": \"scm\", \n" +
-            "\t\"service\": \"mercurial\", \n" +
-            "\t\"url\": null, \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/mercurial\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:40Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:40Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/wiki\", \n" +
-            "\t\"name\": \"wiki\", \n" +
-            "\t\"display_name\": \"Wiki\", \n" +
-            "\t\"type\": \"wiki\", \n" +
-            "\t\"service\": \"wiki\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/wiki\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:40Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:41Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/forum\", \n" +
-            "\t\"name\": \"forum\", \n" +
-            "\t\"display_name\": \"General Discussion\", \n" +
-            "\t\"type\": \"forum\", \n" +
-            "\t\"service\": \"forum\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/forum\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:41Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:41Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/commits\", \n" +
-            "\t\"name\": \"commits\", \n" +
-            "\t\"display_name\": \"Commits Mailing List\", \n" +
-            "\t\"type\": \"lists\", \n" +
-            "\t\"service\": \"lists\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/commits\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:41Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:41Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/dev\", \n" +
-            "\t\"name\": \"dev\", \n" +
-            "\t\"display_name\": \"Dev Mailing List\", \n" +
-            "\t\"type\": \"lists\", \n" +
-            "\t\"service\": \"lists\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/dev\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:45Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:45Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/issues\", \n" +
-            "\t\"name\": \"issues\", \n" +
-            "\t\"display_name\": \"Issues Mailing List\", \n" +
-            "\t\"type\": \"lists\", \n" +
-            "\t\"service\": \"lists\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/issues\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:46Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:46Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/users\", \n" +
-            "\t\"name\": \"users\", \n" +
-            "\t\"display_name\": \"Users Mailing List\", \n" +
-            "\t\"type\": \"lists\", \n" +
-            "\t\"service\": \"lists\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/users\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:48Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:48Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/bz\", \n" +
-            "\t\"name\": \"bz\", \n" +
-            "\t\"display_name\": \n" +
-            "\t\"Issue Tracking\", \n" +
-            "\t\"type\": \"issues\", \n" +
-            "\t\"service\": \"issues\", \n" +
-            "\t\"url\": \"http://testkenai.com/bugzilla/buglist.cgi?product=java-inline\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/bz\", \n" +
-            "\t\"created_at\": \"2008-09-09T22:14:49Z\", \n" +
-            "\t\"updated_at\": \"2008-09-09T22:14:49Z\"\n" +
-            "\t}, \n" +
-            "\t{\n" +
-            "\t\"href\": \"http://testkenai.com/api/projects/java-inline/features/downloads\", \n" +
-            "\t\"name\": \"downloads\", \n" +
-            "\t\"display_name\": \"Downloads\", \n" +
-            "\t\"type\": \"downloads\", \n" +
-            "\t\"service\": \"downloads\", \n" +
-            "\t\"web_url\": \"http://testkenai.com/projects/java-inline/features/downloads\", \n" +
-            "\t\"created_at\": \"2008-10-14T04:31:41Z\", \n" +
-            "\t\"updated_at\": \"2008-10-14T04:31:41Z\"}\n" +
-            "\t]\n" +
-            "}\n" +
-            "";
+    @Test
+    public void testGetProject() throws Exception {
+        System.out.println("testGetProject");
 
-    private static final String project_alice = "{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\",\"name\":\"alice\",\"display_name\":\"Alice\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\",\"owner\":\"denniscosgrove\",\"member_count\":45,\"description\":\"Alice is a teaching tool that uses drag-and-drop style interaction to construct programs without syntax errors.  Students create movies and games as a motivating context.  3D animation provides program visualization which aids students in understanding the execution and catching bugs.\\r\\n\\r\\nThe third version of the system is under development which includes a smoother transition to programming in Java.\",\"created_at\":\"2008-08-15T10:47:27Z\",\"updated_at\":\"2008-11-25T21:46:35Z\",\"licenses\":[{\"href\":\"http:\\/\\/testkenai.com\\/api\\/licenses\\/1\",\"name\":\"Apache-2.0\",\"display_name\":\"Apache License 2.0\",\"license_uri\":\"http:\\/\\/www.opensource.org\\/licenses\\/apache2.0.php\",\"preference_level\":\"recommended\"}],\"features\":[{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/subversion\",\"name\":\"subversion\",\"display_name\":\"Subversion Source Code Repository\",\"type\":\"scm\",\"service\":\"subversion\",\"url\":\"https:\\/\\/testkenai.com\\/svn\\/alice~subversion\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/subversion\",\"created_at\":\"2008-08-15T10:47:30Z\",\"updated_at\":\"2008-08-15T10:47:30Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/wiki\",\"name\":\"wiki\",\"display_name\":\"Wiki\",\"type\":\"wiki\",\"service\":\"wiki\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/wiki\",\"created_at\":\"2008-08-15T10:47:33Z\",\"updated_at\":\"2008-08-15T10:47:33Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/forum\",\"name\":\"forum\",\"display_name\":\"General Discussion\",\"type\":\"forum\",\"service\":\"forum\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/forum\",\"created_at\":\"2008-08-15T10:47:34Z\",\"updated_at\":\"2008-08-15T10:47:34Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/commits\",\"name\":\"commits\",\"display_name\":\"Commits Mailing List\",\"type\":\"lists\",\"service\":\"lists\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/commits\",\"created_at\":\"2008-08-15T10:47:34Z\",\"updated_at\":\"2008-08-15T10:47:34Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/dev\",\"name\":\"dev\",\"display_name\":\"Dev Mailing List\",\"type\":\"lists\",\"service\":\"lists\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/dev\",\"created_at\":\"2008-08-15T10:47:38Z\",\"updated_at\":\"2008-08-15T10:47:38Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/issues\",\"name\":\"issues\",\"display_name\":\"Issues Mailing List\",\"type\":\"lists\",\"service\":\"lists\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/issues\",\"created_at\":\"2008-08-15T10:47:39Z\",\"updated_at\":\"2008-08-15T10:47:39Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/users\",\"name\":\"users\",\"display_name\":\"Users Mailing List\",\"type\":\"lists\",\"service\":\"lists\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/users\",\"created_at\":\"2008-08-15T10:47:41Z\",\"updated_at\":\"2008-08-15T10:47:41Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/bz\",\"name\":\"bz\",\"display_name\":\"Issue Tracking\",\"type\":\"issues\",\"service\":\"issues\",\"url\":\"http:\\/\\/testkenai.com\\/bugzilla\\/buglist.cgi?product=alice\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/bz\",\"created_at\":\"2008-08-15T10:47:43Z\",\"updated_at\":\"2008-08-15T10:47:43Z\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\\/features\\/downloads\",\"name\":\"downloads\",\"display_name\":\"Downloads\",\"type\":\"downloads\",\"service\":\"downloads\",\"web_url\":\"http:\\/\\/testkenai.com\\/projects\\/alice\\/features\\/downloads\",\"created_at\":\"2008-10-14T04:31:37Z\",\"updated_at\":\"2008-10-14T04:31:37Z\"}]}";
+        //Golden data - project properties
+        String href = "http://testkenai.com/api/projects/alice";
+        String name = "alice";
+        String display_name = "Alice";
+        String image = "http://testkenai.com/images/defaultProjectImage.jpg";
+        String owner = "denniscosgrove";
+        String description = "Alice is a teaching tool that uses drag-and-drop style interaction to construct programs without syntax errors.  Students create movies and games as a motivating context.  3D animation provides program visualization which aids students in understanding the execution and catching bugs.\r\n\r\nThe third version of the system is under development which includes a smoother transition to programming in Java.";
+        String created_at = "2008-08-15T10:47:27Z";
+        String updated_at = "2008-11-25T21:46:35Z";
+        int member_count = 45;
 
-    private static final String project_list_json = "" +
-            "{\n" +
-            "\"prev\":null,\n" +
-            "\"next\":\"http:\\/\\/testkenai.com\\/api\\/projects?page=2\",\n" +
-            "\"projects\":[\n" +
-            "\t{\n" +
-            "\t\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/activerecord-jdbc\",\n" +
-            "\t\"name\":\"activerecord-jdbc\",\n" +
-            "\t\"display_name\":\"ActiveRecord JDBC\",\n" +
-            "\t\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},\n" +
-            "\t{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/alice\",\"name\":\"alice\",\"display_name\":\"Alice\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/nbandroid\",\"name\":\"nbandroid\",\"display_name\":\"Android plugin for NetBeans\",\"image\":\"http:\\/\\/testkenai.com\\/attachments\\/images\\/project\\/nbandroid.png\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/bluebird\",\"name\":\"bluebird\",\"display_name\":\"Bluebird\",\"image\":\"http:\\/\\/testkenai.com\\/attachments\\/images\\/project\\/bluebird.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/bz-5052\",\"name\":\"bz-5052\",\"display_name\":\"bz 5052\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/ccadministrator\",\"name\":\"ccadministrator\",\"display_name\":\"CCAdministrator\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/chromeupdater\",\"name\":\"chromeupdater\",\"display_name\":\"Chrome Updater\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/comic-tracker\",\"name\":\"comic-tracker\",\"display_name\":\"Comic Release tracker\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},{\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/clv\",\"name\":\"clv\",\"display_name\":\"compilation log visualizer\",\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"},\n" +
-            "\n" +
-            "\t{\n" +
-            "\t\t\"href\":\"http:\\/\\/testkenai.com\\/api\\/projects\\/csearch\",\n" +
-            "\t\t\"name\":\"csearch\",\n" +
-            "\t\t\"display_name\":\"Conceptual Search\",\n" +
-            "\t\t\"image\":\"http:\\/\\/testkenai.com\\/images\\/defaultProjectImage.jpg\"\n" +
-            "\t}\n" +
-            "]\n" +
-            "}\n" +
-            "";
+        //Goldem data - project license properties
+        String lcHref = "http://testkenai.com/api/licenses/1";
+        String lcName = "Apache-2.0";
+        String lcDisplayName = "Apache License 2.0";
+        String lcURI = "http://www.opensource.org/licenses/apache2.0.php";
+        String lcPreferenceLevel = "recommended";
+
+        System.setProperty("netbeans.t9y.kenai.testUrl", Utils.project_alice);
+
+        String username = "";
+        char[] password = null;
+        KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
+        ProjectData result = kenaiInstance.getProject(name, username, password);
+        LicenceData[] licenseData = result.licenses;
+        FeatureData[] featureData = result.features;
+
+        //verify project properties
+        assertEquals(href, result.href);
+        assertEquals(name, result.name);
+        assertEquals(display_name, result.display_name);
+        assertEquals(image, result.image);
+        assertEquals(owner, result.owner);
+        assertEquals(description, result.description);
+        assertEquals(created_at, result.created_at);
+        assertEquals(updated_at, result.updated_at);
+        assertEquals(member_count, result.member_count);
+
+        //verify project license properties
+        assertEquals(lcHref, result.licenses[0].href);
+        assertEquals(lcName, result.licenses[0].name);
+        assertEquals(lcDisplayName, result.licenses[0].display_name);
+        assertEquals(lcURI, result.licenses[0].license_uri);
+        assertEquals(lcPreferenceLevel, result.licenses[0].preference_level);
+
+        //verify project feature properties
+        /* ToDo */
+
+        System.setProperty("netbeans.t9y.kenai.testUrl", "");
+    // TODO review the generated test code and remove the default call to fail.
+    }
+
+    @Test
+    public void testGetProjectMissingMemberValue() throws Exception {
+        System.out.println("testGetProjectMissingProperties");
+        System.setProperty("netbeans.t9y.kenai.testUrl", Utils.project_alice_missing_member_value);
+
+        String name = "";
+        String username = "";
+        char[] password = null;
+        KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
+        IllegalArgumentException iae = null;
+        try {
+            ProjectData result = kenaiInstance.getProject(name, username, password);
+        } catch (Exception e) {
+            iae = (IllegalArgumentException) e;
+        }
+        assertNotNull(iae);
+
+        System.setProperty("netbeans.t9y.kenai.testUrl", "");
+    }
+
+    @Test
+    public void testGetPrqojectMissingValues() throws Exception {
+        System.out.println("testGetProjectMissingValues");
+        IllegalArgumentException iae = null;
+        for (String json : Utils.project_alice_missing_values) {
+            System.setProperty("netbeans.t9y.kenai.testUrl", json);
+            String name = "";
+            String username = "";
+            char[] password = null;
+            KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
+            iae = null;
+            try {
+                ProjectData result = kenaiInstance.getProject(name, username, password);
+            } catch (Exception e) {
+                iae = (IllegalArgumentException) e;
+            }
+            assertNotNull(iae);
+        }
+        System.setProperty("netbeans.t9y.kenai.testUrl", "");
+    }
 }
