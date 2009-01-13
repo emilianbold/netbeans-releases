@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +86,7 @@ import org.openide.util.NbBundle;
  */
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
-    static final boolean USE_SIMPLE_IMPORT_PROJECT = NewMakeProjectWizardIterator.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
+    static final boolean USE_SIMPLE_IMPORT_PROJECT = CndUtils.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
     
     public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
@@ -495,13 +496,5 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
         }
         return bundle.getString(s);
-    }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
     }
 }

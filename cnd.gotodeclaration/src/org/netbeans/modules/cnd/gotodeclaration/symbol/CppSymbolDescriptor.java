@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -148,12 +149,26 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
     @Override
     public String getProjectName() {
-        return project.getName().toString();
+        CharSequence name = project.getName();
+        if (project.isArtificial()) {
+            name = CsmDisplayUtilities.shrinkPath(name, 32, 2, 2);
+        }
+        return name.toString();
     }
 
     @Override
     public String getSymbolName() {
         return name.toString();
+    }
+
+    /** gets name as such */
+    public CharSequence getRawName() {
+        for (int i = 0; i < name.length(); i++) {
+            if (name.charAt(i) == '(') {
+                return name.subSequence(0, i);
+            }
+        }
+        return name;
     }
 
     @Override
