@@ -607,6 +607,17 @@ public final class RubyCoverageProvider implements CoverageProvider {
         }
     }
 
+    private static final boolean SKIP_EXCLUSIONS;
+    private static final boolean RCOV_RAILS;
+    static {
+        String exclude = System.getProperty("coverage.exclude");
+        SKIP_EXCLUSIONS = exclude != null && "true".equals(exclude);
+        String rails = System.getProperty("coverage.rcov-rails");
+        RCOV_RAILS = rails == null || "true".equals(rails);
+        System.err.println("SKIP_EXCLUSIONS=" + SKIP_EXCLUSIONS);
+        System.err.println("RCOV_RAILS=" + RCOV_RAILS);
+    }
+
     private void buildRcovArgs(StringBuilder sb, List<String> args, boolean isAggregating, String includeName, RubyExecutionDescriptor original) {
         // Rcov args
         String dataFile = getRubyCoverageFile().getPath();
@@ -688,17 +699,25 @@ public final class RubyCoverageProvider implements CoverageProvider {
             }
         }
 
-        if (args != null) {
+        if (SKIP_EXCLUSIONS) {
+            // Temporary workaround to track down problem
+            if (args != null) {
+                args.add("--exclude-only"); // NOI18N
+                args.add("thisstringdefinitelydoesnotexist"); // NOI18N
+            } else {
+                sb.append(" --exclude-only \"thisstringdefinitelydoesnotexist\""); // NOI18N
+            }
+        } else if (args != null) {
             args.add("--exclude-only"); // NOI18N
-            args.add(exclude.toString()); // NOI18N
+            args.add(exclude.toString());
         } else {
             sb.append(" --exclude-only \""); // NOI18N
-            sb.append(exclude.toString()); // NOI18N
-            sb.append("\"");
+            sb.append(exclude.toString());
+            sb.append("\""); // NOI18N
         }
 
         // If on rails:
-        if (project.getClass().getSimpleName().contains("Rails")) { // NOI18N
+        if (RCOV_RAILS && project.getClass().getSimpleName().contains("Rails")) { // NOI18N
             if (args != null) {
                 args.add("--rails"); // NOI18N
             } else {
