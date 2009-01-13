@@ -82,7 +82,7 @@ public final class Context {
     /**
      * Returns the cache folder where the indexer may store language metadata.
      * For each root and indexer there exist a separate cache folder.
-     * @return The cahce folder
+     * @return The cache folder
      */
     public FileObject getIndexFolder () {        
         return this.indexFolder;
