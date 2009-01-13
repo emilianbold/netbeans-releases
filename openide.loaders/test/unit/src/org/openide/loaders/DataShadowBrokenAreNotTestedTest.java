@@ -44,9 +44,7 @@ package org.openide.loaders;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -67,9 +65,7 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         
-        FileSystem lfs = Repository.getDefault().getDefaultFileSystem();
-        
-        FileObject[] delete = lfs.getRoot().getChildren();
+        FileObject[] delete = FileUtil.getConfigRoot().getChildren();
         for (int i = 0; i < delete.length; i++) {
             delete[i].delete();
         }
@@ -78,8 +74,7 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
     }
     
     public void testNoURLMapperQueried() throws Exception {
-        FileSystem lfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = FileUtil.createData(lfs.getRoot(), getName() + "/folder/original.txt");
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
         assertNotNull(fo);
         
         assertEquals("No queries to UM yet", 0, UM.cnt);
@@ -96,10 +91,9 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         //
         
         
-        FileSystem lfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f1 = FileUtil.createData(lfs.getRoot(), getName() + "/folder/original.txt");
+        FileObject f1 = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
         assertNotNull(f1);
-        FileObject f2 = FileUtil.createData(lfs.getRoot(), getName() + "/any/folder/original.txt");
+        FileObject f2 = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/any/folder/original.txt");
         assertNotNull(f2);
         
         assertEquals("No queries to UM yet", 0, UM.cnt);

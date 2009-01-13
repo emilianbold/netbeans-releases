@@ -52,7 +52,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * Handle the installation and uninstallation of JavaHelp for a component
@@ -62,8 +61,7 @@ import org.openide.filesystems.Repository;
  */
 class JavaHelpStorage {
 
-    private static final FileObject fsRoot = Repository.getDefault()
-            .getDefaultFileSystem().getRoot();
+    private static final FileObject fsRoot = FileUtil.getConfigRoot();
 
     /**
      * Install complib help into system.

@@ -29,9 +29,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
@@ -64,20 +62,18 @@ implements java.net.URLStreamHandlerFactory {
     
     protected @Override void setUp() throws Exception {
         
-        FileSystem lfs = Repository.getDefault ().getDefaultFileSystem ();
-        
-        FileObject[] delete = lfs.getRoot().getChildren();
+        FileObject[] delete = FileUtil.getConfigRoot().getChildren();
         for (int i = 0; i < delete.length; i++) {
             delete[i].delete();
         }
 
         
-        FileObject fo = FileUtil.createData (lfs.getRoot (), getName () + "/folder/original.string");
+        FileObject fo = FileUtil.createData (FileUtil.getConfigRoot (), getName () + "/folder/original.string");
         assertNotNull(fo);
         original = DataObject.find (fo);
         assertFalse ("Just to be sure that this is not shadow", original instanceof DataShadow);
         assertEquals ("It is the right class", StringObject.class, original.getClass ());
-        fo = FileUtil.createFolder (lfs.getRoot (), getName () + "/modify");
+        fo = FileUtil.createFolder (FileUtil.getConfigRoot (), getName () + "/modify");
         assertNotNull(fo);
         assertTrue (fo.isFolder ());
         folder = DataFolder.findFolder (fo);

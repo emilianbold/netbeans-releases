@@ -458,7 +458,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /** create node delegate */
     private Node createNodeDelegateImpl () {
         try {
-            if (getPrimaryFile().getFileSystem() != Repository.getDefault().getDefaultFileSystem()) {
+            if (!getPrimaryFile().getFileSystem().isDefault()) {
                 return new DataNode(this, Children.LEAF);
             }
         } catch (FileStateInvalidException ex) {
@@ -1485,9 +1485,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /** look up appropriate convertor according to obj */
     private static FileObject resolveConvertor(Object obj) throws IOException {
         String prefix = "xml/memory"; //NOI18N
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         
-        FileObject memContext = sfs.findResource(prefix);
+        FileObject memContext = FileUtil.getConfigFile(prefix);
         if (memContext == null) throw new FileNotFoundException("SFS:xml/memory while converting a " + obj.getClass().getName()); //NOI18N
         
         Class clazz = obj.getClass();
@@ -1496,7 +1495,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             String className = c.getName();
             String convertorPath = new StringBuffer(200).append(prefix).append('/').
                     append(className.replace('.', '/')).toString(); // NOI18N
-            FileObject fo = sfs.findResource(convertorPath);
+            FileObject fo = FileUtil.getConfigFile(convertorPath);
             if (fo != null) {
                 String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
                 if (providerPath == null) {
@@ -1504,7 +1503,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     continue;
                 }
                 if (c.equals(clazz) || Object.class.equals(c)) {
-                    FileObject ret = sfs.findResource(providerPath);
+                    FileObject ret = FileUtil.getConfigFile(providerPath);
                     if (ret == null) {
                         throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + clazz); // NOI18N
                     } else {
@@ -1516,7 +1515,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     if (inheritAttribute instanceof Boolean) {
                         boolean subclasses = ((Boolean)inheritAttribute).booleanValue();
                         if (subclasses) {
-                            FileObject ret = sfs.findResource(providerPath);
+                            FileObject ret = FileUtil.getConfigFile(providerPath);
                             if (ret == null) {
                                 throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + clazz); // NOI18N
                             } else {

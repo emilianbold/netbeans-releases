@@ -761,7 +761,7 @@ implements java.io.Serializable {
             } catch (FileStateInvalidException e) {
                 return null;
             }
-            if (fs != Repository.getDefault ().getDefaultFileSystem ()) {
+            if (!fs.isDefault()) {
                 return null;
             }
             return super.findPrimaryFile (fo);

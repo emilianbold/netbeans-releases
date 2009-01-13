@@ -62,7 +62,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -271,7 +271,7 @@ public final class KitsTrackerImpl extends KitsTracker {
     
     private static void _reload(Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Editors"); //NOI18N
 
         // Generally may not exist (e.g. in tests)
         if (fo != null) {
@@ -446,7 +446,7 @@ public final class KitsTrackerImpl extends KitsTracker {
                     kitClass2mimeTypes.clear();
 
                     // Get the root of the MimeLookup registry
-                    FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
+                    FileObject root = FileUtil.getConfigFile("Editors"); //NOI18N
                     for(String mimeType : knownMimeTypes) {
                         FileObject mimeTypeFolder = root.getFileObject(mimeType);
                         FileObject kitInstanceFile = findKitRegistration(mimeTypeFolder);

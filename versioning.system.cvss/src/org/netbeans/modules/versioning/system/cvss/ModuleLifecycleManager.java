@@ -45,7 +45,6 @@ import org.openide.ErrorManager;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -60,6 +59,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Handles module events distributed by NetBeans module
@@ -95,7 +95,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                     try {
                         String newModule = vcsGenericModules[i];
                         String newModuleXML = "Modules/" + newModule.replace('.', '-') + ".xml"; // NOI18N
-                        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(newModuleXML);
+                        FileObject fo = FileUtil.getConfigFile(newModuleXML);
                         if (fo == null) continue;
                         Document document = readModuleDocument(fo);
 

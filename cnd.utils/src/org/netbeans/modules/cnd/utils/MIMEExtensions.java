@@ -57,7 +57,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -212,7 +211,7 @@ public final class MIMEExtensions {
         private final FileChangeListener listener;
 
         private Manager() {
-            configFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/CndExtensions"); // NOI18N
+            configFolder = FileUtil.getConfigFile("Services/CndExtensions"); // NOI18N
             if (configFolder != null) {
                 listener = new L();
                 configFolder.addFileChangeListener(FileUtil.weakFileChangeListener(listener, configFolder));

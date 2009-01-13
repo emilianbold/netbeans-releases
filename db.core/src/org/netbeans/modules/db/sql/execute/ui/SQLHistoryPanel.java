@@ -91,7 +91,6 @@ import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.netbeans.modules.db.sql.history.SQLHistoryPersistenceManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -108,7 +107,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final int SAVE_STATEMENTS_MAX_LIMIT = 10000; 
     public static final int TABLE_DATA_WIDTH_SQL = 125;
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
-    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
+    private static final FileObject USERDIR = FileUtil.getConfigRoot();
     private static final FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
     private static String historyFilePath;
     private static Object[][] data;

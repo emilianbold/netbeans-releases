@@ -47,9 +47,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DocumentInterface;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -115,10 +113,9 @@ public class ModelTestUtil {
      */
     public static FileObject getTestFolder(String folderPath){
         FileObject folder = null;
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        
+
         try {
-            folder = FileUtil.createFolder(fs.getRoot(),folderPath);
+            folder = FileUtil.createFolder(FileUtil.getConfigRoot(),folderPath);
         } catch (IOException ex) {
             ex.printStackTrace();
         }

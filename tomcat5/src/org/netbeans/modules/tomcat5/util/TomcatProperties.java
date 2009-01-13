@@ -63,9 +63,7 @@ import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -174,8 +172,7 @@ public class TomcatProperties {
             // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
             // therefore remains valid even if Tomcat version changes. (issue# 40659)
             if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
+                FileObject fo = FileUtil.getConfigFile(BUNDLED_TOMCAT_SETTING);
                 if (fo != null) {
                     catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
                     if (catalinaBase != null && catalinaBase.length() > 0 

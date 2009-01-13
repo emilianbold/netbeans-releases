@@ -44,7 +44,7 @@ import java.util.Collections;
 import javax.swing.Action;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -120,7 +120,7 @@ public final class LibrariesNode extends AbstractNode {
      * @param opened wheter closed or opened icon should be returned.
      */
     private static Image getTreeFolderIcon(boolean opened) {
-        final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        final Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         final Image base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);
         assert base != null;
         return base;

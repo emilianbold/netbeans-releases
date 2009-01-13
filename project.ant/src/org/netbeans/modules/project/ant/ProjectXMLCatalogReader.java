@@ -61,12 +61,11 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -93,7 +92,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
     }
     private static String _resolveURI(String name) {
         if (name.startsWith(PREFIX)) {
-            FileObject rsrc = Repository.getDefault().getDefaultFileSystem().findResource(CATALOG + "/" + name.substring(PREFIX.length()) + "." + EXTENSION);
+            FileObject rsrc = FileUtil.getConfigFile(CATALOG + "/" + name.substring(PREFIX.length()) + "." + EXTENSION);
             if (rsrc != null) {
                 try {
                     return rsrc.getURL().toString();
@@ -145,7 +144,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
      * @throws SAXException if schemas were malformed or the document was invalid
      */
     public static void validate(Element dom) throws SAXException {
-        if (Repository.getDefault().getDefaultFileSystem().findResource(CATALOG) == null) {
+        if (FileUtil.getConfigFile(CATALOG) == null) {
             // Probably running from inside a unit test which overrides the system filesystem.
             // Safest and simplest to just skip validation in this case.
             return;
@@ -159,7 +158,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
     private static synchronized Schema projectXmlCombinedSchema() {
         int hash = 0; // compute hash regardless of ordering of schemas, hence XOR
         List<FileObject> schemas = new ArrayList<FileObject>();
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(CATALOG);
+        FileObject root = FileUtil.getConfigFile(CATALOG);
         if (root != null) {
             for (FileObject f : NbCollections.iterable(root.getChildren(true))) {
                 if (f.isData() && f.hasExt(EXTENSION)) {

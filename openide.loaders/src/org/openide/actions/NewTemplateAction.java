@@ -332,8 +332,7 @@ public class NewTemplateAction extends NodeAction {
     
     private List<DataObject> getPrivilegedList() {
         if (privilegedListFolder == null) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().
-                                    findResource("Templates/Privileged"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Templates/Privileged"); // NOI18N
             if (fo != null) privilegedListFolder = DataFolder.findFolder(fo);
         }
         if (privilegedListFolder != null) {
@@ -378,8 +377,7 @@ public class NewTemplateAction extends NodeAction {
     
     private DataFolder getRecentFolder () {
         if (recentListFolder == null) {
-            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
-                                    findResource ("Templates/Recent"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Templates/Recent"); // NOI18N
             if (fo != null) {
                 recentListFolder = DataFolder.findFolder(fo);
             }

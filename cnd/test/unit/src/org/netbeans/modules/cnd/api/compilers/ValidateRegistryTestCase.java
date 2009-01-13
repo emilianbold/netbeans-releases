@@ -49,8 +49,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -78,8 +77,7 @@ public class ValidateRegistryTestCase extends NbTestCase {
     }
 
     public void testSchema() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
+        FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
             for (FileObject file : files) {

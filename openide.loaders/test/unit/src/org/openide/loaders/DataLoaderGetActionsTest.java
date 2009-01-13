@@ -96,7 +96,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
         
         MyDL loader = MyDL.getLoader(MyDL.class);
 
-        FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem dfs = FileUtil.getConfigRoot().getFileSystem();
         dfs.refresh (true);        
         root = FileUtil.createFolder (dfs.getRoot (), loader.actionsContext ());
         

@@ -71,8 +71,7 @@ import org.xml.sax.SAXException;
 import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 public class HttpMonitorHelper {
@@ -360,13 +359,12 @@ public class HttpMonitorHelper {
     }
     
     private static URL getSampleHTTPServerURL() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
-	    if (fo == null) {
-	        return null;
-	    }
-	    URL u = URLMapper.findURL(fo, URLMapper.NETWORK);
-	    return u;
+        FileObject fo = FileUtil.getConfigFile("HTTPServer_DUMMY");
+        if (fo == null) {
+            return null;
+        }
+        URL u = URLMapper.findURL(fo, URLMapper.NETWORK);
+        return u;
     }
 
     private static String getInternalServerPort() {

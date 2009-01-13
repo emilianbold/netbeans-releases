@@ -44,13 +44,10 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -60,6 +57,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.openide.filesystems.FileUtil;
 
 
 public class J2SEPlatformModule extends ModuleInstall {
@@ -129,7 +127,7 @@ public class J2SEPlatformModule extends ModuleInstall {
     }
 
     private static void recoverDefaultPlatform () {
-        final FileObject defaultPlatform = Repository.getDefault().getDefaultFileSystem().findResource(DEFAULT_PLATFORM);
+        final FileObject defaultPlatform = FileUtil.getConfigFile(DEFAULT_PLATFORM);
         if (defaultPlatform != null) {
             try {
                 DataObject dobj = DataObject.find(defaultPlatform);

@@ -70,7 +70,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 public final class ServerRegistry implements java.io.Serializable {
 
@@ -120,8 +119,7 @@ public final class ServerRegistry implements java.io.Serializable {
         servers = new HashMap();
         instances = new HashMap();
 
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_JSR88_PLUGINS);
+        FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
         if (dir != null) {
             LOGGER.log(Level.FINE, "Loading server plugins"); // NOI18N
             dir.addFileChangeListener(pluginL = new PluginInstallListener(dir));
@@ -131,7 +129,7 @@ public final class ServerRegistry implements java.io.Serializable {
             }
 
             LOGGER.log(Level.FINE, "Loading server instances"); // NOI18N
-            dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+            dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
             dir.addFileChangeListener(instanceL = new InstanceInstallListener(dir));
             ch = dir.getChildren();
             for (int i = 0; i < ch.length; i++) {
@@ -193,8 +191,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private void fetchInstances(Server server) {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+        FileObject dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
         FileObject[] ch = dir.getChildren();
         for (int i = 0; i < ch.length; i++) {
             String url = (String) ch[i].getAttribute(URL_ATTR);
@@ -318,8 +315,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public static FileObject getInstanceFileObject(String url) {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject[] installedServers = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS).getChildren();
+        FileObject[] installedServers = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS).getChildren();
         for (int i=0; i<installedServers.length; i++) {
             String val = (String) installedServers[i].getAttribute(URL_ATTR);
             if (val != null && val.equals(url))
@@ -364,8 +360,7 @@ public final class ServerRegistry implements java.io.Serializable {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
         }
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+        FileObject dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
         for (int i=0; i<instanceFOs.length; i++) {

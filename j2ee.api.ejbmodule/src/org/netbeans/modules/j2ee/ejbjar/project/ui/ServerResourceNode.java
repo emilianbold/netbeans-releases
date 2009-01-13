@@ -46,13 +46,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.actions.FileSystemAction;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -304,7 +302,7 @@ public class ServerResourceNode extends FilterNode {
         }
         
         private static Node getImageDelegate() {
-            FileObject imageFo = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject imageFo = FileUtil.getConfigRoot();
             if (imageFo != null) {
                 try {
                     DataObject imageDo = DataObject.find(imageFo);

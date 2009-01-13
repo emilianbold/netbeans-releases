@@ -77,7 +77,7 @@ import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -143,8 +143,7 @@ public class NbToolTip extends FileChangeAdapter {
             }
 
             // XXX: should use Class2LayerFolder and InstanceProvider
-            FileObject annoFolder = Repository.getDefault().getDefaultFileSystem().
-            findResource("Editors/" + mimeType + "/ToolTips"); //NOI18N
+            FileObject annoFolder = FileUtil.getConfigFile("Editors/" + mimeType + "/ToolTips"); //NOI18N
         
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("tooltip annotation folder = '" + annoFolder + "'"); //NOI18N

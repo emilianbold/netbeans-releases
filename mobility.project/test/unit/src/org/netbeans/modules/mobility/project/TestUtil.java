@@ -88,13 +88,13 @@ import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -154,9 +154,13 @@ public class TestUtil extends ProxyLookup {
             Assert.fail("layer.xml not found");
         }
 
-        Collection<FileSystem> layers=new ArrayList(Arrays.asList(((SystemFileSystem)Repository.getDefault().getDefaultFileSystem()).getLayers()));
-        layers.add(fs);
-        ((SystemFileSystem)Repository.getDefault().getDefaultFileSystem()).setLayers(layers.toArray(new FileSystem[layers.size()]));
+        try {
+            Collection<FileSystem> layers=new ArrayList(Arrays.asList(((SystemFileSystem)FileUtil.getConfigRoot().getFileSystem()).getLayers()));
+            layers.add(fs);
+            ((SystemFileSystem) FileUtil.getConfigRoot().getFileSystem()).setLayers(layers.toArray(new FileSystem[layers.size()]));
+        } catch (FileStateInvalidException ex) {
+            throw new RuntimeException(ex);
+        }
         /**************/
 
         // XXX please use MODULENAME.dir properties instead of hardcoding cluster names!

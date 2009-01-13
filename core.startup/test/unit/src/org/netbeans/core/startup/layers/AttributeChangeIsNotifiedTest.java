@@ -54,14 +54,12 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
  * @author Jaroslav Tulach
  */
 public class AttributeChangeIsNotifiedTest extends NbTestCase {
-    SystemFileSystem sfs;
     
     public AttributeChangeIsNotifiedTest(String testName) {
         super(testName);
@@ -78,10 +76,7 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         new File(h, "config").mkdirs();
         System.setProperty("netbeans.home", h.toString());
         
-        
-        sfs = (SystemFileSystem)Repository.getDefault().getDefaultFileSystem();
-        
-        File f = FileUtil.toFile(sfs.getRoot());
+        File f = FileUtil.toFile(FileUtil.getConfigRoot());
         
         assertEquals("Root is really on disk", uc, f);
         
@@ -92,7 +87,7 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
     }
 
     public void testChangeOfAnAttributeInLayerIsFired() throws Exception {
-        doChangeOfAnAttributeInLayerIsFired(getTheLayer(sfs));
+        doChangeOfAnAttributeInLayerIsFired(getTheLayer((SystemFileSystem)FileUtil.getConfigRoot().getFileSystem()));
     }
     
     private void doChangeOfAnAttributeInLayerIsFired(ModuleLayeredFileSystem fs) throws Exception {
@@ -107,13 +102,13 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
             fs.setURLs (list);
         }
         
-        FileObject file = sfs.findResource("Folder/empty.xml");
+        FileObject file = FileUtil.getConfigFile("Folder/empty.xml");
         assertNotNull("File found in layer", file);
         
         FSListener l = new FSListener();
         file.addFileChangeListener(l);
         
-        FileObject nochange = sfs.findResource("NoChange/empty.xml");
+        FileObject nochange = FileUtil.getConfigFile("NoChange/empty.xml");
         assertNotNull("File found in layer", nochange);
         FSListener no = new FSListener();
         nochange.addFileChangeListener(no);

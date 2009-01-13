@@ -69,7 +69,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
@@ -223,7 +223,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
                     }
                 }
                 try {
-                    Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
 
                         public void run() throws IOException {
                             boolean notified = false;
@@ -233,7 +233,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
                                 OutputStream os = null;
                                 try {
                                     String newModuleXML = "Modules/" + newModule.replace('.', '-') + ".xml"; // NOI18N
-                                    FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(newModuleXML);
+                                    FileObject fo = FileUtil.getConfigFile(newModuleXML);
                                     if (fo == null) {
                                         continue;
                                     }

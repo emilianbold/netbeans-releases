@@ -69,12 +69,11 @@ public class SCMObjectCreator {
 	   {
 	      Object retVal = null;
           /*
-	      org.openide.filesystems.FileSystem system = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
 	      try
 	      {
 	         if(system != null)
 	         {
-	            org.openide.filesystems.FileObject lookupDir = system.findResource(path);
+	            org.openide.filesystems.FileObject lookupDir = FileUtil.getConfigFile(path);
 	            if(lookupDir != null)
 	            {
 	               org.openide.filesystems.FileObject[] children = lookupDir.getChildren();

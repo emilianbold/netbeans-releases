@@ -62,7 +62,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * @author Martin Krauskopf
@@ -148,7 +147,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
     
     public void testTestableInstantiateWithAppClient() throws Exception {
         String resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml";
-        assertNotNull("application client registered", Repository.getDefault().getDefaultFileSystem().findResource(resource));
+        assertNotNull("application client registered", FileUtil.getConfigFile(resource));
         File dirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
         String j2eeLevel = "1.4";
@@ -180,7 +179,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
     
     public void testTestableInstantiateWithWebAndEJBAppClient() throws Exception {
         String resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml";
-        assertNotNull("application client registered", Repository.getDefault().getDefaultFileSystem().findResource(resource));
+        assertNotNull("application client registered", FileUtil.getConfigFile(resource));
         File dirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
         String j2eeLevel = "1.4";

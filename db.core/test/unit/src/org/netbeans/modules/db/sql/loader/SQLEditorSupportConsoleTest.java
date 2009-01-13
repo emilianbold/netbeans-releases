@@ -51,7 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -85,7 +85,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
     }
     
     public void setUp() throws Exception {
-        FileObject folder = Repository.getDefault().getDefaultFileSystem().getRoot().createFolder("folder");
+        FileObject folder = FileUtil.getConfigRoot().createFolder("folder");
         fileObject = folder.createData("SQL Command", "sql");
         assertEquals("nbfs", fileObject.getURL().getProtocol());
         

@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -76,7 +75,7 @@ public class Deadlock51637Test extends NbTestCase implements FileChangeListener 
     }
     
     protected void setUp() throws Exception {
-        fs = Repository.getDefault ().getDefaultFileSystem ();
+        fs = FileUtil.getConfigRoot().getFileSystem();
         FileObject root = fs.getRoot ();
         toolbars = FileUtil.createFolder (root, "Toolbars");
         toolbarsFolder = DataFolder.findFolder (toolbars);

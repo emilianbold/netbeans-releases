@@ -38,8 +38,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -86,7 +84,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
                 }
             }
             try {
-                FileObject fo = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), path);
+                FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), path);
                 
                 String s;
                 if (path.endsWith("/")) { // NOI18N

@@ -98,9 +98,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -878,7 +876,6 @@ public final class OpenProjectList {
     public List<DataObject> getTemplatesLRU( Project project,  PrivilegedTemplates priv ) {
         List<FileObject> pLRU = getTemplateNamesLRU( project,  priv );
         List<DataObject> templates = new ArrayList<DataObject>();
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
             FileObject fo = it.next();
             if ( fo != null ) {
@@ -1128,7 +1125,6 @@ public final class OpenProjectList {
         PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
         
         if (priv == null) {
             // when the privileged templates are part of the active lookup,
@@ -1139,7 +1135,7 @@ public final class OpenProjectList {
                 Iterator<String> it = getRecentTemplates().iterator();
                 for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
                     String templateName = it.next();
-                    FileObject fo = sfs.findResource( templateName );
+                    FileObject fo = FileUtil.getConfigFile( templateName );
                     if ( fo == null ) {
                         it.remove(); // Does not exists remove
                     }
@@ -1158,7 +1154,7 @@ public final class OpenProjectList {
         Iterator<String> it = privilegedTemplates.iterator();
         for( int i = result.size(); i < NUM_TEMPLATES && it.hasNext(); i++ ) {
             String path = it.next();
-            FileObject fo = sfs.findResource( path );
+            FileObject fo = FileUtil.getConfigFile( path );
             if ( fo != null ) {
                 result.add( fo );
             }

@@ -50,7 +50,6 @@ import junit.framework.TestCase;
 import org.openide.cookies.ConnectionCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -73,7 +72,7 @@ public class ConnectionSupportTest extends TestCase {
     }
     
     public void testFireEvent () throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject fo = FileUtil.createData (root, "SomeData.txt");
         
         DataObject obj = DataObject.find (fo);

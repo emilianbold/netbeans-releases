@@ -51,8 +51,7 @@ import javax.swing.JSeparator;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -95,8 +94,7 @@ public final class NbSelectInPopupAction extends SystemAction implements Present
         public JPopupMenu getPopupMenu() {
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
-            FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = dfs.findResource("Actions/Window/SelectDocumentNode"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Actions/Window/SelectDocumentNode"); // NOI18N
             DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
             
             if (df != null) {

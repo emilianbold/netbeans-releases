@@ -61,7 +61,7 @@ import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
@@ -127,7 +127,7 @@ public class NewProject extends BasicAction {
     
     private void doPerform () {
         
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N
+        FileObject fo = FileUtil.getConfigFile( "Templates/Project" ); //NOI18N
         final NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
         
