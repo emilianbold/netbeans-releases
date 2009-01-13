@@ -120,7 +120,9 @@ public final class CommandUtils {
     public static PhpUnit getPhpUnit(boolean showCustomizer) {
         final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
         if (Utils.validatePhpUnit(phpUnitPath) != null) {
-            OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            if (showCustomizer) {
+                OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            }
             return null;
         }
         return new PhpUnit(phpUnitPath);
