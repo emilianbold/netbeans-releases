@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gotodeclaration.element.providers;
+package org.netbeans.spi.jumpto.symbol;
 
-import java.io.File;
+import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
- *
- * @author Nick Krasilnikov
+ * A factory to create SymbolProvider.Context
+ * (for test purposes only)
+ * @author Vladimir Kvashin
  */
-public class MacroElementProviderTestCase extends CppSymbolBaseTestCase {
+public class SymbolProviderContextAndResultFactory {
 
-    public MacroElementProviderTestCase(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected File getTestCaseDataDir() {
-        return getQuoteDataDir();
+    public static SymbolProvider.Context createContext(Project project, SearchType searchType, String text) {
+        return new SymbolProvider.Context(project, text, searchType);
     }
 
-     public void testMacroAllRegexp() throws Exception {
-        peformTest(".*", SearchType.REGEXP);
+    public static SymbolProvider.Result createResult(List<? super SymbolDescriptor> result) {
+        return new SymbolProvider.Result(result, new String[] {""});
     }
-
-    public void testMacroDotRegexp() throws Exception {
-        peformTest("CPU.H", SearchType.REGEXP);
-    }
-
-    public void testMacroCaseInsensitiveRegexp() throws Exception {
-        peformTest("_cUs.*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
-    }
-    
-    public void testMacroCamelCase() throws Exception {
-        peformTest("DH", SearchType.CAMEL_CASE);
-    }
-
-    public void testMacroPrefix() throws Exception {
-        peformTest("M", SearchType.PREFIX);
-    }
-
-    public void testMacroCaseInsensitivePrefix() throws Exception {
-        peformTest("m", SearchType.CASE_INSENSITIVE_PREFIX);
-    }
-
-    public void testMacroExactName() throws Exception {
-        peformTest("DISK_H", SearchType.EXACT_NAME);
-    }
-
-    public void testMacroCaseInsensitiveExactName() throws Exception {
-        peformTest("disk_h", SearchType.CASE_INSENSITIVE_EXACT_NAME);
-    }
-    
 }
