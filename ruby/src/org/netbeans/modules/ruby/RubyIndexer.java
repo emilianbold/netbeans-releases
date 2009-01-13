@@ -42,7 +42,6 @@ package org.netbeans.modules.ruby;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -225,26 +224,18 @@ public class RubyIndexer extends EmbeddingIndexer {
     public RubyIndexer() {
     }
 
-    public String getIndexVersion() {
-        return "6.107"; // NOI18N
-    }
-
-    public String getIndexerName() {
-        return "ruby"; // NOI18N
-    }
-    
-    public String getPersistentUrl(File file) {
-        String url;
-        try {
-            url = file.toURI().toURL().toExternalForm();
-            // Make relative URLs for urls in the libraries
-            return RubyIndex.getPreindexUrl(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return file.getPath();
-        }
-
-    }
+//    public String getPersistentUrl(File file) {
+//        String url;
+//        try {
+//            url = file.toURI().toURL().toExternalForm();
+//            // Make relative URLs for urls in the libraries
+//            return RubyIndex.getPreindexUrl(url);
+//        } catch (MalformedURLException ex) {
+//            Exceptions.printStackTrace(ex);
+//            return file.getPath();
+//        }
+//
+//    }
 
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
@@ -282,7 +273,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     }
 
     public boolean acceptQueryPath(String url) {
-        return url.indexOf("jsstubs") == -1; // NOI18N
+        return url.indexOf("rubystubs") == -1; // NOI18N
     }
 
     private static int getModifiersFlag(Set<Modifier> modifiers) {
@@ -298,6 +289,9 @@ public class RubyIndexer extends EmbeddingIndexer {
 
     public static final class Factory extends EmbeddingIndexerFactory {
 
+        public static final String NAME = "ruby"; // NOI18N
+        public static final int VERSION = 8;
+        
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             if (isIndexable(indexable, snapshot)) {
@@ -309,17 +303,16 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         @Override
         public int getIndexVersion() {
-            return 8;
+            return VERSION;
         }
 
         @Override
         public String getIndexerName() {
-            return "ruby"; // NOI18N
+            return NAME;
         }
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
             String extension = snapshot.getSource().getFileObject().getExt();
-
             if (extension.equals("ruby")) { // NOI18N
                 return true;
             }
