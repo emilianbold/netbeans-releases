@@ -223,7 +223,7 @@ final class PHPSQLStatement {
                     addUnknownCodeBlock(seq, buf);
                     break;
             }
-            if (!seq.moveNext() || seq.offset() > stringEnd) {
+            if (!seq.moveNext() || seq.offset() >= stringEnd) {
                 break;
             }
         }
@@ -353,12 +353,6 @@ final class PHPSQLStatement {
             if (text.equals("\"") || text.equals("\'") || seq.token().id() == PHPTokenId.PHP_HEREDOC_TAG) {
                 seq.moveNext();
             }
-            /*
-             else {
-                // Skip past the starting quote character
-                return seq.offset() + 1;
-            }
-            */
 
             return seq.offset();
         }
@@ -375,12 +369,6 @@ final class PHPSQLStatement {
                 seq.movePrevious();
             }
             return seq.offset() + seq.token().length();
-            /*
-            } else {
-                // Subtract 1 to ignore the ending quote character
-                return seq.offset() + seq.token().length() - 1;
-            }
-            */
         }
 
         /*
