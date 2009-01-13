@@ -44,7 +44,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -134,26 +133,27 @@ public class NewQtFormPanel extends CndPanel {
     }
 
     public static FileObject getTemplateFileObject(String formType) {
-        return Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(
-                "Templates/qtFiles/" + formType); // NOI18N
+        return FileUtil.getConfigFile("Templates/qtFiles/" + formType); // NOI18N
     }
 
-    public static DataObject getTemplateDataObject(String formType) throws DataObjectNotFoundException {
+    public static DataObject getTemplateDataObject(String formType) {
         FileObject fileObj = getTemplateFileObject(formType);
         if (fileObj != null) {
-            return DataObject.find(fileObj);
-        } else {
-            throw new DataObjectNotFoundException(fileObj);
+            try {
+                return DataObject.find(fileObj);
+            } catch (DataObjectNotFoundException ex) {
+                // do nothing here, return null later
+            }
         }
+        return null;
     }
 
     public static String getTemplateDisplayName(String formType) {
-        try {
-            DataObject dataObj = getTemplateDataObject(formType);
+        DataObject dataObj = getTemplateDataObject(formType);
+        if (dataObj != null) {
             return dataObj.getNodeDelegate().getDisplayName();
-        } catch (DataObjectNotFoundException ex) {
-            return formType;
         }
+        return formType;
     }
 
 }
