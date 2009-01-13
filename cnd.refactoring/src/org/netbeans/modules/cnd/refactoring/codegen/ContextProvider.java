@@ -52,7 +52,15 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Vladimir Voskresensky
  */
-public class ContextProvider implements CodeGeneratorContextProvider {
+public final class ContextProvider implements CodeGeneratorContextProvider {
+    private static final ContextProvider instance = new ContextProvider();
+    
+    public ContextProvider() {
+    }
+
+    public ContextProvider create() {
+        return instance;
+    }
 
     public void runTaskWithinContext(final Lookup context, final Task task) {
         JTextComponent component = context.lookup(JTextComponent.class);

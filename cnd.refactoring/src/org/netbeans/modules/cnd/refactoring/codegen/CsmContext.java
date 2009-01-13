@@ -40,10 +40,19 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  *
@@ -53,7 +62,10 @@ public final class CsmContext {
     private final CsmFile file;
     private final int offset;
     private List<CsmObject> path = null;
-    private CsmScope closestScope = null;
+    private CsmClass enclosingClass = null;
+    private CsmNamespaceDefinition enclosingNS = null;
+    private CsmFunction enclosingFun = null;
+    private CsmObject objectUnderOffset = null;
     /*package*/CsmContext(CsmFile file, int offset) {
         this.file = file;
         this.offset = offset;
@@ -68,14 +80,29 @@ public final class CsmContext {
         return path;
     }
 
-    public CsmScope getClosestScope() {
-        initPath();
-        return closestScope;
-    }
-
     @Override
     public String toString() {
         return "context: [" + file + ":" + offset + "]"; // NOI18N
+    }
+
+    public CsmClass getEnclosingClass() {
+        initPath();
+        return enclosingClass;
+    }
+
+    public CsmFunction getEnclosingFunction() {
+        initPath();
+        return enclosingFun;
+    }
+
+    public CsmNamespaceDefinition getEnclosingNamespace() {
+        initPath();
+        return enclosingNS;
+    }
+
+    public CsmObject getObjectUnderOffset() {
+        initPath();
+        return objectUnderOffset;
     }
 
     private synchronized void initPath() {
@@ -84,7 +111,45 @@ public final class CsmContext {
         }
         path = new ArrayList<CsmObject>(5);
         path.add(file);
-        closestScope = file;
+        Collection<? extends CsmScopeElement> scopeElements = file.getDeclarations();
+        boolean cont;
+        do {
+            cont = false;
+            for (CsmScopeElement csmScopeElement : scopeElements) {
+                if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
+                    CsmOffsetable elem = (CsmOffsetable) csmScopeElement;
+                    // stop if element starts after offset
+                    if (this.offset < elem.getStartOffset()) {
+                        break;
+                    } else if (this.offset < elem.getEndOffset()) {
+                        // offset is in element
+                        cont = true;
+                        path.add(elem);
+                        rememberObject(elem);
+                        if (CsmKindUtilities.isScope(elem)) {
+                            // deep diving
+                            scopeElements = ((CsmScope)elem).getScopeElements();
+                            break;
+                        } else {
+                            objectUnderOffset = elem;
+                            cont = false;
+                        }
+                    }
+                }
+            }
+        } while (cont);
     }
 
+    private void rememberObject(CsmObject obj) {
+        if (CsmKindUtilities.isNamespaceDefinition(obj)) {
+            enclosingNS = (CsmNamespaceDefinition) obj;
+        } else if (CsmKindUtilities.isClass(obj)) {
+            enclosingClass = (CsmClass)obj;
+        } else if (CsmKindUtilities.isFunction(obj)) {
+            enclosingFun = (CsmFunction) obj;
+            if (CsmKindUtilities.isMethod(enclosingFun)) {
+                enclosingClass = ((CsmMethod)CsmBaseUtilities.getFunctionDeclaration(enclosingFun)).getContainingClass();
+            }
+        }
+    }
 }
