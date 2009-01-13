@@ -268,12 +268,13 @@ made subject to such option by the copyright holder.
         <mkdir dir="${build.launcher.dir}/bin"/>
 
         <!-- make sure correct launchers are present - for pre7 platform use old app.exe launchers -->
+        <pathconvert property="nbexec.dll.found" setonempty="false">
+            <pathfileset include="lib/nbexec.dll">
+                <path refid="cluster.path.id"/>
+            </pathfileset>
+        </pathconvert>
         <condition property="app.exe.prefix" value="" else="pre7_">
-            <available file="nbexec.dll">
-                <filepath>
-                    <dirset dir="${netbeans.dest.dir}" includes="platform*/lib"/>
-                </filepath>
-            </available>
+            <isset property="nbexec.dll.found"/>
         </condition>
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe" failonerror="false" overwrite="true"/>

@@ -107,8 +107,8 @@ public class ConvertClusterPath extends Task {
             Path absPath = new Path(fakeproj, from);
             log("Converted path: '" + absPath.toString() + "'.", Project.MSG_VERBOSE);
 
-            // When cluster does not exist, try to find one with different number
-            final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*)([0-9]+)[/\\\\]?$");
+            // When cluster does not exist, it is either bare name or one with different number
+            final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9]+)?[/\\\\]?$");
             Path convPath = new Path(fakeproj);
 
             for (Iterator it = absPath.iterator(); it.hasNext();) {
@@ -123,7 +123,7 @@ public class ConvertClusterPath extends Task {
                     continue;
                 }
                 if (cm.matches()) {
-                    // cluster is numbered, search for one with different number
+                    // search for corresponding numbered cluster
                     File parent = f.getParentFile();
 
                     if (parent != null) {
@@ -142,14 +142,18 @@ public class ConvertClusterPath extends Task {
                                         + "' does not exist.", getLocation());
                         }
                         if (alternate.length > 0 && alternate[0].isDirectory()) {
-                            log("Cluster '" + fPath + "' not found, using '" + alternate[0].getAbsolutePath() + "' instead.", Project.MSG_WARN);
+                            if (cm.group(2) != null) // numbered cluster in cluster.path, found one with different number, warning
+                                log("Warning: cluster '" + fPath + "' not found, using '" + alternate[0].getAbsolutePath() + "' instead.", Project.MSG_WARN);
+                            else // bare name used
+                                log("Cluster '" + alternate[0].getAbsolutePath() + "' found matching bare name '" + fPath + "'.", Project.MSG_VERBOSE);
+
                             convPath.createPathElement().setLocation(alternate[0]);
                             continue;
                         }
                     }
                 }
                 // no alternate cluster found
-                throw new BuildException("Cluster '" + fPath + "' not found.", getLocation());
+                throw new BuildException("No numbered cluster matching bare name '" + fPath + "' found.", getLocation());
             }
 
             if (id != null && id.length() > 0)

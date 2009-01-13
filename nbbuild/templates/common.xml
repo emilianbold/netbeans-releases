@@ -342,7 +342,7 @@ made subject to such option by the copyright holder.
             <updaterjar>
                 <pathfileset>
                     <path refid="cluster.path.id"/>
-                    <filename name="**/modules/ext/updater.jar"/>
+                    <filename name="modules/ext/updater.jar"/>
                 </pathfileset>
             </updaterjar>
         </makenbm>
