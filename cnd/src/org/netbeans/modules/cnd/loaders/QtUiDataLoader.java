@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
 
 /**
+ * This class is introduced to reuse CndFormat defined in CndAbstractDataLoader.
+ *
  * @author Alexey Vladykin
  */
-public class QtUiDataObject extends MultiDataObject {
+public class QtUiDataLoader extends CndAbstractDataLoader {
 
-    public QtUiDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+    public QtUiDataLoader() {
+        super("org.netbeans.modules.cnd.loaders.QtUiDataObject"); // NOI18N
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new QtUiDataNode(this);
+    protected String getMimeType() {
+        return MIMENames.QT_UI_MIME_TYPE;
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected String actionsContext() {
+        return "Loaders/" + getMimeType() + "/Actions/"; // NOI18N
+    }
+
+    @Override
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new QtUiDataObject(primaryFile, this);
     }
 
 }
