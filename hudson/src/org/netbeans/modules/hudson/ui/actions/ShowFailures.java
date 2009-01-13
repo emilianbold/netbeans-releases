@@ -96,7 +96,6 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     if (qName.equals("errorStackTrace")) { // NOI18N
                         char[] cs = new char[buf.length()];
                         buf.getChars(0, cs.length, cs, 0);
-                        // XXX would like to hyperlink the stack traces, but how? would need to know where source roots were
                         w.write(cs);
                         buf = null;
                     }

@@ -188,18 +188,6 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                                 return;
                             }
                             StatusDisplayer.getDefault().setStatusText(message);
-                            // XXX try to translate to local path.
-                            // For example, http://test.geomatys.fr/hudson/job/GeoAPI/ws/trunk/.svn/entries lists:
-                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi/trunk        [URL of this checkout]
-                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi              [URL of server root]
-                            // whereas ${projdir}/.svn/entries (found via ProjectHudsonProvider?) might list:
-                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi/trunk/geoapi [what is checked out here]
-                            // https://geoapi.svn.sourceforge.net/svnroot/geoapi              [URL of server root]
-                            // Assuming the server root URLs are the same (modulo protocol & minor hostname differences),
-                            // you can infer that http://test.geomatys.fr/hudson/job/GeoAPI/ws/geoapi
-                            // corresponds to ${projdir}. If the contents are identical (modulo CRLF), you can just open the local one.
-                            // If they are different but similar, you can perhaps open the local after adjusting line number.
-                            // Probably a bit easier for Hg since you just need to find the .hg root.
                             try {
                                 DataObject d = DataObject.find(f);
                                 if (row == -1) {
