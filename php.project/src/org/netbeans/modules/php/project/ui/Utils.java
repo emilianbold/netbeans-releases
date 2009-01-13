@@ -212,8 +212,7 @@ public final class Utils {
 
     // input can be with parameters e.g. "/usr/bin/phpunit  --repeat 3"
     public static String validatePhpUnit(String command) {
-        assert command != null;
-        if (command.trim().length() == 0) {
+        if (command == null || command.trim().length() == 0) {
             return NbBundle.getMessage(Utils.class, "MSG_NoPhpUnit");
         }
 
