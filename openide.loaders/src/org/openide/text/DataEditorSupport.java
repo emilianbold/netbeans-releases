@@ -597,7 +597,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         private transient boolean warned;
 
         /** Atomic action used to ignore fileChange event from FileObject.refresh */
-        private FileSystem.AtomicAction action = null;
+        private transient FileSystem.AtomicAction action = null;
 
         /** Constructor.
         * @param obj this support should be associated with
