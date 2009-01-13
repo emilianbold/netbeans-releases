@@ -43,6 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -464,6 +465,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
 
+        //Test modifications
         indexerFactory.indexer.setExpectedFile(new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[]{f3.getURL()}, new URL[0]);
         final OutputStream out = f3.getOutputStream();
@@ -474,6 +476,42 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
+        assertEquals(1, eindexerFactory.indexer.counter);
+
+        //Test file creation
+        File f = FileUtil.toFile(f3);
+        File container = f.getParentFile();
+        File newFile = new File (container,"c.emb");
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL()}, new URL[0]);
+        assertNotNull(FileUtil.createData(newFile));
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
+        assertEquals(1, eindexerFactory.indexer.counter);
+
+        //Test folder creation
+        FileObject containerFo = FileUtil.toFileObject(container);
+        containerFo.getChildren();
+        File newFolder = new File (container,"subfolder");
+        newFile = new File (newFolder,"d.emb");
+        File newFile2 = new File (newFolder,"e.emb");
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL(), newFile2.toURI().toURL()}, new URL[0]);
+        newFolder.mkdirs();
+        touchFile (newFile);
+        touchFile (newFile2);
+        assertEquals(2,newFolder.list().length);
+        containerFo.refresh();
+        containerFo.getFileSystem().refresh(true);
+        FileUtil.toFileObject(newFolder);   //Refresh fs 
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
+        assertEquals(2, eindexerFactory.indexer.counter);
+    }
+
+    private void touchFile (final File file) throws IOException {
+        OutputStream out = new FileOutputStream (file);
+        out.close();
     }
 
 
