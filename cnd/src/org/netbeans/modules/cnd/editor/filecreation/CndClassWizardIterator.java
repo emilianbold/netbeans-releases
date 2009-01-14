@@ -80,7 +80,8 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
         res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
         String headerFileName = (String) wiz.getProperty("headerFileName"); // NOI18N
-        res.add(dobjBro.createFromTemplate(targetFolder, headerFileName));
+        DataFolder headerFolderName = (DataFolder) wiz.getProperty("headerFolder"); // NOI18N
+        res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName));
 
         return res;
     }
