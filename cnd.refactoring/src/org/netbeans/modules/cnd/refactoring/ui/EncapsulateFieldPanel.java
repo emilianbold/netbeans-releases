@@ -236,9 +236,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 parent.stateChanged(null);
             }
         });
-//
-//        initInsertPoints(selectedPath);
-//        
+
+        initInsertPoints(selectedObject);
+        
         initialized = true;
     }
     
@@ -560,45 +560,37 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return result;
     }
     
-//    private void initInsertPoints(TreePath selectedField, CompilationInfo javac) {
-//        Element elm = javac.getTrees().getElement(selectedField);
-//        TypeElement encloser = null;
-//        if (ElementKind.FIELD == elm.getKind()) {
-//            encloser = (TypeElement) elm.getEnclosingElement();
-//        } else {
-//            encloser = (TypeElement) elm;
-//        }
-//
-//        List<InsertPoint> result = new ArrayList<InsertPoint>();
-//        int idx = 0;
+    private void initInsertPoints(CsmObject selectedObject) {
+        CsmClass encloser = csmClassContainer;
+
+        List<InsertPoint> result = new ArrayList<InsertPoint>();
+        int idx = 0;
 //        TreePath encloserPath = javac.getTrees().getPath(encloser);
 //        ClassTree encloserTree = (ClassTree) encloserPath.getLeaf();
-//        for (Tree memberTree : encloserTree.getMembers()) {
-//            if (memberTree.getKind() == Tree.Kind.METHOD) {
-//                Element member = javac.getTrees().getElement(new TreePath(encloserPath, memberTree));
-//                if (member != null && !javac.getElementUtilities().isSynthetic(member)) {
-//                    InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
-//                            EncapsulateFieldPanel.class,
-//                            "MSG_EncapsulateFieldInsertPointMethod",
-//                            CsmField.create(member, javac).getHtmlText()
-//                            ));
-//                    result.add(ip);
-//                }
-//            }
-//            ++idx;
-//        }
-//        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
-//        if (!result.isEmpty()) {
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
-//            for (InsertPoint ip : result) {
-//                jComboInsertPoint.addItem(ip);
-//            }
-//        }
-//        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
-//    }
+        for (CsmMember member : encloser.getMembers()) {
+            if (CsmKindUtilities.isMethod(member)) {
+                CsmMethod method = (CsmMethod) member;
+                InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
+                        EncapsulateFieldPanel.class,
+                        "MSG_EncapsulateFieldInsertPointMethod",
+                        MemberInfo.create(method).getHtmlText()
+                        ));
+                result.add(ip);
+            }
+            ++idx;
+        }
+        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
+        if (!result.isEmpty()) {
+            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
+            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
+            for (InsertPoint ip : result) {
+                jComboInsertPoint.addItem(ip);
+            }
+        }
+        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+    }
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
@@ -608,9 +600,11 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
             String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
             if (getterName != null || setterName != null) {
-                CsmField field = (CsmField) row.get(0);
+                // this item contains info about fields
+                @SuppressWarnings("unchecked")
+                MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
                 result.add(new EncapsulateFieldInfo(
-                        field,
+                        mi.getElementHandle(),
                         "".equals(getterName)?null:getterName, // NOI18N
                         "".equals(setterName)?null:setterName)); // NOI18N
             }
