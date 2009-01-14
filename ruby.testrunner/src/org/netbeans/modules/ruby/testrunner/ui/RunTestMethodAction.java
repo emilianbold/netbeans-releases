@@ -81,13 +81,6 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         }
     }
 
-    private boolean useClassLocation() {
-        // for dynashoulda tests we need to use class location -- shoulda test
-        // methods are not indexed.
-        return testcase.getName() != null && testcase.getName().startsWith("test: "); //NOI18N
-
-    }
-
     @Override
     protected void doRspecRun(FileObject testFile, FileLocation location) {
         getTestRunner(TestRunner.TestType.valueOf(testcase.getType())).runSingleTest(testFile, String.valueOf(location.line), debug);
