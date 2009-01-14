@@ -88,6 +88,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.reflection.CachedClass;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
@@ -1871,7 +1872,8 @@ public class CompletionHandler implements CodeCompletionHandler {
             GroovyIndex index = null;
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
-                index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+                index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                        Collections.singleton(ClassPath.SOURCE), null));
             }
 
             if (index != null) {
