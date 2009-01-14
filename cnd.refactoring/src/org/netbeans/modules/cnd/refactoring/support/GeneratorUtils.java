@@ -38,14 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.refactoring.codegen;
+package org.netbeans.modules.cnd.refactoring.support;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -153,39 +155,26 @@ public class GeneratorUtils {
 //        return result;
 //    }
 //
-//    public static void scanForFieldsAndConstructors(CompilationInfo info, final TreePath clsPath, final Set<VariableElement> initializedFields, final Set<VariableElement> uninitializedFields, final List<ExecutableElement> constructors) {
-//        final Trees trees = info.getTrees();
-//        new TreePathScanner<Void, Boolean>() {
-//            @Override
-//            public Void visitVariable(VariableTree node, Boolean p) {
-//                if (ERROR.contentEquals(node.getName()))
-//                    return null;
-//                Element el = trees.getElement(getCurrentPath());
-//                if (el != null && el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.STATIC) && node.getInitializer() == null && !initializedFields.remove(el))
-//                    uninitializedFields.add((VariableElement)el);
-//                return null;
-//            }
-//            @Override
-//            public Void visitAssignment(AssignmentTree node, Boolean p) {
-//                Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
-//                if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
-//                    initializedFields.add((VariableElement)el);
-//                return null;
-//            }
-//            @Override
-//            public Void visitClass(ClassTree node, Boolean p) {
-//                //do not analyse the inner classes:
-//                return p ? super.visitClass(node, false) : null;
-//            }
-//            @Override
-//            public Void visitMethod(MethodTree node, Boolean p) {
-//                Element el = trees.getElement(getCurrentPath());
-//                if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
-//                    constructors.add((ExecutableElement)el);
-//                return null;
-//            }
-//        }.scan(clsPath, Boolean.TRUE);
-//    }
+    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> initializedFields, final Set<CsmField> uninitializedFields, final List<CsmConstructor> constructors) {
+        for (CsmMember member : clsPath.getMembers()) {
+            if (CsmKindUtilities.isField(member)) {
+                CsmField field = (CsmField) member;
+                if (!field.isStatic()) {
+                    if (field.getInitialValue() == null) {
+                        if (!initializedFields.remove(field)) {
+                            uninitializedFields.add(field);
+                        }
+                    } else {
+                        if (!initializedFields.remove(field)) {
+                            uninitializedFields.add(field);
+                        }
+                    }
+                }
+            } else if (CsmKindUtilities.isConstructor(member)) {
+                constructors.add((CsmConstructor)member);
+            }
+        }
+    }
 //
 //    public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
 //        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
@@ -294,15 +283,12 @@ public class GeneratorUtils {
 //    }
 //
     public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        CharSequence name = field.getName();
-        assert name.length() > 0;
-        CsmType type = field.getType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
-//        Types types = info.getTypes();
-        List<CsmMethod> candidates = methods.get(sb.toString());
+        String getter = computeGetterName(field);
+        List<CsmMethod> candidates = methods.get(getter);
         if (candidates != null) {
+            CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
+                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;
@@ -310,6 +296,55 @@ public class GeneratorUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Removes the class field prefix from  the identifer of a field.
+     * For example, if the class field prefix is "m_", the identifier "m_name"
+     * is stripped to become "name". Or identifier is "pValue" is stipped to become "Value"
+     * @param identifierString The identifer to strip.
+     * @return The stripped identifier.
+     */
+    private static String stripFieldPrefix(String identifierString) {
+        String stripped = identifierString;
+        // remove usual C++ prefixes
+        if (identifierString.startsWith("m_")) { // NOI18N
+            stripped = identifierString.substring(2);
+        } else if (identifierString.length() > 1) {
+            if (identifierString.charAt(0) == 'p' && Character.isUpperCase(identifierString.charAt(1))) {
+                // this is like pointer "pValue"
+                stripped = identifierString.substring(1);
+            }
+        }
+        return stripped;
+    }
+
+    private static StringBuilder getCapitalizedName(CsmField field) {
+        StringBuilder name = new StringBuilder(stripFieldPrefix(field.getName().toString()));
+        while (name.length() > 1 && name.charAt(0) == '_') //NOI18N
+        {
+            name.deleteCharAt(0);
+        }
+        if (name.length() > 0) {
+            name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        }
+
+        name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        return name;
+    }
+
+    public static String computeSetterName(CsmField field) {
+        StringBuilder name = getCapitalizedName(field);
+
+        name.insert(0, "set"); //NOI18N
+        return name.toString();
+    }
+
+    public static String computeGetterName(CsmField field) {
+        StringBuilder name = getCapitalizedName(field);
+        CsmType type = field.getType();
+        name.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        return name.toString();
     }
 
     private static enum TypeKind {
@@ -335,15 +370,12 @@ public class GeneratorUtils {
     }
 
     public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        CharSequence name = field.getName();
-        assert name.length() > 0;
-        CsmType type = field.getType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, "set"); //NOI18N
-//        Types types = info.getTypes();
-        List<CsmMethod> candidates = methods.get(sb.toString());
+        String setter = computeSetterName(field);
+        List<CsmMethod> candidates = methods.get(setter);
         if (candidates != null) {
+            CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
+                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;
@@ -516,7 +548,7 @@ public class GeneratorUtils {
 //    }
 //
 
-    static DialogDescriptor createDialogDescriptor(JComponent content, String label) {
+    public static DialogDescriptor createDialogDescriptor(JComponent content, String label) {
         JButton[] buttons = new JButton[2];
         buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button"));
         buttons[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GeneratorUtils.class, "A11Y_Generate"));
@@ -541,26 +573,6 @@ public class GeneratorUtils {
 //    }
 //
 
-    public static StringBuilder getCapitalizedName(CharSequence cs) {
-        StringBuilder sb = new StringBuilder(cs);
-        // remove usual C++ prefixes
-        if (sb.toString().startsWith("m_")) { // NOI18N
-            sb.delete(0, 1);
-        } else if (sb.length() > 1) {
-            if (sb.charAt(0) == 'p' && Character.isUpperCase(sb.charAt(1))) {
-                // this is like pointer "pValue"
-                sb.deleteCharAt(0);
-            }
-        }
-        while (sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
-        {
-            sb.deleteCharAt(0);
-        }
-        if (sb.length() > 0) {
-            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        }
-        return sb;
-    }
 //
 //    private static class ClassMemberComparator {
 //

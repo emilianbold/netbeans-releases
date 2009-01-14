@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.refactoring.codegen.ui;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.refactoring.codegen.GeneratorUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.codegen.GetterSetterGenerator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
