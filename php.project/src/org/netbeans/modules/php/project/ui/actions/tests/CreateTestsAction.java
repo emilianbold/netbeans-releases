@@ -88,7 +88,6 @@ public final class CreateTestsAction extends NodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
-    private static final String TMP_FILE_SUFFIX = ".nb-tmp"; // NOI18N
     private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
     private static final String INCLUDE_PATH_TPL = "ini_set(\"include_path\", %sini_get(\"include_path\"));"; // NOI18N
     private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
@@ -313,16 +312,11 @@ public final class CreateTestsAction extends NodeAction {
             return generatedFile;
         }
 
-        if (!generatedFile.renameTo(testFile)) {
-            // what to do now??
-            return generatedFile;
-        }
-        assert testFile.isFile() : "(1) Test file must exist: " + testFile;
-        testFile = adjustFileContent(testFile, getIncludePaths(generatedFile, testFile, testDirectory));
+        testFile = adjustFileContent(generatedFile, testFile, getIncludePaths(generatedFile, testFile, testDirectory));
         if (testFile == null) {
             return null;
         }
-        assert testFile.isFile() : "(2) Test file must exist: " + testFile;
+        assert testFile.isFile() : "Test file must exist: " + testFile;
         return testFile;
     }
 
@@ -338,17 +332,14 @@ public final class CreateTestsAction extends NodeAction {
         return includePaths;
     }
 
-    private File adjustFileContent(File testFile, List<String> includePaths) {
-        File tmpFile = new File(testFile.getAbsolutePath() + TMP_FILE_SUFFIX);
-        tmpFile.deleteOnExit();
-        assert !tmpFile.exists() : "TMP file should not exist: " + tmpFile;
+    private File adjustFileContent(File generatedFile, File testFile, List<String> includePaths) {
         try {
             // input
-            BufferedReader in = new BufferedReader(new FileReader(testFile));
+            BufferedReader in = new BufferedReader(new FileReader(generatedFile));
 
             try {
                 // output
-                BufferedWriter out = new BufferedWriter(new FileWriter(tmpFile));
+                BufferedWriter out = new BufferedWriter(new FileWriter(testFile));
 
                 try {
                     // data
@@ -376,17 +367,11 @@ public final class CreateTestsAction extends NodeAction {
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
-            return testFile;
+            return null;
         }
 
-        if (!testFile.delete()) {
-            LOGGER.info("Cannot delete file " + testFile);
-            return testFile;
-        }
-        if (!tmpFile.renameTo(testFile)) {
-            LOGGER.info(String.format("Cannot rename file %s to %s", tmpFile, testFile));
-            tmpFile.delete();
-            return null;
+        if (!generatedFile.delete()) {
+            LOGGER.info("Cannot delete generated file " + generatedFile);
         }
         return testFile;
     }
