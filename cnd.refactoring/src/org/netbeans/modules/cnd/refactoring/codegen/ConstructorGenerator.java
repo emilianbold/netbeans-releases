@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
 import java.util.ArrayList;
@@ -47,9 +48,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
@@ -70,17 +73,11 @@ public class ConstructorGenerator implements CodeGenerator {
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
-//            CompilationController controller = context.lookup(CompilationController.class);
             CsmContext path = context.lookup(CsmContext.class);
             if (component == null || path == null) {
                 return ret;
             }
-//            try {
-//                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//            } catch (IOException ioe) {
-//                return ret;
-//            }
-            CsmClassifier typeElement = path.getEnclosingClass();
+            CsmClass typeElement = path.getEnclosingClass();
             if (typeElement == null) {
                 return ret;
             }
@@ -88,18 +85,25 @@ public class ConstructorGenerator implements CodeGenerator {
             final Set<CsmField> uninitializedFields = new LinkedHashSet<CsmField>();
             final List<CsmConstructor> constructors = new ArrayList<CsmConstructor>();
             final List<CsmConstructor> inheritedConstructors = new ArrayList<CsmConstructor>();
-//            TypeMirror superClassType = typeElement.getSuperclass();
-            CsmClassifier superClass = null;
-//            if (superClassType.getKind() == TypeKind.DECLARED) {
-//                superClass = (TypeElement) ((DeclaredType) superClassType).asElement();
-//                for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
-//                    inheritedConstructors.add(executableElement);
-//                }
-//            }
-//            GeneratorUtils.scanForFieldsAndConstructors(controller, path, initializedFields, uninitializedFields, constructors);
+            CsmClass superClass = null;
+            // check base class
+            for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
+                CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
+                if (baseClass != null) {
+                    superClass = baseClass;
+                    for (CsmMember member : baseClass.getMembers()) {
+                        if (CsmKindUtilities.isConstructor(member) && CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility())) {
+                            inheritedConstructors.add((CsmConstructor)member);
+                        }
+                    }
+                    // TODO: for now we stop on the first base class
+                    break;
+                }
+            }
+            GeneratorUtils.scanForFieldsAndConstructors(typeElement, initializedFields, uninitializedFields, constructors);
             CsmConstructor constructorHandle = null;
             ElementNode.Description constructorDescription = null;
-            if (!CsmKindUtilities.isEnum(typeElement) && inheritedConstructors.size() == 1) {
+            if (inheritedConstructors.size() == 1) {
                 constructorHandle = inheritedConstructors.get(0);
             } else if (inheritedConstructors.size() > 1) {
                 List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();

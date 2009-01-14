@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.refactoring.support;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -153,39 +155,26 @@ public class GeneratorUtils {
 //        return result;
 //    }
 //
-//    public static void scanForFieldsAndConstructors(CompilationInfo info, final TreePath clsPath, final Set<VariableElement> initializedFields, final Set<VariableElement> uninitializedFields, final List<ExecutableElement> constructors) {
-//        final Trees trees = info.getTrees();
-//        new TreePathScanner<Void, Boolean>() {
-//            @Override
-//            public Void visitVariable(VariableTree node, Boolean p) {
-//                if (ERROR.contentEquals(node.getName()))
-//                    return null;
-//                Element el = trees.getElement(getCurrentPath());
-//                if (el != null && el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.STATIC) && node.getInitializer() == null && !initializedFields.remove(el))
-//                    uninitializedFields.add((VariableElement)el);
-//                return null;
-//            }
-//            @Override
-//            public Void visitAssignment(AssignmentTree node, Boolean p) {
-//                Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
-//                if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
-//                    initializedFields.add((VariableElement)el);
-//                return null;
-//            }
-//            @Override
-//            public Void visitClass(ClassTree node, Boolean p) {
-//                //do not analyse the inner classes:
-//                return p ? super.visitClass(node, false) : null;
-//            }
-//            @Override
-//            public Void visitMethod(MethodTree node, Boolean p) {
-//                Element el = trees.getElement(getCurrentPath());
-//                if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
-//                    constructors.add((ExecutableElement)el);
-//                return null;
-//            }
-//        }.scan(clsPath, Boolean.TRUE);
-//    }
+    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> initializedFields, final Set<CsmField> uninitializedFields, final List<CsmConstructor> constructors) {
+        for (CsmMember member : clsPath.getMembers()) {
+            if (CsmKindUtilities.isField(member)) {
+                CsmField field = (CsmField) member;
+                if (!field.isStatic()) {
+                    if (field.getInitialValue() == null) {
+                        if (!initializedFields.remove(field)) {
+                            uninitializedFields.add(field);
+                        }
+                    } else {
+                        if (!initializedFields.remove(field)) {
+                            uninitializedFields.add(field);
+                        }
+                    }
+                }
+            } else if (CsmKindUtilities.isConstructor(member)) {
+                constructors.add((CsmConstructor)member);
+            }
+        }
+    }
 //
 //    public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
 //        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
