@@ -378,7 +378,8 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static RequestProcessor requestProcessor;
-    private RequestProcessor getRequestProcessor () {
+    // Accessed from test
+    RequestProcessor getRequestProcessor () {
         RequestProcessor rp = treeModelRoot.getRequestProcessor();
         if (rp != null) {
             return rp;
