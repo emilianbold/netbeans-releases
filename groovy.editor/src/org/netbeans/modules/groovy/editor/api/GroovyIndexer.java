@@ -219,7 +219,14 @@ public class GroovyIndexer extends EmbeddingIndexer {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            //todo: Implement me
+            try {
+                IndexingSupport support = IndexingSupport.getInstance(context);
+                for (Indexable indexable : deleted) {
+                    support.removeDocuments(indexable);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     
