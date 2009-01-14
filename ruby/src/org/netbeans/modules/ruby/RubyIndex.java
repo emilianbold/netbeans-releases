@@ -112,14 +112,16 @@ public final class RubyIndex {
 
     private final QuerySupport querySupport;
     
-    /** Creates a new instance of JsIndex */
     private RubyIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
     }
 
     public static RubyIndex get(Collection<FileObject> roots) {
         try {
-            return new RubyIndex(QuerySupport.forRoots("ruby", 8, roots.toArray(new FileObject[roots.size()])));
+            return new RubyIndex(QuerySupport.forRoots(
+                    RubyIndexer.Factory.NAME,
+                    RubyIndexer.Factory.VERSION,
+                    roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
             return EMPTY;
