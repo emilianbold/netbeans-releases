@@ -113,10 +113,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
     // the tasklist is open...
     private static GsfTaskProvider INSTANCE;
     public GsfTaskProvider() {
-        this(LanguageRegistry.getInstance().getLanguagesDisplayName());
+        this(getAllLanguageNames());
         INSTANCE = this;
     }
-    
+
     private GsfTaskProvider(String languageList) {
         super(NbBundle.getMessage(GsfTaskProvider.class, "GsfTasks", languageList),
               NbBundle.getMessage(GsfTaskProvider.class, "GsfTasksDesc", languageList), null);
@@ -423,5 +423,17 @@ public class GsfTaskProvider extends PushTaskScanner  {
     
     private static String severityToTaskListString(Severity severity){
         return (severity == Severity.ERROR) ? TASKLIST_ERROR_HINT : TASKLIST_WARNING_HINT;
+    }
+
+    /* package */ static String getAllLanguageNames() {
+        StringBuilder sb = new StringBuilder();
+        for (Language language : LanguageRegistry.getInstance()) {
+            if (sb.length() > 0) {
+                sb.append(", "); //NOI18N
+            }
+            sb.append(language.getDisplayName());
+        }
+
+        return sb.toString();
     }
 }

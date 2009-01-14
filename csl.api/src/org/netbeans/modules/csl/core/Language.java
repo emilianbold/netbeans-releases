@@ -291,7 +291,7 @@ public final class Language {
     
     @Override
     public String toString() {
-        return mime + ":" + getDisplayName();
+        return super.toString() + "[" + mime; //NOI18N
     }
 
     /**
