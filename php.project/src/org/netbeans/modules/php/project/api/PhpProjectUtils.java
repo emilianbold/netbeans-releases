@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.api;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
+import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
@@ -57,6 +58,8 @@ public final class PhpProjectUtils {
      * @return <code>true</code> if project represents a PHP project.
      */
     public static boolean isPhpProject(Project project) {
-        return project instanceof PhpProject;
+        Parameters.notNull("project", project);
+
+        return project.getLookup().lookup(PhpProject.class) != null;
     }
 }

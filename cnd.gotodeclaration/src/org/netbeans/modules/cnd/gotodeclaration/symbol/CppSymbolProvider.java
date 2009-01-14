@@ -47,17 +47,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.NbBundle;
@@ -72,77 +84,119 @@ public class CppSymbolProvider implements SymbolProvider {
     private static class Cache {
         public final String text;
         public final SearchType searchType;
-        private final Map<CsmProject, List<CppSymbolDescriptor>> data;
+        private final Map<Project, List<CppSymbolDescriptor>> data;
         public Cache(SearchType searchType, String text) {
             this.text = text;
             this.searchType = searchType;
-            this.data = new HashMap<CsmProject, List<CppSymbolDescriptor>>();
+            this.data = new HashMap<Project, List<CppSymbolDescriptor>>();
         }
     }
 
     Cache cache;
     private boolean cancelled;
     private static final boolean TRACE = Boolean.getBoolean("cnd.gotosymbol.trace");
+    private static final boolean USE_CACHE = CndUtils.getBoolean("cnd.gotosymbol.cache", true);
 
     public CppSymbolProvider() {
         if (TRACE) { trace("ctor"); } // NOI18N
     }
 
-    public void cancel() {
+    public synchronized void cancel() {
         if (TRACE) { trace("cancel"); } // NOI18N
         cancelled = true;
         cache = null;
     }
 
-    public void cleanup() {
+    public synchronized void cleanup() {
         if (TRACE) { trace("cleanup"); } // NOI18N
         cancelled = false;
         cache = null;
     }
 
-    CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
+    private CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
         final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-        return new CsmSelect.NameAcceptor() {
-            public boolean accept(CharSequence name) {
-                return nameMatcher.accept(name.toString());
-            }
-        };
+        if (nameMatcher == null) {
+            return null;
+        } else {
+            return new CsmSelect.NameAcceptor() {
+                public boolean accept(CharSequence name) {
+                    return nameMatcher.accept(name.toString());
+                }
+            };
+        }
     }
 
-    public void computeSymbolNames(Context context, Result result) {
+    // synchronized is just in case here - it shouldn't be called async
+    public synchronized void computeSymbolNames(Context context, Result result) {
         if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
+        if (nameAcceptor == null) {
+            if (CndUtils.isDebugMode()) {
+                Logger.global.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
+            }
+            return;
+        }
 
+        List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
+
+        boolean filled = false;
+        if (cache != null && context.getSearchType() == cache.searchType && context.getText().startsWith(cache.text)) {
+            List<CppSymbolDescriptor> cached = cache.data.get(context.getProject());
+            if (cached != null) {
+                filled = true;
+                long time = System.currentTimeMillis();
+                for (CppSymbolDescriptor desc : cached) {
+                    if (nameAcceptor.accept(desc.getRawName())) {
+                        symbols.add(desc);
+                    }
+                }
+                if (TRACE) { trace("Narrowing %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
+            }
+        }
+        if (!filled) {
+            long time = System.currentTimeMillis();
+            collect(context, nameAcceptor, symbols);
+            if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
+        }
+        
+        if (cancelled) {
+            cache = null;
+        } else {
+            if (USE_CACHE) {
+                cache = new Cache(context.getSearchType(), context.getText());
+                cache.data.put(context.getProject(), symbols);
+            }
+            result.addResult(symbols);
+        }
+        cancelled = false;
+    }
+
+    private void collect(Context context, NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
         if (context.getProject() == null) {
-            List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
             Set<CsmProject> libs = new HashSet<CsmProject>();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
-                collectLibs(csmProject, libs);                
+                collectLibs(csmProject, libs);
             }
-            for(CsmProject csmProject : libs) {
+            for (CsmProject csmProject : libs) {
                 if (cancelled) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
             }
-            result.addResult(symbols);
         } else {
             NativeProject nativeProject = context.getProject().getLookup().lookup(NativeProject.class);
             if (nativeProject != null) {
                 CsmProject csmProject = CsmModelAccessor.getModel().getProject(nativeProject);
                 if (csmProject != null) {
-                    List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
                     collectSymbols(csmProject, nameAcceptor, symbols);
-                    result.addResult(symbols);
                 }
             }
         }
-        cancelled = false;
     }
 
     private void collectLibs(CsmProject project, Collection<CsmProject> libs) {
@@ -156,14 +210,15 @@ public class CppSymbolProvider implements SymbolProvider {
 
     private void collectSymbols(CsmProject csmProject, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
 
-        CsmSelect.CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(nameAcceptor);
         // process project namespaces
-        collectSymbols(csmProject.getGlobalNamespace(), filter, symbols);
+        collectSymbols(csmProject.getGlobalNamespace(), nameAcceptor, symbols);
+
+        CsmSelect.CsmFilter nameFilter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(nameAcceptor);
 
         // process project files
         for(CsmFile csmFile : csmProject.getAllFiles()) {
             // macros
-            Iterator<CsmMacro> macros = CsmSelect.getDefault().getMacros(csmFile, filter);
+            Iterator<CsmMacro> macros = CsmSelect.getDefault().getMacros(csmFile, nameFilter);
             while (macros.hasNext() && !cancelled) {
                 symbols.add(new CppSymbolDescriptor(macros.next()));
             }
@@ -171,15 +226,25 @@ public class CppSymbolProvider implements SymbolProvider {
                 break;
             }
             // static functions
-            Iterator<CsmFunction> funcs = CsmSelect.getDefault().getStaticFunctions(csmFile, filter);
+            Iterator<CsmFunction> funcs = CsmSelect.getDefault().getStaticFunctions(csmFile, nameFilter);
             while (funcs.hasNext() && !cancelled) {
-                symbols.add(new CppSymbolDescriptor(funcs.next()));
+                CsmFunction func = funcs.next();
+                if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
+                    symbols.add(new CppSymbolDescriptor(func));
+                } else {
+                    // static functions definitions are not returned by Select;
+                    // neither do they reside in namespace
+                    CsmFunctionDefinition definition = func.getDefinition();
+                    if (definition != null ) {
+                        symbols.add(new CppSymbolDescriptor(definition));
+                    }
+                }
             }
             if (cancelled) {
                 break;
             }
             // static variables
-            Iterator<CsmFunction> vars = CsmSelect.getDefault().getStaticFunctions(csmFile, filter);
+            Iterator<CsmVariable> vars = CsmSelect.getDefault().getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled) {
                 symbols.add(new CppSymbolDescriptor(vars.next()));
             }
@@ -190,10 +255,70 @@ public class CppSymbolProvider implements SymbolProvider {
 
     }
 
-    private void collectSymbols(CsmNamespace namespace, CsmSelect.CsmFilter filter, List<CppSymbolDescriptor> symbols) {
-        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(namespace, filter);
-        while (declarations.hasNext() && ! cancelled) {
-            symbols.add(new CppSymbolDescriptor(declarations.next()));
+    private void collectSymbols(CsmNamespace namespace, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
+
+        // we can filter out "simple" (non-class) namespace elements via CsmSelect;
+        // later we have to instantiate classes and enums to check their *members* as well
+
+        CsmSelect.CsmFilter nameFilter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(nameAcceptor);
+
+        CsmSelect.CsmFilter simpleKindFilter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+                CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.TYPEDEF);
+
+        CsmSelect.CsmFilter simpleNameAndKindFilter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(nameFilter, simpleKindFilter);
+        
+        Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(namespace, simpleNameAndKindFilter);
+        while (declarations.hasNext()) {
+            CsmOffsetableDeclaration decl = declarations.next();
+            if (CsmKindUtilities.isFunction(decl)) {
+                // do not add declarations if their definitions exist
+                if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                    symbols.add(new CppSymbolDescriptor(decl));
+                } else {
+                    CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
+                    if (definition == null || definition == decl) {
+                        symbols.add(new CppSymbolDescriptor(decl));
+                    }
+                }
+            } else {
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
+        }
+
+        // instantiate classes and enums to check them and their members as well
+        CsmSelect.CsmFilter compoundKindFilter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+                CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.STRUCT);
+
+        declarations = CsmSelect.getDefault().getDeclarations(namespace, compoundKindFilter);
+        while (declarations.hasNext()) {
+            addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
+        }
+
+        // process nested namespaces
+        for (CsmNamespace child : namespace.getNestedNamespaces()) {
+            collectSymbols(child, nameAcceptor, symbols);
+        }
+    }
+
+    /**
+     * Is called for classes, enums and their members.
+     * Checks name, if it suites, adds result to symbols collection.
+     * Does the same recursively (with members/enumerators)
+     */
+    private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
+        if (nameAcceptor.accept(decl.getName())) {
+            symbols.add(new CppSymbolDescriptor(decl));
+        }
+        if (CsmKindUtilities.isClass(decl)) {
+            for (CsmMember member : ((CsmClass) decl).getMembers()) {
+                addDeclarationIfNeed(member, nameAcceptor, symbols);
+            }
+        } else if (CsmKindUtilities.isEnum(decl)) {
+            for (CsmEnumerator enumerator : ((CsmEnum) decl).getEnumerators()) {
+                if (nameAcceptor.accept(enumerator.getName())) {
+                    symbols.add(new CppSymbolDescriptor(enumerator));
+                }
+            }
         }
     }
 
@@ -204,7 +329,6 @@ public class CppSymbolProvider implements SymbolProvider {
     public String name() {
         return "C/C++"; //NOI18N
     }
-
 
     private String toString(Context context) {
         return String.format("Context: prj=%s type=%s text=%s", context.getProject(), context.getSearchType(), context.getText()); //NOI18N

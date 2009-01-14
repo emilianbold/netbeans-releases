@@ -49,6 +49,9 @@ public class CsmFileFilter {
         showTypedef = ps.getBoolean("ShowTypedef", showTypedef); // NOI18N
         showVariable = ps.getBoolean("ShowVariable", showVariable); // NOI18N
         showUsing = ps.getBoolean("ShowMacro", showUsing); // NOI18N
+        sortByName = SortMode.valueOf(ps.get("SortByName", sortByName.name())); // NOI18N
+        groupByKind = ps.getBoolean("groupByKind", groupByKind); // NOI18N
+        expandAll = ps.getBoolean("expandAll", expandAll); // NOI18N
     }
 
     public boolean isApplicable(CsmOffsetable object){
@@ -135,10 +138,45 @@ public class CsmFileFilter {
         ps.putBoolean("ShowUsing", showUsing); // NOI18N
     }
 
+    public SortMode getSortMode() {
+        return sortByName;
+    }
+
+    public void setSortMode(SortMode sortByName) {
+        this.sortByName = sortByName;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.put("SortByName", sortByName.name()); // NOI18N
+    }
+
+    public boolean isGroupByKind() {
+        return groupByKind;
+    }
+
+    public void setGroupByKind(boolean groupKind) {
+        this.groupByKind = groupKind;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("groupByKind", groupByKind); // NOI18N
+    }
+
+    public boolean isExpandAll() {
+        return expandAll;
+    }
+
+    public void setExpandAll(boolean expandAll) {
+        this.expandAll = expandAll;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("expandAll", expandAll); // NOI18N
+    }
+
     private boolean showInclude = true;
     private boolean showMacro = true;
     private boolean showForwardFunctionDeclarations = false;
     private boolean showTypedef = true;
     private boolean showVariable = true;
     private boolean showUsing = true;
+    private SortMode sortByName = SortMode.Name;
+    private boolean groupByKind = false;
+    private boolean expandAll = true;
+
+    public enum SortMode { Name, Offset }
 }

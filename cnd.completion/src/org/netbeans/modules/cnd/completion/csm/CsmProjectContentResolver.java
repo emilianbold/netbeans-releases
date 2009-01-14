@@ -728,7 +728,7 @@ public final class CsmProjectContentResolver {
     private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
             Collection<CsmScopeElement> out) {
         CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
-        CsmFilter filter = builder.createKindFilter(new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_DEFINITION});
+        CsmFilter filter = builder.createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDefault().getDeclarations(file, filter); itFile.hasNext();) {
             CsmOffsetableDeclaration decl = itFile.next();
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {

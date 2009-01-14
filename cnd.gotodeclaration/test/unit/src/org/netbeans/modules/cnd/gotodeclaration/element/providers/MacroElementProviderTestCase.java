@@ -40,24 +40,13 @@
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import org.netbeans.junit.Manager;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.gotodeclaration.element.providers.BaseProvider.ProviderDelegate;
-import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
-import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
  *
  * @author Nick Krasilnikov
  */
-public class MacroElementProviderTestCase extends ProjectBasedTestCase {
+public class MacroElementProviderTestCase extends CppSymbolBaseTestCase {
 
     public MacroElementProviderTestCase(String testName) {
         super(testName);
@@ -100,72 +89,4 @@ public class MacroElementProviderTestCase extends ProjectBasedTestCase {
         peformTest("disk_h", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    
-    protected final File getQuoteDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.gotodeclaration", "cnd.modelimpl"); // NOI18N
-        String filePath = "common/quote_nosyshdr"; // NOI18N
-        return Manager.normalizeFile(new File(dataPath, filePath));
-    }
-
-    protected void peformTest(String text, SearchType type) throws Exception {
-        MacroProvider fvp = new MacroProvider();
-        ProviderDelegate pd = fvp.createDelegate();
-
-        CsmProject project = getProject();
-        assertNotNull(project);
-
-        Collection elems = pd.getElements(project, text, type, true);
-        assertNotNull(elems);
-
-        List<ElementDescriptor> items = new ArrayList<ElementDescriptor>();
-        items.addAll(elems);
-
-        Collections.sort(items, new TypeComparator());
-
-        for (ElementDescriptor elementDescriptor : items) {
-            ref(elementDescriptor.getProjectName() + " " + elementDescriptor.getDisplayName()); // NOI18N
-        }
-
-        File output = new File(getWorkDir(), getName() + ".ref"); // NOI18N
-        File goldenDataFile = getGoldenFile(getName() + ".ref");
-
-
-        if (!goldenDataFile.exists()) {
-            fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath()); // NOI18N
-        }
-        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
-            // copy golden
-            File goldenCopyFile = new File(getWorkDir(), getName() + ".ref.golden"); // NOI18N
-            CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
-        }
-    }
-
-    private class TypeComparator implements Comparator<ElementDescriptor> {
-
-        public int compare(ElementDescriptor t1, ElementDescriptor t2) {
-            int result = compareStrings(t1.getDisplayName(), t2.getDisplayName());
-            if (result == 0) {
-                result = compareStrings(t1.getContextName(), t2.getContextName());
-                if (result == 0) {
-                    result = compareStrings(t1.getProjectName(), t2.getProjectName());
-                    if (result == 0) {
-                        result = compareStrings(t1.getAbsoluteFileName(), t2.getAbsoluteFileName());
-                    }
-                }
-            }
-            return result;
-        }
-    }
-
-    private int compareStrings(String s1, String s2) {
-        if (s1 == null) {
-            s1 = ""; // NOI18N
-        }
-        if (s2 == null) {
-            s2 = ""; // NOI18N
-        }
-        return s1.compareTo(s2);
-    }
 }

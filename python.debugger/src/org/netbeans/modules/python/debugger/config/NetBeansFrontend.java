@@ -72,7 +72,7 @@ public class NetBeansFrontend {
   private final static boolean _DEBUG_FLAG_ = true;
 
   public static String getVersion() {
-    return "nbPython debugger V0.0.8";
+    return "nbPython debugger V0.0.10";
   }
 
   /**

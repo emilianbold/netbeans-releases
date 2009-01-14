@@ -539,6 +539,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             declarationsLock.writeLock().lock();
             uids = declarations.values();
             declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+            staticFunctionDeclarationUIDs.clear();
         } finally {
             declarationsLock.writeLock().unlock();
         }

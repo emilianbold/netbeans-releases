@@ -82,12 +82,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
@@ -160,9 +158,6 @@ public class JaxWsUtils {
     private static final String SOAP12_VERSION = "http://www.w3.org/2003/05/soap/bindings/HTTP/";  //NOI18N
     private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
     private static int projectType;
-    protected static final int JSE_PROJECT_TYPE = 0;
-    protected static final int WEB_PROJECT_TYPE = 1;
-    protected static final int EJB_PROJECT_TYPE = 2;
     private static boolean jsr109Supported = false;
 
     /** Creates a new instance of JaxWsUtils */
@@ -234,7 +229,7 @@ public class JaxWsUtils {
                     ClassTree modifiedClass = make.addClassImplementsClause(javaClass, implClause);
 
                     // add @Stateless annotation
-                    if (projectType == EJB_PROJECT_TYPE) {//EJB project
+                    if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
@@ -408,7 +403,7 @@ public class JaxWsUtils {
                     }
 
                     // add @Stateless annotation
-                    if (projectType == EJB_PROJECT_TYPE) {//EJB project
+                    if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
@@ -558,14 +553,20 @@ public class JaxWsUtils {
             }
         }
 
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (em != null) {
-            projectType = EJB_PROJECT_TYPE;
-        } else if (wm != null) {
-            projectType = WEB_PROJECT_TYPE;
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            if (J2eeModule.EJB.equals(moduleType)) {
+                projectType = ProjectInfo.EJB_PROJECT_TYPE;
+            } else if (J2eeModule.WAR.equals(moduleType)) {
+                projectType = ProjectInfo.WEB_PROJECT_TYPE;
+            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+                projectType = ProjectInfo.CAR_PROJECT_TYPE;
+            } else {
+                projectType = ProjectInfo.JSE_PROJECT_TYPE;
+            }
         } else {
-            projectType = JSE_PROJECT_TYPE;
+            projectType = ProjectInfo.JSE_PROJECT_TYPE;
         }
     }
 

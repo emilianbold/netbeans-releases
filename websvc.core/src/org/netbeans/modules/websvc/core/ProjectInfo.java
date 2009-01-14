@@ -44,13 +44,11 @@ package org.netbeans.modules.websvc.core;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
@@ -100,17 +98,21 @@ public class ProjectInfo {
             }
         }
         
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        Car car = Car.getCar(project.getProjectDirectory());
-        if (em != null)
-            projectType = EJB_PROJECT_TYPE;
-        else if (wm != null)
-            projectType = WEB_PROJECT_TYPE;
-        else if (car != null)
-            projectType = CAR_PROJECT_TYPE;
-        else
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            if (J2eeModule.EJB.equals(moduleType)) {
+                projectType = EJB_PROJECT_TYPE;
+            } else if (J2eeModule.WAR.equals(moduleType)) {
+                projectType = WEB_PROJECT_TYPE;
+            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+                projectType = CAR_PROJECT_TYPE;
+            } else {
+                projectType = JSE_PROJECT_TYPE;
+            }
+        } else {
             projectType = JSE_PROJECT_TYPE;
+        }
     }
     
     public int getProjectType() {

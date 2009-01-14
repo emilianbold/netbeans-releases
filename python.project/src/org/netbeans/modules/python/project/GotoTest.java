@@ -82,6 +82,8 @@ public class GotoTest implements TestLocator {
             // Same as above, but no underscore
             "/" + FILE + "\\." + EXT, "/" + FILE + "test\\." + EXT, // NOI18N
             "/" + FILE + "\\." + EXT, "/test" + FILE + "\\." + EXT, // NOI18N
+            // Same as above, but with just embedded test
+            "/" + FILE + "\\." + EXT, "/" + FILE + "test\\." + EXT, // NOI18N
         };
 
     public GotoTest() {

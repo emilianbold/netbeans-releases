@@ -72,6 +72,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -95,8 +96,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -105,7 +104,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -641,17 +639,22 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         this.wizardDescriptor = d;
         
         project = Templates.getProject(d);
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        Car car = Car.getCar(project.getProjectDirectory());
-        if (car != null)
-            projectType = 3;
-        else if (em != null)
-            projectType = 2;
-        else if (wm != null)
-            projectType = 1;
-        else
-            projectType = 0;
+
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            if (J2eeModule.EJB.equals(moduleType)) {
+                projectType = ProjectInfo.EJB_PROJECT_TYPE;
+            } else if (J2eeModule.WAR.equals(moduleType)) {
+                projectType = ProjectInfo.WEB_PROJECT_TYPE;
+            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+                projectType = ProjectInfo.CAR_PROJECT_TYPE;
+            } else {
+                projectType = ProjectInfo.JSE_PROJECT_TYPE;
+            }
+        } else {
+            projectType = ProjectInfo.JSE_PROJECT_TYPE;
+        }
         
         //test JAX-WS library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);

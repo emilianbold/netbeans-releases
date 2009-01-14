@@ -318,9 +318,9 @@ final class JUnitOutputReader {
                         expectedOneSuiteTests = executedOneSuiteTests;
                     }
                     progressLogger.finest("test finished");             //NOI18N
+                    updateProgress();
+                    manager.displayReport(session, sessionType, report, true, statistics);
                 }
-                updateProgress();
-                manager.displayReport(session, sessionType, report, true, statistics);
                 return;
             }
             if (shortMsg.equals(ADD_FAILURE_PREFIX)
@@ -329,9 +329,7 @@ final class JUnitOutputReader {
                     return;
                 }
                 int lastCharIndex = testListenerMsg.length() - 1;
-                if (testListenerMsg.charAt(lastCharIndex) != ')') {
-                    return;
-                }
+
                 String insideBrackets = testListenerMsg.substring(
                                                         shortMsg.length() + 1,
                                                         lastCharIndex);

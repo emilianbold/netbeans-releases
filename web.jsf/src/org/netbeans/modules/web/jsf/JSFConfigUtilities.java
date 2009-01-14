@@ -43,22 +43,30 @@ package org.netbeans.modules.web.jsf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,6 +79,37 @@ public class JSFConfigUtilities {
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
     
+    
+    public static boolean hasJsfFramework(FileObject fileObject) {
+        if (fileObject != null) {
+            WebModule webModule = WebModule.getWebModule(fileObject);
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
+            return configFiles != null && configFiles.length > 0;
+        }
+        return false;
+    }
+    
+    public static Set extendJsfFramework(FileObject fileObject, boolean createWelcomeFile) {
+        Set result = Collections.EMPTY_SET;
+        if (fileObject == null) {
+            return result;
+        }
+
+        List<WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks();
+        for (WebFrameworkProvider framework : frameworks) {
+            if (framework instanceof JSFFrameworkProvider) {
+                WebModule webModule = WebModule.getWebModule(fileObject);
+
+                ((JSFFrameworkProvider) framework).setCreateWelcome(createWelcomeFile);
+                WebModuleExtender extender = framework.createWebModuleExtender(webModule, ExtenderController.create());
+                result = extender.extend(webModule);
+
+                return result;
+            }
+        }
+
+        return result;
+    }
     
     public static NavigationRule findNavigationRule(JSFConfigDataObject data, String fromView){
         NavigationRule navigationRule = null;
