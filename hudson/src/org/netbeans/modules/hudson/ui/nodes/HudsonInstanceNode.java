@@ -33,6 +33,7 @@ import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.impl.HudsonViewImpl;
+import org.netbeans.modules.hudson.ui.actions.CreateJob;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
@@ -118,6 +119,8 @@ public class HudsonInstanceNode extends AbstractNode {
         } else {
             actions.add(SystemAction.get(RemoveInstanceAction.class));
         }
+        actions.add(null);
+        actions.add(new CreateJob(instance));
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[0]);
