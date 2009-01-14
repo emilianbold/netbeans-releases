@@ -99,12 +99,13 @@ public class VariablesNodeModel implements ExtendedNodeModel {
 
     private JPDADebugger debugger;
     
-    private RequestProcessor evaluationRP = new RequestProcessor();
+    private RequestProcessor evaluationRP;
     private final Collection modelListeners = new HashSet();
     
     
     public VariablesNodeModel (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
     }
     
     
@@ -174,7 +175,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         throw new UnknownTypeException (o);
     }
     
-    private Map shortDescriptionMap = new HashMap();
+    private final Map shortDescriptionMap = new HashMap();
     
     public String getShortDescription (final Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)

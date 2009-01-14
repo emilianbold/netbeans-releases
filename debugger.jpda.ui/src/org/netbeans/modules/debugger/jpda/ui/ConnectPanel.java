@@ -324,7 +324,7 @@ Controller, ActionListener {
         
         // Take the start off the AWT EQ:
         final RequestProcessor.Task[] startTaskPtr = new RequestProcessor.Task[1];
-        startTaskPtr[0] = RequestProcessor.getDefault().create(new Runnable() {
+        startTaskPtr[0] = new RequestProcessor("JPDA Debugger Starting").create(new Runnable() {
             public void run() {
                 final Thread theCurrentThread = Thread.currentThread();
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
