@@ -102,10 +102,17 @@ public final class Embedding {
             sb.append (snapshot.getText ());
             int[][] p = snapshot.currentToOriginal;
             for (int i = 0; i < p.length; i++) {
-                currentToOriginal.add (new int[] {p [i] [0] + offset, p [i] [1]});
+                if (currentToOriginal.isEmpty () ||
+                    currentToOriginal.get (currentToOriginal.size () - 1) [1] != -1 ||
+                    p [i] [1] != -1
+                )
+                    currentToOriginal.add (new int[] {p [i] [0] + offset, p [i] [1]});
                 if (p [i] [1] >= 0) {
                     originalToCurrent.add (new int[] {p [i] [1], p [i] [0] + offset});
-                } else if (!originalToCurrent.isEmpty ()) {
+                } else 
+                if (!originalToCurrent.isEmpty () &&
+                    originalToCurrent.get (originalToCurrent.size () - 1) [1] >= 0
+                ) {
                     originalToCurrent.add (new int[] {
                         originalToCurrent.get (originalToCurrent.size () - 1) [0] + 
                             p [i] [0] + offset - 
