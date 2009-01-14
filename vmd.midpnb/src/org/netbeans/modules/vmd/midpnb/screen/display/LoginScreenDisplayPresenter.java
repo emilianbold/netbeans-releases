@@ -178,6 +178,9 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
 
         void updateView() {
             final DesignComponent component = LoginScreenDisplayPresenter.this.getComponent();
+            if (component == null) {
+                return;
+            }
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {

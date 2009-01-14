@@ -43,7 +43,6 @@ import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +54,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -122,7 +121,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     }
     
     public static Action findAction( String key ) {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(key);
+        FileObject fo = FileUtil.getConfigFile(key);
         
         if (fo != null && fo.isValid()) {
             try {

@@ -61,7 +61,6 @@ import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
@@ -141,7 +140,7 @@ public final class SVGPaletteItemData {
             SceneManager.log(Level.INFO, "Obtaining icon for " + getFilePath()); //NOI18N
             try {
                 String folderName = getFolderName();
-                FileObject thumbsFolder = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( SVGPaletteFactory.SVG_PALETTE_THUMBNAIL_FOLDER);                
+                FileObject thumbsFolder = FileUtil.getConfigFile( SVGPaletteFactory.SVG_PALETTE_THUMBNAIL_FOLDER);
                 FileObject thumbFO;
                 FileObject fo;    
                 

@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                     </file>
 
                     <file name="SeparatorAfterFormat.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">

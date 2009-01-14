@@ -48,7 +48,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -156,7 +156,7 @@ final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements Ke
 
         public boolean isValid () {
             if (shortcutsFolder == null)
-                shortcutsFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Shortcuts"); // NOI18N
+                shortcutsFolder = FileUtil.getConfigFile ("Shortcuts"); // NOI18N
             return (getPanel().stroke != null) &&
                    (shortcutsFolder.getFileObject(Utilities.keyToString(getPanel().stroke), "instance") == null) && // NOI18N
                    (shortcutsFolder.getFileObject(Utilities.keyToString(getPanel().stroke), "xml") == null); // NOI18N

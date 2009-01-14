@@ -83,4 +83,15 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         assertEquals(null, instance.getType("unknown"));
     }
 
+    public void testTypeAssertions1() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^FIRST_CARET_POS", true);
+
+        assertEquals("int", instance.getType("defined1"));
+    }
+
+    public void testTypeAssertions2() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^SECOND_CARET_POS", true);
+
+        assertEquals("str", instance.getType("defined1"));
+    }
 }

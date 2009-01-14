@@ -51,6 +51,7 @@ import java.util.Enumeration;
 import junit.framework.Assert;
 import org.netbeans.junit.Manager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -123,7 +124,11 @@ public class IDEInitializer extends ProxyLookup {
             Lookups.metaInfServices (classLoader),
             Lookups.singleton (classLoader),
         });
-        Assert.assertEquals (myFileSystem, Repository.getDefault ().getDefaultFileSystem ());
+        try {
+            Assert.assertEquals (myFileSystem, FileUtil.getConfigRoot().getFileSystem());
+        } catch (FileStateInvalidException e) {
+            e.printStackTrace();
+        }
     }
     
     public static void cleanWorkDir () {

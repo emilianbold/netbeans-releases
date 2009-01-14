@@ -166,8 +166,7 @@ public abstract class InstalledFileLocator {
      * </p>
      <pre>
      <span class="type">String</span> <span class="variable-name">path</span> = <span class="string">"MyModule/data.xml"</span>;
-     <span class="type">FileSystem</span> <span class="variable-name">sfs</span> = Repository.getDefault().getDefaultFileSystem();
-     <span class="type">FileObject</span> <span class="variable-name">fo</span> = sfs.findResource(path);
+     <span class="type">FileObject</span> <span class="variable-name">fo</span> = FileUtil.getConfigFile(path);
      <span class="keyword">if</span> (fo != <span class="constant">null</span>) {
      <span class="comment">// use fo.getInputStream() etc.
      </span>    <span class="comment">// FileUtil.toFile(fo) will often be null, do not rely on it!

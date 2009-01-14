@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.editors.api.nodes.images;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.concurrent.atomic.AtomicReference;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 
@@ -59,8 +59,7 @@ public class FolderIcon {
     }
     
     private static Image getSystemFolderImage(boolean isOpened) {
-            Node n = DataFolder.findFolder(Repository.getDefault()
-                                .getDefaultFileSystem().getRoot()).getNodeDelegate();
+            Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
             return isOpened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : 
                 n.getIcon(BeanInfo.ICON_COLOR_16x16);
     }

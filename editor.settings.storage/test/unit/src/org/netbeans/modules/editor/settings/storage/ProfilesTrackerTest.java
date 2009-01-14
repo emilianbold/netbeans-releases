@@ -55,7 +55,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -153,7 +153,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     
     public void testDisplayName() throws Exception {
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(BASE + "/text/plain/" + folder + "/ProfileA");
+        FileObject f = FileUtil.getConfigFile(BASE + "/text/plain/" + folder + "/ProfileA");
         f.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.editor.settings.storage.Bundle");
         
         ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));

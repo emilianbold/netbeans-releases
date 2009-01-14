@@ -69,8 +69,8 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -96,8 +96,12 @@ public class OptionsDisplayerImpl {
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
-        // 91106 - listen to default FS changes to update Advanced Options button
-        Repository.getDefault().getDefaultFileSystem().addFileChangeListener(new AdvancedOptionsListener());
+        try {
+            // 91106 - listen to default FS changes to update Advanced Options button
+            FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(new AdvancedOptionsListener());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public boolean isOpen() {
@@ -186,8 +190,7 @@ public class OptionsDisplayerImpl {
      * @return true if exists some advanced options, false otherwise
      */
     private boolean advancedOptionsNotEmpty() {
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject servicesFO = defaultFS.findResource("UI/Services");  //NOI18N
+        FileObject servicesFO = FileUtil.getConfigFile("UI/Services");  //NOI18N
         if(servicesFO != null) {
             FileObject[] advancedOptions = servicesFO.getChildren();
             for (FileObject advancedOption : advancedOptions) {

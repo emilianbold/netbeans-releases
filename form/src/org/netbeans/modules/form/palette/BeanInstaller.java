@@ -174,7 +174,7 @@ public final class BeanInstaller {
         final FileObject categoryFolder = PaletteUtils.getPaletteFolder()
                                                        .getFileObject(category);
         try {
-            Repository.getDefault().getDefaultFileSystem().runAtomicAction(
+            FileUtil.runAtomicAction(
             new FileSystem.AtomicAction () {
                 public void run() {
                     Iterator it = beans.iterator();
@@ -292,7 +292,7 @@ public final class BeanInstaller {
             return;
 
         try {
-            Repository.getDefault().getDefaultFileSystem().runAtomicAction(
+            FileUtil.runAtomicAction(
             new FileSystem.AtomicAction () {
                 public void run() {
                     for (int i=0; i < beans.length; i++)

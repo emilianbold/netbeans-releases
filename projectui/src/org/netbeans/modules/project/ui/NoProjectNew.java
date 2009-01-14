@@ -53,7 +53,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -255,7 +254,7 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
     // Private methods ---------------------------------------------------------
     
     private static DataObject findTemplate( String name ) {
-        FileObject tFo = Repository.getDefault().getDefaultFileSystem().findResource( name );
+        FileObject tFo = FileUtil.getConfigFile( name );
         if ( tFo == null ) {
             return null;
         }

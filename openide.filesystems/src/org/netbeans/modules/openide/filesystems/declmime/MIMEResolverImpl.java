@@ -59,10 +59,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.filesystems.Repository;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -161,7 +159,7 @@ public final class MIMEResolverImpl {
      * or null if not yet created.
      */
     public static FileObject getUserDefinedResolver() {
-        FileObject resolversFolder = Repository.getDefault().getDefaultFileSystem().findResource(MIME_RESOLVERS_PATH);
+        FileObject resolversFolder = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
         if (resolversFolder != null) {
             FileObject[] resolvers = resolversFolder.getChildren();
             for (FileObject resolverFO : resolvers) {
@@ -221,10 +219,9 @@ public final class MIMEResolverImpl {
                 OutputStream os = null;
                 FileObject userDefinedResolverFO = null;
                 try {
-                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-                    FileObject resolversFolder = defaultFS.findResource(MIME_RESOLVERS_PATH);
+                    FileObject resolversFolder = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
                     if (resolversFolder == null) {
-                        resolversFolder = FileUtil.createFolder(defaultFS.getRoot(), MIME_RESOLVERS_PATH);
+                        resolversFolder = FileUtil.createFolder(FileUtil.getConfigRoot(), MIME_RESOLVERS_PATH);
                     }
                     userDefinedResolverFO = resolversFolder.createData(USER_DEFINED_MIME_RESOLVER, "xml");  //NOI18N
                     userDefinedResolverFO.setAttribute(USER_DEFINED_MIME_RESOLVER, Boolean.TRUE);
@@ -254,8 +251,7 @@ public final class MIMEResolverImpl {
      */
     public static Map<Integer, FileObject> getOrderedResolvers() {
         // scan resolvers and order them to be able to assign extension to mime type from resolver with the lowest position
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject[] resolvers = defaultFS.findResource(MIME_RESOLVERS_PATH).getChildren();
+        FileObject[] resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH).getChildren();
         TreeMap<Integer, FileObject> orderedResolvers = new TreeMap<Integer, FileObject>(Collections.reverseOrder());
         for (FileObject mimeResolverFO : resolvers) {
             Integer position = (Integer) mimeResolverFO.getAttribute("position");  //NOI18N

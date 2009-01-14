@@ -61,7 +61,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.Environment;
@@ -101,9 +100,8 @@ public class ShortcutsFolderTest extends NbTestCase {
     }
     
     public void testApplyChangeToFactoryActionIssue49597 () throws Exception {
-        final FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        final FileObject shortcuts = fs.getRoot ().getFileObject ("Shortcuts");
-        FileObject inst = FileUtil.createData (fs.getRoot (), "/Actions/Tools/TestAction.instance");
+        final FileObject shortcuts = FileUtil.getConfigFile ("Shortcuts");
+        FileObject inst = FileUtil.createData (FileUtil.getConfigRoot (), "Actions/Tools/TestAction.instance");
         TestAction action = new TestAction ();
         inst.setAttribute ("instanceCreate", action);
         
@@ -121,12 +119,12 @@ public class ShortcutsFolderTest extends NbTestCase {
             FileObject inst2;
             
             public void run() throws IOException {
-                inst2 = FileUtil.createData (fs.getRoot (), "/Shortcuts/CA-F9.shadow");
+                inst2 = FileUtil.createData (FileUtil.getConfigRoot (), "/Shortcuts/CA-F9.shadow");
                 inst2.setAttribute ("originalFile", "/Actions/Tools/TestAction.instance");
             }
         }
         R run = new R();
-        fs.runAtomicAction(run);
+        FileUtil.runAtomicAction(run);
 
         ShortcutsFolder.waitFinished ();
         err.log("ShortcutsFolder.waitFinished");
@@ -147,8 +145,7 @@ public class ShortcutsFolderTest extends NbTestCase {
 
     @RandomlyFails
     public void testShortcutsForDifferentFilesThanInstanceOrShadows () throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject inst = FileUtil.createData (fs.getRoot (), "/Shortcuts/C-F11.xml");
+        FileObject inst = FileUtil.createData (FileUtil.getConfigRoot (), "Shortcuts/C-F11.xml");
 
         FileLock lock = inst.lock ();
         java.io.PrintStream ps = new java.io.PrintStream (inst.getOutputStream (lock));

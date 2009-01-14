@@ -97,10 +97,9 @@ public class AtomicActionTest extends NbTestCase {
         tcl.reset();
         assertNotNull(FileUtil.createData(root, "data"));        
 
-        final FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         final JarFileSystem jfs = new JarFileSystem();
         
-        sfs.runAtomicAction(new FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 jfs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {

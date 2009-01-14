@@ -263,9 +263,9 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
                 return null;
             }
             
-            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (context);
+            FileObject fo = FileUtil.getConfigFile(context);
             if (fo == null) {
-                fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+                fo = FileUtil.getConfigRoot();
                 try {
                     fo = FileUtil.createFolder (fo, context);
 

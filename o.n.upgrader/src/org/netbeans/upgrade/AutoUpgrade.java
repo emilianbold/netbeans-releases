@@ -60,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -206,10 +205,8 @@ public final class AutoUpgrade {
             
             old = (xmlfs != null) ? createLayeredSystem(lfs, xmlfs) : lfs;
         }
-        org.openide.filesystems.FileSystem mine = Repository.getDefault ().
-            getDefaultFileSystem ();
         
-        Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude, PathTransformation.getInstance(oldVersion));
+        Copy.copyDeep (old.getRoot (), FileUtil.getConfigRoot (), includeExclude, PathTransformation.getInstance(oldVersion));
         
     }
     

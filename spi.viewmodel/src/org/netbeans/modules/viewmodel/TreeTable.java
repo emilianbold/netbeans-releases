@@ -108,7 +108,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private IndexedColumn[]     icolumns;
     private boolean             isDefaultColumnAdded;
     //private List                expandedPaths = new ArrayList ();
-    private TreeModelRoot       currentTreeModelRoot;
+    TreeModelRoot       currentTreeModelRoot; // Accessed from test
     private Models.CompoundModel model;
     
     

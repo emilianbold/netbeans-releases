@@ -52,10 +52,11 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -110,16 +111,21 @@ public final class CompoundFolderChildren implements FileChangeListener {
         synchronized (LOCK) {
             List<FileObject> folders = new ArrayList<FileObject>(prefixes.size());
             List<FileSystem> layers = new ArrayList<FileSystem>(prefixes.size());
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             for (final String prefix : prefixes) {
-                FileObject layer = sfs.findResource(prefix);
+                FileObject layer = FileUtil.getConfigFile(prefix);
                 if (layer != null && layer.isFolder()) {
                     folders.add(layer);
-                    layers.add(new MultiFileSystem(new FileSystem[] {sfs}) {
-                        protected @Override FileObject findResourceOn(FileSystem fs, String res) {
-                            return fs.findResource(prefix + res);
-                        }
-                    });
+                    try {
+                        layers.add(new MultiFileSystem(new FileSystem[]{layer.getFileSystem()}) {
+
+                            @Override
+                            protected FileObject findResourceOn(FileSystem fs, String res) {
+                                return fs.findResource(prefix + res);
+                            }
+                        });
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 } else {
                     // Listen to nearest enclosing parent, in case it is created.
                     // XXX would be simpler to use FileChangeSupport but that is in ant/project for now.
@@ -127,7 +133,7 @@ public final class CompoundFolderChildren implements FileChangeListener {
                     while (true) {
                         assert parentPath.length() > 0;
                         parentPath = parentPath.substring(0, Math.max(0, parentPath.lastIndexOf('/')));
-                        FileObject parent = sfs.findResource(parentPath);
+                        FileObject parent = FileUtil.getConfigFile(parentPath);
                         if (parent != null) {
                             parent.removeFileChangeListener(weakFCL);
                             parent.addFileChangeListener(weakFCL);

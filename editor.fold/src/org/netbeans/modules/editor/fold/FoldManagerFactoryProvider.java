@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Provides list of fold factories that produce fold managers
@@ -125,9 +126,7 @@ public abstract class FoldManagerFactoryProvider {
         // (public packages restrictions should not apply).
         if (!forceCustom) {
             try {
-                org.openide.filesystems.Repository repository
-                    = org.openide.filesystems.Repository.getDefault();
-                if (repository != null && repository.getDefaultFileSystem() != null) {
+                if (FileUtil.getConfigRoot() != null) {
                     provider = new LayerProvider();
                 }
             } catch (Throwable t) {

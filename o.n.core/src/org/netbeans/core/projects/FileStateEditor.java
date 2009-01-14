@@ -60,7 +60,7 @@ class FileStateEditor extends ListImageEditor {
     private String action_revert = null;
     private String action_delete = null;
     
-    private Node.Property prop = null;
+    private Node.Property<?> prop = null;
 
     /** Creates new FileStatePropertyEditor */
     public FileStateEditor () {
@@ -71,6 +71,7 @@ class FileStateEditor extends ListImageEditor {
         action_delete = NbBundle.getMessage (FileStateEditor.class, "LBL_action_delete");
     }
 
+    @Override
     public void attachEnv (PropertyEnv env) {
         super.attachEnv (env);
         
@@ -82,10 +83,12 @@ class FileStateEditor extends ListImageEditor {
         }
     }
     
+    @Override
     public String getAsText () {
         return null;
     }
 
+    @Override
     public void setAsText (String str) throws java.lang.IllegalArgumentException {        
         try {
             Integer value = null;
@@ -99,14 +102,19 @@ class FileStateEditor extends ListImageEditor {
                 value = Integer.valueOf (FileStateProperty.ACTION_DELETE);                
             }
             if (value != null) {
-                prop.setValue (value);
+                doSetValue(prop, value);
                 super.setValue(value);                
             }
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
         }
     }
+
+    private <T> void doSetValue(Node.Property<T> prop, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        prop.setValue(prop.getValueType().cast(value));
+    }
     
+    @Override
     public String[] getTags () {
         Integer val = (Integer) getValue ();
 

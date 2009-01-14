@@ -47,7 +47,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 
 /**
- * Repository whose getDefaultFileSystem() returns a writeable FS.
+ * Repository whose getDefaultFileSystem returns a writeable FS.
  * It is put in the default lookup,
  * thus it is returned by Repository.getDefault().
  *

@@ -58,12 +58,13 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -380,7 +381,12 @@ implements FileSystem.Status {
         private static final long serialVersionUID = 6436781994611L;
         SingletonSerializer() {}
         private Object readResolve () throws ObjectStreamException {
-            return Repository.getDefault().getDefaultFileSystem ();
+            try {
+                return FileUtil.getConfigRoot().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
         }
     }
     // --- SAFETY ---

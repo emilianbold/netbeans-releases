@@ -60,7 +60,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -600,7 +599,7 @@ public class ProviderUtil {
         // must create the file using AtomicAction, see #72058
         persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
+                dd[0] = FileUtil.copyFile(FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
             }
         });

@@ -46,8 +46,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.startup.ModuleSystem;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /** Default implementation of TopManager that is used when
 * the system is used without initialization.
@@ -98,7 +100,7 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
   
     /** Create the module system. Subclasses may override. */
     protected ModuleSystem createModuleSystem() throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem fs = FileUtil.getConfigRoot().getFileSystem();
         return new ModuleSystem(fs);
     }
   
@@ -112,12 +114,16 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
             return;
         }
         moduleSystem.loadBootModules();
-        if (!Repository.getDefault().getDefaultFileSystem().isReadOnly()) {
-            moduleSystem.readList();
-            moduleSystem.restore();
-            LoaderPoolNode.installationFinished();
-        } else {
-            LoaderPoolNode.installationFinished();
+        try {
+            if (!FileUtil.getConfigRoot().getFileSystem().isReadOnly()) {
+                moduleSystem.readList();
+                moduleSystem.restore();
+                LoaderPoolNode.installationFinished();
+            } else {
+                LoaderPoolNode.installationFinished();
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
   

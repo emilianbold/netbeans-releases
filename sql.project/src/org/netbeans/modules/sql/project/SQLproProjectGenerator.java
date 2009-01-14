@@ -51,7 +51,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -104,7 +103,7 @@ public class SQLproProjectGenerator {
         AntProjectHelper h = setupProject (fo, name, j2eeLevel);
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         FileObject bpelasaRoot = srcRoot;
-        FileObject sqlmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-sql-project/connectivityInfo.xml"), bpelasaRoot, "connectivityInfo"); //NOI18N
+        FileObject sqlmapFile = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-modules-sql-project/connectivityInfo.xml"), bpelasaRoot, "connectivityInfo"); //NOI18N
 
         FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
         

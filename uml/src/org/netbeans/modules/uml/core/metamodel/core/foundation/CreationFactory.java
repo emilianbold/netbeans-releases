@@ -53,8 +53,7 @@ import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -354,13 +353,9 @@ public class CreationFactory implements ICreationFactory {
                     // Trey - If we are not able to find the type in the
                     //        EssentialConfig.etc file (old way), look
                     //        In the layer file system (new way).
-                    FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-                    if (system != null)
-                    {
 //                            try
 //                            {
-                        definingFileObject = system.findResource("MetaData/" + subKey + "/" + typeName);
+                        definingFileObject = FileUtil.getConfigFile("MetaData/" + subKey + "/" + typeName);
 //                                DataObject dObj = fo != null ? DataObject.find(fo) : null;
 //                                if (dObj != null)
 //                                {
@@ -374,7 +369,6 @@ public class CreationFactory implements ICreationFactory {
 //                            {
 //                                Exceptions.printStackTrace(e);
 //                            }
-                    }
                 }
 
                 if (createID.length() > 0)

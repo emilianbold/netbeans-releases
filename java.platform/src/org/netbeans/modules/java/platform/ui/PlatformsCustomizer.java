@@ -71,7 +71,6 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -324,11 +323,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private void addNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewPlatform
         try {
             WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
-            DataObject template = DataObject.find (
-                    Repository.getDefault().getDefaultFileSystem().findResource(TEMPLATE));
+            DataObject template = DataObject.find (FileUtil.getConfigFile(TEMPLATE));
             wiz.putProperty("targetTemplate", template);    //NOI18N
-            DataFolder folder = DataFolder.findFolder(
-                    Repository.getDefault().getDefaultFileSystem().findResource(STORAGE));
+            DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile(STORAGE));
             wiz.putProperty("targetFolder",folder); //NOI18N
             wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
             wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
@@ -557,7 +554,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         public PlatformCategoryNode (PlatformCategoriesDescriptor desc) {
             super (new PlatformsChildren (desc.getPlatform()));
             this.desc = desc;            
-            this.iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            this.iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
         
         public @Override String getName() {
@@ -594,7 +591,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }       
         
         private void refreshPlatforms () {
-            FileObject storage = Repository.getDefault().getDefaultFileSystem().findResource(STORAGE);
+            FileObject storage = FileUtil.getConfigFile(STORAGE);
             if (storage != null) {
                 java.util.Map<String,PlatformCategoriesDescriptor> categories = new HashMap<String,PlatformCategoriesDescriptor>();
                 for (FileObject child : storage.getChildren()) {

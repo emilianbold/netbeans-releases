@@ -53,7 +53,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -252,7 +252,7 @@ private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         private VariableChildren(List<Variable> vars) {
             setKeys(vars);
-            this.iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            this.iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
         protected Node[] createNodes(Variable var) {

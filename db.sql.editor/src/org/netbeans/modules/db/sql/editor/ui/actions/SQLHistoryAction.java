@@ -43,7 +43,7 @@ import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +63,7 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {
-        FileObject historyRoot = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        FileObject historyRoot = FileUtil.getConfigFile(SQL_HISTORY_FOLDER);
         if (historyRoot == null || historyRoot.getChildren().length == 0) {    
             notifyNoSQLExecuted();
         } else {

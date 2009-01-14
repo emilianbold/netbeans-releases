@@ -49,11 +49,10 @@ import java.util.Set;
 import javax.swing.Action;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /** Default DataObject.Factory implementation.
  * 
@@ -139,7 +138,7 @@ class MimeFactory<T extends DataObject> implements DataObject.Factory {
     }
     
     final Action[] getActions() {
-        FileObject actions = Repository.getDefault().getDefaultFileSystem().findResource(
+        FileObject actions = FileUtil.getConfigFile(
             "Loaders/" + mimeType + "/Actions"
         );
         if (actions != null) {

@@ -82,8 +82,7 @@ class WarmUpSupport implements Runnable {
             StartLog.logStart("Warmup"); // NOI18N
         }
 
-        FileObject fo = Repository.getDefault().getDefaultFileSystem()
-                                                 .findResource(WARMUP_FOLDER);
+        FileObject fo = FileUtil.getConfigFile(WARMUP_FOLDER);
         DataObject[] warmObjects =
             fo != null ? DataFolder.findFolder(fo).getChildren() : new DataObject[0];
 

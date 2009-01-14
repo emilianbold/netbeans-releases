@@ -69,7 +69,6 @@ import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -145,18 +144,25 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointAdded (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (Thread.holdsLock(debugger.LOCK)) {
-            createBreakpointImpl (breakpoint);
+        if (debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+            try {
+                createBreakpointImpl (breakpoint);
+            } finally {
+                debugger.accessLock.readLock().unlock();
+            }
             return ;
         } // Otherwise:
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
-                synchronized (debugger.LOCK) {
+                debugger.accessLock.readLock().lock();
+                try {
                     synchronized (started) {
                         started[0] = true;
                         started.notify();
                     }
                     createBreakpointImpl (breakpoint);
+                } finally {
+                    debugger.accessLock.readLock().unlock();
                 }
             }
         });
@@ -173,18 +179,25 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointRemoved (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (Thread.holdsLock(debugger.LOCK)) {
-            removeBreakpointImpl (breakpoint);
+        if (debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+            try {
+                removeBreakpointImpl (breakpoint);
+            } finally {
+                debugger.accessLock.readLock().unlock();
+            }
             return ;
         } // Otherwise:
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
-                synchronized (debugger.LOCK) {
+                debugger.accessLock.readLock().lock();
+                try {
                     synchronized (started) {
                         started[0] = true;
                         started.notify();
                     }
                     removeBreakpointImpl (breakpoint);
+                } finally {
+                    debugger.accessLock.readLock().unlock();
                 }
             }
         });

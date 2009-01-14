@@ -45,19 +45,16 @@
  */
 package org.netbeans.modules.uml.core.coreapplication;
 
-import java.io.File;
 
 //import org.netbeans.modules.uml.core.addinframework.AddInManagerImpl;
 //import org.netbeans.modules.uml.core.addinframework.IAddIn;
 //import org.netbeans.modules.uml.core.addinframework.IAddInDescriptor;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -158,44 +155,40 @@ public class DesignCenterManager /*extends AddInManagerImpl*/ implements IDesign
 	protected IDesignCenterSupport[] getAddinsFromRegistry(String path)
 	{
 		ArrayList < IDesignCenterSupport > addins = new ArrayList < IDesignCenterSupport >();
-		FileSystem system = Repository.getDefault().getDefaultFileSystem();
 		try
 		{
-			if(system != null)
-			{
-				org.openide.filesystems.FileObject lookupDir = system.findResource(path);
-				if(lookupDir != null)
-				{
-					org.openide.filesystems.FileObject[] children = lookupDir.getChildren();
-					
-					for(FileObject curObj : children)
-					{
-						try
-						{                     
-							DataObject dObj = DataObject.find(curObj);
-							if(dObj != null)
-							{
-								InstanceCookie cookie = (InstanceCookie)dObj.getCookie(InstanceCookie.class);
-								if(cookie != null)
-								{
-									Object obj = cookie.instanceCreate();
-									if(obj instanceof IDesignCenterSupport)
-									{
-                              //String id = (String)curObj.getAttribute("id");
-										addins.add((IDesignCenterSupport)obj);
-									}
-								}
-							}
-						}
-						catch(ClassNotFoundException e)
-						{
-							// Unable to create the instance for some reason.  So the
-							// do not worry about adding the instance to the list.
-                     e.printStackTrace();
-						}
-					}
-				}
-			}
+                        org.openide.filesystems.FileObject lookupDir = FileUtil.getConfigFile(path);
+                        if(lookupDir != null)
+                        {
+                                org.openide.filesystems.FileObject[] children = lookupDir.getChildren();
+
+                                for(FileObject curObj : children)
+                                {
+                                        try
+                                        {
+                                                DataObject dObj = DataObject.find(curObj);
+                                                if(dObj != null)
+                                                {
+                                                        InstanceCookie cookie = (InstanceCookie)dObj.getCookie(InstanceCookie.class);
+                                                        if(cookie != null)
+                                                        {
+                                                                Object obj = cookie.instanceCreate();
+                                                                if(obj instanceof IDesignCenterSupport)
+                                                                {
+                      //String id = (String)curObj.getAttribute("id");
+                                                                        addins.add((IDesignCenterSupport)obj);
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        catch(ClassNotFoundException e)
+                                        {
+                                                // Unable to create the instance for some reason.  So the
+                                                // do not worry about adding the instance to the list.
+             e.printStackTrace();
+                                        }
+                                }
+                        }
 		}
 		catch(org.openide.loaders.DataObjectNotFoundException e)
 		{

@@ -95,6 +95,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List nodeActionsProviderFilters;
     private List columnModels;
     private List mm;
+    private RequestProcessor rp;
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -147,6 +148,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = null;
         columnModels = null;
         mm = null;
+        rp = null;
         Models.setModelsToView (
             view, 
             Models.EMPTY_MODEL
@@ -173,6 +175,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewType, ColumnModel.class);
         mm =                    cp.lookup (viewType, Model.class);
+        rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
         
         ModelsChangeRefresher mcr = new ModelsChangeRefresher();
         Customizer[] modelListCustomizers = new Customizer[] {
@@ -238,6 +241,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         synchronized (mm) {
             models.add(new ArrayList(mm));
+        }
+        if (rp != null) {
+            models.add(rp);
         }
         
         // <RAVE>

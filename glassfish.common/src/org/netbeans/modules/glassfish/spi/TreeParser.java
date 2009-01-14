@@ -53,8 +53,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -203,8 +202,7 @@ public final class TreeParser extends DefaultHandler {
         // this changes, considering caching using HashMap<String, String>
         //
         InputSource source = null;
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = sfs.findResource("DTDs/GlassFish");
+        FileObject folder = FileUtil.getConfigFile("DTDs/GlassFish");
         if(folder != null) {
             for(FileObject fo: folder.getChildren()) {
                 Object attr;

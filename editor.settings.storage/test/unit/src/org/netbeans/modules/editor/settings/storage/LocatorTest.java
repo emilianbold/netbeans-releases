@@ -52,7 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -112,7 +112,7 @@ public class LocatorTest extends NbTestCase {
         
         createOrderedFiles(files, FC_CONTENTS);
         
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-whatever/FontsColors/PPP/Defaults/e.xml");
+        FileObject f = FileUtil.getConfigFile("Editors/text/x-whatever/FontsColors/PPP/Defaults/e.xml");
         f.setAttribute("nbeditor-settings-targetOS", currentOs);
 
         String [] osOrderedFiles = new String [] {
@@ -125,7 +125,7 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/PPP/file99.xml",
         };
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
@@ -160,7 +160,7 @@ public class LocatorTest extends NbTestCase {
         createOrderedFiles(files2, FC_CONTENTS);
         TestUtilities.createFile("Editors/text/x-whatever/FontsColors/MyProfile2/org-netbeans-modules-editor-settings-CustomFontsColors.xml", FC_CONTENTS);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
@@ -185,7 +185,7 @@ public class LocatorTest extends NbTestCase {
         
         createOrderedFiles(files, FC_CONTENTS);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(ColoringStorage.ID, baseFolder, null, null, true, true, true, results);
         
@@ -218,7 +218,7 @@ public class LocatorTest extends NbTestCase {
         orderFiles("Editors/text/x-whatever/FontsColors/NetBeans/file3.xml", writableUserFile);
 //"Editors/text/x-whatever/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
@@ -247,7 +247,7 @@ public class LocatorTest extends NbTestCase {
         TestUtilities.createFile(writableUserFile, KB_CONTENTS);
         orderFiles("Editors/Keybindings/NetBeans/dhdhdddd.xml", writableUserFile);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
@@ -266,7 +266,7 @@ public class LocatorTest extends NbTestCase {
         
         createOrderedFiles(files, KB_CONTENTS);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
@@ -324,8 +324,8 @@ public class LocatorTest extends NbTestCase {
     }
     
     public static void orderFiles(String pathA, String pathB) throws IOException {
-        FileObject fileA = Repository.getDefault().getDefaultFileSystem().findResource(pathA);
-        FileObject fileB = Repository.getDefault().getDefaultFileSystem().findResource(pathB);
+        FileObject fileA = FileUtil.getConfigFile(pathA);
+        FileObject fileB = FileUtil.getConfigFile(pathB);
         assertNotNull("Can't find file '" + pathA + "'", fileA);
         assertNotNull("Can't find file '" + pathB + "'", fileB);
         

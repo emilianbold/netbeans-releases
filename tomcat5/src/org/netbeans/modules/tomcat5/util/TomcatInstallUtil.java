@@ -142,8 +142,7 @@ public class TomcatInstallUtil {
      *         if the CATALINA_HOME directory does not exist which should never happen.
      */
     public static File getBundledHome() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.findResource(TomcatProperties.BUNDLED_TOMCAT_SETTING);
+        FileObject fo = FileUtil.getConfigFile(TomcatProperties.BUNDLED_TOMCAT_SETTING);
         if (fo != null) {
             InstalledFileLocator ifl = InstalledFileLocator.getDefault();
             return ifl.locate(fo.getAttribute("bundled_home").toString(), null, false); // NOI18N

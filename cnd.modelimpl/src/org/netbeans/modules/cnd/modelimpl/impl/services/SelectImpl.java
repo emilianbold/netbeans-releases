@@ -267,7 +267,7 @@ public class SelectImpl extends CsmSelect {
     
     @SuppressWarnings("unchecked")
     static class FilterBuilder implements CsmFilterBuilder {
-        public CsmFilter createKindFilter(final CsmDeclaration.Kind[] kinds) {
+        public CsmFilter createKindFilter(final CsmDeclaration.Kind ... kinds) {
             return new KindFilterImpl(kinds);
         }
 

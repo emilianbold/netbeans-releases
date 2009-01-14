@@ -51,7 +51,7 @@ import javax.script.ScriptContext;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -102,7 +102,7 @@ implements TemplateLoader, TemplateExceptionHandler {
         catch (FileStateInvalidException ex) {
             // ok
         }
-        return Repository.getDefault().getDefaultFileSystem().getRoot();
+        return FileUtil.getConfigRoot();
     }
 
     public Object findTemplateSource(String string) throws IOException {

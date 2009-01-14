@@ -45,7 +45,7 @@ import java.util.Map;
 
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoModel;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,7 +70,7 @@ public class OperatorXmlInfoModel implements IOperatorXmlInfoModel {
     private DataObject getRootOperatorGroupObject(String folderName) {
         try {
             //org.openide.filesystems.FileObject fo = Repository.getDefault().findResource(folderName);
-            org.openide.filesystems.FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(folderName);
+            org.openide.filesystems.FileObject fo = FileUtil.getConfigFile(folderName);
             if (fo == null) {
                 throw new Exception("Folder not found." + folderName);
             }
