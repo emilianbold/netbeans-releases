@@ -43,8 +43,20 @@
 #include "ScriptDebugger.h"
 #include "DbgpConnection.h"
 #include "Utils.h"
-
+#include <atlstr.h>
+#include "ProtocolCF.h"
+#include "HttpMonitoringApp.h"
+#include <AtlBase.h>
+#include <AtlConv.h> 
+#include "HttpMonitoringApp.h"
+#include "base64.h"
 // NetbeansBHO
+
+extern char* gPostText;
+
+typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol,
+	CHttpMonitoringApp> MetaFactory;
+
 
 HRESULT CNetBeansBHO::FinalConstruct() {
     m_dwThreadID = GetCurrentThreadId();
@@ -60,6 +72,19 @@ void CNetBeansBHO::setDebuggerStopped() {
 STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
     HRESULT hr = E_FAIL;
     if (pUnkSite != NULL) {
+        // initialize HTTP Request Monitoring
+        CComPtr<IInternetSession> spSession;
+        CoInternetGetSession(0, &spSession, 0);
+
+        MetaFactory::CreateInstance(CLSID_HttpProtocol, &m_spCFHTTP);
+        spSession->RegisterNameSpace(m_spCFHTTP, CLSID_NULL, L"http", 0, 0, 0);
+        // HTTPS Support --->
+        MetaFactory::CreateInstance(CLSID_HttpSProtocol, &m_spCFHTTPS);
+        spSession->RegisterNameSpace(m_spCFHTTPS, CLSID_NULL, L"https", 0, 0, 0);
+        // HTTPS Support <---
+        // end initialize HTTP Request Monitoring
+
+        // initialize HTTP debugging
         hr = pUnkSite->QueryInterface(IID_IWebBrowser2, (void**)&m_spWebBrowser);
         if (SUCCEEDED(hr)) {
             // Register DWebBrowserEvents2
@@ -70,6 +95,18 @@ STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
         }
         Utils::registerInterfaceInGlobal(m_spWebBrowser, IID_IWebBrowser2, &m_dwWebBrowserCookie);
     } else {
+        // Uninitialize HTTP Monitoring code
+        CComPtr<IInternetSession> spSession;
+        CoInternetGetSession(0, &spSession, 0);
+        spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+        m_spCFHTTP.Release();
+        // HTTPS Support --->
+        spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
+        m_spCFHTTPS.Release();
+        // HTTPS Support <---
+        // End Uninitialize HTTP Monitoring code
+
+        // Unitialize Javascript Debugging code
         // Unregister DWebBrowserEvents2
         if (m_bAdvised) {
             DispEventUnadvise(m_spWebBrowser);
@@ -121,10 +158,67 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIAN
     }
 }
 
+void STDMETHODCALLTYPE CNetBeansBHO::OnBeforeNavigate2(IDispatch *pDisp,
+		VARIANT *pUrl, VARIANT *pFlags, VARIANT *pTargetFrameName,
+		VARIANT *pPostData, VARIANT *pHeaders, VARIANT_BOOL *pCancel) 
+{
+    USES_CONVERSION; // to use ATL string conversion macros
+
+	//char *post_data = NULL;
+	int	post_data_size = 0;
+
+	CString URL_string;
+    if ((pUrl != NULL) && (V_VT(pUrl) == VT_BSTR)) {
+        URL_string = V_BSTR(pUrl);
+    }
+
+	CString headersStr;
+    if ((pHeaders != NULL) && (V_VT(pHeaders) == VT_BSTR)) {
+        headersStr = V_BSTR(pHeaders);
+    }
+
+	if ((pPostData != NULL) && (V_VT(pPostData) == (VT_VARIANT | VT_BYREF))) {
+        VARIANT *PostData_variant = V_VARIANTREF(pPostData);
+        
+
+		if ((PostData_variant != NULL) &&(V_VT(PostData_variant) != VT_EMPTY)) {
+            SAFEARRAY *PostData_safearray = V_ARRAY(PostData_variant);
+            if (PostData_safearray != NULL) {
+                // Copy Post Data into a global so it can be read back when 
+                // BeginningTransaction() in HttpMonitoringApp.cpp to be 
+                // included with the rest of the Http Request message sent
+                // to Netbeans.
+
+				char *post_data_array = NULL;
+
+				SafeArrayAccessData(PostData_safearray,(void HUGEP **)&post_data_array);
+
+				long lower_bound = 1;
+				long upper_bound = 1;
+
+				SafeArrayGetLBound(PostData_safearray,1,&lower_bound);
+				SafeArrayGetUBound(PostData_safearray,1,&upper_bound);
+
+				post_data_size = (int)(upper_bound - lower_bound + 1);
+
+                //post_data = new char[post_data_size];
+                gPostText = new char[post_data_size];
+				//memcpy(post_data,post_data_array,post_data_size);
+                memcpy(gPostText,post_data_array,post_data_size);
+				SafeArrayUnaccessData(PostData_safearray);
+
+            } 
+        }
+    } 
+
+    *pCancel = VARIANT_FALSE;
+    //delete[] post_data;
+}
+
 void CNetBeansBHO::checkAndInitNetbeansDebugging(BSTR bstrURL) {
     tstring str = _bstr_t(bstrURL);
-    tstring portArgName(L"--netbeans-debugger-port=");
-    tstring sessionArgName(L"--netbeans-debugger-session-id=");
+    tstring portArgName(_T("--netbeans-debugger-port="));
+    tstring sessionArgName(_T("--netbeans-debugger-session-id="));
 
     size_t portArgPos = str.find(portArgName);
     if (portArgPos == string::npos) {
@@ -134,7 +228,7 @@ void CNetBeansBHO::checkAndInitNetbeansDebugging(BSTR bstrURL) {
     if (sessionIdArgPos == std::string::npos) {
         return;
     }
-    size_t argsEndPos = str.find(L".html", sessionIdArgPos);
+    size_t argsEndPos = str.find(_T(".html"), sessionIdArgPos);
     if (argsEndPos == string::npos) {
         return;
     }
@@ -149,7 +243,7 @@ void CNetBeansBHO::checkAndInitNetbeansDebugging(BSTR bstrURL) {
 void CNetBeansBHO::initializeNetbeansDebugging(tstring port, tstring sessionId) {
     DWORD threadID;
     m_pDbgpConnection = new DbgpConnection(port, sessionId, m_dwWebBrowserCookie);
-    //DebugBreak();
+//DebugBreak();
     if(m_pDbgpConnection->connectToIDE()) {
         //Create thread for debugger
         CreateThread(NULL, 0, CNetBeansBHO::DebuggerProc, this, 0, &threadID);

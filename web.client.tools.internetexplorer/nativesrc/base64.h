@@ -33,51 +33,13 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
+ *      jdeva <deva@neteans.org>, jwinblad <jwinblad@netbeans.org>
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.firefox;
+#pragma once
+#include <string>
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
-
-/**
- *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
- */
-public class FFJSDebugger extends JSAbstractExternalDebugger {
-
-    public FFJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
-    }
-
-    @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        if (!Utilities.isMac()) {
-            launchDescriptor.setArguments(getBrowserArguments());
-        }
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
-    }
-
-    public String getID() {
-        if (ID == null) {
-            ID = FFJSDebuggerConstants.NETBEANS_FIREFOX_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
-    }
-}
+tstring encodeToBase64(tstring value);
+BOOL unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen);
+BOOL UTF8toUnicode(char *str, TCHAR **ppChars);
