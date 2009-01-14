@@ -40,7 +40,6 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
-import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -61,20 +60,25 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
     }
 
     public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, true);
+        final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
     }
 
     public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(indexFolder);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder, false);
+        final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
+        if (luceneIndexFolder.isValid() && luceneIndexFolder.isFolder() && luceneIndexFolder.getChildren(false).hasMoreElements()) {
+            // the index exists on the disk so force the manager to create LuceneIndex instance for it
+            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
+        } else {
+            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), false);
+        }
     }
 
-    private URL getIndexFolder (final FileObject indexFolder) throws IOException {
+    private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
         final String indexVersion = Integer.toString(LuceneIndex.VERSION);
         final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
+        return luceneIndexFolder;
     }
 
 }

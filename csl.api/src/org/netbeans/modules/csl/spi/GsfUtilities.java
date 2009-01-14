@@ -77,12 +77,12 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.core.PathRecognizerImpl;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -95,6 +95,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -660,7 +661,7 @@ public final class GsfUtilities {
                     // Collect binary path roots
                     collectClasspathRoots(
                         group.getRootFolder(),
-                        binaryPathIds != null ? binaryPathIds : PathRecognizerImpl.getInstance().getBinaryPathIds(),
+                        binaryPathIds != null ? binaryPathIds : getKnownPathIds(false, true),
                         true,
                         roots);
 
@@ -678,6 +679,13 @@ public final class GsfUtilities {
             }
         }
         
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Roots for file " + f //NOI18N
+                    + ", sourcePathIds=" + sourcePathIds //NOI18N
+                    + ", binaryPathIds=" + binaryPathIds //NOI18N
+                    + ": " + roots); //NOI18N
+        }
+
         return roots != null ? roots : Collections.<FileObject>emptySet();
     }
 
@@ -697,11 +705,11 @@ public final class GsfUtilities {
         Set<FileObject> roots = new HashSet<FileObject>();
 
         if (sourcePathIds == null) {
-            sourcePathIds = PathRecognizerImpl.getInstance().getSourcePathIds();
+            sourcePathIds = getKnownPathIds(true, false);
         }
 
         if (binaryPathIds == null) {
-            binaryPathIds = PathRecognizerImpl.getInstance().getBinaryPathIds();
+            binaryPathIds = getKnownPathIds(false, true);
         }
 
         if (project != null) {
@@ -714,6 +722,13 @@ public final class GsfUtilities {
         } else {
             collectClasspathRoots(null, sourcePathIds, false, roots);
             collectClasspathRoots(null, binaryPathIds, true, roots);
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Roots for project " + project //NOI18N
+                    + ", sourcePathIds=" + sourcePathIds //NOI18N
+                    + ", binaryPathIds=" + binaryPathIds //NOI18N
+                    + ": " + roots); //NOI18N
         }
 
         return roots;
@@ -763,5 +778,21 @@ public final class GsfUtilities {
         }
 
         return roots;
+    }
+
+    private static Set<String> getKnownPathIds(boolean source, boolean binary) {
+        Set<String> ids = new HashSet<String>();
+
+        Collection<? extends PathRecognizer> recognizers = Lookup.getDefault().lookupAll(PathRecognizer.class);
+        for(PathRecognizer r : recognizers) {
+            if (source) {
+                ids.addAll(r.getSourcePathIds());
+            }
+            if (binary) {
+                ids.addAll(r.getBinaryPathIds());
+            }
+        }
+
+        return ids;
     }
 }

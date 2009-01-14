@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -62,6 +64,8 @@ import org.openide.util.Parameters;
  */
 public final class QuerySupport {
 
+    private static final Logger LOG = Logger.getLogger(QuerySupport.class.getName());
+    
     /**
      * Encodes a type of the name kind used by
      * {@link Index#search}, {@link CodeCompletionContext#getNameKind()} etc.
@@ -103,11 +107,12 @@ public final class QuerySupport {
     }
 
 
-
+    private final String indexerIdentification;
     private final IndexFactoryImpl spiFactory;
     private final Map<URL,IndexImpl> indexes;
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
+        this.indexerIdentification = indexerName + "/" + indexerVersion; //NOI18N
         this.spiFactory = new LuceneIndexFactory();
         this.indexes = new HashMap<URL, IndexImpl>();
         final String indexerFolder = findIndexerFolder(indexerName, indexerVersion);
@@ -124,12 +129,21 @@ public final class QuerySupport {
                 }
             }
         }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("QuerySupport for " + indexerIdentification + ":"); //NOI18N
+            for(URL root : indexes.keySet()) {
+                LOG.fine(" " + root + " -> index: " + indexes.get(root)); //NOI18N
+            }
+            LOG.fine("----"); //NOI18N
+        }
     }
 
     /**
      * Unit test constructor
      */
     private QuerySupport (final FileObject srcRoot, final String indexerName, final int indexerVersion) throws IOException {
+        this.indexerIdentification = indexerName + "/" + indexerVersion; //NOI18N
         this.spiFactory = new LuceneIndexFactory();
         this.indexes = new HashMap<URL, IndexImpl>();
         final FileObject cacheFolder = CacheFolder.getDataFolder(srcRoot.getURL());
@@ -148,6 +162,13 @@ public final class QuerySupport {
             final IndexImpl index = ie.getValue();
             final URL root = ie.getKey();
             final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("query(" + fieldName + ", " + fieldValue + ", " + kind + ", ...) for " + indexerIdentification + ":"); //NOI18N
+                for(IndexDocumentImpl idi : pr) {
+                    LOG.fine(" " + idi); //NOI18N
+                }
+                LOG.fine("----"); //NOI18N
+            }
             for (IndexDocumentImpl di : pr) {                
                 result.add(new IndexResult(di,root));
             }
@@ -156,14 +177,14 @@ public final class QuerySupport {
     }
 
     public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final URL... roots) throws IOException {
-        Parameters.notNull("indexerName", indexerName);
-        Parameters.notNull("roots", roots);
+        Parameters.notNull("indexerName", indexerName); //NOI18N
+        Parameters.notNull("roots", roots); //NOI18N
         return new QuerySupport(indexerName, indexerVersion, roots);
     }
 
     public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final FileObject... roots) throws IOException {
-        Parameters.notNull("indexerName", indexerName);
-        Parameters.notNull("roots", roots);
+        Parameters.notNull("indexerName", indexerName); //NOI18N
+        Parameters.notNull("roots", roots); //NOI18N
         final List<URL> rootsURL = new ArrayList<URL>(roots.length);
         for (FileObject root : roots) {
             rootsURL.add(root.getURL());
