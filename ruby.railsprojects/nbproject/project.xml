@@ -306,7 +306,7 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.gsf</code-name-base>
+                        <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>
