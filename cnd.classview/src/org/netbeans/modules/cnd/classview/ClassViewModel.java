@@ -48,6 +48,7 @@ import org.netbeans.api.project.*;
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Node;
 
 /**
@@ -56,7 +57,7 @@ import org.openide.nodes.Node;
  */
 /*package-local*/ class ClassViewModel {
     
-    private static final boolean showLibs = ClassViewModel.getBoolean("cnd.classview.sys-includes", true); // NOI18N
+    private static final boolean showLibs = CndUtils.getBoolean("cnd.classview.sys-includes", true); // NOI18N
     
     private ClassViewUpdater updater;
     private ChildrenUpdater childrenUpdater;
@@ -193,14 +194,6 @@ import org.openide.nodes.Node;
         }
         return res;
     }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    } 
 
     private void dump(Project[] projects) {
         if( Diagnostic.DEBUG ) {

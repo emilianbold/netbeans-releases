@@ -77,7 +77,16 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
         navigatorPane.setDragSource(false);
         add(navigatorPane, java.awt.BorderLayout.CENTER);
         explorerManager.setRootContext(content.getRoot());
-        navigatorPane.expandAll();
+        expandAll();
+    }
+
+    private void expandAll() {
+        NavigatorModel model = content.getModel();
+        if (model != null) {
+            if (model.getFilter().isExpandAll()) {
+                navigatorPane.expandAll();
+            }
+        }
     }
     
     /** This method is called from within the constructor to
@@ -105,11 +114,11 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     void newContentReady(){
         explorerManager.setRootContext(content.getRoot());
         if (SwingUtilities.isEventDispatchThread()){
-            navigatorPane.expandAll();
+            expandAll();
         } else {
             SwingUtilities.invokeLater(new Runnable(){
                 public void run() {
-                    navigatorPane.expandAll();
+                    expandAll();
                 }
             });
         }

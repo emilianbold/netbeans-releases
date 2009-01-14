@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -60,14 +61,27 @@ import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandler;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChain;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChains;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerClass;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.DefinitionsBindings;
+import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
+import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.support.RefreshClientDialog;
 import org.netbeans.modules.websvc.api.support.RefreshCookie;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -90,7 +104,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsClientNode extends AbstractNode implements OpenCookie, RefreshCookie {
+public class JaxWsClientNode extends AbstractNode implements OpenCookie, RefreshCookie, ConfigureHandlerCookie {
     JaxWsService client;
     JAXWSLightSupport jaxWsSupport;
     InstanceContent content;
@@ -244,7 +258,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 //            null,
 //            SystemAction.get(WSEditAttributesAction.class),
 //            null,
-//            SystemAction.get(ConfigureHandlerAction.class),
+            SystemAction.get(ConfigureHandlerAction.class),
             null,
             SystemAction.get(DeleteAction.class),
             null,
@@ -283,7 +297,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             if (project != null) {
                 ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
-                        MavenModelUtils.removeWsdlFile(model, client.getLocalWsdl());
+                        MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
                     }
                 };
                 FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
@@ -319,61 +333,35 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 //    }
     
     
-//    public void configureHandler() {
-//        Project project = FileOwnerQuery.getOwner(srcRoot);
-//        ArrayList<String> handlerClasses = new ArrayList<String>();
-//        BindingsModel bindingsModel = getBindingsModel();
-//        if(bindingsModel != null){  //if there is an existing bindings file, load it
-//            GlobalBindings gb = bindingsModel.getGlobalBindings();
-//            if(gb != null){
-//                DefinitionsBindings db = gb.getDefinitionsBindings();
-//                if(db != null){
-//                    BindingsHandlerChains handlerChains = db.getHandlerChains();
-//                    //there is only one handler chain
-//                    BindingsHandlerChain handlerChain =
-//                            handlerChains.getHandlerChains().iterator().next();
-//                    Collection<BindingsHandler> handlers = handlerChain.getHandlers();
-//                    for(BindingsHandler handler : handlers){
-//                        BindingsHandlerClass handlerClass = handler.getHandlerClass();
-//                        handlerClasses.add(handlerClass.getClassName());
-//                    }
-//                }
-//            }
-//        }
-//        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-//                handlerClasses, true, client.getName());
-//        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
-//        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
-//        dialogDesc.setButtonListener(new ClientHandlerButtonListener(panel,
-//                bindingsModel, client, this, jaxWsModel));
-//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
-//        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
-//        dialog.setVisible(true);
-//    }
-    
-//    private BindingsModel getBindingsModel(){
-//        String handlerBindingFile = client.getHandlerBindingFile();
-//        BindingsModel bindingsModel = null;
-//        
-//        //if there is an existing handlerBindingFile, load it
-//        try{
-//            if(handlerBindingFile != null){
-//                JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-//                FileObject bindingsFolder = support.getBindingsFolderForClient(getName(), false);
-//                if(bindingsFolder != null){
-//                    FileObject handlerBindingFO = bindingsFolder.getFileObject(handlerBindingFile);
-//                    if(handlerBindingFO != null){
-//                        ModelSource ms = Utilities.getModelSource(handlerBindingFO, true);
-//                        bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
-//                    }
-//                }
-//            }
-//        }catch(Exception e){
-//            ErrorManager.getDefault().notify(e);
-//            return null;
-//        }
-//        return bindingsModel;
-//    }
+    public void configureHandler() {
+        Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+        ArrayList<String> handlerClasses = new ArrayList<String>();
+        BindingsModel bindingsModel = getBindingsModel();
+        if(bindingsModel != null){  //if there is an existing bindings file, load it
+            GlobalBindings gb = bindingsModel.getGlobalBindings();
+            if(gb != null){
+                DefinitionsBindings db = gb.getDefinitionsBindings();
+                if(db != null){
+                    BindingsHandlerChains handlerChains = db.getHandlerChains();
+                    //there is only one handler chain
+                    BindingsHandlerChain handlerChain =
+                            handlerChains.getHandlerChains().iterator().next();
+                    Collection<BindingsHandler> handlers = handlerChain.getHandlers();
+                    for(BindingsHandler handler : handlers){
+                        BindingsHandlerClass handlerClass = handler.getHandlerClass();
+                        handlerClasses.add(handlerClass.getClassName());
+                    }
+                }
+            }
+        }
+        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
+                handlerClasses, true, client.getServiceName());
+        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
+        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
+        dialogDesc.setButtonListener(new ClientHandlerButtonListener(panel,
+                bindingsModel, client, this));
+        DialogDisplayer.getDefault().notify(dialogDesc);
+    }
     
     WsdlModeler getWsdlModeler() {
         if (getLocalWsdl()!=null) {
@@ -400,7 +388,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         return null;
     }
     
-    private FileObject getLocalWsdl() {
+    FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
             FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
@@ -412,34 +400,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         }
         return wsdlFileObject;
     }
-    
-//    private void setBindings(WsdlModeler wsdlModeler) {
-//        Binding[] extbindings = client.getBindings();
-//        if (extbindings==null || extbindings.length==0) {
-//            wsdlModeler.setJAXBBindings(null);
-//            return;
-//        }
-//        String[] bindingFiles = new String[extbindings.length];
-//        for(int i = 0; i < extbindings.length; i++){
-//            bindingFiles[i] = extbindings[i].getFileName();
-//        }
-//        
-//        FileObject bindingsFolder = getJAXWSClientSupport().getBindingsFolderForClient(getName(),true);
-//        List<URL> list = new ArrayList<URL>();
-//        for (int i=0;i<bindingFiles.length;i++) {
-//            FileObject fo = bindingsFolder.getFileObject(bindingFiles[i]);
-//            if (fo != null) {
-//                try {
-//                    list.add(fo.getURL());
-//                } catch (FileStateInvalidException ex) {
-//                    // if there is problem no bindings will be added
-//                }
-//            }
-//        }
-//        URL[] bindings = new URL[list.size()];
-//        list.<URL>toArray(bindings);
-//        wsdlModeler.setJAXBBindings(bindings);
-//    }
     
     void setModelGenerationFinished(boolean value) {
         modelGenerationFinished=value;
@@ -511,11 +471,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                                     prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
                                 }
                             }
+                            final String oldId = wsdlFileObject.getName();
+                            final String newId = wsdlFo.getName();
                             wsdlFileObject = wsdlFo;
                             // update project's pom.xml
                             ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
                                 public void performOperation(POMModel model) {
-                                    MavenModelUtils.renameWsdlFile(model, client.getLocalWsdl(), relativePath);
+                                    MavenModelUtils.renameWsdlFile(model, oldId, newId, client.getLocalWsdl(), relativePath);
                                 }
                             };
                             FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
@@ -550,6 +512,29 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 }
             });
         }
+    }
+
+    private BindingsModel getBindingsModel(){
+        String handlerBindingFile = client.getHandlerBindingFile();
+        BindingsModel bindingsModel = null;
+
+        //if there is an existing handlerBindingFile, load it
+        try{
+            if(handlerBindingFile != null){
+                FileObject bindingsFolder = jaxWsSupport.getBindingsFolder(false);
+                if(bindingsFolder != null){
+                    FileObject handlerBindingFO = bindingsFolder.getFileObject(handlerBindingFile);
+                    if(handlerBindingFO != null){
+                        ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(handlerBindingFO, true);
+                        bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
+                    }
+                }
+            }
+        } catch(Exception e){
+            ErrorManager.getDefault().notify(e);
+            return null;
+        }
+        return bindingsModel;
     }
  
 }

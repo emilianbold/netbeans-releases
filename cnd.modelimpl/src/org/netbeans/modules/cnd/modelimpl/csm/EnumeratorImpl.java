@@ -137,7 +137,6 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         UIDObjectFactory.getDefaultFactory().writeUID(this.enumerationUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());

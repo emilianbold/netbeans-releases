@@ -238,6 +238,10 @@
 <mapID target="ant_exp-classpath" url="ant/exp-classpath.html" />
 <mapID target="ant_debugging" url="ant/ant_debugging.html" />
 
+<!-- Additional maven topics are in the maven module -->
+<mapID target="org.netbeans.modules.maven.about" url="maven-about.html"/>
+
+
 <mapID target="propfiles.intro" url="propfiles/about_resourcebundles.html" />
 <mapID target="propfiles.creating" url="propfiles/creating_resourcebundles.html" />
 <mapID target="propfiles.adding" url="propfiles/addingprops.html" />

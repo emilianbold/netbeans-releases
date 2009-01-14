@@ -380,7 +380,7 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
     logMsg("JvmLauncher::findJava()\n\tjavaKey: %s\n\tprefix: %s\n\tminJavaVersion: %s", javaKey, prefix, minJavaVersion);
     string value;
     if (getStringFromRegistry(HKEY_LOCAL_MACHINE, javaKey, CUR_VERSION_NAME, value)) {
-        if (value > minJavaVersion) {
+        if (value >= minJavaVersion) {
             string path;
             if (getStringFromRegistry(HKEY_LOCAL_MACHINE, (string(javaKey) + "\\" + value).c_str(), JAVA_HOME_NAME, path)) {
                 if (*path.rbegin() == '\\') {

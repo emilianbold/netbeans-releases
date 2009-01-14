@@ -40,7 +40,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Watches execution in a single thread and detects whether it is blocked
@@ -52,15 +52,13 @@ public class SingleThreadWatcher implements Runnable {
 
     private static final int DELAY = 3000;
 
-    private final RequestProcessor threadWatchRP = new RequestProcessor("Debugger Single Thread Watch", 1);
-
     private JPDAThreadImpl t;
-    private RequestProcessor.Task watchTask;
+    private Task watchTask;
 
     public SingleThreadWatcher(JPDAThreadImpl t) {
         this.t = t;
         //System.err.println("\nnew SingleThreadWatcher("+t+")");
-        watchTask = threadWatchRP.post(this, DELAY);
+        watchTask = t.getDebugger().getRequestProcessor().post(this, DELAY);
     }
 
     public synchronized void destroy() {

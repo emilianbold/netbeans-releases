@@ -61,6 +61,7 @@ import java.util.WeakHashMap;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -111,10 +112,11 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
 
-    private static RequestProcessor RP = new RequestProcessor("Debugging Threads Refresh", 1);
+    private RequestProcessor RP;
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        RP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
             debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
@@ -372,7 +374,15 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         
         private RequestProcessor.Task createTask() {
-            RequestProcessor.Task task = RP.create(new RefreshTree());
+            RequestProcessor rp;
+            try {
+                Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+                rp = s.lookupFirst(null, RequestProcessor.class);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+                rp = RequestProcessor.getDefault();
+            }
+            RequestProcessor.Task task = rp.create(new RefreshTree());
             return task;
         }
         

@@ -723,7 +723,16 @@ public class InfoPanel extends javax.swing.JPanel {
     private void resumeDebuggerDeadlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resumeDebuggerDeadlockButtonActionPerformed
         //final List<JPDAThread> threadsToResume = debuggerDeadlockThreads;
         final JPDAThread blockedThread = debuggerDeadlockThread;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor rp;
+        try {
+            JPDADebugger debugger = (JPDADebugger) blockedThread.getClass().getMethod("getDebugger").invoke(blockedThread);
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+            return ;
+        }
+        rp.post(new Runnable() {
             public void run() {
                 resumeThreadToFreeMonitor(blockedThread);
             }

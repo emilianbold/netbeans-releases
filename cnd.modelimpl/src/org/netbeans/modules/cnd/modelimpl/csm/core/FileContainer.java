@@ -580,7 +580,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
         private volatile boolean pendingReparse = false; // "transient"
-        
+
         @SuppressWarnings("unchecked")
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);

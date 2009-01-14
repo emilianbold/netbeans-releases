@@ -104,7 +104,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     public static final String MONITOR =
         "org/netbeans/modules/debugger/resources/allInOneView/monitor_acquired_16.png"; // NOI18N
 
-    private RequestProcessor evaluationRP = new RequestProcessor();
+    private RequestProcessor evaluationRP;
     private final Collection modelListeners = new HashSet();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
@@ -114,6 +114,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     public DebuggingMonitorModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         prefListener = new MonitorPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }

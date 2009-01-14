@@ -101,6 +101,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -120,9 +121,7 @@ public class Evaluator extends javax.swing.JPanel {
     private JPDADebugger debugger;
     private EvaluatorModelListener viewModelListener;
     private Variable result;
-    private RequestProcessor.Task evalTask =
-            new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
-            create(new EvaluateTask());
+    private RequestProcessor.Task evalTask;
     private boolean ignoreEvents = false;
     private SessionListener sessionListener;
     private PropertyChangeListener csfListener;
@@ -165,6 +164,13 @@ public class Evaluator extends javax.swing.JPanel {
         };
         debugger.addPropertyChangeListener(
                 WeakListeners.propertyChange(csfListener, debugger));
+        try {
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            RequestProcessor rp = s.lookupFirst(null, RequestProcessor.class);
+            evalTask = rp.create(new EvaluateTask());
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     private void setButtons(JButton watchButton, JButton evaluateButton) {
@@ -739,6 +745,7 @@ public class Evaluator extends javax.swing.JPanel {
             nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
             columnModels =          cp.lookup (viewType, ColumnModel.class);
             mm =                    cp.lookup (viewType, Model.class);
+            RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
             
             List treeNodeModelsCompound = new ArrayList(11);
             treeNodeModelsCompound.add(treeModels);
@@ -780,6 +787,9 @@ public class Evaluator extends javax.swing.JPanel {
             models.add(nodeActionsProviderFilters);
             models.add(columnModels);
             models.add(mm);
+            if (rp != null) {
+                models.add(rp);
+            }
             
             Models.setModelsToView (
                 view, 

@@ -97,7 +97,7 @@ public class YardaTest  extends NbTestCase {
             
             cm1.notifyAll ();
         }
-        TreeModelNode.getRequestProcessor ().post (new Runnable () {
+        tt.currentTreeModelRoot.getRootNode().getRequestProcessor().post (new Runnable () {
             public void run () {}
         }).waitFinished ();
         //System.err.println("Child = "+n.getChildren().getNodes()[0]);

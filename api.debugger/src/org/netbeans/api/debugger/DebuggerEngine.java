@@ -148,6 +148,10 @@ public final class DebuggerEngine implements ContextProvider {
             sessionLookup
         );
     }
+
+    Lookup getLookup() {
+        return lookup;
+    }
     
 //    /**
 //     * Returns list of services of given type.

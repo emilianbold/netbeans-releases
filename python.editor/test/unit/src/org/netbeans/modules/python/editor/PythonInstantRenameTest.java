@@ -44,4 +44,14 @@ public class PythonInstantRenameTest extends PythonTestBase {
         String caretLine = "print toplevel^var2";
         checkRenameSections("testfiles/occurrences2.py", caretLine);
     }
+
+    public void testRename7() throws Exception {
+        String caretLine = "# @type ^xy str";
+        checkRenameSections("testfiles/typevars.py", caretLine);
+    }
+
+    public void testRename8() throws Exception {
+        String caretLine = "x^y.s1";
+        checkRenameSections("testfiles/typevars.py", caretLine);
+    }
 }

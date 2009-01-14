@@ -131,7 +131,24 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         
         return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
     }
-    
+
+    protected static String generateUniqueSuffix(FileObject folder, String prefix, String... extensions) {
+        for (int i = 0; true; ++i) {
+            String suffix = i == 0? "" : String.valueOf(i);
+            String filename = prefix + suffix;
+            boolean unique = true;
+            for (String ext : extensions) {
+                if (folder.getFileObject(filename, ext) != null) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique) {
+                return suffix;
+            }
+        }
+    }
+
     protected static String getMessage(String name) {
         return NbBundle.getMessage( CndPanelGUI.class, name);
     }
