@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +66,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
   
     private String sourceExt;
     private String headerExt;
+    private final MIMEExtensions sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+    private final MIMEExtensions headerExtensions = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE);
+
     /** Creates new form NewCndFileChooserPanelGUI */
     NewCndClassPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel) {
         super(project, folders);
@@ -127,8 +131,11 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         
         
-        sourceExt = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getDefaultExtension();
-        headerExt = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getDefaultExtension();
+        sourceExt = sourceExtensions.getDefaultExtension();
+        cbSourceExtension.setSelectedItem(sourceExt);
+
+        headerExt = headerExtensions.getDefaultExtension();
+        cbHeaderExtension.setSelectedItem(headerExt);
         
         if (template != null) {
             if (documentName == null) {
@@ -183,14 +190,12 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" );  // NOI18N
         createdFileName = createdFileName.replace( '/', File.separatorChar );
 
-        String sourceFileName = createdFileName + getSourceFileName(); // NOI18N
+        String sourceFileName = createdFileName + getSourceFileName();
+        String headerFileName = createdFileName + getHeaderFileName();
 
-        if (!sourceFileName.equals(fileTextField.getText())) {
+        if (!sourceFileName.equals(fileTextField.getText()) || !headerFileName.equals(headerTextField.getText())) {
             fileTextField.setText( sourceFileName );
-    
-            String headerFileName = createdFileName + getHeaderFileName(); // NOI18N
             headerTextField.setText( headerFileName );
-
             changeSupport.fireChange();
         }
     }
@@ -199,12 +204,20 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         return getFileName(getClassName()) + "." + sourceExt; // NOI18N
     }
 
+    private DefaultComboBoxModel getSourceExtensionsModel() {
+        return new DefaultComboBoxModel(new Vector<String>(sourceExtensions.getValues()));
+    }
+
     public String getHeaderFileName() {
         return getFileName(getClassName()) + "." + headerExt; // NOI18N
     }
+
+    private DefaultComboBoxModel getHeaderExtensionsModel() {
+        return new DefaultComboBoxModel(new Vector<String>(headerExtensions.getValues()));
+    }
     
     private static String getFileName(String className) {
-        return className.toLowerCase();
+        return className;
     }
 
     public String getClassName() {
@@ -240,6 +253,10 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         headerTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
         bottomPanelContainer = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        cbSourceExtension = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
+        cbHeaderExtension = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -248,9 +265,13 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         classNameLbl.setLabelFor(classNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(classNameLbl, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(classNameLbl, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -267,12 +288,17 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         jLabel1.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Project_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
         projectTextField.setEditable(false);
+        projectTextField.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
@@ -282,12 +308,16 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         locationLabel.setLabelFor(locationComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Location_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(locationLabel, gridBagConstraints);
+
+        locationComboBox.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
@@ -298,12 +328,13 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
@@ -312,7 +343,8 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Browse_Button")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
@@ -323,12 +355,17 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         jLabel4.setLabelFor(fileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel4, gridBagConstraints);
 
         fileTextField.setEditable(false);
+        fileTextField.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -339,12 +376,17 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         jLabel6.setLabelFor(headerTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_HeaderFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel6, gridBagConstraints);
 
         headerTextField.setEditable(false);
+        headerTextField.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -352,7 +394,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         add(headerTextField, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -360,29 +402,93 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
 
         bottomPanelContainer.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(bottomPanelContainer, gridBagConstraints);
 
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_Class_Creation_Source_Extension_Mnemonic").charAt(0));
+        jLabel5.setLabelFor(cbSourceExtension);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(jLabel5, gridBagConstraints);
+
+        cbSourceExtension.setModel(getSourceExtensionsModel());
+        cbSourceExtension.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbSourceExtensionActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(cbSourceExtension, gridBagConstraints);
+
+        jLabel7.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_Class_Creation_Header_Extension_Mnemonic").charAt(0));
+        jLabel7.setLabelFor(cbHeaderExtension);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(jLabel7, gridBagConstraints);
+
+        cbHeaderExtension.setModel(getHeaderExtensionsModel());
+        cbHeaderExtension.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbHeaderExtensionActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(cbHeaderExtension, gridBagConstraints);
+
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndClassPanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbSourceExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSourceExtensionActionPerformed
+        sourceExt = (String)cbSourceExtension.getSelectedItem();
+        updateCreatedFile();
+}//GEN-LAST:event_cbSourceExtensionActionPerformed
+
+    private void cbHeaderExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbHeaderExtensionActionPerformed
+        headerExt = (String)cbHeaderExtension.getSelectedItem();
+        updateCreatedFile();
+}//GEN-LAST:event_cbHeaderExtensionActionPerformed
 
     private void initMnemonics() {
         // kind Matiss put those above setText() in autogeneration, which is not what JLabel expects, so let's do it manually
         classNameLbl.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_FileName_Label_Mnemonic").charAt(0));
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Project_Label_Mnemonic").charAt(0));
-        locationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Location_Label_Mnemonic").charAt(0));
+        //jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Project_Label_Mnemonic").charAt(0));
+        //locationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Location_Label_Mnemonic").charAt(0));
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Folder_Label_Mnemonic").charAt(0));
         browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Browse_Button_Mnemonic").charAt(0));
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));        
-        jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedHeader_Label_Mnemonic").charAt(0));        
+        //jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));
+        //jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedHeader_Label_Mnemonic").charAt(0));
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_Class_Creation_Source_Extension_Mnemonic").charAt(0));
+        jLabel7.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_Class_Creation_Header_Extension_Mnemonic").charAt(0));
     }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
+    private javax.swing.JComboBox cbHeaderExtension;
+    private javax.swing.JComboBox cbSourceExtension;
     private javax.swing.JLabel classNameLbl;
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JTextField fileTextField;
@@ -391,7 +497,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
