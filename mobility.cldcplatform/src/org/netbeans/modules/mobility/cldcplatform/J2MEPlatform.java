@@ -65,7 +65,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -791,7 +790,7 @@ public final class J2MEPlatform extends JavaPlatform {
     
     public static DataObject createPlatform(final J2MEPlatform platform) throws IOException {
         final String name = platform.getName();
-        final FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+        final FileObject platformsFolder = FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
         if (platformsFolder.getFileObject(name, "xml") != null) //NOI18N
             return null;
         return PlatformConvertor.create(platform, DataFolder.findFolder(platformsFolder), name);

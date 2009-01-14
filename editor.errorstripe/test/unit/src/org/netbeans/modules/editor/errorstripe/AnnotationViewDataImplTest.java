@@ -68,7 +68,7 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.modules.editor.options.AnnotationTypeProcessor;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -463,7 +463,7 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         public void loadTypes() {
             try {
                 Map typesInstances = new HashMap();
-                FileObject typesFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/AnnotationTypes");
+                FileObject typesFolder = FileUtil.getConfigFile("Editors/AnnotationTypes");
                 FileObject[] types = typesFolder.getChildren();
                 
                 for (int cntr = 0; cntr < types.length; cntr++) {

@@ -24,9 +24,8 @@ import java.util.Vector;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard Panel that allows the user to select the Page Template
@@ -42,7 +41,7 @@ public class PageLayoutChooserPanel implements WizardDescriptor.Panel, WizardDes
     public PageLayoutChooserPanel() {
         component = null;
         String pageLayoutsFolderName = "Templates/PageLayoutTemplates"; // NOI18N
-        FileObject pageLayoutsFolder = Repository.getDefault().getDefaultFileSystem().findResource(pageLayoutsFolderName);
+        FileObject pageLayoutsFolder = FileUtil.getConfigFile(pageLayoutsFolderName);
         if (pageLayoutsFolder != null) {
             FileObject[] pageLayouts = pageLayoutsFolder.getChildren();
 

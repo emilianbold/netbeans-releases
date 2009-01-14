@@ -41,13 +41,9 @@
 
 package org.netbeans.modules.favorites;
 
-import java.io.File;
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
@@ -76,7 +72,7 @@ public class IndexTest extends NbTestCase {
      */
     public void testReorder () throws Exception {
         FileObject folder = FileUtil.createFolder (
-            Repository.getDefault().getDefaultFileSystem().getRoot(), 
+            FileUtil.getConfigRoot(),
             "FavoritesTest"
         );
         FileObject fo1 = FileUtil.createData(folder,"Test1");

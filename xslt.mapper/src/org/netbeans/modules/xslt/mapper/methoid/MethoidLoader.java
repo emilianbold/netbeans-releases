@@ -36,7 +36,7 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IField;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoid;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * This class is intended to load meta-information from the layer.xml
@@ -56,8 +56,7 @@ public class MethoidLoader {
     }
     
     public static IMethoid loadMethoid(String xpathOperator){
-        FileObject metainfoFo = Repository.getDefault().
-                                    getDefaultFileSystem().findResource(Constants.XSLT_PALETTE_METAINFO);
+        FileObject metainfoFo = FileUtil.getConfigFile(Constants.XSLT_PALETTE_METAINFO);
         for(FileObject subfolder: metainfoFo.getChildren()){
             for (FileObject methoidfile: subfolder.getChildren()){
                 if (xpathOperator.equals(methoidfile.getName())){

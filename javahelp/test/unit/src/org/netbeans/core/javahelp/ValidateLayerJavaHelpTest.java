@@ -96,7 +96,7 @@ public class ValidateLayerJavaHelpTest extends NbTestCase {
     public void testContentCorrect () throws Exception {
         java.util.ArrayList errors = new java.util.ArrayList ();
         
-        DataFolder df = DataFolder.findFolder( Repository.getDefault().getDefaultFileSystem().findResource( rootName() ) );
+        DataFolder df = DataFolder.findFolder( FileUtil.getConfigFile( rootName() ) );
         verifyHelpSets( df, errors );
         
         if (!errors.isEmpty()) {

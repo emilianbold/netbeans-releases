@@ -48,7 +48,6 @@ import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -74,8 +73,7 @@ public class MockInstanceProvider implements ServerInstanceProvider {
 
         Lookup.getDefault().lookup(ModuleInfo.class);
 
-        FileObject servers = Repository.getDefault().getDefaultFileSystem().getRoot()
-                .getFileObject(ServerRegistry.SERVERS_PATH);
+        FileObject servers = FileUtil.getConfigFile(ServerRegistry.SERVERS_PATH);
         FileObject testProvider = FileUtil.createData(servers, instanceName);
 
         testProvider.setAttribute("instanceOf", ServerInstanceProvider.class.getName()); // NOI18N

@@ -30,12 +30,11 @@ package org.netbeans.core.windows.view.ui;
 import java.awt.*;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
-import junit.framework.*;
 import org.netbeans.core.windows.IDEInitializer;
 import org.netbeans.junit.*;
 import org.openide.windows.*;
 import org.openide.awt.ToolbarPool;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -84,7 +83,7 @@ public class CustomMenuBarTest extends NbTestCase {
         IDEInitializer.addLayers(new String[]{"org/netbeans/core/windows/resources/layer-CustomMenuBarTest.xml"});
 
         //Verify that test layer was added to default filesystem
-        assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("LookAndFeel/MenuBar.instance"));
+        assertNotNull(FileUtil.getConfigFile("LookAndFeel/MenuBar.instance"));
 
         MainWindow mw = (MainWindow) WindowManager.getDefault().getMainWindow();
         mw.initializeComponents();
@@ -98,7 +97,7 @@ public class CustomMenuBarTest extends NbTestCase {
         IDEInitializer.addLayers(new String[]{"org/netbeans/core/windows/resources/layer-CustomMenuBarTest.xml"});
 
         //Verify that test layer was added to default filesystem
-        assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("LookAndFeel/StatusLine.instance"));
+        assertNotNull(FileUtil.getConfigFile("LookAndFeel/StatusLine.instance"));
         MainWindow mw = (MainWindow) WindowManager.getDefault().getMainWindow();
         mw.initializeComponents();
         assertTrue(findComponent(mw, createStatusLine()));

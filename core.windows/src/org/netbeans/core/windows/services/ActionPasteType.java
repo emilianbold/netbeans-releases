@@ -43,7 +43,6 @@ package org.netbeans.core.windows.services;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.LoaderTransfer;
@@ -71,7 +70,7 @@ final class ActionPasteType {
 
         try {
             /*Copy/Cut/Paste is allowed just on SystemFileSystem*/ 
-            if (folder.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
+            if (folder.getFileSystem().isDefault()) {
                 final int[] pasteOperations = new int[]{LoaderTransfer.CLIPBOARD_COPY, LoaderTransfer.CLIPBOARD_CUT};
 
                 for (int i = 0; i < pasteOperations.length; i++) {
@@ -99,7 +98,7 @@ final class ActionPasteType {
             final DataObject dataObject = dataObjects[j];
             final FileObject fo = dataObject.getPrimaryFile ();
             
-            if (!isAction(dataObject) || fo.getFileSystem() != Repository.getDefault().getDefaultFileSystem()) {
+            if (!isAction(dataObject) || !fo.getFileSystem().isDefault()) {
                 break;    
             }
 

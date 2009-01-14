@@ -46,7 +46,7 @@ import java.util.Set;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class SynchronousSampleWizardIterator extends SampleWizardIterator {
@@ -70,8 +70,7 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
       Set<FileObject> resultSet = new HashSet<FileObject>();
       FileObject compAppProjectDir = projectDir.createFolder(name);                
       
-      FileObject trsCompositeApp = Repository.getDefault().
-              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip"); // NOI18N
+      FileObject trsCompositeApp = FileUtil.getConfigFile("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip"); // NOI18N
 
       Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
       Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "SynchronousSampleApplication"); // NOI18N

@@ -419,9 +419,8 @@ public class Resolver3 implements Resolver {
     
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
         CsmFilter filter =  CsmSelect.getDefault().getFilterBuilder().createKindFilter(
-                            new CsmDeclaration.Kind[]{
                                   CsmDeclaration.Kind.NAMESPACE_DEFINITION,
-                                  CsmDeclaration.Kind.TYPEDEF});
+                                  CsmDeclaration.Kind.TYPEDEF);
         for (Iterator iter = CsmSelect.getDefault().getDeclarations(nsd, filter); iter.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {

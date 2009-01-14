@@ -56,9 +56,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -94,7 +91,6 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -283,7 +279,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
         
         // create model
-        FileObject template = Repository.getDefault().getDefaultFileSystem().findResource(
+        FileObject template = FileUtil.getConfigFile(
                 "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
         assert template != null;
         

@@ -36,6 +36,14 @@
 *
 * Portions Copyrighted 2009 Sun Microsystems, Inc.
 """
+import Queue
+import sys
+import traceback
+import os
+import socket
+import string
+import threading
+import time
 
 
 """ misc utility modules used by jpydbg stuff """
@@ -46,15 +54,8 @@ __author__= 'Jean-Yves Mengant'
 
 # $Source: /cvsroot/jpydbg/jpydebugforge/src/python/jpydbg/dbgutils.py,v $
 
-import sys
-import traceback
-import os
-import socket
-import string
-import threading
 
-
-class jpyutils :
+class JpyUtils :
 
     def __init__( self ):
         if ( os.name == 'java' ):
@@ -142,6 +143,12 @@ class jpyutils :
             return string.strip(toParse[:nextSpace]) , string.strip(toParse[nextSpace+1:])
 
 
+
+# common global instance
+jpyutils = JpyUtils()
+
+
+
 class PythonPathHandler:
     "store the python path in a text file for jpydebug usage"
     def __init__(self , pyPathFName):
@@ -190,11 +197,10 @@ class DebugLogger :
 ###############################################################################
 # do a touch of jpydbg.log in same directory as jpydebug.py to get debug traces on
 ###############################################################################
-_debugLogger = None
+debugLogger = None
 if os.path.exists(_DEBUGLOG) :
-    _debugLogger = DebugLogger()
-    _debugLogger.debug("***** Debug Session Started ******")
-
+    debugLogger = DebugLogger()
+    debugLogger.debug("***** Debug Session Started ******")
 
 class NetworkSession:
     """ handle network session for JpyDbg and Completion engine """
@@ -202,13 +208,14 @@ class NetworkSession:
     def __init__( self , connection ) :
         self._connection = connection
         self._lastBuffer = ''
+        self._threadQ = Queue.Queue()
         self.lock = threading.Lock()
         self._acquire_lock = self.lock.acquire
         self._release_lock = self.lock.release
 
     def _DBG( self , toWrite ):
-        if _debugLogger :
-            _debugLogger.debug(toWrite)
+        if debugLogger :
+            debugLogger.debug(toWrite)
 
     def populateToClient( self , bufferList ) :
         """ populate back bufferList to client side """
@@ -242,6 +249,7 @@ class NetworkSession:
 
     def _receiveCommand( self ):
         """ receive a command back """
+        self._DBG(">Wait on NET ... ")
         data = self.readNetBuffer() ;
         # data reception from Ip
         while ( data != None and data):
@@ -261,14 +269,36 @@ class NetworkSession:
         # returning None on Ip Exception
         return None
 
-    def receiveCommand( self ):
+    def sendInternalThreadCommand(self , command ):
+        """ send threadQ a command ( internal usage by DebugCommander only ) """
+        self._threadQ.put(command)
+
+    def deprecatedReceiveCommand( self ):
+        """ Threads dispatched commands => just wait on Q"""
+        self._DBG(">Wait on Q ... ")
+        while True :
+            try :
+                returned = self._threadQ.get(timeout=1)
+                self._DBG("< got from Q : %s " %(returned) )
+                return returned
+            except Queue.Empty :
+                time.sleep(.100)
+
+    def receiveCommand(self ):
+        """ Network dbg command main entry dispatch to commander or Q"""
         self._acquire_lock()
         try :
-            returned = self._receiveCommand()
+            self._DBG( "Waiting incomming commands ..."  )
+            command = self._receiveCommand()
+            self._DBG( "<-- Network command = %s" % (command)  )
         finally :
             self._release_lock()
-        return returned
-
+        # handle dispatching
+        verb , arg = jpyutils.nextArg(command)
+        if verb == 'GLBCMD' :
+            return arg
+        else :
+            return command
 
     def close( self ):
         """ close the associated ip session """

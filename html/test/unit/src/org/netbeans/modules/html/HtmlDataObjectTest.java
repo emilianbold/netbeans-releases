@@ -46,7 +46,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
@@ -101,7 +100,7 @@ public class HtmlDataObjectTest extends TestCase {
         
         try {
         
-            FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "my.html");
+            FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "my.html");
             DataObject obj = DataObject.find(fo);
             assertEquals("Successfully created html object", obj.getClass(), HtmlDataObject.class);
             assertNotNull("File encoding query is in the object's lookup", obj.getLookup().lookup(FileEncodingQueryImplementation.class));

@@ -50,9 +50,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -129,8 +127,7 @@ public class SaasServicesModel {
     }
 
     private void loadFromDefaultFileSystem() {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f = sfs.findResource("SaaSServices"); // NOI18N
+        FileObject f = FileUtil.getConfigFile("SaaSServices"); // NOI18N
 
         if (f != null && f.isFolder()) {
             Enumeration<? extends FileObject> en = f.getFolders(false);

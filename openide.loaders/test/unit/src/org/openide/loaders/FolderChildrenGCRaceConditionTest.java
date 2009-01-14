@@ -47,7 +47,6 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -65,7 +64,7 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
     	super.setUp();
         clearWorkDir();
 
-        FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
+        FileObject[] arr = FileUtil.getConfigRoot().getChildren();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete();
         }
@@ -73,7 +72,7 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
 
     @RandomlyFails // NB-Core-Build #1087
     public void testChildrenCanBeSetToNullIfGCKicksIn () throws Exception {
-        FileObject f = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "folder/node.txt");
+        FileObject f = FileUtil.createData(FileUtil.getConfigRoot(), "folder/node.txt");
         
         DataFolder df = DataFolder.findFolder(f.getParent());
         Node n = df.getNodeDelegate();

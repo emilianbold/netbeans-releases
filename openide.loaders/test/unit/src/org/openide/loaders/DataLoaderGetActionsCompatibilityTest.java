@@ -81,7 +81,7 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
         
         MyDL loader = MyDL.getLoader(MyDL.class);
 
-        FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem dfs = FileUtil.getConfigRoot().getFileSystem();
         dfs.refresh (true);        
         
         FileObject fo = FileUtil.createData (dfs.getRoot (), "a.txt");
@@ -106,7 +106,7 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
         if (l != 0) {
             fail ("Not empty actions at the end!!!");
         }
-        Repository.getDefault ().getDefaultFileSystem ().removeFileChangeListener (sfs);
+        FileUtil.getConfigRoot().getFileSystem().removeFileChangeListener (sfs);
 
         // no suspicious activity on getDefaultFileSystem
         sfs.assertEvent (0, null);

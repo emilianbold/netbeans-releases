@@ -44,7 +44,6 @@ package org.netbeans.modules.subversion;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -346,7 +345,7 @@ class DiskMapTurboProvider implements TurboProvider {
         if (userDir != null) {
             cacheStore = new File(new File(new File (userDir, "var"), "cache"), CACHE_DIRECTORY); // NOI18N
         } else {
-            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheStore = new File(cachedir, CACHE_DIRECTORY); // NOI18N
         }
         cacheStore.mkdirs();

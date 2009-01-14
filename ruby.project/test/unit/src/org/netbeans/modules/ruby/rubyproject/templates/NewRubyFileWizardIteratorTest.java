@@ -102,8 +102,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
 
         // Unfortunately lookup in the SFS isn't working from my tests...
         //String path = "Templates/Ruby/";
-//        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-//        FileObject templateFile = sfs.findResource(systemFile);
+//        FileObject templateFile = FileUtil.getConfigFile(systemFile);
 //        
 //        if (templateFile == null) {
 //            FileObject root = sfs.getRoot();

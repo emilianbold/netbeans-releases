@@ -419,6 +419,7 @@ public class PythonRenameRefactoringPlugin extends PythonRefactoringPlugin {
                     for (PythonTree n : nodes) {
                         rename(n, name, null, getString("UpdateLocalvar"));
                     // TODO - check arity - see OccurrencesFinder
+                    // TODO - @type declarations!
                     }
                 }
             } else {

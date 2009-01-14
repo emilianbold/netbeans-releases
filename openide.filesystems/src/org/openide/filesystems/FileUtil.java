@@ -156,7 +156,11 @@ public final class FileUtil extends Object {
      */
     public static void refreshAll() {
         refreshFor(File.listRoots());
-        Repository.getDefault().getDefaultFileSystem().refresh(true);
+        try {
+            getConfigRoot().getFileSystem().refresh(true);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }         
     
     /**
@@ -203,6 +207,7 @@ public final class FileUtil extends Object {
      * @throws java.io.IOException
      * @since 7.5
      */
+    @SuppressWarnings("deprecation")
     public static final void runAtomicAction(final AtomicAction atomicCode) throws IOException {
         Repository.getDefault().getDefaultFileSystem().runAtomicAction(atomicCode);
     }
@@ -1761,6 +1766,36 @@ public final class FileUtil extends Object {
      */
     public static boolean affectsOrder(FileAttributeEvent event) {
         return Ordering.affectsOrder(event);
+    }
+
+    /**
+     * Returns {@code FileObject} from the NetBeans default (system, configuration)
+     * filesystem or {@code null} if does not exist.
+     * If you wish to create the file/folder when it does not already exist,
+     * start with {@link #getConfigRoot} and use {@link #createData(FileObject, String)}
+     * or {@link #createFolder(FileObject, String)} methods.
+     * @param path the path from the root of the NetBeans default (system, configuration)
+     * filesystem delimited by '/' or empty string to get root folder.
+     * @throws NullPointerException if the path is {@code null}
+     * @return a {@code FileObject} for given path in the NetBeans default (system, configuration)
+     * filesystem or {@code null} if does not exist
+     * @since org.openide.filesystems 7.19
+     */
+    @SuppressWarnings("deprecation")
+    public static FileObject getConfigFile(String path) {
+        Parameters.notNull("path", path);  //NOI18N
+        return Repository.getDefault().getDefaultFileSystem().findResource(path);
+    }
+
+    /**
+     * Returns the root of the NetBeans default (system, configuration)
+     * filesystem.
+     * @return a {@code FileObject} for the root of the NetBeans default (system, configuration)
+     * filesystem
+     * @since org.openide.filesystems 7.19
+     */
+    public static FileObject getConfigRoot() {
+        return getConfigFile("");  //NOI18N
     }
 
     private static File wrapFileNoCanonicalize(File f) {

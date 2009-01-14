@@ -47,7 +47,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.test.TestBase;
 import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -207,8 +207,7 @@ public class MySQLDatabaseServerTest extends TestBase {
      * Test of isConnected method, of class MySQLDatabaseServer.
      */
     public void testIsConnected() throws Exception {
-        System.out.println(Repository.getDefault().getDefaultFileSystem());
-        System.out.println(Arrays.asList(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases/JDBCDrivers").getChildren()));
+        System.out.println(Arrays.asList(FileUtil.getConfigFile("Databases/JDBCDrivers").getChildren()));
         assertFalse(server.isConnected());
         server.reconnect();
         assertTrue(server.isConnected());

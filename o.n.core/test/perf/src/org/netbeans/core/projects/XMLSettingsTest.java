@@ -51,7 +51,7 @@ import org.openide.loaders.*;
 import org.netbeans.core.NbTopManager;
 import org.netbeans.core.projects.FixedFileSystem;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Benchmark measuring how fast .settings files can be recognized and probed for instances.
@@ -142,7 +142,7 @@ public class XMLSettingsTest extends Benchmark {
                 FixedFileSystem.Instance inst = new FixedFileSystem.Instance(false, "text/xml", getModifiedData(j + 1), null, (String)null);
                 ffs.add("folder" + i + "/modified" + j + ".settings", inst);
             }
-            folders[i] = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("folder" + i));
+            folders[i] = DataFolder.findFolder(FileUtil.getConfigFile("folder" + i));
         }
     }
     protected void tearDown() throws Exception {

@@ -5,6 +5,7 @@
     <target name="release" depends="init">
         <copy todir="${cluster}" file="release/nb_test_mediator.rb"/>
         <copy todir="${cluster}" file="release/nb_test_runner.rb"/>
+        <copy todir="${cluster}" file="release/nb_suite_runner.rb"/>
         <copy todir="${cluster}" file="release/nb_rspec_mediator.rb"/>
         <copy todir="${cluster}" file="release/nb_autotest_loader.rb"/>
     </target>

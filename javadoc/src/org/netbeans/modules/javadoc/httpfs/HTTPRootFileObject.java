@@ -53,7 +53,7 @@ import java.util.*;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -428,7 +428,7 @@ class HTTPRootFileObject
     static void initHTTPProxyHack() {
         if (proxyInit)
             return;
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(IDE_SETTINGS_NAME);
+        FileObject f = FileUtil.getConfigFile(IDE_SETTINGS_NAME);
         try {
             DataObject d = DataObject.find(f);
             InstanceCookie ic = (InstanceCookie)d.getCookie(InstanceCookie.class);
