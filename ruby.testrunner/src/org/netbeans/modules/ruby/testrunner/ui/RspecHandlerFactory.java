@@ -91,6 +91,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
             testcase.setClassName(matcher.group(2));
             testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(false));
+            testcase.getTrouble().setComparisonFailure(getComparisonFailure(matcher.group(4)));
             testcase.getTrouble().setStackTrace(filterStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
             for (String line : testcase.getTrouble().getStackTrace()) {

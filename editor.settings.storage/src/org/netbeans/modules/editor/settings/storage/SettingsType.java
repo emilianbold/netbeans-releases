@@ -63,7 +63,6 @@ import org.netbeans.modules.editor.settings.storage.preferences.PreferencesStora
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -517,7 +516,7 @@ public final class SettingsType {
                     try {
                         FileObject ff = URLMapper.findFileObject(u.toURL());
                         if (ff != null) {
-                            if (ff.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
+                            if (ff.getFileSystem().isDefault()) {
                                 targetFile = ff;
                             } else {
                                 LOG.warning("Editor settings links can only link targets on SystemFileSystem, ignoring link " + link.getPath()); //NOI18N
@@ -527,7 +526,7 @@ public final class SettingsType {
                         LOG.log(Level.WARNING, "Can't resolve editor settings link, ignoring link " + link.getPath(), ioe); //NOI18N
                     }
                 } else {
-                    targetFile = Repository.getDefault().getDefaultFileSystem().findResource(targetFilePath);
+                    targetFile = FileUtil.getConfigFile(targetFilePath);
                 }
             }
 

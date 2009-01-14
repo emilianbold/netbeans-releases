@@ -143,7 +143,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
     
     public void testTheDeadlock() throws Exception {
         MyLoader m = (MyLoader)MyLoader.getLoader(MyLoader.class);
-        m.button = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "FolderLookup");
+        m.button = FileUtil.createFolder(FileUtil.getConfigRoot(), "FolderLookup");
         DataObject instance = InstanceDataObject.create(DataFolder.findFolder(m.button), "SomeName", JButton.class);
         m.instanceFile = instance.getPrimaryFile();
         
@@ -153,7 +153,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         
         DataLoaderPool.setPreferredLoader(m.instanceFile, m);
         
-        FileObject any = Repository.getDefault().getDefaultFileSystem().getRoot().createData("Ahoj.txt");
+        FileObject any = FileUtil.getConfigRoot().createData("Ahoj.txt");
         DataObject obj = DataObject.find(any);
         
         assertEquals("The right object found", m, obj.getLoader());

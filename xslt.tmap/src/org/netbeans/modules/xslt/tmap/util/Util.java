@@ -64,8 +64,6 @@ import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.soa.ui.SoaUtil;
@@ -299,7 +297,7 @@ public class Util {
         }
 
         try {
-            tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+            tMapFo = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     projectSource, "transformmap"); //NOI18N
 
 // 142908

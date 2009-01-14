@@ -48,7 +48,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -144,7 +144,7 @@ public class AddPropertyGenerator {
     }
     
     private static FileObject getTemplateFileObject(String templatePath) {        
-        return Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(templatePath);
+        return FileUtil.getConfigFile(templatePath);
     }
 
     private static ScriptEngine getScriptEngine() {

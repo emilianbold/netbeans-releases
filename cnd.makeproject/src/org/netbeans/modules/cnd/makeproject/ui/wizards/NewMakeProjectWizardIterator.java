@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,14 +86,15 @@ import org.openide.util.NbBundle;
  */
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
-    static final boolean USE_SIMPLE_IMPORT_PROJECT = NewMakeProjectWizardIterator.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
+    static final boolean USE_SIMPLE_IMPORT_PROJECT = CndUtils.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
     
     public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
     public static final String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
     public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
-    public static final String QMAKEAPPLICATION_PROJECT_NAME = "QmakeApplicationProject"; // NOI18N
-    
+    public static final String QTAPPLICATION_PROJECT_NAME = "QtApplicationProject"; // NOI18N
+    public static final String QTLIBRARY_PROJECT_NAME = "QtLibraryProject"; // NOI18N
+
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     
     // Wizard types
@@ -100,7 +102,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
-    public static final int TYPE_QMAKE_APP = 4;
+    public static final int TYPE_QT_APP = 4;
+    public static final int TYPE_QT_LIB = 5;
     
     private int wizardtype;
     private String name;
@@ -135,11 +138,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return new NewMakeProjectWizardIterator(TYPE_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
     
-    public static NewMakeProjectWizardIterator newQmakeApplication() {
-        String name = QMAKEAPPLICATION_PROJECT_NAME;
-        String wizardTitle = getString("Templates/Project/Native/newQmakeApplication.xml");
-        String wizardACSD = getString("NativeNewQmakeApplicationACSD");
-        return new NewMakeProjectWizardIterator(TYPE_QMAKE_APP, name, wizardTitle, wizardACSD);
+    public static NewMakeProjectWizardIterator newQtApplication() {
+        String name = QTAPPLICATION_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newQtApplication.xml");
+        String wizardACSD = getString("NativeNewQtApplicationACSD");
+        return new NewMakeProjectWizardIterator(TYPE_QT_APP, name, wizardTitle, wizardACSD);
+    }
+
+    public static NewMakeProjectWizardIterator newQtLibrary() {
+        String name = QTLIBRARY_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newQtLibrary.xml");
+        String wizardACSD = getString("NativeNewQtLibraryACSD");
+        return new NewMakeProjectWizardIterator(TYPE_QT_LIB, name, wizardTitle, wizardACSD);
     }
 
     public static NewMakeProjectWizardIterator makefile() {
@@ -150,7 +160,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     private WizardDescriptor.Panel[] createPanels(String name) {
-        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QMAKE_APP) {
+        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB
+                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APP || wizardtype == TYPE_QT_LIB) {
             return new WizardDescriptor.Panel[] {
                 new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
             };
@@ -364,7 +375,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                     });
                 }
             }
-        } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QMAKE_APP) {
+        } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB
+                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APP || wizardtype == TYPE_QT_LIB) {
             int conftype = -1;
             if (wizardtype == TYPE_APPLICATION) {
                 conftype = MakeConfiguration.TYPE_APPLICATION;
@@ -372,8 +384,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
             } else if (wizardtype == TYPE_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_STATIC_LIB;
-            } else if (wizardtype == TYPE_QMAKE_APP) {
+            } else if (wizardtype == TYPE_QT_APP) {
                 conftype = MakeConfiguration.TYPE_QT_APPLICATION;
+            } else if (wizardtype == TYPE_QT_LIB) {
+                conftype = MakeConfiguration.TYPE_QT_LIBRARY;
             }
             MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -495,13 +509,5 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
         }
         return bundle.getString(s);
-    }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
     }
 }

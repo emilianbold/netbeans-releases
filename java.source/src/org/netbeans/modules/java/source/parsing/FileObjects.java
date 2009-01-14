@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -76,9 +77,7 @@ import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -825,8 +824,7 @@ public class FileObjects {
             FileObject parentFo = FileUtil.createFolder(parent);
             assert parentFo != null;
             DataFolder target = DataFolder.findFolder(parentFo);
-            FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject template = dfs.findResource("Templates/Classes/Empty.java");     //NOI18N
+            FileObject template = FileUtil.getConfigFile("Templates/Classes/Empty.java");     //NOI18N
             DataObject templateDobj = DataObject.find(template);
             String simpleName = FileObjects.stripExtension(f.getName());
             DataObject newDobj = templateDobj.createFromTemplate(target, simpleName);

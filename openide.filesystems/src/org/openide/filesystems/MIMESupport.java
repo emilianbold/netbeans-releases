@@ -242,7 +242,7 @@ final class MIMESupport extends Object {
         private static synchronized List<MIMEResolver> declarativeResolvers() {
             List<MIMEResolver> declmimes = new ArrayList<MIMEResolver>();
             if (declarativeFolder == null) {
-                declarativeFolder = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+                declarativeFolder = FileUtil.getConfigFile("Services/MIMEResolver"); // NOI18N
             }
             if (declarativeFolder != null) {
                 for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {

@@ -52,7 +52,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
@@ -89,10 +88,9 @@ public class DocumentTitlePropertyTest extends NbTestCase {
 
     /** Test updating document property Document.TitleProperty when dataobject is renamed */
     public void testRename () throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
         
-        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.obj"));
         assertEquals( MyDataObject.class, obj.getClass());
         assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
 
@@ -111,12 +109,11 @@ public class DocumentTitlePropertyTest extends NbTestCase {
 
     /** Test updating document property Document.TitleProperty when dataobject is moved */
     public void testMove () throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
-        FileUtil.createFolder(fs.getRoot(), "newFolder");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "newFolder");
 
-        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
-        DataFolder dFolder = (DataFolder) DataObject.find(fs.findResource("newFolder"));
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.obj"));
+        DataFolder dFolder = (DataFolder) DataObject.find(FileUtil.getConfigFile("newFolder"));
 
         assertEquals( MyDataObject.class, obj.getClass());
         assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );

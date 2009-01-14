@@ -59,7 +59,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.MockServices;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -191,7 +190,7 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
         FileObject folderFO = URLMapper.findFileObject(getWorkDir().toURL());
         assertTrue(folderFO != null);
         // create new file
-        FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Interface.java"); // NOI18N
+        FileObject tempFO = FileUtil.getConfigFile("Templates/Classes/Interface.java"); // NOI18N
         DataFolder folder = (DataFolder) DataObject.find(folderFO);
         DataObject template = DataObject.find(tempFO);
         DataObject newIfcDO = template.createFromTemplate(folder, "Charles");

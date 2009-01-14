@@ -41,7 +41,7 @@
 package org.netbeans.modules.jmx.mbeanwizard.generator;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -62,8 +62,7 @@ public abstract class MBeanFileGenerator {
     // returns the Dynamic MBean file template
     protected static DataObject getTemplate(String templatePath) throws Exception {
         /* get the template DataObject... */
-        FileObject template = Repository.getDefault().getDefaultFileSystem()
-                              .findResource(templatePath);
+        FileObject template = FileUtil.getConfigFile(templatePath);
         return DataObject.find(template);
     }
     

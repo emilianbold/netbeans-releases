@@ -207,6 +207,7 @@ public class ImportProject implements PropertyChangeListener {
         configurePath = (String) wizard.getProperty("configureName"); // NOI18N
         configureArguments = (String) wizard.getProperty("configureArguments"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
+        consolidationStrategy = (String) wizard.getProperty("consolidationLevel"); // NOI18N
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;

@@ -161,12 +161,14 @@ bool NbLauncher::initBaseNames() {
 }
 
 void NbLauncher::addCluster(const char *cl) {
-    string cluster = dirExists(cl) ? cl : (baseDir + '\\' + cl);
-    if (!clusters.empty()) {
-        clusters += ';';
+    string cluster = (baseDir + '\\' + cl);
+    if (dirExists(cluster.c_str())) {
+        if (!clusters.empty()) {
+            clusters += ';';
+        }
+        logMsg("Adding cluster %s", cluster.c_str());
+        clusters += cluster;
     }
-    logMsg("Adding cluster %s", cluster.c_str());
-    clusters += cluster;
 }
 
 void NbLauncher::addExtraClusters() {

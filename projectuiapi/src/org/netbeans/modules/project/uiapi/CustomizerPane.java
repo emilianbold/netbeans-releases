@@ -61,6 +61,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -245,7 +246,7 @@ public class CustomizerPane extends JPanel
         if ( newCategory == null ) {
             return;
         }
-
+        
         if ( currentCustomizer != null ) {
             customizerPanel.remove( currentCustomizer );
         }
@@ -270,9 +271,17 @@ public class CustomizerPane extends JPanel
                 newHeight = previousDimension.height;
                 if (currentCustomizer.getPreferredSize().width > previousDimension.width) {
                     newWidth = currentCustomizer.getPreferredSize().width;
+                    int maxWidth = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().width * 3 / 4;
+                    if (newWidth > maxWidth) {
+                        newWidth = maxWidth;
+                    }
                 }
                 if (currentCustomizer.getPreferredSize().height > previousDimension.height) {
                     newHeight = currentCustomizer.getPreferredSize().height;
+                    int maxHeght = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().height * 3 / 4;
+                    if (newHeight > maxHeght) {
+                        newHeight = maxHeght;
+                    }
                 }
             }
 
@@ -292,16 +301,15 @@ public class CustomizerPane extends JPanel
                 Window window = SwingUtilities.getWindowAncestor(customizerPanel);
                 if (window != null) {
                     window.pack();
+                    window.setBounds(org.openide.util.Utilities.findCenterBounds(window.getSize()));
                 }
             }
             
             setErrorMessage(newCategory.getErrorMessage());
             firePropertyChange( HELP_CTX_PROPERTY, null, getHelpCtx() );
-        }
-        else {
+        } else {
             currentCustomizer = null;
         }
-
     }
 
     private void setErrorMessage(String errMessage) {

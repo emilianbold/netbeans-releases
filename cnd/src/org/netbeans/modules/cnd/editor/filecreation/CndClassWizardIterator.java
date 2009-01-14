@@ -82,7 +82,7 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
         res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
         String headerExt = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getDefaultExtension();
-        res.add(dobjBro.createFromTemplate(targetFolder, FileUtil.getExtension(sourceFileName) + headerExt)); // NOI18N
+        res.add(dobjBro.createFromTemplate(targetFolder, sourceFileName.substring(0,sourceFileName.lastIndexOf(".")+1) + headerExt)); // NOI18N
 
         return res;
     }

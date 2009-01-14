@@ -48,7 +48,7 @@ import java.util.Enumeration;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
 import org.openide.util.MapFormat;
 
@@ -69,7 +69,7 @@ public class CreateFromTemplateTest extends NbTestCase {
     public void testCreateExecutorFromTemplate () throws Exception {
         String folderName = "/Templates/Services/Executor";
         FileObject data = org.openide.filesystems.FileUtil.createData (
-            Repository.getDefault ().getDefaultFileSystem ().getRoot (), 
+            FileUtil.getConfigRoot(), 
             folderName + "/" + "X.xml"
         );
         data.setAttribute ("template", Boolean.TRUE);
@@ -102,7 +102,7 @@ public class CreateFromTemplateTest extends NbTestCase {
     public void testNoTemplateFlagUnset() throws Exception {
         String folderName = "/Templates/";
         FileObject data = org.openide.filesystems.FileUtil.createData (
-            Repository.getDefault ().getDefaultFileSystem ().getRoot (), 
+            FileUtil.getConfigRoot(), 
             folderName + "/" + "X.prima"
         );
         data.setAttribute ("template", Boolean.TRUE);

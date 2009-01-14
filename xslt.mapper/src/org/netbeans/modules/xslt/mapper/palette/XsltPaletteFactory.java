@@ -30,7 +30,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -109,8 +109,7 @@ public final class XsltPaletteFactory {
                         String metainfoRef = (String)fo.getAttribute(
                                 Constants.METAINFO_REF);
                         if (metainfoRef != null && metainfoRef.length() != 0) {
-                            FileObject metainfoFo = Repository.getDefault().
-                                    getDefaultFileSystem().findResource(metainfoRef);
+                            FileObject metainfoFo = FileUtil.getConfigFile(metainfoRef);
                             if (metainfoFo != null) {
                                 IMethoid methoid = MethoidLoader.loadMethoid(metainfoFo);
                                 return methoid;

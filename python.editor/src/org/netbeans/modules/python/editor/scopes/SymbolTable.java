@@ -502,6 +502,27 @@ public class SymbolTable {
         return Collections.emptyList();
     }
 
+    /** Return a list of the variables visible from a given scope */
+    public Set<String> getVarNames(PythonTree scope, boolean mustBeBound) {
+        ScopeInfo scopeInfo = scopes.get(scope);
+        Set<String> names = new HashSet<String>();
+        while (scopeInfo != null) {
+            for (Map.Entry<String, SymInfo> entry : scopeInfo.tbl.entrySet()) {
+                String name = entry.getKey();
+                SymInfo sym = entry.getValue();
+                if (sym.isVariable(mustBeBound)) {
+                    names.add(name);
+                }
+            }
+            scopeInfo = scopeInfo.up;
+            while (scopeInfo != null && scopeInfo.kind == CLASSSCOPE) {
+                scopeInfo = scopeInfo.up;
+            }
+        }
+
+        return names;
+    }
+
     public List<ImportEntry> getUnusedImports() {
         List<ImportEntry> unused = new ArrayList<ImportEntry>();
         ScopeInfo scopeInfo = scopes.get(root);

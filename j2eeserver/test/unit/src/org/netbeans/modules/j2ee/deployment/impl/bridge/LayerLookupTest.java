@@ -46,7 +46,6 @@ import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -70,7 +69,7 @@ public class LayerLookupTest extends NbTestCase {
     }
 
     public void testLookupConsulted() throws IOException {
-        FileObject servers = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(),
+        FileObject servers = FileUtil.createFolder(FileUtil.getConfigRoot(),
                 TEST_FOLDER);
         FileObject testLookup = FileUtil.createData(servers, "TestLookup.instance"); // NOI18N
 

@@ -228,7 +228,7 @@ public class TemplateWizard extends WizardDescriptor {
     public DataFolder getTemplatesFolder () {
         DataFolder df = templatesFolder;
         if (df == null) {
-            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("/Templates"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Templates"); // NOI18N
             if (fo != null && fo.isFolder ()) {
                 return DataFolder.findFolder (fo);
             }

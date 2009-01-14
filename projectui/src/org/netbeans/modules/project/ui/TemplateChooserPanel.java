@@ -51,7 +51,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -104,7 +104,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     public void readSettings(WizardDescriptor settings) {
         TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
         final FileObject currentTemplate = Templates.getTemplate(settings);
-        FileObject templates = Repository.getDefault().getDefaultFileSystem().findResource("Templates");    //NOI18N        
+        FileObject templates = FileUtil.getConfigFile("Templates");    //NOI18N
         String currentCategoryName = null;
         String currentTemplateName = null;
         if (templates != null && currentTemplate != null && currentTemplate.getParent() != null && templates.equals(currentTemplate.getParent().getParent())) {

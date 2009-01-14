@@ -89,12 +89,13 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         panel.textPane.addHyperlinkListener(this);
         panel.downloadRadioButton.addActionListener(this);
         panel.cliRadioButton.addActionListener(this);        
-        if(Utilities.isWindows()) {
+        if(Utilities.isWindows() && !org.netbeans.modules.subversion.util.SystemUtils.isJava64()) {
             panel.downloadRadioButton.setSelected(true);
         } else {
             panel.cliRadioButton.setSelected(true);
             panel.downloadRadioButton.setEnabled(false);
             panel.forceGlobalCheckBox.setEnabled(false);
+            panel.lblBinariesAvailableTip.setEnabled(false);
         }
         radioSwitch();
     }

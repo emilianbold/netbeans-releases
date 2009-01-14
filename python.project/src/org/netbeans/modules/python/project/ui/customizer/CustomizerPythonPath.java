@@ -13,8 +13,6 @@ package org.netbeans.modules.python.project.ui.customizer;
 
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.netbeans.modules.python.api.PlatformComponentFactory;
 import org.netbeans.modules.python.api.PythonPlatform;
@@ -23,7 +21,7 @@ import org.netbeans.modules.python.core.ui.models.PathListModel;
 
 import org.netbeans.modules.python.project.ui.Utils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Exceptions;
@@ -226,7 +224,7 @@ public class CustomizerPythonPath extends javax.swing.JPanel {
 
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
         //Workaround, Needs an API to display platform customizer
-        final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
+        final FileObject fo = FileUtil.getConfigFile("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
         if (fo != null) {
             try {
                 InstanceDataObject ido = (InstanceDataObject) DataObject.find(fo);

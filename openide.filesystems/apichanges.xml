@@ -46,6 +46,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileUtil.getConfigFile">
+            <api name="filesystems"/>
+            <summary>Added FileUtil.getConfigFile and getConfigRoot for simpler access to default filesystem</summary>
+            <version major="7" minor="19"/>
+            <date day="12" month="1" year="2009"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Rather than having to call
+                    <code>Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(&quot;foo/bar&quot;)</code>,
+                    you can simply call
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigFile(java.lang.String)">FileUtil.getConfigFile(&quot;foo/bar&quot;)</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="91534"/>
+        </change>
         <change id="FileUtil.setMIMEType">
             <api name="filesystems"/>
             <summary>Persisted registration of file extension to MIME type</summary>

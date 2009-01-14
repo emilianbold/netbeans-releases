@@ -52,8 +52,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -239,10 +238,9 @@ public class ResourceValue
         {
             Exceptions.printStackTrace(ex);
         }
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
         String path = "UML/UMLOptions/data";
 
-        FileObject fo = system.findResource(path);
+        FileObject fo = FileUtil.getConfigFile(path);
         if (fo != null)
         {
             try

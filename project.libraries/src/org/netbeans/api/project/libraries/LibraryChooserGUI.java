@@ -41,7 +41,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -220,7 +220,7 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
                     }
                 });
                 Node n = new AbstractNode(new LibraryChildren(libs)) {
-                    Node iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+                    Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
                     public Image getIcon(int type) {
                         return iconDelegate.getIcon(type);
                     }

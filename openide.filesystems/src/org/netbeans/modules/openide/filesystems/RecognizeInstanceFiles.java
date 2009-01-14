@@ -50,7 +50,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -95,7 +94,12 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             this.lkp = lkp;
             this.content = cnt;
             this.content.setPairs(order(items));
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            FileSystem fs = null;
+            try {
+                fs = FileUtil.getConfigRoot().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             this.weakL = FileUtil.weakFileChangeListener(this, fs);
             fs.addFileChangeListener(weakL);
         }
@@ -124,7 +128,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
         
         private static Lookup[] computeDelegates(String p, List<FOItem> items, Lookup lkp) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(p);
+            FileObject fo = FileUtil.getConfigFile(p);
             List<Lookup> delegates = new LinkedList<Lookup>();
             delegates.add(lkp);
             if (fo != null) {

@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -80,7 +79,7 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         
         LOG = Logger.getLogger("Test." + getName());
         
-        root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        root = FileUtil.getConfigRoot();
         for (FileObject fo : root.getChildren()) {
             fo.delete();
         }

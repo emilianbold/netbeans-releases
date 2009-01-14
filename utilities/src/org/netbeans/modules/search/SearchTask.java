@@ -111,15 +111,15 @@ final class SearchTask implements Runnable, Cancellable {
             LifecycleManager.getDefault().saveAll();
         }
         
-        progressHandle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ResultView.class,"TEXT_PREPARE_SEARCH___"), this); // NOI18N
-        progressHandle.start();
-
         /* Start the actual search: */
         ensureResultModelExists();
         if (searchGroup == null) {
             return;
         }
+
+        progressHandle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ResultView.class,"TEXT_PREPARE_SEARCH___"), this); // NOI18N
+        progressHandle.start();
 
         searchGroup.setListeningSearchTask(this);
         try {

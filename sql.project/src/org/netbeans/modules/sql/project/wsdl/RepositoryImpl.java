@@ -39,7 +39,7 @@ import org.openide.filesystems.XMLFileSystem;
 import org.xml.sax.SAXException;
 
 /**
- * Repository whose getDefaultFileSystem() returns a writeable FS containing
+ * Repository whose getDefaultFileSystem returns a writeable FS containing
  * the layer of the Database Explorer module. It is put in the default lookup,
  * thus it is returned by Repository.getDefault().
  *

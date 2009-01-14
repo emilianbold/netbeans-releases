@@ -47,7 +47,6 @@ import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -371,7 +370,7 @@ public class InSyncServiceProviderQuery {
             if(hasTemplateAttribute) {
                 isTemplate = true;
             } else {
-                FileObject templatesFolder = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Templates"); // NOI18N
+                FileObject templatesFolder = FileUtil.getConfigFile("Templates"); // NOI18N
                 if(templatesFolder != null) {
                     isTemplate = FileUtil.isParentOf(templatesFolder, fileObject);
                 } else {

@@ -81,7 +81,7 @@ public class DataObjectSaveAsTest extends NbTestCase {
         MyDL1 loader1 = MyDL1.getLoader(MyDL1.class);
         MyDL2 loader2 = MyDL2.getLoader(MyDL2.class);
 
-        FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem dfs = FileUtil.getConfigRoot().getFileSystem();
         dfs.refresh (true);        
         
         FileObject fo = FileUtil.createData (dfs.getRoot (), "a.ext1");
@@ -103,7 +103,7 @@ public class DataObjectSaveAsTest extends NbTestCase {
      */
     @Override
     protected void tearDown() throws Exception {
-        Repository.getDefault ().getDefaultFileSystem ().removeFileChangeListener (sfs);
+        FileUtil.getConfigRoot().getFileSystem().removeFileChangeListener (sfs);
     }
     
     public void testSaveAsSameExtension() throws IOException {
@@ -169,11 +169,10 @@ public class DataObjectSaveAsTest extends NbTestCase {
     }
     
     public void testNoSaveAsForMultiFileLoadersByDefault() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/x.prima");
-        FileUtil.createData(fs.getRoot(), "someFolder/x.seconda");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/x.prima");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/x.seconda");
         
-        DataObject obj = DataObject.find(fs.findResource("someFolder/x.prima"));
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/x.prima"));
         assertEquals(MyMultiFileDataObject.class, obj.getClass());
         
         sfs.clear();
@@ -189,10 +188,9 @@ public class DataObjectSaveAsTest extends NbTestCase {
     }
 
     public void testSaveAsWorksFineForDefaultDataObjects() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFile.unknownExtension");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFile.unknownExtension");
         
-        DataObject obj = DataObject.find(fs.findResource("someFile.unknownExtension"));
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFile.unknownExtension"));
         assertEquals(DefaultDataObject.class, obj.getClass());
         
         //this is ok because save as works for opened editors only so when the dataobject

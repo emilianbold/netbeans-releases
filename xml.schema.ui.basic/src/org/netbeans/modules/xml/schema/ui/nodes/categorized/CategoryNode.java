@@ -69,7 +69,7 @@ import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -80,7 +80,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
@@ -518,8 +517,7 @@ public class CategoryNode extends AbstractNode
         }
 
 	private Node getFolderNode() {
-	    FileObject fo =
-		Repository.getDefault().getDefaultFileSystem().getRoot();
+	    FileObject fo = FileUtil.getConfigRoot();
 	    Node n = null;
 	    try {
 		DataObject dobj = DataObject.find(fo);
