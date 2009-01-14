@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate, SelectImpl.FilterableMembers {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmTemplate, SelectImpl.FilterableMembers {
 
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
