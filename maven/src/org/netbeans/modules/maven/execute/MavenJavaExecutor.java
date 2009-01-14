@@ -217,7 +217,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             }
             req.setInteractiveMode(clonedConfig.isInteractive());
 //TODO            req.setSettings(settings);
-            req.setGoals(clonedConfig.getGoals());
+            req.setGoals(checkForArchetype(clonedConfig.getGoals()));
             //mavenCLI adds all System.getProperties() in there as well..
             Properties props = new Properties();
             EmbedderFactory.fillEnvVars(props);
@@ -318,6 +318,21 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
                 doRemoveAllShutdownHooks();
             }
         }
+    }
+
+    //#156751
+    private List<String> checkForArchetype(List<String> goals) {
+        List<String> toRet = new ArrayList<String>();
+        for (String goal : goals) {
+            if (goal.equals("org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-4:generate")) { //NOI18N
+                    toRet.add("org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-3:generate"); //NOI18N
+                    LOGGER.info("Embedded execution will lock up when creating a new project with maven-archetype-plugin, version 2.0-alpha-4. Falling back to 2.0-alpha-3");
+            } else {
+                toRet.add(goal);
+            }
+
+        }
+        return toRet;
     }
     
     private void shutdownOutput(InputOutput ioput) {
