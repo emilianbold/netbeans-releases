@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -87,7 +88,7 @@ import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.execution.Unbuffer;
-import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -143,10 +144,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Object                      lastGo;
     private String                      lastStop;
 
-    private static final int            DEBUG_ATTACH = 999;
-
-    /* Some breakpoint flags used only on Windows XP (with Cygwin) */
-    //public static final int             GDB_TMP_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 1;
+    private static final int            DEBUG_ATTACH = ProjectActionEvent.CHECK_EXECUTABLE;
 
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -504,7 +502,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public PathMap getPathMap() {
         return pathMap;
     }
-    
+
     public static GdbDebugger getGdbDebugger() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) {
@@ -703,14 +701,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         return false;
     }
-    
+
     private boolean equivalentPaths(String path1, String path2) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             return winpath(path1).equals(winpath(path2));
         }
         return path1.equals(path1);
     }
-    
+
     private String winpath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) { // NOI18N
             return path.substring(10, 11).toUpperCase() + ':' + path.substring(11);
@@ -783,7 +781,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         return false;
     }
-    
+
     private String getExePath(long pid) {
         if (platform != PlatformTypes.PLATFORM_WINDOWS && pid > 0) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
@@ -800,10 +798,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         return null;
     }
-    
+
     private String getMacExePath() {
         CommandBuffer cb = new CommandBuffer(gdb);
-        
+
         gdb.info_files(cb);
         cb.waitForCompletion();
         String info = cb.toString();
@@ -815,12 +813,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         return null;
     }
-    
+
     private String getMacDylibAddress(String path, String info) {
         String line;
         int start = info.startsWith("shlib-info=") ? 11 : 0; // NOI18N
         int next = info.indexOf(",shlib-info="); // NOI18N
-        
+
         while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
             if (line.contains(path)) {
                 return parseMacDylibAddress(line);
@@ -829,7 +827,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             next = info.indexOf(",shlib-info=", start); // NOI18N
         }
         return null;
-        
+
     }
 
     private static String parseMacDylibAddress(String line) {
@@ -1446,7 +1444,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                
+
                 String signalName = Integer.toString(signal);
                 // for MacOS we should substitute signal number with the real name
                 if (platform == PlatformTypes.PLATFORM_MACOSX) {
@@ -1457,7 +1455,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
                 killcmd.add(signalName);
-                
+
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
@@ -1796,11 +1794,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setStopped();
         }
     }
-    
+
     private Map<String, ShareInfo> createShareTab(String info) {
         Map<String, ShareInfo> shtab = new HashMap<String, ShareInfo>();
         String path, addr;
-        
+
         if (platform == PlatformTypes.PLATFORM_MACOSX) {
             Map<String, String> map;
             int start = 0;
@@ -1865,7 +1863,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         });
     }
-    
+
     private ShareInfo getNewShareInfo(Map<String, ShareInfo> map) {
         for (String path : map.keySet()) {
             if (!shareTab.containsKey(path)) {
@@ -2022,10 +2020,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     /**
-     * This utility method helps to start a new Cnd debugger session.
+     * Start the attach process.
      *
-     * @param hostName a name of computer to attach to
-     * @param portNumber a port number
+     * @param pid The process ID
+     * @param pinfo Miscelaneous project information
      */
     public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
@@ -2034,62 +2032,66 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
 	if (mcd != null) {
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
-	    String path = getExecutableOrSharedLibrary(mcd, conf);
+            String path = getExecutableOrSharedLibrary(pinfo, conf);
 
 	    if (path != null) {
-		ProjectActionEvent pae = new ProjectActionEvent(project, DEBUG_ATTACH, pinfo.getDisplayName(), path, conf, null, false);
+                ProjectActionEvent pae = new ProjectActionEvent(project,
+                        ProjectActionEvent.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid)}));
                 if (es == null) {
                    throw new DebuggerStartException(new InternalError());
                 }
             } else {
-		MakeArtifact ma = new MakeArtifact(mcd, conf);
-		String buildResult = ma.getOutput();
-		if (buildResult != null && buildResult.length() > 0) {
-		    final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-		    SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-			    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-			}
-		    });
-		}
+                String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
+                final String msg;
+
+                if (buildResult.length() > 0) {
+                    if (isAbsolute(conf, buildResult)) {
+                        msg = NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBuildResult", buildResult); // NOI18N
+                    } else {
+                       msg = NbBundle.getMessage(GdbDebugger.class, "ERR_RelativePathInBuildResult"); // NOI18N
+                    }
+                } else {
+                    msg = NbBundle.getMessage(GdbDebugger.class, "ERR_NoBuildResult"); // NOI18N
+                }
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
 	    }
         }
     }
 
-    private static String getExecutableOrSharedLibrary(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
-        MakeArtifact ma = new MakeArtifact(mcd, conf);
-        String buildResult = ma.getOutput().replace("\\", "/"); // NOI18N
-
-        if (buildResult == null || buildResult.length() == 0) {
-            buildResult = getBuildResult();
-            if (buildResult == null) {
-                return null;
-            }
-        }
-        if (buildResult.charAt(0) == '/') {
-            if (isExecutableOrSharedLibrary(conf, buildResult)) {
-                return buildResult;
-            } else {
-                return null;
-            }
-        } else {
-            List<String> paths = new ArrayList<String>();
-            paths.add(conf.getBaseDir());
-            paths.addAll(mcd.getSourceRoots());
-
-            for (String dir : paths) {
-                dir = dir.replace("\\", "/");  // NOI18N
-                String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
-                if (isExecutableOrSharedLibrary(conf, path)) {
-                    return path;
-                }
-            }
-
-        }
-        return null;
+    private static String getExecutableOrSharedLibrary(ProjectInformation pinfo, MakeConfiguration conf) {
+        String buildResult = getBuildResult(pinfo, conf);
+        return isExecutableOrSharedLibrary(conf, buildResult) ? buildResult : null;
     }
+
+    /**
+     * Return the project's Build Result. If empty, use project system APIs to do the same
+     * popup to set it that the Run or Debug actionw do.
+     *
+     * @return The Build Result property from the project's configuration
+     */
+    private static String getBuildResult(ProjectInformation pinfo, MakeConfiguration conf) {
+        String path = conf.getMakefileConfiguration().getOutput().getValue().replace("\\", "/"); // NOI18N
+
+        if (path.length() == 0) {
+            ProjectActionEvent pae = new ProjectActionEvent(pinfo.getProject(),
+                    ProjectActionEvent.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
+            DefaultProjectActionHandler.getInstance().actionPerformed( new ActionEvent(
+                    new ProjectActionEvent[] { pae }, ProjectActionEvent.CHECK_EXECUTABLE, null));
+            path = conf.getMakefileConfiguration().getOutput().getValue().replace("\\", "/"); // NOI18N
+        }
+        return path;
+    }
+
+    private static boolean isAbsolute(MakeConfiguration conf, String path) {
+        int platform = conf.getPlatform().getValue();
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            return path.length() > 2 && path.charAt(1) == ':' && path.charAt(2) == '/';
+        } else {
+            return path.length() > 0 && path.charAt(0) == '/';
+          }
+      }
 
 
     /**
@@ -2129,18 +2131,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Returning null because there is no MakeProject API allowing me to handle this well. See IZ#153482
-     * for an API change request.
-     *
-     * @return Always currently null
-     */
-    private static String getBuildResult() {
-        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class, "ERR_NoBuildResult"));
-        DialogDisplayer.getDefault().notify(nd);
-        return null;
     }
 
     /**
@@ -2636,12 +2626,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public boolean isMinGW() {
         return mingw;
     }
-    
+
     public boolean isUnix() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
                 platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
-    
+
     public boolean isSolaris() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
     }
@@ -2670,17 +2660,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             this.lastGo = lastGo;
         }
     }
-    
+
     private boolean isAttaching() {
         ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         return pae.getID() == DEBUG_ATTACH;
     }
-    
+
     private double parseGdbVersionString(String msg) {
         double ver = 0.0;
         int first = msg.indexOf('.');
         int last = first + 1;
-        
+
         try {
             while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
                 last++;
@@ -2702,29 +2692,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         return ver;
     }
-    
+
     public class ShareInfo {
-        
+
         private String path;
         private String addr;
         private List<String> sourceDirs;
         private Project project;
-        
+
         public ShareInfo(String path, String addr) {
             this.path = path;
             this.addr = addr;
             sourceDirs = null;
             project = null;
         }
-        
+
         public String getPath() {
             return path;
         }
-        
+
         public String getAddress() {
             return addr;
         }
-        
+
         public List<String> getSourceDirectories() {
             if (sourceDirs == null) {
                 sourceDirs = new ArrayList<String>();
@@ -2737,16 +2727,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             sourceDirs.add(dir);
                         }
                     }
-                    
+
                 }
             }
             return sourceDirs;
         }
-        
+
         public boolean isMatchingProject() {
             Object o;
             MakeConfiguration conf;
-            
+
             for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
                 ProjectConfigurationProvider pcp = (ProjectConfigurationProvider) proj.getLookup().lookup(ProjectConfigurationProvider.class);
                 if (pcp != null) {

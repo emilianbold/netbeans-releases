@@ -54,7 +54,8 @@ public class ProjectActionEvent {
     public static final int DEBUG = 3;
     public static final int DEBUG_STEPINTO = 4;
     public static final int DEBUG_LOAD_ONLY = 5;
-    public static final int CUSTOM_ACTION = 6;
+    public static final int CHECK_EXECUTABLE = 6;
+    public static final int CUSTOM_ACTION = 7;
     
     public static final String[] actionNames  = {
         getString("BuildActionName"),
@@ -63,6 +64,7 @@ public class ProjectActionEvent {
         getString("DebugActionName"),
         getString("DebugActionName"),
         getString("DebugActionName"),
+        getString("CheckExecutableActionName"),
         getString("CustomActionName"),
     };
 
