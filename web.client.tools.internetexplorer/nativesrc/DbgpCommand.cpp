@@ -137,10 +137,10 @@ DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<ch
     pDbgpResponse->addAttribute(FEATURE, feature);
     if(pScriptDebugger != NULL) {
         bool value = argsMap.find('v')->second == _T("true") ? true : false;
-        if (feature == _T("http_monitor")) {
+        /*if (feature == _T("http_monitor")) {
             pScriptDebugger->enableHttpMonitor(value);
         } 
-        else if (value) {
+        else*/ if (value) {
             if(feature == _T("showFunctions")) {
                 pScriptDebugger->setFeature(SHOW_FUNCTIONS);
             }else if(feature == _T("showConstants")) {
