@@ -116,6 +116,7 @@ import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.netbeans.modules.exceptions.ReportPanel;
 import org.netbeans.modules.exceptions.ExceptionsSettings;
+import org.netbeans.modules.exceptions.ReporterResultTopComponent;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.DialogDescriptor;
@@ -1229,7 +1230,7 @@ public class Installer extends ModuleInstall implements Runnable {
         System.err.flush();
     }
     
-    private static String findIdentity() {
+    public static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
         String id = p.get("qualifiedId", null);
         //Strip id prefix
@@ -1329,7 +1330,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract boolean viewData();
         protected abstract void assignInternalURL(URL u);
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
-        protected abstract void showURL(URL externalURL);
+        protected abstract void showURL(URL externalURL, boolean inIDE);
 
 
         public void doShow(DataType dataType) {
@@ -1568,7 +1569,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
             if (Button.REDIRECT.isCommand(e.getActionCommand())){
                 if (universalResourceLocator[0] != null) {
-                    showURL(universalResourceLocator[0]);
+                    showURL(universalResourceLocator[0], false);
                 }
                 doCloseDialog();
                 return ;
@@ -1683,7 +1684,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             if (nextURL != null) {
                 clearLogs();
-                showURL(nextURL);
+                showURL(nextURL, report);
             }
         }
 
@@ -1828,7 +1829,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         public void hyperlinkUpdate(HyperlinkEvent e) {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                showURL(e.getURL());
+                showURL(e.getURL(), false);
             }
         }
 
@@ -1900,9 +1901,13 @@ public class Installer extends ModuleInstall implements Runnable {
             notifyAll();
         }
 
-        protected void showURL(URL u) {
+        protected void showURL(URL u, boolean inIDE) {
             LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+            if (inIDE){
+                ReporterResultTopComponent.showUploadDone(u);
+            }else{
+                HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+            }
         }
 
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
@@ -2005,7 +2010,7 @@ public class Installer extends ModuleInstall implements Runnable {
             urlComputed = true;
             notifyAll();
         }
-        protected void showURL(URL u) {
+        protected void showURL(URL u, boolean inIDE) {
             hintURL = u;
         }
 

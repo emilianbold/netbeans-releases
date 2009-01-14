@@ -52,6 +52,7 @@ public class MakeArtifact {
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
     public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_LIBRARY = 5;
 
     // Project
     private String projectLocation;
@@ -114,6 +115,10 @@ public class MakeArtifact {
 		}
         else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION) {
             configurationType = MakeArtifact.TYPE_QT_APPLICATION;
+            output = makeConfiguration.getLinkerConfiguration().getOutputValue();
+        }
+        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_LIBRARY) {
+            configurationType = MakeArtifact.TYPE_QT_LIBRARY;
             output = makeConfiguration.getLinkerConfiguration().getOutputValue();
         }
         else {

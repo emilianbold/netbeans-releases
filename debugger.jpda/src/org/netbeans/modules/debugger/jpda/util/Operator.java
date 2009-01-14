@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -137,7 +138,7 @@ public class Operator {
         final JPDADebuggerImpl debugger,
         Executor starter,
         Runnable finalizer,
-        final Object resumeLock
+        final ReadWriteLock resumeLock
     ) {
         EventQueue eventQueue;
         try {
@@ -260,7 +261,7 @@ public class Operator {
                             }
                          }
                          if (tref != null && !silent) {
-                            suspendedThread = ((JPDAThreadImpl) debugger.getThread(tref));
+                            suspendedThread = debugger.getThread(tref);
                             suspendedThread.notifySuspended();
                          }
                      }
@@ -350,8 +351,11 @@ public class Operator {
                              if (!silent && suspendedThread != null) {
                                  suspendedThread.notifyToBeResumed();
                              }
-                             synchronized (resumeLock) {
+                             resumeLock.writeLock().lock();
+                             try {
                                 EventSetWrapper.resume(eventSet);
+                             } finally {
+                                 resumeLock.writeLock().unlock();
                              }
                          } else if (!silent && (suspendedAll || suspendedThread != null)) {
                             Session session = debugger.getSession();
@@ -369,11 +373,12 @@ public class Operator {
                          }
                      }
                      if (!silent && !resume) { // Check for multiply-suspended threads
-                         synchronized (resumeLock) {
+                         resumeLock.writeLock().lock();
+                         try {
                              List<ThreadReference> threads = VirtualMachineWrapper.allThreads(MirrorWrapper.virtualMachine(eventSet));
                              for (ThreadReference t : threads) {
                                  try {
-                                     JPDAThreadImpl jt = (JPDAThreadImpl) debugger.getExistingThread(t);
+                                     JPDAThreadImpl jt = debugger.getExistingThread(t);
                                      while (ThreadReferenceWrapper.suspendCount(t) > 1) {
                                          if (jt != null) {
                                              jt.notifyToBeResumed();
@@ -387,9 +392,13 @@ public class Operator {
                                      // ignore mobility VM defects
                                  }
                              } // for
+                         } finally {
+                             resumeLock.writeLock().unlock();
                          }
                      }
                  } catch (VMDisconnectedException e) {
+                     break;
+                 } catch (VMDisconnectedExceptionWrapper e) {
                      break;
                  //} catch (InterruptedException e) {
                  } catch (Exception e) {
@@ -490,7 +499,7 @@ public class Operator {
         staledRequests.remove(req);
         if (req instanceof StepRequest) {
             ThreadReference tr = StepRequestWrapper.thread((StepRequest) req);
-            ((JPDAThreadImpl) debugger.getThread(tr)).setInStep(false, null);
+            debugger.getThread(tr).setInStep(false, null);
         }
     }
 

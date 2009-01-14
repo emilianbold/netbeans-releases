@@ -65,6 +65,7 @@ import org.netbeans.modules.xml.spi.dom.AbstractNode;
 import org.openide.ErrorManager;
 import org.openide.util.Enumerations;
 import org.openide.nodes.Node.Property;
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -410,16 +411,26 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     }
     
     protected abstract static class AbstractResultNode extends AbstractNode implements GrammarResult {
+        private String desc;
+        private Icon icon;
         
         public Icon getIcon(int kind) {
-            return null;
+            return icon;
+        }
+
+        public void setIcon(Icon icon) {
+            this.icon = icon;
         }
         
         /**
          * @output provide additional information simplifiing decision
          */
         public String getDescription() {
-            return getNodeName();
+            return desc;
+        }
+
+        public void setDescription(String desc) {
+            this.desc = desc;
         }
         
         /**
@@ -456,6 +467,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         
         MyElement(String name) {
             this.name = name;
+            setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/grammar/element.png"))); //NOI18N
         }
         
         public short getNodeType() {
@@ -482,6 +494,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         MyTextElement(String name, String prefix) {
             this.name = name;
             this.prefix = prefix;
+            setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/grammar/value.png"))); //NOI18N
         }
         
         public short getNodeType() {

@@ -63,9 +63,13 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -87,7 +91,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=100)
-public final class AntBasedProjectFactorySingleton implements ProjectFactory {
+public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public static final String PROJECT_XML_PATH = "nbproject/project.xml"; // NOI18N
 
@@ -159,6 +163,47 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         File projectXmlF = new File(new File(dirF, "nbproject"), "project.xml"); // NOI18N
         return projectXmlF.isFile();
     }
+
+    public Result isProject2(FileObject projectDirectory) {
+        if (FileUtil.toFile(projectDirectory) == null) {
+            return null;
+        }
+        FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
+        //#54488: Added check for virtual
+        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
+            return null;
+        }
+        File projectDiskFile = FileUtil.toFile(projectFile);
+        //#63834: if projectFile exists and projectDiskFile does not, do nothing:
+        if (projectDiskFile == null) {
+            return null;
+        }
+        try {
+            Document projectXml = loadProjectXml(projectDiskFile);
+            if (projectXml != null) {
+                Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
+                if (typeEl != null) {
+                    String type = Util.findText(typeEl);
+                    if (type != null) {
+                        AntBasedProjectType provider = findAntBasedProjectType(type);
+                        if (provider != null) {
+                            if (provider instanceof AntBasedProjectType2) {
+                                return new ProjectManager.Result(((AntBasedProjectType2)provider).getIcon());
+                            } else {
+                                //put special icon?
+                                return new ProjectManager.Result(null);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AntBasedProjectFactorySingleton.class.getName()).log(Level.FINE, "Failed to load the project.xml file.", ex);
+        }
+        // better have false positives than false negatives (according to the ProjectManager.isProject/isProject2 javadoc.
+        return new ProjectManager.Result(null);
+    }
+
     
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         if (FileUtil.toFile(projectDirectory) == null) {
@@ -320,6 +365,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         Reference<AntProjectHelper> helperRef = project2Helper.get(p);
         return helperRef != null ? helperRef.get() : null;
     }
+
 
     /**
      * Callback to create and access AntProjectHelper objects from outside its package.

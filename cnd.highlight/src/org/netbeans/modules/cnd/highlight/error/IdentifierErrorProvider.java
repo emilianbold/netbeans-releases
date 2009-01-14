@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =
-            getBoolean("cnd.identifier.error.provider", true); //NOI18N
+            CndUtils.getBoolean("cnd.identifier.error.provider", true); //NOI18N
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     private static final int MAX_ERROR_LIMIT;
@@ -175,13 +175,4 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         }
 
     }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String value = System.getProperty(name);
-        if (value != null) {
-            result = Boolean.parseBoolean(value);
-        }
-        return result;
-    }
-
 }

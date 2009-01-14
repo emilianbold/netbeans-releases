@@ -43,6 +43,7 @@ require 'test/unit/ui/testrunnermediator'
 require 'getoptlong'
 require 'rubygems'
 require 'rake'
+require File.join(File.expand_path(File.dirname(__FILE__)), "nb_suite_runner")
 
 class NbTestMediator
 
@@ -70,10 +71,11 @@ class NbTestMediator
         # single test method
         when "-m"
           if "-m" != ""
-            @suites.each do |s| 
+            @suites.each do |s|
               tests_to_delete = []
               s.tests.each do |t|
-                unless t.method_name == arg 
+                # t.method_name == "test: #{arg} for shoulda tests
+                unless t.method_name == arg || t.method_name == "test: #{arg}. "
                   tests_to_delete << t
                 end
               end
@@ -164,80 +166,10 @@ class NbTestMediator
 
   def run_mediator
     parse_args
-    
-    @suites.each do |suite|
-      @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
-      attach_listeners
-      start_suite_timer
-      begin
-        puts "%SUITE_STARTING% #{suite}"
-        result = @mediator.run_suite
-        puts "%SUITE_SUCCESS% #{result.passed?}"
-        puts "%SUITE_FAILURES% #{result.failure_count}"
-        puts "%SUITE_ERRORS% #{result.error_count}"
-      rescue => err
-        puts "%SUITE_ERROR_OUTPUT% error=#{err}"
-      ensure
-        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
-      end
-    end
-
+    suite_runner = NbSuiteRunner.new
+    suite_runner.run(@suites)
   end
   
-  def start_suite_timer
-    @suite_start_time = Time.now
-  end
-  
-  def elapsed_suite_time
-    Time.now - @suite_start_time
-  end
-  def attach_listeners
-    @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::STARTED, &method(:suite_started))
-    @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::FINISHED, &method(:suite_finished))
-    @mediator.add_listener(Test::Unit::TestResult::CHANGED, &method(:test_result_changed))
-    @mediator.add_listener(Test::Unit::TestResult::FAULT, &method(:test_fault))
-    @mediator.add_listener(Test::Unit::TestCase::STARTED, &method(:test_started))
-    @mediator.add_listener(Test::Unit::TestCase::FINISHED, &method(:test_finished))
-  end
-  
-  def test_fault(result)
-    if (result.instance_of?(Test::Unit::Failure))
-      puts "%TEST_FAILED% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{result.location}"
-    else
-      stacktrace = result.exception.backtrace.join("%BR%")
-      puts "%TEST_ERROR% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{stacktrace}"
-    end
-  end
-  
-  def test_result_changed(result)
-    puts "%TEST_RESULT_CHANGED% #{result}"
-  end
-  
-  def suite_started(result)
-    puts "%SUITE_STARTED% #{result}"
-  end
-
-  def suite_finished(result)
-    # handled in the main loop that runs suites
-    # puts "%SUITE_FINISHED% time=#{result}"
-  end
-  
-  def test_started(result)
-    start_timer
-    puts "%TEST_STARTED% #{result}"
-  end
-
-  def test_finished(result)
-    puts "%TEST_FINISHED% time=#{elapsed_time} #{result}"
-  end
-  
-  def start_timer
-    @start_time = Time.now
-  end
-  
-  def elapsed_time
-    Time.now - @start_time
-  end
 end
 
 module Test

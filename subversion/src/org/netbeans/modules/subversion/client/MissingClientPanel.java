@@ -121,32 +121,34 @@ public class MissingClientPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(forceGlobalCheckBox, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.forceGlobalCheckBox.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblBinariesAvailableTip, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.lblBinariesAvailableTip.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(34, 34, 34)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tipLabel)
+                            .add(layout.createSequentialGroup()
+                                .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 542, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))
+                            .add(textPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(cliRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE)
+                    .add(downloadRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE))
+                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(40, 40, 40)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tipLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 542, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))
-                    .add(textPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 687, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(40, 40, 40)
-                .add(forceGlobalCheckBox)
-                .add(223, 223, 223))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(downloadRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(cliRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
-                .addContainerGap())
+                    .add(lblBinariesAvailableTip)
+                    .add(forceGlobalCheckBox))
+                .addContainerGap(507, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -155,8 +157,10 @@ public class MissingClientPanel extends javax.swing.JPanel {
                 .add(10, 10, 10)
                 .add(downloadRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lblBinariesAvailableTip)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(forceGlobalCheckBox)
-                .add(14, 14, 14)
+                .add(7, 7, 7)
                 .add(cliRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(textPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -165,7 +169,8 @@ public class MissingClientPanel extends javax.swing.JPanel {
                     .add(browseButton)
                     .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(tipLabel))
+                .add(tipLabel)
+                .addContainerGap())
         );
 
         downloadRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleName")); // NOI18N
@@ -192,6 +197,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
     final javax.swing.JCheckBox forceGlobalCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
+    final javax.swing.JLabel lblBinariesAvailableTip = new javax.swing.JLabel();
     final javax.swing.JTextPane textPane = new javax.swing.JTextPane();
     private javax.swing.JLabel tipLabel;
     // End of variables declaration//GEN-END:variables

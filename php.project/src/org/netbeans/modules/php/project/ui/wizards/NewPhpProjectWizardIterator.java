@@ -138,6 +138,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         File projectDirectory = null;
         if (isProjectFolderUsed()) {
             projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+            assert projectDirectory != null;
         } else {
             projectDirectory = FileUtil.toFile(sourceDir);
         }

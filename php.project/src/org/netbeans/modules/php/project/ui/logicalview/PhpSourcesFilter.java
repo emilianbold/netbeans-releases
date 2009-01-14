@@ -43,22 +43,22 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author Radek Matous
  */
 public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
-        private static final long serialVersionUID = -7439706583318056955L;
+        private static final long serialVersionUID = -743970325456756955L;
         private File projectXML;
-        private final EventListenerList ell = new EventListenerList();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public PhpSourcesFilter(PhpProject project) {
             projectXML = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH);
@@ -75,32 +75,22 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
                     File f = FileUtil.toFile(object.getPrimaryFile()).getCanonicalFile();
                     File nbProject = projectXML.getParentFile().getCanonicalFile();
                     return nbProject != null && !nbProject.equals(f);
-                } else {
-                    return true;
                 }
             } catch (IOException e) {
                 return false;
             }
+            return true;
         }
 
         public void stateChanged(ChangeEvent e) {
-            Object[] listeners = ell.getListenerList();
-            ChangeEvent event = null;
-            for (int i = listeners.length - 2; i >= 0; i -= 2) {
-                if (listeners[i] == ChangeListener.class) {
-                    if (event == null) {
-                        event = new ChangeEvent(this);
-                    }
-                    ((ChangeListener) listeners[i + 1]).stateChanged(event);
-                }
-            }
+            changeSupport.fireChange();
         }
 
         public void addChangeListener(ChangeListener listener) {
-            ell.add(ChangeListener.class, listener);
+            changeSupport.addChangeListener(listener);
         }
 
         public void removeChangeListener(ChangeListener listener) {
-            ell.remove(ChangeListener.class, listener);
+            changeSupport.removeChangeListener(listener);
         }
     }

@@ -28,20 +28,21 @@
 package org.netbeans.modules.python.editor;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.python.editor.lexer.PythonTokenId;
+import org.netbeans.modules.python.editor.lexer.PythonCommentTokenId;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
-import org.netbeans.modules.python.editor.scopes.SymbolTable;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
-import org.python.antlr.ast.Import;
-import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Name;
 
 /**
@@ -50,6 +51,10 @@ import org.python.antlr.ast.Name;
  */
 public class PythonInstantRename implements InstantRenamer {
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
+        if (findVarName(info, caretOffset) != null) {
+            return true;
+        }
+
         PythonTree root = PythonAstUtils.getRoot(info);
         if (root == null) {
             return false;
@@ -70,37 +75,58 @@ public class PythonInstantRename implements InstantRenamer {
         return false;
     }
 
+    private TokenSequence<PythonCommentTokenId> findVarName(CompilationInfo info, int caretOffset) {
+        Document document = info.getDocument();
+        if (document != null) {
+            BaseDocument doc = (BaseDocument)document;
+            TokenSequence<? extends PythonTokenId> ts = PythonLexerUtils.getPositionedSequence(doc, caretOffset);
+            if (ts != null && ts.token().id() == PythonTokenId.COMMENT) {
+                TokenSequence<PythonCommentTokenId> embedded = ts.embedded(PythonCommentTokenId.language());
+                if (embedded != null) {
+                    embedded.move(caretOffset);
+                    if (embedded.moveNext() || embedded.movePrevious()) {
+                        Token<PythonCommentTokenId> token = embedded.token();
+                        PythonCommentTokenId id = token.id();
+                        if (id == PythonCommentTokenId.SEPARATOR && caretOffset == embedded.offset() && embedded.movePrevious()) {
+                            token = embedded.token();
+                            id = token.id();
+                        }
+                        if (id == PythonCommentTokenId.VARNAME) {
+                            return embedded;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+        TokenSequence<PythonCommentTokenId> embedded = findVarName(info, caretOffset);
+        if (embedded != null) {
+            Token<PythonCommentTokenId> token = embedded.token();
+            String name = token.text().toString();
+            Set<OffsetRange> offsets = PythonAstUtils.getAllOffsets(info, null, caretOffset, name, true);
+            if (offsets != null) {
+                return offsets;
+            }
+
+            return Collections.emptySet();
+        }
+
         PythonParserResult parseResult = PythonAstUtils.getParseResult(info);
         PythonTree root = parseResult.getRoot();
         if (root != null) {
-            SymbolTable symbolTable = parseResult.getSymbolTable();
             AstPath path = AstPath.get(root, caretOffset);
             PythonTree leaf = path.leaf();
             String name = null;
             if (leaf instanceof Name) {
                 name = ((Name)leaf).getInternalId();
-                PythonTree scope = PythonAstUtils.getLocalScope(path);
-                List<PythonTree> nodes = symbolTable.getOccurrences(scope, name, true);
-                if (nodes == null) {
-                    // Aborted - we've encountered free variables and full renaming is required
-                    return Collections.emptySet();
+                Set<OffsetRange> offsets = PythonAstUtils.getAllOffsets(info, path, caretOffset, name, true);
+                if (offsets != null) {
+                    return offsets;
                 }
-                Set<OffsetRange> offsets = new HashSet<OffsetRange>();
-                for (PythonTree node : nodes) {
-
-                    if (node instanceof Import || node instanceof ImportFrom ||
-                            node instanceof FunctionDef || node instanceof ClassDef) {
-                        return Collections.emptySet();
-                    }
-                    OffsetRange astRange = PythonAstUtils.getNameRange(info, node);
-                    OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
-                    if (lexRange != OffsetRange.NONE) {
-                        offsets.add(lexRange);
-                    }
-                }
-
-                return offsets;
             }
         }
 
