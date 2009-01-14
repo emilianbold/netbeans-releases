@@ -58,6 +58,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
@@ -102,12 +103,24 @@ public class IndexNode extends BaseNode {
                         public void run(Metadata metaData) {
                             Index index = indexHandle.resolve(metaData);
                             name = index.getName();
+                            updateProperties(index);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
                 // TODO report exception
             }
+        }
+    }
+
+    private void updateProperties(Index index) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        try {
+            addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
+        } catch (Exception e) {
+            // TODO report exception
         }
     }
 
