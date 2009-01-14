@@ -100,7 +100,11 @@ public class InstancePropertiesVisual extends javax.swing.JPanel {
     }
     
     public String getUrl() {
-        return urlTxt.getText().trim();
+        String url = urlTxt.getText().trim();
+        if (!url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        return url;
     }
     
     public String getSyncTime() {
