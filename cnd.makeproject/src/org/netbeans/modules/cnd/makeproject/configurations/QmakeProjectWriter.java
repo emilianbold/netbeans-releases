@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  * Writes qmake project (*.pro file) for given configuration.
@@ -75,6 +76,8 @@ public class QmakeProjectWriter {
         SOURCES,
         HEADERS,
         FORMS,
+        RESOURCES,
+        TRANSLATIONS,
         DEFINES,
         INCLUDEPATH,
         LIBS,
@@ -156,9 +159,11 @@ public class QmakeProjectWriter {
                 configuration.getQmakeConfiguration().getConfig().getValue());
 
         Item[] items = projectDescriptor.getProjectItems();
-        write(bw, Variable.SOURCES, Operation.APPEND, getSources(items));
-        write(bw, Variable.HEADERS, Operation.APPEND, getHeaders(items));
-        write(bw, Variable.FORMS, Operation.APPEND, getForms(items));
+        write(bw, Variable.SOURCES, Operation.APPEND, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
+        write(bw, Variable.HEADERS, Operation.APPEND, getItems(items, MIMENames.HEADER_MIME_TYPE));
+        write(bw, Variable.FORMS, Operation.APPEND, getItems(items, MIMENames.QT_UI_MIME_TYPE));
+        write(bw, Variable.RESOURCES, Operation.APPEND, getItems(items, MIMENames.QT_RESOURCE_MIME_TYPE));
+        write(bw, Variable.TRANSLATIONS, Operation.APPEND, getItems(items, MIMENames.QT_TRANSLATION_MIME_TYPE));
 
         write(bw, Variable.OBJECTS_DIR, Operation.ASSIGN,
                 configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
@@ -199,48 +204,20 @@ public class QmakeProjectWriter {
         bw.write('\n'); // NOI18N
     }
 
-    private List<String> getSources(Item[] items) {
+    private List<String> getItems(Item[] items, String... mimeTypes) {
         List<String> list = new ArrayList<String>();
         for (Item item : items) {
-            if (!item.hasHeaderOrSourceExtension(true, true) || item.hasHeaderOrSourceExtension(false, false)) {
-                continue;
-            }
             ItemConfiguration itemConf = item.getItemConfiguration(configuration);
             if (itemConf.getExcluded().getValue()) {
                 continue;
             }
-            list.add(item.getPath());
-        }
-        return list;
-    }
-
-    private List<String> getHeaders(Item[] items) {
-        List<String> list = new ArrayList<String>();
-        for (Item item : items) {
-            if (!item.hasHeaderOrSourceExtension(false, false)) {
-                continue;
+            String actualMimeType = item.getFileObject().getMIMEType();
+            for (String mimeType : mimeTypes) {
+                if (mimeType.equals(actualMimeType)) {
+                    list.add(item.getPath());
+                    break;
+                }
             }
-            ItemConfiguration itemConf = item.getItemConfiguration(configuration);
-            if (itemConf.getExcluded().getValue()) {
-                continue;
-            }
-            list.add(item.getPath());
-        }
-        return list;
-    }
-
-    private List<String> getForms(Item[] items) {
-        List<String> list = new ArrayList<String>();
-        for (Item item : items) {
-             // TODO: eventually replace this with mime-type check
-            if (!item.getAbsPath().endsWith(".ui")) { // NOI18N
-                continue;
-            }
-            ItemConfiguration itemConf = item.getItemConfiguration(configuration);
-            if (itemConf.getExcluded().getValue()) {
-                continue;
-            }
-            list.add(item.getPath());
         }
         return list;
     }
