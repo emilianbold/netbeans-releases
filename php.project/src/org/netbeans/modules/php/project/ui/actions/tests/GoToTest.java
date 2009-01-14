@@ -59,8 +59,6 @@ import org.openide.util.NbBundle;
 public class GoToTest implements TestLocator {
     private static final Logger LOGGER = Logger.getLogger(GoToTest.class.getName());
 
-    static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
-
     public GoToTest() {
     }
 
@@ -104,7 +102,7 @@ public class GoToTest implements TestLocator {
             return FileType.TESTED;
         } else if (CommandUtils.isUnderTests(project, fo, false)) {
             String name = fo.getNameExt();
-            if (!name.equals(TEST_FILE_SUFFIX) && name.endsWith(TEST_FILE_SUFFIX)) {
+            if (!name.equals(PhpUnitConstants.TEST_FILE_SUFFIX) && name.endsWith(PhpUnitConstants.TEST_FILE_SUFFIX)) {
                 return FileType.TEST;
             }
         }
@@ -120,7 +118,7 @@ public class GoToTest implements TestLocator {
         if (relSrcParentFolder != null) {
             for (FileObject fo : relSrcParentFolder.getChildren()) {
                 if (CommandUtils.isPhpFile(fo)
-                        && testFo.getNameExt().equals(fo.getName() + TEST_FILE_SUFFIX)) {
+                        && testFo.getNameExt().equals(fo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX)) {
                     return new LocationResult(fo, -1);
                 }
             }
@@ -140,7 +138,7 @@ public class GoToTest implements TestLocator {
     static String findRelativeTestFileName(PhpProject project, FileObject srcFo) {
         String relativeSourcePath = FileUtil.getRelativePath(getSources(project), srcFo.getParent());
         assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", getSources(project), srcFo.getParent());
-        return relativeSourcePath + "/" + srcFo.getName() + TEST_FILE_SUFFIX; // NOI18N
+        return relativeSourcePath + "/" + srcFo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX; // NOI18N
     }
 
     private PhpProject findPhpProject(FileObject fo) {

@@ -84,12 +84,9 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class CreateTestsAction extends NodeAction {
-    private static final long serialVersionUID = 9523829206628824L;
+    private static final long serialVersionUID = 952382987542628824L;
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
-
-    // php unit related
-    private static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
 
     private static final String TMP_FILE_SUFFIX = ".nb-tmp"; // NOI18N
     private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
@@ -263,11 +260,12 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit());
-        externalProcessBuilder = externalProcessBuilder.workingDirectory(parent);
-        externalProcessBuilder = externalProcessBuilder.addArgument(PARAM_SKELETON);
-        externalProcessBuilder = externalProcessBuilder.addArgument(sourceFo.getName());
-        externalProcessBuilder = externalProcessBuilder.addArgument(sourceFo.getNameExt());
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit())
+                .workingDirectory(parent)
+                .addArgument(PhpUnitConstants.PARAM_SKELETON)
+                .addArgument(PhpUnitConstants.PARAM_NO_SYNTAX_CHECK)
+                .addArgument(sourceFo.getName())
+                .addArgument(sourceFo.getNameExt());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
         Future<Integer> result = service.run();
         try {
@@ -288,7 +286,7 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + GoToTest.TEST_FILE_SUFFIX);
+        return new File(parent, source.getName() + PhpUnitConstants.TEST_FILE_SUFFIX);
     }
 
     private File getTestDirectory(PhpProject phpProject) {
