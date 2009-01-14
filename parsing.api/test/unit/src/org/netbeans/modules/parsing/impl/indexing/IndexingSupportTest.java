@@ -132,6 +132,7 @@ public class IndexingSupportTest extends NbTestCase {
         assertEquals("String", result.iterator().next().getValue("class"));
         assertEquals("java.lang", result.iterator().next().getValue("package"));
         assertEquals(f1, result.iterator().next().getFile());
+        assertEquals(f1.getURL(), result.iterator().next().getUrl());
         result = qs.query("class", "Str", QuerySupport.Kind.PREFIX, "class", "package");
         assertEquals(1, result.size());
         assertEquals("String", result.iterator().next().getValue("class"));

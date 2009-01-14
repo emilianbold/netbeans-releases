@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -50,10 +54,13 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class IndexResult {
+
+    private static final Logger LOG = Logger.getLogger(IndexResult.class.getName());
     
     private final IndexDocumentImpl spi;
     private final URL root;
 
+    private volatile URL cachedUrl;
     private volatile FileObject cachedFile;
 
     IndexResult (final IndexDocumentImpl spi, final URL root) {
@@ -64,22 +71,47 @@ public final class IndexResult {
     }
 
     public String getValue (final String key) {
-        Parameters.notEmpty("key", key);
+        Parameters.notEmpty("key", key); //NOI18N
         return this.spi.getValue (key);
     }
 
     public String[] getValues (final String key) {
-        Parameters.notEmpty("key", key);
+        Parameters.notEmpty("key", key); //NOI18N
         return this.spi.getValues (key);
+    }
+
+    public URL getUrl() {
+        if (cachedUrl == null) {
+            URL url = null;
+            try {
+                url = root.toURI().resolve(spi.getSourceName()).toURL();
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            } catch (URISyntaxException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+
+            synchronized(this) {
+                if (cachedUrl == null) {
+                    cachedUrl = url;
+                }
+            }
+        }
+        return cachedUrl;
     }
 
     public FileObject getFile () {
         if (cachedFile == null) {
-            final String path = spi.getSourceName();
-            final FileObject rootFo = URLMapper.findFileObject(root);
+//            final String path = spi.getSourceName();
+//            final FileObject rootFo = URLMapper.findFileObject(root);
+//            FileObject resource = null;
+//            if (rootFo != null) {
+//                resource = rootFo.getFileObject(path);
+//            }
             FileObject resource = null;
-            if (rootFo != null) {
-                resource = rootFo.getFileObject(path);                
+            final URL url = getUrl();
+            if (url != null) {
+                resource = URLMapper.findFileObject(url);
             }
             synchronized (this) {
                 if (cachedFile == null) {
