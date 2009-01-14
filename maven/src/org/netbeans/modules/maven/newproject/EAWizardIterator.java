@@ -42,11 +42,14 @@ package org.netbeans.modules.maven.newproject;
 import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -54,37 +57,37 @@ import org.openide.util.NbBundle;
  *
  *@author Dafe Simonek
  */
-public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
-    private int index;
-    private WizardDescriptor.Panel[] panels;
-    private WizardDescriptor wiz;
-
-    private Archetype[] archs;
-    private String[] eeLevels;
-
-    private BasicEEWizardIterator(String[] eeLevels, Archetype[] archs) {
-        this.archs = archs;
-        this.eeLevels = eeLevels;
+    private static final long serialVersionUID = 1L;
+    
+    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
+    static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
+    private final List<ChangeListener> listeners;
+    
+    public EAWizardIterator() {
+        listeners = new ArrayList<ChangeListener>();
     }
     
-    public static BasicEEWizardIterator createWebAppIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.WEB_APP_ARCHS);
+    public static EAWizardIterator createIterator() {
+        return new EAWizardIterator();
     }
 
-    public static BasicEEWizardIterator createEJBIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.EJB_ARCHS);
-    }
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(eeLevels, archs, true)
+            new BasicWizardPanel(false),
+            new EAWizardPanel()
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_CreateProjectStep2"),
+            NbBundle.getMessage(EAWizardIterator.class, "LBL_CreateProjectStep2"),
+            NbBundle.getMessage(EAWizardIterator.class, "LBL_EESettings")
         };
     }
     
@@ -98,20 +101,88 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
     }
     
     public void initialize(WizardDescriptor wiz) {
-        index = 0;
-        panels = createPanels();
         this.wiz = wiz;
+        index = 0;
+        this.wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, ArchetypeWizardUtils.EA_ARCH);
+        panels = createPanels();
+        updateSteps();
+    }
+    
+    public void uninitialize(WizardDescriptor wiz) {
+        this.wiz.putProperty("projdir",null); //NOI18N
+        this.wiz.putProperty("name",null); //NOI18N
+        this.wiz = null;
+        panels = null;
+        listeners.clear();
+    }
+    
+    public String name() {
+        return MessageFormat.format(org.openide.util.NbBundle.getMessage(EAWizardIterator.class, "NameFormat"),
+                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+    }
+    
+    public boolean hasNext() {
+        return index < panels.length - 1;
+    }
+    
+    public boolean hasPrevious() {
+        return index > 0;
+    }
+    
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
+    }
+    
+    public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        index--;
+    }
+    
+    public WizardDescriptor.Panel current() {
+        return panels[index];
+    }
+    
+    // If nothing unusual changes in the middle of the wizard, simply:
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+    
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    private void fireChange() {
+        synchronized (listeners) {
+            for (ChangeListener list : listeners) {
+                list.stateChanged(new ChangeEvent(this));
+            }
+        }
+    }
+
+    private void updateSteps() {
         // Make sure list of steps is accurate.
-        String[] steps = createSteps();
+        String[] steps = new String[panels.length];
+        String[] basicOnes = createSteps();
+        System.arraycopy(basicOnes, 0, steps, 0, basicOnes.length);
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            if (steps[i] == null) {
+            if (i >= basicOnes.length || steps[i] == null) {
                 // Default step name to component name of panel.
                 // Mainly useful for getting the name of the target
                 // chooser to appear in the list of steps.
                 steps[i] = c.getName();
             }
-            if (c instanceof JComponent) { // assume Swing components
+            if (c instanceof JComponent) {
+                // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
@@ -120,36 +191,5 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
             }
         }
     }
-    
-    public void uninitialize(WizardDescriptor wiz) {
-        panels = null;
-    }
-    
-    public String name() {
-        return MessageFormat.format(NbBundle.getMessage(BasicEEWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
-    }
-    
-    public boolean hasNext() {
-        return false;
-    }
-    
-    public boolean hasPrevious() {
-        return false;
-    }
-    
-    public void nextPanel() {
-    }
-    
-    public void previousPanel() {
-    }
-    
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
-    
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
     
 }
