@@ -572,7 +572,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                 CsmMethod method = (CsmMethod) member;
                 InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
                         EncapsulateFieldPanel.class,
-                        "MSG_EncapsulateFieldInsertPointMethod",
+                        "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
                         MemberInfo.create(method).getHtmlText()
                         ));
                 result.add(ip);
