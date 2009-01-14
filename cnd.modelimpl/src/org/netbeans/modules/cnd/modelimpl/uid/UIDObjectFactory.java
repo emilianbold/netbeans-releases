@@ -96,7 +96,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         assert anUID == null || anUID instanceof SelfPersistent;
         super.writeSelfPersistent((SelfPersistent)anUID, aStream);
     }
-    
+
+    @SuppressWarnings("unchecked") // okay
     public <T> CsmUID<T> readUID(DataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);

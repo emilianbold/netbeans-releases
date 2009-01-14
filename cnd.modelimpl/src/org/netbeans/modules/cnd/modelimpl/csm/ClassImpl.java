@@ -544,7 +544,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
-        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(DataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
