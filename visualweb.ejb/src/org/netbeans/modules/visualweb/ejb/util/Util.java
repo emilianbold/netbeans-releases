@@ -54,7 +54,6 @@ import java.nio.channels.FileChannel;
 import java.util.logging.Logger;
 
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * This class contains some utility methods
@@ -184,7 +183,7 @@ public class Util {
      */
     public static File getEjbStateDir() {
         if (ejbStateDir == null) {
-            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
             // Follow NetBeans convention of replacing dots with dashes
             String stateDirName = getCodeNameBase().replace('.', '-');
             ejbStateDir = new File(root, stateDirName);

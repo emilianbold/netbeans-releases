@@ -389,6 +389,88 @@ made subject to such option by the copyright holder.
             
         </folder> <!-- End cppFiles folder -->
 
+<!--
+        <folder name="qtFiles">
+
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+            <attr name="position" intvalue="560"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/qtfiles.html"/>
+
+            <file name="main.cc" url="templates/qt/simple-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-qt.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="qt-types"/>
+            </file>
+
+            <file name="form.ui">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/qtform.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.QtFormFileIterator"/>
+                <attr name="templateCategory" stringvalue="qt-types"/>
+            </file>
+
+            <file name="dialog-buttonsbottom.ui" url="templates/qt/dialog-buttonsbottom.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="210"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+            <file name="dialog-buttonsright.ui" url="templates/qt/dialog-buttonsright.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="220"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+            <file name="dialog-nobuttons.ui" url="templates/qt/dialog-nobuttons.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="230"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+            <file name="mainwindow.ui" url="templates/qt/mainwindow.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="240"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+            <file name="widget.ui" url="templates/qt/widget.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
+                <attr name="position" intvalue="250"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+
+            <file name="form.cc" url="templates/qt/form-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="260"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+
+            <file name="form.h" url="templates/qt/form-h.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="270"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+
+        </folder>
+-->
+
         <folder name="fortranFiles">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="650"/>
@@ -509,7 +591,7 @@ made subject to such option by the copyright holder.
             -->
         </folder>
     </folder> <!-- Templates -->
-    
+
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-exe">
@@ -1012,11 +1094,8 @@ made subject to such option by the copyright holder.
 
             <folder name="xml+qtui">
                 <folder name="Factories">
-                    <file name="QtUiDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/QtUiIcon.png"/>
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.QtUiDataObject"/>
-                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/xml+qtui"/>
+                    <file name="org-netbeans-modules-cnd-loaders-QtUiDataLoader.instance">
+                        <attr name="position" intvalue="100" />
                     </file>
                 </folder>
                 <folder name="Actions">

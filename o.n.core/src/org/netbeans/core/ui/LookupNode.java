@@ -51,9 +51,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.actions.ReorderAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -228,13 +226,12 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      */
     static DataFolder findFolder (String root, String name, boolean template) {
         try {
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             if (template) {
                 name = '/' + prefTemplates (root) + name;
             } else {
                 name = '/' + prefObjects (root) + name;
             }
-            FileObject fo = fs.findResource (name);
+            FileObject fo = FileUtil.getConfigFile (name);
             
             if (fo == null && template) {
                 // we do not create template directories, if it is missing
@@ -244,7 +241,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             
             if (fo == null) {
                 // if the directory is missing, create new one
-                fo = FileUtil.createFolder (fs.getRoot (), name);
+                fo = FileUtil.createFolder (FileUtil.getConfigRoot (), name);
             }
             
             return DataFolder.findFolder (fo);

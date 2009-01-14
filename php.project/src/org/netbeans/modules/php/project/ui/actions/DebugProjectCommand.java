@@ -40,120 +40,36 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.modules.php.project.ui.actions.support.DebugScript;
-import java.net.MalformedURLException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class DebugProjectCommand extends Command implements Displayable {
 
     public static final String ID = ActionProvider.COMMAND_DEBUG;
     public static final String DISPLAY_NAME = NbBundle.getMessage(DebugProjectCommand.class, "LBL_DebugProject");
 
-    private final DebugScript debugScript;
-
     public DebugProjectCommand(PhpProject project) {
         super(project);
-        debugScript = new DebugScript(project);
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final Lookup context) {
         if (!isRunConfigurationValid(true)) {
             // property not set yet
             return;
         }
-        boolean scriptSelected = isScriptSelected();
-        if (scriptSelected) {
-            debugScript.invokeAction(null);
-        } else {
-            eventuallyUploadFiles();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                        try {
-                            showURLForDebugProjectFile();
-                        } catch (MalformedURLException ex) {
-                        //TODO improve error handling
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-            };
-
-            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-            if (jsDebuggingAvailable) {
-                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-                if (!keepDebugging) {
-                    return;
-                }
-            }
-
-            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
-                //temporary; after narrowing deps. will be changed
-                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-                if (dbgStarter != null) {
-                    if (dbgStarter.isAlreadyRunning()) {
-                        if (CommandUtils.warnNoMoreDebugSession()) {
-                            dbgStarter.stop();
-                            invokeAction(context);
-                        }
-                    } else {
-                        final FileObject fileForProject = fileForProject(true);
-                        if (fileForProject != null) {
-                            startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
-                        } else {
-                            String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
-                            String err = NbBundle.getMessage(DebugProjectCommand.class,
-                                    "ERR_Missing_IndexFile", idxFileName);//NOI18N
-
-                            final Message messageDecriptor = new NotifyDescriptor.Message(err,
-                                    NotifyDescriptor.WARNING_MESSAGE);
-                            DialogDisplayer.getDefault().notify(messageDecriptor);
-                            getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
-                        }
-                    }
-                }
-            } else {
-                runnable.run();
-            }
-        }
-    }
-
-    protected void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
-            final FileObject debuggedFile, boolean runAsScript) {
-        Cancellable cancellable = new Cancellable() {
-            public boolean cancel() {
-                return true;
-            }
-        };
-        Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
-        dbgStarter.start(getProject(), initDebuggingCallable, debuggedFile, runAsScript);
+        getConfigAction().debugProject(getProject());
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return XDebugStarterFactory.getInstance() != null;
+    public boolean isActionEnabled(Lookup context) {
+        return getConfigAction().isDebugProjectEnabled(getProject());
     }
 
     @Override

@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator {
     private static final long serialVersionUID = 1L;
@@ -77,8 +77,7 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         Set<FileObject> resultSet = new HashSet<FileObject>();
         FileObject compAppProjectDir = projectDir.createFolder(name);                
         
-        FileObject bluePrintCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName()); // NOI18N
+        FileObject bluePrintCompositeApp = FileUtil.getConfigFile("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName()); // NOI18N
         
         Util.unZipFile(bluePrintCompositeApp.getInputStream(), compAppProjectDir);
         Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, getCompositeApplicationName());

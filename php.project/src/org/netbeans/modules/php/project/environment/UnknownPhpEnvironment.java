@@ -66,4 +66,13 @@ final class UnknownPhpEnvironment extends PhpEnvironment {
         return null;
     }
 
+    @Override
+    public List<String> getAllPhpUnits() {
+        return Collections.<String>emptyList();
+    }
+
+    @Override
+    public String getAnyPhpUnit() {
+        return null;
+    }
 }

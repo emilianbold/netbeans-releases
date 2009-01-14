@@ -57,7 +57,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -223,7 +222,7 @@ public class TabSwitchSpeedTest extends NbTestCase {
             fail("Cannot find cluster " + cluster + " in " + dirs);
         }
         
-        Repository.getDefault().getDefaultFileSystem().refresh(false);
+        FileUtil.getConfigRoot().getFileSystem().refresh(false);
         LOOP: for (int i = 0; i < 20; i++) {
             Thread.sleep(1000);
             for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {

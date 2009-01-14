@@ -98,8 +98,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 
 /**
@@ -977,8 +975,7 @@ public class J2eeProjectHelper {
         assert template != null;
         assert folder != null;
         
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(folder);
         DataObject dataObj = templateDO.createFromTemplate(dataFolder, sunDDName);

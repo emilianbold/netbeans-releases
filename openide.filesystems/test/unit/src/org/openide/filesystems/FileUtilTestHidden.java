@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class FileUtilTestHidden extends TestBaseHid {
@@ -90,7 +89,7 @@ public class FileUtilTestHidden extends TestBaseHid {
         final LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
         
-        final FileSystem defSystem = Repository.getDefault().getDefaultFileSystem();
+        final FileSystem defSystem = FileUtil.getConfigRoot().getFileSystem();
         final TestListener l = new TestListener();
         try {
             defSystem.addFileChangeListener(l);

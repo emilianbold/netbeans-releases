@@ -64,7 +64,7 @@ import org.openide.filesystems.FileLock;
 import java.lang.Exception;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Representation of the "Editors/AnnotationTypes" folder. All
  * instances created through the createInstance() method are
@@ -121,7 +121,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             return folder;
         }
         
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(FOLDER);
+        FileObject f = FileUtil.getConfigFile(FOLDER);
         if (f == null) {
             return null;
         }

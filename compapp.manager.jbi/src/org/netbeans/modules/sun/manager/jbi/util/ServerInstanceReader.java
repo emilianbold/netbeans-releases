@@ -61,7 +61,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Reader for NetBeans server config file.
@@ -114,7 +114,7 @@ public class ServerInstanceReader {
                     public InputSource resolveEntity(String publicID, String systemID)
                     throws SAXException, IOException {
                         if (NB_DEFAULT_ATTRS_PUBLIC_ID.equals(publicID)) {
-                            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(NB_DEFAULT_ATTRS_DTD);
+                            FileObject file = FileUtil.getConfigFile(NB_DEFAULT_ATTRS_DTD);
                             if (file != null) {
                                 return new InputSource(file.getInputStream());
                             } else { // command line support for offline ATS

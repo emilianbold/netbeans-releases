@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.CookieSet;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -98,7 +97,7 @@ implements DataLoader.RecognizedFiles {
 
 
     static void init() throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fo = FileUtil.getConfigRoot();
         FileObject data = FileUtil.createData(fo, 
             "Loaders/text/x-java/Factories/" + 
             FormKitDataLoader.class.getName().replace('.', '-') + ".instance"

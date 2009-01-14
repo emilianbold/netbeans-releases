@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -73,7 +72,7 @@ final class PanelUtil {
     }
     try {
       return FileUtil.copyFile(
-        Repository.getDefault().getDefaultFileSystem().findResource(path + file),
+        FileUtil.getConfigFile(path + file),
         destination,
         name,
         ext);

@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Node;
 
 /**
@@ -89,18 +90,10 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (model instanceof CallModelImpl) {
             return new CallGraphUI(){
                 public boolean showGraph() {
-                    return getBoolean("cnd.callgraph.showgraph", true); // NOI18N
+                    return CndUtils.getBoolean("cnd.callgraph.showgraph", true); // NOI18N
                 }
             };
         }
         return null;
-    }
-
-    private boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
     }
 }

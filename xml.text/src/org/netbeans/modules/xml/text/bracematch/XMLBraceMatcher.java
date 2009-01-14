@@ -78,6 +78,7 @@ public class XMLBraceMatcher implements BracesMatcher {
     private int searchOffset;
     private javax.swing.text.Document document;
     private MatcherContext context;
+    private BracesMatcher defaultMatcher;
     
     public XMLBraceMatcher(MatcherContext context) {
         this(context.getDocument(), context.getSearchOffset());
@@ -100,8 +101,8 @@ public class XMLBraceMatcher implements BracesMatcher {
         if(origin != null)
             return origin;
 
-        BracesMatcher matcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
-        return matcher.findOrigin();
+        defaultMatcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
+        return defaultMatcher.findOrigin();
     }
 
     public int[] doFindOrigin() throws InterruptedException, BadLocationException {
@@ -160,12 +161,12 @@ public class XMLBraceMatcher implements BracesMatcher {
         if (MatcherContext.isTaskCanceled()) {
             return null;
         }
-        int[] matches = doFindMatches();
-        if(matches != null)
-            return matches;
 
-        BracesMatcher matcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
-        return matcher.findMatches();
+        if(defaultMatcher != null) {
+            return defaultMatcher.findMatches();
+        }
+
+        return doFindMatches();
     }
     
     public int[] doFindMatches() throws InterruptedException, BadLocationException {

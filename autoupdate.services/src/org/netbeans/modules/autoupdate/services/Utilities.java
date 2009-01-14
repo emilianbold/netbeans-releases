@@ -91,7 +91,6 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
@@ -1246,7 +1245,7 @@ public class Utilities {
         if (userDir != null) {
             cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
         } else {
-            File dir = FileUtil.toFile (Repository.getDefault ().getDefaultFileSystem ().getRoot());
+            File dir = FileUtil.toFile (FileUtil.getConfigRoot());
             cacheDir = new File (dir, "catalogcache"); // NOI18N
         }
         cacheDir.mkdirs();

@@ -58,10 +58,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Stamps;
 import org.netbeans.core.startup.StartLog;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -226,8 +227,12 @@ implements LookupListener {
      * if working within the core.
      */
     public static ModuleLayeredFileSystem getInstallationModuleLayer () {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        SystemFileSystem sfs = (SystemFileSystem)fs;            
+        SystemFileSystem sfs = null;
+        try {
+            sfs = (SystemFileSystem) FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         ModuleLayeredFileSystem home = sfs.getInstallationLayer ();
         if (home != null)
             return home;
@@ -240,8 +245,12 @@ implements LookupListener {
      * if working within the core.
      */
     public static ModuleLayeredFileSystem getUserModuleLayer () {
-        SystemFileSystem sfs = (SystemFileSystem)
-            Repository.getDefault().getDefaultFileSystem();
+        SystemFileSystem sfs = null;
+        try {
+            sfs = (SystemFileSystem) FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return sfs.getUserLayer ();
     }
 

@@ -77,7 +77,7 @@ public class DataFolderRefreshTest extends LoggingTestCaseHid {
         clearWorkDir ();
         
         root = FileUtil.createFolder(
-            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            FileUtil.getConfigRoot(),
             "dir"
         );
         

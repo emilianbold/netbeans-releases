@@ -56,7 +56,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 /** Checks the testable behaviour of TemplateWizard
  * @author Jaroslav Tulach, Jiri Rechtacek
@@ -68,7 +67,7 @@ public class TemplateWizardTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+         FileObject fo = FileUtil.getConfigRoot ();
          FileUtil.createFolder (fo, "Templates");
     }
 

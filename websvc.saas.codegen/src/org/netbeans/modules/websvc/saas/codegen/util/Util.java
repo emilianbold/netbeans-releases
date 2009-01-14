@@ -95,8 +95,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -123,6 +121,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
 import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
@@ -572,8 +571,7 @@ public class Util {
         assert template != null;
         assert targetFolder != null;
 
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 

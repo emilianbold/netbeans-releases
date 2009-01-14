@@ -60,8 +60,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -106,8 +105,7 @@ public class LayersBridge extends KeymapManager {
     }
 
     private void initActions (String folder, String category) {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject fo = fs.findResource (folder);
+        FileObject fo = FileUtil.getConfigFile(folder);
         if (fo == null) return;
         DataFolder root = DataFolder.findFolder (fo);
         Enumeration<DataObject> en = root.children ();
@@ -276,9 +274,7 @@ public class LayersBridge extends KeymapManager {
     }
 
     public void deleteProfile (String profile) {
-        FileObject root = Repository.getDefault ().
-            getDefaultFileSystem ().getRoot ();
-        root = root.getFileObject (KEYMAPS_FOLDER);
+        FileObject root = FileUtil.getConfigFile(KEYMAPS_FOLDER);
         if (root == null) return;
         root = root.getFileObject (profile);
         if (root == null) return;
@@ -361,8 +357,7 @@ public class LayersBridge extends KeymapManager {
     }    
 
     private static DataFolder getRootFolder (String name1, String name2) {
-        FileObject root = Repository.getDefault ().
-            getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot ();
         FileObject fo1 = root.getFileObject (name1);
         try {
             if (fo1 == null) fo1 = root.createFolder (name1);

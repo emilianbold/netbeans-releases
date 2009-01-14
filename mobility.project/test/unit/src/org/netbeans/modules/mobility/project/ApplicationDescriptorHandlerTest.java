@@ -64,7 +64,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 
@@ -146,7 +145,7 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
         api=getGoldenFile("midpapi20.zip");
         tmp=getGoldenFile("Midlet.java");
 
-        FileObject fobj=Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fobj=FileUtil.getConfigRoot();
         fobj=FileUtil.createFolder(fobj,"Templates");
         fobj=FileUtil.createFolder(fobj,"MIDP");
         FileObject template=FileUtil.toFileObject(tmp);

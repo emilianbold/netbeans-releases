@@ -54,7 +54,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
@@ -81,7 +80,7 @@ public class ToolbarPoolTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         toolbars = FileUtil.createFolder (root, "Toolbars");
         toolbarsFolder = DataFolder.findFolder (toolbars);
         FileObject[] arr = toolbars.getChildren ();

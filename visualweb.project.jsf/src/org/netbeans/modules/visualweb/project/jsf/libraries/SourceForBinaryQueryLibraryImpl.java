@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 // <RAVE>
-import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
+import org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider.ComponentLibraryTypeProvider;
 
 /**
  * Finds the locations of sources for various libraries.

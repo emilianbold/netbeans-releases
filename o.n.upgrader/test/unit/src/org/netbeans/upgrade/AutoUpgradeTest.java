@@ -42,7 +42,6 @@
 package org.netbeans.upgrade;
 import java.io.File;
 import java.net.URL;
-import java.util.*;
 
 import org.openide.filesystems.FileObject;
 
@@ -50,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 
 /** Tests copying of attributes during upgrade when .nbattrs file is stored on the
@@ -101,7 +99,7 @@ public final class AutoUpgradeTest extends org.netbeans.junit.NbTestCase {
         
         AutoUpgrade.doUpgrade(old, oldVersion);
         
-        FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem dfs = FileUtil.getConfigRoot().getFileSystem();
         
         MultiFileSystem newmfs = new MultiFileSystem(
                 new FileSystem[] { dfs, xmlfs }

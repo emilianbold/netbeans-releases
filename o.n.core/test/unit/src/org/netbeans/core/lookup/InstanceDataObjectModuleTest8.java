@@ -50,7 +50,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /** A test.
@@ -74,13 +73,13 @@ implements FileChangeListener {
     }
     
     protected void setUp() throws Exception {
-        Repository.getDefault ().getDefaultFileSystem ().addFileChangeListener (this);
+        FileUtil.getConfigRoot().getFileSystem().addFileChangeListener (this);
         assertNotNull("have org-netbeans-modules-settings.jar in CP", InstanceDataObjectModuleTest7.class.getResource("/org/netbeans/modules/settings/resources/Bundle.properties"));
         super.setUp();
     }
      
     protected void tearDown () throws java.lang.Exception {
-        Repository.getDefault ().getDefaultFileSystem ().removeFileChangeListener (this);
+        FileUtil.getConfigRoot().getFileSystem().removeFileChangeListener (this);
         super.tearDown ();
     }
     
@@ -170,7 +169,7 @@ implements FileChangeListener {
     
     public void fileDeleted(FileEvent fe) {
         if ("inst-8.settings".equals (fe.getFile ().getNameExt ())) {
-            FileObject isThere = Repository.getDefault ().getDefaultFileSystem ().findResource (fe.getFile ().getPath ());
+            FileObject isThere = FileUtil.getConfigFile (fe.getFile ().getPath ());
             fail ("File " + fe.getFile () + " should not be deleted as this will discard the data object. Moreover it is expected that similar file is still there: " + isThere);
         }
     }

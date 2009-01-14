@@ -51,7 +51,6 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -141,8 +140,7 @@ public final class ProviderModel {
     } // end of Category
 
     private static List<Category> loadCategories () {
-        FileObject[] categoryFOs = Repository.getDefault().getDefaultFileSystem().
-                findResource(SEARCH_PROVIDERS_FOLDER).getChildren();
+        FileObject[] categoryFOs = FileUtil.getConfigFile(SEARCH_PROVIDERS_FOLDER).getChildren();
 
         // respect ordering defined in layers
         List<FileObject> sortedCats = FileUtil.getOrder(Arrays.asList(categoryFOs), false);

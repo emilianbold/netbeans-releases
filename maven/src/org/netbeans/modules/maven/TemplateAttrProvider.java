@@ -50,7 +50,7 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -74,7 +74,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             List lst = project.getOriginalMavenProject().getLicenses();
             if (lst != null && lst.size() > 0) {
                 String url = ((License)lst.get(0)).getUrl();
-                FileObject licenses = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Templates/Licenses"); //NOI18N
+                FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
                 if (url != null && licenses != null) {
                     for (FileObject fo : licenses.getChildren()) {
                         String str = (String)fo.getAttribute("mavenLicenseURL"); //NOI18N

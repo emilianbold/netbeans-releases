@@ -46,10 +46,8 @@ import java.io.OutputStream;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -59,9 +57,8 @@ public class LibraryConverter extends FileChangeAdapter {
     
     /** Creates a new instance of LibraryConverter */
     public LibraryConverter() {
-        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();
         try {
-            FileObject rep = FileUtil.createFolder(storageFS.getRoot(), "org-netbeans-api-project-libraries/Libraries");  //NOI18N
+            FileObject rep = FileUtil.createFolder(FileUtil.getConfigRoot(), "org-netbeans-api-project-libraries/Libraries");  //NOI18N
             rep.addFileChangeListener(this);
             FileObject fo[] = rep.getChildren();
             for (int i=0; i < fo.length; i++) {

@@ -78,7 +78,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -159,12 +158,12 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
             pName = mainClassName.substring( 0, lastDotIdx ).trim();
         }
         if ( mName.length() == 0 || platformType == null) return null;
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource("MainTemplates/org.netbeans.modules.kjava.j2meproject/" + platformType); //NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile("MainTemplates/org.netbeans.modules.kjava.j2meproject/" + platformType); //NOI18N
         if ( mainTemplate == null ) return null;
         String templateName = (String)mainTemplate.getAttribute("templateName"); //NOI18N
         String templateType = (String)mainTemplate.getAttribute("templateType"); //NOI18N
         if (templateName == null || templateType == null) return null;
-        mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource(templateName);
+        mainTemplate = FileUtil.getConfigFile(templateName);
         if ( mainTemplate == null ) return null;
         DataObject mt = DataObject.find( mainTemplate );
         FileObject pkgFolder = srcFolder;

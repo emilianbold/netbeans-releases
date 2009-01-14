@@ -56,7 +56,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -73,8 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -82,7 +79,6 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -236,7 +232,7 @@ public class FileEncodingQueryTest extends NbTestCase {
     }
     
     public void testDefaultEncodingOnSFSIsUTF8() throws IOException {
-        FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "some.file");
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "some.file");
         Charset enc = FileEncodingQuery.getEncoding(fo);
         assertEquals("UTF-8", enc.toString());
     }

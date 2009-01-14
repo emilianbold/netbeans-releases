@@ -77,7 +77,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /** Some infrastructure for module system tests.
  * @author Jesse Glick
@@ -148,7 +147,7 @@ public abstract class SetupHid extends NbTestCase {
 
     protected static String slurp(String path) throws IOException {
         Main.getModuleSystem(); // #26451
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(path);
+        FileObject fo = FileUtil.getConfigFile(path);
         if (fo == null) return null;
         InputStream is = fo.getInputStream();
         StringBuffer text = new StringBuffer((int)fo.getSize());

@@ -53,7 +53,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
@@ -76,6 +75,7 @@ import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.python.editor.PythonParser.Sanitize;
 import org.netbeans.modules.python.editor.elements.IndexedPackage;
 import org.netbeans.modules.python.editor.imports.ImportManager;
+import org.netbeans.modules.python.editor.lexer.PythonCommentTokenId;
 import org.netbeans.modules.python.editor.lexer.PythonLexer;
 import org.netbeans.modules.python.editor.options.CodeStyle;
 import org.netbeans.modules.python.editor.scopes.SymbolTable;
@@ -192,6 +192,23 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                 request.searchUrl = "";
             }
 
+            if (root != null) {
+                int offset = astOffset;
+
+                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
+                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
+                    offset = sanitizedRange.getStart();
+                }
+
+                final AstPath path = AstPath.get(root, offset);
+                request.path = path;
+                //request.fqn = PythonAstUtils.getFqn(path, null, null);
+
+                final PythonTree closest = path.leaf();
+                request.root = root;
+                request.node = closest;
+            }
+
             TokenSequence<? extends PythonTokenId> ts = PythonLexerUtils.getPositionedSequence(doc, lexOffset);
             if (ts == null || ts.token() == null) {
                 if (PythonUtils.isPythonFile(fileObject)) {
@@ -242,23 +259,6 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     }
                     return completionResult;
                 }
-            }
-
-            if (root != null) {
-                int offset = astOffset;
-
-                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
-                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
-                    offset = sanitizedRange.getStart();
-                }
-
-                final AstPath path = AstPath.get(root, offset);
-                request.path = path;
-//                request.fqn = PythonAstUtils.getFqn(path, null, null);
-
-                final PythonTree closest = path.leaf();
-                request.root = root;
-                request.node = closest;
             }
 
             if (completeContextual(proposals, request)) {
@@ -733,7 +733,6 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
         return item;
     }
-    
     private static final String[] BUILTIN_TYPES =
             new String[]{
         "str", "StringType",
@@ -753,24 +752,57 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         "ModuleType", "ModuleType",
         "MethodType", "MethodType",
         "None", "NoneType",
-        "object", "ObjectType",
-    };
+        "object", "ObjectType",};
 
     private boolean completeComments(List<CompletionProposal> proposals, CompletionRequest request, TokenSequence<? extends PythonTokenId> ts) throws BadLocationException {
         assert ts.token().id() == PythonTokenId.COMMENT;
-        int offset = request.lexOffset - ts.offset();
-        CharSequence seq = ts.token().text();
+        TokenSequence<PythonCommentTokenId> embedded = ts.embedded(PythonCommentTokenId.language());
+        if (embedded == null) {
+            return false;
+        }
 
-        int typeStart = TokenUtilities.indexOf(seq, "@type ", 0); // NOI18N
-        if (typeStart != -1) {
-            int prefixStart = TokenUtilities.lastIndexOf(seq, ' ');
-            if (prefixStart != -1) {
-                prefixStart++; // Skip
-                String prefix = "";
-                if (prefixStart < offset) {
-                    prefix = seq.subSequence(prefixStart, offset).toString();
+        embedded.move(request.lexOffset);
+        if (embedded.moveNext() || embedded.movePrevious()) {
+            Token<? extends PythonCommentTokenId> token = embedded.token();
+            TokenId id = token.id();
+            TokenId complete = null;
+            String prefix = null;
+            if (id == PythonCommentTokenId.VARNAME || id == PythonCommentTokenId.TYPE) {
+                complete = id;
+                prefix = request.prefix;
+            } else if (id == PythonCommentTokenId.SEPARATOR) {
+                prefix = "";
+
+                // Look backwards to see what we're completing
+                if (embedded.movePrevious()) {
+                    id = embedded.token().id();
+                    if (id == PythonCommentTokenId.VARNAME) {
+                        complete = PythonCommentTokenId.TYPE;
+                    } else if (id == PythonCommentTokenId.TYPEKEY) {
+                        complete = PythonCommentTokenId.VARNAME;
+                    }
                 }
+            }
+            if (complete == PythonCommentTokenId.VARNAME) {
+                // Complete variable names!
+                SymbolTable symbolTable = request.result.getSymbolTable();
+                PythonTree scope = PythonAstUtils.getLocalScope(request.path);
+                Set<String> names = symbolTable.getVarNames(scope, true);
+                for (String name : names) {
+                    if (!name.startsWith(prefix)) {
+                        continue;
+                    }
 
+                    KeywordItem item = new KeywordItem(name, null, request, name);
+                    item.setKind(ElementKind.VARIABLE);
+                    item.setInsertPrefix(name + ": "); // NOI18N
+                    proposals.add(item);
+                    item.smart = true;
+                }
+            } else if (complete == PythonCommentTokenId.TYPE) {
+                // Complete type
+
+                // Builtin/core
                 for (int j = 0, n = BUILTIN_TYPES.length; j < n; j += 2) {
                     String word = BUILTIN_TYPES[j];
                     String desc = BUILTIN_TYPES[j + 1];
@@ -784,6 +816,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                     item.smart = true;
                 }
 
+                // User defined and library classes
                 PythonIndex index = request.index;
                 Set<IndexedElement> elements = index.getClasses(prefix, request.kind, PythonIndex.ALL_SCOPE, request.result, false);
                 for (IndexedElement element : elements) {
@@ -1285,7 +1318,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                                 for (alias at : names) {
                                     if (at.getInternalAsname() != null && at.getInternalAsname().equals(lhs)) {
                                         addSpecifyTypeItem = false;
-                                        
+
                                         // Yes, imported symbol
                                         moduleName = at.getInternalName();
                                         moduleCompletion = true;
@@ -2194,6 +2227,8 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         private int sortPrioOverride = 0;
         private boolean smart;
         private boolean deprecated;
+        private ElementKind kind;
+        private String insertPrefix;
 
         KeywordItem(String keyword, String description, CompletionRequest request, String sort) {
             this.keyword = keyword;
@@ -2207,12 +2242,20 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             this.handle = handle;
         }
 
+        public void setInsertPrefix(String insertPrefix) {
+            this.insertPrefix = insertPrefix;
+        }
+
+        public void setKind(ElementKind kind) {
+            this.kind = kind;
+        }
+
         public String getName() {
             return keyword;
         }
 
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return kind != null ? kind : ElementKind.KEYWORD;
         }
 
         public String getRhsHtml(final HtmlFormatter formatter) {
@@ -2238,6 +2281,10 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         public ImageIcon getIcon() {
+            if (kind != null && kind != ElementKind.KEYWORD) {
+                return null;
+            }
+
             if (keywordIcon == null) {
                 keywordIcon = new ImageIcon(ImageUtilities.loadImage(PYTHON_KEYWORD));
             }
@@ -2263,7 +2310,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
         }
 
         public String getInsertPrefix() {
-            return keyword;
+            return insertPrefix != null ? insertPrefix : keyword;
         }
 
         public String getSortText() {

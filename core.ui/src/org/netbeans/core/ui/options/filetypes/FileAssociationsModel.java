@@ -53,9 +53,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
 /** Model holds mapping between extension and MIME type.
  *
@@ -93,7 +94,7 @@ final class FileAssociationsModel {
 
     /** Creates new model. */
     FileAssociationsModel() {
-        FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource(MIME_RESOLVERS_PATH);
+        FileObject resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
         if (resolvers != null) {
             resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
         }
@@ -143,8 +144,7 @@ final class FileAssociationsModel {
 
     /** Reads MIME types registered in Loaders folder and fills mimeTypes set. */
     private void readMimeTypesFromLoaders() {
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject[] children = defaultFS.findResource("Loaders").getChildren();  //NOI18N
+        FileObject[] children = FileUtil.getConfigFile("Loaders").getChildren();  //NOI18N
         for (int i = 0; i < children.length; i++) {
             FileObject child = children[i];
             String mime1 = child.getNameExt();
@@ -210,13 +210,18 @@ final class FileAssociationsModel {
     
         /** Returns localized display name of loader for given MIME type or null if not defined. */
     private static String getLoaderDisplayName(String mimeType) {
-        FileSystem root = Repository.getDefault().getDefaultFileSystem();
-        FileObject factoriesFO = root.findResource("Loaders/" + mimeType + "/Factories");  //NOI18N
+        FileSystem filesystem = null;
+        try {
+            filesystem = FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        FileObject factoriesFO = FileUtil.getConfigFile("Loaders/" + mimeType + "/Factories");  //NOI18N
         if(factoriesFO != null) {
             FileObject[] children = factoriesFO.getChildren();
             for (FileObject child : children) {
                 String childName = child.getNameExt();
-                String displayName = root.getStatus().annotateName(childName, Collections.singleton(child));
+                String displayName = filesystem.getStatus().annotateName(childName, Collections.singleton(child));
                 if(!childName.equals(displayName)) {
                     return displayName;
                 }

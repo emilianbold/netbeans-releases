@@ -42,9 +42,7 @@ package org.netbeans.modules.mercurial;
 
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
-import org.netbeans.modules.mercurial.Mercurial;
 import java.util.logging.Level;
 
 import java.io.*;
@@ -345,7 +343,7 @@ class DiskMapTurboProvider implements TurboProvider {
         if (userDir != null) {
             cacheStore = new File(new File(new File (userDir, "var"), "cache"), DiskMapTurboProvider.CACHE_DIRECTORY); // NOI18N
         } else {
-            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheStore = new File(cachedir, DiskMapTurboProvider.CACHE_DIRECTORY); // NOI18N
         }
         cacheStore.mkdirs();

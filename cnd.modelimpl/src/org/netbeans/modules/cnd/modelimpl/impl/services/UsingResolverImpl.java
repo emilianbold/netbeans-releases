@@ -82,11 +82,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     }
     
     public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
-        CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DECLARATION };
         CsmSelect select = CsmSelect.getDefault();
         List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
         Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
-                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+                    namespace, select.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
         while (udecls.hasNext()) {
             res.add((CsmUsingDeclaration) udecls.next());
         }
@@ -97,7 +96,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
                 CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
                 if (ns != null) {
                     Iterator<CsmOffsetableDeclaration> it = select.getDeclarations(
-                            ns, select.getFilterBuilder().createKindFilter(kinds));
+                            ns, select.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
                     while (it.hasNext()) {
                         res.add((CsmUsingDeclaration) it.next());
                     }
@@ -134,11 +133,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
 //    }
     
     public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
-        CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DIRECTIVE };
         CsmSelect select = CsmSelect.getDefault();
         List<CsmUsingDirective> res = new ArrayList<CsmUsingDirective>();
         Iterator<CsmOffsetableDeclaration> udirs = select.getDeclarations(
-                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+                    namespace, select.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DIRECTIVE));
         while (udirs.hasNext()) {
             res.add((CsmUsingDirective)udirs.next());
         }

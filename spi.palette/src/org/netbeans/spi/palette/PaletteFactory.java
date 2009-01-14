@@ -51,8 +51,7 @@ import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.RootNode;
 import org.netbeans.modules.palette.Settings;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.lookup.Lookups;
@@ -177,8 +176,7 @@ public final class PaletteFactory {
     
     private static FileObject getPaletteFolder( String folderName ) throws IOException {
         FileObject paletteFolder;
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteFolder = fs.findResource( folderName );
+        paletteFolder = FileUtil.getConfigFile( folderName );
         if (paletteFolder == null) { // not found, cannot continue
             throw new FileNotFoundException( folderName );
         }
