@@ -76,7 +76,7 @@ import org.openide.util.WeakListeners;
  */
 public class PathRegistry implements Runnable {
     private static PathRegistry instance;
-    private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor");
+    private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
 
     private final RequestProcessor.Task firerTask;
@@ -93,8 +93,6 @@ public class PathRegistry implements Runnable {
     private Collection<URL>  sourcePaths;
     private Collection<URL> binaryPath;
     private Collection<URL> unknownSourcePath;
-    private Set<String> sourceIds;
-    private Set<String> binaryIds;
 
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
@@ -292,12 +290,12 @@ public class PathRegistry implements Runnable {
             LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
         }
 
-        Iterable<? extends PathRegistryEvent.Change> changes;
+        Iterable<? extends PathRegistryEvent.Change> ch;
         synchronized (this) {
-            changes = new ArrayList<PathRegistryEvent.Change>(this.changes);
+            ch = new ArrayList<PathRegistryEvent.Change>(this.changes);
             this.changes.clear();
         }
-        fire(changes);
+        fire(ch);
         LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
     }
 
@@ -436,37 +434,19 @@ public class PathRegistry implements Runnable {
     }
 
     private Set<String> getSourceIds () {
-        synchronized (this) {
-            if (this.sourceIds != null) {
-                return this.sourceIds;
-            }
+        Set<String> sids = PathRecognizerRegistry.getDefault().getSourceIds();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Source Ids: " + sids); //NOI18N
         }
-        final Set<String> sIds = new HashSet<String>();
-        final Set<String> bIds = new HashSet<String>();
-        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
-        synchronized (this) {
-            if (this.sourceIds == null) {
-                this.sourceIds = sIds;
-            }
-            return this.sourceIds;
-        }
+        return sids;
     }
 
     private Set<String> getBinaryIds () {
-        synchronized (this) {
-            if (this.binaryIds != null) {
-                return this.binaryIds;
-            }
+        Set<String> bids = PathRecognizerRegistry.getDefault().getBinaryIds();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Binary Ids: " + bids); //NOI18N
         }
-        final Set<String> sIds = new HashSet<String>();
-        final Set<String> bIds = new HashSet<String>();
-        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
-        synchronized (this) {
-            if (this.binaryIds == null) {
-                this.binaryIds = bIds;
-            }
-            return this.binaryIds;
-        }
+        return bids;
     }
     
     private Set<ClassPath> getSourcePaths () {
@@ -587,6 +567,10 @@ public class PathRegistry implements Runnable {
             public void pathsAdded(GlobalPathRegistryEvent event) {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("pathsAdded: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
+                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_ADDED, pk, pathId, event.getChangedPaths());
                 }
@@ -595,12 +579,22 @@ public class PathRegistry implements Runnable {
             public void pathsRemoved(GlobalPathRegistryEvent event) {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("pathsRemoved: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
+                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_REMOVED, pk, pathId, event.getChangedPaths());
                 }
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("propertyChange: " + evt.getPropertyName() //NOI18N
+                            + ", old=" + evt.getOldValue() //NOI18N
+                            + ", new=" + evt.getNewValue()); //NOI18N
+                }
+
                 String propName = evt.getPropertyName();
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
                     resetCacheAndFire (EventKind.PATHS_CHANGED,null, null, Collections.singleton((ClassPath)evt.getSource()));
@@ -619,6 +613,9 @@ public class PathRegistry implements Runnable {
             }
 
             public void stateChanged (final ChangeEvent event) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("stateChanged: " + event); //NOI18N
+                }
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY,null, null);
             }
     }

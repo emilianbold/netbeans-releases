@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -54,11 +56,15 @@ import org.openide.util.LookupListener;
  */
 public class PathRecognizerRegistry implements LookupListener {
 
+    private static final Logger LOG = Logger.getLogger(PathRecognizerRegistry.class.getName());
+    
     private static PathRecognizerRegistry instance;
 
     private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
+
     private String[] mimeTypes;
-    private Map<String,Set<String>> idMap;
+    private Map<String,Set<String>> cachedIdMap;
+    private Set<String> cachedBinaryIds;
 
     private PathRecognizerRegistry() {
         pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
@@ -72,13 +78,16 @@ public class PathRecognizerRegistry implements LookupListener {
         return idMap.keySet();
     }
 
-    public Set<String> getBinaryIds () {
-        final Map<String,Set<String>> idMap = getIdMap();
-        final Set<String> result = new HashSet<String>();
-        for (Set<String> val : idMap.values()) {
-            result.addAll(val);
+    public synchronized Set<String> getBinaryIds () {
+        if (cachedBinaryIds == null) {
+            final Map<String,Set<String>> idMap = getIdMap();
+            final Set<String> result = new HashSet<String>();
+            for (Set<String> val : idMap.values()) {
+                result.addAll(val);
+            }
+            cachedBinaryIds = Collections.unmodifiableSet(result);
         }
-        return result;
+        return cachedBinaryIds;
     }
 
     public void collectIds (final Set<String> sourceIds, final Set<String> binaryIds) {
@@ -90,18 +99,21 @@ public class PathRecognizerRegistry implements LookupListener {
     }
     //where
     private synchronized Map<String,Set<String>> getIdMap () {
-        if (idMap == null) {
+        if (cachedIdMap == null) {
             final Map<String,Set<String>> map = new HashMap<String, Set<String>>();
+            LOG.fine("Reading path ids from PathRecognizers:"); //NOI18N
             for (PathRecognizer f : pathRecognizers.allInstances()) {
+                LOG.fine("PathRecognizer: " + f); //NOI18N
                 Set<String> sids = f.getSourcePathIds();
                 Set<String> bids = f.getBinaryPathIds();
                 for (String sid : sids) {
                     map.put(sid, new HashSet<String>(bids));    //Defensive copy
                 }
             }
-            idMap = map;
+            LOG.fine("-- Finished reading path ids from PathRecognizers."); //NOI18N
+            cachedIdMap = Collections.unmodifiableMap(map);
         }
-        return idMap;
+        return cachedIdMap;
     }
     
 
@@ -131,8 +143,10 @@ public class PathRecognizerRegistry implements LookupListener {
 
     public void resultChanged(LookupEvent ev) {
         synchronized (this) {
+            LOG.fine("resultChanged: reseting cached PathRecognizers"); //NOI18N
             mimeTypes = null;
-            idMap = null;
+            cachedIdMap = null;
+            cachedBinaryIds = null;
         }
     }
 
