@@ -65,11 +65,12 @@ public class NewCndClassPanel extends CndPanel {
     }
 
     @Override
-    protected void doStoreSettings() {
+    protected void doStoreSettings(WizardDescriptor settings) {
         String table = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsTable();
         table +="\nCLASSNAME=" + getGui().getClassName(); // NOI18N
         table +="\nDEFAULT_HEADER_EXT=" + getGui().getHeaderExt(); // NOI18N
         (CppSettings.findObject(CppSettings.class, true)).setReplaceableStringsTable(table);
+        settings.putProperty("headerFileName", getGui().getHeaderFileName()); // NOI18N
     }
     
     NewCndClassPanelGUI getGui() {
