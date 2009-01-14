@@ -131,6 +131,8 @@ public class EditorContextBridge {
                     // do nothing
                 }
             }
+        } else {
+            Disassembly.open();
         }
         return false;
     }

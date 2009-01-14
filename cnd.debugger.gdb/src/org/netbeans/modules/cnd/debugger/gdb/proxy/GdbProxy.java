@@ -530,6 +530,17 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /**
+     * Send "-break-delete number" to the debugger
+     * This command deletes the breakpoints
+     * whose number(s) are specified in the argument list.
+     *
+     * @param number - breakpoint's number
+     */
+    public void break_delete(String number) {
+        engine.sendCommand("-break-delete " + number); // NOI18N
+    }
+
+    /**
      * Send "-break-enable number" to the debugger
      * This command enables the breakpoint
      * whose number is specified by the argument

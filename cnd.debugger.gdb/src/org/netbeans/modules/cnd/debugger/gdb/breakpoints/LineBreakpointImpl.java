@@ -49,16 +49,45 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
 */
 public class LineBreakpointImpl extends BreakpointImpl {
+
+    private String lastPath;
     
     public LineBreakpointImpl(LineBreakpoint breakpoint, GdbDebugger debugger) {
         super(breakpoint, debugger);
+	lastPath = null;
         set();
     }
 
     @Override
     protected String getBreakpointCommand() {
         int lineNumber = getBreakpoint().getLineNumber();
-        String path = debugger.getBestPath(getBreakpoint().getPath());
-        return path + ':' + lineNumber;
+	String bppath = getBreakpoint().getPath();
+	String path = null;
+
+	if (lastPath == null && bppath.indexOf(' ') == -1) {
+	    path = bppath;
+	} else if (lastPath == null) {
+	    path = debugger.getBestPath(bppath);
+	} else if (lastPath.length() > 0) {
+	    if (lastPath.equals(bppath)) {
+		path = debugger.getBestPath(bppath);
+	    } else {
+		int pos = lastPath.lastIndexOf('/');
+		if (pos >= 0) {
+		    path = lastPath.substring(pos + 1);
+		}
+	    }
+	}
+        lastPath = path;
+	if (path == null) {
+	    return null;
+	} else {
+	    return path + ':' + lineNumber;
+	}
+    }
+
+    @Override
+    protected boolean alternateSourceRootAvailable() {
+	return err != null && err.startsWith("No source file named ") && lastPath != null && lastPath.length() > 0; // NOI18N
     }
 }

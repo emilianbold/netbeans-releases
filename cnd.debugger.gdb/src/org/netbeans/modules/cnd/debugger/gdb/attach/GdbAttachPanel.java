@@ -191,8 +191,8 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
                 row.add(tok.nextToken());
             }
             if (re == null || re.matcher(line).find()) {
-                if (procList.isCygwin()) {
-                    processModel.addRow(reorderCygwinRow(row));
+                if (procList.isWindowsPsFound()) {
+                    processModel.addRow(reorderWindowsProcLine(row));
                 } else {
                     processModel.addRow(combineArgs(row));
                 }
@@ -200,7 +200,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         }
     }
     
-    private Vector<String> reorderCygwinRow(Vector<String> oldrow) {
+    private Vector<String> reorderWindowsProcLine(Vector<String> oldrow) {
         StringBuilder tmp = new StringBuilder();
         Vector<String> nurow = new Vector<String>(oldrow.size() - 2);
         String status = oldrow.get(0);

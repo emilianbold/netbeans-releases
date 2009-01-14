@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -66,7 +67,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected final GdbDebugger debugger;
     private final GdbBreakpoint breakpoint;
     private String state = BPSTATE_UNVALIDATED;
-    private String err = null;
+    protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
@@ -75,13 +76,38 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.breakpoint = breakpoint;
     }
 
-    public void completeValidation(Map<String, String> map) {
+    public final void completeValidation(Map<String, String> map) {
         if (getState().equals(BPSTATE_DELETION_PENDING)) {
             return;
         }
         
         String number = (map != null) ? map.get("number") : null; // NOI18N
         if (number != null) {
+            String fullname = map.get("fullname"); // NOI18N
+            
+            // Note: The following test is appropriate only for line breakpoints...
+            if (this instanceof LineBreakpointImpl && fullname != null) {
+                // We set a valid breakpoint, but its not in the exact source file we meant it to
+                // be. This can happen when a source path has embedded spaces and we shorten the
+                // path to a possiby non-unique relative path and another project has a similar
+                // relative path. See IZ #151761.
+                String path = getBreakpoint().getPath();
+                if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.replace("\\", "/").toLowerCase(); // NOI18N
+                    fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
+                } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.toLowerCase();
+                    fullname = fullname.toLowerCase();
+                }
+                if (!path.equals(fullname)) {
+                    debugger.getGdbProxy().break_delete(number);
+                    breakpoint.setInvalid(err);
+                    setState(BPSTATE_VALIDATION_FAILED);
+                    return;
+                }
+            }
             breakpointNumber = Integer.parseInt(number);
             setState(BPSTATE_VALIDATED);
             if (!breakpoint.isEnabled()) {
@@ -105,9 +131,18 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
         } else {
-            breakpoint.setInvalid(err);
-            setState(BPSTATE_VALIDATION_FAILED);
+	    if (alternateSourceRootAvailable()) {
+		setState(BPSTATE_UNVALIDATED);
+		setRequests();
+	    } else {
+		breakpoint.setInvalid(err);
+		setState(BPSTATE_VALIDATION_FAILED);
+	    }
         }
+    }
+
+    protected boolean alternateSourceRootAvailable() {
+	return false;
     }
 
     public void addError(String err) {
@@ -163,11 +198,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 requestDelete();
             }
             setState(BPSTATE_VALIDATION_PENDING);
-            int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
-                    getBreakpoint().isTemporary(),
-                    getBreakpointCommand(),
-                    getBreakpoint().getThreadID());
-            debugger.addPendingBreakpoint(token, this);
+	    String bpcmd = getBreakpointCommand();
+	    if (bpcmd != null) {
+		int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
+			getBreakpoint().isTemporary(), bpcmd, getBreakpoint().getThreadID());
+		debugger.addPendingBreakpoint(token, this);
+	    } else {
+		breakpoint.setInvalid(err);
+		setState(BPSTATE_VALIDATION_FAILED);
+	    }
 	} else {
             if (breakpointNumber > 0) { // bnum < 0 for breakpoints from other projects...
                 if (st.equals(BPSTATE_DELETION_PENDING)) {

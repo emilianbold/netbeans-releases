@@ -58,6 +58,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -71,8 +72,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -291,7 +290,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (pae.getID() == DEBUG_ATTACH) {
                 String pgm = null;
                 boolean isSharedLibrary = false;
-                final String path = getFullPath(runDirectory, pae.getExecutable());
+                final String path = getFullPath(baseDir, pae.getExecutable());
 
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
@@ -322,6 +321,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             finish(false);
                         }
                     });
+		    return; // since we've failed, a return here keeps us from sending more gdb commands
                 } else {
                     if (isSharedLibrary) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
@@ -357,6 +357,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                                         finish(false);
                                     }
                                 });
+                                return; // since we've failed, a return here keeps us from sending more gdb commands
                             }
                         } else {
                             // 3) send an "info files" command to gdb. Its response should say what symbols
@@ -455,6 +456,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         } catch (Exception ex) {
+	    log.warning("GdbDebugger.startDebugger: Exception during start [" + ex.getClass().getName() + "]");
             if (startupTimer != null) {
                 startupTimer.cancel();
             }
@@ -465,9 +467,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (msg == null || msg.length() == 0) {
                 msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnSpecifiedStartError");
             }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-            setExited();
-            finish(false);
+	    final String fmsg = msg;
+	    SwingUtilities.invokeLater(new Runnable() {
+
+		public void run() {
+		    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(fmsg));
+		    setExited();
+		    finish(false);
+		}
+	    });
         }
     }
 
@@ -511,9 +519,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CppUtils.getMSysBase();
+            String msysBase = CompilerSetManager.getMSysBase();
             if (msysBase != null && msysBase.length() > 0) {
-                csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N;
+                csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
             }
         }
 
@@ -524,14 +532,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return sig;
     }
 
-    // TODO: use IPEUtils
-    private String getFullPath(String rundir, String path) {
+    /**
+     * Get the full path name of the executable.
+     *
+     * Note: A comment suggested we should use IpeUtils.toAbsolutePath(). This actualy is an
+     * error because gdb <b>requires</b> forward slashes and toAbsolutePath uses File.separator.
+     * Since it can be called in non-gdb situations, its probably best not to make it always
+     * use forward slashes, either.
+     *
+     * @param base The base directory to prepend if path is relative
+     * @param path Either an absolute path or relative path component
+     * @return An absolute path
+     */
+    private String getFullPath(String base, String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
         } else if (path.charAt(0) == '/') {
             return path;
         } else {
-            return rundir + '/' + path;
+            return base + '/' + path; // gdb requires forward slashes!
         }
     }
 
@@ -703,20 +722,40 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                String ep = line.substring(15, line.length() - 3);
-                if (ep.equals(exepath)) { // NOI18N
-                    return true;
-                } else if (ep.startsWith("/cygdrive/") && ep.charAt(11) == '/') { // NOI18N
-                    // TODO: use win2UnixPath method or smth like IPEUtils
-                    String lc_exepath = exepath.toLowerCase().replace('\\', '/');
-                    ep = ep.substring(10, 11).toLowerCase() + ':' + ep.substring(11).toLowerCase();
-                    if (ep.equals(lc_exepath) || ep.equals(lc_exepath + ".exe")) { // NOI18N
-                        return true;
-                    }
-                }
+                return compareExePaths(line.substring(15, line.length() - 3), exepath);
             }
         }
         return false;
+    }
+
+    /**
+     * Compare the executable path from gdb (via the <i>info files</i> command to the executable path
+     * from the project data. This comparison is <b>very</b> system dependent. For MacOS, all compares
+     * are done in lower case. For Unix, they're done as-is. The most difficult platform is Windows,
+     * where, depending on the gdb provider, I can see a Cygwin name, either forward or backward slashes,
+     * either single or double backslashes (MinGW). The ".exe" may also be missing in some cases.
+     *
+     * @param exe1 The first path
+     * @param exe2 The second path
+     * @return True if exe1 and exe2 resolve to the same executable
+     */
+    private boolean compareExePaths(String exe1, String exe2) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            return normalizeWindowsExe(exe1).equals(normalizeWindowsExe(exe2));
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            return exe1.toLowerCase().equals(exe2.toLowerCase());
+        } else {
+            return exe1.equals(exe2);
+        }
+    }
+
+    private String normalizeWindowsExe(String exe) {
+        String n_exe = winpath(exe).replace("\\\\", "/").replace("\\", "/"); // NOI18N
+        if (n_exe.endsWith(".exe")) { // NOI18N
+            return n_exe.substring(0, n_exe.length() - 4);
+        } else {
+            return n_exe;
+        }
     }
 
     /**
@@ -1030,24 +1069,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.append(msg.substring(6));
                 cb.done();
             }
-        } else if (msg.startsWith("^done,shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-            String info = msg.substring(6);
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.append(info);
-                cb.done();
-                if (token == shareToken) {
-                    shareTab = createShareTab(info);
-                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
-                        ProjectActionEvent pae;
-                        pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                        int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                            gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N // FIXME (broken on Mac)
-                        }
-                    }*/
-                }
-            }
+// Should now work in the last if-branch
+//        } else if (msg.startsWith("^done,shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
+//            String info = msg.substring(6);
+//            cb = gdb.getCommandBuffer(itok);
+//            if (cb != null) {
+//                cb.append(info);
+//                cb.done();
+//                if (token == shareToken) {
+//                    shareTab = createShareTab(info);
+//                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
+//                        ProjectActionEvent pae;
+//                        pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+//                        int conType = pae.getProfile().getConsoleType().getValue();
+//                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+//                            gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N // FIXME (broken on Mac)
+//                        }
+//                    }*/
+//                }
+//            }
         } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
             disassembly.update(msg);
         } else if (msg.startsWith(Disassembly.REGISTER_NAMES_HEADER)) {
@@ -1129,7 +1169,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
                 BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
-                if (platform == PlatformTypes.PLATFORM_MACOSX && breakpoint != null) {
+                if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
                 }
@@ -1708,10 +1748,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     map = GdbUtils.createMapFromString(frame);
                     String fullname = map.get("fullname"); // NOI18N
                     if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                        if (fullname.startsWith("/usr")) { // NOI18N
-                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                        if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
+                            fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
                         } else {
-                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
+                            fullname = CompilerSetManager.getCygwinBase() + fullname;
                         }
                     }
                     String line = map.get("line"); // NOI18N
@@ -1941,7 +1981,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(token);
                 impl.completeValidation((Map<String, String>) o);
-                if (o != null && impl.getBreakpoint().isEnabled()) {
+                if (o != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
                     Map<String, String> map = (Map) o;
                     String fullname = map.get("fullname"); // NOI18N
                     String file = map.get("file"); // NOI18N
@@ -1989,40 +2029,68 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
-        ConfigurationDescriptorProvider cdp =
-                (ConfigurationDescriptorProvider) project.getLookup().
-                lookup(ConfigurationDescriptorProvider.class);
-        if (cdp != null) {
-            MakeConfigurationDescriptor mcd =
-                    (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+	ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+	MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+
+	if (mcd != null) {
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
-            MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String runDirectory = conf.getProfile().getRunDirectory();
-            String path = IpeUtils.toAbsolutePath(runDirectory, ma.getOutput());
-            if (isExecutableOrSharedLibrary(conf, path)) {
-                ProjectActionEvent pae = new ProjectActionEvent(
-                        project,
-                        DEBUG_ATTACH,
-                        pinfo.getDisplayName(),
-                        path,
-                        conf,
-                        null,
-                        false);
+	    String path = getExecutableOrSharedLibrary(mcd, conf);
+
+	    if (path != null) {
+		ProjectActionEvent pae = new ProjectActionEvent(project, DEBUG_ATTACH, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid)}));
                 if (es == null) {
                    throw new DebuggerStartException(new InternalError());
                 }
             } else {
-                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                    }
-                });
-            }
+		MakeArtifact ma = new MakeArtifact(mcd, conf);
+		String buildResult = ma.getOutput();
+		if (buildResult != null && buildResult.length() > 0) {
+		    final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
+		    SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+			    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+			}
+		    });
+		}
+	    }
         }
     }
+
+    private static String getExecutableOrSharedLibrary(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+        MakeArtifact ma = new MakeArtifact(mcd, conf);
+        String buildResult = ma.getOutput().replace("\\", "/"); // NOI18N
+
+        if (buildResult == null || buildResult.length() == 0) {
+            buildResult = getBuildResult();
+            if (buildResult == null) {
+                return null;
+            }
+        }
+        if (buildResult.charAt(0) == '/') {
+            if (isExecutableOrSharedLibrary(conf, buildResult)) {
+                return buildResult;
+            } else {
+                return null;
+            }
+        } else {
+            List<String> paths = new ArrayList<String>();
+            paths.add(conf.getBaseDir());
+            paths.addAll(mcd.getSourceRoots());
+
+            for (String dir : paths) {
+                dir = dir.replace("\\", "/");  // NOI18N
+                String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
+                if (isExecutableOrSharedLibrary(conf, path)) {
+                    return path;
+                }
+            }
+
+        }
+        return null;
+    }
+
 
     /**
      * Use various heuristics to verify that either the project produces an executable
@@ -2064,6 +2132,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     /**
+     * Returning null because there is no MakeProject API allowing me to handle this well. See IZ#153482
+     * for an API change request.
+     *
+     * @return Always currently null
+     */
+    private static String getBuildResult() {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class, "ERR_NoBuildResult"));
+        DialogDisplayer.getDefault().notify(nd);
+        return null;
+    }
+
+    /**
      *  Called when GdbProxy receives the results of a -stack-list-frames command.
      */
     private void stackUpdate(List<String> stack) {
@@ -2089,10 +2169,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
                 if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                    if (fullname.startsWith("/usr")) { // NOI18N
-                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                    if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
+                        fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
                     } else {
-                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
+                        fullname = CompilerSetManager.getCygwinBase() + fullname;
                     }
                 }
 
@@ -2254,6 +2334,31 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    // TODO: unify with requestWhatis and requestValueEx
+    public String requestSymbolTypeFromName(String type) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+
+        if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
+            CommandBuffer cb = new CommandBuffer(gdb);
+            gdb.symbol_type(cb, type);
+            String info = cb.waitForCompletion();
+            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
+                if (cb.getState() == CommandBuffer.STATE_ERROR) {
+                    log.fine("GD.requestSymbolTypeFromName Error[" + cb + "]"); // NOI18N
+                    return "";
+                } else {
+                    log.fine("GD.requestSymbolTypeFromName Failure[" + cb + "]. Returning original type"); // NOI18N
+                    return "";
+                }
+            } else {
+                log.fine("GD.requestSymbolTypeFromName[" + cb + "]: " + type + " --> [" + info + "]");
+                return info.substring(7, info.length() - 2);
+            }
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Suspend all breakpoints. This is used to suspend breakpoints during Watch
      * updates so functions called don't stop.
@@ -2399,9 +2504,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public String getBestPath(String path) {
         path = pathMap.getRemotePath(path);
-        if (path.indexOf(' ') == -1 && platform != PlatformTypes.PLATFORM_MACOSX) {
-            return path;
-        } else if (path.startsWith(baseDir + '/')) {
+        if (path.startsWith(baseDir + '/')) {
             return path.substring(baseDir.length() + 1);
         } else {
             int pos = path.lastIndexOf('/');

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.NbBundle;
@@ -79,7 +80,7 @@ public class TypeInfo {
         if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
             rawInfo = debugger.requestSymbolType(var.getType());
         } else {
-            rawInfo = debugger.requestSymbolType(var.getFullName(false));
+            rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
         }
         log.fine("TI.getTypeInfo[rawInfo]: " + var.getType() + " ==> [" + rawInfo + "]");
         
@@ -131,9 +132,15 @@ public class TypeInfo {
     }
     
     public String getResolvedType(AbstractVariable var) {
+        if (var instanceof GdbWatchVariable) {
+            // Reset type info because a watch can change its type from stop to stop
+            resolvedType = null;
+            rawInfo = null;
+            map = null;
+        }
         if (resolvedType == null) {
             if (rawInfo == null) {
-                rawInfo = debugger.requestSymbolType(var.getFullName(false));
+                rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
             }
             if (rawInfo != null) {
                 rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
@@ -158,7 +165,7 @@ public class TypeInfo {
     
     public String getDetailedType(AbstractVariable var) {
         if (rawInfo == null) {
-            rawInfo = debugger.requestSymbolType(var.getFullName(false));
+            rawInfo = debugger.requestSymbolTypeFromName(var.getFullName(false));
         }
         return rawInfo;
     }

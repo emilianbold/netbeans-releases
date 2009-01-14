@@ -378,6 +378,10 @@ public final class ToolchainManager {
         } catch (Exception ex) {
             if (TRACE) ex.printStackTrace();
         }
+        if (base == null && key.startsWith("hklm\\")) { // NOI18N
+            // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
+            base = readRegestry("hkcu\\" + key.substring(5), pattern);
+        }
         return base;
     }
 
