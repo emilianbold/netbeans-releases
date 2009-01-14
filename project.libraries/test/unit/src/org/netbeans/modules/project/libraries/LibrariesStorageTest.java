@@ -174,7 +174,7 @@ public class LibrariesStorageTest extends NbTestCase {
         }
     }
     
-    private static void registerLibraryTypeProvider () throws Exception {
+    static void registerLibraryTypeProvider () throws Exception {
         StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         while (tk.hasMoreElements()) {
@@ -192,7 +192,7 @@ public class LibrariesStorageTest extends NbTestCase {
         }
     }
     
-    private static void createLibraryDefinition (final FileObject storageFolder, final String libName) throws IOException {
+    static void createLibraryDefinition (final FileObject storageFolder, final String libName) throws IOException {
         storageFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run () throws IOException {
                 FileObject defFile = storageFolder.createData(libName,"xml");
@@ -222,7 +222,7 @@ public class LibrariesStorageTest extends NbTestCase {
         });
     }
     
-    private static class TestListener implements PropertyChangeListener {
+    static class TestListener implements PropertyChangeListener {
         
         private List<String> eventNames = new ArrayList<String>();
         
@@ -241,7 +241,7 @@ public class LibrariesStorageTest extends NbTestCase {
     }
     
     
-    private static class TestEntityCatalog extends EntityCatalog {        
+    static class TestEntityCatalog extends EntityCatalog {        
         
         private static final String DTD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!ELEMENT library (name, type, description?, localizing-bundle?, volume*) >\n" +
