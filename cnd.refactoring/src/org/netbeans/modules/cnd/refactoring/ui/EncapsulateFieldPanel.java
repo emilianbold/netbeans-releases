@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -600,19 +601,19 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
-//        List rows = model.getDataVector();
-//        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
-//            List row = (List) rowIt.next();
-//            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
-//            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
-//            if (getterName != null || setterName != null) {
-//                CsmField mi = (CsmField) row.get(0);
-//                result.add(new EncapsulateFieldInfo(
-//                        (TreePathHandle) mi.getElementHandle(),
-//                        "".equals(getterName)?null:getterName, // NOI18N
-//                        "".equals(setterName)?null:setterName)); // NOI18N
-//            }
-//        }
+        List rows = model.getDataVector();
+        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
+            List row = (List) rowIt.next();
+            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
+            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
+            if (getterName != null || setterName != null) {
+                CsmField field = (CsmField) row.get(0);
+                result.add(new EncapsulateFieldInfo(
+                        field,
+                        "".equals(getterName)?null:getterName, // NOI18N
+                        "".equals(setterName)?null:setterName)); // NOI18N
+            }
+        }
 
         return result;
     }

@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.refactoring.codegen;
+package org.netbeans.modules.cnd.refactoring.support;
 
 import java.util.Collection;
 import java.util.List;
@@ -303,6 +303,7 @@ public class GeneratorUtils {
         List<CsmMethod> candidates = methods.get(sb.toString());
         if (candidates != null) {
             for (CsmMethod candidate : candidates) {
+                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;
@@ -344,6 +345,7 @@ public class GeneratorUtils {
         List<CsmMethod> candidates = methods.get(sb.toString());
         if (candidates != null) {
             for (CsmMethod candidate : candidates) {
+                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;
@@ -516,7 +518,7 @@ public class GeneratorUtils {
 //    }
 //
 
-    static DialogDescriptor createDialogDescriptor(JComponent content, String label) {
+    public static DialogDescriptor createDialogDescriptor(JComponent content, String label) {
         JButton[] buttons = new JButton[2];
         buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button"));
         buttons[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GeneratorUtils.class, "A11Y_Generate"));
