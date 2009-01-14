@@ -53,8 +53,10 @@ import java.util.Map;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
@@ -91,7 +93,13 @@ public class GetterSetterGenerator implements CodeGenerator {
 //            Elements elements = controller.getElements();
             CsmClass typeElement = path.getEnclosingClass();
             if (typeElement == null) {
-                return ret;
+                CsmFunction fun = path.getEnclosingFunction();
+                if (CsmKindUtilities.isMethod(fun)) {
+                    typeElement = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
+                }
+                if (typeElement == null) {
+                    return ret;
+                }
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
             Map<String, List<CsmMethod>> methods = new HashMap<String, List<CsmMethod>>();
