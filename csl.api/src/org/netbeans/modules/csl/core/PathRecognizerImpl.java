@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.core;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -99,6 +100,8 @@ public final class PathRecognizerImpl extends PathRecognizer {
     // Private implementation
     // ------------------------------------------------------------------------
 
+    private static final Logger LOG = Logger.getLogger(PathRecognizerImpl.class.getName());
+
     private volatile Set<String> sourcePathIds = null;
     private volatile Set<String> binaryPathIds = null;
     private volatile Set<String> mimeTypes = null;
@@ -119,11 +122,13 @@ public final class PathRecognizerImpl extends PathRecognizer {
         for(Language l : LanguageRegistry.getInstance()) {
             Set<String> spids = l.getSourcePathIds();
             if (spids != null && !spids.isEmpty()) {
+                LOG.fine("Language: " + l.getMimeType() + " adds spids: " + spids); //NOI18N
                 collectedSpids.addAll(spids);
             }
 
             Set<String> bpids = l.getBinaryPathIds();
             if (bpids != null && !bpids.isEmpty()) {
+                LOG.fine("Language: " + l.getMimeType() + " adds bpids: " + bpids); //NOI18N
                 collectedBpids.addAll(bpids);
             }
 

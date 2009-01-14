@@ -73,7 +73,7 @@ public class TypeAndSymbolProvider {
     }
 
     public String getDisplayName() {
-        return LanguageRegistry.getInstance().getLanguagesDisplayName();
+        return GsfTaskProvider.getAllLanguageNames();
     }
 
     public void cancel() {
@@ -88,8 +88,6 @@ public class TypeAndSymbolProvider {
             cachedRootsProjectRef = null;
         }
     }
-
-
 
     public static final class TypeProviderImpl extends TypeAndSymbolProvider implements TypeProvider {
         public TypeProviderImpl() {

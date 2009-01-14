@@ -161,6 +161,7 @@ import org.netbeans.modules.csl.core.GsfEditorKitFactory;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfReformatTaskFactory;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.editor.codetemplates.CslCorePackageAccessor;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.hints.infrastructure.HintsSettings;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
@@ -259,7 +260,6 @@ public abstract class CslTestBase extends NbTestCase {
             fail("If you don't implement getPreferredLanguage(), you must override initializeRegistry!");
             return;
         }
-        LanguageRegistry registry = LanguageRegistry.getInstance();
         if (!LanguageRegistry.getInstance().isSupported(getPreferredMimeType())) {
             List<Action> actions = Collections.emptyList();
             org.netbeans.modules.csl.core.Language dl = new org.netbeans.modules.csl.core.Language(
@@ -271,7 +271,7 @@ public abstract class CslTestBase extends NbTestCase {
                     defaultLanguage.isUsingCustomEditorKit());
             List<org.netbeans.modules.csl.core.Language> languages = new ArrayList<org.netbeans.modules.csl.core.Language>();
             languages.add(dl);
-            registry.addLanguages(languages);
+            CslCorePackageAccessor.get().languageRegistryAddLanguages(languages);
         }
     }
 
@@ -2321,7 +2321,8 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     public void checkCompletion(final String file, final String caretLine, final boolean includeModifiers) throws Exception {
-        initializeClassPaths();
+// XXX: remove
+//        initializeClassPaths();
 
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
@@ -2466,7 +2467,8 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     public void checkCompletionDocumentation(final String file, final String caretLine, final boolean includeModifiers, final String itemPrefix) throws Exception {
-        initializeClassPaths();
+// XXX: remove
+//        initializeClassPaths();
 
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
@@ -2744,17 +2746,19 @@ public abstract class CslTestBase extends NbTestCase {
     protected void checkCall(ParserResult info, int caretOffset, String param, boolean expectSuccess) {
     }
 
-    protected void initializeClassPaths() {
-        initializeRegistry();
-        // Force classpath initialization
-        LanguageRegistry.getInstance().getLibraryUrls();
-        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
-// XXX: parsingapi
-//        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-    }
+// XXX: remove
+//    protected void initializeClassPaths() {
+//        initializeRegistry();
+//        // Force classpath initialization
+//        LanguageRegistry.getInstance().getLibraryUrls();
+//        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+//// XXX: parsingapi
+////        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
+//    }
     
     public void checkComputeMethodCall(String file, final String caretLine, final String param, final boolean expectSuccess) throws Exception {
-        initializeClassPaths();
+// XXX: remove
+//        initializeClassPaths();
         
         final QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
