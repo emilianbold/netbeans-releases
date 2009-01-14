@@ -31,20 +31,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.common.IRubyWarnings.ID;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
-import org.netbeans.modules.gsf.api.Rule;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParser.RubyError;
@@ -57,6 +56,7 @@ import org.netbeans.modules.ruby.RubyParser.RubyError;
  * @author Tor Norbye
  */
 public class RubyHintsProvider implements HintsProvider {
+    
     private boolean cancelled;
     
     public RubyHintsProvider() {
@@ -73,7 +73,7 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
 
-        List<Error> errors = parserResult.getDiagnostics();
+        List<? extends Error> errors = parserResult.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return;
         }
@@ -222,7 +222,7 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
         
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         int astOffset = AstUtilities.getAstOffset(info, caretOffset);
 
         AstPath path = new AstPath(root, astOffset);
@@ -334,4 +334,5 @@ public class RubyHintsProvider implements HintsProvider {
     private boolean isCancelled() {
         return cancelled;
     }
+
 }

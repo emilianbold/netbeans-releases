@@ -43,10 +43,12 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstPath;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HTMLKit;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -107,6 +109,19 @@ public class HtmlElementHandle implements ElementHandle {
     public AstNode node() {
         return node;
     }
-    
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+      ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
+        if (object instanceof HtmlElementHandle) {
+            AstNode n = ((HtmlElementHandle) object).node();
+            return new OffsetRange(
+                    result.getSnapshot().getOriginalOffset(n.startOffset()),
+                    result.getSnapshot().getOriginalOffset(n.endOffset()));
+
+        } else {
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
+        }
+    }
     
 }

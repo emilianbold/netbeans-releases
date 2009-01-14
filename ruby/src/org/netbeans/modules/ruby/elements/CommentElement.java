@@ -43,9 +43,8 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
 import java.util.Set;
-
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 
 public class CommentElement extends RubyElement {
 

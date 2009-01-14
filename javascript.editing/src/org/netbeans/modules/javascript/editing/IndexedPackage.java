@@ -42,8 +42,9 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -51,8 +52,8 @@ import org.netbeans.modules.gsf.api.Modifier;
  */
 public class IndexedPackage extends IndexedElement {
     
-    IndexedPackage(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
+    IndexedPackage(String fqn, String name, String in, JsIndex index, IndexResult indexResult, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, indexResult, attributes, flags, kind);
     }
     
     @Override

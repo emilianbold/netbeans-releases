@@ -40,20 +40,20 @@
  */
 package org.netbeans.modules.ruby.elements;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
 import javax.swing.text.Document;
-
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
-
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * A program element coming from the persistent index.
@@ -75,7 +75,7 @@ public abstract class IndexedElement extends RubyElement {
     /** This element is deliberately not documented (rdoc :nodoc:) */
     public static final int NODOC = 1 << 5;
     
-    protected String fileUrl;
+    protected final FileObject file;
     protected final String clz;
     protected final String fqn;
     protected final String require;
@@ -90,11 +90,11 @@ public abstract class IndexedElement extends RubyElement {
     private final FileObject context;
     protected RubyType type;
 
-    protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
+    protected IndexedElement(RubyIndex index, FileObject file, String fqn,
             String clz, String require, String attributes,
             int flags, FileObject context, RubyType type) {
         this.index = index;
-        this.fileUrl = fileUrl;
+        this.file = file;
         this.fqn = fqn;
         this.require = require;
         this.attributes = attributes;
@@ -105,17 +105,19 @@ public abstract class IndexedElement extends RubyElement {
         this.type = type;
     }
 
-    protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
+    protected IndexedElement(RubyIndex index, IndexResult result, String fqn,
+            String clz, String require, String attributes,
+            int flags, FileObject context, RubyType type) {
+        this(index, result.getFile(), fqn, clz, require, attributes, flags, context, type);
+    }
+
+    protected IndexedElement(RubyIndex index, IndexResult result, String fqn,
             String clz, String require, String attributes,
             int flags, FileObject context) {
-        this(index, fileUrl, fqn, clz, require, attributes, flags, context, null);
+        this(index, result, fqn, clz, require, attributes, flags, context, null);
     }
 
     public abstract String getSignature();
-
-    public final String getFileUrl() {
-        return fileUrl;
-    }
 
     public final String getRequire() {
         return require;
@@ -131,7 +133,7 @@ public abstract class IndexedElement extends RubyElement {
 
     @Override
     public String toString() {
-        return getSignature() + ":" + getFileUrl();
+        return getSignature();
     }
 
     public final String getClz() {
@@ -145,10 +147,6 @@ public abstract class IndexedElement extends RubyElement {
     @Override
     public String getIn() {
         return getClz();
-    }
-
-    public String getFilenameUrl() {
-        return fileUrl;
     }
 
     public Document getDocument() {
@@ -165,24 +163,25 @@ public abstract class IndexedElement extends RubyElement {
         return document;
     }
 
-    public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
-    }
-
+//    public ParserFile getFile() {
+//        boolean platform = false; // XXX FIND OUT WHAT IT IS!
+//
+//        return new DefaultParserFile(getFileObject(), null, platform);
+//    }
+    
     @Override
     public FileObject getFileObject() {
-        if ((fileObject == null) && (fileUrl != null)) {
-            fileObject = RubyIndex.getFileObject(fileUrl, context);
+        return file;
+    }
 
-            if (fileObject == null) {
-                // Don't try again
-                fileUrl = null;
-            }
+    public String getFileUrl() {
+        File f = FileUtil.toFile(file);
+        try {
+            return f == null ? null : f.toURI().toURL().toExternalForm();
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
-
-        return fileObject;
     }
 
     @Override

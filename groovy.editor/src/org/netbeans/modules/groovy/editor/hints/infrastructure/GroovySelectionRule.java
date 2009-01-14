@@ -40,8 +40,8 @@
 package org.netbeans.modules.groovy.editor.hints.infrastructure;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.SelectionRule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.SelectionRule;
 
 /**
  * Represents a rule to be run on text selection

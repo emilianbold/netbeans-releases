@@ -40,7 +40,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
 import org.netbeans.modules.ruby.lexer.Call;
 
