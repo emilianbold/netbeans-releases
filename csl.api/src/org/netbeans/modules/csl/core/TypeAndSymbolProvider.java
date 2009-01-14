@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
@@ -159,25 +160,47 @@ public class TypeAndSymbolProvider {
     protected final Set<? extends IndexSearcher.Descriptor> compute(String text, SearchType searchType, Project project) {
         resume();
 
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Looking for '" + text + "', searchType=" + searchType + ", project=" + project); //NOI18N
+        }
+        
         Set<IndexSearcher.Descriptor> results = new HashSet<IndexSearcher.Descriptor>();
         for(Language language : LanguageRegistry.getInstance()) {
             if (isCancelled()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Search '" + text + "', searchType=" + searchType + ", project=" + project + " cancelled"); //NOI18N
+                }
                 return null;
             }
             
             IndexSearcher searcher = language.getIndexSearcher();
             if (searcher == null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("No IndexSearcher for " + language); //NOI18N
+                }
                 continue;
             }
 
             Set<? extends IndexSearcher.Descriptor> languageResults;
             Collection<FileObject> searchRoots = getRoots(project, language);
+            if (LOG.isLoggable(Level.FINE)) {
+                if (typeProvider) {
+                    LOG.fine("Querying " + searcher + " for types in " + searchRoots); //NOI18N
+                } else {
+                    LOG.fine("Querying " + searcher + " for symbols in " + searchRoots); //NOI18N
+                }
+            }
+
             if (typeProvider) {
                 languageResults = searcher.getTypes(searchRoots, text, t2t(searchType), HELPER);
             } else {
                 languageResults = searcher.getSymbols(searchRoots, text, t2t(searchType), HELPER);
             }
 
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(searcher + " found " + languageResults); //NOI18N
+            }
+            
             if (languageResults != null) {
                 results.addAll(languageResults);
             }
