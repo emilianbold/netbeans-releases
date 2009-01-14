@@ -294,14 +294,10 @@ public class GeneratorUtils {
 //    }
 //
     public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        CharSequence name = field.getName();
-        assert name.length() > 0;
-        CsmType type = field.getType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
-//        Types types = info.getTypes();
-        List<CsmMethod> candidates = methods.get(sb.toString());
+        String getter = computeGetterName(field);
+        List<CsmMethod> candidates = methods.get(getter);
         if (candidates != null) {
+            CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
                 @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
@@ -311,6 +307,55 @@ public class GeneratorUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Removes the class field prefix from  the identifer of a field.
+     * For example, if the class field prefix is "m_", the identifier "m_name"
+     * is stripped to become "name". Or identifier is "pValue" is stipped to become "Value"
+     * @param identifierString The identifer to strip.
+     * @return The stripped identifier.
+     */
+    private static String stripFieldPrefix(String identifierString) {
+        String stripped = identifierString;
+        // remove usual C++ prefixes
+        if (identifierString.startsWith("m_")) { // NOI18N
+            stripped = identifierString.substring(2);
+        } else if (identifierString.length() > 1) {
+            if (identifierString.charAt(0) == 'p' && Character.isUpperCase(identifierString.charAt(1))) {
+                // this is like pointer "pValue"
+                stripped = identifierString.substring(1);
+            }
+        }
+        return stripped;
+    }
+
+    private static StringBuilder getCapitalizedName(CsmField field) {
+        StringBuilder name = new StringBuilder(stripFieldPrefix(field.getName().toString()));
+        while (name.length() > 1 && name.charAt(0) == '_') //NOI18N
+        {
+            name.deleteCharAt(0);
+        }
+        if (name.length() > 0) {
+            name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        }
+
+        name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        return name;
+    }
+
+    public static String computeSetterName(CsmField field) {
+        StringBuilder name = getCapitalizedName(field);
+
+        name.insert(0, "set"); //NOI18N
+        return name.toString();
+    }
+
+    public static String computeGetterName(CsmField field) {
+        StringBuilder name = getCapitalizedName(field);
+        CsmType type = field.getType();
+        name.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        return name.toString();
     }
 
     private static enum TypeKind {
@@ -336,14 +381,10 @@ public class GeneratorUtils {
     }
 
     public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        CharSequence name = field.getName();
-        assert name.length() > 0;
-        CsmType type = field.getType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, "set"); //NOI18N
-//        Types types = info.getTypes();
-        List<CsmMethod> candidates = methods.get(sb.toString());
+        String setter = computeSetterName(field);
+        List<CsmMethod> candidates = methods.get(setter);
         if (candidates != null) {
+            CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
                 @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
@@ -543,26 +584,6 @@ public class GeneratorUtils {
 //    }
 //
 
-    public static StringBuilder getCapitalizedName(CharSequence cs) {
-        StringBuilder sb = new StringBuilder(cs);
-        // remove usual C++ prefixes
-        if (sb.toString().startsWith("m_")) { // NOI18N
-            sb.delete(0, 1);
-        } else if (sb.length() > 1) {
-            if (sb.charAt(0) == 'p' && Character.isUpperCase(sb.charAt(1))) {
-                // this is like pointer "pValue"
-                sb.deleteCharAt(0);
-            }
-        }
-        while (sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
-        {
-            sb.deleteCharAt(0);
-        }
-        if (sb.length() > 0) {
-            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        }
-        return sb;
-    }
 //
 //    private static class ClassMemberComparator {
 //

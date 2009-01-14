@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.netbeans.modules.cnd.refactoring.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -176,8 +177,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         for (CsmField field : initFields(selectedObject)) {
             boolean createGetter = field.equals(selectedResolvedObject);
             boolean createSetter = createGetter && !isConstant(field);
-            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+            String getName = GeneratorUtils.computeGetterName(field);
+            String setName = GeneratorUtils.computeSetterName(field);
             model.addRow(new Object[] {
                 MemberInfo.create(field),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,
@@ -745,8 +746,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         private static AccessorInfo create(CsmField field, CsmMethod method, String proposedName, boolean isGetter) {
             AccessorInfo ai = new AccessorInfo();
             ai.name = ai.defaultName = proposedName;
-            ai.accessor = ai.defaultAccessor = method != null ? MemberInfo.create(method) : null; 
-            ai.accessorToolTip = ai.defaultAccessorToolTip = method != null
+            ai.accessor = ai.defaultAccessor = (method != null) ? MemberInfo.create(method) : null;
+            ai.accessorToolTip = ai.defaultAccessorToolTip = (method != null)
                     ? NbBundle.getMessage(
                             EncapsulateFieldPanel.class,
                             isGetter ? "MSG_EncapsulateFieldDeclaredGetter" : "MSG_EncapsulateFieldDeclaredSetter", // NOI18N
