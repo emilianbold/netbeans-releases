@@ -285,16 +285,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     return false;
                 }
             }
-            file = new File(path+"/Makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            if (SelectModeDescriptorPanel.findMakefile(path) != null){
                 return true;
             }
-            file = new File(path+"/makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                return true;
-            }
-            file = new File(path+"/configure"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            if (SelectModeDescriptorPanel.findConfigureScript(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {
