@@ -1451,7 +1451,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    @SuppressWarnings("unchecked")
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
 

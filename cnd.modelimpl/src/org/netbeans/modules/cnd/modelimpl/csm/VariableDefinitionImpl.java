@@ -297,7 +297,6 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }  
     
-    @SuppressWarnings("unchecked")
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.qualifiedName = PersistentUtils.readUTF(input);
