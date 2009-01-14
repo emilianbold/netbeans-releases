@@ -55,8 +55,8 @@ public class CsmFileModel {
         this.actions = actions;
     }
 
-    public boolean setFile(CsmFile csmFile){
-        return buildModel(csmFile);
+    public boolean setFile(CsmFile csmFile, boolean force){
+        return buildModel(csmFile, force);
     }
     
     public Node[] getNodes() {
@@ -76,7 +76,7 @@ public class CsmFileModel {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
     
-    private boolean buildModel(CsmFile csmFile) {
+    private boolean buildModel(CsmFile csmFile, boolean force) {
         boolean res = true;
         List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
         List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
@@ -110,7 +110,7 @@ public class CsmFileModel {
             Collections.<CppDeclarationNode>sort(newList);
             Collections.<IndexOffsetNode>sort(newLineNumberIndex);
             resetScope(newLineNumberIndex);
-            if (isNeedChange(newLineNumberIndex)) {
+            if (force || isNeedChange(newLineNumberIndex)) {
                 clear();
                 list.addAll(newList);
                 lineNumberIndex.addAll(newLineNumberIndex);

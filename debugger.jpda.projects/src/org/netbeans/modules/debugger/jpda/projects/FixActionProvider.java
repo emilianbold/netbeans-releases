@@ -96,7 +96,6 @@ public class FixActionProvider extends ActionsProviderSupport {
     private SourcePathProvider sp;
     private Listener listener;
     private boolean isFixCommandSupported;
-    private static final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
     
     
     public FixActionProvider (ContextProvider lookupProvider) {
@@ -283,7 +282,16 @@ public class FixActionProvider extends ActionsProviderSupport {
             return ;
         }
 
-        hotFixRP.post(new Runnable() {
+        RequestProcessor rp;
+        try {
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return ;
+        }
+
+        rp.post(new Runnable() {
             public void run() {
                 String error = null;
                 try {

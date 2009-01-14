@@ -73,9 +73,8 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
@@ -356,12 +355,12 @@ public class ClassesTreeModel implements TreeModel {
     
     private static class Listener implements PropertyChangeListener {
         
-        private JPDADebugger debugger;
+        private JPDADebuggerImpl debugger;
         private WeakReference<ClassesTreeModel> model;
         
         public Listener (
             ClassesTreeModel tm,
-            JPDADebugger debugger
+            JPDADebuggerImpl debugger
         ) {
             this.debugger = debugger;
             model = new WeakReference<ClassesTreeModel>(tm);
@@ -389,7 +388,7 @@ public class ClassesTreeModel implements TreeModel {
         
         // currently waiting / running refresh task
         // there is at most one
-        private RequestProcessor.Task task;
+        private Task task;
         
         public void propertyChange (PropertyChangeEvent e) {
             if ( ( (e.getPropertyName () == 
@@ -409,7 +408,7 @@ public class ClassesTreeModel implements TreeModel {
                         System.out.println ("ClTM cancel old task " + task);
                     task = null;
                 }
-                task = RequestProcessor.getDefault ().post (new Runnable () {
+                task = debugger.getRequestProcessor().post (new Runnable () {
                     public void run () {
                         if (debugger.getState () != debugger.STATE_STOPPED) {
                             if (verbose)

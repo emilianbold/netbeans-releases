@@ -94,6 +94,10 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         "test",//NOI18N
         "none"//NOI18N
     };
+
+    private static final String PARAM_DEBUG = "debug";//NOI18N
+    private static final String PARAM_DEPRECATION = "showDeprecation";
+
     private static final int COS_ALL = 0;
     private static final int COS_APP = 1;
     private static final int COS_TESTS = 2;
@@ -214,7 +218,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         };
         debugUpdater = new CheckBoxUpdater(cbDebug) {
             public Boolean getValue() {
-                String val = getCompilerParam(handle, "debug");
+                String val = getCompilerParam(handle,PARAM_DEBUG);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -226,11 +230,11 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "true";
+                    text = "true";//NOI18N
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, "debug", text);
+                checkCompilerParam(handle, PARAM_DEBUG, text);
             }
 
             public boolean getDefaultValue() {
@@ -240,7 +244,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
         deprecateUpdater = new CheckBoxUpdater(cbDeprecate) {
             public Boolean getValue() {
-                String val = getCompilerParam(handle, "showDeprecation");
+                String val = getCompilerParam(handle,PARAM_DEPRECATION);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -252,11 +256,11 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 if (value == null) {
                     //TODO we should attempt to remove the configuration
                     // from pom if this parameter is the only one defined.
-                    text = "false";
+                    text = "false";//NOI18N
                 } else {
                     text = value.toString();
                 }
-                checkCompilerParam(handle, "showDeprecation", text);
+                checkCompilerParam(handle, PARAM_DEPRECATION, text);
             }
 
             public boolean getDefaultValue() {
@@ -269,20 +273,77 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
             @Override
             public JavaPlatform getValue() {
-                return getSelPlatform();
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                String val = null;
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
+                    if (props != null && props.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
+                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
+                    }
+                }
+                if (val == null) {
+                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    if (props != null) {
+                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
+                    }
+                }
+                if (val == null) {
+                    MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
+                    val = props.get(Constants.HINT_JDK_PLATFORM, true, false);
+                }
+                if (val != null) {
+                    return BootClassPathImpl.getActivePlatform(val);
+                } else {
+                    return getSelPlatform();
+                }
             }
 
             @Override
             public JavaPlatform getDefaultValue() {
-                return JavaPlatformManager.getDefault().getDefaultPlatform();
+                return getSelPlatform();
             }
 
             @Override
             public void setValue(JavaPlatform value) {
-                JavaPlatform platf = value == null ? getDefaultValue() : value;
-                String platformId = platf.getProperties().get("platform.ant.name");
-                project.getLookup().lookup(AuxiliaryProperties.class).
-                        put(Constants.HINT_JDK_PLATFORM, platformId, true);
+                JavaPlatform platf = value == null ? JavaPlatformManager.getDefault().getDefaultPlatform() : value;
+                String platformId = platf.getProperties().get("platform.ant.name"); //NOI18N
+                if (JavaPlatformManager.getDefault().getDefaultPlatform().equals(platf)) {
+                    platformId = null;
+                }
+
+                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
+                boolean hasConfig = props.get(Constants.HINT_JDK_PLATFORM, true, false) != null;
+                //TODO also try to take the value in pom vs inherited pom value into account.
+
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
+                        profprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId);
+                        if (hasConfig) {
+                            // in this case clean up the auxiliary config
+                            props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                        }
+                        handle.markAsModified(handle.getProfileModel());
+                        return;
+                    }
+                }
+
+                if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
+                    Properties modprops = handle.getPOMModel().getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId); //NOI18N
+                    handle.markAsModified(handle.getPOMModel());
+                    if (hasConfig) {
+                        // in this case clean up the auxiliary config
+                        props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                    }
+                    return;
+                }
+                props.put(Constants.HINT_JDK_PLATFORM, platformId, true);
             }
         };
 

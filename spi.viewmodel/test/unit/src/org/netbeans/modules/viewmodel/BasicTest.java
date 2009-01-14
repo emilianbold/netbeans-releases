@@ -80,10 +80,12 @@ public class BasicTest  extends NbTestCase {
         l.add (cm);
         Models.CompoundModel mcm = Models.createCompoundModel(l, helpID);
         TreeTable tt = (TreeTable) Models.createView(mcm);
-        waitFinished ();
+        RequestProcessor rp = tt.currentTreeModelRoot.getRootNode().getRequestProcessor();
+        cm.setRPUsed(rp);
+        waitFinished (rp);
         Node n = tt.getExplorerManager ().
             getRootContext ();
-        checkNode (n, "");
+        checkNode (n, "", rp);
         if (cm.exception != null)
             cm.exception.printStackTrace ();
         assertNull ("Threading problem", cm.exception);
@@ -93,18 +95,18 @@ public class BasicTest  extends NbTestCase {
         assertEquals(n.getValue("propertiesHelpID"), helpID);
     }
     
-    private void checkNode (Node n, String name) {
+    private void checkNode (Node n, String name, RequestProcessor rp) {
         // init
         //assertEquals (null, n.getShortDescription ());
         Node[] ns = n.getChildren ().getNodes ();
-        waitFinished ();
+        waitFinished (rp);
         
         ns = n.getChildren ().getNodes ();
         if (name.length () < 4) {
             assertEquals (name, 3, ns.length);
-            checkNode (ns [0], name + "a");
-            checkNode (ns [1], name + "b");
-            checkNode (ns [2], name + "c");
+            checkNode (ns [0], name + "a", rp);
+            checkNode (ns [1], name + "b", rp);
+            checkNode (ns [2], name + "c", rp);
         } else
             assertEquals (ns.length, 0);
         
@@ -113,15 +115,15 @@ public class BasicTest  extends NbTestCase {
             n.getDisplayName ();
             String sd = n.getShortDescription ();
             n.getActions (false);
-            waitFinished ();
+            waitFinished (rp);
             assertEquals (name, n.getDisplayName ());
             assertEquals (name + "WWW", sd);
             assertEquals (1, n.getActions (false).length);
         }
     }
 
-    static void waitFinished () {
-        TreeModelNode.getRequestProcessor ().post (new Runnable () {
+    static void waitFinished (RequestProcessor rp) {
+        rp.post (new Runnable () {
             public void run () {}
         }).waitFinished ();
     }
@@ -135,6 +137,7 @@ public class BasicTest  extends NbTestCase {
         l.add(tcm);
         Models.CompoundModel mcm = Models.createCompoundModel(l);
         TreeTable tt = (TreeTable) Models.createView(mcm);
+        cm.setRPUsed(tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
         Node.Property[] columns = tt.columns;
         assertEquals(2, columns.length);
         assertEquals(new Character('e'), columns[1].getValue("ColumnMnemonicCharTTV"));
@@ -149,6 +152,13 @@ public class BasicTest  extends NbTestCase {
         private Throwable exception;
 
         private Map callNumbers = new HashMap ();
+        
+        private RequestProcessor rp;
+
+        void setRPUsed(RequestProcessor rp) {
+            this.rp = rp;
+        }
+
         protected synchronized void addCall (String methodName, Object node) {
             Map m = (Map) callNumbers.get (methodName);
             if (m == null)
@@ -175,7 +185,7 @@ public class BasicTest  extends NbTestCase {
 
         void checkThread () {
             try {
-                assertTrue ("The right thread", TreeModelNode.getRequestProcessor ().isRequestProcessorThread ());
+                assertTrue ("The right thread", rp.isRequestProcessorThread ());
             } catch (Throwable t) {
                 exception = t;
             }

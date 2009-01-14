@@ -42,53 +42,38 @@ package org.netbeans.modules.php.project.ui.actions;
 
 
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.modules.php.project.ui.actions.support.RunScript;
-import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class RunProjectCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
     public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
-    private final RunScript runScript;
 
     /**
      * @param project
      */
     public RunProjectCommand(PhpProject project) {
         super(project);
-        runScript = new RunScript(project);
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    public void invokeAction(Lookup context) {
         boolean scriptSelected = isScriptSelected();
         if (!isRunConfigurationValid(scriptSelected)) {
             // property not set yet
             return;
         }
-        if (scriptSelected) {
-            runScript.invokeAction(null);
-        } else {
-            eventuallyUploadFiles();
-            try {
-                showURLForProjectFile();
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        getConfigAction().runProject(getProject());
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return true;
+    public boolean isActionEnabled(Lookup context) {
+        return getConfigAction().isRunProjectEnabled(getProject());
     }
 
     @Override

@@ -513,7 +513,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         for (int i = 0; i < model.getRowCount(); i++) {
             if (model.getItem(i).isSelected().booleanValue()) {
                 FrameworkModelItem item = model.getItem(i);
-                WebModuleExtender extender = (WebModuleExtender) extenders.get(item.getFramework());
+                WebModuleExtender extender = extenders.get(item.getFramework());
                 if (extender != null && !extender.isValid()) {
                     setErrorMessage(wizardDescriptor, controller.getErrorMessage());
                     return false;
@@ -563,7 +563,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         if (serverInstanceID != null) {
             for (int i = 0; i < model.getRowCount(); i++) {
                 FrameworkModelItem item = model.getItem(i);
-                WebModuleExtender extender = (WebModuleExtender) extenders.get(item.getFramework());
+                WebModuleExtender extender = extenders.get(item.getFramework());
                 if (extender != null) {
                     extender.update();
                 }
@@ -654,12 +654,12 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
 
-            JComponent panelComponent = ((WebModuleExtender) extenders.get(framework)).getComponent();
+            JComponent panelComponent = extenders.get(framework).getComponent();
             jPanelConfig.add(panelComponent, gridBagConstraints);
             
             jLabelConfig.setEnabled(item.isSelected().booleanValue());
             enableComponents(panelComponent, item.isSelected().booleanValue());
-            ((WebModuleExtender) extenders.get(framework)).update();
+            extenders.get(framework).update();
             jPanelConfig.revalidate();
             jPanelConfig.repaint();
         } else {

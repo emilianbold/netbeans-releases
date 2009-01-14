@@ -90,16 +90,23 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     }
 
     public void initialize(TemplateWizard wiz) {
+        targetChooserDescriptorPanel = createPanel(wiz);
+    }
+
+    public void uninitialize(TemplateWizard wiz) {
+    }
+
+    protected WizardDescriptor.Panel<WizardDescriptor> createPanel(TemplateWizard wiz) {
         DataObject dobj = wiz.getTemplate();
         MIMEExtensions extensions = MIMEExtensions.get(dobj.getPrimaryFile().getMIMEType());
         if (extensions != null) {
             Project project = Templates.getProject(wiz);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) { 
+            if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) {
                 // this is the only place where we want to differ c headers from cpp headers (creation of new one)
                 if (dobj.getPrimaryFile().getAttribute(C_HEADER_MIME_TYPE) != null) {
-                    MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE); 
+                    MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE);
                     if ((cHeaderExtensions == null) || !C_HEADER_MIME_TYPE.equals(extensions.getMIMEType())) {
                         System.err.println("not found extensions for C Headers"); // NOI18N
                     } else {
@@ -107,13 +114,10 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
                     }
                 }
             }
-            targetChooserDescriptorPanel = new NewCndFileChooserPanel(project, groups, null, extensions);
+            return new NewCndFileChooserPanel(project, groups, null, extensions);
         } else {
-            targetChooserDescriptorPanel = wiz.targetChooser();
+            return wiz.targetChooser();
         }
-    }
-
-    public void uninitialize(TemplateWizard wiz) {
     }
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
@@ -188,4 +192,3 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
         getListenerList().remove(l);
     }
 }
-

@@ -430,31 +430,11 @@ public final class MakeProject implements Project, AntProjectListener {
             "cpp-types", // NOI18N
             "shell-types", // NOI18N
             "makefile-types", // NOI18N
-            "c-types", // NOI18N
-            "simple-files", // NOI18N
-            "asm-types"}; // NOI18N
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{
-            "c-types", // NOI18N
-            "cpp-types", // NOI18N
-            "shell-types", // NOI18N
-            "makefile-types", // NOI18N
-            "c-types", // NOI18N
             "simple-files", // NOI18N
             "fortran-types", // NOI18N
-            "asm-types"}; // NOI18N
+            "asm-types", // NOI18N
+            "qt-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{
-            "Templates/cFiles/main.c", // NOI18N
-            "Templates/cFiles/file.c", // NOI18N
-            "Templates/cFiles/file.h", // NOI18N
-            "Templates/cppFiles/class.cc", // NOI18N
-            "Templates/cppFiles/main.cc", // NOI18N
-            "Templates/cppFiles/file.cc", // NOI18N
-            "Templates/cppFiles/file.h", // NOI18N
-            "Templates/MakeTemplates/ComplexMakefile", // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
             "Templates/cFiles/file.h", // NOI18N
@@ -469,11 +449,11 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
-            return RECOMMENDED_TYPES_FORTRAN;
+            return RECOMMENDED_TYPES;
         }
 
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES_FORTRAN;
+            return PRIVILEGED_NAMES;
         }
     }
 

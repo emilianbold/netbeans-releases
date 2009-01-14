@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Po-Ting Wu
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
     
@@ -88,6 +88,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+
+    private boolean createWelcome = true;
+    
+    public void setCreateWelcome(boolean set) {
+        createWelcome = set;
+    }
     
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
@@ -158,10 +164,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
-            result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp")); //NOI18N
+
+            FileObject welcomeFile = webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"); //NOI18N
+            if (welcomeFile != null) {
+                result.add(welcomeFile);
+            }
         }  catch (IOException exception) {   
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
+
+        createWelcome = true;
+
         return result;
     }
     
@@ -425,7 +438,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             
             //copy Welcome.jsp
-            if (canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
+            if (createWelcome && canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                 content = content.replaceAll("__ENCODING__", encoding.name());

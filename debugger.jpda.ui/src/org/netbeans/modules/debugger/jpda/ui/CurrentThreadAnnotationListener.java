@@ -269,7 +269,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // do not need synchronization, called in a 1-way RP
     private HashMap               stackAnnotations = new HashMap ();
     
-    private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher");
+    private final RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher");
 
     // currently waiting / running refresh task
     // there is at most one
@@ -380,10 +380,18 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         private Set<JPDAThread> threadsToAnnotate = new HashSet<JPDAThread>();
         private Map<JPDAThread, FutureAnnotation> futureAnnotations = new HashMap<JPDAThread, FutureAnnotation>();
         private Set<Object> annotationsToRemove = new HashSet<Object>();
-        private RequestProcessor.Task task = rp.create(this);
+        private RequestProcessor.Task task;
         
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
+            try {
+                task = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
+                        lookupFirst(null, RequestProcessor.class).create(this);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                task = rp.create(this);
+            }
+
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").NEW");
             for (JPDAThread t : debugger.getThreadsCollector().getAllThreads()) {
                 add(t);

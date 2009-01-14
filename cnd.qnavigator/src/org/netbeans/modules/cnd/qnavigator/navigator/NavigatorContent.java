@@ -57,6 +57,10 @@ public class NavigatorContent {
         this.curModel = curModel;
     }
 
+    NavigatorModel getModel() {
+        return curModel;
+    }
+
     Node getRoot(){
         if (curModel != null) {
             return curModel.getRoot();

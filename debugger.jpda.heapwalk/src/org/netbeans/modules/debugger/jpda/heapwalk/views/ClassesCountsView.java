@@ -170,7 +170,8 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         }
         if (debugger != null && debugger.canGetInstanceInfo()) {
             final JPDADebugger fDebugger = debugger;
-            Task t = RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
+            rp.post(new Runnable() {
                 public void run() {
                     Heap heap = new HeapImpl(fDebugger);
                     final HeapFragmentWalker hfw = new DebuggerHeapFragmentWalker(heap);
