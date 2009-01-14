@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationEvent.Copy;
@@ -68,24 +69,24 @@ import org.openide.util.Exceptions;
  * @author Jan Pokorsky
  */
 final class CopyHandler implements OperationListener {
-    
+
     private static final CopyHandler INSTANCE = new CopyHandler();
-    
+
     public static CopyHandler getInstance() {
         return INSTANCE;
     }
-    
+
     public void register() {
         DataLoaderPool.getDefault().addOperationListener(this);
     }
 
-    private static void renameFO(final JavaSource javaSource, 
-            final String packageName, 
-            final String newName, 
+    private static void renameFO(final JavaSource javaSource,
+            final String packageName,
+            final String newName,
             final String originalName) throws IOException {
 
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
-            
+
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
@@ -110,11 +111,11 @@ final class CopyHandler implements OperationListener {
                         }
                     }
                 }
-            }                
+            }
         };
         javaSource.runModificationTask(task).commit();
     }
-    
+
     // singleton
     private CopyHandler() {
     }
@@ -124,6 +125,11 @@ final class CopyHandler implements OperationListener {
         FileObject origFO = ev.getOriginalDataObject().getPrimaryFile();
         JavaSource js = JavaSource.forFileObject(copyFO);
         if (js == null) {
+            return;
+        }
+        if (!"text/x-java".equals(FileUtil.getMIMEType(copyFO)) //NOI18N
+            && !"java".equals(copyFO.getExt())) { //NOI18N
+            // #151288: JavaSource may exist even for .class file
             return;
         }
         ClassPath cp = ClassPath.getClassPath(copyFO, ClassPath.SOURCE);
