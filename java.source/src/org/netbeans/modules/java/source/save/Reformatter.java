@@ -1497,6 +1497,11 @@ public class Reformatter implements ReformatTask {
                     alignIndent = col;
                 for (Iterator<? extends StatementTree> it = inits.iterator(); it.hasNext();) {
                     scan(it.next(), p);
+                    if (it.hasNext() && !fieldGroup) {
+                        spaces(cs.spaceBeforeComma() ? 1 : 0);
+                        accept(COMMA);
+                        spaces(cs.spaceAfterComma() ? 1 : 0);
+                    }
                 }
                 spaces(cs.spaceBeforeSemi() ? 1 : 0);
             }
