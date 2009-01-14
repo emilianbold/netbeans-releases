@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
@@ -70,7 +71,7 @@ public class VectorConfiguration {
     public boolean getDirty() {
         return dirty;
     }
-    
+
     public void add(Object o) {
 	getValue().add(o);
     }
@@ -81,7 +82,7 @@ public class VectorConfiguration {
         else
             this.value = l;
     }
-    
+
     /*
      * @deprecated use setValue(List l)
      * See IZ 122300
@@ -112,27 +113,31 @@ public class VectorConfiguration {
     public void reset() {
 	//value.removeAll(); // FIXUP
 	value = new ArrayList();
-        
+
     }
 
-    public String getOption(String prependOption) {
-	StringBuilder option = new StringBuilder();
-	String[] values = getValueAsArray();
-	for (int i = 0; i < values.length; i++) {
-        if (values[i].length() > 0) { // See IZ 151364
-            option.append(prependOption + IpeUtils.escapeOddCharacters(values[i]) + " "); // NOI18N
+    public String getOption(CompilerSet cs, String prependOption) {
+        StringBuilder option = new StringBuilder();
+        String[] values = getValueAsArray();
+        for (int i = 0; i < values.length; i++) {
+            String s = values[i];
+            if (s.length() > 0) { // See IZ 151364
+                if (cs != null) {
+                    s = cs.normalizeDriveLetter(s);
+                }
+            option.append(prependOption + IpeUtils.escapeOddCharacters(s) + " "); // NOI18N
         }
     }
 	return option.toString();
     }
-    
+
     // Clone and Assign
     public void assign(VectorConfiguration conf) {
         setDirty(!this.equals(conf));
 	reset();
 	getValue().addAll(conf.getValue());
     }
-     
+
     public boolean equals(VectorConfiguration conf) {
         boolean eq = true;
         if (getValue().size() != conf.getValue().size())

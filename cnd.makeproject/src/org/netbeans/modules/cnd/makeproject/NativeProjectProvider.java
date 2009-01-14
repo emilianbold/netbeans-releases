@@ -83,8 +83,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
-    
-    
+
+
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
@@ -112,7 +112,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         return (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
     }
-    
+
     private MakeConfiguration getMakeConfiguration() {
 	MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
 	if (descriptor != null) {
@@ -138,15 +138,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 	}
 	return Collections.<String>emptyList();
     }
-    
+
     public String getProjectRoot() {
         return FileUtil.toFile(project.getProjectDirectory()).getPath();
     }
-    
+
     public String getProjectDisplayName() {
         return ProjectUtils.getInformation(project).getDisplayName();
     }
-    
+
 //    public List<NativeFileItem> getAllSourceFiles() {
 //        ArrayList list = new ArrayList();
 //        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
@@ -159,7 +159,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 //        }
 //        return list;
 //    }
-//    
+//
 //    public List<NativeFileItem> getAllHeaderFiles() {
 //        ArrayList list = new ArrayList();
 //        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
@@ -172,7 +172,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 //		    if (!itemConfiguration.getExcluded().getValue()){
 //			list.add(items[i]);
 //		    }
-//		}		
+//		}
 //	    }
 //        }
 //        return list;
@@ -196,7 +196,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return list;
     }
-    
+
     public List<NativeProject> getDependences(){
         List<NativeProject> list = new ArrayList<NativeProject>();
 	MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -211,7 +211,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return list;
     }
-    
+
     public void addProjectItemsListener(NativeProjectItemsListener listener) {
         synchronized (listeners) {
             if (listeners.size() == 0) {
@@ -220,7 +220,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             listeners.add(listener);
         }
     }
-    
+
     public void removeProjectItemsListener(NativeProjectItemsListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
@@ -229,7 +229,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
     }
-    
+
     public void fireFilesAdded(List<NativeFileItem> nativeFileIetms) {
         //System.out.println("fireFileAdded ");
         ArrayList actualList = new ArrayList();
@@ -254,7 +254,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
     }
-    
+
     public void fireFilesRemoved(List<NativeFileItem> nativeFileIetms) {
         //System.out.println("fireFilesRemoved ");
         ArrayList actualList = new ArrayList();
@@ -294,34 +294,34 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             listener.filePropertiesChanged(nativeFileIetm);
         }
     }
-    
+
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems) {
         //System.out.println("fireFilesPropertiesChanged " + fileItems);
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filesPropertiesChanged(fileItems);
         }
     }
-    
+
     public void fireFilesPropertiesChanged() {
         //System.out.println("fireFilesPropertiesChanged ");
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filesPropertiesChanged();
         }
     }
-    
+
     public void fireProjectDeleted() {
         //System.out.println("fireProjectDeleted ");
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.projectDeleted(this);
         }
     }
-    
+
     private List<NativeProjectItemsListener> getListenersCopy() {
         synchronized (listeners) {
 	    return (listeners.size() == 0) ? Collections.EMPTY_LIST : new ArrayList<NativeProjectItemsListener>(listeners);
         }
     }
-    
+
     public NativeFileItem findFileItem(File file) {
         MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
         if (descr != null) {
@@ -329,7 +329,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return null;
     }
-    
+
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -337,45 +337,48 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         });
     }
-    
+
     private void checkConfigurationChangedWorker(Configuration oldConf, Configuration newConf) {
         MakeConfiguration oldMConf = (MakeConfiguration)oldConf;
         MakeConfiguration newMConf = (MakeConfiguration)newConf;
         List<NativeFileItem> list = new ArrayList<NativeFileItem>();
         List<NativeFileItem> added = new ArrayList<NativeFileItem>();
         List<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
-        
+
         synchronized (listeners) {
             if (listeners.size() == 0)
                 return;
         }
-        
+
         if (newConf == null) {
             // How can this happen?
             System.err.println("Nativeprojectprovider - checkConfigurationChanged - newConf is null!"); // NOI18N
             return;
         }
-        
+
         if (!newConf.isDefault())
             return;
 
         ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_CONFIG_CND, getMakeConfigurationDescriptor());
-        
+
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
             MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
-        
+
         // Check compiler collection. Fire if different (IZ 131825)
-        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) || 
+        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) ||
                 !oldMConf.getDevelopmentHost().getName().equals(newMConf.getDevelopmentHost().getName())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
-        
+
+        CompilerSet oldCompilerSet = oldMConf.getCompilerSet().getCompilerSet();
+        CompilerSet newCompilerSet = newMConf.getCompilerSet().getCompilerSet();
+
         // Check all items
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         Project proj = getMakeConfigurationDescriptor().getProject();
@@ -399,17 +402,17 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 }
                 MakeLogicalViewProvider.checkForChangedItems(proj, null, items[i]);
             }
-            
+
             if (newItemConf.getExcluded().getValue()){
                 continue;
             }
-            
+
             if (newItemConf.getTool() == Tool.CCompiler) {
                 if (!oldItemConf.getCCompilerConfiguration().getPreprocessorOptions().equals(newItemConf.getCCompilerConfiguration().getPreprocessorOptions())) {
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions().equals(newItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions())) {
+                if (!oldItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions(oldCompilerSet).equals(newItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }
@@ -419,7 +422,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions().equals(newItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions())) {
+                if (!oldItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions(oldCompilerSet).equals(newItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }
@@ -429,7 +432,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         fireFilesAdded(added);
         firePropertiesChanged(list, true);
     }
-    
+
     public void checkForChangedItems(final Folder folder, final Item item) {
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -437,13 +440,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         });
     }
-    
+
     private void checkForChangedItemsWorker(Folder folder, Item item) {
         synchronized (listeners) {
             if (listeners.size() == 0)
                 return;
         }
-        
+
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         boolean cFiles = false;
         boolean ccFiles = false;
@@ -458,7 +461,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         VectorConfiguration ccPreprocessorOption;
         BooleanConfiguration ccInheritMacros;
         Item[] items;
-        
+
         // Check first whether the development host has changed
         if (makeConfiguration.getDevelopmentHost().getDirty()) {
             makeConfiguration.getDevelopmentHost().setDirty(false);
@@ -471,7 +474,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             items = getMakeConfigurationDescriptor().getProjectItems();
             firePropertiesChanged(items, true, true, true);
         }
-        
+
         if (folder != null) {
             FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
@@ -518,7 +521,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
         }
-        
+
         if (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||
             cInheritIncludes.getDirty() || cInheritMacros.getDirty()) {
             cFiles = true;
@@ -544,7 +547,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (cFiles || ccFiles)
             firePropertiesChanged(items, cFiles, ccFiles, projectChanged);
     }
-    
+
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
         ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
@@ -566,7 +569,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         firePropertiesChanged(list, projectChanged);
     }
-    
+
     private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
         if (list.size() > 1 || (projectChanged && list.size() == 1)) {
             fireFilesPropertiesChanged(list);
@@ -576,13 +579,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             // nothing
         }
     }
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
         //System.out.println("propertyChange " + evt.getPropertyName());
         if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION))
             checkConfigurationChanged((Configuration)evt.getOldValue(), (Configuration)evt.getNewValue());
     }
-    
+
     /**
      * Returns a list <String> of compiler defined include paths used when parsing 'orpan' source files.
      * @return a list <String> of compiler defined include paths.
@@ -607,7 +610,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return vec;
     }
-    
+
     /**
      * Returns a list <String> of user defined include paths used when parsing 'orpan' source files.
      * @return a list <String> of user defined include paths.
@@ -632,7 +635,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return vec;
     }
-    
+
     /**
      * Returns a list <String> of compiler defined macro definitions used when parsing 'orpan' source files.
      * @return a list <String> of compiler defined macro definitions.
@@ -656,7 +659,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return vec;
     }
-    
+
     /**
      * Returns a list <String> of user defined macro definitions used when parsing 'orpan' source files.
      * @return a list <String> of user defined macro definitions.

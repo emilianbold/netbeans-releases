@@ -239,7 +239,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     public String getBasicOptions() {
-	String options = ""; // NOI18N 
+	String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB ) {
             String libName = getOutputValue();
@@ -278,7 +278,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
         return null;
     }
-    
+
     public String getLibraryItems() {
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
         LinkerDescriptor linker = cs == null ? null : cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
@@ -294,8 +294,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
             dynSearchPrefix = ""; // NOI18N
         }
 	String options = ""; // NOI18N
-	options += getAdditionalLibs().getOption(libPrefix) + " "; // NOI18N
-	options += getDynamicSearch().getOption(dynSearchPrefix) + " "; // NOI18N
+        options += getAdditionalLibs().getOption(cs, libPrefix) + " "; // NOI18N
+        options += getDynamicSearch().getOption(cs, dynSearchPrefix) + " "; // NOI18N
 	options += getLibrariesConfiguration().getOptions(getMakeConfiguration()) + " "; // NOI18N
 	return CppUtils.reformatWhitespaces(options);
     }
@@ -321,7 +321,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 linkDriver = cCompiler.getName();
             }
         }
-        
+
 	Sheet.Set set1 = new Sheet.Set();
 	set1.setName("General"); // NOI18N
 	set1.setDisplayName(getString("GeneralTxt"));
@@ -358,7 +358,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
         }
 	sheet.put(set4);
-        
+
 	texts = new String[] {getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};
 	set2 = new Sheet.Set();
 	set2.setName("Libraries"); // NOI18N
@@ -366,7 +366,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set2.setShortDescription(getString("LibrariesHint"));
 	set2.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
 	sheet.put(set2);
-        
+
 	texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
 	set2 = new Sheet.Set();
 	set2.setName("CommandLine"); // NOI18N
@@ -374,7 +374,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set2.setShortDescription(getString("CommandLineHint"));
 	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
 	sheet.put(set2);
-        
+
 	return sheet;
     }
 
@@ -413,9 +413,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
             outputName = platform.getLibraryName(outputName);
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/" + outputName; // NOI18N 
+	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/" + outputName; // NOI18N
     }
-    
+
     /*
     private String getOutputDefault30() {
 	String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
@@ -423,26 +423,26 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	    outputName = outputName.toLowerCase();
 	else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB)
 	    outputName = "lib" + outputName + ".so"; // NOI18N
-        
-	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // NOI18N 
+
+	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // NOI18N
     }
      **/
-    
+
     public String getOutputDefault27() {
 	String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION)
 	    outputName = outputName.toLowerCase();
 	else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB)
 	    outputName = "lib" + outputName + ".so"; // NOI18N
-        
-	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N 
+
+	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N
     }
-    
+
     private class OutputNodeProp extends StringNodeProp {
         public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }
-        
+
         @Override
         public void setValue(Object v) {
             if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
@@ -452,7 +452,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             super.setValue(v);
         }
     }
-    
+
     private class LinkerStripConfiguration extends BooleanConfiguration {
         public LinkerStripConfiguration(BooleanConfiguration master, boolean def) {
             super(master, def);
@@ -490,7 +490,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             return clone;
         }
     }
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(LinkerConfiguration.class, s);
