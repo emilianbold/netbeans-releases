@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -47,6 +48,8 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
+import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
@@ -73,7 +76,6 @@ public class DatabaseConnector {
 
     private DatabaseConnection databaseConnection;
     private Connection connection = null;
-    private boolean readOnly = false;
     private Specification spec;
 
     // we maintain a lazy cache of driver specs mapped to the catalog name
@@ -87,14 +89,6 @@ public class DatabaseConnector {
 
     public DatabaseConnection getDatabaseConnection() {
         return databaseConnection;
-    }
-
-    public void setRememberPassword(boolean val) {
-
-    }
-
-    public boolean getRememberPassword() {
-        return true;
     }
 
     public Specification getDatabaseSpecification() {
@@ -128,22 +122,44 @@ public class DatabaseConnector {
     public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
         try {
             SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
+            int readOnlyFlag = 0;
             if (dbsys != null) {
                 spec = (Specification) factory.createSpecification(con, dbsys, connection);
-                readOnly = true;
+
+                readOnlyFlag = 1;
             } else {
-                readOnly = false;
                 spec = (Specification) factory.createSpecification(con, connection);
             }
-            //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
+
+            DatabaseMetaData md = spec.getMetaData();
+            ((DefaultAdaptor)md).setreadOnly(readOnlyFlag);
+
             String adaname = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; // NOI18N
             if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
                 spec.setMetaDataAdaptorClassName(adaname);
             }
 
             setConnection(connection);
+        } catch (DatabaseProductNotFoundException e) {
+            connect("GenericDatabaseSystem"); //NOI18N
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    private void connect(String dbsys) throws DatabaseException {
+        String drvurl = databaseConnection.getDriver();
+        String dburl = databaseConnection.getDatabase();
+
+        try {
+            DatabaseConnection con = new DatabaseConnection(drvurl, dburl, databaseConnection.getUser(), databaseConnection.getPassword());
+            Connection c = con.createJDBCConnection();
+
+            finishConnect(dbsys, con, c);
+        } catch (Exception e) {
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
