@@ -51,12 +51,13 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider;
 import org.openide.util.Lookup;
 
 /**
- * Servise that provides macro expansions
+ * Service that provides macro expansions
  *
  * @author Nick Krasilnikov
  */
@@ -93,6 +94,40 @@ public final class CsmMacroExpansion {
         return getProvider().getExpandedText(file, startOffset, endOffset);
     }
 
+    /**
+     * Macro expands content of one document to another
+     *
+     * @param inDoc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @param outDoc - result
+     */
+    public static void expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        getProvider().expand(inDoc, startOffset, endOffset, outDoc);
+    }
+
+    /**
+     * Transforms original offset to offset in expanded text
+     *
+     * @param expandedDoc - document
+     * @param originalOffset - original offset
+     * @return offset in expanded text
+     */
+    public static int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
+        return getProvider().getOffsetInExpandedText(expandedDoc, originalOffset);
+    }
+
+    /**
+     * Transforms offset in expanded text to original offset
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return original offset
+     */
+    public static int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
+        return getProvider().getOffsetInOriginalText(expandedDoc, expandedOffset);
+    }
+
     //
     // Implementation of the default provider
     //
@@ -104,5 +139,17 @@ public final class CsmMacroExpansion {
         public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
             return null;
         }
+
+        public void expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        }
+
+        public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
+            return originalOffset;
+        }
+
+        public int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
+            return expandedOffset;
+        }
+
     }
 }
