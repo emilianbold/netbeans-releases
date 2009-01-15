@@ -44,15 +44,21 @@ made subject to such option by the copyright holder.
 
     <target name="-init">
         <property name="run.jdkhome" location="${nbjdk.home}"/>
-        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
+        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir" else="build/testuserdir">
             <isset property="suite.dir"/>
         </condition>
-        <property name="test.user.dir" location="build/testuserdir"/>
-        <property name="install" location="${netbeans.dest.dir}"/>
+        <property name="suite.dir" location="${basedir}"/>
         <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
+        <property file="${suite.dir}/nbproject/private/platform-private.properties"/>
+        <property file="${suite.dir}/nbproject/platform.properties"/>
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
+        <!-- CP with id="cluster.path.id" is expected to be passed as parameter to run.xml -->
+        <pathconvert property="install">
+            <path refid="cluster.path.id"/>
+            <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
+        </pathconvert>
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
         <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">
             <available file="${install}\bin\nb.exe"/>
@@ -91,45 +97,23 @@ made subject to such option by the copyright holder.
         <property name="run.sh" location="${run.sh.candidate}"/>
         <mkdir dir="${test.user.dir}/etc"/>
         <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${cluster}"</echo>
-        <property name="run.args.prepared" value=""/>
+        <property name="run.args.prepared" value=''/>
     </target>
 
     <target name="-prepare-as-platform" depends="-init" if="app.name">
         <property name="disabled.modules" value=""/>
-        <property name="enabled.clusters" value=""/>
-        <property name="disabled.clusters" value=""/>
-        <pathconvert property="run.platform.update.tracking">
-            <path>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/update_tracking/*.xml"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <pathconvert property="run.platform.clusters.duplicates" pathsep=",">
-            <path>
-                <fileset dir="${netbeans.dest.dir}">
-                    <selector>
-                        <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
-                            <param name="excludeModules" value="${disabled.modules}"/>
-                            <param name="includeClusters" value="${enabled.clusters}"/>
-                            <param name="excludeClusters" value="${disabled.clusters}"/>
-                            <param name="updateTrackingFiles" value="${run.platform.update.tracking}"/>
-                        </custom>
-                    </selector>
-                </fileset>
-            </path>
-            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\](config[/\\]Modules|update_tracking)[/\\]" to="\1"/> <!-- #71849, #73494 -->
-        </pathconvert>
-        <fail message="Must have at least one cluster from the platform">
-            <!-- Otherwise ${run.platform.clusters} gets filled with nonsense. -->
+        <fail message="Platform cluster is not present in cluster.path: '${cluster.path}'">
             <condition>
-                <equals arg1="${run.platform.clusters.duplicates}" arg2=""/>
+                <not>
+                    <matches string="${cluster.path}" pattern="[\\/]platform[0-9]*([;:]|$)"/>
+                </not>
             </condition>
         </fail>
         <pathconvert property="run.platform.clusters">
             <path>
                 <pathelement location="${cluster}"/>
-                <dirset dir="${netbeans.dest.dir}" includes="${run.platform.clusters.duplicates}" excludes="platform*"/>
+                <!-- Does not exclude clusters in which all modules are excluded, shouldn't be a problem -->
+                <path refid="cluster.path.id"/>
             </path>
         </pathconvert>
         <pathconvert property="run.exe">
@@ -186,9 +170,9 @@ You must shut it down before trying to run it again.
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <pathfileset include="**/*.jar">
+                    <path refid="cluster.path.id"/>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -198,6 +182,7 @@ You must shut it down before trying to run it again.
         <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
         <antcall target="run">
             <param name="run.args" value="${debug.args}"/>
+            <reference refid="cluster.path.id"/>
         </antcall>
     </target>
     
@@ -209,9 +194,9 @@ You must shut it down before trying to run it again.
             mainclass="org.netbeans.Main"
         >
             <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <pathfileset include="**/*.jar">
+                    <path refid="cluster.path.id"/>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -225,6 +210,7 @@ You must shut it down before trying to run it again.
         
         <antcall target="run">
             <param name="run.args" value='"${profiler.jvmargs}"'/>
+            <reference refid="cluster.path.id"/>
         </antcall>
     </target>
     
