@@ -220,6 +220,23 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("test_something_should_happen_to_me_okay?", test);
     }
 
+    public void testGetTestNameForShouldaTest() {
+        String testFile = "testfiles/shoulda_test.rb";
+        FileObject fileObject = getTestFile(testFile);
+        String text = readFile(fileObject);
+
+        int offset = 0;
+        String test = null;
+
+        offset = text.indexOf("respond to :push");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("A Queue instance should respond to :push", test);
+
+        offset = text.indexOf("return that element on :pop");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("A Queue instance with a single element should return that element on :pop", test);
+    }
+
     public void testAddNodesByType() {
         Node root = getRootNode("testfiles/unused.rb");
         List<Node> result = new ArrayList<Node>();

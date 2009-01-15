@@ -134,7 +134,6 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     }
     
     public void addEnumerator(CsmEnumerator enumerator) {
-        @SuppressWarnings("unchecked")
         CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
         enumerators.add(uid);
     }

@@ -1784,6 +1784,13 @@ public class AstUtilities {
                         }
                         AstPath path = new AstPath(root, astOffset);
                         Iterator<Node> it = path.leafToRoot();
+                        // method names for shoulda tests need to be constructed from
+                        // should and context nodes, e.g.
+                        // context "An Instance" ...
+                        //  should "respond to :something" ... (the method name here is "An Instance should respond to :something"
+                        //      context "with a single element" ..
+                        //          should "return that" ... (the name here is "An Instance with a single element should return that")
+                        List<String> shouldaMethodName = new ArrayList<String>();
                         while (it.hasNext()) {
                             Node node = it.next();
                             if (node.nodeId == NodeType.FCALLNODE) {
@@ -1828,6 +1835,13 @@ public class AstUtilities {
                                 return;
                             }
                         }
+                        if (!shouldaMethodName.isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            for (String each : shouldaMethodName) {
+                                sb.append(each);
+                            }
+                            testName[0] = sb.toString().trim();
+                        }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -1839,7 +1853,40 @@ public class AstUtilities {
 
         return testName[0];
     }
-    
+
+    private static String getNodeDesc(FCallNode fc) {
+        if (fc.getIterNode() == null) { // "it" without do/end: pending
+            return null;
+        }
+
+        Node argsNode = fc.getArgsNode();
+
+        if (argsNode instanceof ListNode) {
+            ListNode args = (ListNode) argsNode;
+
+            //  describe  ThingsController, "GET #index" do
+            // e.g. where the desc string is not first
+            for (int i = 0, max = args.size(); i < max; i++) {
+                Node n = args.get(i);
+
+                // For dynamically computed strings, we have n instanceof DStrNode
+                // but I can't handle these anyway
+                if (n instanceof StrNode) {
+                    ByteList descBl = ((StrNode) n).getValue();
+
+                    if ((descBl != null) && (descBl.length() > 0)) {
+                        // No truncation? See 138259
+                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                        return descBl.toString();
+                    }
+                    break;
+                }
+            }
+        }
+        return null;
+
+    }
+
     public static int findOffset(FileObject fo, final String methodName) {
         Source source = Source.create(fo);
 
