@@ -144,6 +144,8 @@ public final class EjbEnterpriseReferenceContainerSupport {
                     Ejb model = metadata.findByEjbClass(referencingClass);
                     // XXX: target may be null (for example for a freeform project which doesn't have jar outputs set)
                     // that's the reason of the check for target == null
+                    // mkleint: maven projects don't have AntArtifacts. I'm sort of curious if
+                    //the ejb link should be set or not in such case..
                     boolean fromSameProject = (moduleJarTarget == null || ejbProject.equals(moduleJarTarget.getProject()));
                     // try to write to deployment descriptor only if there is any
                     // in case of metadata written in annotations, model should be updatet automaticaly
