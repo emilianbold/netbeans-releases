@@ -170,8 +170,10 @@ public class ModelXMLRootContext implements XMLReaderContext {
                 int idx = regCtxs.indexOf(ctx);
                 
                 if (results[idx] == null) {
-                     if (inProcesses.add(ctx))
-                         new ModelXMLReaderException("Cyclic dependence for register:  " + ctx.getName()); //NOI18N
+                     if (inProcesses.add(ctx)) {
+                         // TODO: check if we need to throw the exception
+                         //new ModelXMLReaderException("Cyclic dependence for register:  " + ctx.getName()); //NOI18N
+                     }
                      
                      XMLBaseRegister result = new DefaultXMLBaseRegister(ctx.getName(), ctx.getWidth());
                      Set<Register> children = new HashSet<Register>();
