@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
@@ -88,11 +89,13 @@ public class J2eeLookupProvider implements LookupProvider {
         private Object lastInstance = null;
         private CopyOnSave copyOnSave;
         private WebReplaceTokenProvider replacer;
+        private EntRefContainerImpl webEnt;
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;
             content = cont;
             replacer = new WebReplaceTokenProvider(proj);
+            webEnt = new EntRefContainerImpl(proj);
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
         }
@@ -133,6 +136,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 lastInstance = prov;
                 content.add(lastInstance);
                 content.add(replacer);
+                content.add(webEnt);
                 copyOnSave = new CopyOnSave(project, prov);
                 try {
                     copyOnSave.initialize();
@@ -142,12 +146,14 @@ public class J2eeLookupProvider implements LookupProvider {
             } else if (NbMavenProject.TYPE_EAR.equals(packaging) && !lastType.equals(packaging)) {
                 removeLastInstance();
                 content.remove(replacer);
+                content.remove(webEnt);
                 lastInstance = new EarModuleProviderImpl(project);
                 content.add(lastInstance);
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
                 removeLastInstance();
                 content.remove(replacer);
+                content.remove(webEnt);
                 lastInstance = new EjbModuleProviderImpl(project);
                 content.add(lastInstance);
             } else if (lastInstance != null && !(
@@ -157,6 +163,7 @@ public class J2eeLookupProvider implements LookupProvider {
             {
                 removeLastInstance();
                 content.remove(replacer);
+                content.remove(webEnt);
                 lastInstance = null;
             }
             lastType = packaging;
