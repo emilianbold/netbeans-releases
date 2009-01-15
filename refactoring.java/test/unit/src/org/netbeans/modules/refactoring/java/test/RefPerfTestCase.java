@@ -109,8 +109,7 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
 
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
-        //String zipPath = work + "/../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
-        String zipPath=CommonUtilities.jEditProjectOpen();
+        String zipPath = Utilities.jEditProjectOpen();
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         unzip(zipFile, work);
         projectDir = openProject("jEdit41", getWorkDir());

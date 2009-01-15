@@ -139,7 +139,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                         d.unit = "ms";
                         d.runOrder = 0;
                         sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
-                        CommonUtilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
+                        Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
                     } catch (Exception ex) {
                         sb.append("Cannot collect usages: ").append(ex.getCause());
                     }
