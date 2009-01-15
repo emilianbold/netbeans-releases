@@ -29,8 +29,11 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -46,8 +49,7 @@ public class DebugScript  extends RunScript {
     @Override
     public void run(final Lookup context) {
         //temporary; after narrowing deps. will be changed
-        Callable<Cancellable> callable = getCallable(context, false, getDebugEnvironmentVariables(),
-                NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug"));
+        Callable<Cancellable> callable = getCallable(context);
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         assert dbgStarter != null;
         if (dbgStarter.isAlreadyRunning()) {
@@ -56,23 +58,23 @@ public class DebugScript  extends RunScript {
                 run(context);
             }
         } else {
-            dbgStarter.start(project, callable, getStartFile(project, context), true);
+            dbgStarter.start(project, callable, getStartFile(context), true);
         }
     }
 
+    @Override
     protected boolean isControllable() {
         return false;
     }
 
     @Override
     protected String getOutputTabTitle(String command, File scriptFile) {
-        return super.getOutputTabTitle(command, scriptFile) + " "+
-                NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug");//NOI18N
+        return String.format("%s %s", super.getOutputTabTitle(command, scriptFile), NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug"));
     }
 
-//    @Override
-//    protected ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
-//        ExternalProcessBuilder ret = super.initProcessBuilder(processBuilder);
-//        return ret.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); //NOI18N
-//    }
+    @Override
+    protected ExternalProcessBuilder getProcessBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
+        return super.getProcessBuilder(phpInterpreter, scriptFile)
+                .addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
+    }
 }

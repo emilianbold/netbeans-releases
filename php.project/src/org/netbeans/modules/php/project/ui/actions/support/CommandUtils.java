@@ -138,7 +138,7 @@ public final class CommandUtils {
             return Collections.<FileObject>emptyList();
         }
 
-        final List<FileObject> files = new ArrayList<FileObject>();
+        final List<FileObject> files = new ArrayList<FileObject>(nodes.length);
         for (Node node : nodes) {
             FileObject fo = getFileObject(node);
             assert fo != null : "A valid file object not found for node: " + node;
@@ -164,10 +164,10 @@ public final class CommandUtils {
             return null;
         }
         fileObj = dataObj.getPrimaryFile();
-        if ((fileObj == null) || !fileObj.isValid()) {
-            return null;
+        if (fileObj != null && fileObj.isValid()) {
+            return fileObj;
         }
-        return fileObj;
+        return null;
     }
 
     /**

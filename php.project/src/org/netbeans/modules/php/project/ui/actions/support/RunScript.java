@@ -81,18 +81,17 @@ public class RunScript {
 
     public void run(final Lookup context) {
         try {
-            getCallable(context, true, Collections.<String, String>emptyMap(), null).call();
+            getCallable(context).call();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    protected final Callable<Cancellable> getCallable(final Lookup context,
-            final boolean isControllable, final Map<String, String> environmentVariables, final String displayNameSuffix)  {
+    protected final Callable<Cancellable> getCallable(final Lookup context)  {
         return new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
 
-                FileObject scriptFo = getStartFile(project, context);
+                FileObject scriptFo = getStartFile(context);
                 final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
 
                 PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(project);
@@ -104,20 +103,8 @@ public class RunScript {
                     };
                 }
 
-                ExternalProcessBuilder processBuilder = getBuilder(project, phpInterpreter, scriptFile);
-                for (Map.Entry<String, String> entry : environmentVariables.entrySet()) {
-                    processBuilder = processBuilder.addEnvironmentVariable(entry.getKey(), entry.getValue());
-                }
-
-                StringBuilder displayName = new StringBuilder();
-                displayName.append(getOutputTabTitle(phpInterpreter.getProgram(), scriptFile));
-                if (displayNameSuffix != null) {
-                    displayName.append(" "); // NOI18N
-                    displayName.append(displayNameSuffix);
-                }
-
                 ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                        .controllable(isControllable)
+                        .controllable(isControllable())
                         .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
                         .inputVisible(true)
                         .showProgress(true)
@@ -125,8 +112,8 @@ public class RunScript {
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
-                final ExecutionService service = ExecutionService.newService(processBuilder,
-                        descriptor, displayName.toString());
+                final ExecutionService service = ExecutionService.newService(getProcessBuilder(phpInterpreter, scriptFile),
+                        descriptor, getOutputTabTitle(phpInterpreter.getProgram(), scriptFile));
                 final Future<Integer> result = service.run();
                 // #155251, #155741
 //                try {
@@ -143,7 +130,11 @@ public class RunScript {
         };
     }
 
-    protected FileObject getStartFile(PhpProject project, Lookup context) {
+    protected boolean isControllable() {
+        return true;
+    }
+
+    protected FileObject getStartFile(Lookup context) {
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
         FileObject startFile = null;
         if (context == null) {
@@ -154,7 +145,7 @@ public class RunScript {
         return startFile;
     }
 
-    private ExternalProcessBuilder getBuilder(PhpProject project, PhpInterpreter phpInterpreter, File scriptFile) {
+    protected ExternalProcessBuilder getProcessBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter.getProgram());
         for (String param : phpInterpreter.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
@@ -180,14 +171,10 @@ public class RunScript {
         return String.format("%s - %s", command, scriptFile.getName());
     }
 
-    protected Map<String, String> getDebugEnvironmentVariables() {
-        return Collections.<String, String>singletonMap("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
-    }
-
     private static final class InOutPostRedirector implements InputProcessorFactory, Runnable {
-        private BufferedWriter fileWriter;
         private final File tmpFile;
-        private Charset encoding;
+        private final Charset encoding;
+        private BufferedWriter fileWriter;
 
         public InOutPostRedirector(File scriptFile) throws IOException {
             this.tmpFile = FileUtil.normalizeFile(tempFileForScript(scriptFile));
