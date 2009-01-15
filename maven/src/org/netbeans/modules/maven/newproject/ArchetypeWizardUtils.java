@@ -48,7 +48,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -275,60 +274,58 @@ public class ArchetypeWizardUtils {
             NBVersionInfo ear_vi = (NBVersionInfo)wiz.getProperty("ear_versionInfo");
             if (ear_vi != null) {
                 // enterprise application wizard, multiple archetypes to run
-                Set<FileObject> resultSet = new HashSet<FileObject>();
                 NBVersionInfo web_vi = (NBVersionInfo)wiz.getProperty("web_versionInfo");
                 NBVersionInfo ejb_vi = (NBVersionInfo)wiz.getProperty("ejb_versionInfo");
 
-                handle.start(8 + (web_vi != null ? 4 : 0) + (ejb_vi != null ? 4 : 0));
-                resultSet.addAll(instantiate(handle, (File)wiz.getProperty("projdir"), vi,
-                        (Archetype)wiz.getProperty("archetype"), additional, 0));
-                resultSet.addAll(instantiate(handle, (File)wiz.getProperty("ear_projdir"), ear_vi,
-                        (Archetype)wiz.getProperty("ear_archetype"), null, 4));
-                int progressCounter = 8;
+                handle.start(7 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
+                File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi,
+                        (Archetype)wiz.getProperty("archetype"), additional, 0);
+                createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi,
+                        (Archetype)wiz.getProperty("ear_archetype"), null, 4);
+                int progressCounter = 6;
                 if (web_vi != null) {
-                    resultSet.addAll(instantiate(handle, (File)wiz.getProperty("web_projdir"), web_vi,
-                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter));
-                    progressCounter += 4;
+                    createFromArchetype(handle, (File)wiz.getProperty("web_projdir"), web_vi,
+                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter);
+                    progressCounter += 3;
                 }
                 if (ejb_vi != null) {
-                    resultSet.addAll(instantiate(handle, (File)wiz.getProperty("ejb_projdir"), ejb_vi,
-                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter));
+                    createFromArchetype(handle, (File)wiz.getProperty("ejb_projdir"), ejb_vi,
+                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter);
+                    progressCounter += 3;
                 }
-                return resultSet;
+                return openProjects(handle, rootFile, progressCounter);
             } else {
                 // other wizards, just one archetype
                 handle.start(4);
-                return instantiate(handle, (File)wiz.getProperty("projdir"), vi,
+                File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi,
                         (Archetype)wiz.getProperty("archetype"), additional, 0);
+                return openProjects(handle, projFile, 3);
             }
         } finally {
             handle.finish();
         }
     }
 
-    private static Set<FileObject> instantiate (ProgressHandle handle, File projDir, NBVersionInfo vi,
+    private static File createFromArchetype (ProgressHandle handle, File projDir, NBVersionInfo vi,
         Archetype arch, Map<String, String> additional, int progressCounter) throws IOException {
         handle.progress(++progressCounter);
+
         final File dirF = FileUtil.normalizeFile(projDir); //NOI18N
         final File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-//            final Archetype archetype = (Archetype)wiz.getProperty("archetype"); //NOI18N<
         dirF.getParentFile().mkdirs();
-
         handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), ++progressCounter);
+
         runArchetype(dirF.getParentFile(), vi, arch, additional);
-//            } else {
-//                final String art = (String)wiz.getProperty("artifactId"); //NOI18N
-//                final String ver = (String)wiz.getProperty("version"); //NOI18N
-//                final String gr = (String)wiz.getProperty("groupId"); //NOI18N
-//                final String pack = (String)wiz.getProperty("package"); //NOI18N
-//                runArchetype(dirF.getParentFile(), gr, art, ver, pack, archetype);
-//            }
+
         handle.progress(++progressCounter);
+        return dirF;
+    }
+
+    private static Set<FileObject> openProjects (ProgressHandle handle, File dirF, int progressCounter) throws IOException {
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         // Always open top dir as a project:
         FileObject fDir = FileUtil.toFileObject(dirF);
         if (fDir != null) {
