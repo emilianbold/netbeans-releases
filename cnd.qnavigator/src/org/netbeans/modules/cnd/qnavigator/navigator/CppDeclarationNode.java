@@ -86,11 +86,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmFile file;
     private boolean isFriend;
     private CsmFileModel model;
-    private String htmlDisplayName = NEEDS_INIT;
-    private static final String NEEDS_INIT = new String("");
+    private boolean needInitHTML = true;
+    private String htmlDisplayName;
     private String scopeName = "";
-    private final byte weight;
-    
+    private byte weight;
+
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex) {
         this(element, model, null, lineNumberIndex);
     }
@@ -117,7 +117,6 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     private byte getObjectWeight(){
-        scopeName = "";
         try {
             if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
                 CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
@@ -174,7 +173,6 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return 9*10+0;
     }
 
-
     public CsmObject getCsmObject() {
         if (CsmKindUtilities.isCsmObject(object)) {
             return (CsmObject) object;
@@ -189,6 +187,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     void resetNode(CppDeclarationNode node){
         object = node.object;
         file = object.getContainingFile();
+        weight = node.weight;
+        scopeName = node.scopeName;
+        isFriend = node.isFriend;
+        needInitHTML = node.needInitHTML;
+        htmlDisplayName = node.htmlDisplayName;
         fireIconChange();
     }
     
@@ -232,11 +235,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.icon = icon;
     }
 
-
     @Override
     public String getHtmlDisplayName() {
-        if( htmlDisplayName == NEEDS_INIT ) {
+        if(needInitHTML) {
             htmlDisplayName = createHtmlDisplayName();
+            needInitHTML = false;
         }
         return htmlDisplayName;
     }
