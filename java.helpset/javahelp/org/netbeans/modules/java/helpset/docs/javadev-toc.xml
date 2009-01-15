@@ -221,7 +221,7 @@
             <tocitem text="Installing Ant Documentation" target="ant_docs" />
         </tocitem>
         <tocitem text="Working with Maven">
-            <tocitem text="Configuring Maven Settings" target="maven_settings" />
+            <tocitem text="About Maven Project Support" target="org.netbeans.modules.maven.about"/>
         </tocitem>
         <tocitem text="Working with Groovy">
             <tocitem text="About Working with Groovy" target="groovy_intro"/>

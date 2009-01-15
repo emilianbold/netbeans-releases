@@ -113,7 +113,14 @@ public final class MIMENames {
     // special mime type for C Headers extensions
     /*package*/ static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
-    public static final String QT_UI_MIME_TYPE = "text/xml+qtui"; // NOI18N
+    /** Qt Form files */
+    public static final String QT_UI_MIME_TYPE = "text/qtui+xml"; // NOI18N
+
+    /** Qt Resource files */
+    public static final String QT_RESOURCE_MIME_TYPE = "text/qtresource+xml"; // NOI18N
+
+    /** Qt Translation files */
+    public static final String QT_TRANSLATION_MIME_TYPE = "text/qttranslation+xml"; // NOI18N
 
     public static boolean isCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {

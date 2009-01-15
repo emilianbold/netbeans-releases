@@ -1512,7 +1512,7 @@ public class Evaluator implements JavaParserVisitor {
                 // Try to get arguments
                 try {
                     org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                    lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                    lvs = new CallStackFrameImpl(((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
                                                  frame, 0, evaluationContext.getDebugger()).getMethodArguments();
                     if (lvs != null) {
                         for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
@@ -1650,7 +1650,7 @@ public class Evaluator implements JavaParserVisitor {
         // return special variable
         if (expression.returnReplaced().equals(ctx.identifier)) {
             ThreadReference tr = frame.thread();
-            JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
+            JPDAThreadImpl thread = evaluationContext.getDebugger().getThread(tr);
             JDIVariable returnVar = (JDIVariable) thread.getReturnVariable();
             if (returnVar != null) {
                 return returnVar.getJDIValue();

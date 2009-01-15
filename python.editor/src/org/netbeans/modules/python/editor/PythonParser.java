@@ -32,14 +32,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.BaseRecognizer;
-import org.antlr.runtime.BitSet;
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.IntStream;
-import org.antlr.runtime.Lexer;
-import org.antlr.runtime.MismatchedTokenException;
-import org.antlr.runtime.RecognitionException;
+import org.python.antlr.runtime.ANTLRStringStream;
+import org.python.antlr.runtime.BaseRecognizer;
+import org.python.antlr.runtime.BitSet;
+import org.python.antlr.runtime.CommonToken;
+import org.python.antlr.runtime.IntStream;
+import org.python.antlr.runtime.Lexer;
+import org.python.antlr.runtime.MismatchedTokenException;
+import org.python.antlr.runtime.RecognitionException;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.Parser;
@@ -198,8 +198,8 @@ public class PythonParser implements Parser {
                         if (re instanceof MismatchedTokenException) {
                             MismatchedTokenException m = (MismatchedTokenException)re;
                             if (m.token != null) {
-                                if (m.token instanceof org.antlr.runtime.CommonToken) {
-                                    CommonToken token = (org.antlr.runtime.CommonToken)m.token;
+                                if (m.token instanceof org.python.antlr.runtime.CommonToken) {
+                                    CommonToken token = (org.python.antlr.runtime.CommonToken)m.token;
                                     start = token.getStartIndex();
                                     end = token.getStopIndex();
                                 }
@@ -262,7 +262,7 @@ public class PythonParser implements Parser {
         } catch (Throwable t) {
             runtimeException = t;
             StackTraceElement[] stackTrace = t.getStackTrace();
-            if (stackTrace != null && stackTrace.length > 0 && stackTrace[0].getClassName().equals("org.antlr.runtime.tree.RewriteRuleElementStream")) {
+            if (stackTrace != null && stackTrace.length > 0 && stackTrace[0].getClassName().equals("org.python.antlr.runtime.tree.RewriteRuleElementStream")) {
                 // This is issue 150921
                 // Don't bug user about it -- we already know
                 Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Encountered issue #150921", t);

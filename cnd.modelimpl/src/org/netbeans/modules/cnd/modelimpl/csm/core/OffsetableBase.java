@@ -153,7 +153,6 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         UIDObjectFactory.getDefaultFactory().writeUID(this.fileUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     protected OffsetableBase(DataInput input) throws IOException {
         startPosition = input.readInt();
         endPosition = input.readInt();
