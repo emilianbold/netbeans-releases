@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
@@ -205,7 +206,11 @@ public final class SemanticHighlighter extends HighlighterBase {
                 seq = old.getHighlights(0, Integer.MAX_VALUE);
                 while (seq.moveNext()) {
                     if (!set.contains(seq.getAttributes())) {
-                        addHighlightsToBag(tempBag, seq.getStartOffset(), seq.getEndOffset(), seq.getAttributes(), "cached"); //NOI18N
+                        int startOffset = getDocumentOffset(doc, seq.getStartOffset());
+                        int endOffset = getDocumentOffset(doc, seq.getEndOffset());
+                        if (startOffset < doc.getLength() && endOffset > 0) {
+                            addHighlightsToBag(tempBag, startOffset, endOffset, seq.getAttributes(), "cached"); //NOI18N
+                        }
                     }
                 }
                 getHighlightsBag(doc).setHighlights(tempBag);
@@ -239,8 +244,15 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     private void addHighlightsToBag(PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
-        for (CsmOffsetable block : blocks) {
-            addHighlightsToBag(bag, block.getStartOffset(), block.getEndOffset(), entity.getAttributes(block), entity.getName());
+        Document doc = getDocument();
+        if (doc != null) {
+            for (CsmOffsetable block : blocks) {
+                int startOffset = getDocumentOffset(doc, block.getStartOffset());
+                int endOffset = getDocumentOffset(doc, block.getEndOffset());
+                if (startOffset < doc.getLength() && endOffset > 0) {
+                    addHighlightsToBag(bag, startOffset, endOffset, entity.getAttributes(block), entity.getName());
+                }
+            }
         }
     }
 
@@ -253,6 +265,10 @@ public final class SemanticHighlighter extends HighlighterBase {
         } catch (BadLocationException ex) {
             LOG.log(Level.FINE, "Can't add highlight <" + start + ", " + end + ", " + nameToStateInLog + ">", ex);
         }
+    }
+
+    private static int getDocumentOffset(Document doc, int fileOffset) {
+        return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
     }
 
     // PhaseRunner
