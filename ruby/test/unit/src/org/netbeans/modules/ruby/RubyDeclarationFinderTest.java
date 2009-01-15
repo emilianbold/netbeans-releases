@@ -128,9 +128,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestClassDeclarationWithNonExistingMethod() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+        forceIndexing(fo);
 
         // tests that the class declaration is found even if the given method doesn't exist
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/a_non_existing_method", true);
