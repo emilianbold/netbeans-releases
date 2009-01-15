@@ -310,15 +310,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
         CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
-        Collection<CsmClassifier> out = new LazyCsmCollection<CsmClassifier, CsmClassifier>(new ArrayList<CsmUID<CsmClassifier>>(), TraceFlags.SAFE_UID_ACCESS);
+        Collection<CsmClassifier> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmClassifier>>());
+        //Collection<CsmClassifier> out = new LazyCsmCollection<CsmClassifier, CsmClassifier>(new ArrayList<CsmUID<CsmClassifier>>(), TraceFlags.SAFE_UID_ACCESS);
         if (result != null) {
             if (CsmKindUtilities.isBuiltIn(result)) {
                 return Collections.<CsmClassifier>singletonList(result);
             }
             CharSequence[] allClassifiersUniqueNames = Utils.getAllClassifiersUniqueNames(result.getUniqueName());
             for (CharSequence curUniqueName : allClassifiersUniqueNames) {
-                Collection decls = this.findDeclarations(curUniqueName);
-                out.addAll(decls);
+                Collection<? extends CsmDeclaration> decls = this.findDeclarations(curUniqueName);
+                Collection<CsmClassifier> classifiers = (Collection<CsmClassifier>)decls;
+                out.addAll(classifiers);
             }
         }
         return out;
