@@ -895,7 +895,10 @@ public class DatabaseConnection implements DBConnection {
         Collection<? extends Node> children = root.getChildNodes();
         for (Node node : children) {
             if (node instanceof ConnectionNode) {
-                return (ConnectionNode)node;
+                ConnectionNode cnode = (ConnectionNode)node;
+                if (cnode.getName().equals(connection)) {
+                    return cnode;
+                }
             }
         }
 
