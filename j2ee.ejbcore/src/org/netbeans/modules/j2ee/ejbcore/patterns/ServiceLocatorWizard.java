@@ -52,6 +52,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -106,12 +107,18 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
         DataObject dobj = dTemplate.createFromTemplate( dataFolder, clsName);
         String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg);
         String fullName = (pkgName.length()>0?pkgName+'.':"")+clsName;
-        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-                project.getLookup().lookup(EnterpriseReferenceContainer.class);
+        EnterpriseReferenceContainer erc = project.getLookup().lookup(EnterpriseReferenceContainer.class);
         if (erc != null) {
             erc.setServiceLocatorName(fullName);
         }
         FileObject createdFile = dobj.getPrimaryFile();
+        //#156674
+        ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+        if (modifier != null) {
+            modifier.extendClasspath(dobj.getPrimaryFile(), new String[] {
+                ContainerClassPathModifier.API_J2EE
+            });
+        }
         
         return Collections.singleton(createdFile); 
     }

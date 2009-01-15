@@ -256,10 +256,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                final String serviceName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
-                        MavenModelUtils.addWsdlFile(plugin, relativePath);
+                        MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
                         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
                         if (provider != null) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);

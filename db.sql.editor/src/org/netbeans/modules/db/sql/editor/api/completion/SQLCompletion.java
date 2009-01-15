@@ -48,6 +48,7 @@ import org.netbeans.modules.db.sql.editor.completion.SQLCompletionQuery;
  * @author Andrei Badea
  */
 public class SQLCompletion {
+    public static final String UNKNOWN_TAG = "__UNKNOWN__"; // NOI8N
 
     private final SQLCompletionContext initContext;
     private final SQLCompletionQuery delegate;

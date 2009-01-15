@@ -51,6 +51,7 @@ public class JaxWsService {
     private String wsdlLocation;
     private String implementationClass;
     private boolean serviceProvider = true;
+    private String handlerBindingFile;
 
     /** Constructor useful to create web service based on @WebService annotation (WS from Java).
      *
@@ -173,6 +174,22 @@ public class JaxWsService {
      */
     public void setWsdlLocation(String wsdlLocation) {
         this.wsdlLocation = wsdlLocation;
+    }
+
+    /** Returns handler binding file information.
+     *
+     * @return handler binding file path
+     */
+    public String getHandlerBindingFile() {
+        return handlerBindingFile;
+    }
+
+    /** Sets handler binding file information.
+     *
+     * @param handlerBindingFile handler binding file
+     */
+    public void setHandlerBindingFile(String handlerBindingFile) {
+        this.handlerBindingFile = handlerBindingFile;
     }
 
 }

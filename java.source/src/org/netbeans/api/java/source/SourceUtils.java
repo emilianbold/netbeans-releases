@@ -492,19 +492,23 @@ public class SourceUtils {
             pageName = PACKAGE_SUMMARY;
         }
         else {
-            Element prev = null;
-            Element enclosing = element;
-            while (enclosing.getKind() != ElementKind.PACKAGE) {
-                prev = enclosing;
-                enclosing = enclosing.getEnclosingElement();
+            Element e = element;
+            StringBuilder sb = new StringBuilder();
+            while(e.getKind() != ElementKind.PACKAGE) {
+                if (e.getKind().isClass() || e.getKind().isInterface()) {
+                    if (sb.length() > 0)
+                        sb.insert(0, '.');
+                    sb.insert(0, e.getSimpleName());
+                    if (clsSym == null)
+                        clsSym = (ClassSymbol)e;
+                }
+                e = e.getEnclosingElement();
             }
-            if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
+            if (clsSym == null)
                 return null;
-            }
-            clsSym = (ClassSymbol)prev;
-            pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
-            pageName = clsSym.getSimpleName().toString();
-            buildFragment = element != prev;
+            pkgName = FileObjects.convertPackage2Folder(((PackageElement)e).getQualifiedName().toString());
+            pageName = sb.toString();
+            buildFragment = element != clsSym;
         }
         
         if (clsSym.completer != null) {

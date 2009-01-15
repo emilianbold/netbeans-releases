@@ -44,7 +44,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
@@ -55,7 +54,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -76,7 +74,7 @@ import org.openide.util.NbBundle;
  *
  * @author Max Sauer
  */
-public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
+public class KeymapPanel extends javax.swing.JPanel implements ActionListener, Popupable {
 
     // Delay times for incremental search [ms]
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
@@ -89,12 +87,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
     //search fields
     private Popup searchPopup;
-    JList list  = new JList();
+    private SpecialkeyPanel specialkeyList;
 
     /** Creates new form KeymapPanel */
     public KeymapPanel() {
         sorter = new TableSorter(getModel());
         initComponents();
+        specialkeyList = new SpecialkeyPanel(this, searchSCField);
         actionsTable = new JTable() {
             int lastRow;
             int lastColumn;
@@ -198,28 +197,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         popup.add(new ShortcutPopupPanel(actionsTable, popup));
         cbProfile.addActionListener(this);
         manageButton.addActionListener(this);
-
-        list.setListData(new String[] {"TAB", "ESCAPE"});//NOI18N
-        list.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (searchPopup != null) {
-                    searchPopup.hide();
-                    searchPopup = null;
-                }
-
-                int index = list.locationToIndex(new Point(e.getX(), e.getY()));
-                String scText = searchSCField.getText();
-                final String space = " "; //NOI18N
-                if (scText.length() == 0 || scText.endsWith(space) || scText.endsWith("+"))
-                    searchSCField.setText(scText + list.getModel().getElementAt(index));
-                else
-                    searchSCField.setText(scText + space + list.getModel().getElementAt(index));
-
-                    
-            }
-        });
     }
 
     //todo: merge with update
@@ -467,14 +444,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
      * Shows popup with ESC and TAB keys
      */
     private void moreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moreButtonActionPerformed
-        if (searchPopup == null) {
-            JComponent tf = (JComponent) evt.getSource();
-            Point p = new Point(tf.getX(), tf.getY());
-            SwingUtilities.convertPointToScreen(p, this);
-            //show special key popup
-            searchPopup = PopupFactory.getSharedInstance().getPopup(this, list, p.x, p.y);
-            searchPopup.show();
-        }
+        JComponent tf = (JComponent) evt.getSource();
+        Point p = new Point(tf.getX(), tf.getY());
+        SwingUtilities.convertPointToScreen(p, this);
+        //show special key popup
+        searchPopup = PopupFactory.getSharedInstance().getPopup(this, specialkeyList, p.x, p.y);
+        searchPopup.show();
 }//GEN-LAST:event_moreButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -493,6 +468,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     private javax.swing.JScrollPane spShortcuts;
     // End of variables declaration//GEN-END:variables
 
+
+    public Popup getPopup() {
+        return searchPopup;
+    }
 
     class ButtonCellMouseListener implements MouseListener {
 

@@ -299,7 +299,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
     
-    @SuppressWarnings("unchecked")
     private void addNestedNamespace(NamespaceImpl nsp) {
         assert nsp != null;
         CsmUID<CsmNamespace> nestedNsUid = RepositoryUtils.put(nsp);
@@ -432,7 +431,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return defs;
     }
     
-    @SuppressWarnings("unchecked")
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
         CsmUID<CsmNamespaceDefinition> definitionUid = RepositoryUtils.put(def);
         try {
@@ -581,7 +579,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
     }
     
-    @SuppressWarnings("unchecked")
     public NamespaceImpl(DataInput input) throws IOException {
         this.global = input.readBoolean();
         

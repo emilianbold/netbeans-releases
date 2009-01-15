@@ -264,7 +264,6 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }  
 
-    @SuppressWarnings("unchecked")
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
