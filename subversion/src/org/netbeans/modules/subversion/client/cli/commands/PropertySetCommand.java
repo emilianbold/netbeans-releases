@@ -100,11 +100,14 @@ public class PropertySetCommand extends SvnCommand {
         switch (type) {
             case string: 
                 arguments.add(propName);
+                String propFileName = null;
                 if(propValue != null && propValue.trim().equals("")){
-                    arguments.add("'" + propValue + "'");
+                    propFileName = createTempCommandFile("'" + propValue + "'");
                 } else {
-                    arguments.add(propValue);
+                    propFileName = createTempCommandFile(propValue);
                 }
+                arguments.add("-F");    // NOI18N
+                arguments.add(propFileName);
                 arguments.add(file);
                 break;
             case file:     
