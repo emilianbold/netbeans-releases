@@ -48,7 +48,6 @@ public final class PhpUnitConstants {
     static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
 
     // cli options
-    static final String PARAM_NO_SYNTAX_CHECK = "--no-syntax-check"; // NOI18N
     static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
     static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
 

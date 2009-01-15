@@ -262,7 +262,6 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                 .workingDirectory(parent)
                 .addArgument(PhpUnitConstants.PARAM_SKELETON)
-                .addArgument(PhpUnitConstants.PARAM_NO_SYNTAX_CHECK)
                 .addArgument(sourceFo.getName())
                 .addArgument(sourceFo.getNameExt());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
