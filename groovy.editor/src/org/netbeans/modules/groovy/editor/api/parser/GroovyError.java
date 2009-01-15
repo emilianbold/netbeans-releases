@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.modules.csl.api.annotations.Nullable;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.openide.filesystems.FileObject;
 
@@ -67,10 +66,10 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
 
     /** Creates a new instance of GroovyError */
     public GroovyError(
-            @Nullable String key,
+            @NullAllowed String key,
             @NonNull String displayName,
-            @Nullable String description,
-            @CheckForNull FileObject file,
+            @NullAllowed String description,
+            @NullAllowed FileObject file,
             @NonNull int start,
             @NonNull int end,
             @NonNull Severity severity,
