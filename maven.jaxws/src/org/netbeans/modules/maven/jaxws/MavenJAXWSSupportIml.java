@@ -155,26 +155,4 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
-
-//    private String getWsdlDir() {
-//        MavenProject mavproj = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
-//        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavproj);
-//        if (jaxWsPlugin != null) {
-//            String dirPath = PluginPropertyUtils.getPluginProperty(prj,
-//                    "org.codehaus.mojo", //NOI18N
-//                    "jaxws-maven-plugin", //NOI18N
-//                    "wsdlDirectory", //NOI18N
-//                    "wsimport"); //NOI18N
-//            if (dirPath != null) {
-//                return dirPath;
-//            } else {
-//                return "src/wsdl"; //NOI18N
-//            }
-//        } else {
-//            //TODO  is null or src/wsdl correct?
-//            return "src/wsdl"; //NOI18N
-//        }
-//    }
-
-
 }
