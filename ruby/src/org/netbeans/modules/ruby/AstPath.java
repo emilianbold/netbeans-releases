@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
 
 
 /**
@@ -63,6 +63,7 @@ import org.netbeans.modules.gsf.api.annotations.CheckForNull;
  * @author Tor Norbye
  */
 public class AstPath implements Iterable<Node> {
+    
     private ArrayList<Node> path = new ArrayList<Node>(30);
 
     public AstPath() {

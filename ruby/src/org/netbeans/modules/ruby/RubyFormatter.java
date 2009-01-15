@@ -42,25 +42,23 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.util.Exceptions;
-
 
 /**
  * Formatting and indentation for Ruby.
@@ -89,7 +87,8 @@ end
  *
  * @author Tor Norbye
  */
-public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
+public class RubyFormatter implements Formatter {
+
     private boolean isEmbeddedDoc;
     private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;
@@ -132,7 +131,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void reformat(Context context, CompilationInfo info) {
+    public void reformat(Context context, ParserResult info) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -496,7 +495,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     @SuppressWarnings("deprecation") // For the doc.getFormatter() part -- I need it when called from outside an indentation api context (such as in preview form)
-    public void reindent(final Context context, Document document, int startOffset, int endOffset, CompilationInfo info,
+    public void reindent(final Context context, Document document, int startOffset, int endOffset, ParserResult info,
         final boolean indentOnly) {
 
         isEmbeddedDoc = RubyUtils.isRhtmlDocument(document) || RubyUtils.isYamlDocument(document);
@@ -616,7 +615,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, CompilationInfo info,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly

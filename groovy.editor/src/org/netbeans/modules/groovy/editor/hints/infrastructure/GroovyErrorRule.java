@@ -43,10 +43,10 @@ package org.netbeans.modules.groovy.editor.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
-import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 
 /** 
  * Represents a rule to be run on the Groovy source in case the compiler 

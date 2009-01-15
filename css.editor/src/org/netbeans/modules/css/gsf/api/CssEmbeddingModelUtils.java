@@ -41,6 +41,8 @@ package org.netbeans.modules.css.gsf.api;
 
 /**
  *
+ * todo fix this class
+ *
  * @author marekfukala
  */
 public class CssEmbeddingModelUtils {

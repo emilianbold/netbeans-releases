@@ -44,12 +44,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
-import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public abstract class RubyTestBase extends GsfTestBase {
+public abstract class RubyTestBase extends CslTestBase {
 
     private FileObject testRubyHome;
 

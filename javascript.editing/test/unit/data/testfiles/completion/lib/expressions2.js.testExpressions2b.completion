@@ -1,6 +1,6 @@
 Code completion result for source line:
 document.images[0].ownerDocument.|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     adoptNode(externalNode) : Node             Document
 METHOD     appendChild(Node newChild) : N             Node
 METHOD     clear() : void                             Document

@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**

@@ -43,11 +43,11 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -59,18 +59,17 @@ abstract class RubyDeclarationFinderHelper {
 
     protected static final boolean CHOOSE_ONE_DECLARATION = Boolean.getBoolean("ruby.choose_one_decl");
 
-    protected static DeclarationLocation fix(final DeclarationLocation location, final CompilationInfo info) {
+    protected static DeclarationLocation fix(final DeclarationLocation location, final ParserResult result) {
         if ((location != DeclarationLocation.NONE) && (location.getFileObject() == null) &&
                 (location.getUrl() == null)) {
-            return new DeclarationLocation(info.getFileObject(), location.getOffset(), location.getElement());
+            return new DeclarationLocation(RubyUtils.getFileObject(result), location.getOffset(), location.getElement());
         }
-
         return location;
     }
 
-    protected static DeclarationLocation getLocation(final CompilationInfo info, final Node node) {
-        AstElement element = AstElement.create(info, node);
-        int lexOffset = LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset());
+    protected static DeclarationLocation getLocation(final ParserResult result, final Node node) {
+        AstElement element = AstElement.create(result, node);
+        int lexOffset = LexUtilities.getLexerOffset(result, node.getPosition().getStartOffset());
         return new DeclarationLocation(null, lexOffset, element);
     }
 
@@ -129,7 +128,7 @@ abstract class RubyDeclarationFinderHelper {
                 }
 
                 String filename = null;
-                String url = element.getFilenameUrl();
+                String url = element.getFileUrl();
                 if (url == null) {
                     // Deleted file?
                     // Just leave out the file name
@@ -216,7 +215,7 @@ abstract class RubyDeclarationFinderHelper {
         }
 
         public DeclarationLocation getLocation() {
-            Node node = AstUtilities.getForeignNode(element, (Node[]) null);
+            Node node = AstUtilities.getForeignNode(element);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
                     lineOffset, element);

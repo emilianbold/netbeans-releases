@@ -41,30 +41,29 @@ package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.api.completion.*;
 import groovy.lang.MetaMethod;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 import org.openide.util.ImageUtilities;
 
 
@@ -465,9 +464,9 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         private final String keyword;
         private final String description;
         private final boolean isGroovy;
-        private final CompilationInfo info;
+        private final ParserResult info;
 
-        public KeywordItem(String keyword, String description, int anchorOffset, CompilationInfo info, boolean isGroovy) {
+        public KeywordItem(String keyword, String description, int anchorOffset, ParserResult info, boolean isGroovy) {
             super(null, anchorOffset);
             this.keyword = keyword;
             this.description = description;
@@ -529,9 +528,9 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String keyword;
 
-        private final CompilationInfo info;
+        private final ParserResult info;
 
-        public PackageItem(String keyword, int anchorOffset, CompilationInfo info) {
+        public PackageItem(String keyword, int anchorOffset, ParserResult info) {
             super(null, anchorOffset);
             this.keyword = keyword;
             this.info = info;
@@ -802,13 +801,13 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String name;
 
-        private final CompilationInfo info;
+        private final ParserResult info;
 
         private final String typeName;
 
         private final int modifiers;
 
-        public FieldItem(String name, int modifiers, int anchorOffset, CompilationInfo info, String typeName) {
+        public FieldItem(String name, int modifiers, int anchorOffset, ParserResult info, String typeName) {
             super(null, anchorOffset);
             this.name = name;
             this.info = info;

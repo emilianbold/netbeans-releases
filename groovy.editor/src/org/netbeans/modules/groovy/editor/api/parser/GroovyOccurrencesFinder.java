@@ -45,17 +45,20 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -68,17 +71,16 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  * @author Matthias Schmidt
  */
-public class GroovyOccurrencesFinder implements OccurrencesFinder {
+public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResult> {
 
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
     private FileObject file;
-    private final Logger LOG = Logger.getLogger(GroovyOccurrencesFinder.class.getName());
+    private static final Logger LOG = Logger.getLogger(GroovyOccurrencesFinder.class.getName());
 
     public GroovyOccurrencesFinder() {
         super();
-        // LOG.setLevel(Level.FINEST);
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
@@ -98,7 +100,18 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) {
+    @Override
+    public int getPriority() {
+        return 200;
+    }
+
+    @Override
+    public final Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public void run(GroovyParserResult result, SchedulerEvent event) {
         LOG.log(Level.FINEST, "run()"); //NOI18N
         
         resume();
@@ -106,22 +119,23 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
-        FileObject currentFile = info.getFileObject();
+        FileObject currentFile = result.getSnapshot().getSource().getFileObject();
+        // FIXME parsing API - null file
         if (currentFile != file) {
             // Ensure that we don't reuse results from a different file
             occurrences = null;
             file = currentFile;
         }
 
-        ModuleNode rootNode = AstUtilities.getRoot(info);
+        ModuleNode rootNode = AstUtilities.getRoot(result);
         if (rootNode == null) {
             return;
         }
-        int astOffset = AstUtilities.getAstOffset(info, caretPosition);
+        int astOffset = AstUtilities.getAstOffset(result, caretPosition);
         if (astOffset == -1) {
             return;
         }
-        BaseDocument document = (BaseDocument) info.getDocument();
+        BaseDocument document = LexUtilities.getDocument(result, false);
         if (document == null) {
             LOG.log(Level.FINEST, "Could not get BaseDocument. It's null"); //NOI18N
             return;
@@ -147,7 +161,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         if (highlights.size() > 0) {
             Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange, ColoringAttributes>(2 * highlights.size());
             for (Map.Entry<OffsetRange, ColoringAttributes> entry : highlights.entrySet()) {
-                OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                OffsetRange range = LexUtilities.getLexerOffsets(result, entry.getKey());
                 if (range != OffsetRange.NONE) {
                     translated.put(range, entry.getValue());
                 }

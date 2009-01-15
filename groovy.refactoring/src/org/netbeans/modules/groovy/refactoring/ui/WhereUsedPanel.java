@@ -46,17 +46,19 @@ import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.parsing.api.UserTask;
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
@@ -87,21 +89,20 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     
     public void initialize() {
         if (initialized) return;
-        CancellableTask<GroovyParserResult> task =new CancellableTask<GroovyParserResult>() {
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
+        UserTask task = new UserTask() {
             
             // TODO - handle methods in modules!!!!
             private String getClassName(GroovyRefactoringElement element) {
                 return element.getDefClass();
             }
-            
+
             /**
              * @todo For method calls, try to figure out the call type with the type analyzer
              */
-            public void run(GroovyParserResult info) throws Exception {
-//                info.toPhase(Phase.RESOLVED);
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                GroovyParserResult info = AstUtilities.getParseResult(resultIterator.getParserResult());
+
                 String m_isBaseClassText = null;
                 final String labelText;
                 Set<Modifier> modif = new HashSet<Modifier>();

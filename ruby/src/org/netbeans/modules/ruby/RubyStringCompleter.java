@@ -47,10 +47,10 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.RubyCompletionItem.ClassItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.KeywordItem;
 import org.netbeans.modules.ruby.elements.CommentElement;
@@ -300,8 +300,8 @@ final class RubyStringCompleter extends RubyBaseCompleter {
                                 // Do require-completion
                                 Set<String[]> requires =
                                         getIndex().getRequires(prefix,
-                                        caseSensitive ? NameKind.PREFIX
-                                        : NameKind.CASE_INSENSITIVE_PREFIX);
+                                        caseSensitive ? QuerySupport.Kind.PREFIX
+                                        : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 
                                 for (String[] require : requires) {
                                     assert require.length == 2;

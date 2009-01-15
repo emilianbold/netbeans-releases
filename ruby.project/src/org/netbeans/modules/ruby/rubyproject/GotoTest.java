@@ -41,8 +41,7 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,19 +49,19 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -348,126 +347,124 @@ public class GotoTest implements TestLocator {
     }
     
     private DeclarationLocation findTestPair(FileObject fo, final int offset, final boolean findTest) {
-        SourceModel js = SourceModelFactory.getInstance().getModel(fo);
+        Source source = Source.create(fo);
 
-        if (js == null) {
+        if (source == null) {
             return DeclarationLocation.NONE;
         }
 
-        if (js.isScanInProgress()) {
-            return DeclarationLocation.NONE;
-        }
+        // XXX Parsing API
+//        if (js.isScanInProgress()) {
+//            return DeclarationLocation.NONE;
+//        }
 
-        final DeclarationLocation[] result = new DeclarationLocation[1];
-        result[0] = DeclarationLocation.NONE;
+        final DeclarationLocation[] locationResult = new DeclarationLocation[1];
+        locationResult[0] = DeclarationLocation.NONE;
 
         try {
-            js.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                    public void cancel() {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Parser.Result parserResult = resultIterator.getParserResult();
+                    Node root = AstUtilities.getRoot(parserResult);
+
+                    if (root == null) {
+                        return;
                     }
 
-                    public void run(CompilationInfo info) {
-                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
+                    org.jruby.nb.ast.ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
 
-                        if (root == null) {
-                            return;
-                        }
+                    if (cls == null) {
+                        // It's possible the user had the caret on a line
+                        // that includes a method that isn't actually inside
+                        // the method block - such as the beginning of the
+                        // "def" line, or the end of a line after "end".
+                        // The latter isn't very likely, but the former can
+                        // happen, so let's check the method bodies at the
+                        // end of the current line
+                        try {
+                            BaseDocument doc = RubyUtils.getDocument(parserResult);
+                            int endOffset = Utilities.getRowEnd(doc, offset);
 
-                        org.jruby.nb.ast.ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
-
-                        if (cls == null) {
-                            // It's possible the user had the caret on a line
-                            // that includes a method that isn't actually inside
-                            // the method block - such as the beginning of the
-                            // "def" line, or the end of a line after "end".
-                            // The latter isn't very likely, but the former can
-                            // happen, so let's check the method bodies at the
-                            // end of the current line
-                            try {
-                                BaseDocument doc = (BaseDocument)info.getDocument();
-                                int endOffset = Utilities.getRowEnd(doc, offset);
-
-                                if (endOffset != offset) {
-                                    cls = AstUtilities.findClassAtOffset(root, endOffset);
-                                }
-                            } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
+                            if (endOffset != offset) {
+                                cls = AstUtilities.findClassAtOffset(root, endOffset);
                             }
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
                         }
+                    }
 
-                        // TODO - look up the specific method at the caret and use it
-                        // to pick a corresponding test method!
-                        // MethodDefNode method = AstUtilities.findMethodAtOffset(root, endOffset);
-                        if (cls != null) {
-                            RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE));
+                    // TODO - look up the specific method at the caret and use it
+                    // to pick a corresponding test method!
+                    // MethodDefNode method = AstUtilities.findMethodAtOffset(root, endOffset);
+                    if (cls != null) {
+                        RubyIndex index = RubyIndex.get(parserResult);
 
-                            if (index != null) {
-                                String className = AstUtilities.getClassOrModuleName(cls);
+                        if (index != null) {
+                            String className = AstUtilities.getClassOrModuleName(cls);
 
-                                String TEST = "Test"; // NOI18N
+                            String TEST = "Test"; // NOI18N
 
-                                if (findTest) {
-                                    // Foo => FooTest
-                                    String name = className + TEST;
+                            if (findTest) {
+                                // Foo => FooTest
+                                String name = className + TEST;
+                                DeclarationLocation location = findClass(name, index);
+
+                                if (location != DeclarationLocation.NONE) {
+                                    locationResult[0] = location;
+
+                                    return;
+                                }
+
+                                // Foo => TestFoo
+                                name = TEST + className;
+                                location = findClass(name, index);
+
+                                if (location != DeclarationLocation.NONE) {
+                                    locationResult[0] = location;
+
+                                    return;
+                                }
+                            } else {
+                                // FooTest => Foo
+                                if (className.endsWith(TEST)) {
+                                    String name =
+                                            className.substring(0, className.length() - TEST.length());
                                     DeclarationLocation location = findClass(name, index);
 
                                     if (location != DeclarationLocation.NONE) {
-                                        result[0] = location;
+                                        locationResult[0] = location;
 
                                         return;
                                     }
+                                }
 
-                                    // Foo => TestFoo
-                                    name = TEST + className;
-                                    location = findClass(name, index);
+                                // TestFoo => Foo
+                                if (className.startsWith(TEST)) {
+                                    String name = className.substring(TEST.length());
+                                    DeclarationLocation location = findClass(name, index);
 
                                     if (location != DeclarationLocation.NONE) {
-                                        result[0] = location;
+                                        locationResult[0] = location;
 
                                         return;
-                                    }
-                                } else {
-                                    // FooTest => Foo
-                                    if (className.endsWith(TEST)) {
-                                        String name =
-                                            className.substring(0, className.length() - TEST.length());
-                                        DeclarationLocation location = findClass(name, index);
-
-                                        if (location != DeclarationLocation.NONE) {
-                                            result[0] = location;
-
-                                            return;
-                                        }
-                                    }
-
-                                    // TestFoo => Foo
-                                    if (className.startsWith(TEST)) {
-                                        String name = className.substring(TEST.length());
-                                        DeclarationLocation location = findClass(name, index);
-
-                                        if (location != DeclarationLocation.NONE) {
-                                            result[0] = location;
-
-                                            return;
-                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }, true);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                }
+            });
+        } catch (ParseException pe) {
+            Exceptions.printStackTrace(pe);
         }
 
-        return result[0];
+        return locationResult[0];
     }
 
     private DeclarationLocation findClass(String className, RubyIndex index) {
-        // Deps?
-        Set<SearchScope> scope = EnumSet.of(SearchScope.SOURCE /*,SearchScope.DEPENDENCIES*/);
         Set<IndexedClass> classes =
-            index.getClasses(className, NameKind.EXACT_NAME, true, false, false /*?*/, scope, null);
+            index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false /*?*/, null);
 
         // First look for candidates whose filenames contain test or tc
         // Second look for candidates whose paths contain test
@@ -479,7 +476,7 @@ public class GotoTest implements TestLocator {
 
             if (fo != null) {
                 int offset = 0;
-                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c, (Node[])null);
+                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c);
 
                 if (node != null) {
                     offset = node.getPosition().getStartOffset();

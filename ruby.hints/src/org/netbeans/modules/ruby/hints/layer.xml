@@ -42,7 +42,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="gsf-hints">
+    <folder name="csl-hints">
         <folder name="text">
             <folder name="x-ruby">
                 <folder name="errors">
@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-ruby">
                 <file name="hints.instance">

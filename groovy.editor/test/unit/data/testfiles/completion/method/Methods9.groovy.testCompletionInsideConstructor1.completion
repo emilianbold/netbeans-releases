@@ -1,6 +1,6 @@
 Code completion result for source line:
 new File("/").equals(new Date().a|)
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     addShutdownHook(Closure)                   void
 METHOD     after(Date)                     [PUBLIC]   boolean

@@ -41,28 +41,17 @@
 
 package org.netbeans.modules.refactoring.javascript.plugins;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
-import org.netbeans.modules.refactoring.javascript.JsElementCtx;
-import org.openide.ErrorManager;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 
 /**
  *
  * @author Jan Becicka
  */
 public abstract class SearchVisitor {
-    protected WorkingCopy workingCopy;
+    protected JsParseResult workingCopy;
     
-    public void setWorkingCopy(WorkingCopy workingCopy) {
+    public void setWorkingCopy(JsParseResult workingCopy) {
         this.workingCopy = workingCopy;
-        try {
-            this.workingCopy.toPhase(Phase.RESOLVED);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
     }
     
     public abstract void scan();
