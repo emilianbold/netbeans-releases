@@ -52,14 +52,20 @@ import java.io.IOException;
  * Implements CsmParameter
  * @author Vladimir Kvashin
  */
-public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
+public final class ParameterEllipsisImpl extends ParameterImpl {
 
-    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope) {
-        super(ast, file, type, name, scope, false);
+    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+        super(ast, file, type, "...", scope);
     }
 
+    @Override
     public boolean isVarArgs() {
-        return false;
+        return true;
+    }
+    
+    @Override
+    public CharSequence getDisplayText() {
+        return "..."; //NOI18N
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -68,17 +74,9 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);      
-        // write UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.writeUID(output);
-        }
     }  
     
-    public ParameterImpl(DataInput input) throws IOException {
+    public ParameterEllipsisImpl(DataInput input) throws IOException {
         super(input);
-        // restore UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.readUID(input);
-        }        
     } 
 }
