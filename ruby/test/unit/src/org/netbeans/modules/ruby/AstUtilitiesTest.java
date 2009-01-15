@@ -65,14 +65,12 @@ import org.jruby.nb.ast.ReturnNode;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
  * @todo Lots of other methods to test!
  *  
  * @author Tor Norbye
@@ -265,48 +263,48 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testGuessName() throws Exception {
-        //public static String guessName(CompilationInfo info, OffsetRange lexRange, OffsetRange astRange) {
-        GsfTestCompilationInfo info = getInfo("testfiles/arguments.rb");
-        String text = info.getText();
+        //public static String guessName(ParserResult info, OffsetRange lexRange, OffsetRange astRange) {
+        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        String text = getText(parserResult);
 
         int caretOffset = getCaretOffset(text, "call1(^x)");
         OffsetRange range = new OffsetRange(caretOffset, caretOffset);
-        String name = AstUtilities.guessName(info, range, range);
+        String name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("foo", name);
 
         caretOffset = getCaretOffset(text, "call2(^y)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("foo", name);
 
         caretOffset = getCaretOffset(text, "call3(^x,y,z)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("a", name);
 
         caretOffset = getCaretOffset(text, "call3(x,^y,z)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("b", name);
 
         caretOffset = getCaretOffset(text, "call4(^x,y,z,w)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("a", name);
 
         caretOffset = getCaretOffset(text, "call4(x,^y,z,w)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("b", name);
 
         caretOffset = getCaretOffset(text, "call4(x,y,^z,w)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("c", name);
 
         caretOffset = getCaretOffset(text, "call4(x,y,z,^w)");
         range = new OffsetRange(caretOffset, caretOffset);
-        name = AstUtilities.guessName(info, range, range);
+        name = AstUtilities.guessName(parserResult, range, range);
         assertEquals("d", name);
     }
 
@@ -315,11 +313,11 @@ public class AstUtilitiesTest extends RubyTestBase {
     public void testStress() throws Throwable {
         List<FileObject> files = findJRubyRubyFiles();
         for (FileObject file : files) {
-            CompilationInfo info = getInfo(file);
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            Parser.Result parserResult = getParserResult(file);
+            BaseDocument doc = RubyUtils.getDocument(parserResult);
             assertNotNull(doc);
             List<Node> allNodes = new ArrayList<Node>();
-            Node root = AstUtilities.getRoot(info);
+            Node root = AstUtilities.getRoot(parserResult);
             if (root == null || root.isInvisible()) {
                 continue;
             }
@@ -409,12 +407,10 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments1() throws Exception {
-
-        GsfTestCompilationInfo info = getInfo("testfiles/ape.rb");
-        assertNotNull(info);
-        String text = info.getText();
+        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        String text = getText(parserResult);
         int caretOffset = getCaretOffset(text, "might_^fail(uri, requested_e_coll, requested_m_coll)");
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(parserResult);
         AstPath path = new AstPath(root, caretOffset);
         Node call = path.leaf();
         assertTrue(AstUtilities.isCall(call));
@@ -442,13 +438,12 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments2() throws Exception {
-        GsfTestCompilationInfo info = getInfo("testfiles/rubygems.rb");
-        assertNotNull(info);
-        String text = info.getText();
+        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        String text = getText(parserResult);
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "MUTEX = Mutex.^new");
 
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(parserResult);
         AstPath path = new AstPath(root, caretOffset);
         Node call = path.leaf();
         assertTrue(AstUtilities.isCall(call));
@@ -458,13 +453,12 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments3() throws Exception {
-        GsfTestCompilationInfo info = getInfo("testfiles/rubygems.rb");
-        assertNotNull(info);
-        String text = info.getText();
+        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        String text = getText(parserResult);
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "Gem.ac^tivate(gem_name, *version_requirements)");
 
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(parserResult);
         AstPath path = new AstPath(root, caretOffset);
         Node call = path.leaf();
         assertTrue(AstUtilities.isCall(call));

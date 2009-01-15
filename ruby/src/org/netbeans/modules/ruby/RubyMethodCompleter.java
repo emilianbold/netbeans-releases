@@ -56,7 +56,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.RubyCompletionItem.DbItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.MethodItem;
@@ -289,11 +289,11 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
      * we're not in a method call. The argument index is returned in
      * parameterIndexHolder[0] and the method being called in methodHolder[0].
      */
-    static boolean computeMethodCall(ParserResult info, int lexOffset, int astOffset,
+    static boolean computeMethodCall(Parser.Result parserResult, int lexOffset, int astOffset,
             IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder,
             Set<IndexedMethod>[] alternativesHolder, QuerySupport.Kind kind) {
         try {
-            Node root = AstUtilities.getRoot(info);
+            Node root = AstUtilities.getRoot(parserResult);
 
             if (root == null) {
                 return false;
@@ -309,7 +309,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             int originalAstOffset = astOffset;
 
             // Adjust offset to the left
-            BaseDocument doc = RubyUtils.getDocument(info);
+            BaseDocument doc = RubyUtils.getDocument(parserResult);
             if (doc == null) {
                 return false;
             }
@@ -318,7 +318,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 astOffset -= (lexOffset - newLexOffset);
             }
 
-            RubyParseResult rpr = AstUtilities.getParseResult(info);
+            RubyParseResult rpr = AstUtilities.getParseResult(parserResult);
             OffsetRange range = rpr.getSanitizedRange();
             if (range != OffsetRange.NONE && range.containsInclusive(astOffset)) {
                 if (astOffset != range.getStart()) {
@@ -447,7 +447,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 // nodes later
                                 Node peek = it.next();
                                 if (AstUtilities.isCall(peek) &&
-                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(parserResult, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
                                     if (it.hasPrevious()) {
@@ -490,7 +490,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 // nodes later
                                 Node peek = it.next();
                                 if (AstUtilities.isCall(peek) &&
-                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(parserResult, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
                                     if (it.hasPrevious()) {
@@ -533,7 +533,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 // nodes later
                                 Node peek = it.next();
                                 if (AstUtilities.isCall(peek) &&
-                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(parserResult, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
                                     if (it.hasPrevious()) {
@@ -580,7 +580,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             } else if (targetMethod == null) {
                 // Look up the
                 // See if we can find the method corresponding to this call
-                targetMethod = new RubyDeclarationFinder().findMethodDeclaration(info, call, path,
+                targetMethod = new RubyDeclarationFinder().findMethodDeclaration(parserResult, call, path,
                         alternativesHolder);
                 if (targetMethod == null) {
                     return false;
