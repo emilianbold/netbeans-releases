@@ -1763,13 +1763,16 @@ public class AstUtilities {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     try {
-                    Parser.Result result = resultIterator.getParserResult();
-                    Node root = AstUtilities.getRoot(result);
-                    if (root == null) {
-                        return;
-                    }
+                        Parser.Result result = resultIterator.getParserResult();
+                        Node root = AstUtilities.getRoot(result);
+                        if (root == null) {
+                            return;
+                        }
                         // Make sure the offset isn't at the beginning of a line
-                        BaseDocument doc = RubyUtils.getDocument(result);
+                        BaseDocument doc = RubyUtils.getDocument(result, true);
+                        if (doc == null) {
+                            return;
+                        }
                         int lexOffset = caretOffset;
                         int rowStart = Utilities.getRowFirstNonWhite(doc, lexOffset);
                         if (rowStart != -1 && lexOffset <= rowStart) {

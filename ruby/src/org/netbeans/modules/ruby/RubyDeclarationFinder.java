@@ -231,7 +231,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     public DeclarationLocation findDeclaration(ParserResult parserResult, int lexOffset) {
         // Is this a require-statement? If so, jump to the required file
         try {
-            Document document = RubyUtils.getDocument(parserResult);
+            Document document = RubyUtils.getDocument(parserResult, true);
             if (document == null) {
                 return DeclarationLocation.NONE;
             }

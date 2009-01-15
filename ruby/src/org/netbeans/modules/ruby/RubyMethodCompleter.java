@@ -309,7 +309,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             int originalAstOffset = astOffset;
 
             // Adjust offset to the left
-            BaseDocument doc = RubyUtils.getDocument(parserResult);
+            BaseDocument doc = RubyUtils.getDocument(parserResult, true);
             if (doc == null) {
                 return false;
             }
