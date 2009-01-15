@@ -90,9 +90,10 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     public static TableAndColumns selectTableAndColumns(String connVariable) {
         TableGeneratorPanel panel = new TableGeneratorPanel();
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(TableGeneratorPanel.class, "MSG_SelectTableAndColumns"));
+        desc.createNotificationLineSupport();
         panel.initialize(desc, connVariable);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionGeneratorPanel.class, "ACSD_SelectColumns"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TableGeneratorPanel.class, "ACSD_SelectColumns"));
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -302,7 +303,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private void setErrorMessage(String message) {
-        errorLabel.setText(message);
+        descriptor.getNotificationLineSupport().setErrorMessage(message);
         descriptor.setValid(message == null);
     }
 
@@ -357,7 +358,6 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         columnList = new javax.swing.JList();
         connVariableLabel = new javax.swing.JLabel();
         connVariableTextField = new javax.swing.JTextField();
-        errorLabel = new ErrorLabel();
 
         dbconnLabel.setLabelFor(dbconnComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(dbconnLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "ConnectionGeneratorPanel.dbconnLabel.text")); // NOI18N
@@ -391,8 +391,6 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
 
         connVariableTextField.setColumns(16);
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.errorLabel.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -403,7 +401,6 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, columnScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, dbconnLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, dbconnComboBox, 0, 437, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableComboBox, 0, 437, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, columnLabel)
@@ -430,11 +427,10 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
                 .add(connVariableLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(connVariableTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(errorLabel)
-                .addContainerGap())
+                .add(20, 20, 20))
         );
 
+        dbconnLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnLabel.AccessibleContext.accessibleName")); // NOI18N
         dbconnComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleName")); // NOI18N
         dbconnComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         tableComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableComboBox.AccessibleContext.accessibleName")); // NOI18N
@@ -469,7 +465,6 @@ private void tableComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JTextField connVariableTextField;
     private javax.swing.JComboBox dbconnComboBox;
     private javax.swing.JLabel dbconnLabel;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JComboBox tableComboBox;
     private javax.swing.JLabel tableLabel;
     // End of variables declaration//GEN-END:variables

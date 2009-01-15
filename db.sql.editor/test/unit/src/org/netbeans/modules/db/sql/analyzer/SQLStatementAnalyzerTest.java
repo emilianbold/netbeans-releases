@@ -125,6 +125,31 @@ public class SQLStatementAnalyzerTest extends TestCase {
         assertTrue(statement.getFromClause().getUnaliasedTableNames().isEmpty());
     }
 
+    public void testUnknownIdentifiers() throws Exception {
+        // SQL generated from embedded code may have __UNKNOWN__ flags in it -
+        // make sure these are handled correctly
+        SQLStatement stmt = doAnalyze("SELECT __UNKNOWN__");
+        List<List<String>> selectValues = stmt.getSelectValues();
+        assertEquals(1, selectValues.size());
+        assertEquals(Arrays.asList("__UNKNOWN__"), selectValues.get(0));
+
+        stmt = doAnalyze("SELECT foo FROM __UNKNOWN__, bar");
+        selectValues = stmt.getSelectValues();
+        assertEquals(1, selectValues.size());
+        assertEquals(Arrays.asList("foo"), selectValues.get(0));
+        FromClause fromClause = stmt.getFromClause();
+        assertEquals(new HashSet<QualIdent>(Arrays.asList(new QualIdent("__UNKNOWN__"), new QualIdent("bar"))), fromClause.getUnaliasedTableNames());
+
+        // From PHP, sometimes you get weird things if the string isn't complete,
+        // we should be able to handle this...
+        stmt = doAnalyze("SELECT  FROM foo,\necho");
+        selectValues = stmt.getSelectValues();
+        assertEquals(0, selectValues.size());
+        fromClause = stmt.getFromClause();
+        Set<QualIdent> tableNames = fromClause.getUnaliasedTableNames();
+        assertEquals(new HashSet<QualIdent>(Arrays.asList(new QualIdent("foo"), new QualIdent("echo"))), tableNames);
+    }
+
     public void testSubqueries() throws Exception {
         String sql = "select * from foo where exists (select id from bar where bar.id = foo.id and (select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
         int firstSubStart = sql.indexOf("(select") + 1;
@@ -185,6 +210,6 @@ public class SQLStatementAnalyzerTest extends TestCase {
     }
 
     public static void assertCanAnalyze(String sql) throws IOException {
-        doAnalyze(sql);
+        assertNotNull(doAnalyze(sql));
     }
 }
