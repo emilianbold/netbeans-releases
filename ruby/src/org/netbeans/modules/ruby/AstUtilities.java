@@ -1492,6 +1492,23 @@ public class AstUtilities {
         return new SymbolNode[0];
     }
 
+    static Node getRoot(final FileObject sourceFO) {
+        Source source = Source.create(sourceFO);
+        final Node[] rootHolder = new Node[1];
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator ri) throws Exception {
+                    Parser.Result result = ri.getParserResult();
+                    rootHolder[0] = getRoot(result);
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return rootHolder[0];
+    }
+
     public static Node getRoot(Parser.Result parserResult) {
         assert parserResult instanceof RubyParseResult;
         RubyParseResult result = (RubyParseResult) parserResult;
@@ -1928,7 +1945,7 @@ public class AstUtilities {
         return result;
     }
     
-    public static String guessName(ParserResult result, OffsetRange lexRange, OffsetRange astRange) {
+    public static String guessName(Parser.Result result, OffsetRange lexRange, OffsetRange astRange) {
         String guessedName = "";
         
         // Try to guess the name - see if it's in a method and if so name it after the parameter
