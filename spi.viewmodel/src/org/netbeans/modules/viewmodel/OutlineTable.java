@@ -113,7 +113,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private int                 defaultColumnIndex; // The index of the tree column
     private boolean             ignoreMove; // Whether to ignore column movement events
     //private List                expandedPaths = new ArrayList ();
-    private TreeModelRoot       currentTreeModelRoot;
+    TreeModelRoot               currentTreeModelRoot; // Accessed from test
     private Models.CompoundModel model;
     
     
@@ -420,7 +420,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         List<Node.Property> columnList = new ArrayList<Node.Property>(k);
         int d = 0;
         for (i = 0; i < k; i++) {
-            Column c = new Column(cs [i], null);
+            Column c = new Column(cs [i]);
             columns[i] = c;
             //IndexedColumn ic = new IndexedColumn(c, i, cs[i].getCurrentOrderNumber());
             //icolumns[i] = ic;

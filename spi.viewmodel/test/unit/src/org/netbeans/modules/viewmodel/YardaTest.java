@@ -41,18 +41,13 @@
 
 package org.netbeans.modules.viewmodel;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.viewmodel.TreeModelNode;
-import org.netbeans.modules.viewmodel.TreeModelRoot;
-import org.netbeans.modules.viewmodel.TreeTable;
+
 import org.netbeans.spi.viewmodel.*;
+
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 
 
@@ -79,7 +74,7 @@ public class YardaTest  extends NbTestCase {
         ArrayList l = new ArrayList ();
         CompoundModel1 cm1 = new CompoundModel1 ();
         l.add (cm1);
-        TreeTable tt = (TreeTable) Models.createView 
+        OutlineTable tt = (OutlineTable) Models.createView
             (Models.createCompoundModel (l));
         Node n = tt.getExplorerManager ().
             getRootContext ();
