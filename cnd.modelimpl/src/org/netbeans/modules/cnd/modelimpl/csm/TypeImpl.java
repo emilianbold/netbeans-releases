@@ -582,10 +582,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeInt(pointerDepth);
-        output.writeBoolean(reference);
-        output.writeInt(arrayDepth);
-        output.writeBoolean(_const);
+        output.writeByte(pointerDepth);
+        output.writeByte(arrayDepth);
+        byte pack = (byte) ((this.reference ? 1 : 0) | (this._const ? 2 : 0));
+        output.writeByte(pack);
         assert this.classifierText != null;
         output.writeUTF(classifierText.toString());
 
@@ -596,10 +596,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
     public TypeImpl(DataInput input) throws IOException {
         super(input);
-        this.pointerDepth = (byte) input.readInt();
-        this.reference = input.readBoolean();
-        this.arrayDepth= (byte) input.readInt();
-        this._const = input.readBoolean();
+        this.pointerDepth = input.readByte();
+        this.arrayDepth= input.readByte();
+        byte pack = input.readByte();
+        this.reference = (pack & 1) == 1;
+        this._const = (pack & 2) == 2;
         this.classifierText = NameCache.getManager().getString(input.readUTF());
         assert this.classifierText != null;
 
