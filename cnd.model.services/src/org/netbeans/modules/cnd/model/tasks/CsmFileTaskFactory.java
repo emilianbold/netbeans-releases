@@ -145,7 +145,7 @@ public abstract class CsmFileTaskFactory {
                     continue;
                 }
 
-                CsmFile csmFile = getCsmFile(v);
+                CsmFile csmFile = getCsmFile(v, true);
                 if (csmFile != null) {
                     TaskData oldTaskData = fobj2task.get(v);
                     if (!csmFile.equals(oldTaskData.file)) {
@@ -171,7 +171,7 @@ public abstract class CsmFileTaskFactory {
                     continue;
                 }
 
-                CsmFile csmFile = getCsmFile(fileObject);                
+                CsmFile csmFile = getCsmFile(fileObject, true);
                 if (csmFile != null) {
                     PhaseRunner task = createTask(fileObject);
                     TaskData data = new TaskData(task, csmFile);
@@ -182,7 +182,7 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<FileObject, TaskData> e : toRemove.entrySet()) {
-            CsmFile csmFile = CsmUtilities.getCsmFile(e.getKey(), false);
+            CsmFile csmFile = getCsmFile(e.getKey(), false);
             if (csmFile != null) {
                 if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: removing " + csmFile.getAbsolutePath());}
             }
@@ -203,7 +203,7 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<FileObject, TaskData> e : toAdd.entrySet()) {
-            CsmFile csmFile = CsmUtilities.getCsmFile(e.getKey(), false);
+            CsmFile csmFile = getCsmFile(e.getKey(), false);
             if (csmFile != null) {
                 if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: adding "+ //NOI18N
                         (csmFile.isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
@@ -213,7 +213,7 @@ public abstract class CsmFileTaskFactory {
         }
     }
 
-    private static CsmFile getCsmFile(FileObject fo) {
+    private static CsmFile getCsmFile(FileObject fo, boolean allowStandalone) {
         CsmFile csmFile = null;
         Document doc = CsmUtilities.getDocument(fo);
         if (doc != null) {
@@ -222,7 +222,7 @@ public abstract class CsmFileTaskFactory {
         if (csmFile == null) {
             csmFile = CsmUtilities.getCsmFile(fo, false);
         }
-        if (csmFile == null) {
+        if (allowStandalone && csmFile == null) {
             csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
         }        
         return csmFile;
@@ -244,7 +244,7 @@ public abstract class CsmFileTaskFactory {
             if (!pr.runner.isValid()) {
                 PhaseRunner runner = createTask(fobj);
                 assert runner.isValid();
-                pr = new TaskData(runner, CsmUtilities.getCsmFile(fobj, false));
+                pr = new TaskData(runner, getCsmFile(fobj, false));
                 fobj2task.put(fobj, pr);
             }
 
@@ -253,12 +253,13 @@ public abstract class CsmFileTaskFactory {
             if (doc != null) {
                 Document doc2 = (Document) doc.getProperty(Document.class);
                 if (doc2 != null) {
-                    PhaseRunner task = createTask(CsmUtilities.getFileObject(doc2));
-                    TaskData data = new TaskData(task, CsmUtilities.getCsmFile(fobj, false));
+                    FileObject fobj2 = CsmUtilities.getFileObject(doc2);
+                    PhaseRunner task = createTask(fobj2);
+                    TaskData data = new TaskData(task, getCsmFile(fobj2, false));
                     doc2.putProperty(USE_OWN_CARET_POSITION, false);
                     doc.putProperty(USE_OWN_CARET_POSITION, true);
                     if (data != null) {
-                        post(data, CsmUtilities.getFileObject(doc2), phase, delay);
+                        post(data, fobj2, phase, delay);
                     }
                 }
             }
@@ -316,9 +317,12 @@ public abstract class CsmFileTaskFactory {
                 FileObject fobj = CsmUtilities.getFileObject(f);
                 if (fobj != null) {
                     if (fobj2task.get(fobj) != null) {
-                        synchronized (this) {
-                            runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                            fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(fobj, false)));
+                        Document doc = CsmUtilities.getDocument(fobj);
+                        if (doc != null) {
+                            synchronized (this) {
+                                runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
+                                fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false)));
+                            }
                         }
                     }
                 }
@@ -389,7 +393,7 @@ public abstract class CsmFileTaskFactory {
         }
 
         public void run() {
-            CsmFile file = CsmUtilities.getCsmFile(fileObject, false);
+            CsmFile file = getCsmFile(fileObject, false);
             if (file !=  null && file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
                 run.run();
             }

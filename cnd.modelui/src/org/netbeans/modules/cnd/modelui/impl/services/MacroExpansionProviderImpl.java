@@ -120,6 +120,8 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
             return;
         }
 
+        try {
+
         TransformationTable tt = new TransformationTable();
 
         int shift = startOffset;
@@ -146,13 +148,14 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
             copyInterval(inDoc, outDoc, new Interval(inIntervalStart, docTokenStartOffset), shift, tt);
             inIntervalStart = docTokenStartOffset;
 
-            String expandedToken = "";
+            StringBuffer expandedToken = new StringBuffer(""); // NOI18N
             try {
                 if (fileToken.getOffset() < docTokenEndOffset) {
-                    expandedToken = fileToken.getText();
+                    expandedToken.append(fileToken.getText());
                     fileToken = (org.netbeans.modules.cnd.apt.support.APTToken) fileTS.nextToken();
                     while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
-                        expandedToken += " " + fileToken.getText();
+                        expandedToken.append(" "); // NOI18N
+                        expandedToken.append(fileToken.getText());
                         fileToken = (org.netbeans.modules.cnd.apt.support.APTToken) fileTS.nextToken();
                     }
                 }
@@ -160,7 +163,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
                 Exceptions.printStackTrace(ex);
             }
 
-            int expandedTokenLength = indentAndAddString(outDoc, expandedToken);
+            int expandedTokenLength = indentAndAddString(outDoc, expandedToken.toString());
             int shiftShift = docToken.length() - expandedTokenLength;
             tt.intervals.add(new IntervalCorrespondence(new Interval(inIntervalStart, docTokenEndOffset),
                     new Interval(inIntervalStart - shift, docTokenEndOffset - (shift + shiftShift))));
@@ -176,7 +179,9 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
 
         outDoc.putProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER, tt);
 
-        fileImpl.releaseTokenStream(fileTS);
+        } finally {
+            fileImpl.releaseTokenStream(fileTS);
+        }
     }
 
     private void copyInterval(Document inDoc, Document outDoc, Interval interval, int shift, TransformationTable tt) {
@@ -291,7 +296,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
 //        }
 //    }
     
-    private class Interval {
+    private static class Interval {
 
         public int start;
         public int end;
@@ -310,7 +315,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
         }
     }
 
-    private class IntervalCorrespondence {
+    private static class IntervalCorrespondence {
 
         public Interval inInterval;
         public Interval outInterval;
@@ -321,7 +326,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
         }
     }
 
-    private class TransformationTable {
+    private static class TransformationTable {
 
         private ArrayList<IntervalCorrespondence> intervals = new ArrayList<IntervalCorrespondence>();
 
