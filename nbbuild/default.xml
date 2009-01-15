@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
     <!-- XXX Does not preserve order of clusters specified in etc/netbeans.clusters -->
     <pathconvert property="cluster.path.evaluated">
         <path>
-            <dirset dir="${netbeans.dest.dir}" includesfile="${netbeans.dest.dir}/etc/netbeans.clusters"/>
+            <dirset dir="${netbeans.dest.dir}" includesfile="${nb_all}/ide/launcher/netbeans.clusters"/>
         </path>
     </pathconvert>
     <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
