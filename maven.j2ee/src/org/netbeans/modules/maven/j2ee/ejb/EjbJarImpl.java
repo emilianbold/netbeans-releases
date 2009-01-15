@@ -159,10 +159,15 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
     }
     
     public FileObject[] getJavaSources() {
-        //TODO !!!!
-//        System.out.println("EjbM:getJavaSources");
-        
-        return new FileObject[0];
+        Sources srcs = ProjectUtils.getSources(project);
+        SourceGroup[] gr = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<FileObject> toRet = new ArrayList<FileObject>();
+        if (gr != null) {
+            for (int i = 0; i < gr.length; i++) {
+                toRet.add(gr[i].getRootFolder());
+            }
+        }
+        return toRet.toArray(new FileObject[toRet.size()]);
     }
     
     public String getModuleVersion() {
