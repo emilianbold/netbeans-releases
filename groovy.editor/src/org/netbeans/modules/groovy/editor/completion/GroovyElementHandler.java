@@ -89,7 +89,7 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null));
 
         if (index == null) {
@@ -152,7 +152,7 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null));
 
         if (index == null) {
