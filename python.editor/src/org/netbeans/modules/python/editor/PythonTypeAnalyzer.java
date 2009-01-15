@@ -199,6 +199,10 @@ public class PythonTypeAnalyzer {
 
                 String name = typeAssertionNames.removeFirst();
                 String type = typeAssertionTypes.removeFirst();
+                if ("basestring".equals(type)) { // NOI18N
+                    // We don't support basestr yet
+                    type = "str"; // NOI18N
+                }
                 localVars.put(name, type);
             }
         }
@@ -284,6 +288,40 @@ public class PythonTypeAnalyzer {
         }
 
         @Override
+        public String visitAssert(Assert node) throws Exception {
+            if (checkNode(node)) {
+                return null;
+            }
+
+            // Is this a type assertion?
+            //  assert isinstanceof(s, basestring)
+            expr expr = node.getInternalTest();
+            if (expr instanceof Call) {
+                Call call = (Call)expr;
+                if ("isinstanceof".equals(PythonAstUtils.getCallName(call))) { // NOI18N
+                    java.util.List<expr> args = call.getInternalArgs();
+                    if (args != null && args.size() == 2) {
+                        expr arg1 = args.get(0);
+                        expr arg2 = args.get(1);
+                        if (arg1 instanceof Name && arg2 instanceof Name) {
+                            String varName = PythonAstUtils.getExprName(arg1);
+                            String type = PythonAstUtils.getExprName(arg2);
+                            if (varName != null && type != null) {
+                                if ("basestring".equals(type)) { // NOI18N
+                                    // We don't support basestr yet
+                                    type = "str"; // NOI18N
+                                }
+                                localVars.put(varName, type);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return super.visitAssert(node);
+        }
+
+        @Override
         public String visitCall(Call call) throws Exception {
             if (checkNode(call)) {
                 return null;
@@ -337,14 +375,6 @@ public class PythonTypeAnalyzer {
                 return null;
             }
             return super.visitIf(node);
-        }
-
-        @Override
-        public String visitAssert(Assert node) throws Exception {
-            if (checkNode(node)) {
-                return null;
-            }
-            return super.visitAssert(node);
         }
 
         @Override
