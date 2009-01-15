@@ -853,8 +853,7 @@ public class SvnUtils {
         exp = exp.replaceAll("\\^", "\\\\^");   // NOI18N
         exp = exp.replaceAll("\\<", "\\\\<");   // NOI18N
         exp = exp.replaceAll("\\>", "\\\\>");   // NOI18N
-        exp = exp.replaceAll("\\[", "\\\\[");   // NOI18N
-        exp = exp.replaceAll("\\]", "\\\\]");   // NOI18N
+        exp = patchRegExpClassCharacters(exp);
         exp = exp.replaceAll("\\{", "\\\\{");   // NOI18N
         exp = exp.replaceAll("\\}", "\\\\}");   // NOI18N
         exp = exp.replaceAll("\\(", "\\\\(");   // NOI18N
@@ -863,6 +862,53 @@ public class SvnUtils {
         exp = exp.replaceAll("\\|", "\\\\|");   // NOI18N
 
         return exp;
+    }
+
+
+    /*
+     * Returns a string having characters <code>[</code> and <code>]</code> escaped if they do not represent
+     * a character class definition.
+     *
+     * @param exp string to be escaped
+     * @return string with escaped characters
+     */
+    private static String patchRegExpClassCharacters (String exp) {
+        LinkedList<Integer> indexes = new LinkedList<Integer>();
+        StringBuilder builder = new StringBuilder(exp.length());
+
+        for (int index = 0, builderIndex = 0; index < exp.length(); ++index, ++builderIndex) {
+            char ch = exp.charAt(index);
+            if (ch == '\\') {       // NOI18N
+                // backslash is escaped and added
+                builder.append(ch);
+                if (++index < exp.length()) {
+                    ++builderIndex;
+                    builder.append(exp.charAt(index));
+                }
+            } else if (ch == '[') { // NOI18N
+                // openning parenthesis is added and its position is saved for possible later escaping
+                builder.append(ch);
+                indexes.add(builderIndex);
+            } else {
+                if (ch == ']') { // NOI18N
+                    // closing parenthesis consumes the last opening parenthesis (if that exists), otherwise escapes itself
+                    if (indexes.isEmpty()) {
+                        builder.append("\\");   // NOI18N
+                        ++builderIndex;
+                    } else {
+                        indexes.removeLast();
+                    }
+                }
+                builder.append(ch); // append the current character
+            }
+        }
+
+        for (Integer index : indexes) {
+            // escapes all opening parenthesis that have no closing
+            builder.insert(index, "\\");   // NOI18N
+        }
+
+        return builder.toString();
     }
 
     /**
