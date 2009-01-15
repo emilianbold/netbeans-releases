@@ -48,8 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -123,54 +121,54 @@ public class UIDCsmConverter {
         return uid == null ? null : uid.getObject();
     }
     
-    public static <T extends CsmNamespace> Collection<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmIdentifiable<T>> Collection<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmDeclaration<T>> Collection<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
 
-    public static <T extends CsmDeclaration> Iterator<T> UIDsToDeclarationsFiltered(Collection<CsmUID<T>> uids, CsmFilter filter) {
+    public static <T extends CsmDeclaration<T>> Iterator<T> UIDsToDeclarationsFiltered(Collection<CsmUID<T>> uids, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
 
-    public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmDeclaration<T>> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, true);
         return out;
     }
     
-    public static <T extends CsmMacro> Collection<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmIdentifiable<T>> Collection<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
 
-    public static <T extends CsmMacro> Iterator<T> UIDsToMacros(Collection<CsmUID<T>> uids, CsmFilter filter) {
+    public static <T extends CsmIdentifiable<T>> Iterator<T> UIDsToMacros(Collection<CsmUID<T>> uids, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
     
-    public static <T extends CsmInclude> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmIdentifiable<T>> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
 
-    public static <T extends CsmInclude> Iterator<T> UIDsToIncludes(Collection<CsmUID<T>> uids, CsmFilter filter) {
+    public static <T extends CsmIdentifiable<T>> Iterator<T> UIDsToIncludes(Collection<CsmUID<T>> uids, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
 
-    public static <T> Collection<T> UIDsToCsmObjects(Collection<CsmUID<T>> uids) {
+    public static <T extends CsmIdentifiable<T>> Collection<T> UIDsToCsmObjects(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
 
-    private static <T> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
+    private static <T extends CsmIdentifiable<T>> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
     }
 
-    public static <T extends CsmIdentifiable> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> nonSharedCollection, CsmFilter filter) {
+    public static <T extends CsmIdentifiable<T>> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> nonSharedCollection, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(nonSharedCollection, true).iterator(filter);
     }
     
