@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 
 
 /**
@@ -80,7 +81,7 @@ public final class Embedding {
         List<Embedding>        embeddings
     ) {
         if (embeddings.isEmpty ()) throw new IllegalArgumentException ();
-        String mimeType = null;
+        MimePath mimePath = null;
         Source source = null;
         StringBuilder sb = new StringBuilder ();
         List<int[]> currentToOriginal = new ArrayList<int[]> ();
@@ -88,15 +89,15 @@ public final class Embedding {
         int offset = 0;
         for (Embedding embedding : embeddings) {
             Snapshot snapshot = embedding.getSnapshot ();
-            if (mimeType != null) {
-                if (!mimeType.equals (embedding.mimeType)) {
+            if (mimePath != null) {
+                if (!mimePath.equals (embedding.mimePath)) {
                     throw new IllegalArgumentException ();
                 }
                 if (source != snapshot.getSource ()) {
                     throw new IllegalArgumentException ();
                 }
             } else {
-                mimeType = embedding.mimeType;
+                mimePath = embedding.mimePath;
                 source = snapshot.getSource ();
             }
             sb.append (snapshot.getText ());
@@ -134,25 +135,25 @@ public final class Embedding {
         Snapshot snapshot = new Snapshot (
             sb,
             source,
-            mimeType,
+            mimePath,
             currentToOriginal.toArray (new int [currentToOriginal.size ()] []),
             originalToCurrent.toArray (new int [originalToCurrent.size ()] [])
         );
         return new Embedding (
             snapshot, 
-            mimeType
+            mimePath
         );
     }
     
     private Snapshot        snapshot;
-    private String          mimeType;
+    private MimePath        mimePath;
                 
     Embedding (
         Snapshot            snapshot,
-        String              mimeType
+        MimePath            mimePath
     ) {
         this.snapshot =     snapshot;
-        this.mimeType =     mimeType;
+        this.mimePath =     mimePath;
     }
     
     /**
@@ -170,7 +171,7 @@ public final class Embedding {
      * @return              A mime type of embedded source.
      */
     public final String getMimeType () {
-        return mimeType;
+        return mimePath.getMimeType (mimePath.size () - 1);
     }
     
     /**
