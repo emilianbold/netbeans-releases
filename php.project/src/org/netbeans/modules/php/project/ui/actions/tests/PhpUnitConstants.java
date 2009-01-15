@@ -39,17 +39,22 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.io.File;
+
 /**
  * @author Tomas Mysik
  */
 public final class PhpUnitConstants {
-
     // test files
-    static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
+    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
 
     // cli options
-    static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
-    static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
+    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+
+    // output files
+    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
 
     private PhpUnitConstants() {
     }

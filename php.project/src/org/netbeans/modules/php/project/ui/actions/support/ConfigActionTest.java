@@ -39,21 +39,17 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * Action implementation for TEST configuration.
@@ -130,7 +126,10 @@ public class ConfigActionTest extends ConfigAction {
         for (String param : phpUnit.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
         }
-        externalProcessBuilder = externalProcessBuilder.addArgument(pair.second);
+        externalProcessBuilder = externalProcessBuilder
+                .addArgument(PhpUnitConstants.PARAM_XML_LOG)
+                .addArgument(PhpUnitConstants.XML_LOG.getAbsolutePath())
+                .addArgument(pair.second);
 
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must be known already";
