@@ -39,29 +39,21 @@
 
 package org.netbeans.modules.php.editor.sql;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionContext;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -72,36 +64,6 @@ public class PHPSQLCompletion implements CompletionProvider {
 
     private static final Logger LOGGER = Logger.getLogger(PHPSQLCompletion.class.getName());
     private static final Boolean NO_COMPLETION = Boolean.getBoolean("netbeans.php.nosqlcompletion"); // NOI18N
-    private static final String PROP_DBCONN = "dbconn"; // NOI18N
-
-    public static DatabaseConnection getDatabaseConnection(Project project) {
-        String name = getProjectPreferences(project).get(PROP_DBCONN, null);
-        if (name != null) {
-            return ConnectionManager.getDefault().getConnection(name);
-        }
-        return null;
-    }
-
-    public static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
-        Preferences prefs = getProjectPreferences(project);
-        if (dbconn != null) {
-            prefs.put(PROP_DBCONN, dbconn.getName());
-        } else {
-            prefs.remove(PROP_DBCONN);
-        }
-    }
-
-    private static Preferences getProjectPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, PHPSQLCompletion.class, false);
-    }
-
-    private static Project getProject(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
-        if (fo != null) {
-            return FileOwnerQuery.getOwner(fo);
-        }
-        return null;
-    }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return new AsyncCompletionTask(new Query(), component);
@@ -134,13 +96,10 @@ public class PHPSQLCompletion implements CompletionProvider {
                 return;
             }
             context = context.setOffset(stmt.sourceToGeneratedPos(caretOffset));
-            Project project = getProject(document);
-            if (project == null) {
-                return;
-            }
-            DatabaseConnection dbconn = getDatabaseConnection(project);
-            if (dbconn == null) {
-                resultSet.addItem(new SelectConnectionItem(project));
+
+            DatabaseConnection dbconn = DatabaseConnectionSupport.getDatabaseConnection(document, true);
+            if (dbconn == null ) {
+                resultSet.addItem(new SelectConnectionItem(document));
             } else {
                 context = context.setDatabaseConnection(dbconn);
                 SQLCompletion completion = SQLCompletion.create(context);

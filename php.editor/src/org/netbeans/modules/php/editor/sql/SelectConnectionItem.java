@@ -39,17 +39,16 @@
 
 package org.netbeans.modules.php.editor.sql;
 
-import org.netbeans.modules.php.editor.sql.PHPSQLCompletion;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.editor.codegen.ui.ConnectionGeneratorPanel;
+import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -64,18 +63,17 @@ public class SelectConnectionItem implements CompletionItem {
 
     private static final ImageIcon CONNECTION_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/editor/resources/connection.gif")); // NOI18N
 
-    private Project project;
+    private Document doc;
     private DatabaseConnection dbconn;
 
-    public SelectConnectionItem(Project project) {
-        this.project = project;
-        dbconn = PHPSQLCompletion.getDatabaseConnection(project);
+    public SelectConnectionItem(Document doc) {
+        this.doc = doc;
+        dbconn = DatabaseConnectionSupport.getDatabaseConnection(doc, true);
     }
 
     public void defaultAction(JTextComponent component) {
-        DatabaseConnection newDBConn = ConnectionGeneratorPanel.selectConnection(dbconn, false, false);
-        PHPSQLCompletion.setDatabaseConnection(project, newDBConn);
-        if (newDBConn != null) {
+        DatabaseConnection newDBConn = DatabaseConnectionSupport.selectDatabaseConnection(Utilities.getDocument(component));
+        if (newDBConn != null && newDBConn.getJDBCConnection() != null) {
             Completion.get().showCompletion();
         }
     }
