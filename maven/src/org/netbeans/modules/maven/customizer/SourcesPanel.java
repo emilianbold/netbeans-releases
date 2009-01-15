@@ -135,6 +135,8 @@ public class SourcesPanel extends JPanel {
                 handleEncodingChange();
             }            
         });
+        txtSrc.setText(project.getOriginalMavenProject().getBuild().getSourceDirectory());
+        txtTestSrc.setText(project.getOriginalMavenProject().getBuild().getTestSourceDirectory());
     }
     
     private void handleSourceLevelChange() {
@@ -235,6 +237,11 @@ public class SourcesPanel extends JPanel {
 
         lblProjectFolder = new javax.swing.JLabel();
         txtProjectFolder = new javax.swing.JTextField();
+        lblSrc = new javax.swing.JLabel();
+        txtSrc = new javax.swing.JTextField();
+        lblTestSrc = new javax.swing.JLabel();
+        txtTestSrc = new javax.swing.JTextField();
+        lblGenerated = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         lblSourceLevel = new javax.swing.JLabel();
         comSourceLevel = new javax.swing.JComboBox();
@@ -246,6 +253,19 @@ public class SourcesPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblProjectFolder, org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("CTL_ProjectFolder")); // NOI18N
 
         txtProjectFolder.setEditable(false);
+
+        lblSrc.setLabelFor(txtSrc);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSrc, org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("SourcesPanel.lblSrc.text")); // NOI18N
+
+        txtSrc.setEditable(false);
+
+        lblTestSrc.setLabelFor(txtTestSrc);
+        org.openide.awt.Mnemonics.setLocalizedText(lblTestSrc, org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("SourcesPanel.lblTestSrc.text")); // NOI18N
+
+        txtTestSrc.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblGenerated, org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("SourcesPanel.lblGenerated.text")); // NOI18N
+        lblGenerated.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -294,11 +314,18 @@ public class SourcesPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(lblProjectFolder)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE))
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblProjectFolder)
+                    .add(lblSrc)
+                    .add(lblTestSrc))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(txtTestSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                    .add(txtSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                    .add(txtProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)))
+            .add(lblGenerated, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -306,7 +333,17 @@ public class SourcesPanel extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblProjectFolder)
                     .add(txtProjectFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 363, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblSrc)
+                    .add(txtSrc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblTestSrc)
+                    .add(txtTestSrc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(lblGenerated, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 148, Short.MAX_VALUE)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -318,9 +355,14 @@ public class SourcesPanel extends JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblEncoding;
+    private javax.swing.JLabel lblGenerated;
     private javax.swing.JLabel lblProjectFolder;
     private javax.swing.JLabel lblSourceLevel;
+    private javax.swing.JLabel lblSrc;
+    private javax.swing.JLabel lblTestSrc;
     private javax.swing.JTextField txtProjectFolder;
+    private javax.swing.JTextField txtSrc;
+    private javax.swing.JTextField txtTestSrc;
     // End of variables declaration//GEN-END:variables
     
 }
