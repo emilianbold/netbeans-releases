@@ -40,7 +40,9 @@
 package org.netbeans.modules.maven.jaxws;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -49,6 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
@@ -395,4 +398,35 @@ public final class MavenModelUtils {
             }
         }
     }
+
+    /** get list of wsdl files in Maven project
+     *
+     * @param project Maven project instance
+     * @return list of wsdl files
+     */
+    public static List<String> getWsdlFiles(Project project) {
+        MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        assert mavenProject != null;
+        @SuppressWarnings("unchecked")
+        List<org.apache.maven.model.Plugin> plugins = mavenProject.getBuildPlugins();
+        List<String> wsdlList = new ArrayList<String>();
+        for (org.apache.maven.model.Plugin plg : plugins) {
+            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
+                @SuppressWarnings("unchecked")
+                List<org.apache.maven.model.PluginExecution> executions = plg.getExecutions();
+                for (org.apache.maven.model.PluginExecution exec : executions) {
+                    Xpp3Dom conf =  (Xpp3Dom)exec.getConfiguration();
+                    if (conf != null) {
+                        Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
+                        if (wsdlFiles != null) {
+                            Xpp3Dom wsdlFile = wsdlFiles.getChild("wsdlFile"); //NOI18N
+                            if (wsdlFile != null) wsdlList.add(wsdlFile.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        return wsdlList;
+    }
+
 }

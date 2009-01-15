@@ -45,17 +45,16 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.viewmodel.TreeModelNode;
-import org.netbeans.modules.viewmodel.TreeModelRoot;
-import org.netbeans.modules.viewmodel.TreeTable;
+
 import org.netbeans.spi.viewmodel.*;
+
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -79,7 +78,7 @@ public class BasicTest  extends NbTestCase {
         CompoundModel cm = new CompoundModel ();
         l.add (cm);
         Models.CompoundModel mcm = Models.createCompoundModel(l, helpID);
-        TreeTable tt = (TreeTable) Models.createView(mcm);
+        OutlineTable tt = (OutlineTable) Models.createView(mcm);
         RequestProcessor rp = tt.currentTreeModelRoot.getRootNode().getRequestProcessor();
         cm.setRPUsed(rp);
         waitFinished (rp);
@@ -136,7 +135,7 @@ public class BasicTest  extends NbTestCase {
         TestColumnModel tcm = new TestColumnModel();
         l.add(tcm);
         Models.CompoundModel mcm = Models.createCompoundModel(l);
-        TreeTable tt = (TreeTable) Models.createView(mcm);
+        OutlineTable tt = (OutlineTable) Models.createView(mcm);
         cm.setRPUsed(tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
         Node.Property[] columns = tt.columns;
         assertEquals(2, columns.length);
