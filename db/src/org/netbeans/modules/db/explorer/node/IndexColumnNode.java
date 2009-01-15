@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -101,12 +102,25 @@ public class IndexColumnNode extends BaseNode {
                             }
 
                             position = column.getPosition();
+
+                            updateProperties(column);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
                 // TODO report exception
             }
+        }
+    }
+
+    private void updateProperties(IndexColumn column) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        try {
+            addProperty(POSITION, POSITIONDESC, Integer.class, false, column.getPosition());
+        } catch (Exception e) {
+            // TODO report exception
         }
     }
 

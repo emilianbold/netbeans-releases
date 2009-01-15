@@ -42,8 +42,6 @@
 package org.netbeans.modules.cnd.repository.sfs;
 
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
@@ -54,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 public class SimpleRWAccess implements FileRWAccess {
     
     private RandomAccessFile randomAccessFile;
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     public SimpleRWAccess(File file) throws IOException {
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N

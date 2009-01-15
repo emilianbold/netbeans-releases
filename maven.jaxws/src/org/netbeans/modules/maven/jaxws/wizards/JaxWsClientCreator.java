@@ -61,7 +61,6 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
-import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -131,10 +130,11 @@ public class JaxWsClientCreator implements ClientCreator {
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                final String clientName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
-                        MavenModelUtils.addWsdlFile(plugin, relativePath);
+                        MavenModelUtils.addWsimportExecution(plugin, clientName, relativePath);
                         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
                         if (provider != null) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);

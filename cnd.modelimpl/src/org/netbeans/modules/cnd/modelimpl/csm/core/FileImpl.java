@@ -943,7 +943,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lastParsed;
     }
 
-    @SuppressWarnings("unchecked")
     public void addInclude(IncludeImpl includeImpl) {
         CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
         assert inclUID != null;
@@ -1451,7 +1450,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    @SuppressWarnings("unchecked")
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
 

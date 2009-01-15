@@ -272,26 +272,39 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     }
     
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {
-        List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         from = CharSequenceKey.create(from);
         to = CharSequenceKey.create(to);
         try {
             declarationsLock.readLock().lock();
             for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()){
-                Object o = entry.getValue();
-                if (o instanceof CsmUID[]) {
-                    CsmUID[] uids = (CsmUID[])o;
-                    for(CsmUID uid:uids){
-                        list.add(uid);
-                    }
-                } else if (o instanceof CsmUID){
-                    list.add((CsmUID)o);
-                }
+                addAll(list, entry.getValue());
             }
         } finally {
             declarationsLock.readLock().unlock();
         }
         return list;
+    }
+
+    /**
+     * Adds ether object to the collection or array of objects
+     * @param list
+     * @param o - can be CsmUID or CsmUID[]
+     */
+    private static void addAll(Collection<CsmUID<CsmOffsetableDeclaration>> list, Object o) {
+        if (o instanceof CsmUID<?>[]) {
+            // we know the template type to be CsmOffsetableDeclaration
+            @SuppressWarnings("unchecked") // checked
+            final CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
+            for (CsmUID<CsmOffsetableDeclaration> uid : uids) {
+                list.add(uid);
+            }
+        } else if (o instanceof CsmUID<?>) {
+            // we know the template type to be CsmOffsetableDeclaration
+            @SuppressWarnings("unchecked") // checked
+            final CsmUID<CsmOffsetableDeclaration> uid = (CsmUID<CsmOffsetableDeclaration>) o;
+            list.add(uid);
+        }
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
@@ -304,14 +317,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         try {
             declarationsLock.readLock().lock();
             for (Object o : declarations.values()) {
-                if (o instanceof CsmUID[]) {
-                    CsmUID[] uids = (CsmUID[]) o;
-                    for (CsmUID<CsmOffsetableDeclaration> uid : uids) {
-                        list.add(uid);
-                    }
-                } else if (o instanceof CsmUID) {
-                    list.add((CsmUID) o);
-                }
+                addAll(list, o);
             }
         } finally {
             declarationsLock.readLock().unlock();
@@ -363,19 +369,11 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     }
     
     public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
-        List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         uniqueName = CharSequenceKey.create(uniqueName);
         try {
             declarationsLock.readLock().lock();
-            Object o = declarations.get(uniqueName);
-            if (o instanceof CsmUID[]) {
-                CsmUID[] uids = (CsmUID[])o;
-                for(CsmUID uid:uids){
-                    list.add(uid);
-                }
-            } else if (o instanceof CsmUID){
-                list.add((CsmUID)o);
-            }
+            addAll(list, declarations.get(uniqueName));
         } finally {
             declarationsLock.readLock().unlock();
         }
@@ -389,10 +387,16 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
-            if (o instanceof CsmUID[]) {
-                uid = ((CsmUID[])o)[0];
-            } else if (o instanceof CsmUID){
-                uid = (CsmUID)o;
+            if (o instanceof CsmUID<?>[]) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                final CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
+                uid = uids[0];
+            } else if (o instanceof CsmUID<?>) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                final CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
+                uid = uidt;
             }
         } finally {
             declarationsLock.readLock().unlock();

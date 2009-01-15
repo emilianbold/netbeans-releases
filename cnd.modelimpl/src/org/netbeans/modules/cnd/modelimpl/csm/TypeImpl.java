@@ -594,7 +594,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
     }
 
-    @SuppressWarnings("unchecked")
     public TypeImpl(DataInput input) throws IOException {
         super(input);
         this.pointerDepth = (byte) input.readInt();

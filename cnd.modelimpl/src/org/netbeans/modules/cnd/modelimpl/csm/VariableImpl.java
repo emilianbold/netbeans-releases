@@ -352,7 +352,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
 
-    @SuppressWarnings("unchecked")
     public VariableImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
