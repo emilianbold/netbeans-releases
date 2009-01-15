@@ -9,7 +9,7 @@
                     <code-name-base>org.jruby</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.114</specification-version>
+                        <specification-version>0.114.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
