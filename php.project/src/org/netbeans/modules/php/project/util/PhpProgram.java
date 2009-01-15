@@ -92,7 +92,7 @@ abstract class PhpProgram {
     /**
      * @return PHP program, never <code>null</code>.
      */
-    String getProgram() {
+    public String getProgram() {
         return program;
     }
 

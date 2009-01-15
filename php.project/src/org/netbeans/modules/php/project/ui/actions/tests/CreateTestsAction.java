@@ -259,7 +259,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit())
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                 .workingDirectory(parent)
                 .addArgument(PhpUnitConstants.PARAM_SKELETON)
                 .addArgument(PhpUnitConstants.PARAM_NO_SYNTAX_CHECK)

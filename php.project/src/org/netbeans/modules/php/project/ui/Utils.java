@@ -185,7 +185,7 @@ public final class Utils {
         }
 
         PhpInterpreter phpInterpreter = new PhpInterpreter(command);
-        File file = new File(phpInterpreter.getInterpreter());
+        File file = new File(phpInterpreter.getProgram());
         if (!file.isAbsolute()) {
             return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotAbsolutePath");
         }
@@ -217,7 +217,7 @@ public final class Utils {
         }
 
         PhpUnit phpUnit = new PhpUnit(command);
-        File file = new File(phpUnit.getPhpUnit());
+        File file = new File(phpUnit.getProgram());
         if (!file.isAbsolute()) {
             return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotAbsolutePath");
         }

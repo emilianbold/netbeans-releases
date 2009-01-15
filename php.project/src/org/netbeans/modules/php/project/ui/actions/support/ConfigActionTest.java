@@ -123,7 +123,7 @@ public class ConfigActionTest extends ConfigAction {
                 .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
 
         try {
-            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit())
+            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                     .workingDirectory(FileUtil.toFile(pair.first))
                     .addArgument(pair.second);
             ExecutionService service = ExecutionService.newService(
