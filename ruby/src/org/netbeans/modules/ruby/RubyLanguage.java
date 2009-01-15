@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -180,4 +181,10 @@ public class RubyLanguage extends DefaultLanguageConfig {
     public IndexSearcher getIndexSearcher() {
         return new RubyTypeSearcher();
     }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new RubyIndexer.Factory();
+    }
+
 }

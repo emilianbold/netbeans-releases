@@ -89,6 +89,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -230,7 +231,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     public DeclarationLocation findDeclaration(ParserResult parserResult, int lexOffset) {
         // Is this a require-statement? If so, jump to the required file
         try {
-            Document document = RubyUtils.getDocument(parserResult);
+            Document document = RubyUtils.getDocument(parserResult, true);
             if (document == null) {
                 return DeclarationLocation.NONE;
             }
@@ -1060,20 +1061,20 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     }
     
     /** Locate the method declaration for the given method call */
-    public IndexedMethod findMethodDeclaration(ParserResult info, Node callNode, AstPath path,
+    public IndexedMethod findMethodDeclaration(Parser.Result parserResult, Node callNode, AstPath path,
             Set<IndexedMethod>[] alternativesHolder) {
         int astOffset = AstUtilities.getCallRange(callNode).getStart();
 
         // Is this a require-statement? If so, jump to the required file
         try {
-            Document doc = RubyUtils.getDocument(info);
+            Document doc = RubyUtils.getDocument(parserResult);
             if (doc == null) {
                 return null;
             }
 
             // Determine the bias (if the caret is between two tokens, did we
             // click on a link for the left or the right?
-            int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            int lexOffset = LexUtilities.getLexerOffset(parserResult, astOffset);
             if (lexOffset == -1) {
                 return null;
             }
@@ -1085,9 +1086,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
             boolean leftSide = range.getEnd() <= astOffset;
 
-            Node root = AstUtilities.getRoot(info);
+            Node root = AstUtilities.getRoot(parserResult);
 
-            RubyIndex index = RubyIndex.get(info);
+            RubyIndex index = RubyIndex.get(parserResult);
             if (root == null) {
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
@@ -1148,7 +1149,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
                     ContextKnowledge knowledge = new ContextKnowledge(
-                            index, root, method, astOffset, lexOffset, (BaseDocument) doc, RubyUtils.getFileObject(info));
+                            index, root, method, astOffset, lexOffset, (BaseDocument) doc, RubyUtils.getFileObject(parserResult));
                     RubyTypeInferencer inferencer = new RubyTypeInferencer(knowledge);
                     type = inferencer.inferType(lhs);
                 }

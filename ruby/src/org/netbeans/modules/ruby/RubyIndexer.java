@@ -313,7 +313,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
             String extension = snapshot.getSource().getFileObject().getExt();
-            if (extension.equals("ruby")) { // NOI18N
+            if (extension.equals("rb")) { // NOI18N
                 return true;
             }
             return false;
