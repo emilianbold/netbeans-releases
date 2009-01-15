@@ -597,7 +597,8 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        assertEquals(expected.trim(), description.trim());
+        assertEquals("content does not match between '" + relFilePath + "' and '" + relFilePath + ext + "'",
+                expected.trim(), description.trim());
     }
 
     protected void assertDescriptionMatches(FileObject fileObject, 
