@@ -258,7 +258,6 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         }
     }
 
-    @SuppressWarnings("unchecked")
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

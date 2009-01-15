@@ -1056,4 +1056,19 @@ public class SvnUtils {
         return ret;
     }
 
+    /**
+     * @return <code>true</code> if currently running Java Platform is 64-bit, <code>false</code> othrewise
+     */
+    public static boolean isJava64 () {
+        String javaVMName = System.getProperty("java.vm.name"); // NOI18N
+        if (javaVMName == null) {
+            return false;
+        }
+
+        if (javaVMName.toLowerCase().contains("64-bit")) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+
  }

@@ -581,7 +581,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
     }
     
-    @SuppressWarnings("unchecked")
     public NamespaceImpl(DataInput input) throws IOException {
         this.global = input.readBoolean();
         

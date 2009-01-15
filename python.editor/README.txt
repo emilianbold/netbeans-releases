@@ -63,9 +63,17 @@ correct.
 
 UPDATING JYTHON
 
-From time to time we will want to update Jython - for example
-to pick up parser fixes (improvements in AST offsets or
-any other bug fixes). To do this, go to the
+Jython is used in two different ways:
+1) As a Python platform to execute users code
+2) As the internal parser for Python
+
+These two are built separately; o.jython.distro contains
+the (optional) Jython execution distribution, and o.jython
+contains the (in IDE module only) Jython parser.
+
+UPDATING JYTHON DISTRO
+
+To update Jython, go to the
    o.jython.distro
 directory. It has an "external/jython-2.5.zip" file. 
 
@@ -116,16 +124,21 @@ The script will check out the sources and zip them up into
 external/. At this point you should update your binaries-list
 as describe above.
 
-Once you have done that, you can rebuild o.jython.distro,
-AND, o.jython. Don't forget to rebuild o.jython! It should
-be built after o.jython.distro, since it copies out the python jar
-files from that build from IDE usage. Note that all the editor
-related unit tests rely on the o.jython copy, so if you just
-update o.jython.distro and then run the python.editor unit tests,
-you have not checked that the new Jython bits work correctly.
+UPDATING JYTHON PARSER
 
-After rebuilding o.jython.distro and o.jython, you should run
-all the Python Editor tests. If they pass, great, check in your
+The Jython parser is currently using a separate version of Jython
+than the one used for execution (in particular, we have a version
+that can handle some Python 2.6 constructs - it can parse them,
+but not exeute them!). This version is built manually by you.
+The final result lives in o.jython/external/jython-parser.jar
+which you can update by running the update_jython.sh script
+in the same directory. It has some configurable parameters at
+the top. Run the script, then rebuild the module, then
+rebuild python.editor and run all test. Don't forget to also
+upload the updated jython parser file as described under
+updating the jython distro above.
+
+If the python editor unit tests pass, great, check in your
 updates. If not, proceed as described under FIXING TESTS above.
 
 UPDATING THE INDEXED DATA
