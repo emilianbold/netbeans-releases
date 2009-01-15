@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,45 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.project.classpath;
 
-
-package org.netbeans.modules.cnd.modelimpl.csm;
-
-import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.WeakSet;
 
 /**
- * Implements CsmParameter
- * @author Vladimir Kvashin
+ * Provides ClassPath for php files on include path
  */
-public final class ParameterEllipsisImpl extends ParameterImpl {
-
-    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-        super(ast, file, type, "...", scope); //NOI18N
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class, position = 200)
+public class IncludePathClassPathProvider implements ClassPathProvider {
+    static Set<ClassPath> projectIncludes = new WeakSet<ClassPath>();
+    /** Default constructor for lookup. */
+    public IncludePathClassPathProvider() {
     }
-
-    @Override
-    public boolean isVarArgs() {
-        return true;
+    static void addProjectIncludePath(ClassPath cp) {
+        projectIncludes.add(cp);
     }
-    
-    @Override
-    public CharSequence getDisplayText() {
-        return "..."; //NOI18N
+    public ClassPath findClassPath(FileObject file, String type) {
+        if (CommandUtils.isPhpFile(file)) {
+            FileType fileType = PhpSourcePath.getFileType(file);
+            if (fileType.equals(FileType.INCLUDE)) {
+                /*for global include path*/
+                List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+                return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+            } else if (fileType.equals(FileType.UNKNOWN)) {
+                /*include pathes for individual projects*/
+                for (ClassPath classPath : projectIncludes) {
+                    if (classPath.contains(file)) {
+                        return classPath;
+                    }
+                }
+            }
+        }
+        return null;
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);      
-    }  
-    
-    public ParameterEllipsisImpl(DataInput input) throws IOException {
-        super(input);
-    } 
 }

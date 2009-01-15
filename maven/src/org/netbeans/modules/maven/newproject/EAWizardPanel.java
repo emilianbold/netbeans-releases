@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,116 +34,82 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
-/**
- * Panel just asking for basic info.
- * @author mkleint
- */
-public class BasicWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
-    
+public class EAWizardPanel implements WizardDescriptor.Panel,
+                                        WizardDescriptor.FinishablePanel {
+
+    /**
+     * The visual component that displays this panel.
+     */
+    private EAVisualPanel component;
     private WizardDescriptor wizardDescriptor;
-    private BasicPanelVisual component;
 
-    private final String[] eeLevels;
-    private final Archetype[] archs;
-    private final boolean isFinish;
-    
-    /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(String[] eeLevels, Archetype[] archs, boolean isFinish) {
-        this.archs = archs;
-        this.eeLevels = eeLevels;
-        this.isFinish = isFinish;
-    }
-
-    public BasicWizardPanel() {
-        this(new String[0], null, true);
-    }
-
-    public BasicWizardPanel(boolean isFinish) {
-        this(new String[0], null, isFinish);
-    }
-    
-    public Component getComponent() {
+    public EAVisualPanel getComponent() {
         if (component == null) {
-            component = new BasicPanelVisual(this);
-            component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
+            component = new EAVisualPanel();
         }
         return component;
     }
 
-    Archetype[] getArchetypes() {
-        return archs;
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+    // If you have context help:
+    // return new HelpCtx(SampleWizardPanel1.class);
     }
 
-    String[] getEELevels() {
-        return eeLevels;
-    }
-    
-    public HelpCtx getHelp() {
-        return new HelpCtx(BasicWizardPanel.class);
-    }
-    
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        return getComponent().valid(wizardDescriptor);
     }
-    
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
-    
+
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+        getComponent().readSettings(wizardDescriptor);
     }
-    
+
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+        getComponent().storeSettings(d);
     }
-    
+
+
     public boolean isFinishPanel() {
-        return isFinish;
+        return true;
     }
-    
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
-    
 }
+
