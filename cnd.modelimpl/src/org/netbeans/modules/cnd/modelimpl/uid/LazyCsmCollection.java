@@ -41,8 +41,10 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
 
 /**
@@ -59,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
  *  
  * @author Alexander Simon
  */
-public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
+public class LazyCsmCollection<Tuid extends CsmIdentifiable<Tuid>, Tfact extends Tuid> implements Collection<Tfact> {
 
     private Collection<CsmUID<Tuid>> uids;
     boolean allowNullsAndSkip;
@@ -69,12 +71,8 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         this.allowNullsAndSkip = allowNullsAndSkip;
     }
 
-    private Tfact convertToObject(CsmUID uid) {
+    private Tfact convertToObject(CsmUID<? extends Tfact> uid) {
         return (Tfact) UIDCsmConverter.UIDtoCsmObject(uid);
-    }
-
-    private CsmUID<Tuid> convertToUID(Tfact object) {
-        return ((CsmIdentifiable) object).getUID();
     }
 
     public int size() {
@@ -98,11 +96,11 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     public Iterator<Tfact> iterator() {
-        return allowNullsAndSkip ? new MySafeIterator<Tfact>() : new MyIterator();
+        return allowNullsAndSkip ? new MySafeIterator() : new MyIterator();
     }
 
     public Iterator<Tfact> iterator(CsmFilter filter) {
-        return new MySafeIterator<Tfact>(filter);
+        return new MySafeIterator(filter);
     }
 
     public Object[] toArray() {
@@ -120,6 +118,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
         int size = size();
         if (a.length < size) {
@@ -140,11 +139,15 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     public boolean add(Tfact o) {
-        return uids.add(convertToUID(o));
+        return uids.add(o.getUID());
     }
 
     public boolean remove(Object o) {
-        return uids.remove(convertToUID((Tfact) o));
+        if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isIdentifiable((CsmObject)o)) {
+            return uids.remove(((CsmIdentifiable)o).getUID());
+        } else {
+            return uids.remove(o);
+        }
     }
 
     public boolean containsAll(Collection<?> c) {
@@ -159,8 +162,12 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     public boolean addAll(Collection<? extends Tfact> c) {
         boolean modified = false;
-        if (c instanceof LazyCsmCollection) {
-            return uids.addAll(((LazyCsmCollection) c).uids);
+        if (c instanceof LazyCsmCollection<?,?>) {
+            // input collection c is Tfact based
+            // Tfact is extension of Tuid => col.uids provides array of needed type
+            @SuppressWarnings("unchecked") // checked
+            final LazyCsmCollection<Tuid, ? extends Tfact> col = (LazyCsmCollection<Tuid, ? extends Tfact>) c;
+            return uids.addAll(col.uids);
         } else {
             Iterator<? extends Tfact> it = c.iterator();
             while (it.hasNext()) {
@@ -220,9 +227,9 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return buf.toString();
     }
 
-    private class MyIterator<T> implements Iterator<T> {
+    private class MyIterator implements Iterator<Tfact> {
 
-        private Iterator it;
+        private Iterator<CsmUID<Tuid>> it;
 
         private MyIterator() {
             it = uids.iterator();
@@ -232,9 +239,11 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             return it.hasNext();
         }
 
-        public T next() {
-            CsmUID uid = (CsmUID) it.next();
-            T decl = (T) convertToObject(uid);
+        public Tfact next() {
+            // we know that Tfact is the real type so cast is okay
+            @SuppressWarnings("unchecked") // checked
+            CsmUID<Tfact> uid = (CsmUID<Tfact>)it.next();
+            Tfact decl =  convertToObject(uid);
             assert decl != null : "no object for UID " + uid;
             return decl;
         }
@@ -244,10 +253,10 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         }
     }
 
-    private class MySafeIterator<T> implements Iterator<T> {
+    private class MySafeIterator implements Iterator<Tfact> {
 
-        private Iterator it;
-        private T next;
+        private Iterator<CsmUID<Tuid>> it;
+        private Tfact next;
         private CsmFilter filter;
 
         private MySafeIterator() {
@@ -264,21 +273,23 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             return next != null;
         }
 
-        private T getNextNonNull() {
-            T out = null;
+        private Tfact getNextNonNull() {
+            Tfact out = null;
             while (out == null && it.hasNext()) {
-                CsmUID uid = (CsmUID) it.next();
+                // we know that Tfact is the real type so cast is okay
+                @SuppressWarnings("unchecked") // checked
+                CsmUID<Tfact> uid = (CsmUID<Tfact>)it.next();
                 if (uid == null ||
                         (filter != null && !((UIDFilter) filter).accept(uid))) {
                     continue;
                 }
-                out = (T) convertToObject(uid);
+                out = convertToObject(uid);
             }
             return out;
         }
 
-        public T next() {
-            T decl = next;
+        public Tfact next() {
+            Tfact decl = next;
             next = getNextNonNull();
             return decl;
         }

@@ -62,7 +62,6 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -80,8 +79,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
     public StorageImpl(StorageDescription<K, V> sd, Callable<Void> callback) {
         this.storageDescription = sd;
         this.dataChangedCallback = callback;
-        this.sfs = Repository.getDefault().getDefaultFileSystem();
-        this.baseFolder = sfs.findResource("Editors"); //NOI18N
+        this.baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
         Filters.registerCallback(this);
     }
 
@@ -200,7 +198,6 @@ public final class StorageImpl <K extends Object, V extends Object> {
     
     private final StorageDescription<K, V> storageDescription;
     private final Callable<Void> dataChangedCallback;
-    private final FileSystem sfs;
     private final FileObject baseFolder;
     
     private final Object lock = new String("StorageImpl.lock"); //NOI18N
@@ -319,7 +316,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
             final String settingFileName = SettingsType.getLocator(storageDescription).getWritableFileName(
                 mimePathString, profile, null, defaults);
             
-            sfs.runAtomicAction(new FileSystem.AtomicAction() {
+            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     if (added.size() > 0 || removed.size() > 0) {
                         FileObject f = FileUtil.createData(baseFolder, settingFileName);
@@ -359,7 +356,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
             // Perform the operation
             final List<Object []> profileInfos = scan(mimePath, profile, defaults, !defaults);
             if (profileInfos != null) {
-                sfs.runAtomicAction(new FileSystem.AtomicAction() {
+                FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         for(Object [] info : profileInfos) {
                             assert info.length == 5;

@@ -227,7 +227,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
             } else {
                 Manifest man = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
-                definePackage (pkgName, man, src.getURL());
+                try {
+                    definePackage(pkgName, man, src.getURL());
+                } catch (IllegalArgumentException x) {
+                    // #156478: possibly a race condition defining packages in parallel parents? Ignore.
+                    LOGGER.log(Level.FINE, null, x);
+                }
             }
 
             return defineClass (name, data, 0, data.length, src.getProtectionDomain());

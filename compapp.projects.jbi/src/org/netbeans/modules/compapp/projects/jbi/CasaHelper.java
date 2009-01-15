@@ -59,7 +59,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -154,7 +153,7 @@ public class CasaHelper {
         FileObject casaFO = null;
         try {        
             casaFO = FileUtil.copyFile(
-                    Repository.getDefault().getDefaultFileSystem().findResource(
+                    FileUtil.getConfigFile(
                     "org-netbeans-modules-compapp-projects-jbi/project.casa" // NOI18N
                     ), confFO, projName
                     );        

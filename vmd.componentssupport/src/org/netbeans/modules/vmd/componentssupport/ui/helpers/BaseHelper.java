@@ -67,7 +67,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataObject;
 import org.openide.text.IndentEngine;
@@ -163,8 +162,7 @@ public class BaseHelper {
      * @return that file from the <code>Templates/NetBeansModuleDevelopment-files</code> layer folder
      */
     public static FileObject getTemplate(String name) {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().
-                findResource(TEMPLATES_LAYER_FOLDER + name);
+        FileObject f = FileUtil.getConfigFile(TEMPLATES_LAYER_FOLDER + name);
         assert f != null : name;
         return f;
     }

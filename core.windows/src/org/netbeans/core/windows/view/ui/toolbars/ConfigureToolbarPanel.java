@@ -65,8 +65,7 @@ import org.openide.awt.Actions;
 import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -96,8 +95,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         
         setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject paletteFolder = fs.findResource( "Actions" ); // NOI18N
+        FileObject paletteFolder = FileUtil.getConfigFile( "Actions" ); // NOI18N
         DataFolder df = DataFolder.findFolder( paletteFolder );
         root = new FolderActionNode( new AbstractNode( df.createNodeChildren( new ActionIconDataFilter() ) ) );
 

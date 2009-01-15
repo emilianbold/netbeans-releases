@@ -170,7 +170,11 @@ public class ColumnModels {
          */
         @Override
         public int getCurrentOrderNumber () {
-            return properties.getInt (getID () + ".currentOrderNumber", -1);
+            int cn = properties.getInt (getID () + ".currentOrderNumber", -1);
+            if (cn >= 0 && !properties.getBoolean("outlineOrdering", false)) {
+                cn++; // Shift the old TreeTable ordering, which did not count the first nodes column.
+            }
+            return cn;
         }
 
         /**
@@ -184,6 +188,7 @@ public class ColumnModels {
                 getID () + ".currentOrderNumber",
                 newOrderNumber
             );
+            properties.setBoolean("outlineOrdering", true);
         }
 
         /**

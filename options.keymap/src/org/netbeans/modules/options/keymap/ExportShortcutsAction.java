@@ -67,7 +67,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -206,7 +205,7 @@ public class ExportShortcutsAction {
             XMLStorage.generateFolderEnd (sb, "html", "");
             
             FileObject fo = FileUtil.createData (
-                Repository.getDefault ().getDefaultFileSystem ().getRoot (),
+                FileUtil.getConfigRoot (),
                 "shortcuts.html"
             );
             FileLock fileLock = fo.lock ();

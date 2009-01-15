@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -91,12 +92,29 @@ public class ProcedureNode extends BaseNode {
                         public void run(Metadata metaData) {
                             Procedure proc = procedureHandle.resolve(metaData);
                             name = proc.getName();
+
+                            updateProperties(proc);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
                 // TODO report exception
             }
+        }
+    }
+
+    private void updateProperties(Procedure proc) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        try {
+            if (proc.getReturnValue() == null) {
+                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("StoredProcedure")); // NOI18N
+            } else {
+                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("StoredFunction")); // NOI18N
+            }
+        } catch (Exception e) {
+            // TODO report exception
         }
     }
 

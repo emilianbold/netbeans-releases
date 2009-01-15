@@ -61,8 +61,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -91,8 +90,7 @@ import org.xml.sax.helpers.DefaultHandler;
         try {
             Map<Integer, CompilerVendor> vendors = new TreeMap<Integer, CompilerVendor>();
             Map<String, String> cache = new HashMap<String, String>();
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
+            FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
             int indefinedID = Integer.MAX_VALUE / 2;
             if (folder != null && folder.isFolder()) {
                 FileObject[] files = folder.getChildren();
@@ -537,8 +535,7 @@ import org.xml.sax.helpers.DefaultHandler;
      * available in package for testing only
      */
     /*package-local for testing*/ void writeToolchains() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
+        FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
             for (FileObject file : files) {

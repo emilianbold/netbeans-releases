@@ -60,12 +60,13 @@ import java.util.Vector;
 import org.openide.util.io.NbMarshalledObject;
 
 /**
- * Holder for system filesystem, used for most of NetBeans' runtime configuration.
- * There is only one useful thing to do with this class:
+ * Holder for NetBeans default (system, configuration) filesystem, used for most
+ * of NetBeans' runtime configuration. The default implementation is a merge
+ * of all of the XML layer files provided by enabled modules, and
+ * the {@code config} subfolder of the userdir on the user's disk.
+ * If you just want to modify configuration data use e.g.
  * <pre>
- * FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
- * // now use somehow, e.g.
- * FileObject menus = sfs.findResource("Menu");
+ * FileObject menus = FileUtil.getConfigFile("Menu");
  * // ...
  * </pre>
  * Formerly (NB 3.x) contained a list of mounted filesystems. This functionality
@@ -169,7 +170,10 @@ public class Repository implements Serializable {
     /**
      * Gets the NetBeans default (system, configuration) filesystem.
      * @return the default filesystem
+     * @deprecated Please use {@link FileUtil#getConfigFile(String)} or
+     * {@link FileUtil#getConfigRoot()} instead.
      */
+    @Deprecated
     public final FileSystem getDefaultFileSystem() {
         return system;
     }

@@ -41,18 +41,8 @@
 
 package org.netbeans.core;
 
-
-import junit.textui.TestRunner;
-
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-
-import org.netbeans.core.NbPlaces;
-
 
 /**
  * Tests NbPlaces.
@@ -65,7 +55,6 @@ public class NbPlacesTest extends NbTestCase {
     }
     
     public void testFindSessionFolder() throws Exception {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         
         DataFolder a = NbPlaces.findSessionFolder("A");
         assertNotNull("\"A\" session folder not created", a);

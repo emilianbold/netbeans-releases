@@ -199,7 +199,7 @@ public class Utilities {
     }
 
     public static boolean checkAnnotation(EditorOperator operator, int line, String annotationType) {
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(10000);
         Object[] annotations = operator.getAnnotations(line);
         boolean found = false;
         JemmyProperties.getProperties().getOutput().print(">>>>> Annotations on line: " + line + "\n");

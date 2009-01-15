@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.LocatorTest;
 import org.netbeans.modules.editor.settings.storage.TestUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -109,7 +109,7 @@ public class CodeTemplatesLocatorTest extends NbTestCase {
         TestUtilities.createFile(writableUserFile, CT_CONTENTS);
         LocatorTest.orderFiles("Editors/CodeTemplates/dhdhdddd.xml", writableUserFile);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         LocatorTest.scan(CodeTemplatesStorage.ID, baseFolder, null, null, true, true, true, results);
         
@@ -128,7 +128,7 @@ public class CodeTemplatesLocatorTest extends NbTestCase {
         
         LocatorTest.createOrderedFiles(files, CT_CONTENTS);
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
         LocatorTest.scan(CodeTemplatesStorage.ID, baseFolder, null, null, true, true, true, results);
         

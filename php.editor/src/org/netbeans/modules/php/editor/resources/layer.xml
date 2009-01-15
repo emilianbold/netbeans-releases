@@ -48,6 +48,15 @@
                 </folder>
                 <folder name="Actions">
                     <file name="org-netbeans-modules-php-editor-actions-FastImportAction.instance"/>
+                    <file name="org-netbeans-modules-php-editor-sql-SelectConnectionAction.instance"/>
+                </folder>
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="select-connection">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.sql,resources.Bundle"/>
+                            <attr name="position" intvalue="200000"/>
+                        </file>
+                    </folder>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
@@ -93,7 +102,7 @@
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
-                    <file name="org-netbeans-modules-php-editor-PHPSQLCompletion.instance"/>
+                    <file name="org-netbeans-modules-php-editor-sql-PHPSQLCompletion.instance"/>
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
@@ -106,6 +115,10 @@
                     </folder>
                     <file name="fast-import">
                         <attr name="position" intvalue="1181"/>
+                    </file>
+                    <file name="select-connection">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                        <attr name="position" intvalue="1182"/>
                     </file>
 
                 </folder>

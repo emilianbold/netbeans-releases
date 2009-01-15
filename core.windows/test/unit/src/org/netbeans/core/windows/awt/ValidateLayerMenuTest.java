@@ -113,8 +113,7 @@ public class ValidateLayerMenuTest extends NbTestCase {
         
         java.util.ArrayList errors = new java.util.ArrayList ();
         
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        DataFolder df = DataFolder.findFolder (defaultFS.findResource (rootName ()));
+        DataFolder df = DataFolder.findFolder (FileUtil.getConfigFile(rootName ()));
         verifyMenu (df, errors);
         
         if (!errors.isEmpty()) {

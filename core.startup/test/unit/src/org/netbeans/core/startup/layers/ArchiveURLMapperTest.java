@@ -51,13 +51,10 @@ import java.util.zip.ZipEntry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
+
 /**
- *
  * @author  tomas zezula
  */
 public class ArchiveURLMapperTest extends NbTestCase {
@@ -91,37 +88,17 @@ public class ArchiveURLMapperTest extends NbTestCase {
         }
     }
     
-    private FileSystem mountFs () throws Exception {    
-        File f = FileUtil.normalizeFile(this.getWorkDir());
-        String parentName;
-        while ((parentName=f.getParent())!=null) {
-            f = new File (parentName);
-        }
-        LocalFileSystem lfs = new LocalFileSystem ();
-        lfs.setRootDirectory(f);
-        assertTrue (lfs!=null);
-        Repository.getDefault().addFileSystem(lfs);
-        return lfs;
-    }
-    
-    private void umountFs (FileSystem fs) {
-        Repository.getDefault().removeFileSystem (fs);
-    }
-    
-    
     public void testURLMapper () throws Exception {
         URL jarFileURL = createJarFile ();
-        FileSystem fs = mountFs();
         assertTrue (jarFileURL != null);
         URL url = new URL (MessageFormat.format("jar:{0}!/{1}", new Object[] {jarFileURL.toExternalForm(),  //NOI18N
             RESOURCE}));
-        FileObject[] fos = URLMapper.findFileObjects(url);
-        assertEquals ("There is one found file object", 1, fos.length);
-        assertTrue (fos[0].getPath().equals(RESOURCE));
-        URL newUrl = URLMapper.findURL(fos[0], URLMapper.EXTERNAL);
+        FileObject fo = URLMapper.findFileObject(url);
+        assertNotNull("There is one found file object", fo);
+        assertTrue(fo.getPath().equals(RESOURCE));
+        URL newUrl = URLMapper.findURL(fo, URLMapper.EXTERNAL);
         assertEquals(url, newUrl);
         removeJarFile ();
-        umountFs(fs);
     }
 
 	public void testArchiveToRootURL () throws Exception {
@@ -140,7 +117,6 @@ public class ArchiveURLMapperTest extends NbTestCase {
         
         
         public void testArchiveToRootFileObject () throws Exception {
-            FileSystem fs = mountFs ();
             URL jarFileURL = createJarFile ();
             FileObject fo = URLMapper.findFileObject(jarFileURL);
             assertTrue (fo != null);   
@@ -152,7 +128,6 @@ public class ArchiveURLMapperTest extends NbTestCase {
             File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
             assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
             removeJarFile ();
-            umountFs (fs);
         }
     
 }

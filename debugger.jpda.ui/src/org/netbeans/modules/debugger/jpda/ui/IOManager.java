@@ -75,7 +75,6 @@ public class IOManager {
     private InputOutput                     debuggerIO = null;
     private OutputWriter                    debuggerOut;
     private OutputWriter                    debuggerErr;
-    private String                          name;
     private boolean                         closed = false;
     
     /** output writer Thread */
@@ -167,9 +166,9 @@ public class IOManager {
                         }
                     }
                 }
-            }, 500, Thread.MIN_PRIORITY);
-        else 
-            task.schedule (500);
+            }, 200, Thread.MIN_PRIORITY);
+        else
+            task.schedule (200);
         }
     }
 

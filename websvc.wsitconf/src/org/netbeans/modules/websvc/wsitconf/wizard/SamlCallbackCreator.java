@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -63,7 +63,7 @@ public class SamlCallbackCreator {
         try {
             DataFolder folder = (DataFolder) DataObject.find(targetFolder);
             FileObject fo = null;
-            fo = Repository.getDefault().getDefaultFileSystem().findResource("Templates/WebServices/Saml" + version + type + ".java"); // NOI18N
+            fo = FileUtil.getConfigFile("Templates/WebServices/Saml" + version + type + ".java"); // NOI18N
             if (fo != null) {
                 DataObject template = DataObject.find(fo);
                 DataObject obj = template.createFromTemplate(folder, targetName);            

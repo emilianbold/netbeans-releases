@@ -67,7 +67,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -97,14 +96,14 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
      * Creates a new instance of PlatformCatalogAutoInstaller
      */
     public PlatformCatalogAutoInstaller() {
-        fo = Repository.getDefault().getDefaultFileSystem().findResource("platform_installers"); //NOI18N
+        fo = FileUtil.getConfigFile("platform_installers"); //NOI18N
         assert fo != null;
         fo.addFileChangeListener(this);
         res = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
         res.allInstances();
         res.addLookupListener(this);
         res.allInstances();
-        Repository.getDefault().getDefaultFileSystem().findResource("Modules").addFileChangeListener(this); //NOI18N
+        FileUtil.getConfigFile("Modules").addFileChangeListener(this); //NOI18N
     }
     
     public void run() {
@@ -175,11 +174,9 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
     private void launchAddPlatformWizard() {
         try {
             final WizardDescriptor wiz = new WizardDescriptor(InstallerIterator.getDefault());
-            final DataObject template = DataObject.find(
-                    Repository.getDefault().getDefaultFileSystem().findResource(TEMPLATE));
+            final DataObject template = DataObject.find(FileUtil.getConfigFile(TEMPLATE));
             wiz.putProperty("targetTemplate", template);    //NOI18N
-            final DataFolder folder = DataFolder.findFolder(
-                    Repository.getDefault().getDefaultFileSystem().findResource(STORAGE));
+            final DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile(STORAGE));
             wiz.putProperty("targetFolder",folder); //NOI18N
             wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
             wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N

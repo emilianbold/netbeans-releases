@@ -96,7 +96,7 @@ public final class TestUtil {
         FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
         FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
         
-        Assert.assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers").toString());;
+        Assert.assertNotNull(FileUtil.getConfigFile("J2EE/InstalledServers").toString());
     }
     
     private static boolean warned = false;
@@ -260,7 +260,7 @@ public final class TestUtil {
         } else {
             asRoot = extractAppSrv(test.getWorkDir(), new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
         }
-        FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers"); // NOI18N
+        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
         String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
         FileObject instanceFO = dir.createData(name);
         String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N

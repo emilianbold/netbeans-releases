@@ -69,7 +69,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -178,7 +177,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             } else {
                 switch (runAsType) {
                     case SCRIPT:
-                        template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
+                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP"); // NOI18N
                         break;
                     default:
                         template = Templates.getTemplate(descriptor);

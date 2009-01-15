@@ -44,7 +44,6 @@ import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
@@ -153,8 +152,7 @@ public class WrapServiceRefHandler implements ItemHandler {
             wrap2servicerefFo = bpelFo.getParent().getFileObject(WRAP2SERVICEREF_XSL);
             if (wrap2servicerefFo == null) {
                 try {
-                    wrap2servicerefFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
-                            .findResource(PATH_TO_WRAP2SERVICEREF), //NOI18N
+                    wrap2servicerefFo = FileUtil.copyFile(FileUtil.getConfigFile(PATH_TO_WRAP2SERVICEREF),
                             bpelFo.getParent(), WRAP2SERVICEREF); //NOI18N            
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);

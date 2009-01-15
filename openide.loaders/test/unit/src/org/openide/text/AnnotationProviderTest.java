@@ -69,7 +69,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataNode;
@@ -349,7 +348,7 @@ public class AnnotationProviderTest extends NbTestCase {
         protected FileObject findPrimaryFile (FileObject fo) {
             boolean isSysFile;
             try {
-                isSysFile = fo.getFileSystem () == Repository.getDefault ().getDefaultFileSystem ();
+                isSysFile = fo.getFileSystem ().isDefault();
             } catch (FileStateInvalidException fsie) {
                 // Never mind.
                 isSysFile = false;

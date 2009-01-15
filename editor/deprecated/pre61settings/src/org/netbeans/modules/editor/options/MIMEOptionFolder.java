@@ -41,37 +41,27 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.Settings;
 
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderInstance;
-import org.openide.util.TaskListener;
-import org.openide.util.Task;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.openide.loaders.DataObjectNotFoundException;
-import java.lang.ClassNotFoundException;
-import org.netbeans.editor.BaseKit;
-import org.openide.loaders.DataObjectExistsException;
 import java.lang.reflect.Field;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 
 /** MIME Options Folder representation.
@@ -166,15 +156,13 @@ public class MIMEOptionFolder{
             if (mpFolder != null) return mpFolder;
         }
 
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().
-            findResource(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
+        FileObject fo = FileUtil.getConfigFile(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
 
         if ( (fo==null) && forceCreation){
             // let's create a DataFolder
             try{
                 DataFolder.create(folder,folderName);
-                fo = Repository.getDefault().getDefaultFileSystem().
-                    findResource(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
+                fo = FileUtil.getConfigFile(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
             }catch(IOException ioe){
                 return null;
             }
@@ -230,8 +218,7 @@ public class MIMEOptionFolder{
                 return (MIMEOptionFolder)subFolders.get(subFolder);
             }
 
-            org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
-                findResource(folder.getPrimaryFile().getPath()+"/"+subFolder); // NOI18N
+            org.openide.filesystems.FileObject f = FileUtil.getConfigFile(folder.getPrimaryFile().getPath()+"/"+subFolder); // NOI18N
             if (f==null) return null;
 
                 try {

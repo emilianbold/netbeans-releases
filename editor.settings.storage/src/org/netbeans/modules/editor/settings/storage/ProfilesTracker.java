@@ -59,8 +59,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -119,7 +121,13 @@ public final class ProfilesTracker {
 
         // Start listening
         this.listener = new Listener();
-        this.systemFileSystem = Repository.getDefault().getDefaultFileSystem();
+        FileSystem sfs = null;
+        try {
+            sfs = FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        this.systemFileSystem = sfs;
         this.systemFileSystem.addFileChangeListener(WeakListeners.create(FileChangeListener.class, listener, this.systemFileSystem));
         this.mimeTypes.addPropertyChangeListener(listener);
     }
@@ -221,10 +229,9 @@ public final class ProfilesTracker {
         PropertyChangeEvent event = null;
 
         synchronized (LOCK) {
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             Map<String, List<Object[]>> scan = new HashMap<String, List<Object[]>>();
 
-            FileObject baseFolder = sfs.findResource(mimeTypes.getBasePath());
+            FileObject baseFolder = FileUtil.getConfigFile(mimeTypes.getBasePath());
             if (baseFolder != null && baseFolder.isFolder()) {
                 // Scan base folder
                 locator.scan(baseFolder, null, null, false, true, true, false, scan);

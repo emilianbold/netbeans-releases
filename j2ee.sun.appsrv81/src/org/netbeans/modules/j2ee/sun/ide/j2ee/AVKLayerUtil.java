@@ -48,8 +48,6 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import org.openide.filesystems.*;
-import org.openide.*;
-import org.openide.util.Lookup;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 
@@ -70,8 +68,7 @@ public class AVKLayerUtil {
     }
     public static InstrumentAVK getAVKImplemenation() {
         InstrumentAVK avkSupport = null;
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_EXTENSION);
+        FileObject dir = FileUtil.getConfigFile(DIR_EXTENSION);
         
         FileObject[] ch =null;
         

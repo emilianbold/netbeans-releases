@@ -47,7 +47,6 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -66,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.*;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 
@@ -762,7 +762,7 @@ public class ExplorerActions {
         */
         private void doDestroy(final Node[] sel) {
             try {
-                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
 
                                                                                    public void run() throws IOException {
                                                                                        for (int i = 0; i <

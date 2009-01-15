@@ -694,20 +694,20 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbAll, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_All_Label")); // NOI18N
+        tgbAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_local.png"))); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle"); // NOI18N
         tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
         tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);
         jPanel2.add(tgbAll);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Local_Label")); // NOI18N
+        tgbLocal.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/local_vs_local.png"))); // NOI18N
         tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
         tgbLocal.setFocusable(false);
         tgbLocal.addActionListener(this);
         jPanel2.add(tgbLocal);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Remote_Label")); // NOI18N
+        tgbRemote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_remote.png"))); // NOI18N
         tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
         tgbRemote.setFocusable(false);
         tgbRemote.addActionListener(this);
@@ -719,7 +719,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
-        btnRefresh.setActionCommand("null");
+        btnRefresh.setActionCommand("null"); // NOI18N
         btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);

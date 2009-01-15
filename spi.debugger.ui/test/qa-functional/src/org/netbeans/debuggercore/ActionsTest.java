@@ -154,7 +154,7 @@ public class ActionsTest extends JellyTestCase {
             //toggle breakpoint
             assertFalse(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, false));
             //evaluate expression
-            assertFalse(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, false));
+            assertTrue(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
 
             //open source file
@@ -505,15 +505,9 @@ public class ActionsTest extends JellyTestCase {
             new ContinueAction().performMenu();
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
-
-            //continue
-            //new ContinueAction().performMenu();
-
-           //continue
            //continue
            //new EventTool().waitNoEvent(1000);
-           // new ContinueAction().performMenu();
-
+           new ContinueAction().performMenu();
             String pausePath = Utilities.runMenu + "|" + Utilities.pauseItem;
             for (int i = 0; i < 10; i++) {
                 if (MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
@@ -524,6 +518,7 @@ public class ActionsTest extends JellyTestCase {
             }
 
             eo = new EditorOperator("MemoryView.java");
+
             boolean found = false;
             for (int i = 79; i < 87; i++) {
                 if (Utilities.checkAnnotation(eo, i, "CallSite")) {

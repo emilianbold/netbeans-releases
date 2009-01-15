@@ -62,7 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 
@@ -245,7 +245,7 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
         boolean duplicated = false;
 
         //TODO - verify implementation. Where do collaboration files live?
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(collaborationName);
+        FileObject fo = FileUtil.getConfigFile(collaborationName);
 
         if (fo != null) { // file exists
             duplicated = true;

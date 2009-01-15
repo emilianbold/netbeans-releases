@@ -49,9 +49,7 @@ import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
 
@@ -59,12 +57,11 @@ public final class LibraryTypeRegistry extends FolderInstance {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
     private static FileObject findProvidersFolder() {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = sfs.findResource(REGISTRY);
+        FileObject folder = FileUtil.getConfigFile(REGISTRY);
         if (folder == null) {
             // #50391 - maybe we are turning this module off?
             try {
-                folder = FileUtil.createFolder(sfs.getRoot(), REGISTRY);
+                folder = FileUtil.createFolder(FileUtil.getConfigRoot(), REGISTRY);
             } catch (IOException e) {
                 // Hmm, what to do?
                 throw (IllegalStateException) new IllegalStateException("Cannot make folder " + REGISTRY + ": " + e).initCause(e);
