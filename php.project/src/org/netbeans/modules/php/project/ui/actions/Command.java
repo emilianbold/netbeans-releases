@@ -40,8 +40,10 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -86,5 +88,11 @@ public abstract class Command {
 
     protected ConfigAction getConfigAction() {
         return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(getProject())));
+    }
+
+    protected boolean isTestFile(Lookup context) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        assert fileObj != null : "No fileobject found for context: " + context;
+        return CommandUtils.isUnderTests(project, fileObj, false);
     }
 }
