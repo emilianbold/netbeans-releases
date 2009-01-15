@@ -68,7 +68,7 @@ class HTMLJavadocParser {
      */
     public static String getJavadocText(URL url, boolean pkg) {
         if (url == null) return null;
-        
+
         HTMLEditorKit.Parser parser;
         InputStream is = null;
         
@@ -297,6 +297,8 @@ class HTMLJavadocParser {
         final int A_CLOSE = 2;
         // PRE close tag after the A_CLOSE
         final int PRE_CLOSE = 3;
+        // div tag after the A_CLOSE
+        final int INSIDE_DIV = 3;
 
         final int state[] = new int[1];
         final int offset[] = new int[2];
@@ -307,8 +309,10 @@ class HTMLJavadocParser {
 
         HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback() {
 
+            int div_counter = 0;
             int hrPos = -1;
 
+            @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.HR && state[0]!=INIT){
                     if (state[0] == PRE_CLOSE){
@@ -317,6 +321,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
                 if (t == HTML.Tag.A) {
@@ -325,7 +330,7 @@ class HTMLJavadocParser {
                         // we have found desired javadoc member info anchor
                         state[0] = A_OPEN;
                     } else {
-                        if (state[0] == PRE_CLOSE && attrName!=null){
+                        if ((state[0] == PRE_CLOSE || state[0] == INSIDE_DIV) && attrName!=null){
                             // reach the end of retrieved javadoc info
                             state[0] = INIT;
                             offset[1] = (hrPos!=-1) ? hrPos : pos;
@@ -333,15 +338,28 @@ class HTMLJavadocParser {
                     }
                 } else if (t == HTML.Tag.DD && state[0] == PRE_CLOSE && offset[0] < 0){
                     offset[0] = pos;
+                } else if (t == HTML.Tag.DIV && (state[0] == A_CLOSE || state[0] == INSIDE_DIV)){
+                    state[0] = INSIDE_DIV;
+                    div_counter++;
+                    if (div_counter == 2 && offset[0] < 0) {
+                      offset[0] = pos;
+                    }
                 }
 
             }
 
+            @Override
             public void handleEndTag(HTML.Tag t, int pos){
                 if (t == HTML.Tag.A && state[0] == A_OPEN){
                     state[0] = A_CLOSE;
                 } else if (t == HTML.Tag.PRE && state[0] == A_CLOSE){
                     state[0] = PRE_CLOSE;
+                } else if (t == HTML.Tag.DIV && state[0] == INSIDE_DIV) {
+                    state[0] = INSIDE_DIV;
+                    if (div_counter == 1) {
+                      hrPos = pos;
+                    }
+                    div_counter--;
                 }
             }
 
