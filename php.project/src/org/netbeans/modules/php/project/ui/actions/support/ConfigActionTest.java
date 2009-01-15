@@ -126,8 +126,11 @@ public class ConfigActionTest extends ConfigAction {
                 .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
 
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(FileUtil.toFile(pair.first))
-                .addArgument(pair.second);
+                .workingDirectory(FileUtil.toFile(pair.first));
+        for (String param : phpUnit.getParameters()) {
+            externalProcessBuilder = externalProcessBuilder.addArgument(param);
+        }
+        externalProcessBuilder = externalProcessBuilder.addArgument(pair.second);
 
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must be known already";
