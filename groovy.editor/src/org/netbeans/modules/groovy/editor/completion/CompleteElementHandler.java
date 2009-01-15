@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -202,7 +203,8 @@ public final class CompleteElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+        GroovyIndex index = index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                        Collections.singleton(ClassPath.SOURCE), null));
 
         if (index == null) {
             return node;

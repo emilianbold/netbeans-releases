@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
@@ -56,7 +57,6 @@ import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -89,7 +89,8 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+        GroovyIndex index = index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                        Collections.singleton(ClassPath.SOURCE), null));
 
         if (index == null) {
             return Collections.emptyMap();
@@ -151,7 +152,8 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+        GroovyIndex index = index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                        Collections.singleton(ClassPath.SOURCE), null));
 
         if (index == null) {
             return Collections.emptyMap();
