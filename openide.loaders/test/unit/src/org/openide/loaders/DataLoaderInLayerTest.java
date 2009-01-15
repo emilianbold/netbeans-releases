@@ -99,7 +99,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, Class<F> clazz, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         if (add) {
             FileObject fo = FileUtil.createData(root, res);
             fo.setAttribute("instanceClass", clazz.getName());
@@ -119,7 +119,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         if (add) {
             FileObject fo = FileUtil.createData(root, res);
             fo.setAttribute("instanceCreate", factory);
@@ -208,7 +208,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
             
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject root = FileUtil.getConfigRoot();
             FileObject edit = FileUtil.createData(root, "/Loaders/text/simplefactory/Actions/org-openide-actions-EditAction.instance");
             
             Node node = dob.getNodeDelegate();
@@ -245,7 +245,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
     
     public void testFactoryInstanceRegistrationWorksAsWellNowFromLayer() throws Exception {
         URL u = DataLoaderInLayerTest.class.getResource("/org/openide/loaders/saveAll.gif");
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject instance = FileUtil.createData(root, "TestLoaders/text/L.instance");
         instance.setAttribute("dataObjectClass", SimpleDataObject.class.getName());
         instance.setAttribute("mimeType", "text/simplefactory");

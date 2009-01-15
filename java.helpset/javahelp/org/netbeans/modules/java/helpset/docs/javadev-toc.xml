@@ -220,6 +220,9 @@
             <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
             <tocitem text="Installing Ant Documentation" target="ant_docs" />
         </tocitem>
+        <tocitem text="Working with Maven">
+            <tocitem text="About Maven Project Support" target="org.netbeans.modules.maven.about"/>
+        </tocitem>
         <tocitem text="Working with Groovy">
             <tocitem text="About Working with Groovy" target="groovy_intro"/>
             <tocitem text="Enabling a Java Application to Support Groovy" target="groovy_enable"/>

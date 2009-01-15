@@ -134,7 +134,7 @@ public final class ModelUtils {
      * @param mdl
      * @param url of the repository
      * @param add true == add to model, will not add if the repo is in project but not in model (eg. central repo)
-     * @return null
+     * @return null if repository with given url exists, otherwise a returned newly created item.
      */
     public static Repository addModelRepository(MavenProject project, POMModel mdl, String url) {
         if (url.contains("http://repo1.maven.org/maven2")) { //NOI18N

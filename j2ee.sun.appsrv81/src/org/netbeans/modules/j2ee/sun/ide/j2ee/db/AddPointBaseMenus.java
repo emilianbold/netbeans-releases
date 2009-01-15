@@ -49,9 +49,7 @@ import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -64,12 +62,11 @@ import org.openide.util.Lookup;
      * Now the menu is optional...
      */
     static void  execute() {
-        final Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject pbFolder = rep.getDefaultFileSystem().findResource("/Menu/Tools/PointbaseMenu"); //NOI18N
+        FileObject pbFolder = FileUtil.getConfigFile("Menu/Tools/PointbaseMenu"); //NOI18N
         if (pbFolder!=null){
             return;
         }
-        final FileObject ToolsFolder = rep.getDefaultFileSystem().findResource("/Menu/Tools");//NOI18N
+        final FileObject ToolsFolder = FileUtil.getConfigFile("Menu/Tools");//NOI18N
         try {
             ToolsFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {

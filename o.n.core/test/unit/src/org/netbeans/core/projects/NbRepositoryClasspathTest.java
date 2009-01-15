@@ -40,7 +40,7 @@
 package org.netbeans.core.projects;
 
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 public class NbRepositoryClasspathTest extends NbTestCase {
 
@@ -54,7 +54,7 @@ public class NbRepositoryClasspathTest extends NbTestCase {
      * defines any kind of layer, so needs to be in a module which does.
      */
     public void testNbRepositoryInitializedFromClasspath() throws Exception {
-        assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("Services"));
+        assertNotNull(FileUtil.getConfigFile("Services"));
     }
 
 }

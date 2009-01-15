@@ -94,9 +94,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
@@ -143,9 +143,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Utilities;
 
@@ -553,11 +551,7 @@ public class JaxWsUtils {
                     Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
-        }
-
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            Object moduleType = provider.getJ2eeModule().getModuleType();
             if (J2eeModule.EJB.equals(moduleType)) {
                 projectType = ProjectInfo.EJB_PROJECT_TYPE;
             } else if (J2eeModule.WAR.equals(moduleType)) {
@@ -1295,8 +1289,7 @@ public class JaxWsUtils {
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
 
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 

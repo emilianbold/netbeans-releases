@@ -76,8 +76,6 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -279,7 +277,7 @@ class Controller  {
 	if(debug) log("Now in createDirectories()"); // NOI18N
 	
 	FileObject rootdir = 
-	    Repository.getDefault().getDefaultFileSystem().getRoot();
+	    FileUtil.getConfigRoot();
 	if(debug) {
 	    log("Root directory is " + rootdir.getName()); // NOI18N
 	    File rootF = FileUtil.toFile(rootdir);
@@ -683,7 +681,6 @@ class Controller  {
 
 	    String portS = null; 
 	    try { 
-	    FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
 	    URL u = getSampleHTTPServerURL();
 		portS = 
 		    String.valueOf(u.getPort()/*HttpServer.getRepositoryRoot().getPort()*/);
@@ -1469,8 +1466,7 @@ class Controller  {
 
 
     private static URL getSampleHTTPServerURL() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
+	    FileObject fo = FileUtil.getConfigFile("HTTPServer_DUMMY");
 	    if (fo == null) {
 	        return null;
 	    }

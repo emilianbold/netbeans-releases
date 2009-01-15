@@ -81,7 +81,7 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         l.add (cm);
         TreeTable tt = (TreeTable) Models.createView 
             (Models.createCompoundModel (l));
-        BasicTest.waitFinished ();
+        BasicTest.waitFinished (tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
         n = tt.getExplorerManager ().
             getRootContext ();
         n.addNodeListener(this);

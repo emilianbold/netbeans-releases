@@ -42,8 +42,6 @@ package org.netbeans.modules.gsf;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
@@ -60,7 +58,6 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -83,8 +80,7 @@ public class LanguageRegistryTest extends NbTestCase {
 */
     @Override
     public void setUp() throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
-        plugins = FileUtil.createFolder(fo, "GsfPlugins");
+        plugins = FileUtil.createFolder(FileUtil.getConfigRoot(), "GsfPlugins");
         loader = GsfDataLoader.getLoader(GsfDataLoader.class);
     }
 
@@ -98,7 +94,7 @@ public class LanguageRegistryTest extends NbTestCase {
         assertNull("No languages thus far", r.getLanguageByMimeType("text/x-php5"));
         assertFalse("No extensions", loader.getExtensions().mimeTypes().hasMoreElements());
 
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("GsfPlugins");
+        FileObject fo = FileUtil.getConfigFile("GsfPlugins");
         FileObject inst = FileUtil.createData(fo, "text/x-php5/language.instance");
         inst.setAttribute("instanceCreate", new MyLang());
 

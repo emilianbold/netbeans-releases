@@ -61,7 +61,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
@@ -196,7 +196,7 @@ public class AutoupdateSettings {
         err.log (Level.FINER, "Old IDE Identity ID: " + id); // NOI18N
         String newPrefix = "";
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("/productid"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("productid"); // NOI18N
             if (fo != null) {
                 InputStream is = fo.getInputStream();
                 try {

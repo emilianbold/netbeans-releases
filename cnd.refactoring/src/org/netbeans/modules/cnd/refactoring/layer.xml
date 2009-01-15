@@ -36,10 +36,32 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
                         <attr name="position" intvalue="1210"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-EncapsulateFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1220"/>
+                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
                     </file>                    
+                </folder>
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
+                </folder>
+
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ImplementOverrideMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-c++">
@@ -74,10 +96,32 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
                         <attr name="position" intvalue="1210"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-EncapsulateFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1220"/>
+                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
                     </file>                     
+                </folder>
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
+                </folder>
+
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ImplementOverrideMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
                 </folder>
             </folder>            
             <folder name="x-h">
@@ -104,9 +148,31 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
                         <attr name="position" intvalue="1210"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-EncapsulateFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1220"/>
+                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
+                    </file>
+                </folder>
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
+                </folder>
+
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-ImplementOverrideMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
             </folder>

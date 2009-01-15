@@ -66,12 +66,11 @@ import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -88,7 +87,7 @@ class GetStarted extends BackgroundPanel implements Constants {
     }
     
     private void buildContent() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "WelcomePage/GettingStartedLinks" ); // NOI18N
+        FileObject root = FileUtil.getConfigFile( "WelcomePage/GettingStartedLinks" ); // NOI18N
         DataFolder folder = DataFolder.findFolder( root );
         DataObject[] children = folder.getChildren();
         for( int i=0; i<children.length; i++ ) {
@@ -181,7 +180,7 @@ class GetStarted extends BackgroundPanel implements Constants {
         
         String preferredCluster = "java";
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("/productid"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("/productid"); // NOI18N
             if (fo != null) {
                 InputStream is = fo.getInputStream();
                 try {

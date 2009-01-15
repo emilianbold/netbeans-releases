@@ -589,13 +589,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
         Set<IndexedMethod> methods = index.getMethods(methodName, className, QuerySupport.Kind.EXACT);
         DeclarationLocation methodLocation = getLocation(methods);
-        if (!classLocation || methodLocation.getFileObject() == null) {
+        if (!classLocation) {
             return methodLocation;
         }
-        
         Set<IndexedClass> classes =
                 index.getClasses(className, QuerySupport.Kind.EXACT, false, false, true, null);
         DeclarationLocation classDeclarationLocation = getLocation(classes);
+        
+        if (DeclarationLocation.NONE == methodLocation && classLocation) {
+            return classDeclarationLocation;
+        }
         if (methodLocation.getFileObject().equals(classDeclarationLocation.getFileObject())) {
             return classDeclarationLocation;
         }

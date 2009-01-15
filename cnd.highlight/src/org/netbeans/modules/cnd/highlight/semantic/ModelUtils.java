@@ -240,8 +240,7 @@ public class ModelUtils {
             if (parameters == null) {
                 parameters = new HashSet<CsmUID>();
                 CsmSelect select = CsmSelect.getDefault();
-                CsmFilter filter = select.getFilterBuilder().createKindFilter(
-                        new CsmDeclaration.Kind[] {CsmDeclaration.Kind.FUNCTION_DEFINITION});
+                CsmFilter filter = select.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION);
                 Iterator<CsmOffsetableDeclaration> i = select.getDeclarations(file, filter);
                 while (i.hasNext()) {
                     CsmFunctionDefinition fundef = (CsmFunctionDefinition)i.next();

@@ -67,7 +67,6 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.NbCollections;
@@ -610,7 +609,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     
     private static void registerTestLibraryTypeProvider () throws Exception {
         StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         while (tk.hasMoreElements()) {
             String pathElement = tk.nextToken();
             FileObject tmp = root.getFileObject(pathElement);

@@ -83,8 +83,11 @@ THREAD = 16
 STEP_RETURN = 17
 UNKNOWN = -1
 
+# Thread running states
 STATE_RUNNING = 0
 STATE_SUSPENDED = 1
+STATE_SUSPENDING = 2
+STATE_RESUMING = 2
 
 CP037_OPENBRACKET='\xBA'
 CP037_CLOSEBRACKET='\xBB'
@@ -96,8 +99,8 @@ def SetTraceForParents(frame, dispatch_func):
         frame = frame.f_back
     del frame
 
-# instanciate a jpyutil object
-_utils = dbgutils.jpyutils()
+# get jpyutils global instance
+_utils = dbgutils.jpyutils
 
 class UntracedSources :
     """ singleton class to just prevent system python sources tracing from beeing enabled"""
@@ -105,6 +108,7 @@ class UntracedSources :
         self.DONT_TRACE = {
               #commonly used things from the stdlib that we don't want to trace
               'atexit.py':1,
+              'codecs.py':1,
               'threading.py':1,
               'Queue.py':1,
               'socket.py':1,
@@ -138,9 +142,9 @@ except :
 
 def _DEBUG(   message) :
     # DEBUG TRACING when things goes wrong
-    from dbgutils import _debugLogger
-    if _debugLogger != None :
-        _debugLogger.debug(message)
+    from dbgutils import debugLogger
+    if debugLogger != None :
+        debugLogger.debug(message)
 
 
 class BdbQuit(Exception):
@@ -180,7 +184,6 @@ class BdbClone(bdb.Bdb) :
         self.lastLineException = None
         # on going running
         self.running_threads= {}
-
 
     def connect( self ,   myhost = None , myport = PORT  )  :
         if ( myhost == None ):
@@ -428,21 +431,8 @@ class BdbClone(bdb.Bdb) :
                    _DEBUG(  '%s is an active THREAD '  % ( str(t))  )
                else :
                    _DEBUG(  'No ExtraInfos for THREAD : %s '  % ( str(t))  )
-
-        if isJython :
-            # get Java Running Threads
-            from java.lang import Thread
-            from jarray import zeros
-            rootGrp = Thread.currentThread().getThreadGroup()
-            while rootGrp.getParent() != None :
-                rootGrp = rootGrp.getParent()
-            jthreads = zeros( rootGrp.activeCount() , Thread )
-            count = rootGrp.enumerate( jthreads)
-            for jt in jthreads :
-                if jt != None :
-                    if jt.isAlive() :
-                        returned.append(  ("J"  ,  jt.getName() )  )
         return returned
+
 
     def isDead(self , threadId):
         threads = threading.enumerate()
@@ -455,22 +445,6 @@ class BdbClone(bdb.Bdb) :
                   _DEBUG(  'No ExtraInfos for THREAD : %s '  % ( str(t)))
         return False
 
-
-    def isSingleThreaded( self ) :
-        """
-        Check the threading Python + java to determine if we're over
-        the Jython case is  due to the fact that jython will exit event if
-        awt  or java threads are running in the back
-        """
-        tList = self.listThreads()
-        _DEBUG(  'living THREAD are : %i '  % ( len(tList))  )
-        if isJython :
-            if ( len(tList) > 6) :
-                return False
-        else :
-            if len(tList) > 1 :
-                return False
-        return True
 
 class MainThread (threading.Thread) :
     """ debuggee mainthread """
@@ -566,9 +540,11 @@ class JPyDbgFrame :
         _DEBUG(  ' THREAD Dispatch  Second:  %s , %s '   % (  id(lthread) , event  )  )
         if event == 'call':
             # just dispatch to client side for any interest
-            _DEBUG( 'THREAD Dispatch before dispatch call')
-            mainDebugger.dispatch_call(frame, arg)
-            return self.trace_dispatch
+            _DEBUG( 'THREAD Dispatch before dispatch call fname,debuggee %s,%s' % (fileName,mainDebugger.debuggee))
+            returned = mainDebugger.dispatch_call(frame, arg)
+            if fileName == mainDebugger.debuggee :
+                return self.trace_dispatch
+            return returned
 
         if event == 'return':
             # just dispatch to client side for any interest
@@ -620,7 +596,8 @@ class JPyDbgFrame :
                 #_DEBUG( 'info.cmd=% '  % (info.cmd) )
                 #  thread frame in STEP INTO or DEBUG initial start
                 _DEBUG('before STEP(%s) or DEBUG(%s)' % (info.cmd,mainDebugger.cmd) )
-                if  info.cmd == STEP  or  mainDebugger.isStarting() :
+                if  info.cmd == STEP or \
+                  ( mainDebugger.isStarting() ) :
                     _DEBUG( 'STEP reached')
                     info.cmd = None
                     self.dispatchLineAndBreak(mainDebugger, frame , lthread )
@@ -834,8 +811,9 @@ class JPyDbg(BdbClone) :
         self._suspended = Suspended()
         self._verb = None
         self._starting = True
+        self._commander = None
 
-    def isStarting(self):
+    def isStarting(self ):
         """ simply used to detect first incoming frame to debug """
         if self._starting :
             self._starting = False
@@ -1139,6 +1117,9 @@ class JPyDbg(BdbClone) :
             return 1
         return 0
 
+    def getConnection(self) :
+        return self._connection
+
     # return true when selected element is composite candidate
     def getVarType( self , value ):
         if self.isComposite(value):
@@ -1224,16 +1205,26 @@ class JPyDbg(BdbClone) :
         self.debuggee = None
         self.set_quit()
 
+    def stopRunningThreads(self):
+        threads = threading.enumerate()
+        for thread in threads :
+            if thread.isAlive() :
+                if ( thread.getName() != 'DbgCommanderThread' ) :
+                    # send a KILL to threadQ for suspended THREAD
+                    self._connection.sendInternalThreadCommand("KILL "+thread.getName() )
+
     def parseSingleCommand( self , command ):
         verb , arg = self.commandSyntax( command )
         if ( string.upper(verb) == "READSRC" ):
-            return self.dealWithRead( verb , arg )
+            return self.dealWithRead( verb , arg ) , True
         if ( string.upper(verb) == "SETARGS" ):
-            return self.dealWithSetArgs( arg )
+            return self.dealWithSetArgs( arg ) , True
         elif ( string.upper(verb) == "DBG" ):
-            self.dealWithDebug( verb, arg )
+            return self.dealWithDebug( verb, arg ) , True
+        elif ( string.upper(verb) == "STOP"):
+            return self.stopRunningThreads() , False
         else:
-            return _utils.parsedReturned( message = "JPyDaemon SYNTAX ERROR : " + command )
+            return _utils.parsedReturned( message = "JPyDaemon SYNTAX ERROR : " + command ) , True
 
     # receive a command when in debugging state using debuggee's frame local and global
     # contexts
@@ -1273,11 +1264,6 @@ class JPyDbg(BdbClone) :
         elif ( string.upper(verb) == "RUN" ):
             self.dbgContinue = True
             self.set_continue()
-        elif ( string.upper(verb) == "STOP"):
-            self.cmd = QUIT
-            # raise BdbQuit exception to force debuggee termination
-            raise BdbQuit
-
         elif ( string.upper(verb) == "BP+"):
             self.cmd = SET_BP
             # split the command line argument on the last blank
@@ -1307,6 +1293,13 @@ class JPyDbg(BdbClone) :
             arg , optarg = _utils.nextArg(arg) # split BP arguments
             self.clear_break( arg , int(optarg) )
             self.cmd = FREEZE
+        elif ( string.upper(verb) == "KILL"):
+            self.cmd = QUIT
+            ident , optarg = _utils.nextArg(arg) # split BP arguments
+            _DEBUG("KILL requested for %s in %s" % (ident , lthread.getName() ))
+            if ( ident == lthread.getName() ) :
+                # raise BdbQuit exception to force termination on assoc thread
+                raise BdbQuit
         return self.cmd
 
     def terminateDaemon( self  ):
@@ -1345,15 +1338,10 @@ class JPyDbg(BdbClone) :
     # check and execute a received command
     def parseCommand( self , command ):
         # IP exception populating None object
-        if ( command == None ):
-            return 0 # => terminate starter thread
-        if ( self.verbose ):
-            print command
-        result = self.parseSingleCommand(command)
-        if ( result == None ):
-            return 0
-        self.populateCommandToClient( command , result )
-        return 1
+        result , inProgress = self.parseSingleCommand(command)
+        if inProgress and result :
+            self.populateCommandToClient( command , result )
+        return inProgress
 
 
     # start the deamon
@@ -1372,6 +1360,11 @@ class JPyDbg(BdbClone) :
             welcome.append('" />')
 
         self._connection.populateXmlToClient( welcome )
+        # define and enter the global commander thread
+        #self._commander = DebugGlobalCommander(self)
+        #_DEBUG('start CommanderThread')
+        #self._commander.start()
+        # next wait for first command populated by commander
         command = self._connection.receiveCommand()
         debugging = False
         while not debugging :
@@ -1382,6 +1375,28 @@ class JPyDbg(BdbClone) :
                 debugging = True
             else :
                 command = self._connection.receiveCommand()
+
+class DebugGlobalCommander(threading.Thread) :
+    """ Global debugger loop used to dispatch from network """
+    def __init__( self , debugger ) :
+        threading.Thread.__init__(self, name='DbgCommanderThread')
+        self._debugger = debugger
+        self._connection = debugger.getConnection()
+        self._running = False
+
+    def handleCommand( self , command ):
+        """ handle global commands here (not specific to given thread)"""
+        # handle global commands from here (not Thread specific actions)
+        self._running = self._debugger.parseCommand( command )
+
+
+    def run(self):
+        """ loop on network for commands while running """
+        self._running = True
+        while self._running :
+            _DEBUG('calling dispatchCommand')
+            self._connection.dispatchCommand(self)
+        _DEBUG('*** GlobalCommanderThread IS TERMINATED')
 #
 # Instanciate a client side debugging session
 #

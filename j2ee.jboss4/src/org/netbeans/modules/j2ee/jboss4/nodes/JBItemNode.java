@@ -48,7 +48,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -101,7 +101,7 @@ public class JBItemNode extends AbstractNode {
     }
     
     private Node getIconDelegate() {
-        return DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
     
     public javax.swing.Action[] getActions(boolean context) {

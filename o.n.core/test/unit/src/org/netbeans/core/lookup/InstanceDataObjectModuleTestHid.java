@@ -53,7 +53,7 @@ import org.netbeans.core.startup.SetupHid;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -229,7 +229,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     }
     
     protected DataObject findIt(String name) throws Exception {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(name);
+        FileObject fo = FileUtil.getConfigFile(name);
         assertNotNull("Found " + name, fo);
         return DataObject.find(fo);
     }

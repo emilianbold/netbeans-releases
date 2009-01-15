@@ -37,6 +37,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Finder;
 import org.netbeans.editor.FinderFactory;
@@ -51,6 +56,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.python.editor.lexer.PythonCommentTokenId;
+import org.netbeans.modules.python.editor.scopes.ScopeInfo;
 import org.netbeans.modules.python.editor.scopes.SymbolTable;
 import org.netbeans.modules.python.editor.scopes.SymInfo;
 import org.openide.filesystems.FileObject;
@@ -63,6 +70,8 @@ import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.Expr;
 import org.python.antlr.ast.FunctionDef;
+import org.python.antlr.ast.Import;
+import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.Str;
@@ -663,6 +672,89 @@ public class PythonAstUtils {
         }
 
         return null;
+    }
+
+    public static Set<OffsetRange> getAllOffsets(CompilationInfo info, AstPath path, int lexOffset, String name, boolean abortOnFree) {
+        if (path == null) {
+            path = AstPath.get(PythonAstUtils.getRoot(info), lexOffset);
+        }
+        PythonTree scope = PythonAstUtils.getLocalScope(path);
+        SymbolTable symbolTable = PythonAstUtils.getParseResult(info).getSymbolTable();
+        List<PythonTree> nodes = symbolTable.getOccurrences(scope, name, abortOnFree);
+        if (nodes == null) {
+            return null;
+        }
+        Set<OffsetRange> offsets = new HashSet<OffsetRange>();
+        Document doc = info.getDocument();
+        if (doc == null) {
+            return Collections.emptySet();
+        }
+        for (PythonTree node : nodes) {
+            OffsetRange astRange = PythonAstUtils.getNameRange(info, node);
+            OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, astRange);
+
+            if (node instanceof Import || node instanceof ImportFrom) {
+                // Try to find the exact spot
+                if (abortOnFree) {
+                    return null;
+                } else {
+                    lexRange = PythonLexerUtils.getImportNameOffset((BaseDocument)doc, lexRange, node, name);
+                }
+            } else if (abortOnFree && (node instanceof FunctionDef || node instanceof ClassDef)) {
+                return null;
+            }
+
+            if (lexRange != OffsetRange.NONE) {
+                offsets.add(lexRange);
+            }
+        }
+        // Look for type variables
+        ScopeInfo scopeInfo = symbolTable.getScopeInfo(scope);
+        if (scopeInfo != null) {
+            SymInfo sym = scopeInfo.tbl.get(name);
+            if (sym != null && sym.isVariable(false)) {
+                // Look for type declarations that can apply to this variable
+                OffsetRange lexRange = PythonLexerUtils.getLexerOffsets(info, PythonAstUtils.getRange(scope));
+                if (lexRange != OffsetRange.NONE) {
+                    BaseDocument bdoc = (BaseDocument)doc;
+                    try {
+                        bdoc.readLock(); // For TokenHierarchy usage
+                        TokenHierarchy hi = TokenHierarchy.get(doc);
+                        LanguagePath languagePath = LanguagePath.get(LanguagePath.get(PythonTokenId.language()), PythonCommentTokenId.language());
+                        int startOffset = Math.min(lexRange.getStart(), doc.getLength());
+                        if (scope instanceof Module) {
+                            startOffset = 0; // Pick up comments before code starts
+                        }
+                        int endOffset = Math.min(lexRange.getEnd(), doc.getLength());
+                        @SuppressWarnings("unchecked")
+                        List<TokenSequence<? extends PythonCommentTokenId>> tsl = hi.tokenSequenceList(languagePath, startOffset, endOffset);
+                        for (TokenSequence<? extends PythonCommentTokenId> ts : tsl) {
+                            ts.moveStart();
+                            while (ts.moveNext()) {
+                                PythonCommentTokenId id = ts.token().id();
+                                if (id == PythonCommentTokenId.TYPEKEY) {
+                                    if (ts.moveNext() && // skip separator
+                                            ts.moveNext()) {
+                                        if (ts.token().id() == PythonCommentTokenId.VARNAME) {
+                                            if (TokenUtilities.equals(ts.token().text(), name)) {
+                                                int start = ts.offset();
+                                                OffsetRange nameRange = new OffsetRange(start, start + name.length());
+                                                offsets.add(nameRange);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } finally {
+                        bdoc.readUnlock();
+                    }
+
+                }
+            }
+        }
+
+        return offsets;
     }
 
     private static final class NameVisitor extends Visitor {

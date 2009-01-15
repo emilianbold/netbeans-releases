@@ -47,7 +47,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -69,7 +69,7 @@ public class BaseOptionsDeadlock92449Test extends NbTestCase {
         Collection modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
 
         // Check that the modules have been loaded properly
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-java/Settings.settings");
+        FileObject f = FileUtil.getConfigFile("Editors/text/x-java/Settings.settings");
         assertNotNull("Can't find Settings.settings for text/x-java", f);
 
         final String mimeType = "text/x-java";

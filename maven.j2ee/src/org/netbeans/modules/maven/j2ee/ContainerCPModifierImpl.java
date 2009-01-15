@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.maven.j2ee;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -52,6 +54,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
@@ -72,7 +75,6 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         }
         final Boolean[] added = new Boolean[1];
         added[0] = Boolean.FALSE;
-
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Map<String, Item> items = createItemList();
@@ -86,6 +88,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                         version = ejb.getJ2eePlatformVersion();
                     }
                 }
+
                 for (String name : symbolicNames) {
                     Item item = items.get(name + ":" + version);//NOI18N
                     if (item != null) {
@@ -96,11 +99,21 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                                 //skip, already on CP somehow..
                                 continue;
                             }
-                            Dependency dep = ModelUtils.checkModelDependency(model, item.groupId, item.artifactId, true);
-                            dep.setVersion(item.version); 
-                            dep.setScope("provided"); //NOI18N
-                            added[0] = Boolean.TRUE;
-                            //TODO repository insertion once we define a non-central repo content
+                        }
+                        Dependency dep = ModelUtils.checkModelDependency(model, item.groupId, item.artifactId, true);
+                        dep.setVersion(item.version);
+                        dep.setScope(Artifact.SCOPE_PROVIDED); 
+                        added[0] = Boolean.TRUE;
+                        //TODO repository insertion once we define a non-central repo content
+                        if (item.repositoryurl != null) {
+                            String[] repo = StringUtils.split(item.repositoryurl, "|"); //NOI18N
+                            assert repo.length == 3;
+                            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+                            Repository repository = ModelUtils.addModelRepository(prj.getMavenProject(), model, repo[2]);
+                            if (repository != null) {
+                                repository.setId(repo[0]);
+                                repository.setLayout(repo[1]);
+                            }
                         }
                     }
                 }
@@ -143,10 +156,10 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
 
         key = ContainerClassPathModifier.API_JSP + ":" + J2eeModule.J2EE_13;//NOI18N
         item = new Item();
-        item.groupId = "javax.servlet.jsp";
-        item.artifactId = "jsp-api";
-        item.version = "2.0";
-        item.classToCheck = "javax/servlet/jsp/tagext/BodyContent.class";
+        item.groupId = "javax.servlet.jsp";//NOI18N
+        item.artifactId = "jsp-api";//NOI18N
+        item.version = "2.0";//NOI18N
+        item.classToCheck = "javax/servlet/jsp/tagext/BodyContent.class";//NOI18N
         toRet.put(key, item);
         key = ContainerClassPathModifier.API_JSP + ":" + J2eeModule.J2EE_14;
         item = new Item();
@@ -162,6 +175,29 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.version = "2.1";//NOI18N
         item.classToCheck = "javax/servlet/jsp/tagext/BodyContent.class";//NOI18N
         toRet.put(key, item);
+
+
+        key = ContainerClassPathModifier.API_J2EE + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-j2ee_1.4_spec";//NOI18N
+        item.version = "1.0";//NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_J2EE + ":" + J2eeModule.J2EE_14;
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-j2ee_1.4_spec";//NOI18N
+        item.version = "1.0";//NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_J2EE + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "javaee";//NOI18N
+        item.artifactId = "javaee-api";//NOI18N
+        item.version = "5";//NOI18N
+        item.repositoryurl = "java.net1|legacy|http://download.java.net/maven/1"; //NOI18N
+        toRet.put(key, item);
+
+
 
         return toRet;
     }

@@ -54,11 +54,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -108,7 +105,7 @@ public class GlobalAbilitiesCacheTest extends NbTestCase {
     public void testAbilities() throws IOException {
         System.out.println("Abilities");
         System.setProperty("netbeans.user","test/tiredTester");
-        FileObject root=Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root=FileUtil.getConfigRoot();
         FileObject fo;
         FileObject dir=root.getFileObject(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
         if (dir == null)

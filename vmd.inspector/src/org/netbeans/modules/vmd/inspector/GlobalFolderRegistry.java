@@ -87,7 +87,7 @@ final class GlobalFolderRegistry {
     
     private GlobalFolderRegistry(String projectType) {
         assert projectType != null && projectType.length() > 0;
-        FileObject resource = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + FILE_SYSTEM_FOLDER_NAME);
+        FileObject resource = FileUtil.getConfigFile (projectType + FILE_SYSTEM_FOLDER_NAME);
         if (resource != null) {
             registryFolders = DataFolder.findFolder(resource); // NOI18N
 

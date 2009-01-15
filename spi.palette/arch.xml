@@ -401,13 +401,12 @@ question-version="1.25"
         <p>Adding a <strong>new category</strong> is very straight-forward, it basically means creating
         a new folder under palette's root folder in XML layer:</p>
         <pre>
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject paletteRoot = fs.findResource( "MyModulePalette" );
+        FileObject paletteRoot = FileUtil.getConfigFile( "MyModulePalette" );
         paletteRoot.createFolder( "NewCategory" );
         </pre>
         <p>Adding a <strong>new item</strong> is a similar task:</p>
         <pre>
-        FileObject paletteRoot = Repository.getDefault().getDefaultFileSystem().findResource( "MyPalette" );
+        FileObject paletteRoot = FileUtil.getConfigFile( "MyPalette" );
         FileObject targetCategoryFO = paletteRoot.getFileObject( "CategoryName" );
         DataFolder targetCategoryDF = DataFolder.findFolder( targetCategoryFO );
         DataObject dobj = (DataObject)itemNode.getLookup().lookup( DataObject.class );

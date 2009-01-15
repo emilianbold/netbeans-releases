@@ -65,7 +65,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -149,7 +148,7 @@ class ImportImageWizard extends WizardDescriptor {
 
         final FileObject[] copied = new FileObject[selectedFiles.length];
         try {
-            Repository.getDefault().getDefaultFileSystem().runAtomicAction(
+            FileUtil.runAtomicAction(
             new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     for (int i=0; i < selectedFiles.length; i++) {

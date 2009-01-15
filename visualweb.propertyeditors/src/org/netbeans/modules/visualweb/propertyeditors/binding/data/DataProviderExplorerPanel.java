@@ -41,36 +41,23 @@
 package org.netbeans.modules.visualweb.propertyeditors.binding.data;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -104,7 +91,7 @@ public class DataProviderExplorerPanel extends JPanel implements ExplorerManager
      * Initialization the explorer panel.
      */
     public void initialize(){
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("ServerNavigator");
+        FileObject fo = FileUtil.getConfigFile("ServerNavigator");
         if(fo != null){
             DataFolder folder = DataFolder.findFolder(fo);
             final ServerNavigatorFolder servNavFolder = new ServerNavigatorFolder(folder);

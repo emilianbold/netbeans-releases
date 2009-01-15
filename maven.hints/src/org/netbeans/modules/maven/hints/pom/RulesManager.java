@@ -56,8 +56,7 @@ import javax.swing.tree.TreeModel;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /** Manages rules read from the system filesystem.
@@ -85,8 +84,7 @@ public class RulesManager  {
         TreeModel hintsTreeModel;
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         hintsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject(RULES_FOLDER);
+        FileObject folder = FileUtil.getConfigFile(RULES_FOLDER);
         List<Pair<POMErrorFixBase,FileObject>> rules = readRules(folder);
         categorizeTreeRules( rules, folder, rootNode );
         return hintsTreeModel;

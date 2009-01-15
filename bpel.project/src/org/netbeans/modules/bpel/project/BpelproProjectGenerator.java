@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -134,7 +133,7 @@ public class BpelproProjectGenerator {
     // vlv # 111020
     private static void createCatalogXml(FileObject project) {
       try {
-        FileObject resource = Repository.getDefault().getDefaultFileSystem().findResource("bpel-project-resources/catalog.xml");
+        FileObject resource = FileUtil.getConfigFile("bpel-project-resources/catalog.xml");
         FileUtil.copyFile(resource, project, "catalog", "xml"); // NOI18N
       }
       catch (IOException e) {

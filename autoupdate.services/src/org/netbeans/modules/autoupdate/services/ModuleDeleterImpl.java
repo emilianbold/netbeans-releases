@@ -60,7 +60,6 @@ import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -413,7 +412,7 @@ public final class ModuleDeleterImpl  {
 
     private void refreshModuleList () {
         // XXX: the modules list should be delete automatically when config/Modules/module.xml is removed
-        FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource (ModuleDeactivator.MODULES); // NOI18N
+        FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES); // NOI18N
         err.log (Level.FINE, "Call refresh on " + modulesRoot + " file object.");
         if (modulesRoot != null) {
             modulesRoot.refresh ();

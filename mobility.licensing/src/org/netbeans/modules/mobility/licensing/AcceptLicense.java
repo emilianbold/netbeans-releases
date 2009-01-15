@@ -58,12 +58,11 @@ import javax.swing.JPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 
 //import org.netbeans.util.Util;
 import org.openide.util.NbBundle;
-import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
 /**
  * Displays LicensePanel to user. User must accept license to continue.
@@ -83,7 +82,7 @@ public final class AcceptLicense extends ModuleInstall {
      */
     public void validate() throws IllegalStateException {
 //        Util.setDefaultLookAndFeel();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("LICENSE.txt"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("LICENSE.txt"); //NOI18N
         if (fo == null) return;
         URL url = null;
         try {

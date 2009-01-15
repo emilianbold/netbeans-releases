@@ -43,10 +43,8 @@ package org.netbeans.modules.java.j2seplatform.wizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
@@ -56,7 +54,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -140,7 +138,7 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         for (NewJ2SEPlatform platform : getPlatforms()) {
             if (platform.isValid()) {
                 final String systemName = platform.getAntName();
-                FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
+                FileObject platformsFolder = FileUtil.getConfigFile(
                         "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
                 if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
                     String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");

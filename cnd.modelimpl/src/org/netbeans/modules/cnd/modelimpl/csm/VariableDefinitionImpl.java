@@ -200,8 +200,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 		def = findByName(CsmSelect.getDefault().getClassMembers((CsmClass)owner, filter), getName());
 	    }  else if( owner instanceof CsmNamespace ) {
                 CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getDefault().getFilterBuilder().createKindFilter(
-                         new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}),
+                         CsmSelect.getDefault().getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
                          CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)owner), filter);
                 while (it.hasNext()) {
@@ -298,7 +297,6 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }  
     
-    @SuppressWarnings("unchecked")
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.qualifiedName = PersistentUtils.readUTF(input);

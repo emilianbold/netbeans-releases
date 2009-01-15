@@ -305,7 +305,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(enclosingTypdefs, output, true);
     }
 
-    @SuppressWarnings("unchecked")
     protected ClassEnumBase(DataInput input) throws IOException {
         super(input);
         this.isValid = input.readBoolean();

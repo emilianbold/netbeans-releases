@@ -44,7 +44,7 @@ package org.netbeans.modules.settings.convertors;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
@@ -56,8 +56,6 @@ import org.openide.util.Lookup;
  */
 public class SerialDataNodeTest extends NbTestCase {
 
-    private FileSystem sfs;
-
     /** Creates a new instance of SerialDataNodeTest */
     public SerialDataNodeTest(String name) {
         super(name);
@@ -66,12 +64,11 @@ public class SerialDataNodeTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault().lookup(ModuleInfo.class);
-        sfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     
     public void testDisplayName() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-testDisplayName.settings";
-        FileObject fo = sfs.findResource(res);
+        FileObject fo = FileUtil.getConfigFile(res);
         assertNotNull(res, fo);
         assertNull("name", fo.getAttribute("name"));
         

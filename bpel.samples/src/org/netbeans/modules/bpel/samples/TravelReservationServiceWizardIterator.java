@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class TravelReservationServiceWizardIterator extends SampleWizardIterator {
@@ -67,8 +67,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
       Set<FileObject> resultSet = new HashSet<FileObject>();
       FileObject j2eeProjectDir = projectDir.createFolder(Util.RESERVATION_PARTNER_SERVICES);
 
-      FileObject j2eeSamples = Repository.getDefault().
-              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
+      FileObject j2eeSamples = FileUtil.getConfigFile("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
 
       Util.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
       resultSet.add(j2eeProjectDir);
@@ -86,8 +85,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
       Set<FileObject> resultSet = createJ2eeReservationPartnerServicesProjects(projectDir);
       FileObject compAppProjectDir = projectDir.createFolder(name);                
       
-      FileObject trsCompositeApp = Repository.getDefault().
-              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip"); // NOI18N
+      FileObject trsCompositeApp = FileUtil.getConfigFile("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip"); // NOI18N
 
       Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
       Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "TravelReservationServiceApplication"); // NOI18N

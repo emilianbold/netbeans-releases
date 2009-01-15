@@ -142,7 +142,7 @@ public class TargetModuleConverter extends DOMConvertor {
     private static FileObject targetModulesDir = null;
     private static FileObject getTargetModulesDir() throws IOException {
         if (targetModulesDir == null) {
-            FileObject j2eeDir = Repository.getDefault().getDefaultFileSystem().findResource("/J2EE");
+            FileObject j2eeDir = FileUtil.getConfigFile("J2EE");
             targetModulesDir = j2eeDir.getFileObject(DIR_TARGETMODULES);
             if (targetModulesDir == null)
                 targetModulesDir = j2eeDir.createFolder(DIR_TARGETMODULES);

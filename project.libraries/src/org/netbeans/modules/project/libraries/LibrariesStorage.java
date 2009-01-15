@@ -70,7 +70,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -132,9 +131,8 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
      * @return new storage or null on I/O error.
      */
     private static final FileObject createStorage () {
-        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();        
         try {
-            return FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
+            return FileUtil.createFolder(FileUtil.getConfigRoot(), LIBRARIES_REPOSITORY);
         } catch (IOException e) {
             return null;
         }

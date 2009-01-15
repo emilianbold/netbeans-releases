@@ -378,10 +378,17 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static RequestProcessor requestProcessor;
-    static RequestProcessor getRequestProcessor () {
-        if (requestProcessor == null)
-            requestProcessor = new RequestProcessor ("TreeModel", 1);
-        return requestProcessor;
+    // Accessed from test
+    RequestProcessor getRequestProcessor () {
+        RequestProcessor rp = treeModelRoot.getRequestProcessor();
+        if (rp != null) {
+            return rp;
+        }
+        synchronized (TreeModelNode.class) {
+            if (requestProcessor == null)
+                requestProcessor = new RequestProcessor ("TreeModel", 1);
+            return requestProcessor;
+        }
     }
 
     private void setName (String name, boolean italics) {
@@ -1130,14 +1137,17 @@ public class TreeModelNode extends AbstractNode {
     static class LazyEvaluator implements Runnable {
         
         /** Release the evaluator task after this time. */
-        private static final long EXPIRE_TIME = 60000L;
+        private static final long EXPIRE_TIME = 1000L;
 
-        private List<Object> objectsToEvaluate = new LinkedList<Object>();
+        private final List<Object> objectsToEvaluate = new LinkedList<Object>();
         private Evaluable currentlyEvaluating;
         private Task evalTask;
         
-        public LazyEvaluator() {
-            evalTask = new RequestProcessor("Debugger Values Evaluator", 1).post(this);
+        public LazyEvaluator(RequestProcessor prefferedRequestProcessor) {
+            if (prefferedRequestProcessor == null) {
+                prefferedRequestProcessor = new RequestProcessor("Debugger Values Evaluator", 1); // NOI18N
+            }
+            evalTask = prefferedRequestProcessor.create(this, true);
         }
         
         public void evaluate(Evaluable eval) {

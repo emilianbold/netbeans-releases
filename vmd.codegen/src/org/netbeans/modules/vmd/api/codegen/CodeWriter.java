@@ -116,9 +116,11 @@ public final class CodeWriter {
                     text = ""; // NOI18N
             }
 
-            if (section != null)
+            if (section != null) {
                 section.setText (text);
-            else {
+                System.out.println(" Section: " + section.getName());
+                System.out.println(" Code: \n" + text);
+            } else {
                 if (endOffset != Integer.MIN_VALUE)
                     document.remove (offset, endOffset - offset);
                 document.insertString (offset, text, null);

@@ -62,10 +62,7 @@ import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -141,8 +138,7 @@ public class PluginProperties  {
     }
     
     private FileObject getPropertiesFile() { // throws java.io.IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject dir = fs.findResource("J2EE");
+        FileObject dir = FileUtil.getConfigFile("J2EE");
         FileObject retVal = null;
         if (null != dir) {
             retVal = dir.getFileObject("platform","properties"); // NOI18N
@@ -557,8 +553,7 @@ public class PluginProperties  {
                                 }
                             }
 
-                            Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
-                            FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+                            FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
                             FileObject instanceFOs[] = dir.getChildren();
 
                             displayName = generateDisplayName(displayName, instanceFOs);

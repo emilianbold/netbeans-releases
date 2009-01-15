@@ -69,8 +69,6 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -417,8 +415,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
     }
 
     private static FileObject getServerInstanceDir() {
-        Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
         return dir;
     }
 

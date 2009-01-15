@@ -63,7 +63,6 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /**
@@ -80,7 +79,7 @@ public class PHPIndexTest extends NbTestCase {
     
     @Override
     public void setUp() throws Exception {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(FOLDER + "/text/html");
+        FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
         
         if (f != null) {
             f.delete();

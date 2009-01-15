@@ -41,25 +41,13 @@
 
 package org.openide.loaders;
 
-import java.awt.Button;
 import java.util.Date;
-import junit.framework.*;
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import org.openide.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
-import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
-import java.util.List;
 
 /**
  *
@@ -81,7 +69,7 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
     }
 
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {
-        FileObject set = createSettings (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "x.settings");
+        FileObject set = createSettings (FileUtil.getConfigRoot(), "x.settings");
         DataObject obj = DataObject.find (set);
         assertEquals (InstanceDataObject.class, obj.getClass ());
         assertNull ("It does not have edit cookie", obj.getCookie (EditCookie.class));

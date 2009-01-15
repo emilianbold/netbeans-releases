@@ -25,7 +25,7 @@ import javax.swing.Action;
 
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -158,13 +158,12 @@ public class PaletteNode extends org.openide.loaders.DataFolder.FolderNode {
 
         try {
             org.openide.filesystems.FileObject fo =
-                Repository.getDefault().getDefaultFileSystem()
-                    .findResource(folderName);
+                FileUtil.getConfigFile(folderName);
 
             if (fo == null) {
 
                 // resource not found, try to create new folder
-                fo = Repository.getDefault().getDefaultFileSystem().getRoot()
+                fo = FileUtil.getConfigRoot()
                     .createFolder(folderName);
             }
 

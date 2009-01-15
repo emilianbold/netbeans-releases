@@ -42,6 +42,7 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -59,9 +60,6 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     protected final static String SYS_CLOSE = ">"; // NOI18N
     protected final static String SLASH = "/"; // NOI18N
     protected final static String PARENT_COLOR_TAG = "<font color=\"#557755\">"; // NOI18N
-    private final static int MAX_DISPLAYED_DIR_LENGTH = 35;
-    private final static int NR_DISPLAYED_FRONT_DIRS = 2;
-    private final static int NR_DISPLAYED_TRAILING_DIRS = 2;
     private final int substitutionOffset;
     private final int priority;
     private final String item;
@@ -240,56 +238,9 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     }
 
     protected String getRightText(boolean shrink, String separator) {
-        StringBuilder builder = new StringBuilder(this.getParentFolder());
-        builder.append(separator).append(getChildSubdir());
-        String toReplace = null;
-        if (SLASH.equals(separator)) {
-            if (builder.indexOf("\\") >= 0) { // NOI18N
-                toReplace = "\\"; // NOI18N
-            }
-        } else {
-            if (builder.indexOf(SLASH) >= 0) {
-                toReplace = SLASH;
-            }
-        }
-        if (toReplace != null) {
-            // replace all "/" or "\" to system separator
-            builder = new StringBuilder(builder.toString().replace(toReplace, separator));
-        }
-        int len = builder.length();
-        if (shrink && len > MAX_DISPLAYED_DIR_LENGTH) {
-
-            StringBuilder reverse = new StringBuilder(builder).reverse();
-            int st = builder.indexOf(separator);
-            if (st < 0) {
-                st = 0;
-            } else {
-                st++;
-            }
-            int end = 0;
-            while (reverse.charAt(end) == separator.charAt(0)) {
-                end++;
-            }
-            int firstSlash = NR_DISPLAYED_FRONT_DIRS > 0 ? Integer.MAX_VALUE : -1;
-            for (int i = NR_DISPLAYED_FRONT_DIRS; i > 0 && firstSlash > 0; i--) {
-                firstSlash = builder.indexOf(separator, st);
-                st = firstSlash + 1;
-            }
-            int lastSlash = NR_DISPLAYED_TRAILING_DIRS > 0 ? Integer.MAX_VALUE : -1;
-            for (int i = NR_DISPLAYED_TRAILING_DIRS; i > 0 && lastSlash > 0; i--) {
-                lastSlash = reverse.indexOf(separator, end);
-                end = lastSlash + 1;
-            }
-            if (lastSlash > 0 && firstSlash > 0) {
-                lastSlash = len - lastSlash;
-                if (firstSlash < lastSlash - 1) {
-                    builder.replace(firstSlash, lastSlash - 1, "..."); // NOI18N
-                }
-            }
-        }
-        return builder.toString(); // NOI18N
+        return CsmDisplayUtilities.shrinkPath(this.getParentFolder() + separator + getChildSubdir(), shrink, separator, 35, 2, 2);
     }
-
+    
     protected void substituteText(final JTextComponent c, final int offset, final int origLen, final String toAdd) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
         final String itemText = getItemText();

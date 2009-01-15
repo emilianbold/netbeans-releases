@@ -51,7 +51,6 @@ import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
 import org.netbeans.modules.db.mysql.test.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -171,8 +170,7 @@ public class SampleManagerTest extends TestBase {
 
     }
     private FileObject getSampleProviderFolder() throws Exception {
-               FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-       return FileUtil.createFolder(root, SampleProvider.SAMPLE_PROVIDER_PATH);
+       return FileUtil.createFolder(FileUtil.getConfigRoot(), SampleProvider.SAMPLE_PROVIDER_PATH);
     }
 
 

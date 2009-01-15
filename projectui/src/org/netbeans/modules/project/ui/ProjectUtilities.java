@@ -50,11 +50,10 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -77,6 +76,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
@@ -117,11 +117,11 @@ public class ProjectUtilities {
             return true;
         }
         
-        public Map<Project,SortedSet<String>> close(final Project[] projects,
+        public Map<Project,Set<String>> close(final Project[] projects,
                                                     final boolean notifyUI) {
             final Wrapper wr = new Wrapper();
 
-            wr.urls4project = new HashMap<Project,SortedSet<String>>();
+            wr.urls4project = new HashMap<Project,Set<String>>();
             if (SwingUtilities.isEventDispatchThread()) {
                 doClose(projects, notifyUI, wr);
             } else {
@@ -144,11 +144,15 @@ public class ProjectUtilities {
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
             WindowManager wm = WindowManager.getDefault();
-            for (TopComponent tc : wm.getRegistry().getOpened()) {
+            for (Mode mode : wm.getModes()) {
                 //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
-                if (!wm.isOpenedEditorTopComponent(tc)) {
+                if (!wm.isEditorMode(mode)) {
                     continue;
                 }
+                for (TopComponent tc : mode.getTopComponents()) {
+                    if (!tc.isOpened()) {
+                        continue;
+                    }
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);
 
                 if (dobj != null) {
@@ -165,7 +169,7 @@ public class ProjectUtilities {
                         }
                         if (!wr.urls4project.containsKey(owner)) {
                             // add project
-                            wr.urls4project.put(owner, new TreeSet<String>());
+                            wr.urls4project.put(owner, new LinkedHashSet<String>());
                         }
                         URL url = null;
 
@@ -179,6 +183,7 @@ public class ProjectUtilities {
                         }
                     }
                 }
+            }
             }
             if (notifyUI) {
                 for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
@@ -207,7 +212,7 @@ public class ProjectUtilities {
     };
     
     private static class Wrapper {
-        Map<Project,SortedSet<String>> urls4project;
+        Map<Project,Set<String>> urls4project;
     }
     
     private static final Logger ERR = Logger.getLogger(ProjectUtilities.class.getName());
@@ -441,12 +446,12 @@ public class ProjectUtilities {
             return true;
         }
         
-        Map<Project,SortedSet<String>> urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close(projects, notifyUI);
+        Map<Project,Set<String>> urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close(projects, notifyUI);
 
         if (urls4project != null) {
             // store project's documents
             // loop all project being closed
-            for (Map.Entry<Project,SortedSet<String>> entry : urls4project.entrySet()) {
+            for (Map.Entry<Project,Set<String>> entry : urls4project.entrySet()) {
                 storeProjectOpenFiles(entry.getKey(), entry.getValue());
             }
         }
@@ -454,7 +459,7 @@ public class ProjectUtilities {
         return urls4project != null;
     }
     
-    static private void storeProjectOpenFiles (Project p, SortedSet<String> urls) {
+    static private void storeProjectOpenFiles(Project p, Set<String> urls) {
         AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
         aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
 
@@ -526,7 +531,7 @@ public class ProjectUtilities {
         
         // closes documents of given projects and returns mapped document's urls by project
         // it's used as base for storing documents in project private.xml
-        Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI);
+        Map<Project,Set<String>> close(Project[] projects, boolean notifyUI);
     }
     
 }

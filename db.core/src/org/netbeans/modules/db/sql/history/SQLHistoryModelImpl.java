@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
 
 /**
@@ -60,7 +59,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
     private static final int SAVE_STATEMENTS_EMPTY = 0; // NOI18N
     private static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
     private static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
-    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
+    private static final FileObject USERDIR = FileUtil.getConfigRoot();
 
     List<SQLHistory> _sqlHistoryList = new ArrayList<SQLHistory>();
     

@@ -57,7 +57,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -97,8 +97,7 @@ class ShortcutsFolder {
     
     private ShortcutsFolder () {
         try {
-            FileObject root = Repository.getDefault ().
-                getDefaultFileSystem ().getRoot ();
+            FileObject root = FileUtil.getConfigRoot ();
             profilesFileObject = root.getFileObject (PROFILES_FOLDER);
             if (profilesFileObject == null)
                 profilesFileObject = root.createFolder (PROFILES_FOLDER);
@@ -135,8 +134,7 @@ class ShortcutsFolder {
             keymapName = "NetBeans"; // NOI18N
         if (currentFolder != null) 
             currentFolder.removeFileChangeListener (listener);
-        currentFolder = Repository.getDefault ().getDefaultFileSystem ().
-            getRoot ().getFileObject (PROFILES_FOLDER + '/' + keymapName);
+        currentFolder = FileUtil.getConfigFile (PROFILES_FOLDER + '/' + keymapName);
         if (currentFolder == null) {
             try {
                 currentFolder = profilesFileObject.createFolder(keymapName);

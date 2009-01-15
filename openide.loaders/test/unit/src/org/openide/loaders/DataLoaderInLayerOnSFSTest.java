@@ -57,7 +57,7 @@ public class DataLoaderInLayerOnSFSTest extends DataLoaderInLayerTest {
 
     @Override
     protected FileSystem createFS(String... resources) throws IOException {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem sfs = FileUtil.getConfigRoot().getFileSystem();
         for (String s : resources) {
             assertNotNull("creating: " + s, FileUtil.createData(sfs.getRoot(), s));
         }
