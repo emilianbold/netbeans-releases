@@ -29,11 +29,13 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpProgram;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -44,6 +46,10 @@ public class DebugScript  extends RunScript {
 
     public DebugScript(PhpProject project) {
         super(project);
+    }
+
+    public DebugScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot) {
+        super(project, program, descriptor, processBuilder, sourceRoot);
     }
 
     @Override
@@ -73,8 +79,8 @@ public class DebugScript  extends RunScript {
     }
 
     @Override
-    protected ExternalProcessBuilder getProcessBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
-        return super.getProcessBuilder(phpInterpreter, scriptFile)
+    protected ExternalProcessBuilder getProcessBuilder(PhpProgram program, File scriptFile) {
+        return super.getProcessBuilder(program, scriptFile)
                 .addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
     }
 }

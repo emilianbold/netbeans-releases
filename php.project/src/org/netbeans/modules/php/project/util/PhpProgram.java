@@ -47,7 +47,7 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik
  */
-abstract class PhpProgram {
+public abstract class PhpProgram {
     private static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
     private static final String[] NO_PARAMETERS = new String[0];
 
@@ -113,7 +113,7 @@ abstract class PhpProgram {
     /**
      * @return <code>true</code> if program is set, <code>false</code> otherwise.
      */
-    boolean isValid() {
+    public boolean isValid() {
         return program.length() > 0;
     }
 

@@ -83,12 +83,15 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (XDebugStarterFactory.getInstance() == null) {
+            return false;
+        }
+        return isRunFileEnabled(project, context);
     }
 
     @Override
     public void runProject(PhpProject project) {
-        run(project, null);
+        invoke(project, null, false);
     }
 
     @Override
@@ -98,15 +101,15 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(PhpProject project, Lookup context) {
-        run(project, context);
+        invoke(project, context, false);
     }
 
     @Override
     public void debugFile(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        invoke(project, context, true);
     }
 
-    private void run(PhpProject project, Lookup context) {
+    private void invoke(PhpProject project, Lookup context, boolean debug) {
         Pair<FileObject, String> pair = getPair(project, context);
         if (pair == null) {
             return;
@@ -116,26 +119,24 @@ public class ConfigActionTest extends ConfigAction {
         if (phpUnit == null) {
             return;
         }
-        final ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .controllable(true)
                 .frontWindow(true)
                 .showProgress(true)
                 .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
 
-        try {
-            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                    .workingDirectory(FileUtil.toFile(pair.first))
-                    .addArgument(pair.second);
-            ExecutionService service = ExecutionService.newService(
-                    externalProcessBuilder,
-                    executionDescriptor,
-                    NbBundle.getMessage(ConfigActionTest.class, "LBL_RunPhpUnitTests"));
-            Future<Integer> result = service.run();
-            result.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            CommandUtils.processExecutionException(ex);
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
+                .workingDirectory(FileUtil.toFile(pair.first))
+                .addArgument(pair.second);
+
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must be known already";
+
+        // ugly :/
+        if (debug) {
+            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
+        } else {
+            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
         }
     }
 
