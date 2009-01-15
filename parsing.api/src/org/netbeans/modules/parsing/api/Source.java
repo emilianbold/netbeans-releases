@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -287,7 +288,7 @@ public final class Source {
         }
 
         return new Snapshot(
-            text[0], this, mimeType, new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
+            text[0], this, MimePath.get (mimeType), new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
         );
     }
     
