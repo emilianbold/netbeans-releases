@@ -120,7 +120,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -143,6 +143,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
     // End of variables declaration//GEN-END:variables
 
     public boolean show(File[] files) {
+        Arrays.sort(files);
         this.files = files;
         DefaultListModel m = new DefaultListModel();
         for (File file : files) {
@@ -159,7 +160,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         boolean ret = dialogDescriptor.getValue() == okButton;
         if(ret) {
             saveSelectedFile(files);
-                    }
+        }
         return ret;
     }
 
