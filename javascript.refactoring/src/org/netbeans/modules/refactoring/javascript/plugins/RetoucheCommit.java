@@ -43,7 +43,7 @@ package org.netbeans.modules.refactoring.javascript.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.napi.gsfret.source.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
 

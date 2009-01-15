@@ -39,22 +39,22 @@ import org.jruby.nb.ast.IArgumentNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyFormatter;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -73,9 +73,9 @@ public class ConvertBlockType extends RubyAstRule {
     }
 
     public boolean appliesTo(RuleContext context) {
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         // Skip for RHTML files for now - isn't implemented properly
-        return info.getFileObject().getMIMEType().equals("text/x-ruby");
+        return RubyUtils.getFileObject(info).getMIMEType().equals("text/x-ruby");
     }
 
     public Set<NodeType> getKinds() {
@@ -84,7 +84,7 @@ public class ConvertBlockType extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         int caretOffset = context.caretOffset;
         BaseDocument doc = context.doc;
         
@@ -177,7 +177,7 @@ public class ConvertBlockType extends RubyAstRule {
                 if (sameLine || (!sameLine && offerCollapse)) {
                     fixList.add(new ConvertTypeFix(context, node, false, false, sameLine, !sameLine));
                 }
-                Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
+                Hint desc = new Hint(this, getDisplayName(), RubyUtils.getFileObject(info), range, fixList, 500);
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
@@ -327,7 +327,7 @@ public class ConvertBlockType extends RubyAstRule {
                         doc.getText(endOffset, 3).equals("end")) { // NOI18N
                     // TODO - make sure there is whitespace next to these tokens!!!
                     // They are optional around {} but not around do/end!
-                    AstPath path = new AstPath(AstUtilities.getRoot(context.compilationInfo), node);
+                    AstPath path = new AstPath(AstUtilities.getRoot(context.parserResult), node);
                     assert path.leaf() == node;
                     boolean parenIsNecessary = isArgParenNecessary(path, doc);
 

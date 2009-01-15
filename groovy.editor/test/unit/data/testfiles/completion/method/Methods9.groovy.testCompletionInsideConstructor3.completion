@@ -1,6 +1,6 @@
 Code completion result for source line:
 if (new File(new Date().get|)) {}
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 int

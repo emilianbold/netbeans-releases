@@ -279,7 +279,13 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     @Override
     public void visitMethodCallExpression(MethodCallExpression node) {
         if (isInside(node, line, column)) {
-            super.visitMethodCallExpression(node);
+            // FIXME http://jira.codehaus.org/browse/GROOVY-3263
+            if (node.isImplicitThis()) {
+                node.getMethod().visit(this);
+                node.getArguments().visit(this);
+            } else {
+                super.visitMethodCallExpression(node);
+            }
         }
     }
 
@@ -591,6 +597,8 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
             return false;
         }
 
+        fixNode(node);
+        
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
@@ -634,7 +642,27 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         return addToPath ? true : result;
     }
 
+    private void fixNode(ASTNode node) {
+        // FIXME http://jira.codehaus.org/browse/GROOVY-3263
+        if (node instanceof MethodCallExpression && !((MethodCallExpression) node).isImplicitThis()) {
+            MethodCallExpression call = (MethodCallExpression) node;
+            if (call.getObjectExpression() == VariableExpression.THIS_EXPRESSION
+                    || call.getObjectExpression() == VariableExpression.SUPER_EXPRESSION) {
+                // this is not bulletproof but fix most of the problems
+                VariableExpression var = new VariableExpression(
+                        call.getObjectExpression() == VariableExpression.THIS_EXPRESSION ? "this" : "super", // NOI18N
+                        call.getObjectExpression().getType()); // NOI18N
+                var.setLineNumber(call.getLineNumber());
+                var.setColumnNumber(call.getColumnNumber());
+                var.setLastLineNumber(call.getMethod().getLineNumber());
+                var.setLastColumnNumber(call.getMethod().getColumnNumber());
+                call.setObjectExpression(var);
+            }
+        }
+    }
+
     private boolean isInSource(ASTNode node) {
+        // FIXME probably http://jira.codehaus.org/browse/GROOVY-3263
         if (node instanceof StaticMethodCallExpression && node.getLineNumber() == -1
                 && node.getLastLineNumber() == -1 && node.getColumnNumber() == -1
                 && node.getLastColumnNumber() == -1) {
@@ -652,4 +680,5 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         }
         return true;
     }
+
 }

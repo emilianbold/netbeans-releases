@@ -42,8 +42,8 @@
 package org.netbeans.modules.ruby;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -51,18 +51,18 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.csl.api.IndexSearcher.Helper;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -79,6 +79,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyTypeSearcher implements IndexSearcher {
+    
     public RubyTypeSearcher() {
     }
     
@@ -99,16 +100,16 @@ public class RubyTypeSearcher implements IndexSearcher {
          return camelCasePattern.matcher(text).matches();
     }
     
-    private NameKind cachedKind;
+    private QuerySupport.Kind cachedKind;
     private String cachedString = "/";
     
-    private NameKind adjustKind(NameKind kind, String text) {
+    private QuerySupport.Kind adjustKind(QuerySupport.Kind kind, String text) {
         if (text.equals(cachedString)) {
             return cachedKind;
         }
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
             if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
-                kind = NameKind.CAMEL_CASE;            
+                kind = QuerySupport.Kind.CAMEL_CASE;            
             }
         }
 
@@ -116,33 +117,30 @@ public class RubyTypeSearcher implements IndexSearcher {
         cachedKind = kind;
         return kind;
     }
-    
-    public Set<? extends Descriptor> getTypes(Index gsfIndex,
-                                            String textForQuery,
-                                            NameKind kind,
-                                            EnumSet<SearchScope> scope, Helper helper) {
+
+    public Set<? extends Descriptor> getTypes(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
         // treated by the Open Type dialog as a regexp char, it will turn it into a regexp query
         // for example. Thus, I look at the query string and I might turn it into a different kind
         // of query. (We also allow #method suffixes which are handled here.)
-        
-        
+
+
         if (textForQuery.endsWith("::")) {
-            textForQuery = textForQuery.substring(0, textForQuery.length()-2);
+            textForQuery = textForQuery.substring(0, textForQuery.length() - 2);
         } else if (textForQuery.endsWith(":")) {
             textForQuery = textForQuery.substring(0, textForQuery.length()-1);
         }
         
-        RubyIndex index = RubyIndex.get(gsfIndex);
+        RubyIndex index = RubyIndex.get(roots);
         if (index == null) {
             return Collections.emptySet();
         }
 
         kind = adjustKind(kind, textForQuery);
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase();
         }
         
@@ -155,14 +153,14 @@ public class RubyTypeSearcher implements IndexSearcher {
         
         Set<IndexedClass> classes = null;
         if (method == null || textForQuery.length() > 0) {
-            classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+            classes = index.getClasses(textForQuery, kind, true, false, false, null);
         }
         
         Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();
         
         if (method != null) {
             // Query methods
-            Set<IndexedMethod> methods = index.getMethods(method, null, kind, scope);
+            Set<IndexedMethod> methods = index.getMethods(method, (String) null, kind);
             for (IndexedMethod m : methods) {
                 if (textForQuery.length() > 0 && m.getClz() != null) {
                     String in = m.getClz();
@@ -200,7 +198,7 @@ public class RubyTypeSearcher implements IndexSearcher {
                             continue;
                         }
                         break;
-                    case EXACT_NAME:
+                    case EXACT:
                         if (!in.equalsIgnoreCase(textForQuery)) {
                             continue;
                         }
@@ -217,27 +215,28 @@ public class RubyTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+
+    public Set<? extends Descriptor> getSymbols(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
         if (textForQuery.indexOf("::") != -1 || textForQuery.indexOf("#") != -1) {
-            return getTypes(gsfIndex, textForQuery, kind, scope, helper);
+            return getTypes(roots, textForQuery, kind, helper);
         }
 
-        RubyIndex index = RubyIndex.get(gsfIndex);
+        RubyIndex index = RubyIndex.get(roots);
         if (index == null) {
             return Collections.emptySet();
         }
 
         kind = adjustKind(kind, textForQuery);
 
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase();
         }
 
         if (textForQuery.length() > 0) {
             Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();
-            Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+            Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, null);
 
-            Set<IndexedMethod> methods = index.getMethods(textForQuery, null, kind, scope);
+            Set<IndexedMethod> methods = index.getMethods(textForQuery, (String) null, kind);
             for (IndexedClass cls : classes) {
                 result.add(new RubyTypeDescriptor(cls, helper));
             }
@@ -331,7 +330,7 @@ public class RubyTypeSearcher implements IndexSearcher {
         }
 
         public void open() {
-            Node node = AstUtilities.getForeignNode(element, (Node[])null);
+            Node node = AstUtilities.getForeignNode(element);
             
             if (node != null) {
                 GsfUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());

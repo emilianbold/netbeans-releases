@@ -40,27 +40,21 @@
  */
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.ModificationResult;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
-import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
+import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 
@@ -68,84 +62,63 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Becicka
  */
-public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, CancellableTask<CompilationController> {
+public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
-    private Phase whatRun = Phase.DEFAULT;
-    private Problem problem;
-    protected volatile boolean cancelRequest = false;
-    private volatile CancellableTask currentTask;
+//    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
+//    private Phase whatRun = Phase.DEFAULT;
+//    private Problem problem;
+//    protected volatile boolean cancelRequest;
+//    private volatile CancellableTask currentTask;
+    protected boolean cancelled;
 
-    protected abstract Problem preCheck(CompilationController javac) throws IOException;
-    protected abstract Problem checkParameters(CompilationController javac) throws IOException;
-    protected abstract Problem fastCheckParameters(CompilationController javac) throws IOException;
-
-    protected abstract Source getRubySource(Phase p);
-
-    public void cancel() {
-    }
-
-    public final void run(CompilationController javac) throws Exception {
-        switch(whatRun) {
-        case PRECHECK:
-            this.problem = preCheck(javac);
-            break;
-        case CHECKPARAMETERS:
-            this.problem = checkParameters(javac);
-            break;
-        case FASTCHECKPARAMETERS:
-            this.problem = fastCheckParameters(javac);
-            break;
-        default:
-            throw new IllegalStateException();
-        }
-    }
+//    protected abstract Problem preCheck(CompilationController javac) throws IOException;
+//    protected abstract Problem checkParameters(CompilationController javac) throws IOException;
+//    protected abstract Problem fastCheckParameters(CompilationController javac) throws IOException;
+//
+//    protected abstract Source getRubySource(Phase p);
+//
+//    public void cancel() {
+//    }
+//
+//    public final void run(CompilationController javac) throws Exception {
+//        switch(whatRun) {
+//        case PRECHECK:
+//            this.problem = preCheck(javac);
+//            break;
+//        case CHECKPARAMETERS:
+//            this.problem = checkParameters(javac);
+//            break;
+//        case FASTCHECKPARAMETERS:
+//            this.problem = fastCheckParameters(javac);
+//            break;
+//        default:
+//            throw new IllegalStateException();
+//        }
+//    }
     
-    public Problem preCheck() {
-        return run(Phase.PRECHECK);
-    }
-
-    public Problem checkParameters() {
-        return run(Phase.CHECKPARAMETERS);
-    }
-
-    public Problem fastCheckParameters() {
-        return run(Phase.FASTCHECKPARAMETERS);
-    }
-
-    private Problem run(Phase s) {
-        this.whatRun = s;
-        this.problem = null;
-        Source js = getRubySource(s);
-        if (js==null) {
-            return null;
-        }
-        try {
-            js.runUserActionTask(this, true);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return problem;
-    }
-    
-    public void cancelRequest() {
-        cancelRequest = true;
-        if (currentTask!=null) {
-            currentTask.cancel();
+    protected final boolean isCancelled() {
+        synchronized (this) {
+            return cancelled;
         }
     }
 
-    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        if (cpInfo==null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
-            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
-            if (cpInfo != null) {
-                refactoring.getContext().add(cpInfo);
-            }
+    public final void cancelRequest() {
+        synchronized (this) {
+            cancelled = true;
         }
-        return cpInfo;
     }
+
+//    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
+//        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+//        if (cpInfo==null) {
+//            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
+//            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
+//            if (cpInfo != null) {
+//                refactoring.getContext().add(cpInfo);
+//            }
+//        }
+//        return cpInfo;
+//    }
     
     protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
@@ -167,90 +140,95 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
         }
     }
     
-    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
-        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
-        for (FileObject file : data) {
-            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-            if (cp != null) {
-                FileObject root = cp.findOwnerRoot(file);
-                if (root != null) {
-                    List<FileObject> subr = result.get (root);
-                    if (subr == null) {
-                        subr = new LinkedList<FileObject>();
-                        result.put (root,subr);
-                    }
-                    subr.add (file);
+//    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
+//        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
+//        for (FileObject file : data) {
+//            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+//            if (cp != null) {
+//                FileObject root = cp.findOwnerRoot(file);
+//                if (root != null) {
+//                    List<FileObject> subr = result.get (root);
+//                    if (subr == null) {
+//                        subr = new LinkedList<FileObject>();
+//                        result.put (root,subr);
+//                    }
+//                    subr.add (file);
+//                }
+//            }
+//        }
+//        return result.values();
+//    }        
+
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, TransformTask task) {
+        // Process Ruby files and RHTML files separately - and OTHER files separately
+        // TODO - now that I don't need separate RHTML models any more, can
+        // I just do a single pass?
+        Set<Source> sources = new HashSet<Source>(2 * files.size());
+        Set<Source> rubyFiles = new HashSet<Source>(2 * files.size());
+        Set<Source> rhtmlFiles = new HashSet<Source>(2 * files.size());
+        for (FileObject file : files) {
+            if (RubyUtils.isRubyFile(file)) {
+                rubyFiles.add(Source.create(file));
+            } else if (RubyUtils.isRhtmlOrYamlFile(file)) {
+                // Avoid opening HUGE Yaml files - they may be containing primarily data
+                if (file.getSize() > 512 * 1024) {
+                    continue;
                 }
+                rhtmlFiles.add(Source.create(file));
             }
         }
-        return result.values();
-    }        
 
-    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
-        currentTask = task;
-        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
-            // Process Ruby files and RHTML files separately - and OTHER files separately
-            // TODO - now that I don't need separate RHTML models any more, can
-            // I just do a single pass?
-            Set<FileObject> rubyFiles = new HashSet<FileObject>(2*files.size());
-            Set<FileObject> rhtmlFiles = new HashSet<FileObject>(2*files.size());
-            for (FileObject file : files) {
-                if (RubyUtils.isRubyFile(file)) {
-                    rubyFiles.add(file);
-                } else if (RubyUtils.isRhtmlOrYamlFile(file)) {
-                    // Avoid opening HUGE Yaml files - they may be containing primarily data
-                    if (file.getSize() > 512*1024) {
-                        continue;
-                    }
-                    rhtmlFiles.add(file);
-                }
-            }
-
-            Iterable<? extends List<FileObject>> work = groupByRoot(rubyFiles);
-            for (List<FileObject> fos : work) {
-                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
-                try {
-                    results.add(source.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
-            }
-            work = groupByRoot(rhtmlFiles);
-            for (List<FileObject> fos : work) {
-                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
-                try {
-                    results.add(source.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
-            }
-        } finally {
-            currentTask = null;
+            ParserManager.parse(sources, task);
+            return task.results;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
-        return results;
+
+////
+////        Iterable<? extends List<FileObject>> work = groupByRoot(rubyFiles);
+////        for (List<FileObject> fos : work) {
+////            final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
+////            try {
+////                results.add(source.runModificationTask(task));
+////            } catch (IOException ex) {
+////                throw (RuntimeException) new RuntimeException().initCause(ex);
+////            }
+////        }
+////        work = groupByRoot(rhtmlFiles);
+////        for (List<FileObject> fos : work) {
+////            final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
+////            try {
+////                results.add(source.runModificationTask(task));
+////            } catch (IOException ex) {
+////                throw (RuntimeException) new RuntimeException().initCause(ex);
+////            }
+////        }
+//        return results;
     }
     
-    protected class TransformTask implements CancellableTask<WorkingCopy> {
-        private SearchVisitor visitor;
-        private RubyElementCtx treePathHandle;
-        public TransformTask(SearchVisitor visitor, RubyElementCtx searchedItem) {
-            this.visitor = visitor;
-            this.treePathHandle = searchedItem;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            visitor.setWorkingCopy(compiler);
-            visitor.scan();
-            
-            //for (RubyElementCtx tree : visitor.getUsages()) {
-            //    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            //}
+    protected abstract class TransformTask extends UserTask {
 
+        private final Collection<ModificationResult> results = new ArrayList<ModificationResult>();
+
+        public final void run(ResultIterator resultIterator) throws ParseException {
+            visit(resultIterator);
             fireProgressListenerStep();
         }
+
+        protected abstract Collection<ModificationResult> process(ParserResult jspr);
+
+        private void visit(ResultIterator resultIterator) throws ParseException {
+            if (resultIterator.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
+                ParserResult pr = AstUtilities.getParseResult(resultIterator.getParserResult());
+                Collection<ModificationResult> r = process(pr);
+                results.addAll(r);
+            }
+
+            for (Embedding e : resultIterator.getEmbeddings()) {
+                visit(resultIterator.getResultIterator(e));
+            }
+        }
     }
+
 }

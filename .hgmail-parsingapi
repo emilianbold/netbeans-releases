@@ -1,2 +1,12 @@
 [usersubs]
-cvs@editor.netbeans.org=parsing*/*,java.source/*,java.editor/*,java.hints*/*
+nbpython-commits@netbeans.org=o.jython/*,o.antlr3/*,python.console/*,python.core/*,python.debugger/*,python.editor/*,python.help/*,python.platform/*,python.project/*,python.options/*,python.tests/*
+cvs@editor.netbeans.org=editor*/*,options.editor/*,spi.editor.hints/*,parsing*/*,csl.api/*
+cvs@groovy.netbeans.org=groovy.*/*
+cvs@html.netbeans.org=html/*,html.editor/*,html.editor.lib/*,html.lexer/*
+cvs@java.netbeans.org=api.java/*,java.editor/*,java.editor.lib/*,java.freeform/*,java.guards/*,java.helpset/*,java.hints*/*,java.j2seplatform/*,java.j2seproject/*,java.kit/*,java.lexer/*,java.navigation/*,java.platform/*,java.project/*,java.source/*,java.debug/*,libs.javacapi/*,libs.javacimpl/*,java.preprocessorbridge/*,java.sourceui/*
+cvs@languages.netbeans.org=languages*/*
+cvs@php.netbeans.org=php.*/*,languages.php/*
+cvs@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,gsf/*,gsf.api/*,gsfpath.api/*,gsf.testrunner/*,o.jruby/*,o.kxml2/*,languages.yaml/*
+cvs@scripting.netbeans.org=languages.bat/*,languages.javascript/*,languages.sh/*,javascript.editing/*,javascript.refactoring/*,javascript.hints/*,o.mozilla.rhino.patched/*
+cvs@web.netbeans.org=web.core/*,css.editor/*,css.visual/*,el.lexer/*,web.examples/*,web.fake/*,web.freeform/*,web.jsf/*,web.jsf.kit/*,web.jsf.navigation/*,web.debug/*,web.jspparser/*,web.core.syntax/*,jsp.lexer/*,web.kit/*,libs.commons_fileupload/*,web.flyingsaucer/*,libs.glassfish_logging/*,web.libraries.jsf1102/*,web.jsf12/*,web.jsf12ri/*,web.jstl11/*,servletjspapi/*,web.project/*,web.refactoring/*,spring.beans/*,spring.webmvc/*,web.struts/*,api.web.webmodule/*,hibernate*/*
+

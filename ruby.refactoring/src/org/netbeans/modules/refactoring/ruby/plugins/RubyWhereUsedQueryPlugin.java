@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -59,29 +59,25 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
-import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
-import org.netbeans.modules.refactoring.ruby.WhereUsedElement;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
+import org.netbeans.modules.refactoring.ruby.WhereUsedElement;
 import org.netbeans.modules.refactoring.ruby.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.ruby.AstPath;
@@ -106,6 +102,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
+    
     private final WhereUsedQuery refactoring;
     private final RubyElementCtx searchHandle;
     private Set<IndexedClass> subclasses;
@@ -118,12 +115,12 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         targetName = searchHandle.getSimpleName();
     }
     
-    protected Source getRubySource(Phase p) {
-        switch (p) {
-        default: 
-            return RetoucheUtils.getSource(searchHandle.getFileObject());
-        }
-    }
+//    protected Source getRubySource(Phase p) {
+//        switch (p) {
+//        default:
+//            return RetoucheUtils.getSource(searchHandle.getFileObject());
+//        }
+//    }
     
     @Override
     public Problem preCheck() {
@@ -134,75 +131,43 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return null;
     }
     
-    @Override
-    protected Problem preCheck(CompilationController info) {
-//        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
-//        if (p != null)
-//            return p;
-        
-//        if (!((jmiObject instanceof Feature) || (jmiObject instanceof Variable) || (jmiObject instanceof JavaPackage) || (jmiObject instanceof TypeParameter)) ) {
-//            return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "ERR_WhereUsedWrongType"));
-//        }
-        
-        return null;
-    }
-    
     private Set<FileObject> getRelevantFiles(final RubyElementCtx tph) {
-        final ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        //final ClassIndex idx = cpInfo.getClassIndex();
-        final Set<FileObject> set = new HashSet<FileObject>();
+        Set<FileObject> set = new HashSet<FileObject>();
                 
-        final FileObject file = tph.getFileObject();
-        Source source;
-        if (file!=null) {
-           set.add(file);
-            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
-        } else {
-            source = Source.create(cpInfo);
-        }
-        //XXX: This is slow!
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
-            
-            public void run(CompilationController info) throws Exception {
-                info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                //System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
-                //set.add(info.getFileObject());
-                // (This currently doesn't need to run in a compilation controller since I'm not using parse results at all...)
+        FileObject file = tph.getFileObject();
+        if (file != null) {
+            set.add(file);
+//            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
+            if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
+                // No need to do any parsing, we'll be using the index to find these files!
+                set.add(file);
+                String name = tph.getName();
 
-                
-                if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
-                    // No need to do any parsing, we'll be using the index to find these files!
-                    set.add(info.getFileObject());
+                // Find overrides of the class
+                RubyIndex index = RubyIndex.get(Collections.singleton(file));
+                String fqn = AstUtilities.getFqnName(tph.getPath());
+                subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
 
-                    String name = tph.getName();
-                
-                    // Find overrides of the class
-                    RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
-                    String fqn = AstUtilities.getFqnName(tph.getPath());
-                    subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
-
-                    if (subclasses.size() > 0) {
+                if (subclasses.size() > 0) {
 //                        for (IndexedClass clz : classes) {
 //                            FileObject fo = clz.getFileObject();
 //                            if (fo != null) {
 //                                set.add(fo);
 //                            }
 //                        }
-                        // For now just parse this particular file!
-                        set.add(info.getFileObject());
-                        return;
-                    }
+                    // For now just parse this particular file!
+                    set.add(file);
                 }
-                
-                if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {
-                    // For local variables, only look in the current file!
-                    set.add(info.getFileObject());
-                }  else {
-                    set.addAll(RetoucheUtils.getRubyFilesInProject(info.getFileObject()));
-                }
-                
+            }
+
+            if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {
+                // For local variables, only look in the current file!
+                set.add(file);
+            } else {
+                set.addAll(RetoucheUtils.getRubyFilesInProject(file));
+            }
+        }
+        return set;
 //                final Element el = tph.resolveElement(info);
 //                if (el.getKind().isField()) {
 //                    //get field references from index
@@ -247,14 +212,6 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 //                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
 //                }
 //                    
-            }
-        };
-        try {
-            source.runUserActionTask(task, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        }
-        return set;
     }
     
 //    private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
@@ -287,8 +244,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return null;
     }
     
-    //@Override
-    protected Problem fastCheckParameters(CompilationController info) {
+    public Problem fastCheckParameters() {
         if (targetName == null) {
             return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
         }
@@ -298,8 +254,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return null;
     }
     
-    //@Override
-    protected Problem checkParameters(CompilationController info) {
+    public Problem checkParameters() {
         return null;
     }
     
@@ -314,7 +269,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
     }
     private boolean isFindUsages() {
-        return refactoring.getBooleanValue(refactoring.FIND_REFERENCES);
+        return refactoring.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
     }
     private boolean isFindDirectSubclassesOnly() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
@@ -329,43 +284,38 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
     }
 
     private boolean isSearchInComments() {
-        return refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS);
+        return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
     }
     
-    private class FindTask implements CancellableTask<WorkingCopy> {
+    private class FindTask extends TransformTask {
 
         private RefactoringElementsBag elements;
-        private volatile boolean cancelled;
 
         public FindTask(RefactoringElementsBag elements) {
             super();
             this.elements = elements;
         }
 
-        public void cancel() {
-            cancelled=true;
-        }
-
-        public void run(WorkingCopy compiler) throws IOException {
-            if (cancelled)
-                return ;
-            compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+        protected Collection<ModificationResult> process(ParserResult parserResult) {
+            if (isCancelled()) {
+                return null;
+            }
 
             Error error = null;
             
             RubyElementCtx searchCtx = searchHandle;
             
-            Node root = AstUtilities.getRoot(compiler);
+            Node root = AstUtilities.getRoot(parserResult);
             
             if (root == null) {
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
-                String sourceText = compiler.getText();
+                String sourceText = parserResult.getSnapshot().getText().toString();
                 if (sourceText != null && sourceText.indexOf(targetName) != -1) {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 
-                    List<Error> errors = compiler.getErrors();
+                    List<? extends Error> errors = parserResult.getDiagnostics();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
                             if (e.getSeverity() == Severity.ERROR) {
@@ -385,7 +335,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 
                         desc = desc + "; " + errorMsg;
                         start = error.getStartPosition();
-                        start = LexUtilities.getLexerOffset(compiler, start);
+                        start = LexUtilities.getLexerOffset(parserResult, start);
                         if (start == -1) {
                             start = 0;
                         }
@@ -395,13 +345,13 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     Set<Modifier> modifiers = Collections.emptySet();
                     Icon icon = UiUtils.getElementIcon(ElementKind.ERROR, modifiers);
                     OffsetRange range = new OffsetRange(start, end);
-                    WhereUsedElement element = WhereUsedElement.create(compiler, targetName, desc, range, icon); 
+                    WhereUsedElement element = WhereUsedElement.create(parserResult, targetName, desc, range, icon);
                     elements.add(refactoring, element);
                 }
             }
 
             if (error == null && isSearchInComments()) {
-                Document doc = RetoucheUtils.getDocument(compiler, compiler.getFileObject());
+                Document doc = RetoucheUtils.getDocument(parserResult, RubyUtils.getFileObject(parserResult));
                 if (doc != null) {
                     //force open
                     TokenHierarchy<Document> th = TokenHierarchy.get(doc);
@@ -409,19 +359,18 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 
                     ts.move(0);
 
-                    searchTokenSequence(compiler, ts);
+                    searchTokenSequence(parserResult, ts);
                 }
             }
             
             if (root == null) {
                 // TODO - warn that this file isn't compileable and is skipped?
-                fireProgressListenerStep();
-                return;
+                return Collections.<ModificationResult>emptySet();
             }
             
-            Element element = AstElement.create(compiler, root);
+            Element element = AstElement.create(parserResult, root);
             Node node = searchCtx.getNode();
-            RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, compiler.getFileObject(), compiler);
+            RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, RubyUtils.getFileObject(parserResult), parserResult);
 
             // If it's a local search, use a simpler search routine
             // TODO: ArgumentNode - look to see if we're in a parameter list, and if so its a localvar
@@ -476,10 +425,10 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             } else if (isSearchFromBaseClass()) {
                 // TODO
             }
-            fireProgressListenerStep();
+            return Collections.<ModificationResult>emptySet();
         }
 
-        private void searchTokenSequence(CompilationInfo info, TokenSequence<?> ts) {
+        private void searchTokenSequence(ParserResult info, TokenSequence<?> ts) {
             if (ts.moveNext()) {
                 do {
                     Token<?> token = ts.token();

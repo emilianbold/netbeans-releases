@@ -41,22 +41,20 @@
 
 package org.netbeans.modules.refactoring.javascript.ui;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.javascript.RetoucheUtils;
 import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -68,9 +66,12 @@ import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.AstElement;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsUtils;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.openide.ErrorManager;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -84,7 +85,10 @@ import org.openide.windows.TopComponent;
  * @author Jan Becicka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=400)
-public class RefactoringActionsProvider extends ActionsImplementationProvider{
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
+
+    private static final Logger LOG = Logger.getLogger(RefactoringActionsProvider.class.getName());
+    
     private static boolean isFindUsages;
     
     /** Creates a new instance of RefactoringActionsProvider */
@@ -98,9 +102,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
+                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, JsParseResult info) {
                     // If you're trying to rename a constructor, rename the enclosing class instead
-                    return new RenameRefactoringUI(selectedElement, info);
+                    return new RenameRefactoringUI(selectedElement);
                 }
             };
         } else {
@@ -112,13 +116,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0], newName);
                         else
-                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
+                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next());
                     }
                     else 
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0]);
                         else
-                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
+                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next());
                 }
             };
         }
@@ -217,14 +221,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new WhereUsedQueryUI(selectedElement, info);
+                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, JsParseResult info) {
+                    return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
-                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement, CompilationInfo info) {
-                    return new WhereUsedQueryUI(selectedElement, info);
+                protected RefactoringUI createRefactoringUI(JsElementCtx selectedElement, JsParseResult info) {
+                    return new WhereUsedQueryUI(selectedElement);
                 }
             };
         }
@@ -260,11 +264,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doMove(final Lookup lookup) {
     }    
     
-    public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
-        private JTextComponent textC;
-        private int caret;
-        private int start;
-        private int end;
+    public static abstract class TextComponentTask extends UserTask implements Runnable {
+        private final JTextComponent textC;
+        private final int caret;
+        private final int start;
+        private final int end;
         private RefactoringUI ui;
         
         public TextComponentTask(EditorCookie ec) {
@@ -277,48 +281,46 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             assert end != -1;
         }
         
-        public void cancel() {
-        }
-        
-        public void run(CompilationController cc) throws Exception {
-            cc.toPhase(Phase.RESOLVED);
-            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(cc);
-            if (root == null) {
-                // TODO How do I add some kind of error message?
-                System.out.println("FAILURE - can't refactor uncompileable sources");
-                return;
+        public void run(ResultIterator ri) throws ParseException {
+            if (ri.getSnapshot().getMimeType().equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+                JsParseResult jspr = AstUtilities.getParseResult(ri.getParserResult());
+                org.mozilla.nb.javascript.Node root = jspr.getRootNode();
+                if (root != null) {
+                    JsElementCtx ctx = new JsElementCtx(jspr, caret);
+                    if (ctx.getSimpleName() != null) {
+                        ui = createRefactoringUI(ctx, start, end, jspr);
+                    }
+                } else {
+                    // TODO How do I add some kind of error message?
+                    System.out.println("FAILURE - can't refactor uncompileable sources");
+                }
+            } else {
+                for(Embedding e : ri.getEmbeddings()) {
+                    run(ri.getResultIterator(e));
+                }
             }
-
-            JsElementCtx ctx = new JsElementCtx(cc, caret);
-            if (ctx.getSimpleName() == null) {
-                return;
-            }
-            ui = createRefactoringUI(ctx, start, end, cc);
         }
         
         public final void run() {
-            FileObject fo = null;
             try {
-                Source source = RetoucheUtils.getSource(textC.getDocument());
-                source.runUserActionTask(this, false);
-                Collection<FileObject> fileObjects = source.getFileObjects();
-                if (fileObjects.size() > 0) {
-                    fo = fileObjects.iterator().next();
-                }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Source source = Source.create(textC.getDocument());
+                ParserManager.parse(Collections.singleton(source), this);
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
                 return ;
             }
+
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             
-            if (ui!=null) {
-                if (fo != null) {
-                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
-                    if (classpathInfoFor == null) {
-                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
-                        return;
-                    }
-                }
+            if (ui != null) {
+// XXX: what is this supposed to do??
+//                if (fo != null) {
+//                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
+//                    if (classpathInfoFor == null) {
+//                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
+//                        return;
+//                    }
+//                }
                 
                 UI.openRefactoringUI(ui, activetc);
             } else {
@@ -330,11 +332,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             }
         }
         
-        protected abstract RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info);
+        protected abstract RefactoringUI createRefactoringUI(JsElementCtx selectedElement,int startOffset,int endOffset, JsParseResult info);
     }
     
-    public static abstract class NodeToElementTask implements Runnable, CancellableTask<CompilationController>  {
-        private Node node;
+    public static abstract class NodeToElementTask extends UserTask implements Runnable  {
+        private final Node node;
         private RefactoringUI ui;
         
         public NodeToElementTask(Collection<? extends Node> nodes) {
@@ -342,56 +344,64 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             this.node = nodes.iterator().next();
         }
         
-        public void cancel() {
-        }
-        
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
-            if (root != null) {
-                Element element = AstElement.getElement(info, root);
-                JsElementCtx fileCtx = new JsElementCtx(root, root, element, info.getFileObject(), info);
-                ui = createRefactoringUI(fileCtx, info);
+        public void run(ResultIterator ri) throws ParseException {
+            if (ri.getSnapshot().getMimeType().equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+                JsParseResult jspr = AstUtilities.getParseResult(ri.getParserResult());
+                org.mozilla.nb.javascript.Node root = jspr.getRootNode();
+                if (root != null) {
+                    Element element = AstElement.getElement(jspr, root);
+                    JsElementCtx fileCtx = new JsElementCtx(root, root, element, ri.getSnapshot().getSource().getFileObject(), jspr);
+                    ui = createRefactoringUI(fileCtx, jspr);
+                }
+            } else {
+                for(Embedding e : ri.getEmbeddings()) {
+                    run(ri.getResultIterator(e));
+                }
             }
         }
         
         public final void run() {
-            DataObject o = node.getCookie(DataObject.class);
-            Source source = RetoucheUtils.getSource(o.getPrimaryFile());
-            assert source != null;
             try {
-                source.runUserActionTask(this, false);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                DataObject o = node.getCookie(DataObject.class);
+                Source source = Source.create(o.getPrimaryFile());
+                ParserManager.parse(Collections.singleton(source), this);
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+                return ;
             }
-            UI.openRefactoringUI(ui);
+
+            if (ui != null) {
+                UI.openRefactoringUI(ui);
+            } else {
+                String key = "ERR_CannotRenameLoc"; // NOI18N
+                if (isFindUsages) {
+                    key = "ERR_CannotFindUsages"; // NOI18N
+                }
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, key));
+            }
         }
-        protected abstract RefactoringUI createRefactoringUI(JsElementCtx selectedElement, CompilationInfo info);
+        protected abstract RefactoringUI createRefactoringUI(JsElementCtx selectedElement, JsParseResult info);
     }
     
-    public static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
-        private Collection<? extends Node> nodes;
-        private RefactoringUI ui;
-        public NonRecursiveFolder pkg[];
-        public WeakReference<CompilationInfo> cinfo;
+    public static abstract class NodeToFileObjectTask extends UserTask implements Runnable {
+        private final Collection<? extends Node> nodes;
+//        private RefactoringUI ui;
+        protected final NonRecursiveFolder pkg[];
+//        public WeakReference<JsParseResult> cinfo;
         Collection<JsElementCtx> handles = new ArrayList<JsElementCtx>();
      
         public NodeToFileObjectTask(Collection<? extends Node> nodes) {
+            assert nodes != null;
             this.nodes = nodes;
+            this.pkg = new NonRecursiveFolder[nodes.size()];
         }
         
-        public void cancel() {
-        }
-        
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
-            if (root != null) {
-                JsParseResult rpr = AstUtilities.getParseResult(info);
-                if (rpr != null) {
-                    AnalysisResult ar = rpr.getStructure();
+        public void run(ResultIterator ri) throws Exception {
+            if (ri.getSnapshot().getMimeType().equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+                JsParseResult jspr = AstUtilities.getParseResult(ri.getParserResult());
+                org.mozilla.nb.javascript.Node root = jspr.getRootNode();
+                if (root != null) {
+                    AnalysisResult ar = jspr.getStructure();
                     List<? extends AstElement> els = ar.getElements();
                     if (els.size() > 0) {
                         // TODO - try to find the outermost or most "relevant" module/class in the file?
@@ -399,34 +409,31 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         // It's not as simple in Ruby.
                         AstElement element = els.get(0);
                         org.mozilla.nb.javascript.Node node = element.getNode();
-                        JsElementCtx representedObject = new JsElementCtx(root, node, element, info.getFileObject(), info);
+                        JsElementCtx representedObject = new JsElementCtx(root, node, element, ri.getSnapshot().getSource().getFileObject(), jspr);
                         representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);
                     }
                 }
+//                cinfo=new WeakReference<CompilationInfo>(info);
+            } else {
+                for(Embedding e : ri.getEmbeddings()) {
+                    run(ri.getResultIterator(e));
+                }
             }
-            cinfo=new WeakReference<CompilationInfo>(info);
         }
         
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
-            pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
-            for (Node node:nodes) {
+            for(Node node : nodes) {
                 DataObject dob = node.getCookie(DataObject.class);
-                if (dob!=null) {
+                if (dob != null) {
                     fobs[i] = dob.getPrimaryFile();
-                    Source source = RetoucheUtils.getSource(fobs[i]);
-                    if (source == null) {
-                        continue;
-                    }
-                    assert source != null;
+                    Source source = Source.create(fobs[i]);
                     try {
-                        source.runUserActionTask(this, false);
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                        ParserManager.parse(Collections.singleton(source), this);
+                    } catch (ParseException ex) {
+                        LOG.log(Level.WARNING, null, ex);
                     }
                     
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);

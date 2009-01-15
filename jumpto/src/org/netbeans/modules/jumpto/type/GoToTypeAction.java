@@ -448,6 +448,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 current = provider;
                 long start = System.currentTimeMillis();
                 try {
+                    LOGGER.fine("Calling TypeProvider: " + provider);
                     provider.computeTypeNames(context, result);
                 } finally {
                     current = null;

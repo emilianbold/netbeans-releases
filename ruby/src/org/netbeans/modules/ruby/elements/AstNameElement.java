@@ -40,8 +40,8 @@
 package org.netbeans.modules.ruby.elements;
 
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * Configurable element of a given name and kind.
@@ -51,9 +51,10 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author Tor Norbye
  */
 public class AstNameElement extends AstElement {
+
     private ElementKind kind;
 
-    public AstNameElement(CompilationInfo info, Node node, String name, ElementKind kind) {
+    public AstNameElement(ParserResult info, Node node, String name, ElementKind kind) {
         super(info, node);
         this.name = name;
         this.kind = kind;
