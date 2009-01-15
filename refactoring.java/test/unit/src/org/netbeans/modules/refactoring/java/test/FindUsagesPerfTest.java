@@ -59,7 +59,8 @@ import static org.netbeans.modules.refactoring.java.test.Utilities.*;
 import org.openide.util.Lookup;
 
 /**
- * Test find usages functionality. Measure the the usages time.
+ * Test find usages functionality. Measure the usages time.
+ * Verifies that all java-source instances are disposed at the end.
  * 
  * @author Pavel Flaska
  */
