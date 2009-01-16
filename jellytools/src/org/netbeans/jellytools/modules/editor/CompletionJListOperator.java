@@ -40,12 +40,15 @@
  */
 
 package org.netbeans.jellytools.modules.editor;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -54,13 +57,19 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JScrollPaneOperator;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionJList;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.util.EmptyVisualizer;
 
 
 /**
@@ -108,7 +117,7 @@ public class CompletionJListOperator extends JListOperator {
         }
         return data;
     }
-    
+
     private static JList findCompletionJList() {
         final String PLEASE_WAIT = Bundle.getStringTrimmed(
                 "org.netbeans.modules.editor.completion.Bundle",
@@ -368,4 +377,56 @@ public class CompletionJListOperator extends JListOperator {
         });
     }
 
+    @Override
+    public Object clickOnItem(final String item)
+    {
+        return runMapping( new MapAction("clickOnItem( String )") {
+
+            @Override
+            public Object map() throws Exception {
+                return CompletionJListOperator.super.clickOnItem( item );
+            }
+        });
+    }
+
+    @Override
+    /*
+     * Most of this code copied from JList.java because there are
+     * some problems with scrolling on big completion lists, ex. full
+     * PHP completion list contains about 6000 elements. Scrolling
+     * just removed from code.
+    */
+    public Object clickOnItem(final String item, final Operator.StringComparator comp)
+    {
+        return runMapping( new MapAction("clickOnItem( String, Comparator )")
+        {
+            @Override
+            public Object map() throws Exception
+            {
+              final int itemIndex = CompletionJListOperator.super.findItemIndex(item, comp, 0);
+
+              if( itemIndex < 0 || itemIndex >= getModel().getSize())
+                throw(new NoSuchItemException(itemIndex));
+
+              return( getQueueTool().invokeSmoothly( new QueueTool.QueueAction("Path selecting")
+                  {
+                    public Object launch()
+                    {
+	              if(((JList)getSource()).getAutoscrolls())
+	                ((JList)getSource()).ensureIndexIsVisible(itemIndex);
+                      Rectangle rect = getCellBounds(itemIndex, itemIndex);
+                      if(rect == null)
+                        return(null);
+                      Point point = new Point(
+                          (int)(rect.getX() + rect.getWidth() / 2),
+                          (int)(rect.getY() + rect.getHeight() / 2)
+                        );
+                      Object result = getModel().getElementAt(itemIndex);
+                      clickMouse(point.x, point.y, 1);
+                      return(result);
+                    }
+                 }));
+            }
+         });
+    }
 }
