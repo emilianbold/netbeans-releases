@@ -264,6 +264,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 ClassPath includePath = ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
                         new String[] {PhpProjectProperties.INCLUDE_PATH}));
+                IncludePathClassPathProvider.addProjectIncludePath(includePath);
                 cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
                         internalClassPath, includePath);
                 cache.put(ClassPathCache.PLATFORM, cp);

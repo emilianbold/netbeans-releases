@@ -58,11 +58,9 @@ public class Column extends PropertySupport.ReadWrite {
 
     private PropertyEditor propertyEditor;
     private ColumnModel columnModel;
-    private TreeTable treeTable;
 
     Column (
-        ColumnModel columnModel,
-        TreeTable treeTable
+        ColumnModel columnModel
     ) {
         super (
             columnModel.getID (),
@@ -73,7 +71,6 @@ public class Column extends PropertySupport.ReadWrite {
             columnModel.getShortDescription ()
         );
         this.columnModel = columnModel;
-        this.treeTable = treeTable;
         setValue (
             "ComparableColumnTTV", 
             Boolean.valueOf (columnModel.isSortable ())
@@ -134,19 +131,6 @@ public class Column extends PropertySupport.ReadWrite {
     }
 
     public Object getValue (String propertyName) {
-        if (treeTable != null && "OrderNumberTTV".equals (propertyName)) {
-            if (!columnModel.isVisible()) return -1;
-            int index = columnModel.getCurrentOrderNumber();
-            if (index != -1) {
-                index = treeTable.getColumnVisibleIndex(this, index);
-            }
-            //System.err.println("Get order of "+this.getDisplayName()+" => "+index);
-            if (index == -1) {
-                return null;
-            } else {
-                return new Integer(index);
-            }
-        }
         if (PROP_ORDER_NUMBER.equals (propertyName)) {
             int index = columnModel.getCurrentOrderNumber();
             return new Integer(index);
@@ -161,27 +145,9 @@ public class Column extends PropertySupport.ReadWrite {
     }
     
     public void setValue (String propertyName, Object newValue) {
-        if (treeTable != null && "OrderNumberTTV".equals (propertyName)) {
-            int index = ((Integer) newValue).intValue();
-            //System.err.println("Set order of "+this.getDisplayName()+" <= "+newValue);
-            if (index != -1) {
-                index = treeTable.getColumnGlobalIndex(this, index);
-                columnModel.setCurrentOrderNumber(index);
-            }
-        } else
         if (PROP_ORDER_NUMBER.equals (propertyName)) {
             int index = ((Integer) newValue).intValue();
             columnModel.setCurrentOrderNumber(index);
-        } else
-        if (treeTable != null && "InvisibleInTreeTableView".equals (propertyName)) {
-            columnModel.setVisible (
-                !((Boolean) newValue).booleanValue ()
-            );
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    treeTable.updateColumnWidths ();
-                }
-            });
         } else
         if ("SortingColumnTTV".equals (propertyName)) 
             columnModel.setSorted (

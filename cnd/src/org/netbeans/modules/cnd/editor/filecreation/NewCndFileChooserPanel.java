@@ -69,7 +69,7 @@ public class NewCndFileChooserPanel extends CndPanel {
     }
 
     @Override
-    protected void doStoreSettings() {
+    protected void doStoreSettings(WizardDescriptor settings) {
         if (((NewCndFileChooserPanelGUI)gui).useTargetExtensionAsDefault()) {
             es.setDefaultExtension(getTargetExtension());
         } else {

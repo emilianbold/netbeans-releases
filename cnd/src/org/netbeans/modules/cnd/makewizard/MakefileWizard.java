@@ -266,7 +266,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
 
     /** The current panel.
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return currentPanel;
     }
 

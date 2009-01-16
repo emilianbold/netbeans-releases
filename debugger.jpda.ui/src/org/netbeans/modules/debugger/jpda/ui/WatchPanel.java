@@ -93,8 +93,6 @@ import org.openide.util.RequestProcessor;
  */
 public class WatchPanel {
 
-    private static RequestProcessor contextRetrievalRP;
-
     private JPanel panel;
     private JEditorPane editorPane;
     private String expression;
@@ -106,14 +104,14 @@ public class WatchPanel {
     public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
         EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         editorPane.setEditorKit(kit);
-        if (EventQueue.isDispatchThread()) {
-            synchronized (WatchPanel.class) {
-                if (contextRetrievalRP == null) {
-                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1);
-                }
+        DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
+        if (EventQueue.isDispatchThread() && en != null) {
+            RequestProcessor contextRetrievalRP = en.lookupFirst(null, RequestProcessor.class);
+            if (contextRetrievalRP != null) {
+                final DebuggerEngine den = en;
                 contextRetrievalRP.post(new Runnable() {
                     public void run() {
-                        final Context c = retrieveContext();
+                        final Context c = retrieveContext(den);
                         if (c != null) {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
@@ -124,21 +122,22 @@ public class WatchPanel {
                         }
                     }
                 });
-            }
-            setupUI(editorPane);
-        } else {
-            Context c = retrieveContext();
-            if (c != null) {
-                setupContext(editorPane, c.url, c.line);
-            } else {
                 setupUI(editorPane);
+                return ;
+            } else {
+                en = null;
             }
-            if (contextSetUp != null) contextSetUp.actionPerformed(null);
         }
+        Context c = retrieveContext(en);
+        if (c != null) {
+            setupContext(editorPane, c.url, c.line);
+        } else {
+            setupUI(editorPane);
+        }
+        if (contextSetUp != null) contextSetUp.actionPerformed(null);
     }
 
-    private static Context retrieveContext() {
-        DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
+    private static Context retrieveContext(DebuggerEngine en) {
         CallStackFrame csf = null;
         if (en != null) {
             JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);

@@ -71,10 +71,11 @@ class NbTestMediator
         # single test method
         when "-m"
           if "-m" != ""
-            @suites.each do |s| 
+            @suites.each do |s|
               tests_to_delete = []
               s.tests.each do |t|
-                unless t.method_name == arg 
+                # t.method_name == "test: #{arg} for shoulda tests
+                unless t.method_name == arg || t.method_name == "test: #{arg}. "
                   tests_to_delete << t
                 end
               end
