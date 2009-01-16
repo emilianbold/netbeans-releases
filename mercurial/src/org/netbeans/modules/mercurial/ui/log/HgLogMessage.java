@@ -81,14 +81,9 @@ public class HgLogMessage {
                 pathsStrings.add(path);
             }
         } else {
-            for (String fileSP : filesShortPaths) {
-                if (path.equals(fileSP) || path.startsWith(fileSP)) {
-                    paths.add(new HgLogMessageChangedPath(path, status));
-                    if(pathsStrings != null){
-                        pathsStrings.add(path);
-                    }
-                    break;
-                }
+            paths.add(new HgLogMessageChangedPath(path, status));
+            if(pathsStrings != null){
+                pathsStrings.add(path);
             }
         }
     }
