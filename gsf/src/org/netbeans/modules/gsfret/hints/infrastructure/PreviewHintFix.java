@@ -123,8 +123,7 @@ final class PreviewHintFix implements EnhancedFix {
         // has changed only the whitespace (such as the fix which moves =begin entries to column 0)
         // there are no diffs, even though I want to jump to the relevant line.
         final int index = 0;
-        final int firstLine = diffView.getDifferenceCount() == 0 ? NbDocument.findLineNumber((StyledDocument) oldDoc, edits.getRange().
-                getStart()) : -1;
+        final int firstLine = diffView.getDifferenceCount() == 0 ? edits.firstLine(oldDoc) : -1;
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {

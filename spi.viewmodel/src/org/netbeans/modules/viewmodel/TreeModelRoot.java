@@ -59,6 +59,7 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -78,22 +79,45 @@ public class TreeModelRoot implements ModelListener {
     private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     private DefaultTreeFeatures treeFeatures;
     
-    /** The children evaluator for view if this root. */
+    /** The children evaluator for view of this root. */
     private TreeModelNode.LazyEvaluator childrenEvaluator;
-    /** The values evaluator for view if this root. */
+    /** The values evaluator for view of this root. */
     private TreeModelNode.LazyEvaluator valuesEvaluator;
 
+    /** RequestProcessor to be used for evaluations. */
+    private RequestProcessor rp;
 
     public TreeModelRoot (Models.CompoundModel model, TreeView treeView) {
         this.model = model;
         this.treeFeatures = new DefaultTreeFeatures(treeView);
+        getRP();
         model.addModelListener (this);
     }
 
     public TreeModelRoot (Models.CompoundModel model, OutlineView outlineView) {
         this.model = model;
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        getRP();
         model.addModelListener (this);
+    }
+
+    private void getRP() {
+        try {
+            java.lang.reflect.Field rpf = model.getClass().getDeclaredField("rp");
+            rpf.setAccessible(true);
+            this.rp = (RequestProcessor) rpf.get(model);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        /*if (rp == null) {
+            Exceptions.printStackTrace(new RuntimeException("NULL RP for "+model));
+        } else {
+            Exceptions.printStackTrace(new RuntimeException("RP for "+model+" is: "+rp));
+        }*/
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return rp;
     }
     
     public TreeFeatures getTreeFeatures () {
@@ -173,14 +197,14 @@ public class TreeModelRoot implements ModelListener {
     
     synchronized TreeModelNode.LazyEvaluator getChildrenEvaluator() {
         if (childrenEvaluator == null) {
-            childrenEvaluator = new TreeModelNode.LazyEvaluator();
+            childrenEvaluator = new TreeModelNode.LazyEvaluator(rp);
         }
         return childrenEvaluator;
     }
 
     synchronized TreeModelNode.LazyEvaluator getValuesEvaluator() {
         if (valuesEvaluator == null) {
-            valuesEvaluator = new TreeModelNode.LazyEvaluator();
+            valuesEvaluator = new TreeModelNode.LazyEvaluator(rp);
         }
         return valuesEvaluator;
     }

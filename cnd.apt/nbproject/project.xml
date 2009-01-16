@@ -35,6 +35,7 @@
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.modelui</friend>
                 <package>org.netbeans.modules.cnd.apt.debug</package>
                 <package>org.netbeans.modules.cnd.apt.structure</package>
                 <package>org.netbeans.modules.cnd.apt.support</package>

@@ -100,11 +100,13 @@ public class PropertySetCommand extends SvnCommand {
         switch (type) {
             case string: 
                 arguments.add(propName);
-                if(propValue != null && propValue.trim().equals("")){
-                    arguments.add("'" + propValue + "'");
-                } else {
-                    arguments.add(propValue);
-                }
+                /*  property values are set using an intermediate file, former setting directly through command line arguments as
+                 *  'svn propset svn:ignore VALUE TARGET' was causing problems on windows platforms when values contained wild-cards.
+                 *  The command line tried to expand the values and resolve them into existing files.
+                */
+                String propFileName = createTempCommandFile(propValue);
+                arguments.add("-F");    // NOI18N
+                arguments.add(propFileName);
                 arguments.add(file);
                 break;
             case file:     

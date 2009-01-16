@@ -169,7 +169,6 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }
 
-    @SuppressWarnings("unchecked")
     public IncludeImpl(DataInput input) throws IOException {
         super(input);
         this.name = FileNameCache.getManager().getString(input.readUTF());
