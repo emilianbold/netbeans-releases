@@ -137,6 +137,10 @@ public class ConfigActionTest extends ConfigAction {
         FileObject runFile = null;
         if (context == null) {
             runFile = testDirectory;
+        } else {
+            runFile = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
+            assert runFile != null;
+            assert runFile.getName().equals(pair.second) : String.format("Names differ: %s <-> %s", runFile.getName(), pair.second);
         }
 
         // ugly :/
