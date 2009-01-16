@@ -51,9 +51,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -188,8 +188,9 @@ class CompletionContextFinder {
             PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG);
     
         @NonNull
-    static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
-       Document document = info.getDocument();
+    static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
+       Document document = info.getSnapshot().getSource().getDocument(false);
+       
         if (document == null) {
             return CompletionContext.NONE;
         }
@@ -503,7 +504,7 @@ class CompletionContextFinder {
         return tokens;
     }
 
-    private synchronized static boolean isInsideClassIfaceDeclarationBlock(CompilationInfo info,
+    private synchronized static boolean isInsideClassIfaceDeclarationBlock(ParserResult info,
             int caretOffset, TokenSequence tokenSequence){
         List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
         boolean methDecl = false;
@@ -572,7 +573,7 @@ class CompletionContextFinder {
         return false;
     }
 
-    static CompletionContext getCompletionContextInComment(TokenSequence<PHPTokenId> tokenSeq, final int caretOffset, CompilationInfo info) {
+    static CompletionContext getCompletionContextInComment(TokenSequence<PHPTokenId> tokenSeq, final int caretOffset, ParserResult info) {
         Token<PHPTokenId> token = tokenSeq.token();
         if (token.text().length() == 0) {
             return CompletionContext.NONE;
@@ -591,14 +592,14 @@ class CompletionContextFinder {
     }
 
     static int lexerToASTOffset (PHPParseResult result, int lexerOffset) {
-        if (result.getTranslatedSource() != null) {
-            return result.getTranslatedSource().getAstOffset(lexerOffset);
-        }
+//        if (result.getTranslatedSource() != null) {
+//            return result.getTranslatedSource().getAstOffset(lexerOffset);
+//        }
         return lexerOffset;
     }
 
-    static int lexerToASTOffset(CompilationInfo info, int lexerOffset) {
-        PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, lexerOffset);
+    static int lexerToASTOffset(ParserResult info, int lexerOffset) {
+        PHPParseResult result = (PHPParseResult) info;
         return lexerToASTOffset(result, lexerOffset);
     }
 }

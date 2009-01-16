@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;

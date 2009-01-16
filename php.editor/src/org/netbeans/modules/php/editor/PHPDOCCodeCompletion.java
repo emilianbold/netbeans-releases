@@ -55,11 +55,11 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -105,7 +105,7 @@ public class PHPDOCCodeCompletion {
     }
     
     static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
-        Document document = request.info.getDocument();
+        Document document = request.info.getSnapshot().getSource().getDocument(false);
         TokenSequence<PHPTokenId> phpTS = LexUtilities.getPHPTokenSequence(document, request.anchor);
         if (phpTS != null) {
             phpTS.move(request.anchor);

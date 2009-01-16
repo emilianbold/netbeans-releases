@@ -39,8 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.openide.filesystems.FileObject;
 
@@ -56,5 +55,5 @@ public interface ModelElement {
     Scope getInScope();
     PHPElement getPHPElement();
     public OffsetRange getNameRange();
-    public ParserFile getParserFile();
+   // public ParserFile getParserFile();
 }

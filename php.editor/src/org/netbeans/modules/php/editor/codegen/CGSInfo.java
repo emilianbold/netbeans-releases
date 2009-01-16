@@ -6,12 +6,15 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -106,14 +109,12 @@ public class CGSInfo {
         if (file == null) {
             return;
         }
-        SourceModel model = SourceModelFactory.getInstance().getModel(file);
         try {
-            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+            ParserManager.parse(Collections.singleton(Source.create(textComp.getDocument())), new UserTask() {
 
-                public void cancel() {
-                }
-
-                public void run(CompilationInfo info) throws IOException {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ParserResult info = (ParserResult) resultIterator.getParserResult();
                     int caretOffset = textComp.getCaretPosition();
                     ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                     if (classDecl != null) {
@@ -141,11 +142,10 @@ public class CGSInfo {
                         }
                     }
                 }
-            }, true);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
     }
 
     /**
@@ -154,7 +154,7 @@ public class CGSInfo {
      * @param offset caret offset
      * @return class declaration or null
      */
-    private ClassDeclaration findEnclosingClass(CompilationInfo info, int offset) {
+    private ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
         int count = nodes.size();
         if (count > 1) {  // the cursor has to be in class block see issue #142417

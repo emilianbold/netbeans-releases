@@ -42,10 +42,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
 /**
  *
  * @author Tor Norbye
@@ -57,14 +56,14 @@ public class AstElement extends PHPElement {
     //protected Node node;
     protected String name;
     protected String in;
-    protected CompilationInfo info;
+    protected ParserResult info;
     protected String signature;
     protected ElementKind kind;
 
     @SuppressWarnings("unchecked")
     protected Set<Modifier> modifiers = Collections.EMPTY_SET;
 
-    AstElement(CompilationInfo info) {//, Node node) {
+    AstElement(ParserResult info) {//, Node node) {
         this.info = info;
         //this.node = node;
     }
@@ -152,7 +151,7 @@ public class AstElement extends PHPElement {
         return "JsElement:" + getName() + "(" + getKind() + ")"; // NOI18N
     }
 
-    public CompilationInfo getInfo() {
+    public ParserResult getInfo() {
         return info;
     }
     

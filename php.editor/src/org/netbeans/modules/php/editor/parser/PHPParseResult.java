@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.api.*;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 
@@ -51,10 +54,17 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 public class PHPParseResult extends ParserResult {
     
     private final Program root;
+    private final List<Error> errors;
 
-    public PHPParseResult(GSFPHPParser parser, ParserFile file, Program rootNode, boolean isValid) {
-        super(parser, file, PHPLanguage.PHP_MIME_TYPE, isValid);
+    public PHPParseResult(Snapshot snapshot, Program rootNode) {
+        this(snapshot, rootNode, Collections.<Error>emptyList());
+    }
+
+    public PHPParseResult(Snapshot snapshot, Program rootNode, List<Error> errors) {
+        //super(parser, file, PHPLanguage.PHP_MIME_TYPE, isValid);
+        super(snapshot);
         this.root = rootNode;
+        this.errors = errors;
     }
 
     public Program getProgram() {
@@ -62,8 +72,13 @@ public class PHPParseResult extends ParserResult {
     }
     
     @Override
-    public AstTreeNode getAst() {
-        return null;
+    public List<? extends Error> getDiagnostics() {
+        return errors;
+    }
+
+    @Override
+    protected void invalidate() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

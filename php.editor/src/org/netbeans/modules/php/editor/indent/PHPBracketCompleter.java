@@ -49,9 +49,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditorOptions;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -59,8 +56,12 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.csl.api.EditorOptions;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -109,7 +110,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
  *
  * @author Tor Norbye
  */
-public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.KeystrokeHandler {
+public class PHPBracketCompleter implements KeystrokeHandler {
 //    /** When true, automatically reflows comments that are being edited according to the rdoc
 //     * conventions as well as the right hand side margin
 //     */
@@ -1838,7 +1839,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
         }
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
 //        Node root = AstUtilities.getRoot(info);
 //
 //        if (root == null) {

@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  *
@@ -49,5 +49,5 @@ import org.netbeans.modules.gsf.api.NameKind;
 public interface VariableScope extends Scope  {
     public List<? extends VariableName> getAllVariables();
     public List<? extends VariableName> getVariables(final String... queryName);
-    public List<? extends VariableName> getVariables(final NameKind nameKind, final String... queryName);
+    public List<? extends VariableName> getVariables(final QuerySupport.Kind nameKind, final String... queryName);
 }

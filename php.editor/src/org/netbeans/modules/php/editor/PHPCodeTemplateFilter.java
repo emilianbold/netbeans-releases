@@ -40,16 +40,18 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
+import java.util.Collections;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 
@@ -57,24 +59,17 @@ import static org.netbeans.modules.php.editor.CompletionContextFinder.Completion
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationInfo> {
+public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter  {
     private boolean accept = false;
     private int caretOffset;
     private CompletionContext context;
 
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
-        FileObject fo = GsfUtilities.findFileObject(component);
-        if (fo != null) {  // fo can be null, see issue #144856
-            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
-
-            if (model != null && !model.isScanInProgress()){
-                try {
-                    model.runUserActionTask(this, false);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(component.getDocument())), this);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -90,17 +85,15 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
         return true;
     }
 
-    public void cancel() {
-
-    }
-
-    public void run(CompilationInfo parameter) throws Exception {
-        BaseDocument document = (BaseDocument) parameter.getDocument();
+    @Override
+    public void run(ResultIterator resultIterator) throws Exception {
+        ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+        BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
         document.readLock();
-        
-        try{
+
+        try {
             context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-            switch(context){
+            switch (context) {
                 case EXPRESSION:
                     accept = true;
                     break;

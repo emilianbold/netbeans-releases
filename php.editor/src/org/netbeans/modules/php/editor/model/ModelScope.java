@@ -40,25 +40,24 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
-
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 /**
  * @author Radek Matous
  */
 public interface ModelScope extends VariableScope {
     public List<? extends TypeScope> getAllTypes();
     public List<? extends TypeScope> getTypes(final String... queryName);
-    public List<? extends TypeScope> getTypes(final NameKind nameKind, final String... queryName);
+    public List<? extends TypeScope> getTypes(final QuerySupport.Kind nameKind, final String... queryName);
     public List<? extends ConstantElement> getAllConstants();
     public List<? extends ConstantElement> getConstants(final String... queryName);
-    public List<? extends ConstantElement> getConstants(final NameKind nameKind, final String... queryName);
+    public List<? extends ConstantElement> getConstants(final QuerySupport.Kind nameKind, final String... queryName);
     public List<? extends ClassScope> getAllClasses();
     public List<? extends ClassScope> getClasses(final String... queryName);
-    public List<? extends ClassScope> getClasses(final NameKind nameKind, final String... queryName);
+    public List<? extends ClassScope> getClasses(final QuerySupport.Kind nameKind, final String... queryName);
     public List<? extends InterfaceScope> getAllInterfaces();
     public List<? extends InterfaceScope> getInterfaces(final String... queryName);
-    public List<? extends InterfaceScope> getInterfaces(final NameKind nameKind, final String... queryName);
+    public List<? extends InterfaceScope> getInterfaces(final QuerySupport.Kind nameKind, final String... queryName);
     public List<? extends FunctionScope> getAllFunctions();
     public List<? extends FunctionScope> getFunctions(final String... queryName);
-    public List<? extends FunctionScope> getFunctions(final NameKind nameKind, final String... queryName);
+    public List<? extends FunctionScope> getFunctions(final QuerySupport.Kind nameKind, final String... queryName);
 }

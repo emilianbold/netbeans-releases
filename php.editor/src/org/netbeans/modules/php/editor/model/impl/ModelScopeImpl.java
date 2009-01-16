@@ -39,9 +39,10 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.openide.filesystems.FileObject;
@@ -52,8 +53,8 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 abstract class ModelScopeImpl extends ScopeImpl implements ModelScope  {
-    ModelScopeImpl(CompilationInfo info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+    ModelScopeImpl(ParserResult info, String name, PhpKind kind) {
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
     }
 
     @CheckForNull

@@ -50,11 +50,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
@@ -84,7 +87,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPIndexer implements Indexer {
+public class PHPIndexer extends EmbeddingIndexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     private static final FileSystem MEM_FS = FileUtil.createMemoryFileSystem();
     private static final Map<String,FileObject> EXT2FO = new HashMap<String,FileObject>();
@@ -127,44 +130,6 @@ public class PHPIndexer implements Indexer {
     /** This field is for fast access top level elemnts */
     static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    public boolean isIndexable(ParserFile file) {
-        // Cannot call file.getFileObject().getMIMEType() here for several reasons:
-        // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
-        //   may return "content/unknown", and in some cases, file.getFileObject() returns null
-        // (2) file.getFileObject() can be expensive during startup indexing when we're
-        //   rapidly scanning through lots of directories to determine which files are
-        //   indexable. This is done using the java.io.File API rather than the more heavyweight
-        //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
-        // Since the mime resolver for PHP is simple -- it's just based on the file extension,
-        // we perform the same check here:
-        //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-        if (INDEXABLE_EXTENSIONS.contains(file.getExtension().toLowerCase())) {
-            return true;
-        }
-
-        return isPhpFile(file);
-    }
-
-    private boolean isPhpFile(ParserFile file) {
-        FileObject fo = null;
-        String ext = file.getExtension();
-        synchronized (EXT2FO) {
-            fo = (ext != null) ? EXT2FO.get(ext) : null;
-            if (fo == null) {
-                try {
-                    fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
-                    if (ext != null && fo != null) {
-                        EXT2FO.put(ext, fo);
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        assert fo != null;
-        return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE));
-    }
-
     public String getPersistentUrl(File file) {
         String url;
         try {
@@ -177,45 +142,36 @@ public class PHPIndexer implements Indexer {
         }
 
     }
-
-    public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
-        PHPParseResult r = (PHPParseResult)result;
-
-        if (r.getProgram() == null){
-            return Collections.<IndexDocument>emptyList();
+    @Override
+    protected void index(Indexable indexable, Result parserResult, Context context) {
+        try {
+            PHPParseResult r = (PHPParseResult) parserResult;
+            if (r.getProgram() == null) {
+                return;
+            }
+            IndexingSupport support = IndexingSupport.getInstance(context);
+            TreeAnalyzer analyzer = new TreeAnalyzer(indexable, r, support);
+            analyzer.analyze();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
-        analyzer.analyze();
-
-        return analyzer.getDocuments();
     }
 
-    public String getIndexVersion() {
-        // If you chane the index number, you have to regenerate preindexed
-        // php runtime files. Go to the php.project/tools, modify and run
-        // preindex.sh script. Also change the number of license in
-        // php.project/external/preindexed-php-license.txt
-        return "0.5.7"; // NOI18N
-    }
-
-    public String getIndexerName() {
-        return "php"; // NOI18N
-    }
-
+   
     private static class TreeAnalyzer {
-        private final ParserFile file;
+        private Indexable indexable;
         private String url;
         private final PHPParseResult result;
         private Program root;
         //private final BaseDocument doc;
-        private IndexDocumentFactory factory;
+        private IndexingSupport support;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
 
-        private TreeAnalyzer(PHPParseResult result, IndexDocumentFactory factory) {
+        private TreeAnalyzer(Indexable indexable, PHPParseResult result, IndexingSupport support) {
+            this.indexable = indexable;
             this.result = result;
-            this.file = result.getFile();
-            this.factory = factory;
+            this.support = support;
 
             /*FileObject fo = file.getFileObject();
 
@@ -226,7 +182,7 @@ public class PHPIndexer implements Indexer {
             }
             */
             try {
-                url = file.getFile().toURI().toURL().toExternalForm();
+                url = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = PHPIndex.getPreindexUrl(url);
@@ -245,7 +201,7 @@ public class PHPIndexer implements Indexer {
                     Identifier identifier = (Identifier) field.getName().getName();
                     String type = getFieldTypeFromPHPDoc(field);
                     String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
-                    document.addPair(FIELD_FIELD, signature, false);
+                    document.addPair(FIELD_FIELD, signature, false, true);
                 }
             }
         }
@@ -265,7 +221,7 @@ public class PHPIndexer implements Indexer {
         private class IndexerVisitor extends DefaultTreePathVisitor{
             private List<IndexDocument> documents;
             private IndexDocument defaultDocument;
-            private final IndexDocument identifierDocument = factory.createDocument(10);
+            private final IndexDocument identifierDocument = support.createDocument(indexable);
             private Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
 
             public IndexerVisitor(List<IndexDocument> documents, IndexDocument defaultDocument) {
@@ -276,7 +232,7 @@ public class PHPIndexer implements Indexer {
             public void addIdentifierPairs() {
                 Collection<IdentifierSignature> values = identifiers.values();
                 for (IdentifierSignature idSign : values) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true);
+                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
                 }
             }
             @Override
@@ -287,13 +243,13 @@ public class PHPIndexer implements Indexer {
             @Override
             public void visit(ClassDeclaration node) {
                 // create a new document for each class
-                IndexDocument classDocument = factory.createDocument(10);
+                IndexDocument classDocument = support.createDocument(indexable);
                 documents.add(classDocument);
                 indexClass((ClassDeclaration) node, classDocument);
                 List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
                 IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
                 for (IdentifierSignature idSign : idSignatures) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
                 }
                 super.visit(node);
             }
@@ -317,13 +273,13 @@ public class PHPIndexer implements Indexer {
 
             @Override
             public void visit(InterfaceDeclaration node) {
-                IndexDocument ifaceDocument = factory.createDocument(10);
+                IndexDocument ifaceDocument = support.createDocument(indexable);
                 documents.add(ifaceDocument);
                 indexInterface((InterfaceDeclaration) node, ifaceDocument);
                 List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
                 IdentifierSignature.add(node, idSignatures);
                 for (IdentifierSignature idSign : idSignatures) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
                 }
                 super.visit(node);
             }
@@ -331,8 +287,9 @@ public class PHPIndexer implements Indexer {
 
         public void analyze() throws IOException {
 
-            final IndexDocument defaultDocument = factory.createDocument(40); // TODO - measure!
+            final IndexDocument defaultDocument = support.createDocument(indexable); // TODO - measure!
             documents.add(defaultDocument);
+            support.addDocument(defaultDocument);
 
             root = result.getProgram();
             IndexerVisitor indexerVisitor = new IndexerVisitor(documents, defaultDocument);
@@ -342,7 +299,7 @@ public class PHPIndexer implements Indexer {
             String processedFileURL = null;
 
             try {
-                processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+                processedFileURL = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
 
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
@@ -393,7 +350,7 @@ public class PHPIndexer implements Indexer {
                     }
                 }.scan(statement);
             }
-            defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
+            defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false, true);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
@@ -411,8 +368,8 @@ public class PHPIndexer implements Indexer {
             }
 
             classSignature.append(superClass + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, classSignature.toString(), true);
-            document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true);
+            document.addPair(FIELD_CLASS, classSignature.toString(), true, true);
+            document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true, true);
             boolean isConstructor = false;
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
@@ -435,7 +392,7 @@ public class PHPIndexer implements Indexer {
                         StringBuilder signature = new StringBuilder();
                         signature.append(id.getName() + ";");
                         signature.append(constDeclaration.getStartOffset() + ";");
-                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
+                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
                     }
                 }
             }
@@ -450,7 +407,7 @@ public class PHPIndexer implements Indexer {
                 }
                 // TODO if the property has defined more types, then it should be reflected
                 String signature = createFieldsDeclarationRecord(name, tag.getTypes().get(0).getValue(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
-                document.addPair(FIELD_FIELD, signature, false);
+                document.addPair(FIELD_FIELD, signature, false, true);
             }
         }
 
@@ -470,8 +427,8 @@ public class PHPIndexer implements Indexer {
             }
 
             ifaceSign.append(';');
-            document.addPair(FIELD_IFACE, ifaceSign.toString(), true);
-            document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true);
+            document.addPair(FIELD_IFACE, ifaceSign.toString(), true, true);
+            document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true, true);
 
             for (Statement statement : ifaceDecl.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
@@ -487,7 +444,7 @@ public class PHPIndexer implements Indexer {
                         StringBuilder signature = new StringBuilder();
                         signature.append(id.getName() + ";");
                         signature.append(constDeclaration.getStartOffset() + ";");
-                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
+                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
                     }
                 }
 
@@ -512,8 +469,8 @@ public class PHPIndexer implements Indexer {
 
                         signature.append(";"); //NOI18N
                         signature.append(var.getStartOffset() + ";");
-                        document.addPair(FIELD_VAR, signature.toString(), true);
-                        document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true);
+                        document.addPair(FIELD_VAR, signature.toString(), true, true);
+                        document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true, true);
                     }
                 }
             }
@@ -551,8 +508,8 @@ public class PHPIndexer implements Indexer {
                                     signature.append(';');
                                     signature.append(invocation.getStartOffset());
                                     signature.append(';');
-                                    document.addPair(FIELD_CONST,  signature.toString(), true);
-                                    document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true);
+                                    document.addPair(FIELD_CONST,  signature.toString(), true, true);
+                                    document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true, true);
                                 }
                             }
                         }
@@ -565,8 +522,8 @@ public class PHPIndexer implements Indexer {
             StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
             signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
 
-            document.addPair(FIELD_BASE, signature.toString(), true);
-            document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true);
+            document.addPair(FIELD_BASE, signature.toString(), true, true);
+            document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true, true);
         }
 
         /**
@@ -584,7 +541,7 @@ public class PHPIndexer implements Indexer {
             signature.append(getBaseSignatureForFunctionDeclaration(className,paramCount, offset, functionDeclaration));
             signature.append(modifiers + ";"); //NOI18N
 
-            document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false);
+            document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false, true);
         }
 
         private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
@@ -592,7 +549,7 @@ public class PHPIndexer implements Indexer {
             signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
             signature.append(modifiers + ";"); //NOI18N
 
-            document.addPair(FIELD_METHOD, signature.toString(), false);
+            document.addPair(FIELD_METHOD, signature.toString(), false, true);
         }
 
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
@@ -717,4 +674,78 @@ public class PHPIndexer implements Indexer {
                 url.indexOf("/gems/") == -1 &&  // NOI18N
                 url.indexOf("lib/ruby/") == -1; // NOI18N
      }
+
+     public static final class Factory extends EmbeddingIndexerFactory {
+
+        public static final String NAME = "php"; // NOI18N
+        public static final int VERSION = 1;
+
+        @Override
+        public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
+
+            if (isIndexable(indexable, snapshot)) {
+                return new PHPIndexer();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String getIndexerName() {
+            return NAME;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return VERSION;
+        }
+        private FileObject cachedFo;
+        private boolean cachedIndexable;
+
+        private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            // Cannot call file.getFileObject().getMIMEType() here for several reasons:
+            // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
+            //   may return "content/unknown", and in some cases, file.getFileObject() returns null
+            // (2) file.getFileObject() can be expensive during startup indexing when we're
+            //   rapidly scanning through lots of directories to determine which files are
+            //   indexable. This is done using the java.io.File API rather than the more heavyweight
+            //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
+            // Since the mime resolver for PHP is simple -- it's just based on the file extension,
+            // we perform the same check here:
+            //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+
+            FileObject fileObject = snapshot.getSource().getFileObject();
+
+            if (INDEXABLE_EXTENSIONS.contains(fileObject.getExt().toLowerCase())) {
+                return true;
+            }
+
+            return isPhpFile(fileObject);
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            //todo:
+        }
+
+        private boolean isPhpFile(FileObject file) {
+            FileObject fo = null;
+            String ext = file.getExt();
+            synchronized (EXT2FO) {
+                fo = (ext != null) ? EXT2FO.get(ext) : null;
+                if (fo == null) {
+                    try {
+                        fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
+                        if (ext != null && fo != null) {
+                            EXT2FO.put(ext, fo);
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            assert fo != null;
+            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE));
+        }
+    } // End of Factory class
 }

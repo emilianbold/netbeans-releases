@@ -39,15 +39,14 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -76,12 +75,12 @@ public class PHPCompletionResult extends DefaultCompletionResult {
                 final IndexedElement elem = (IndexedElement) phpItem.getElement();
 
                 if (!elem.isResolved()) {
-                    final BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
+                    final BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
                     if (doc == null) {
                         return;
                     }
 
-                    FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
+                    FileObject currentFolder = completionContext.getParserResult().getSnapshot().getSource().getFileObject().getParent();
                     
                     FileObject fileObject = elem.getFileObject();
                     

@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  * @author Radek Matous
@@ -51,12 +51,12 @@ public interface TypeScope extends Scope {
     List<? extends MethodScope> getAllMethods();
     List<? extends MethodScope> getMethods(final int... modifiers);
     List<? extends MethodScope> getMethods(final String queryName, final int... modifiers);
-    List<? extends MethodScope> getMethods(final NameKind nameKind, final String queryName, final int... modifiers);
+    List<? extends MethodScope> getMethods(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
     List<? extends MethodScope> getAllInheritedMethods();
     List<? extends MethodScope> getInheritedMethods(final String queryName);
     List<? extends ClassConstantElement> getAllConstants();
     List<? extends ClassConstantElement> getConstants(final String... queryName);
-    List<? extends ClassConstantElement> getConstants(final NameKind nameKind, final String... queryName);
+    List<? extends ClassConstantElement> getConstants(final QuerySupport.Kind nameKind, final String... queryName);
     List<? extends ClassConstantElement> getInheritedConstants(String constName);
 
     //List<? extends MethodScope> getTopInheritedMethods(final String queryName, final int... modifiers);

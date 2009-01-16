@@ -43,9 +43,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -66,7 +67,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     
     @Override
     public String toString() {
-        return getSignature() + ":" + getFilenameUrl();
+        return getSignature();
     }
 
     @Override
