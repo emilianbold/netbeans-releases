@@ -46,7 +46,7 @@ import java.util.Collection;
  * Represents a source file
  * @author Vladimir Kvashin
  */
-public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIdentifiable<CsmFile> {
+public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
 
     /** Gets this file absolute path */
     CharSequence getAbsolutePath();

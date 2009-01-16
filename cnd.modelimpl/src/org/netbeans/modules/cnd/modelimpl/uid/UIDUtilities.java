@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -475,7 +476,7 @@ public class UIDUtilities {
         private CsmUID<CsmProject> projectUID;
 
         public UnresolvedUIDBase(CsmProject project) {
-            projectUID = project.getUID();
+            projectUID = UIDs.get(project);
         }
 
         protected ProjectBase getProject() {
