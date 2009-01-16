@@ -150,6 +150,9 @@ public class ConfigActionTest extends ConfigAction {
     // <working directory, unit test name (script name without extension)>
     private Pair<FileObject, String> getPair(PhpProject project, Lookup context) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        if (testDirectory == null) {
+            return null;
+        }
         if (context == null) {
             return getProjectPair(testDirectory);
         }
@@ -157,9 +160,7 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     private Pair<FileObject, String> getProjectPair(FileObject testDirectory) {
-        if (testDirectory == null) {
-            return null;
-        }
+        assert testDirectory != null : "Test directory should be defined for running a test file";
         return Pair.of(testDirectory, CWD);
     }
 
