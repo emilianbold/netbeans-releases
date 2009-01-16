@@ -48,8 +48,8 @@ public class DebugScript  extends RunScript {
         super(project);
     }
 
-    public DebugScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot) {
-        super(project, program, descriptor, processBuilder, sourceRoot);
+    public DebugScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot, FileObject runFile) {
+        super(project, program, descriptor, processBuilder, sourceRoot, runFile);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DebugScript  extends RunScript {
                 run(context);
             }
         } else {
-            dbgStarter.start(project, callable, getStartFile(context), true);
+            dbgStarter.start(project, callable, getRunFile(context), true);
         }
     }
 

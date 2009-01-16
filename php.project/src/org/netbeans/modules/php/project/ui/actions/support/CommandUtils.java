@@ -141,8 +141,10 @@ public final class CommandUtils {
         final List<FileObject> files = new ArrayList<FileObject>(nodes.length);
         for (Node node : nodes) {
             FileObject fo = getFileObject(node);
-            assert fo != null : "A valid file object not found for node: " + node;
-            files.add(fo);
+            // #156939
+            if (fo != null) {
+                files.add(fo);
+            }
         }
         return files;
     }
