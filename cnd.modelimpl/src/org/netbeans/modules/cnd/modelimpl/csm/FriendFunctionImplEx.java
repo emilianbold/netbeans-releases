@@ -89,7 +89,6 @@ public class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction> impl
         UIDObjectFactory.getDefaultFactory().writeUID(friendClassUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public FriendFunctionImplEx(DataInput input) throws IOException {
         super(input);
         friendClassUID = UIDObjectFactory.getDefaultFactory().readUID(input);

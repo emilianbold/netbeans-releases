@@ -67,6 +67,7 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -152,6 +153,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewType, ColumnModel.class);
         mm =                    cp.lookup (viewType, Model.class);
+        RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
         
         List models = new ArrayList(11);
         models.add(treeModels);
@@ -166,6 +168,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         models.add(columnModels);
         models.add(mm);
         models.add(treeExpansionModelFilters);
+        if (rp != null) {
+            models.add(rp);
+        }
         
         if (view instanceof DebuggingView) {
             ((DebuggingView) view).setRootContext(

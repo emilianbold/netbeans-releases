@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -276,9 +277,17 @@ public final class NbMavenProject {
             FileChangeSupport.DEFAULT.addListener(listener, fil);
         }
     } 
-    
+
+    /**
+     * asynchronous dependency download, scheduled to some time in the future.
+     */
     public synchronized void triggerDependencyDownload() {
         task.schedule(1000);
+    }
+
+    public synchronized void synchronousDependencyDownload() {
+        assert !SwingUtilities.isEventDispatchThread();
+        task.run();
     }
     
     public synchronized void removeWatchedPath(String relPath) {

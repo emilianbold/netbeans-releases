@@ -128,8 +128,8 @@ abstract class Lookup implements ContextProvider {
     }
     
     static class Compound extends Lookup {
-        private ContextProvider l1;
-        private ContextProvider l2;
+        ContextProvider l1;
+        ContextProvider l2;
         
         Compound(ContextProvider l1, ContextProvider l2) {
             this.l1 = l1;
@@ -711,13 +711,19 @@ abstract class Lookup implements ContextProvider {
                     this.className = className;
                 }
 
+                private final Object instanceCreationLock = new Object();
+                
                 protected T getEntry() {
                     Object instance = null;
-                    synchronized(instanceCache) {
-                        instance = instanceCache.get (className);
+                    synchronized (instanceCreationLock) {
+                        synchronized(instanceCache) {
+                            instance = instanceCache.get (className);
+                        }
                         if (instance == null) {
                             instance = createInstance (className);
-                            instanceCache.put (className, instance);
+                            synchronized (instanceCache) {
+                                instanceCache.put (className, instance);
+                            }
                         }
                     }
                     if (instance != null) {

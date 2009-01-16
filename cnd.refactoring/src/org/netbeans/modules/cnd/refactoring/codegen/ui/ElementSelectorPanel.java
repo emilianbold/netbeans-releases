@@ -89,7 +89,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         Node[] children = root.getChildren().getNodes();
         if (null != children && children.length > 0) {
             try {
-                manager.setSelectedNodes(new org.openide.nodes.Node[]{getSelectedNode(children)});
+                manager.setSelectedNodes(new org.openide.nodes.Node[]{children[0]});
             } catch (PropertyVetoException ex) {
                 //ignore
             }
@@ -167,7 +167,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
             row += ssn.length;
             if (toSelect == null) {
                 if (ssn.length > 0) {
-                    toSelect = ssn[0];
+                    toSelect = getSelectedNode(ssn);
                 }
             }
         }

@@ -233,10 +233,37 @@ public class ContextUtils {
                 if(inScope != null) {
                     return inScope;
                 } else {
-                    return (CsmScope) item;
+                    if(CsmKindUtilities.isClass(item) ||
+                            CsmKindUtilities.isNamespace(item) ||
+                            CsmKindUtilities.isFunction(item) ||
+                            CsmKindUtilities.isEnum(item) ||
+                            CsmKindUtilities.isUnion(item) ||
+                            CsmKindUtilities.isFile(item)) {
+                        return (CsmScope) item;
+                    }
                 }
             }
         }
+        if (CsmKindUtilities.isNamespaceDefinition(outScope)) {
+            for (CsmDeclaration item : ((CsmNamespaceDefinition) outScope).getDeclarations()) {
+                if (CsmKindUtilities.isScope(item) && isInObject(item, offset)) {
+                    CsmScope inScope = findInnerScope((CsmScope) item, offset);
+                    if (inScope != null) {
+                        return inScope;
+                    } else {
+                        if (CsmKindUtilities.isClass(item) ||
+                                CsmKindUtilities.isNamespace(item) ||
+                                CsmKindUtilities.isFunction(item) ||
+                                CsmKindUtilities.isEnum(item) ||
+                                CsmKindUtilities.isUnion(item) ||
+                                CsmKindUtilities.isFile(item)) {
+                            return (CsmScope) item;
+                        }
+                    }
+                }
+            }
+        }
+
         return null;
     }
 
