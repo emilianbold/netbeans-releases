@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -724,7 +723,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         String accessorToolTip;
         String defaultAccessorToolTip;
         MemberInfo<? extends CsmMember> accessor;
-        private CsmUID<CsmField> fieldHandle;
+        private CsmField fieldHandle;
         private boolean isGetter;
 
         public static AccessorInfo createGetter(CsmField field, String proposedName) {
@@ -749,7 +748,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                             method.getName().toString())
                     : null;
             ai.isGetter = isGetter;
-            ai.fieldHandle = CsmRefactoringUtils.getHandler(field);
+            ai.fieldHandle = field;
             return ai;
         }
         
@@ -761,7 +760,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         public void setName(String s) {
             name = s;
-            CsmField field = null;//fieldHandle.resolve(javac);
+            CsmField field = fieldHandle;
             CsmMethod method = null;
             method = isGetter
                     ? EncapsulateFieldRefactoringPlugin.findMethod(field.getContainingClass(), s, Collections.<CsmVariable>emptyList(), true)

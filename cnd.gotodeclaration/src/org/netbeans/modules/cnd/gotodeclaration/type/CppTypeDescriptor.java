@@ -30,6 +30,7 @@ package org.netbeans.modules.cnd.gotodeclaration.type;
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.gotodeclaration.util.ContextUtil;
 
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -62,7 +63,7 @@ class CppTypeDescriptor extends TypeDescriptor {
     
     @SuppressWarnings("unchecked")
     public CppTypeDescriptor(CsmClassifier classifier) {
-	uid = classifier.getUID();
+	uid = UIDs.get(classifier);
 	kind = classifier.getKind();
 	modifiers = CsmUtilities.getModifiers(classifier);
 	if( CsmKindUtilities.isOffsetable(classifier) ) {

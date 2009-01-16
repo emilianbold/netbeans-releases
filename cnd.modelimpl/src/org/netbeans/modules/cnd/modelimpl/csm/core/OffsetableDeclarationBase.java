@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiableBase<T> implements CsmOffsetableDeclaration<T> {
+public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiableBase<T> implements CsmOffsetableDeclaration {
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     

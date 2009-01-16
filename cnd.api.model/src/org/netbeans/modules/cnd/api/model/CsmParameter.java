@@ -51,7 +51,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmParameter extends CsmVariable<CsmParameter> {
+public interface CsmParameter extends CsmVariable {
 
     //TODO: create an interface to place getDeclarationText() in
     //String getDeclarationText();
