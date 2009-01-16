@@ -44,8 +44,8 @@ package org.netbeans.modules.csl.api;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.Icon;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 

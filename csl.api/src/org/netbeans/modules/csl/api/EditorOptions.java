@@ -28,10 +28,9 @@
 package org.netbeans.modules.csl.api;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.openide.util.Lookup;
 
 /**
  * Manage a set of options configurable by the user in the IDE.

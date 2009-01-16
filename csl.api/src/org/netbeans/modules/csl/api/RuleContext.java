@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.csl.api;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 
 /**

@@ -43,8 +43,9 @@ package org.netbeans.modules.csl.api;
 
 import java.util.Set;
 
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.spi.ParserResult;
 
 
@@ -63,7 +64,7 @@ public interface InstantRenamer {
      *   to a short description string (explaining why renaming is not allowed) which
      *   may be displayed to the user.
      */
-    boolean isRenameAllowed(@NonNull ParserResult info, int caretOffset, @CheckForNull String[] explanationRetValue);
+    boolean isRenameAllowed(@NonNull ParserResult info, int caretOffset, @NullAllowed String[] explanationRetValue);
 
     /**
      * Return a Set of regions that should be renamed if the element under the caret offset is

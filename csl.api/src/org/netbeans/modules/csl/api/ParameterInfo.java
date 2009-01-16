@@ -41,7 +41,7 @@
 package org.netbeans.modules.csl.api;
 
 import java.util.List;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 
 /**

@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.csl.api;
 
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
+
 
 /**
  * A formatter used to format items for navigation, code completion, etc.
