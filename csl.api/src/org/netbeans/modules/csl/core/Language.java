@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -55,8 +57,6 @@ import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.StructureScanner;

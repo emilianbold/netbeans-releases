@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.csl.api</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -356,7 +365,6 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.csl.api</package>
-                <package>org.netbeans.modules.csl.api.annotations</package>
                 <package>org.netbeans.modules.csl.core</package>
                 <package>org.netbeans.modules.csl.editor</package>
                 <package>org.netbeans.modules.csl.spi</package>

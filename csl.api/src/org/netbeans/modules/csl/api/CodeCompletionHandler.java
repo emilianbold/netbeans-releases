@@ -44,8 +44,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.spi.ParserResult;
 
 
@@ -152,7 +153,7 @@ public interface CodeCompletionHandler {
      */
     @CheckForNull
     String resolveTemplateVariable(String variable, @NonNull ParserResult info, int caretOffset, 
-            @NonNull String name, @CheckForNull Map parameters);
+            @NonNull String name, @NullAllowed Map parameters);
     
     /**
      * Compute the set of applicable templates for a given text selection
@@ -170,5 +171,5 @@ public interface CodeCompletionHandler {
      * @return A ParameterInfo object, or ParameterInfo.NONE if parameter completion is not supported.
      */
     @NonNull
-    ParameterInfo parameters(@NonNull ParserResult info, int caretOffset, @CheckForNull CompletionProposal proposal);
+    ParameterInfo parameters(@NonNull ParserResult info, int caretOffset, @NullAllowed CompletionProposal proposal);
 }

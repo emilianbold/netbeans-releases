@@ -44,8 +44,8 @@ package org.netbeans.modules.csl.api;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *

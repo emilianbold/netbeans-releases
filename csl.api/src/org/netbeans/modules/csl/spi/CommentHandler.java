@@ -40,10 +40,10 @@ package org.netbeans.modules.csl.spi;
 
 import java.util.ArrayList;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 
 /**
  *

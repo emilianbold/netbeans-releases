@@ -32,9 +32,9 @@ import java.util.Iterator;
 
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;

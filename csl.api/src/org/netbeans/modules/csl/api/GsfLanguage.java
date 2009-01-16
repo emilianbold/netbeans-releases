@@ -44,8 +44,8 @@ package org.netbeans.modules.csl.api;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
 import org.openide.filesystems.FileObject;
 

@@ -40,10 +40,10 @@
  */
 package org.netbeans.modules.csl.spi;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.modules.csl.api.annotations.Nullable;
 import org.openide.filesystems.FileObject;
 
 
@@ -67,9 +67,9 @@ public class DefaultError implements Error {
 
     /** Creates a new instance of DefaultError */
     public DefaultError(
-            @Nullable String key, 
+            @NullAllowed String key,
             @NonNull String displayName, 
-            @Nullable String description, 
+            @NullAllowed String description,
             @NonNull FileObject file, 
             @NonNull int start, 
             @NonNull int end, 

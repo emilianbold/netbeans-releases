@@ -106,7 +106,6 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
@@ -137,6 +136,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -724,7 +725,7 @@ public abstract class CslTestBase extends NbTestCase {
         return parser;
     }
     
-    protected void validateParserResult(@CheckForNull ParserResult result) {
+    protected void validateParserResult(@NullAllowed ParserResult result) {
         // Clients can do checks to make sure everything is okay here. 
     }
     

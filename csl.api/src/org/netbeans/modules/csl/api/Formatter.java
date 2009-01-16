@@ -40,11 +40,10 @@
  */
 package org.netbeans.modules.csl.api;
 
-import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 
 /**
  * Implementations of this interface can be registered such that the formatter
@@ -59,7 +58,7 @@ public interface Formatter {
      * You may use the provided parse tree information, if available, to guide formatting decisions.
      * The caret (if any) should be updated to the corresponding position that it was at before formatting.     * 
      */
-    void reformat(@NonNull Context context, @CheckForNull ParserResult compilationInfo);
+    void reformat(@NonNull Context context, @NullAllowed ParserResult compilationInfo);
 
     /**
      * Reindent the source code. Adjusts indentation and strips trailing whitespace but

@@ -46,6 +46,9 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -53,8 +56,6 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 
 /**
  * <p>The EditHistory object contains information about a set of edits that
@@ -234,7 +235,7 @@ public final class EditHistory implements DocumentListener, TokenHierarchyListen
      * @param id The token id to be checked
      * @return True iff the given token id has appeared in this edit history
      */
-    public boolean wasModified(@CheckForNull TokenId id) {
+    public boolean wasModified(@NullAllowed TokenId id) {
         if (id == null) {
             return false;
         }
