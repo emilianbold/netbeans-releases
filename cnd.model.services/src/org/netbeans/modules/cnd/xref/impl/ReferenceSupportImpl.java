@@ -55,12 +55,12 @@ package org.netbeans.modules.cnd.xref.impl;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 
@@ -128,31 +128,6 @@ public class ReferenceSupportImpl {
     }
     
     public <T extends CsmObject> CsmUID<T> getUID(T element) {
-        CsmUID<T> uid = null;
-        if (CsmKindUtilities.<T>isIdentifiable(element)) {
-            @SuppressWarnings("unchecked")
-            CsmIdentifiable<T> obj = (CsmIdentifiable<T>)element;
-            uid = obj.getUID();
-            boolean checkAssert = false;
-            assert checkAssert = true;
-            if (checkAssert && (uid.getObject() == null)) {
-                System.err.println("UID " + uid + "can't return object " + obj);
-                uid = null;
-            }
-        } 
-        if (uid == null) {
-            uid = new SelfUID<T>(element);
-        }
-        return uid;
+        return UIDs.get(element);
     }
-    
-    private static final class SelfUID<T> implements CsmUID<T> {
-        private final T element;
-        SelfUID(T element) {
-            this.element = element;
-        }
-        public T getObject() {
-            return this.element;
-        }
-    }    
 }

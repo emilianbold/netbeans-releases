@@ -47,7 +47,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmEnum extends CsmCompoundClassifier<CsmEnum> {
+public interface CsmEnum extends CsmCompoundClassifier {
 
     Collection<CsmEnumerator> getEnumerators();
 

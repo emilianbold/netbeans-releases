@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -68,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Common ancestor for ClassImpl and EnumImpl
  * @author Vladimir Kvashin
  */
-public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier<T>, CsmMember<T> {
+public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier, CsmMember {
 
     private final CharSequence name;
     private /*final*/ CharSequence qualifiedName;
@@ -335,6 +336,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
 
     public void addEnclosingTypedef(CsmTypedef typedef) {
-        enclosingTypdefs.add(typedef.getUID());
+        final CsmUID<CsmTypedef> uid = UIDs.get(typedef);
+        enclosingTypdefs.add(uid);
     }
 }
