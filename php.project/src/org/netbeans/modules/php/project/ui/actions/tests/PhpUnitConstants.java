@@ -37,62 +37,27 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.actions.support;
+package org.netbeans.modules.php.project.ui.actions.tests;
 
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.io.File;
 
 /**
- * Action implementation for SCRIPT configuration.
- * It means running and debugging scripts.
  * @author Tomas Mysik
  */
-public class ConfigActionScript extends ConfigAction {
+public final class PhpUnitConstants {
+    // test files
+    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
 
-    @Override
-    public boolean isRunProjectEnabled(PhpProject project) {
-        return isRunProjectEnabled();
-    }
+    // cli options
+    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
+    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    // for older PHP Unit versions
+    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
 
-    @Override
-    public boolean isDebugProjectEnabled(PhpProject project) {
-        return isDebugProjectEnabled();
-    }
+    // output files
+    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
 
-    @Override
-    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
-        FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
-        return file != null && CommandUtils.isPhpFile(file);
-    }
-
-    @Override
-    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
-        if (XDebugStarterFactory.getInstance() == null) {
-            return false;
-        }
-        return isRunFileEnabled(project, context);
-    }
-
-    @Override
-    public void runProject(PhpProject project) {
-        new RunScript(project).run();
-    }
-
-    @Override
-    public void debugProject(PhpProject project) {
-        new DebugScript(project).run();
-    }
-
-    @Override
-    public void runFile(PhpProject project, Lookup context) {
-        new RunScript(project).run(context);
-    }
-
-    @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        new DebugScript(project).run(context);
+    private PhpUnitConstants() {
     }
 }
