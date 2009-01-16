@@ -164,7 +164,7 @@ public class RailsProject extends RubyBaseProject {
         // in a rails project there are no other test roots, and ATM these
         // are not customizable by the user.
         // see #151667
-        List<FileObject> result = new <FileObject>ArrayList(2);
+        List<FileObject> result = new ArrayList<FileObject>(2);
         addIfNotNull(getProjectDirectory().getFileObject("test/"), result); //NOI18N
         addIfNotNull(getProjectDirectory().getFileObject("spec/"), result); //NOI18N
         return result.toArray(new FileObject[result.size()]);
