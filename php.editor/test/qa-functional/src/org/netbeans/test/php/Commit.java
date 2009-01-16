@@ -189,12 +189,6 @@ public class Commit extends GeneralPHP
     endTest( );
   }
 
-  protected void Backit( EditorOperator eoPHP, int iCount )
-  {
-    for( int i = 0; i < iCount; i++ )
-      eoPHP.pressKey( KeyEvent.VK_BACK_SPACE );
-  }
-
   protected void EnsureEmptyLine( EditorOperator eoPHP )
   {
     CheckResultRegex( eoPHP, "[ \t\r\n]*" );

@@ -50,6 +50,7 @@ import org.netbeans.modules.db.explorer.dlg.AddViewDialog;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -75,7 +76,7 @@ public class CreateViewAction extends BaseAction {
                     enabled = !conn.isClosed();
                 }
             } catch (SQLException e) {
-
+                Exceptions.printStackTrace(e);
             }
         }
 

@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.NamespaceDeclararationContainerKey;
@@ -183,7 +184,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             CharSequence name = CharSequenceKey.create(cls.getName());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
-                set.remove(cls.getUID());
+                set.remove(UIDs.get(cls));
                 if (set.size()==0){
                     friends.remove(name);
                 }
@@ -193,7 +194,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             CharSequence name = CharSequenceKey.create(fun.getSignature());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
-                set.remove(fun.getUID());
+                set.remove(UIDs.get(fun));
                 if (set.size()==0){
                     friends.remove(name);
                 }
@@ -203,7 +204,6 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public void putDeclaration(CsmOffsetableDeclaration decl) {
 	CharSequence name = UniqueNameCache.getManager().getString(decl.getUniqueName());
-        @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
 	try {
@@ -257,7 +257,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                 set = new HashSet<CsmUID<? extends CsmFriend>>();
                 friends.put(name,set);
             }
-            set.add(cls.getUID());
+            set.add(UIDs.get(cls));
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
             CsmFriendFunction fun = (CsmFriendFunction) decl;
             CharSequence name = CharSequenceKey.create(fun.getSignature());
@@ -266,7 +266,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                 set = new HashSet<CsmUID<? extends CsmFriend>>();
                 friends.put(name,set);
             }
-            set.add(fun.getUID());
+            set.add(UIDs.get(fun));
         }
 	put();
     }

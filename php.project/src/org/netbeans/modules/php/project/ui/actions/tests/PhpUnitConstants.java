@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,24 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
-import java.util.EventListener;
+package org.netbeans.modules.php.project.ui.actions.tests;
+
+import java.io.File;
 
 /**
- * Listener for changes in file existence and/or contents.
- * Unlike the Filesystems API, renames etc. are not considered special;
- * the "file" is identified uniquely by its path, not an object.
- * @author Jesse Glick
+ * PHP Unit 3.x constants.
+ * @author Tomas Mysik
  */
-public interface FileChangeSupportListener extends EventListener {
+public final class PhpUnitConstants {
+    // test files
+    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
 
-    void fileCreated(FileChangeSupportEvent event);
+    // cli options
+    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
+    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    // for older PHP Unit versions
+    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
 
-    void fileDeleted(FileChangeSupportEvent event);
+    // output files
+    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
 
-    void fileModified(FileChangeSupportEvent event);
-
+    private PhpUnitConstants() {
+    }
 }

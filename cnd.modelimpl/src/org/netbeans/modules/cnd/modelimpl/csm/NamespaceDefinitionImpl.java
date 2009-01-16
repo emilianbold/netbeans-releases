@@ -124,7 +124,6 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
-        @SuppressWarnings("unchecked")
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         insertIntoSortedDeclArray(uid);
