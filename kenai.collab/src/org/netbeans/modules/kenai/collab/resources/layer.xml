@@ -16,6 +16,7 @@
         <folder name="Window">
             <file name="ChatAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-collab-chat-ui-ChatAction.instance"/>
+                <attr name="position" intvalue="918"/>
             </file>
         </folder>
     </folder>
@@ -26,6 +27,7 @@
         <folder name="Modes">
             <folder name="rightSlidingSide">
                 <file name="ChatTopComponent.wstcref" url="ChatTopComponentWstcref.xml"/>
+                <attr name="position" intvalue="100"/>
             </folder>
         </folder>
     </folder>
