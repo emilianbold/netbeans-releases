@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -66,6 +67,8 @@ import org.openide.util.Lookup;
  * @author Radek Matous, Tomas Mysik
  */
 public class RunScript {
+    protected static final Logger LOGGER = Logger.getLogger(RunScript.class.getName());
+
     protected final PhpProject project;
     protected final PhpProgram program;
     // can be null
@@ -74,12 +77,14 @@ public class RunScript {
     protected final ExternalProcessBuilder processBuilder;
     // can be null
     protected final FileObject sourceRoot;
+    // can be null
+    protected final FileObject runFile;
 
     public RunScript(PhpProject project) {
-        this(project, ProjectPropertiesSupport.getPhpInterpreter(project), null, null, null);
+        this(project, ProjectPropertiesSupport.getPhpInterpreter(project), null, null, null, null);
     }
 
-    public RunScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot) {
+    public RunScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot, FileObject runFile) {
         assert project != null;
         assert program != null;
 
@@ -88,6 +93,7 @@ public class RunScript {
         this.descriptor = descriptor;
         this.processBuilder = processBuilder;
         this.sourceRoot = sourceRoot != null ? sourceRoot : ProjectPropertiesSupport.getSourcesDirectory(project);
+        this.runFile = runFile;
     }
 
     public void run() {
@@ -106,10 +112,10 @@ public class RunScript {
         return new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
 
-                FileObject scriptFo = getStartFile(context);
-                final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
-
+                final FileObject runFo = getRunFile(context);
+                final File scriptFile = runFo != null ? FileUtil.toFile(runFo) : null;
                 if (!program.isValid() || scriptFile == null) {
+                    LOGGER.info(String.format("Program is not valid or no run file found (%s, %s)", program, scriptFile));
                     return new Cancellable() {
                         public boolean cancel() {
                             return true;
@@ -156,14 +162,14 @@ public class RunScript {
                 .postExecution(redirector);
     }
 
-    protected FileObject getStartFile(Lookup context) {
-        FileObject startFile = null;
-        if (context == null) {
-            startFile = CommandUtils.fileForProject(project, sourceRoot);
-        } else {
-            startFile = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
+    protected FileObject getRunFile(Lookup context) {
+        if (runFile != null) {
+            return runFile;
         }
-        return startFile;
+        if (context == null) {
+            return CommandUtils.fileForProject(project, sourceRoot);
+        }
+        return CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
     }
 
     protected ExternalProcessBuilder getProcessBuilder(PhpProgram program, File scriptFile) {

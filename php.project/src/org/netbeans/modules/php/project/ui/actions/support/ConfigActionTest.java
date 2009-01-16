@@ -134,11 +134,16 @@ public class ConfigActionTest extends ConfigAction {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must be known already";
 
+        FileObject runFile = null;
+        if (context == null) {
+            runFile = testDirectory;
+        }
+
         // ugly :/
         if (debug) {
-            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
+            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
         } else {
-            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
+            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
         }
     }
 
