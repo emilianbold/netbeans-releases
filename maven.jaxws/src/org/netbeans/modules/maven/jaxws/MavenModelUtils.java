@@ -266,6 +266,15 @@ public final class MavenModelUtils {
         return null;
     }
 
+    private static POMExtensibilityElement findElementForValue(List<POMExtensibilityElement> elems, String value) {
+        for (POMExtensibilityElement e : elems) {
+            if (value.equals(e.getElementText())) {
+                return e;
+            }
+        }
+        return null;
+    }
+
     public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath) {
         POMModel model = plugin.getModel();
         assert model.isIntransaction();
@@ -307,21 +316,30 @@ public final class MavenModelUtils {
             for (PluginExecution exec : executions) {
                 if (execId.equals(exec.getId())) {
                     Configuration config = exec.getConfiguration();
+                    if (config != null) {
+                        QName qname = POMQName.createQName("bindingDirectory", model.getPOMQNames().isNSAware()); //NOI18N
+                        if (config.getChildElementText(qname) == null) {
+                            POMExtensibilityElement bindingDir = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingDir.setElementText("${basedir}/src/jaxws-bindings");
+                            config.addExtensibilityElement(bindingDir);
+                        }
+                        POMExtensibilityElement bindingFiles =
+                                findChild(config.getConfigurationElements(), "bindingFiles"); //NOI18N
+                        if (bindingFiles == null) {
+                            qname = POMQName.createQName("bindingFiles", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFiles = model.getFactory().createPOMExtensibilityElement(qname);
+                            config.addExtensibilityElement(bindingFiles);
+                        }
 
-                    QName qname = POMQName.createQName("bindingDirectory", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingDir = model.getFactory().createPOMExtensibilityElement(qname);
-                    bindingDir.setElementText("${basedir}/src/jaxws-bindings");
-                    config.addExtensibilityElement(bindingDir);
-
-                    qname = POMQName.createQName("bindingFiles", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingFiles = model.getFactory().createPOMExtensibilityElement(qname);
-                    config.addExtensibilityElement(bindingFiles);
-
-                    qname = POMQName.createQName("bindingFile", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingFile = model.getFactory().createPOMExtensibilityElement(qname);
-                    bindingFile.setElementText(bindingFilePath);
-                    bindingFiles.addExtensibilityElement(bindingFile);
-
+                        POMExtensibilityElement bindingFile =
+                                findElementForValue(bindingFiles.getExtensibilityElements(), bindingFilePath);
+                        if (bindingFile == null) {
+                            qname = POMQName.createQName("bindingFile", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFile = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingFile.setElementText(bindingFilePath);
+                            bindingFiles.addExtensibilityElement(bindingFile);
+                        }
+                    }
                     break;
                 }
             }
