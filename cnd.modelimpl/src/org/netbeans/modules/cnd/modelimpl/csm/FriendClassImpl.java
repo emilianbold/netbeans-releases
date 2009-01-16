@@ -161,7 +161,6 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
 
-    @SuppressWarnings("unchecked")
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

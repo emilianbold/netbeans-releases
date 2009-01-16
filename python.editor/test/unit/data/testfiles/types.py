@@ -18,4 +18,8 @@ x = Other()
 y = 5
 z = "str"
 
+# Type assertions
+assert isinstanceof(s, basestring)
+s.i
+
 #SECOND_CARET_POS

@@ -146,7 +146,7 @@ public class ConnectAction extends BaseAction {
             String user = dbcon.getUser();
             String pwd = dbcon.getPassword();
            
-            boolean remember = connector.getRememberPassword();
+            boolean remember = dbcon.rememberPassword();
 
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
@@ -244,7 +244,7 @@ public class ConnectAction extends BaseAction {
                                 realDbcon.setRememberPassword(dbcon.rememberPassword());
                             }
                             
-                            connector.setRememberPassword(basePanel.rememberPassword());
+                            dbcon.setRememberPassword(basePanel.rememberPassword());
 
                             if (dlg != null) {
                                 dlg.close();
@@ -290,7 +290,7 @@ public class ConnectAction extends BaseAction {
                                         realDbcon.setRememberPassword(
                                                 basePanel.rememberPassword());
                                     }
-                                    connector.setRememberPassword(basePanel.rememberPassword());
+                                    dbcon.setRememberPassword(basePanel.rememberPassword());
                                     
                                     if (dlg != null)
                                         dlg.close();
@@ -319,7 +319,7 @@ public class ConnectAction extends BaseAction {
 
                 dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener, changeTabListener);  // NOI18N
                 dlg.setVisible(true);
-            } else // without dialog with connection data (username, password), just with progress dlg
+            } else { // without dialog with connection data (username, password), just with progress dlg
                 try {
                     DialogDescriptor descriptor = null;
                     ProgressHandle progress = null;
@@ -395,6 +395,9 @@ public class ConnectAction extends BaseAction {
                     // or password.
                     showDialog(dbcon, true);
                 }
+            }
+
+            dbcon.removeExceptionListener(excListener);
         }
 
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {

@@ -123,7 +123,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
     void applyChanges() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         for (int i = 0; i < newExtenders.size(); i++) {
-            ((WebModuleExtender) newExtenders.get(i)).extend(webModule);
+            newExtenders.get(i).extend(webModule);
         }
 
         // ui logging of the added frameworks
@@ -283,7 +283,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 }
                 else
                     for (int j = 0; j < usedFrameworks.size(); j++)
-                        if (!((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+                        if (! usedFrameworks.get(j).getName().equals(framework.getName())) {
                             usedFrameworks.add(framework);
                             added = true;
                             break;

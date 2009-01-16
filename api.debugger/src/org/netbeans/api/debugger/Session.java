@@ -45,9 +45,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.spi.debugger.ContextProvider;
 
 
@@ -152,10 +154,10 @@ public final class Session implements ContextProvider {
     private String              currentLanguage;
     private String[]            languages;
     private DebuggerEngine[]    engines;
-//    private Listener            listener;
     private PropertyChangeSupport pcs;
     private Lookup              lookup;
     Lookup                      privateLookup;
+    private Map<DebuggerEngine, Lookup> enginesLookups = new HashMap<DebuggerEngine, Lookup>();
 
     
     // initialization ..........................................................
@@ -285,7 +287,7 @@ public final class Session implements ContextProvider {
      *
      * @return DebuggerEngine registerred for given language or null
      */
-    public DebuggerEngine getEngineForLanguage (String language) {
+    public synchronized DebuggerEngine getEngineForLanguage (String language) {
         int i, k = languages.length;
         for (i = 0; i < k; i++)
             if (languages [i].equals (language))
@@ -301,19 +303,30 @@ public final class Session implements ContextProvider {
      * @see org.netbeans.spi.debugger.DebuggerEngineProvider
      */
     public void setCurrentLanguage (String language) {
-        int i, k = languages.length;
-        for (i = 0; i < k; i++) {
-            if (language.equals (languages [i])) {
-                Object oldL = currentLanguage;
-                currentLanguage = language;
-                currentDebuggerEngine = engines [i];
-                pcs.firePropertyChange (
-                    PROP_CURRENT_LANGUAGE,
-                    oldL, 
-                    currentLanguage
-                );
+        Object oldL = null;
+        int i, k;
+        synchronized (this) {
+            if (language.equals(currentLanguage)) {
+                return ;
+            }
+            k = languages.length;
+            for (i = 0; i < k; i++) {
+                if (language.equals (languages [i])) {
+                    oldL = currentLanguage;
+                    currentLanguage = language;
+                    currentDebuggerEngine = engines [i];
+                    break;
+                }
             }
         }
+        if (i < k) { // was set
+            pcs.firePropertyChange (
+                PROP_CURRENT_LANGUAGE,
+                oldL,
+                language
+            );
+        }
+
     }
 
     
@@ -327,100 +340,184 @@ public final class Session implements ContextProvider {
         String language,
         DebuggerEngine engine
     ) {
-        // is pair already added?
-        int i, k = languages.length;
-        for (i = 0; i < k; i++)
-            if (language.equals (languages [i])) {
-                engines [i] = engine;
-                return;
+        Object oldL;
+        String[] newLanguages;
+        boolean fireCurrentLanguage = false;
+        synchronized (this) {
+            // is pair already added?
+            int i, k = languages.length;
+            for (i = 0; i < k; i++)
+                if (language.equals (languages [i])) {
+                    engines [i] = engine;
+                    return;
+                }
+
+            // add pair
+            newLanguages = new String [languages.length + 1];
+            DebuggerEngine[] newEngines = new DebuggerEngine [engines.length + 1];
+            System.arraycopy (languages, 0, newLanguages, 0, languages.length);
+            System.arraycopy (engines, 0, newEngines, 0, engines.length);
+            newLanguages [languages.length] = language;
+            newEngines [engines.length] = engine;
+            oldL = languages;
+            languages = newLanguages;
+            engines = newEngines;
+            Lookup newCompoundLookup = new Lookup.Compound(lookup, engine.getLookup());
+            lookup = newCompoundLookup;
+            enginesLookups.put(engine, engine.getLookup());
+            if (currentLanguage == null) {
+                currentLanguage = language;
+                currentDebuggerEngine = engine;
+                fireCurrentLanguage = true;
             }
-        
-        // add pair
-        String[] newLanguages = new String [languages.length + 1];
-        DebuggerEngine[] newEngines = new DebuggerEngine [engines.length + 1];
-        System.arraycopy (languages, 0, newLanguages, 0, languages.length);
-        System.arraycopy (engines, 0, newEngines, 0, engines.length);
-        newLanguages [languages.length] = language;
-        newEngines [engines.length] = engine;
-        Object oldL = languages;
-        languages = newLanguages;
-        engines = newEngines;
+        }
         DebuggerManager.getDebuggerManager ().addEngine (engine);
         pcs.firePropertyChange (
             PROP_SUPPORTED_LANGUAGES,
             oldL,
-            languages
+            newLanguages
         );
-//        engine.addEngineListener (
-//            DebuggerEngineListener.PROP_ACTION_PERFORMED,
-//            listener
-//        );
-        if (currentLanguage == null) {
-            setCurrentLanguage (language);
+        if (fireCurrentLanguage) {
+            pcs.firePropertyChange (
+                PROP_CURRENT_LANGUAGE,
+                null,
+                language
+            );
         }
     }
     
     void removeEngine (
         DebuggerEngine engine
     ) {
-        if (engines.length == 0) return;
-        int i, k = engines.length;
-        ArrayList newLanguages = new ArrayList ();
-        ArrayList newEngines = new ArrayList ();
-        for (i = 0; i < k; i++)
-            if (!engine.equals (engines [i])) {
-                newLanguages.add (languages [i]);
-                newEngines.add (engines [i]);
+        String[] oldL;
+        String[] newL;
+        String oldCurrentL = null;
+        String newCurrentL = null;
+        synchronized (this) {
+            if (engines.length == 0) return;
+            int i, k = engines.length;
+            newL = new String[k - 1];
+            DebuggerEngine[] newE = new DebuggerEngine[k - 1];
+            int j = 0;
+            for (i = 0; i < k; i++) {
+                if (!engine.equals (engines [i])) {
+                    if (j == (k - 1)) {
+                        // The engine is not there. Nothing to remove.
+                        return ;
+                    }
+                    newL[j] = languages [i];
+                    newE[j] = engines [i];
+                    j++;
+                } else {
+                    if (languages[i].equals(currentLanguage)) {
+                        // The current language needs to be reset
+                        oldCurrentL = currentLanguage;
+                        if (i > 0) {
+                            currentLanguage = languages[0];
+                        } else if (i < (k - 1)) {
+                            currentLanguage = languages[i + 1];
+                        } else {
+                            currentLanguage = null;
+                        }
+                        newCurrentL = currentLanguage;
+                    }
+                }
             }
-        String[] oldL = languages;
-        languages = (String[]) newLanguages.toArray 
-            (new String [newLanguages.size ()]);
-        engines = (DebuggerEngine[]) newEngines.toArray 
-            (new DebuggerEngine [newEngines.size ()]);
+            removeFromLookup(enginesLookups.remove(engine));
+            oldL = languages;
+            languages = newL;
+            engines = newE;
+        }
         DebuggerManager.getDebuggerManager ().removeEngine (engine);
         
         pcs.firePropertyChange (
             PROP_SUPPORTED_LANGUAGES,
             oldL,
-            languages
+            newL
         );
+        if (oldCurrentL != newCurrentL) {
+            pcs.firePropertyChange (
+                PROP_CURRENT_LANGUAGE,
+                oldCurrentL,
+                newCurrentL
+            );
+        }
     }
     
     void removeLanguage (
         String language,
         DebuggerEngine engine
     ) {
-        int i, k = languages.length;
-        for (i = 0; i < k; i++)
-            if (language.equals (languages [i])) {
-                if (engines [i] != engine)
-                    throw new IllegalArgumentException ();
-                break;
+        Object oldL;
+        String[] newLanguages;
+        synchronized (this) {
+            int i, k = languages.length;
+            for (i = 0; i < k; i++)
+                if (language.equals (languages [i])) {
+                    if (engines [i] != engine)
+                        throw new IllegalArgumentException ();
+                    break;
+                }
+            if (i >= k) return;
+
+            newLanguages = new String [k - 1];
+            DebuggerEngine[] newEngines = new DebuggerEngine [k - 1];
+            if (i > 0) {
+                System.arraycopy (languages, 0, newLanguages, 0, i);
+                System.arraycopy (engines, 0, newEngines, 0, i);
             }
-        if (i >= k) return;
-        
-        String[] newLanguages = new String [k - 1];
-        DebuggerEngine[] newEngines = new DebuggerEngine [k - 1];
-        if (i > 0) {
-            System.arraycopy (languages, 0, newLanguages, 0, i);
-            System.arraycopy (engines, 0, newEngines, 0, i);
+            System.arraycopy (languages, i + 1, newLanguages, i, k - i - 1);
+            System.arraycopy (engines, i + 1, newEngines, i, k - i - 1);
+            oldL = languages;
+            languages = newLanguages;
+            engines = newEngines;
+
+            k = engines.length;
+            for (i = 0; i < k; i++)
+                if (engines [i] == engine) {
+                    engine = null;
+                    break;
+                }
         }
-        System.arraycopy (languages, i + 1, newLanguages, i, k - i - 1);
-        System.arraycopy (engines, i + 1, newEngines, i, k - i - 1);
-        Object oldL = languages;
-        languages = newLanguages;
-        engines = newEngines;
         pcs.firePropertyChange (
             PROP_SUPPORTED_LANGUAGES,
             oldL,
-            languages
+            newLanguages
         );
-        
-        k = engines.length;
-        for (i = 0; i < k; i++)
-            if (engines [i] == engine)
-                return;
-        DebuggerManager.getDebuggerManager ().removeEngine (engine);
+
+        if (engine != null) {
+            DebuggerManager.getDebuggerManager ().removeEngine (engine);
+        }
+    }
+
+    private void removeFromLookup(Lookup engineLookup) {
+        boolean [] wasRemovedPtr = new boolean[] { false };
+        Lookup newLookup = removeFromLookup(lookup, engineLookup, wasRemovedPtr);
+        if (wasRemovedPtr[0]) {
+            lookup = newLookup;
+        }
+    }
+
+    private Lookup removeFromLookup(Lookup lookup, Lookup engineLookup, boolean[] wasRemovedPtr) {
+        if (engineLookup == null || !(lookup instanceof Lookup.Compound)) {
+            return lookup;
+        }
+        Lookup.Compound cl = (Lookup.Compound) lookup;
+        if (cl.l2 == engineLookup) {
+            wasRemovedPtr[0] = true;
+            return (Lookup) cl.l1;
+        } else {
+            if (!(cl.l1 instanceof Lookup) || !(cl.l2 instanceof Lookup)) {
+                return lookup;
+            }
+            Lookup l1 = removeFromLookup((Lookup) cl.l1, engineLookup, wasRemovedPtr);
+            Lookup l2 = removeFromLookup((Lookup) cl.l2, engineLookup, wasRemovedPtr);
+            if (wasRemovedPtr[0]) {
+                return new Lookup.Compound(l1, l2);
+            } else {
+                return lookup;
+            }
+        }
     }
 
     /**
@@ -474,7 +571,7 @@ public final class Session implements ContextProvider {
     public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
         pcs.removePropertyChangeListener (propertyName, l);
     }
-    
+
 
     // innerclasses ............................................................
     

@@ -482,7 +482,6 @@ public class UIDUtilities {
             return (ProjectBase) projectUID.getObject();
         }
 
-        @SuppressWarnings("unchecked")
         /* package */ UnresolvedUIDBase(DataInput aStream) throws IOException {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }

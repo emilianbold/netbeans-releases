@@ -47,7 +47,10 @@ import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -156,7 +159,16 @@ class ClickableIcon extends JLabel implements MouseListener {
     
     private void invokeAction() {
         final boolean suspended = isThreadSupended;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor rp;
+        try {
+            JPDADebugger debugger = (JPDADebugger) jpdaThread.getClass().getMethod("getDebugger").invoke(jpdaThread);
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+            return ;
+        }
+        rp.post(new Runnable() {
             public void run() {
                 if (suspended) {
                     jpdaThread.resume();

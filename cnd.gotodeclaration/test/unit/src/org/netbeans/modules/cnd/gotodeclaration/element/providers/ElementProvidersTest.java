@@ -49,10 +49,8 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class ElementProvidersTest  extends BaseTestSuite  {
 
     public ElementProvidersTest() {
-        super("Model Services Impl");
-        
+        super("Model Services Impl");        
         addTestSuite(FuncVarElementProviderTestCase.class);
-        addTestSuite(MacroElementProviderTestCase.class);
     }
 
     public static Test suite() {

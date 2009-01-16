@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.debugger.gdb.models.WatchPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,21 +57,37 @@ public class ConditionsPanel extends JPanel {
     private GdbBreakpoint  breakpoint;
     
     /** Creates new form ConditionsPanel */
-    public ConditionsPanel(GdbBreakpoint breakpoint) {
+    public ConditionsPanel(final GdbBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         initComponents();
-        String condition = breakpoint.getCondition();
-        if (condition.length() > 0) {
-            cbCondition.setSelected(true);
-            tfCondition.setEnabled(true);
-            tfCondition.setText(condition);
+
+        tfConditionFieldForUI = new javax.swing.JTextField();
+        tfConditionFieldForUI.setEnabled(false);
+        tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        add(tfConditionFieldForUI, gridBagConstraints);
+
+        setCondition(breakpoint.getCondition());
+        setHitCount(breakpoint.getSkipCount());
+
+        int preferredHeight = tfConditionFieldForUI.getPreferredSize().height;
+        if (spCondition.getPreferredSize().height > preferredHeight) {
+            preferredHeight = spCondition.getPreferredSize().height;
+            tfConditionFieldForUI.setPreferredSize(new java.awt.Dimension(tfConditionFieldForUI.getPreferredSize().width, preferredHeight));
         }
-        int skipCount = breakpoint.getSkipCount();
-        if (skipCount > 0) {
-            cbSkipCount.setSelected(true);
-            tfSkipCount.setEnabled(true);
-            tfSkipCount.setText(Integer.toString(skipCount));
-        }
+
+        ActionListener editorPaneUpdated = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                tfCondition.setText(breakpoint.getCondition());
+            }
+        };
+        WatchPanel.setupContext(tfCondition, editorPaneUpdated);
     }
     
     public void ok() {
@@ -93,7 +112,9 @@ public class ConditionsPanel extends JPanel {
         if (show) {
             cbConditionActionPerformed(null);
         } else {
+            spCondition.setVisible(show);
             tfCondition.setVisible(show);
+            tfConditionFieldForUI.setVisible(show);
         }
     }
     
@@ -167,7 +188,8 @@ public class ConditionsPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         cbCondition = new javax.swing.JCheckBox();
-        tfCondition = new javax.swing.JTextField();
+        spCondition = new javax.swing.JScrollPane();
+        tfCondition = new javax.swing.JEditorPane();
         panelHitCountFilter = new javax.swing.JPanel();
         cbSkipCount = new javax.swing.JCheckBox();
         tfSkipCount = new javax.swing.JTextField();
@@ -190,15 +212,19 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbCondition, gridBagConstraints);
 
-        tfCondition.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.text")); // NOI18N
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TT_tfCondition")); // NOI18N
-        tfCondition.setEnabled(false);
+        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
+        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
+
+        tfCondition.setContentType(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.contentType")); // NOI18N
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.toolTipText")); // NOI18N
+        spCondition.setViewportView(tfCondition);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(tfCondition, gridBagConstraints);
+        add(spCondition, gridBagConstraints);
 
         panelHitCountFilter.setLayout(new java.awt.GridBagLayout());
 
@@ -249,18 +275,27 @@ private void cbSkipCountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
 private void cbConditionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbConditionActionPerformed
     boolean isSelected = cbCondition.isSelected();
-    tfCondition.setEnabled(isSelected);
     
     if (isSelected) {
+        spCondition.setVisible(true);
+        tfConditionFieldForUI.setVisible(false);
         tfCondition.requestFocusInWindow();
+    } else {
+        spCondition.setVisible(false);
+        tfConditionFieldForUI.setText(tfCondition.getText());
+        tfConditionFieldForUI.setVisible(true);
     }
+    revalidate();
+    repaint();
 }//GEN-LAST:event_cbConditionActionPerformed
     
+    private javax.swing.JTextField tfConditionFieldForUI;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbCondition;
     private javax.swing.JCheckBox cbSkipCount;
     private javax.swing.JPanel panelHitCountFilter;
-    private javax.swing.JTextField tfCondition;
+    private javax.swing.JScrollPane spCondition;
+    private javax.swing.JEditorPane tfCondition;
     private javax.swing.JTextField tfSkipCount;
     // End of variables declaration//GEN-END:variables
     

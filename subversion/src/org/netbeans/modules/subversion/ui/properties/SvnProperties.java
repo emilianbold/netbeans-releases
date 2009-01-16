@@ -180,7 +180,7 @@ public class SvnProperties implements ActionListener {
     }
 
     protected String getPropertyValue() {
-        return panel.getPropertyValue();
+        return panel.getPropertyValue().replaceAll("\r\n", "\n");
     }
 
     protected String getPropertyName() {
