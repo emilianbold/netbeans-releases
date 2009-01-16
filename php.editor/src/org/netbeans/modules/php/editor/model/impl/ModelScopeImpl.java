@@ -40,8 +40,8 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.ModelScope;
 import org.netbeans.modules.php.editor.model.PhpKind;

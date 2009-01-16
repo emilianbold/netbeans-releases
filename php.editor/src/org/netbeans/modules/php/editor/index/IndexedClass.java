@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 
 
 /**

@@ -40,8 +40,8 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**

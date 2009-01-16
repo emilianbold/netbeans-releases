@@ -38,10 +38,9 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 
 /**

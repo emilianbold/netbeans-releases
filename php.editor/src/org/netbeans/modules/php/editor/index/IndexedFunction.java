@@ -43,10 +43,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *

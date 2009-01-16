@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
