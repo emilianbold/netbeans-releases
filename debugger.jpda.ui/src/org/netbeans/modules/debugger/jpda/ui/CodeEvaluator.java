@@ -363,6 +363,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (result == null && resultView == null) {
+                    return ; // Ignore when nothing to display and nothing is initialized.
+                }
                 if (resultView == null) {
                     resultView = getResultViewInstance();
                 }
@@ -455,18 +458,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private void initResult(ResultView view) {
         javax.swing.JComponent tree = Models.createView (Models.EMPTY_MODEL);
-        Container hackedFCR = (Container) ((Container) ((Container) tree.getComponents()[0]).getComponents()[0]).getComponents()[0];
-        hackedFCR = (Container) tree.getComponents()[0];
-        try {
-            java.lang.reflect.Field treeTableField = hackedFCR.getClass().getSuperclass().getDeclaredField("treeTable");
-            treeTableField.setAccessible(true);
-            hackedFCR = (Container) treeTableField.get(hackedFCR);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        hackedFCR.setFocusCycleRoot(false);
-        hackedFCR.setFocusTraversalPolicy(null);
-        hackedFCR.setFocusTraversalPolicyProvider(false);
         view.add (tree, BorderLayout.CENTER);
         viewModelListener = new EvaluatorModelListener (
             tree

@@ -137,7 +137,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
         String path = getFileKey(file, true);
         MyFile newEntry;
-        CsmUID<CsmFile> uid = RepositoryUtils.put(impl);
+        CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
         newEntry = new MyFile(uid, state, path);
         MyFile old;
 

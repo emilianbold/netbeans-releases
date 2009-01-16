@@ -42,17 +42,17 @@ package org.netbeans.modules.cnd.refactoring.codegen;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,15 +60,31 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  */
 public final class CsmContext {
     private final CsmFile file;
-    private final int offset;
+    private final Document doc;
+    private final FileObject fo;
+
+    private final int startOffset;
+    private final int endOffset;
     private List<CsmObject> path = null;
     private CsmClass enclosingClass = null;
     private CsmNamespaceDefinition enclosingNS = null;
     private CsmFunction enclosingFun = null;
-    private CsmObject objectUnderOffset = null;
-    /*package*/CsmContext(CsmFile file, int offset) {
+    private CsmOffsetable objectUnderOffset = null;
+
+    public CsmContext(CsmFile file, FileObject fo, Document doc, int startOffset, int endOffset) {
         this.file = file;
-        this.offset = offset;
+        this.fo = fo;
+        this.doc = doc;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+    }
+
+    public FileObject getFileObject() {
+        return fo;
+    }
+
+    public Document getDocument() {
+        return doc;
     }
 
     public CsmFile getFile() {
@@ -80,9 +96,17 @@ public final class CsmContext {
         return path;
     }
 
+    public int getStartOffset() {
+        return startOffset;
+    }
+
+    public int getEndOffset() {
+        return endOffset;
+    }
+
     @Override
     public String toString() {
-        return "context: [" + file + ":" + offset + "]"; // NOI18N
+        return "context: [" + file + ":" + startOffset + ", " + endOffset + "]"; // NOI18N
     }
 
     public CsmClass getEnclosingClass() {
@@ -100,7 +124,7 @@ public final class CsmContext {
         return enclosingNS;
     }
 
-    public CsmObject getObjectUnderOffset() {
+    public CsmOffsetable getObjectUnderOffset() {
         initPath();
         return objectUnderOffset;
     }
@@ -119,9 +143,9 @@ public final class CsmContext {
                 if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
                     CsmOffsetable elem = (CsmOffsetable) csmScopeElement;
                     // stop if element starts after offset
-                    if (this.offset < elem.getStartOffset()) {
+                    if (this.startOffset < elem.getStartOffset()) {
                         break;
-                    } else if (this.offset < elem.getEndOffset()) {
+                    } else if (this.startOffset < elem.getEndOffset()) {
                         // offset is in element
                         cont = true;
                         path.add(elem);

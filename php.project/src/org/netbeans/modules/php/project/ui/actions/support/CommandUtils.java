@@ -120,7 +120,9 @@ public final class CommandUtils {
     public static PhpUnit getPhpUnit(boolean showCustomizer) {
         final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
         if (Utils.validatePhpUnit(phpUnitPath) != null) {
-            OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            if (showCustomizer) {
+                OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+            }
             return null;
         }
         return new PhpUnit(phpUnitPath);
@@ -136,11 +138,13 @@ public final class CommandUtils {
             return Collections.<FileObject>emptyList();
         }
 
-        final List<FileObject> files = new ArrayList<FileObject>();
+        final List<FileObject> files = new ArrayList<FileObject>(nodes.length);
         for (Node node : nodes) {
             FileObject fo = getFileObject(node);
-            assert fo != null : "A valid file object not found for node: " + node;
-            files.add(fo);
+            // #156939
+            if (fo != null) {
+                files.add(fo);
+            }
         }
         return files;
     }
@@ -162,10 +166,10 @@ public final class CommandUtils {
             return null;
         }
         fileObj = dataObj.getPrimaryFile();
-        if ((fileObj == null) || !fileObj.isValid()) {
-            return null;
+        if (fileObj != null && fileObj.isValid()) {
+            return fileObj;
         }
-        return fileObj;
+        return null;
     }
 
     /**
@@ -203,9 +207,10 @@ public final class CommandUtils {
      * @param context context to search in.
      * @return {@link FileObject}s for context.
      */
-    public static Collection<? extends FileObject> filesForContext(Lookup context) {
+    public static FileObject[] filesForContext(Lookup context) {
         assert context != null;
-        return context.lookupAll(FileObject.class);
+        Collection<? extends FileObject> files = context.lookupAll(FileObject.class);
+        return files.toArray(new FileObject[files.size()]);
     }
 
     /**
@@ -251,6 +256,7 @@ public final class CommandUtils {
      * @param context context to search in.
      * @param baseDirectory a directory that must be a parent folder of all the found {@link FileObject}s.
      * @return a <b>valid</b> {@link FileObject} for context or selected nodes and base directory or <code>null</code>.
+     * @see #fileForContextOrSelectedNodes(Lookup)
      */
     public static FileObject fileForContextOrSelectedNodes(Lookup context, FileObject baseDirectory) {
         assert baseDirectory != null;
@@ -259,6 +265,22 @@ public final class CommandUtils {
         FileObject[] files = filesForContext(context, baseDirectory);
         if (files == null || files.length == 0) {
             files = filesForSelectedNodes(baseDirectory);
+        }
+        return (files != null && files.length > 0) ? files[0] : null;
+    }
+
+    /**
+     * Get a <b>valid</b> {@link FileObject} for context or selected nodes.
+     * Return <code>null</code> if any {@link FileObject} is invalid.
+     * @param context context to search in.
+     * @return a <b>valid</b> {@link FileObject} for context or selected nodes or <code>null</code>.
+     * @see #fileForContextOrSelectedNodes(Lookup, FileObject)
+     */
+    public static FileObject fileForContextOrSelectedNodes(Lookup context) {
+
+        FileObject[] files = filesForContext(context);
+        if (files.length == 0) {
+            files = filesForSelectedNodes();
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -415,6 +437,10 @@ public final class CommandUtils {
         }
         arguments.append("XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
         return arguments.toString();
+    }
+
+    private static FileObject[] filterValidFiles(FileObject[] files, FileObject dir) {
+        return filterValidFiles(Arrays.asList(files), dir);
     }
 
     private static FileObject[] filterValidFiles(Collection<? extends FileObject> files, FileObject dir) {

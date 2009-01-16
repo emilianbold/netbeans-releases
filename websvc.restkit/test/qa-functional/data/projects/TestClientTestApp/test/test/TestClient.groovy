@@ -47,26 +47,26 @@ class TestClient extends DslContext {
 
             // CustomerDB
             // /html/body/div/div[2]/table/tbody/tr/td/span/div/a
-            UrlLink(uid: "customersdb", locator: "/div/div[2]/table/tbody/tr/td/span/div/a")
+            UrlLink(uid: "customersdb", locator: "//a[text() = \"CustomerDB\"]")
             // customers
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span/div/a
-            UrlLink(uid: "customers", locator: "/div/div[2]/table/tbody/tr/td/span[2]/span/div/a")
+            UrlLink(uid: "customers", locator: "//a[text() = \"customers\"]")
             // expander for customers
             // //*[@id="I1/customers/_1"]
             Image(uid: "customersExpander", locator: "//*[@id=\"I1/customers/_1\"]")
             // {customerId}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[2]/span/div/a
-            UrlLink(uid: "customerId", locator: "/div/div[2]/table/tbody/tr/td/span[2]/span[2]/span/div/a")
+            UrlLink(uid: "customerId", locator: "//td/span/span/span/div/a[text() = \"{customerId}\"]")
 
             // discountCodes
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[3]/div/a
-            UrlLink(uid: "discountCodes", locator: "/div/div[2]/table/tbody/tr/td/span[2]/span[3]/div/a")
+            UrlLink(uid: "discountCodes", locator: "//a[text() = \"discountCodes\"]")
             // expander for discountCodes
             // //*[@id="I1/discountCodes/_4"]
             Image(uid: "dcodesExpander", locator: "//*[@id=\"I1/discountCodes/_4\"]")
             // {discountCode}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[4]/span/div/a
-            UrlLink(uid: "discountCodeId", locator: "/div/div[2]/table/tbody/tr/td/span[2]/span[4]/span/div/a")
+            UrlLink(uid: "discountCodeId", locator: "//td/span/span/span/div/a[text() = \"{discountCode}\"]")
 
 
             // ------------------------------------------------------- test form
@@ -97,36 +97,36 @@ class TestClient extends DslContext {
 
             // tab view
             // //*[@id="tabtable"]
-            UrlLink(uid: "tableView", locator: "//*[@id=\"tabtable\"]")
+            UrlLink(uid: "tableView", clocator: [id: "tabtable"])
 
             // tab view content
             // //*[@id="tableContent"]
             // XXX - can contain a table....
-            Div(uid: "tableContent", locator: "//*[@id=\"tableContent\"]")
+            Div(uid: "tableContent", clocator: [id: "tableContent"])
 
             // raw view
             // //*[@id="tabraw"]
-            UrlLink(uid: "rawView", locator: "//*[@id=\"tabraw\"]")
+            UrlLink(uid: "rawView", clocator: [id: "tabraw"])
 
             // raw view content
             // //*[@id="rawContent"]
-            Div(uid: "rawContent", locator: "//*[@id=\"rawContent\"]")
+            Div(uid: "rawContent", clocator: [id: "rawContent"])
 
             // sub-resources
             // //*[@id="tabstructure"]
-            UrlLink(uid: "subresourcesView", locator: "//*[@id=\"tabstructure\"]")
+            UrlLink(uid: "subresourcesView", clocator: [id: "tabstructure"])
 
             // sub-resources content
             // //*[@id="structureInfo"]
-            Div(uid: "subresourcesContent", locator: "//*[@id=\"structureInfo\"]")
+            Div(uid: "subresourcesContent", clocator: [id: "structureInfo"])
 
             // monitor view
             // //*[@id="tabmonitor"]
-            UrlLink(uid: "monitorView", locator: "//*[@id=\"tabmonitor\"]")
+            UrlLink(uid: "monitorView", clocator: [id: "tabmonitor"])
 
             //monitor view content
             // //*[@id="monitorContent"]
-            Div(uid: "monitorContent", locator: "//*[@id=\"monitorContent\"]")
+            Div(uid: "monitorContent", clocator: [id: "monitorContent"])
 
         }
     }

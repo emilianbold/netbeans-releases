@@ -93,7 +93,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
     
     public void writeUID(CsmUID anUID, DataOutput aStream) throws IOException {
-        assert anUID == null || anUID instanceof SelfPersistent;
+        assert anUID == null || anUID instanceof SelfPersistent : anUID + ", " + anUID.getObject();
         super.writeSelfPersistent((SelfPersistent)anUID, aStream);
     }
 

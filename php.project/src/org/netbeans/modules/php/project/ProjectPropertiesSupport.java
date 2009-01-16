@@ -206,7 +206,7 @@ public final class ProjectPropertiesSupport {
                 }
                 break;
             case SCRIPT:
-                if (RunAsValidator.validateScriptFields(getPhpInterpreter(project).getInterpreter(),
+                if (RunAsValidator.validateScriptFields(getPhpInterpreter(project).getProgram(),
                         FileUtil.toFile(getSourcesDirectory(project)), null, getArguments(project)) != null) {
                     return false;
                 }

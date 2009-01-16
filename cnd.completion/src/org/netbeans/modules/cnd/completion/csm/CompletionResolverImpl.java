@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.csm.SymTabCache.CacheEntry;
@@ -220,7 +220,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 return;
             }
             if (fun != null) {
-                CsmUID uid = fun.getUID();
+                CsmUID uid = UIDs.get(fun);
                 //if (CsmKindUtilities.isMethodDeclaration(fun)) {
                 //    uid = ((CsmMethod)fun).getContainingClass().getUID();
                 //}
@@ -234,7 +234,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
                 CsmVariable var = (CsmVariable) context.getLastObject();
-                CsmUID uid = var.getUID();
+                CsmUID uid = UIDs.get(var);
                 //if (CsmKindUtilities.isField(var)) {
                 //    uid = ((CsmField)var).getContainingClass().getUID();
                 //}
