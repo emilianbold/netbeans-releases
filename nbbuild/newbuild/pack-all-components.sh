@@ -45,10 +45,6 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
 
-    cd $NB_ALL/nbbuild/netbeans
-    pack_component $DIST_DIR/zip/moduleclusters $NAME maven "maven*"
-    rm -rf maven*
-
     cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
