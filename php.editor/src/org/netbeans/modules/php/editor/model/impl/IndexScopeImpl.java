@@ -41,10 +41,10 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
@@ -68,9 +68,9 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     private PHPIndex index;
 
-    IndexScopeImpl(CompilationInfo info) {
+    IndexScopeImpl(ParserResult info) {
         super(info, "index", PhpKind.INDEX);//NOI18N
-        this.index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        this.index = PHPIndex.get(info);
     }
 
     IndexScopeImpl(PHPIndex idx) {
@@ -80,7 +80,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends TypeScopeImpl> getAllTypes() {
         List<TypeScopeImpl> retval = new ArrayList<TypeScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedClass) {
                 retval.add(new ClassScopeImpl(this, (IndexedClass) element));
             } else if (element instanceof IndexedInterface) {
@@ -91,10 +91,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends TypeScopeImpl> getTypes(String... queryName) {
-        return getTypes(NameKind.EXACT_NAME, queryName);
+        return getTypes(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends TypeScopeImpl> getTypes(NameKind nameKind, String... queryName) {
+    public List<? extends TypeScopeImpl> getTypes(QuerySupport.Kind nameKind, String... queryName) {
         List<TypeScopeImpl> retval = new ArrayList<TypeScopeImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -112,7 +112,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends ClassScopeImpl> getAllClasses() {
         List<ClassScopeImpl> retval = new ArrayList<ClassScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedClass) {
                 retval.add(new ClassScopeImpl(this, (IndexedClass) element));
             }
@@ -121,10 +121,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends ClassScopeImpl> getClasses(String... queryName) {
-        return getClasses(NameKind.EXACT_NAME, queryName);
+        return getClasses(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends ClassScopeImpl> getClasses(NameKind nameKind, String... queryName) {
+    public List<? extends ClassScopeImpl> getClasses(QuerySupport.Kind nameKind, String... queryName) {
         List<ClassScopeImpl> retval = new ArrayList<ClassScopeImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -138,7 +138,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends InterfaceScopeImpl> getAllInterfaces() {
         List<InterfaceScopeImpl> retval = new ArrayList<InterfaceScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedInterface) {
                 retval.add(new InterfaceScopeImpl(this, (IndexedInterface) element));
             }
@@ -147,10 +147,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends InterfaceScopeImpl> getInterfaces(String... queryName) {
-        return getInterfaces(NameKind.EXACT_NAME, queryName);
+        return getInterfaces(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends InterfaceScopeImpl> getInterfaces(NameKind nameKind, String... queryName) {
+    public List<? extends InterfaceScopeImpl> getInterfaces(QuerySupport.Kind nameKind, String... queryName) {
         List<InterfaceScopeImpl> retval = new ArrayList<InterfaceScopeImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -164,7 +164,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends ConstantElementImpl> getAllConstants() {
         List<ConstantElementImpl> retval = new ArrayList<ConstantElementImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedConstant) {
                 retval.add(new ConstantElementImpl(this, (IndexedConstant) element));
             }
@@ -173,10 +173,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends ConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
+        return getConstants(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends ConstantElementImpl> getConstants(NameKind nameKind, String... queryName) {
+    public List<? extends ConstantElementImpl> getConstants(QuerySupport.Kind nameKind, String... queryName) {
         List<ConstantElementImpl> retval = new ArrayList<ConstantElementImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -190,7 +190,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends FunctionScopeImpl> getAllFunctions() {
         List<FunctionScopeImpl> retval = new ArrayList<FunctionScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedFunction) {
                 retval.add(new FunctionScopeImpl(this, (IndexedFunction) element));
             }
@@ -199,10 +199,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends FunctionScopeImpl> getFunctions(String... queryName) {
-        return getFunctions(NameKind.EXACT_NAME, queryName);
+        return getFunctions(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends FunctionScopeImpl> getFunctions(NameKind nameKind, String... queryName) {
+    public List<? extends FunctionScopeImpl> getFunctions(QuerySupport.Kind nameKind, String... queryName) {
         List<FunctionScopeImpl> retval = new ArrayList<FunctionScopeImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -216,7 +216,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
 
     public List<? extends VariableName> getAllVariables() {
         List<VariableNameImpl> retval = new ArrayList<VariableNameImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
+        for (IndexedElement element : getIndex().getAllTopLevel(null, "", QuerySupport.Kind.PREFIX)) {
             if (element instanceof IndexedVariable) {
                 retval.add(new VariableNameImpl(this, (IndexedVariable) element));
             }
@@ -225,10 +225,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends VariableName> getVariables(String... queryName) {
-        return getVariables(NameKind.EXACT_NAME, queryName);
+        return getVariables(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends VariableName> getVariables(NameKind nameKind, String... queryName) {
+    public List<? extends VariableName> getVariables(QuerySupport.Kind nameKind, String... queryName) {
         List<VariableNameImpl> retval = new ArrayList<VariableNameImpl>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -267,7 +267,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
         //if (cls == null) return Collections.emptyList();
         //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, cls.getName(), queryName, NameKind.EXACT_NAME);
+        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, cls.getName(), queryName, QuerySupport.Kind.EXACT);
         for (IndexedConstant idxConst : flds) {
             //assert cls.getName().equals(idxConst.getIn());
             ClzConstantElementImpl elementImpl = new ClzConstantElementImpl(cls, idxConst);
@@ -281,7 +281,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
         //if (cls == null) return Collections.emptyList();
         //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getFields(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        Collection<IndexedConstant> flds = getIndex().getFields(null, cls.getName(), queryName, QuerySupport.Kind.EXACT, Modifier.PUBLIC | Modifier.PROTECTED);
         for (IndexedConstant idxConst : flds) {
             FieldElementImpl fei = new FieldElementImpl(cls, idxConst);
             retval.add(fei);
@@ -294,7 +294,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
         //if (cls == null) return Collections.emptyList();
         //assert cls.getName().equals(className);
-        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, QuerySupport.Kind.EXACT, Modifier.PUBLIC | Modifier.PROTECTED);
         for (IndexedFunction idxFunc : methods) {
             MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
             retval.add(msi);
@@ -303,7 +303,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
 
-    public List<? extends MethodScopeImpl> getMethods(final NameKind nameKind, TypeScopeImpl cls, final String queryName, final int... modifiers) {
+    public List<? extends MethodScopeImpl> getMethods(final QuerySupport.Kind nameKind, TypeScopeImpl cls, final String queryName, final int... modifiers) {
         List<MethodScopeImpl> retval = new ArrayList<MethodScopeImpl>();
         PhpModifiers attribs = new PhpModifiers(modifiers);
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
@@ -323,14 +323,14 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends MethodScopeImpl> getMethods(TypeScopeImpl cls, final String queryName, final int... modifiers) {
-        return getMethods(NameKind.EXACT_NAME, cls, queryName, modifiers);
+        return getMethods(QuerySupport.Kind.EXACT, cls, queryName, modifiers);
     }
 
     public List<? extends MethodScopeImpl> getMethods(TypeScopeImpl cls, final int... modifiers) {
-        return getMethods(NameKind.PREFIX, cls, "", modifiers);
+        return getMethods(QuerySupport.Kind.PREFIX, cls, "", modifiers);
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, TypeScopeImpl cls, final String... queryName) {
+    public List<? extends ClzConstantElementImpl> getConstants(final QuerySupport.Kind nameKind, TypeScopeImpl cls, final String... queryName) {
         List<ClzConstantElementImpl> retval = new ArrayList<ClzConstantElementImpl>();
         for (String name : queryName) {
             Collection<IndexedConstant> constants = getIndex().getClassConstants(null, cls.getName(), name, nameKind);
@@ -344,10 +344,10 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends ClzConstantElementImpl> getConstants(TypeScopeImpl aThis, final String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, aThis, queryName);
+        return getConstants(QuerySupport.Kind.EXACT, aThis, queryName);
     }
 
-    public List<? extends FieldElementImpl> getFields(final NameKind nameKind, ClassScopeImpl cls, final String queryName, final int... modifiers) {
+    public List<? extends FieldElementImpl> getFields(final QuerySupport.Kind nameKind, ClassScopeImpl cls, final String queryName, final int... modifiers) {
         List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
         PhpModifiers attribs = new PhpModifiers(modifiers);
         String name = (queryName.startsWith("$")) //NOI18N
@@ -362,7 +362,7 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
     }
 
     public List<? extends FieldElementImpl> getFields(ClassScopeImpl aThis, final String queryName, final int... modifiers) {
-        return getFields(NameKind.EXACT_NAME, aThis, queryName, modifiers);
+        return getFields(QuerySupport.Kind.EXACT, aThis, queryName, modifiers);
     }
 
     @Override

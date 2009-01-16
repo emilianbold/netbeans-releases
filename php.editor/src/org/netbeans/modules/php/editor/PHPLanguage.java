@@ -39,23 +39,20 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
@@ -70,8 +67,6 @@ import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -116,11 +111,6 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new PHPCodeCompletion();
-    }
-
-    @Override
-    public Indexer getIndexer() {
-        return new PHPIndexer();
     }
 
     @Override

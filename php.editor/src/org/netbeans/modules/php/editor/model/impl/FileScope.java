@@ -45,8 +45,8 @@ import java.util.HashMap;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -84,7 +84,7 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
         return retval;
     }
 
-    FileScope(CompilationInfo info) {
+    FileScope(ParserResult info) {
         super(info, "program", PhpKind.PROGRAM);//NOI18N
         indexScope = (IndexScopeImpl) ModelVisitor.getIndexScope(info);
         cachedModelSupport = new CachedModelSupport(this);
@@ -140,10 +140,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends ClassScopeImpl> getClasses(final String... queryName) {
-        return getClasses(NameKind.EXACT_NAME, queryName);
+        return getClasses(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends ClassScopeImpl> getClasses(final NameKind nameKind, final String... queryName) {
+    public List<? extends ClassScopeImpl> getClasses(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -158,10 +158,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends InterfaceScopeImpl> getInterfaces(final String... queryName) {
-        return getInterfaces(NameKind.EXACT_NAME, queryName);
+        return getInterfaces(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends InterfaceScopeImpl> getInterfaces(final NameKind nameKind, final String... queryName) {
+    public List<? extends InterfaceScopeImpl> getInterfaces(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -176,10 +176,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends ConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
+        return getConstants(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends ConstantElementImpl> getConstants(final NameKind nameKind, final String... queryName) {
+    public List<? extends ConstantElementImpl> getConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -194,10 +194,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends FunctionScopeImpl> getFunctions(final String... queryName) {
-        return getFunctions(NameKind.EXACT_NAME, queryName);
+        return getFunctions(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends FunctionScopeImpl> getFunctions(final NameKind nameKind, final String... queryName) {
+    public List<? extends FunctionScopeImpl> getFunctions(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -215,10 +215,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends TypeScopeImpl> getTypes(String... queryName) {
-        return getTypes(NameKind.EXACT_NAME, queryName);
+        return getTypes(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends TypeScopeImpl> getTypes(final NameKind nameKind, final String... queryName) {
+    public List<? extends TypeScopeImpl> getTypes(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getAllTypes(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -235,7 +235,7 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
         return getVariablesImpl(queryName);
     }
 
-    public List<? extends VariableName> getVariables(final NameKind nameKind, final String... queryName) {
+    public List<? extends VariableName> getVariables(final QuerySupport.Kind nameKind, final String... queryName) {
         return getVariablesImpl(nameKind, queryName);
     }
 
@@ -244,10 +244,10 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     public List<? extends VariableNameImpl> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(NameKind.EXACT_NAME, queryName);
+        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends VariableNameImpl> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public List<? extends VariableNameImpl> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {

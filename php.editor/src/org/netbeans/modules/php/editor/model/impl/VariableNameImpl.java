@@ -42,7 +42,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -67,6 +67,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
+
     VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
         addElement(retval);

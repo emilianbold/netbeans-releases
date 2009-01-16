@@ -48,8 +48,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -156,14 +156,14 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
             public boolean isAccepted(ModelElementImpl element) {
                 return element.getPhpKind().equals(PhpKind.FIELD) &&
-                        ModelElementImpl.nameKindMatch(element.getName(), NameKind.EXACT_NAME, queryName) &&
+                        ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName) &&
                         (modifiers.length == 0 ||
                         (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
             }
         });
     }
 
-    public List<? extends FieldElementImpl> getFields(final NameKind nameKind, final String queryName, final int... modifiers) {
+    public List<? extends FieldElementImpl> getFields(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers) {
         IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
         if (indexScopeImpl != null) {
             return indexScopeImpl.getFields(nameKind, this, queryName, modifiers);
@@ -193,7 +193,7 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
         interfaces.addAll(getInterfaces());
         while(clz != null) {
-            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
@@ -222,7 +222,7 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
                     String fldName = (queryName.startsWith("$")) //NOI18N
                             ? queryName.substring(1) : queryName;
 
-                    Collection<IndexedConstant> indexedConstants = index.getFields(null, clz.getName(), fldName, NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                    Collection<IndexedConstant> indexedConstants = index.getFields(null, clz.getName(), fldName, QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
                     for (IndexedConstant indexedConstant : indexedConstants) {
                         allFields.add(new FieldElementImpl((ClassScopeImpl) clz,indexedConstant));
                     }

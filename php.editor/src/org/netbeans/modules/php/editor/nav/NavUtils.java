@@ -44,7 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -63,7 +63,7 @@ import org.openide.loaders.DataObject;
  */
 public class NavUtils {
 
-    public static List<ASTNode> underCaret(CompilationInfo info, final int offset) {
+    public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
             private Stack<ASTNode> result;
             public Result(Stack<ASTNode> result) {
@@ -110,7 +110,7 @@ public class NavUtils {
         return value.substring(1, value.length() - 1);
     }
 
-    public static FileObject resolveInclude(CompilationInfo info, Include include) {
+    public static FileObject resolveInclude(ParserResult info, Include include) {
         Expression e = include.getExpression();
 
         if (e instanceof ParenthesisExpression) {
@@ -131,12 +131,12 @@ public class NavUtils {
         return null;
     }
 
-    private static FileObject resolveRelativeFile(CompilationInfo info, String name) {
+    private static FileObject resolveRelativeFile(ParserResult info, String name) {
         while (true) {
             FileObject result;
 
 //            if (psp != null) {
-                result = PhpSourcePath.resolveFile(info.getFileObject().getParent(), name);
+                result = PhpSourcePath.resolveFile(info.getSnapshot().getSource().getFileObject().getParent(), name);
 //            } else {
 //                result = info.getFileObject().getParent().getFileObject(name);
 //            }

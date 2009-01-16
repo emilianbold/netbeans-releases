@@ -40,9 +40,9 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -161,7 +161,8 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
 
         Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
-                context.compilationInfo.getFileObject(), range, null, 500);
+                context.parserResult.getSnapshot().getSource().getFileObject(),
+                range, null, 500);
 
         addResult(hint);
         super.visit(node);

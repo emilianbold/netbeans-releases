@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.nav;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -47,15 +46,17 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -84,7 +85,7 @@ import org.openide.util.Exceptions;
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
 
-    public DeclarationLocation findDeclaration(CompilationInfo info, int caretOffset) {
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
     }
 
@@ -100,33 +101,30 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 Token<?> t = ts.token();
 
                 if (t.id() == PHPTokenId.PHP_VARIABLE) {
-                    return new OffsetRange(ts.offset()+1, ts.offset() + t.length());
+                    return new OffsetRange(ts.offset() + 1, ts.offset() + t.length());
                 } else if (t.id() == PHPTokenId.PHP_STRING) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
 
-                if (t.id() == PHPTokenId.PHPDOC_COMMENT ||  t.id() == PHPTokenId.PHP_COMMENT) {
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT || t.id() == PHPTokenId.PHP_COMMENT) {
                     inDocComment = true;
                     break;
-                } 
+                }
             }
         }
 
         //XXX: to find out includes, we need to parse - but this means we are parsing on mouse move in AWT!:
         FileObject file = NavUtils.getFile(doc);
+        final OffsetRange[] result = new OffsetRange[1];
 
-        if (file != null) {
-            SourceModel model = SourceModelFactory.getInstance().getModel(file);
-            final OffsetRange[] result = new OffsetRange[1];
+        if (!inDocComment) {
+            if (file != null) {
+                try {
+                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
 
-            try {
-                if (!inDocComment) {
-                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationInfo parameter) throws Exception {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                             List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
 
                             if (path.size() == 0) {
@@ -156,15 +154,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 }
                             }
                         }
-                    }, true);
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                else {
-                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+            } else {
+                try {
+                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
 
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationInfo parameter) throws Exception {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                             Program program = Utils.getRoot(parameter);
                             Comment comment = null;
                             for (Comment comm : program.getComments()) {
@@ -177,10 +177,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 }
                             }
                             if (comment != null && comment instanceof PHPDocBlock) {
-                                PHPDocBlock docComment = (PHPDocBlock)comment;
+                                PHPDocBlock docComment = (PHPDocBlock) comment;
                                 ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docComment, caretOffset);
                                 PHPDocNode node = null;
-                                if (hierarchy.length > 0 ) {
+                                if (hierarchy.length > 0) {
                                     if (hierarchy[0] instanceof PHPDocTypeTag) {
                                         for (PHPDocNode type : ((PHPDocTypeTag) hierarchy[0]).getTypes()) {
                                             if (type.getStartOffset() < caretOffset && caretOffset < type.getEndOffset()) {
@@ -193,7 +193,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                         }
                                     }
                                     if (hierarchy[0] instanceof PHPDocVarTypeTag) {
-                                        node = ((PHPDocVarTypeTag)hierarchy[0]).getVariable();
+                                        node = ((PHPDocVarTypeTag) hierarchy[0]).getVariable();
                                         if (node != null && node.getStartOffset() < caretOffset && caretOffset < node.getEndOffset()) {
                                             result[0] = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                                         }
@@ -212,10 +212,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 }
                             }
                         }
-                    }, true);
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+
+
             }
 
             if (result[0] != null) {
@@ -226,7 +228,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return OffsetRange.NONE;
     }
 
-    public static DeclarationLocation findDeclarationImpl(CompilationInfo info, int caretOffset) {
+    public static DeclarationLocation findDeclarationImpl(ParserResult info, int caretOffset) {
         DeclarationLocation retval = DeclarationLocation.NONE;
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
         Occurence underCaret = occurencesSupport.getOccurence();
@@ -234,7 +236,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             ModelElement declaration = underCaret.gotoDeclaratin();
             retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset(),declaration.getPHPElement());
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
-            if (info.getFileObject() == declaration.getFileObject()) {
+            if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
             List<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();

@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -49,10 +49,12 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -77,7 +79,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
-    private CompilationInfo info;
+    private ParserResult info;
 
     public PHPCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -216,21 +218,20 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         if (file == null) {
             return false;
         }
-        SourceModel model = SourceModelFactory.getInstance().getModel(file);
-        final String[] nue = { null };
         try {
-            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                public void cancel() {
-                }
-                public void run(CompilationInfo info) throws IOException {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
                     PHPCodeTemplateProcessor.this.info = info;
                 }
-            }, false);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
             info = null;
             return false;
         }
+
         return true;
     }
 

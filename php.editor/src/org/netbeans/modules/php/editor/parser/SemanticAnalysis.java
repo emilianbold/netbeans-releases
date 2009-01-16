@@ -44,13 +44,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -59,7 +59,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  *
  * @author Petr Pisl
  */
-public class SemanticAnalysis implements SemanticAnalyzer {
+public class SemanticAnalysis extends SemanticAnalyzer {
 
     public static final EnumSet<ColoringAttributes> UNUSED_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD, ColoringAttributes.STATIC);
@@ -82,19 +82,19 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         cancelled = true;
     }
 
-    public void run(CompilationInfo compilationInfo) throws Exception {
+    public void run(Result r, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        PHPParseResult result = getParseResult(compilationInfo);
+        PHPParseResult result = (PHPParseResult) r;
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         if (result.getProgram() != null) {
-            result.getProgram().accept(new SemanticHighlightVisitor(highlights, result.getTranslatedSource()));
+            result.getProgram().accept(new SemanticHighlightVisitor(highlights, result.getSnapshot()));
 
             if (highlights.size() > 0) {
                 semanticHighlights = highlights;
@@ -112,14 +112,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         cancelled = false;
     }
 
-    private PHPParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+    public @Override int getPriority() {
+        return 0;
+    }
 
-        if (result == null) {
-            return null;
-        } else {
-            return ((PHPParseResult) result);
-        }
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     private class SemanticHighlightVisitor extends DefaultVisitor {
@@ -143,25 +141,20 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         // this is holder of blocks, which has to be scanned for usages in the class.
         private List<Block> needToScan = new ArrayList<Block>();
 
-        private final TranslatedSource translatedSource;
+        private final Snapshot snapshot;
 
-        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, TranslatedSource translatedSource) {
+        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot) {
             this.highlights = highlights;
             privateFieldsUsed = new HashMap<String, IdentifierColoring>();
             privateMethod = new HashMap<String, IdentifierColoring>();
-            this.translatedSource = translatedSource;
+            this.snapshot = snapshot;
         }
 
         private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
-            if (translatedSource == null) {
-                highlights.put(new OffsetRange(node.getStartOffset(), node.getEndOffset()), coloring);
-            }
-            else {
-                int start = translatedSource.getLexicalOffset(node.getStartOffset());
-                if (start > -1) {
-                    int end = start + node.getEndOffset() - node.getStartOffset();
-                    highlights.put(new OffsetRange(start, end), coloring);
-                }
+            int start = snapshot.getOriginalOffset(node.getStartOffset());
+            if (start > -1) {
+                int end = start + node.getEndOffset() - node.getStartOffset();
+                highlights.put(new OffsetRange(start, end), coloring);
             }
         }
 
@@ -335,15 +328,10 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         public void visit(PHPVarComment node) {
             int start = node.getVariable().getStartOffset();
             int end = start + 4;
-            if (translatedSource == null) {
-                highlights.put(new OffsetRange(start, end), ColoringAttributes.CUSTOM1_SET);
-            }
-            else {
-                int startTranslated = translatedSource.getLexicalOffset(start);
-                if (startTranslated > -1) {
-                    int endTranslated = startTranslated + end - start;
-                    highlights.put(new OffsetRange(startTranslated, endTranslated), ColoringAttributes.CUSTOM1_SET);
-                }
+            int startTranslated = snapshot.getOriginalOffset(start);
+            if (startTranslated > -1) {
+                int endTranslated = startTranslated + end - start;
+                highlights.put(new OffsetRange(startTranslated, endTranslated), ColoringAttributes.CUSTOM1_SET);
             }
         }
 

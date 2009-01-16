@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  * @author Radek Matous
@@ -51,7 +51,7 @@ public interface ClassScope extends TypeScope {
     List<? extends FieldElement> getAllFields();
     List<? extends FieldElement> getFields(final int... modifiers);
     List<? extends FieldElement> getFields(final String queryName, final int... modifiers);
-    List<? extends FieldElement> getFields(final NameKind nameKind, final String queryName, final int... modifiers);
+    List<? extends FieldElement> getFields(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
     List<? extends FieldElement> getInheritedFields(String fieldName);
 
     //TODO: add getAllInheritedSuperClasses()

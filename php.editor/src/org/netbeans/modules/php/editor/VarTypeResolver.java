@@ -48,9 +48,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -96,14 +96,14 @@ public final class VarTypeResolver {
     private final ASTNode blockOfCaret;
     private int anchor;
     private PHPIndex index;
-    private CompilationInfo info;
+    private ParserResult info;
     private PHPParseResult result;
     private VarTypeResolver(final PHPCompletionItem.CompletionRequest request,
             final String varName) {
         this(varName,request.anchor,request.index, request.info, request.result);
     }
 
-    private VarTypeResolver(final String varName,int anchor,PHPIndex index,CompilationInfo info,PHPParseResult result) {
+    private VarTypeResolver(final String varName,int anchor,PHPIndex index,ParserResult info,PHPParseResult result) {
         this.result = result;
         this.anchor = anchor;
         this.index = index;
@@ -113,9 +113,11 @@ public final class VarTypeResolver {
         blockOfCaret = findNearestBlock(pathUnderCaret);
     }
 
-    private VarTypeResolver(final CompilationInfo info, final int offset, final String varName)  {
-        this(varName,offset,PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE)), info,
-                (PHPParseResult)info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, offset));
+    private VarTypeResolver(final ParserResult info, final int offset, final String varName)  {
+        this(varName,offset,
+                PHPIndex.get(info),
+                info,
+                (PHPParseResult)info);
     }
     public static VarTypeResolver getInstance(final PHPCompletionItem.CompletionRequest request,
             final String varName)  {
@@ -123,7 +125,7 @@ public final class VarTypeResolver {
         return new VarTypeResolver(request, varName);
     }
 
-    public static VarTypeResolver getInstance(final CompilationInfo info, final int offset, final String varName)  {
+    public static VarTypeResolver getInstance(final ParserResult info, final int offset, final String varName)  {
         return new VarTypeResolver(info, offset, varName);
     }
 
@@ -356,9 +358,9 @@ public final class VarTypeResolver {
             Set<String> typeNames = null;
             for (Entry<String, ElementKind> entrySet : memberNames.entrySet()) {
                 if (typeNames == null) {
-                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.CASE_INSENSITIVE_PREFIX));
+                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX));
                 } else {
-                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.CASE_INSENSITIVE_PREFIX);
+                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
                     typeNames.retainAll(names4MethName);
                 }
                 if (!(typeNames.size() > 1)) {
@@ -426,7 +428,7 @@ public final class VarTypeResolver {
         }
     }
     private static String getReturnType(FunctionInvocation node,PHPParseResult result,PHPIndex index) {
-        Collection<IndexedFunction> functions = index.getFunctions(result, CodeUtils.extractFunctionName(node), NameKind.EXACT_NAME);
+        Collection<IndexedFunction> functions = index.getFunctions(result, CodeUtils.extractFunctionName(node), QuerySupport.Kind.EXACT);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();
@@ -439,7 +441,7 @@ public final class VarTypeResolver {
         FunctionInvocation method = staticMethodInvocation.getMethod();
         String fncName = CodeUtils.extractFunctionName(method);
         Collection<IndexedFunction> functions =
-                index.getAllMethods(result, clsName, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                index.getAllMethods(result, clsName, fncName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();
@@ -456,7 +458,7 @@ public final class VarTypeResolver {
                     ? varName.substring(1) : varName;
 
             Collection<IndexedConstant> constants =
-                    index.getAllFields(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                    index.getAllFields(result, clsName, varName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
 
             if (!constants.isEmpty()) {
                 IndexedConstant con = constants.iterator().next();
@@ -473,7 +475,7 @@ public final class VarTypeResolver {
         FunctionInvocation method = methodInvocation.getMethod();
         String fncName = CodeUtils.extractFunctionName(method);
         Collection<IndexedFunction> functions =
-                index.getAllMethods(result, className, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                index.getAllMethods(result, className, fncName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();

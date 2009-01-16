@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -78,9 +78,9 @@ public class ClassNotFoundRule extends PHPRule {
     private void check(Expression expression) {
         if (expression instanceof Identifier) {
             String className = ((Identifier) expression).getName();
-
+            
             if (!"self".equalsIgnoreCase(className) //NOI18N
-                && context.index.getClasses(null, className, NameKind.EXACT_NAME).isEmpty()){
+                && context.index.getClasses(null, className, QuerySupport.Kind.EXACT).isEmpty()){
                 
                 addHint(expression);
             }
@@ -97,7 +97,9 @@ public class ClassNotFoundRule extends PHPRule {
 
     private void addHint(ASTNode node) {
         OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-        Hint hint = new Hint(ClassNotFoundRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ClassNotFoundRule.this, getDisplayName(),
+                context.parserResult.getSnapshot().getSource().getFileObject(),
+                range, null, 500);
         addResult(hint);
     }
     
