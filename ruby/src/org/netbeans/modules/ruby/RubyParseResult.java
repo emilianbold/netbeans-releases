@@ -44,9 +44,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.parser.RubyParserResult;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 
