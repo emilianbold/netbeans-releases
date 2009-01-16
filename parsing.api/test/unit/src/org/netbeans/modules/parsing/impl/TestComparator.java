@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,48 +34,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.parsing.impl;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.parser.ParserTestBase;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
- * @author Andrei Badea
+ * @author hanz
  */
-public class PHPSQLCompletionTest extends ParserTestBase {
+public class TestComparator {
 
-    public PHPSQLCompletionTest(String name) {
-        super(name);
+    private String      text;
+    private boolean     failed = false;
+
+    public TestComparator (String text) {
+        this.text = text;
     }
 
-    public void testFindStringOffset() {
-        assertEquals(8, findStringOffset("<? echo \"ab|cde\" ?>"));
-        assertEquals(8, findStringOffset("<? echo |\"abcde\" ?>"));
-        assertEquals(8, findStringOffset("<? echo \"${v|ar}\" ?>"));
-        assertEquals(8, findStringOffset("<? echo \"f|oo{$var}bar\" ?>"));
-        assertEquals(8, findStringOffset("<? echo \"foo{$v|ar}bar\" ?>"));
-        assertEquals(8, findStringOffset("<? echo \"foo{$var}b|ar\" ?>"));
-        assertEquals(16, findStringOffset("<? echo \"foo\" . \"${v|ar}\" ?>"));
-        assertEquals(17, findStringOffset("<? echo 42; echo \"foo{$var}b|ar\" ?>"));
-        // Does not work:
-        // assertEquals(8, findStringOffset("<? echo \"${foo}\" . \"${v|ar}\" ?>"));
+    public void check (String line) {
+        if (failed) return;
+        if (!text.startsWith (line)) {
+            failed = true;
+            throw new IllegalArgumentException (line + "\nBut expecting:\n" + text);
+        }
+        text = text.substring (line.length ());
+        if (text.startsWith ("\n"))
+            text = text.substring (1);
     }
 
-    private static int findStringOffset(String text) {
-        int caretOffset = text.indexOf('|');
-        text = text.replace("|", "");
-        TokenSequence<PHPTokenId> seq = PHPLexerUtils.seqForText(text, PHPTokenId.language());
-        return PHPSQLCompletion.findStringOffset(seq, caretOffset);
+    private Map<Class,Map<Object,Integer>> classToObjects = new HashMap<Class,Map<Object,Integer>> ();
+
+    public int get (Object o) {
+        if (failed) return -1;
+        Map<Object,Integer> objects = classToObjects.get (o.getClass ());
+        if (objects == null) {
+            objects = new HashMap<Object,Integer> ();
+            classToObjects.put (o.getClass (), objects);
+        }
+        Integer i = objects.get (o);
+        if (i == null) {
+            i = objects.size () + 1;
+            objects.put (o, i);
+        }
+        return i;
     }
 
-    @Override
-    protected String getTestResult(String filename) throws Exception {
-        return null;
+    public String getResult () {
+        return text;
     }
 }
+
+

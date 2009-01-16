@@ -113,12 +113,13 @@ public final class SourceRoots {
         this.refHelper = refHelper;
         this.isTest = isTest;
 
-        sourceRootProperties = Arrays.asList(
-                PhpProjectProperties.SRC_DIR,
-                PhpProjectProperties.TEST_SRC_DIR);
-        sourceRootNames = Arrays.asList(
-                NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources"),
-                NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests"));
+        if (isTest) {
+            sourceRootProperties = Arrays.asList(PhpProjectProperties.TEST_SRC_DIR);
+            sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests"));
+        } else {
+            sourceRootProperties = Arrays.asList(PhpProjectProperties.SRC_DIR);
+            sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources"));
+        }
         projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
         support = new PropertyChangeSupport(this);
         listener = new ProjectMetadataListener();

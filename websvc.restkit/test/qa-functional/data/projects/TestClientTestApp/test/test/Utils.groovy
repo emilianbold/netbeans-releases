@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,24 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package test
 
-package org.netbeans.modules.maven;
-import java.util.EventListener;
+import org.xml.sax.SAXParseException
 
 /**
- * Listener for changes in file existence and/or contents.
- * Unlike the Filesystems API, renames etc. are not considered special;
- * the "file" is identified uniquely by its path, not an object.
- * @author Jesse Glick
+ *
+ * @author lukas
  */
-public interface FileChangeSupportListener extends EventListener {
+class Utils {
+    private Utils(){}
 
-    void fileCreated(FileChangeSupportEvent event);
-
-    void fileDeleted(FileChangeSupportEvent event);
-
-    void fileModified(FileChangeSupportEvent event);
-
+    static void readXml(String text) throws SAXParseException {
+        new XmlParser().parseText(text)
+    }
 }
+

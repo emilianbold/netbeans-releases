@@ -80,6 +80,10 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         ejbimpl = new EjbJarImpl(project, this);
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
     }
+
+    public EjbJarImpl getModuleImpl() {
+        return ejbimpl;
+    }
     
     /**
      * 

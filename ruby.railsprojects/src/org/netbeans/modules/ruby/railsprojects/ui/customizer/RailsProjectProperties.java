@@ -64,10 +64,11 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     public static final String RAILS_PORT = "rails.port"; // NOI18N
     public static final String RAILS_SERVERTYPE = "rails.servertype"; // NOI18N
     public static final String RAILS_ENV = "rails.env"; // NOI18N
+    public static final String RAILS_URL = "rails.url"; // NOI18N
     
     /** All per-configuration properties to be stored. */
     private static final String[] CONFIG_PROPS = {
-        RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
+        RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV, RAILS_URL,
         MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RAILS_SERVERTYPE,
         PLATFORM_ACTIVE
     };

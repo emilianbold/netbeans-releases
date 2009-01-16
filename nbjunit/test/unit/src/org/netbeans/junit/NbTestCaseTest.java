@@ -58,12 +58,6 @@ public class NbTestCaseTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-    
     public void testNetBeansFullHackIsSet() throws Exception {
         assertEquals("true", System.getProperty("netbeans.full.hack"));
     }
@@ -175,7 +169,8 @@ public class NbTestCaseTest extends NbTestCase {
         fail("The assertion should fail");
     }
 
-    public void testAssertGcFailsForUntracableObject() {
+    @RandomlyFails // NB-Core-Build #1987
+    public void testAssertGcFailsForUntraceableObject() {
         Object o = new Object();
         WeakReference<Object> wr = new WeakReference<Object>(o);
         

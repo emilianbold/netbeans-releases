@@ -41,22 +41,17 @@
 
 package org.netbeans.modules.viewmodel;
 
-import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.viewmodel.TreeModelNode;
-import org.netbeans.modules.viewmodel.TreeModelRoot;
-import org.netbeans.modules.viewmodel.TreeTable;
+
 import org.netbeans.spi.viewmodel.*;
+
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeListener;
-import org.openide.util.RequestProcessor;
 
 
 
@@ -79,7 +74,7 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         ArrayList l = new ArrayList ();
         cm = new CompoundModel1 ();
         l.add (cm);
-        TreeTable tt = (TreeTable) Models.createView 
+        OutlineTable tt = (OutlineTable) Models.createView
             (Models.createCompoundModel (l));
         BasicTest.waitFinished (tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
         n = tt.getExplorerManager ().
