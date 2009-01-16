@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -58,15 +59,26 @@ public class RunFileCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) {
-        if (!isRunConfigurationValid(false)) {
-            // property not set yet
-            return;
+        if (isTestFile(context)) {
+            // test
+            ConfigAction.get(ConfigAction.Type.TEST).runFile(getProject(), context);
+        } else {
+            // source
+            if (!isRunConfigurationValid(false)) {
+                // property not set yet
+                return;
+            }
+            getConfigAction().runFile(getProject(), context);
         }
-        getConfigAction().runFile(getProject(), context);
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
+        if (isTestFile(context)) {
+            // test
+            return ConfigAction.get(ConfigAction.Type.TEST).isRunFileEnabled(getProject(), context);
+        }
+        // source
         return getConfigAction().isRunFileEnabled(getProject(), context);
     }
 

@@ -54,6 +54,7 @@ import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -119,7 +120,7 @@ public class IndexNodeProvider extends NodeProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
 

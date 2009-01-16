@@ -408,6 +408,12 @@ public class DefaultProjectActionHandler implements ActionListener {
                             } else {
                                 args2 = "";
                             }
+                            if (pae.getID() == ProjectActionEvent.RUN &&
+                                    ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
+                                    HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS &&
+                                    !exe.endsWith(".exe")) { // NOI18N
+                                exe = exe + ".exe"; // NOI18N
+                            }
                             args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();
                         }

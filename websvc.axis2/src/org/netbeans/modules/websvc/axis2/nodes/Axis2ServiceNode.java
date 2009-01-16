@@ -220,8 +220,11 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             }
             
             // removing implementation class
-            FileObject fo = srcRoot.getFileObject(service.getServiceClass().replace('.', '/')+".java"); //NOI18N
-            if (fo != null) fo.delete();
+            String serviceClass = service.getServiceClass();
+            if (serviceClass != null) {
+                FileObject fo = srcRoot.getFileObject(serviceClass.replace('.', '/')+".java"); //NOI18N
+                if (fo != null) fo.delete();
+            }
             
             // call clean targets
             if (service.getGenerateWsdl() != null) {

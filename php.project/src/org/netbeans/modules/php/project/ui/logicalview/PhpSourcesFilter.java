@@ -40,12 +40,13 @@
 package org.netbeans.modules.php.project.ui.logicalview;
 
 import java.io.File;
-import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
@@ -56,30 +57,51 @@ import org.openide.util.ChangeSupport;
  * @author Radek Matous
  */
 public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
-        private static final long serialVersionUID = -743970325456756955L;
-        private File projectXML;
+        private static final long serialVersionUID = -743970325856955L;
+
+        private final PhpProject project;
+        private final FileObject rootFolder;
+        private final File nbProject;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public PhpSourcesFilter(PhpProject project) {
-            projectXML = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH);
+            this(project, null);
+        }
+        public PhpSourcesFilter(PhpProject project, FileObject rootFolder) {
+            assert project != null;
+
+            this.project = project;
+            this.rootFolder = rootFolder;
+
+            nbProject = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH).getParentFile();
+            assert nbProject != null : "NB metadata folder was not found for project: " + project;
             VisibilityQuery.getDefault().addChangeListener(this);
         }
 
         public boolean acceptDataObject(DataObject object) {
-            return isNotProjectFile(object) && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
+            return !isProjectFile(object)
+                    && !isTestDirectory(object)
+                    && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
         }
 
-        private boolean isNotProjectFile(DataObject object) {
-            try {
-                if (projectXML != null) {
-                    File f = FileUtil.toFile(object.getPrimaryFile()).getCanonicalFile();
-                    File nbProject = projectXML.getParentFile().getCanonicalFile();
-                    return nbProject != null && !nbProject.equals(f);
-                }
-            } catch (IOException e) {
+        private boolean isProjectFile(DataObject object) {
+            File f = FileUtil.toFile(object.getPrimaryFile());
+            return nbProject.equals(f);
+        }
+
+        private boolean isTestDirectory(DataObject object) {
+            if (rootFolder == null) {
                 return false;
             }
-            return true;
+            FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+            if (testDirectory == null) {
+                return false;
+            }
+            if (!testDirectory.equals(rootFolder)) {
+                // in sources or similar (but not in tests definitely)
+                return testDirectory.equals(object.getPrimaryFile());
+            }
+            return false;
         }
 
         public void stateChanged(ChangeEvent e) {

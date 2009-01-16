@@ -53,25 +53,25 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter1() {
         PhpInterpreter phpInterpreter = new PhpInterpreter(null);
-        assertEquals("", phpInterpreter.getInterpreter());
+        assertEquals("", phpInterpreter.getProgram());
         assertEquals("", phpInterpreter.getFullCommand());
         assertEquals(0, phpInterpreter.getParameters().length);
 
         phpInterpreter = new PhpInterpreter("");
-        assertEquals("", phpInterpreter.getInterpreter());
+        assertEquals("", phpInterpreter.getProgram());
         assertEquals("", phpInterpreter.getFullCommand());
         assertEquals(0, phpInterpreter.getParameters().length);
     }
 
     public void testPhpInterpreter2() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
+        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
         assertEquals(0, phpInterpreter.getParameters().length);
     }
 
     public void testPhpInterpreter3() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php /q");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
+        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("/q", parameters[0]);
@@ -79,7 +79,7 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter4() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php    -q     ");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
+        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("-q", parameters[0]);
@@ -87,7 +87,7 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter5() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program-Files\\php\\bin\\php   -q    -a");
-        assertEquals("C:\\Program-Files\\php\\bin\\php", phpInterpreter.getInterpreter());
+        assertEquals("C:\\Program-Files\\php\\bin\\php", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(2, parameters.length);
         assertEquals("-q", parameters[0]);
@@ -96,13 +96,13 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter6() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php");
-        assertEquals("/usr/bin/php", phpInterpreter.getInterpreter());
+        assertEquals("/usr/bin/php", phpInterpreter.getProgram());
         assertEquals(0, phpInterpreter.getParameters().length);
     }
 
     public void testPhpInterpreter7() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php -q");
-        assertEquals("/usr/bin/php", phpInterpreter.getInterpreter());
+        assertEquals("/usr/bin/php", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("-q", parameters[0]);
@@ -110,7 +110,7 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter8() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/b-i-n/php -q -a");
-        assertEquals("/usr/b-i-n/php", phpInterpreter.getInterpreter());
+        assertEquals("/usr/b-i-n/php", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(2, parameters.length);
         assertEquals("-q", parameters[0]);
@@ -119,7 +119,7 @@ public class PhpInterpreterTest extends NbTestCase {
 
     public void testPhpInterpreter9() {
         PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/phpunit --repeat 3   \"--repeat 3\"  MyTest   ");
-        assertEquals("/usr/bin/phpunit", phpInterpreter.getInterpreter());
+        assertEquals("/usr/bin/phpunit", phpInterpreter.getProgram());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(4, parameters.length);
         assertEquals("--repeat", parameters[0]);

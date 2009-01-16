@@ -344,12 +344,13 @@ public class SourceUtils {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("cpInfo", cpInfo);   //NOI18N
         
-        Element prev = null;
+        Element prev = element.getKind() == ElementKind.PACKAGE ? element : null;
         while (element.getKind() != ElementKind.PACKAGE) {
             prev = element;
             element = element.getEnclosingElement();
         }
-        if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
+        final ElementKind kind = prev.getKind();
+        if (prev == null || !(kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE)) {
             return null;
         }        
         final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
