@@ -436,12 +436,12 @@ public final class MavenModelUtils {
      * @param project Maven project instance
      * @return list of wsdl files
      */
-    public static List<String> getWsdlFiles(Project project) {
+    public static List<WsimportPomInfo> getWsdlFiles(Project project) {
         MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         assert mavenProject != null;
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = mavenProject.getBuildPlugins();
-        List<String> wsdlList = new ArrayList<String>();
+        List<WsimportPomInfo> wsdlList = new ArrayList<WsimportPomInfo>();
         for (org.apache.maven.model.Plugin plg : plugins) {
             if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
                 @SuppressWarnings("unchecked")
@@ -452,13 +452,34 @@ public final class MavenModelUtils {
                         Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
                         if (wsdlFiles != null) {
                             Xpp3Dom wsdlFile = wsdlFiles.getChild("wsdlFile"); //NOI18N
-                            if (wsdlFile != null) wsdlList.add(wsdlFile.getValue());
+                            if (wsdlFile != null) {
+                                WsimportPomInfo pomInfo = new WsimportPomInfo(wsdlFile.getValue());
+                                // detect handler binding file
+                                Xpp3Dom bindingFiles = conf.getChild("bindingFiles"); //NOI18N
+                                if (bindingFiles != null) {
+                                    String bindingPath = findHandler(bindingFiles);
+                                    if (bindingPath != null) {
+                                        pomInfo.setHandlerFile(bindingPath);
+                                    }
+                                }
+                                wsdlList.add(pomInfo);
+                            }
                         }
                     }
                 }
             }
         }
         return wsdlList;
+    }
+
+    private static String findHandler(Xpp3Dom parent) {
+        for (Xpp3Dom child : parent.getChildren("bindingFile")) { //NOI18N
+            String bindingPath = child.getValue();
+            if (bindingPath != null && bindingPath.endsWith("_handler.xml")) { //NOI18N
+                return bindingPath;
+            }
+        }
+        return null;
     }
 
 }
