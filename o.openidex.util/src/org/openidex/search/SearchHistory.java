@@ -46,6 +46,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * Shareable search history. Known implementations are explorer search
@@ -63,6 +65,7 @@ import java.util.List;
  *
  * @since  org.openidex.util/3 3.5, NB 4.1
  * @author  Martin Roskanin
+ * @author  kaktus
  */
 public final class SearchHistory {
 
@@ -95,9 +98,17 @@ public final class SearchHistory {
      *  newValue - added pattern
      */
     public final static String ADD_TO_HISTORY = "add-to-history"; //NOI18N
-    
+
+    /** Preferences node for storing history info */
+    private static Preferences prefs;
+    /** Name of preferences node where we persist history */
+    private static final String PREFS_NODE = "SearchHistory";  //NOI18N
+    private static final String PROP_SEARCH_PATTERN_PREFIX = "search_pattern_";  //NOI18N
+
     /** Creates a new instance of SearchHistory */
     private SearchHistory() {
+        prefs = NbPreferences.forModule(SearchHistory.class).node(PREFS_NODE);
+        load();
     }
 
     /** @return singleton instance of SearchHistory */
@@ -107,7 +118,18 @@ public final class SearchHistory {
         }
         return INSTANCE;
     }
-    
+
+    /**
+     *  Loads search history stored in previous system sessions.
+     */
+    private void load () {
+        for(int i=0; i < MAX_SEARCH_PATTERNS_ITEMS; i++){
+            String searchExpr = prefs.get(PROP_SEARCH_PATTERN_PREFIX + i, null);
+            if (searchExpr != null)
+                searchPatternsList.add(SearchPattern.create(searchExpr, false, false, false));
+        }
+    }
+
     /** @return last selected SearchPattern */
     public SearchPattern getLastSelected(){
         return lastSelected;
@@ -166,6 +188,9 @@ public final class SearchHistory {
             searchPatternsList.remove(MAX_SEARCH_PATTERNS_ITEMS-1);
         }
         searchPatternsList.add(0, pattern);
+        for(int i=0;i < searchPatternsList.size();i++){
+            prefs.put(PROP_SEARCH_PATTERN_PREFIX + i, searchPatternsList.get(i).getSearchExpression());
+        }
         if (pcs != null){
             pcs.firePropertyChange(ADD_TO_HISTORY, null, pattern);
         }

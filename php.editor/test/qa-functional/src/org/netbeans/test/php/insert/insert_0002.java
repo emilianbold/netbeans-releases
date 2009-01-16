@@ -142,19 +142,22 @@ public class insert_0002 extends insert
     // Check result
     String[] asResult =
     {
-      "public function getA() {",
+      "public function getA()",
+      "{",
       "return $this->a;",
       "}",
       "",
-      "public function getB() {",
+      "public function getB()",
+      "{",
       "return $this->b;",
       "}",
       "",
-      "public function getD() {",
+      "public function getD()",
+      "{",
       "return $this->d;",
       "}"
     };
-    CheckResult( eoPHP, asResult, -12 );
+    CheckResult( eoPHP, asResult, -15 );
 
     endTest( );
   }

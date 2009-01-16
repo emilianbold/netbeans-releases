@@ -305,7 +305,7 @@ public class PhpProject implements Project {
                 new PhpConfigurationProvider(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator()),
+                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),

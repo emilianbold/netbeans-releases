@@ -65,6 +65,7 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -166,7 +167,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -187,7 +188,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             addProperty(DIGITS, DIGITSDESC, Short.class, false, column.getScale());
             addProperty(POSITION, POSITIONDESC, Integer.class, false, column.getPosition());
         } catch (Exception e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -221,7 +222,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -244,6 +245,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             command.removeColumn(getName());
             command.execute();
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
@@ -316,7 +318,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -338,7 +340,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -360,7 +362,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -382,7 +384,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

@@ -127,9 +127,6 @@ public class SourcesNodeFactory implements NodeFactory {
         }
 
         public List<SourceGroup> keys() {
-            // update Sources listeners
-            Sources sources = getSources();
-
             // parse SG
             // update SG listeners
             // XXX check if this is necessary
@@ -167,14 +164,10 @@ public class SourcesNodeFactory implements NodeFactory {
         public Node node(SourceGroup key) {
             Node node = null;
             if (key != null) {
-                DataFolder folder = getFolder(key.getRootFolder());
+                FileObject rootFolder = key.getRootFolder();
+                DataFolder folder = getFolder(rootFolder);
                 if (folder != null) {
-                    /* no need to use sourceGroup.getDisplayName() while we have only one sourceRoot.
-                     * Now it contains not good-looking label.
-                     * We put label there in PhpSources.configureSources()
-                     */
-                    //node = new SrcNode(folder, sourceGroup.getDisplayName());
-                    node = new SrcNode(project, folder,new PhpSourcesFilter(project), key.getDisplayName());
+                    node = new SrcNode(project, folder, new PhpSourcesFilter(project, rootFolder), key.getDisplayName());
                 }
             }
             return node;

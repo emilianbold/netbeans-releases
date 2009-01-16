@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.ReferenceVisitor;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -180,8 +182,8 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     ////////////////////////////////////////////////////////////////////////////
     // prototype of impl
     
-    private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset, Interrupter interrupter) {
+    private Collection<CsmReference> getReferences(final CsmObject targetDecl, final CsmObject targetDef, FileImpl file,
+            final Set<CsmReferenceKind> kinds, final boolean unboxInstantiation, int startOffset, int endOffset, final Interrupter interrupter) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
@@ -203,7 +205,6 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
-        Collection<CsmReference> out = new ArrayList<CsmReference>(20);
         long time = 0;
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             time = System.currentTimeMillis();
@@ -213,17 +214,26 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
         }
+        Collection<CsmReference> refs = new ArrayList<CsmReference>(20);
         for (APTToken token : tokens) {
             if (interrupter != null && interrupter.cancelled()){
                 break;
             }
             // this is candidate to resolve
-            int offset = token.getOffset();
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, offset);
-            if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
-                out.add(ref);
-            }
+            refs.add(CsmReferenceResolver.getDefault().findReference(file, token.getOffset()));
         }
+        final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
+        ReferenceVisitor visitor = new ReferenceVisitor() {
+            public void visit(CsmReference ref) {
+                if (interrupter != null && interrupter.cancelled()){
+                    return;
+                }
+                if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
+                    out.add(ref);
+                }
+            }
+        };
+        CsmFileReferences.getDefault().visit(refs, visitor);
         return out;
     }
     

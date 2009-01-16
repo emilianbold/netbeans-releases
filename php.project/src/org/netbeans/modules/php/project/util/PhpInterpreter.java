@@ -51,13 +51,6 @@ public final class PhpInterpreter extends PhpProgram {
         super(command);
     }
 
-    /**
-     * @return PHP interpreter, never <code>null</code>.
-     */
-    public String getInterpreter() {
-        return super.getProgram();
-    }
-
     @Override
     public boolean isValid() {
         return super.isValid();
