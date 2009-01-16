@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby.lexer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
