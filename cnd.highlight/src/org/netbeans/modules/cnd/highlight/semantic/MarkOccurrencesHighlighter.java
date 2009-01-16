@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -180,7 +181,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 if (!useOwnCarretPosition) {
                     FileObject fo2 = CsmUtilities.getFileObject(doc2);
                     if(fo2 != null) {
-                        lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo2);
+                        lastPosition = getDocumentOffset(doc, getFileOffset(doc2, CaretAwareCsmFileTaskFactory.getLastPosition(fo2)));
                     }
                 }
             }
@@ -203,7 +204,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 obag.clear();
 
                 for (CsmReference csmReference : out) {
-                    obag.addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
+                    int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
+                    int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
+                    if (startOffset < doc.getLength() && endOffset > 0) {
+                        obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                    }
                 }
 
                 getHighlightsBag(doc).setHighlights(obag);
@@ -222,6 +227,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     /* package-local */ static Collection<CsmReference> getOccurrences(AbstractDocument doc, CsmFile file, int position, Interrupter interrupter) {
+        position = getFileOffset(doc, position);
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
         // check if offset is in preprocessor conditional block
         if (isPreprocessorConditionalBlock(doc, position)) {
@@ -234,6 +240,14 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             }
         }
         return out;
+    }
+
+    private static int getFileOffset(Document doc, int documentOffset) {
+        return CsmMacroExpansion.getOffsetInOriginalText(doc, documentOffset);
+    }
+
+    private static int getDocumentOffset(Document doc, int fileOffset) {
+        return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
     }
 
     @Override

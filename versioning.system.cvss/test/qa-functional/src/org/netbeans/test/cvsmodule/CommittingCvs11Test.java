@@ -209,7 +209,6 @@ public class CommittingCvs11Test extends JellyTestCase {
         //create new elements for testing
         TestKit.createNewElementsCommitCvs11(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
-        TestKit.TIME_OUT = 15;
     }
 
     public void testCommitModified() throws Exception {
@@ -358,5 +357,6 @@ public class CommittingCvs11Test extends JellyTestCase {
     public void removeAllData() throws Exception {
         TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        TestKit.TIME_OUT = 15;
     }
 }

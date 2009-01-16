@@ -306,7 +306,7 @@ public class ThreadsTreeModel implements TreeModel {
         
         private RequestProcessor.Task createTask() {
             RequestProcessor.Task task =
-                new RequestProcessor("Threads Refresh", 1).create(
+                debugger.getRequestProcessor().create(
                                 new RefreshTree());
             if (verbose)
                 System.out.println("TTM  create task " + task);

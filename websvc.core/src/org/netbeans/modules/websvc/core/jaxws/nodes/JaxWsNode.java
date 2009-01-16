@@ -749,6 +749,14 @@ public class JaxWsNode extends AbstractNode implements
      */
     public void configureHandler() {
         FileObject implBeanFo = getImplBean();
+        if (implBeanFo == null) {
+            // unable to find implementation class
+            NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JaxWsNode.class, "ERR_missingImplementationClass"),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(dialogDesc);
+            return;
+        }
         List<String> handlerClasses = new ArrayList<String>();
         FileObject handlerFO = null;
         HandlerChains handlerChains = null;

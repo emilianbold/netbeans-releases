@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -173,54 +174,56 @@ implements Executor {
     
     public void runAction(final Object action) {
         //S ystem.out.println("\nStepAction.doAction");
+        int suspendPolicy = getDebuggerImpl().getSuspend();
+        JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
+        Lock lock;
+        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+            lock = resumeThread.accessLock.writeLock();
+        } else {
+            lock = getDebuggerImpl().accessLock.writeLock();
+        }
+        lock.lock();
         try {
-            int suspendPolicy;
-            synchronized (getDebuggerImpl ().LOCK) {
-                // 1) init info about current state & remove old
-                //    requests in the current thread
-                suspendPolicy = getDebuggerImpl().getSuspend();
-                JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-                synchronized (resumeThread) {
-                    resumeThread.waitUntilMethodInvokeDone();
-                    ThreadReference tr = resumeThread.getThreadReference ();
-                    removeStepRequests (tr);
+            // 1) init info about current state & remove old
+            //    requests in the current thread
+            resumeThread.waitUntilMethodInvokeDone();
+            ThreadReference tr = resumeThread.getThreadReference ();
+            removeStepRequests (tr);
 
-                    // 2) create new step request
-                    VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-                    if (vm == null) return ; // There's nothing to do without the VM.
-                    stepRequest = EventRequestManagerWrapper.createStepRequest (
-                            VirtualMachineWrapper.eventRequestManager (vm),
-                            tr,
-                            StepRequest.STEP_LINE,
-                            getJDIAction (action)
-                        );
-                    EventRequestWrapper.addCountFilter (stepRequest, 1);
-                    getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
-                    EventRequestWrapper.setSuspendPolicy (stepRequest, suspendPolicy);
-                    try {
-                        EventRequestWrapper.enable (stepRequest);
-                    } catch (IllegalThreadStateException itsex) {
-                        // the thread named in the request has died.
-                        // Or suspend count > 1 !
-                        //itsex.printStackTrace();
-                        //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                        try {
-                            logger.warning(itsex.getLocalizedMessage()+"\nThread: "+ThreadReferenceWrapper.name(tr)+", suspended = "+ThreadReferenceWrapper.isSuspended(tr)+", status = "+ThreadReferenceWrapper.status(tr));
-                        } catch (Exception e) {
-                            logger.warning(e.getLocalizedMessage());
-                        }
-                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
-                        return ;
-                    }
-                    logger.fine("JDI Request (action "+action+"): " + stepRequest);
-                    if (action == ActionsManager.ACTION_STEP_OUT) {
-                        addMethodExitBP(tr, resumeThread);
-                    }
-                    resumeThread.disableMethodInvokeUntilResumed();
+            // 2) create new step request
+            VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+            if (vm == null) return ; // There's nothing to do without the VM.
+            stepRequest = EventRequestManagerWrapper.createStepRequest (
+                    VirtualMachineWrapper.eventRequestManager (vm),
+                    tr,
+                    StepRequest.STEP_LINE,
+                    getJDIAction (action)
+                );
+            EventRequestWrapper.addCountFilter (stepRequest, 1);
+            getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
+            EventRequestWrapper.setSuspendPolicy (stepRequest, suspendPolicy);
+            try {
+                EventRequestWrapper.enable (stepRequest);
+            } catch (IllegalThreadStateException itsex) {
+                // the thread named in the request has died.
+                // Or suspend count > 1 !
+                //itsex.printStackTrace();
+                //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
+                try {
+                    logger.warning(itsex.getLocalizedMessage()+"\nThread: "+ThreadReferenceWrapper.name(tr)+", suspended = "+ThreadReferenceWrapper.isSuspended(tr)+", status = "+ThreadReferenceWrapper.status(tr));
+                } catch (Exception e) {
+                    logger.warning(e.getLocalizedMessage());
                 }
-                // 3) resume JVM
-                resumeThread.setInStep(true, stepRequest);
+                getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                return ;
             }
+            logger.fine("JDI Request (action "+action+"): " + stepRequest);
+            if (action == ActionsManager.ACTION_STEP_OUT) {
+                addMethodExitBP(tr, resumeThread);
+            }
+            resumeThread.disableMethodInvokeUntilResumed();
+            // 3) resume JVM
+            resumeThread.setInStep(true, stepRequest);
             if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
                 //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
                 getDebuggerImpl().resumeCurrentThread();
@@ -236,6 +239,8 @@ implements Executor {
             Exceptions.printStackTrace(e);
         } catch (ObjectCollectedExceptionWrapper e) {
             // Thread was collected - ignore the step
+        } finally {
+            lock.unlock();
         }
         //S ystem.out.println("/nStepAction.doAction end");
     }
@@ -296,7 +301,7 @@ implements Executor {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
         StepRequest sr = (StepRequest) EventWrapper.request(ev);
-        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
+        JPDAThreadImpl st = getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
         st.setInStep(false, null);
         /*if (stepWatch != null) {
             stepWatch.done();
@@ -307,7 +312,14 @@ implements Executor {
         ThreadReference tr = LocatableEventWrapper.thread(event);
         setLastOperation(tr);
         removeStepRequests (tr);
-        synchronized (getDebuggerImpl ().LOCK) {
+        Lock lock;
+        if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
+            lock = st.accessLock.writeLock();
+        } else {
+            lock = getDebuggerImpl().accessLock.writeLock();
+        }
+        lock.lock();
+        try {
             //S ystem.out.println("/nStepAction.exec");
 
             int suspendPolicy = getDebuggerImpl().getSuspend();
@@ -375,6 +387,8 @@ implements Executor {
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
+        } finally {
+            lock.unlock();
         }
         } catch (InternalExceptionWrapper e) {
             return false; // Do not resume when something bad happened
@@ -388,7 +402,7 @@ implements Executor {
     public void removed(EventRequest eventRequest) {
         StepRequest sr = (StepRequest) eventRequest;
         try {
-            JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
+            JPDAThreadImpl st = getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
             st.setInStep(false, null);
         } catch (InternalExceptionWrapper ex) {
         } catch (VMDisconnectedExceptionWrapper ex) {
@@ -467,7 +481,7 @@ implements Executor {
             return ;
         }
         lastOperation.setReturnValue(returnValue);
-        JPDAThreadImpl jtr = (JPDAThreadImpl) debugger.getThread(tr);
+        JPDAThreadImpl jtr = debugger.getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
     }

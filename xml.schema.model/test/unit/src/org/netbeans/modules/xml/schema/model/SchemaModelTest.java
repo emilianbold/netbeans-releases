@@ -129,6 +129,7 @@ public class SchemaModelTest extends TestCase {
     public void testGetSchema() throws Exception {
         SchemaModel sm = Util.loadSchemaModel(TEST_XSD);
         assertNotNull(sm);
+        assert(!sm.isEmbedded());
     	String uri = sm.getSchema().getTargetNamespace();
         String expectUri = "http://www.example.com/testInclude";
         assertEquals(expectUri, uri);

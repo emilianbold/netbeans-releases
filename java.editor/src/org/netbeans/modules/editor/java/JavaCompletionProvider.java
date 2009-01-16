@@ -50,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
+import org.netbeans.modules.parsing.spi.Parser;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;

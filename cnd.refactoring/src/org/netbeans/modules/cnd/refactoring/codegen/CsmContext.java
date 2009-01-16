@@ -147,9 +147,6 @@ public final class CsmContext {
             enclosingClass = (CsmClass)obj;
         } else if (CsmKindUtilities.isFunction(obj)) {
             enclosingFun = (CsmFunction) obj;
-            if (CsmKindUtilities.isMethod(enclosingFun)) {
-                enclosingClass = ((CsmMethod)CsmBaseUtilities.getFunctionDeclaration(enclosingFun)).getContainingClass();
-            }
         }
     }
 }

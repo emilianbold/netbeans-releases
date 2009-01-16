@@ -156,12 +156,12 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
                 throw iae;
             }
             Templates.setTargetName(settings, name);
-            doStoreSettings();
+            doStoreSettings(settings);
         }
         settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
     
-    protected abstract void doStoreSettings();
+    protected abstract void doStoreSettings(WizardDescriptor settings);
 
     public void stateChanged(ChangeEvent e) {        
         changeSupport.fireChange();
