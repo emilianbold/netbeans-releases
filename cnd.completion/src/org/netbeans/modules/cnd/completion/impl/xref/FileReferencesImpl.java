@@ -152,6 +152,26 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
     }
 
+    @Override
+    public void visit(Collection<CsmReference> refs, ReferenceVisitor visitor) {
+        FileReferencesContext fileReferencesContext = null;
+        try {
+            for(CsmReference ref : refs) {
+                if (fileReferencesContext == null){
+                    fileReferencesContext = new FileReferencesContext(ref.getContainingFile());
+                }
+                if (ref instanceof ReferenceImpl) {
+                    ((ReferenceImpl)ref).setFileReferencesContext(fileReferencesContext);
+                }
+                visitor.visit(ref);
+            }
+        } finally {
+            if (fileReferencesContext != null) {
+                fileReferencesContext.clean();
+            }
+        }
+    }
+
     private List<CsmReferenceContext> getIdentifierReferences(CsmFile csmFile, final BaseDocument doc,
                     final int start, final int end,
                     Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
