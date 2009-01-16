@@ -80,7 +80,7 @@ import org.openide.filesystems.URLMapper;
  * implementation of ejb netbeans functionality
  * @author Milos Kleint 
  */
-class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter {
+public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter {
     
     private Project project;
     private List versionListeners;
