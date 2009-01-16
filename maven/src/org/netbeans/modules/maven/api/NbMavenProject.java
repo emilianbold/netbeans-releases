@@ -51,9 +51,6 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.FileChangeSupport;
-import org.netbeans.modules.maven.FileChangeSupportEvent;
-import org.netbeans.modules.maven.FileChangeSupportListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -63,7 +60,11 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -122,18 +123,30 @@ public final class NbMavenProject {
     }
 
     
-    private class FCHSL implements FileChangeSupportListener {
+    private class FCHSL implements FileChangeListener {
 
-        public void fileCreated(FileChangeSupportEvent event) {
-            fireChange(event.getPath().toURI());
+
+        public void fileFolderCreated(FileEvent fe) {
+            fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
-            fireChange(event.getPath().toURI());
+        public void fileDataCreated(FileEvent fe) {
+            fireChange(FileUtil.toFile(fe.getFile()).toURI());
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
-            fireChange(event.getPath().toURI());
+        public void fileChanged(FileEvent fe) {
+            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
         
     }
@@ -274,7 +287,7 @@ public final class NbMavenProject {
             files.add(fil);
         }
         if (addListener) {
-            FileChangeSupport.DEFAULT.addListener(listener, fil);
+            FileUtil.addFileChangeListener(listener, fil);
         }
     } 
 
@@ -304,7 +317,7 @@ public final class NbMavenProject {
             }
         }
         if (removeListener) {
-            FileChangeSupport.DEFAULT.removeListener(listener, fil);
+            FileUtil.removeFileChangeListener(listener, fil);
         }
     } 
     
