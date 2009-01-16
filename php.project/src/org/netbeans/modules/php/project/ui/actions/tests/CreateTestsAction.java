@@ -259,14 +259,12 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(parent)
-                .addArgument(PhpUnitConstants.PARAM_SKELETON)
-                .addArgument(sourceFo.getName())
-                .addArgument(sourceFo.getNameExt());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
-        Future<Integer> result = service.run();
+        Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, PhpUnitConstants.PARAM_SKELETON);
         try {
+            if (result.get() != 0) {
+                // "compatibility mode"
+                result = generateSkeleton(phpUnit, sourceFo, parent, PhpUnitConstants.PARAM_SKELETON_OLD);
+            }
             if (result.get() != 0) {
                 // test not generated
                 failed.add(sourceFo);
@@ -281,6 +279,17 @@ public final class CreateTestsAction extends NodeAction {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
+    }
+
+    private Future<Integer> generateSkeleton(PhpUnit phpUnit, FileObject sourceFo, File parent, String paramSkeleton) {
+        // test does not exist yet
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
+                .workingDirectory(parent)
+                .addArgument(paramSkeleton)
+                .addArgument(sourceFo.getName())
+                .addArgument(sourceFo.getNameExt());
+        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
+        return service.run();
     }
 
     private File getGeneratedFile(FileObject source, File parent) {
