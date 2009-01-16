@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.ui.update;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
@@ -90,7 +91,16 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         final Context ctx = getContext(nodes);
-        final File[] roots = SvnUtils.getActionRoots(ctx);
+        File[] roots = ctx.getRootFiles();
+        // filter managed roots
+        List<File> l = new ArrayList<File>();
+        for (File file : roots) {
+            if(SvnUtils.isManaged(file)) {
+                l.add(file);
+            }
+        }
+        roots = l.toArray(new File[l.size()]);
+
         if(roots == null || roots.length == 0) return;
 
         File interestingFile;
