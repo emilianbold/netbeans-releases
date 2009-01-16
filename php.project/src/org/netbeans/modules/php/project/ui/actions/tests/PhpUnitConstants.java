@@ -52,6 +52,8 @@ public final class PhpUnitConstants {
     public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
     public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    // for older PHP Unit versions
+    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
 
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
