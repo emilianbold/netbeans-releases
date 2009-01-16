@@ -44,6 +44,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -94,7 +95,7 @@ public class DisconnectAction extends BaseAction {
                             try {
                                 connection.disconnect();
                             } catch (DatabaseException dbe) {
-
+                                Exceptions.printStackTrace(dbe);
                             }
                         }
                     }
