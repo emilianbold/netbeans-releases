@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.explorer.node;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -59,6 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
@@ -67,7 +67,6 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class IndexNode extends BaseNode {
-    private static final Logger LOGGER = Logger.getLogger(IndexNode.class.getName());
     private static final String ICONBASE = "org/netbeans/modules/db/resources/index.gif";
     private static final String FOLDER = "Index"; //NOI18N
 
@@ -108,7 +107,7 @@ public class IndexNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -117,11 +116,7 @@ public class IndexNode extends BaseNode {
         PropertySupport ps = new PropertySupport.Name(this);
         addProperty(ps);
 
-        try {
-            addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
-        } catch (Exception e) {
-            // TODO report exception
-        }
+        addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
     }
 
     public String getCatalogName() {
@@ -178,7 +173,7 @@ public class IndexNode extends BaseNode {
         } catch (DDLException e) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, null, e);
+            Exceptions.printStackTrace(e);
         }
     }
 

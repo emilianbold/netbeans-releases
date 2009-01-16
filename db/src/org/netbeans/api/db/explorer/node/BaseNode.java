@@ -214,7 +214,6 @@ public abstract class BaseNode extends AbstractNode {
             RequestProcessor.getDefault().post(
                 new Runnable() {
                     public void run() {
-                        //nodeProvider.refresh();
                         Node parent = getParentNode();
                         if (parent instanceof BaseNode) {
                             ((BaseNode)parent).refresh();
