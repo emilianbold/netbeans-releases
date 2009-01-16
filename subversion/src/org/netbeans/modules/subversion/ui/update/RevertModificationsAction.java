@@ -90,14 +90,22 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         final Context ctx = getContext(nodes);
-        final File root = SvnUtils.getActionRoot(ctx);
-        if(root == null) return;
+        final File[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) return;
+
+        File interestingFile;
+        if(roots.length == 1) {
+            interestingFile = roots[0];
+        } else {
+            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+        }
+
         final SVNUrl rootUrl;
         final SVNUrl url;
         
         try {
-            rootUrl = SvnUtils.getRepositoryRootUrl(root);
-            url = SvnUtils.getRepositoryUrl(root);
+            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+            url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
