@@ -147,7 +147,7 @@ public class ConfigActionTest extends ConfigAction {
         }
     }
 
-    // <working directory, script name>
+    // <working directory, unit test name (script name without extension)>
     private Pair<FileObject, String> getPair(PhpProject project, Lookup context) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
         if (context == null) {
