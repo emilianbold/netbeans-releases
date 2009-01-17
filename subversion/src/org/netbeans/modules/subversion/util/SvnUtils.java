@@ -73,6 +73,8 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
@@ -1048,12 +1050,19 @@ public class SvnUtils {
     }
 
     /**
-     * Opens a dialog to pick a file if there is more then one root in a Context
+     * Either returns all root files from a context if they belong to the same DataObject or 
+     * opens a dialog to pick a file from all managed roots in the given context.
      *
-     * @param ctx the given context the choose the root from
-     * @return the only root available in the context the one picked by the user
+     * @param ctx the given context to choose the root from
+     * @return might be one of the following:<br>
+     *          <ul>
+     *              <li>all root files from a context
+     *              <li>the context root picked by the one picked by the user
+     *              <li>null if there are more than one root file not belonging
+     *                  to the same DataObject and none was chosen by the user
+     *          </ul>
      */
-    public static File getActionRoot(Context ctx) {
+    public static File[] getActionRoots(Context ctx) {
         File[] roots = ctx.getRootFiles();
         List<File> l = new ArrayList<File>();
 
@@ -1065,17 +1074,46 @@ public class SvnUtils {
         }
 
         roots = l.toArray(new File[l.size()]);
+        if(Utils.shareCommonDataObject(roots)) {
+            return roots;
+        }
+
         if(roots.length > 1) {
             // more than one managed root => need a dlg
             FileSelector fs = new FileSelector();
             if(fs.show(roots)) {
-                return fs.getSelectedFile();
+                return new File[ ]{ fs.getSelectedFile()};
             } else {
                 return null;
             }
         } else {
-            return roots[0];
+            return new File[] {roots[0]};
         }
+    }
+
+    /**
+     * Returns the primary file from a DataObject if there is some
+     * @param roots
+     * @return
+     */
+    public static File getPrimaryFile(File file) {
+        File primaryFile = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo != null) {
+            DataObject dao = null;
+            try {
+                dao = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                Subversion.LOG.log(Level.INFO, "No DataObject found for " + file, ex);
+            }
+            if(dao != null) {
+                primaryFile = FileUtil.toFile(dao.getPrimaryFile());
+            }
+        }
+        if(primaryFile == null) {
+            primaryFile = file; // consider it a fallback
+        }
+        return primaryFile;
     }
 
     /**
