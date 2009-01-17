@@ -92,6 +92,7 @@ public class J2eeLookupProvider implements LookupProvider {
         private WebReplaceTokenProvider replacer;
         private EntRefContainerImpl webEnt;
         private EjbEntRefContainerImpl ejbEnt;
+        private JPAStuffImpl jpa;
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;
@@ -99,6 +100,7 @@ public class J2eeLookupProvider implements LookupProvider {
             replacer = new WebReplaceTokenProvider(proj);
             webEnt = new EntRefContainerImpl(proj);
             ejbEnt = new EjbEntRefContainerImpl(proj);
+            jpa = new JPAStuffImpl(proj);
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
         }
@@ -138,9 +140,11 @@ public class J2eeLookupProvider implements LookupProvider {
                 WebModuleProviderImpl prov = new WebModuleProviderImpl(project);
                 lastInstance = prov;
                 content.remove(ejbEnt);
+                content.remove(jpa);
                 content.add(lastInstance);
                 content.add(replacer);
                 content.add(webEnt);
+                content.add(jpa);
                 copyOnSave = new CopyOnSave(project, prov);
                 try {
                     copyOnSave.initialize();
@@ -152,16 +156,19 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.remove(replacer);
                 content.remove(webEnt);
                 content.remove(ejbEnt);
+                content.remove(jpa);
                 lastInstance = new EarModuleProviderImpl(project);
                 content.add(lastInstance);
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
                 removeLastInstance();
+                content.remove(jpa);
                 content.remove(replacer);
                 content.remove(webEnt);
-                content.add(ejbEnt);
                 lastInstance = new EjbModuleProviderImpl(project);
                 content.add(lastInstance);
+                content.add(jpa);
+                content.add(ejbEnt);
             } else if (lastInstance != null && !(
                     NbMavenProject.TYPE_WAR.equals(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
@@ -171,6 +178,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.remove(replacer);
                 content.remove(webEnt);
                 content.remove(ejbEnt);
+                content.remove(jpa);
                 lastInstance = null;
             }
             lastType = packaging;

@@ -284,7 +284,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             for (CsmMember elm : c.getMembers()) {
                 if (CsmKindUtilities.isMethod(elm)) {
                     @SuppressWarnings("unchecked")
-                    CsmMethod<CsmMethod> m = (CsmMethod<CsmMethod>) elm;
+                    CsmMethod m = (CsmMethod) elm;
                     if (name.contentEquals(m.getName())
                             && compareParams(params, m.getParameters())
                             /*&& isAccessible(clazz, m)*/) {

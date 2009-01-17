@@ -56,6 +56,7 @@ import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.node.DriverNode;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -118,7 +119,7 @@ public class CustomizeDriverAction extends BaseAction {
                             node.destroy();
                             JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(oldName, displayName, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
                         } catch (DatabaseException exc) {
-                            //PENDING
+                            Exceptions.printStackTrace(exc);
                         }
                     }
                 }

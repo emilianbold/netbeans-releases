@@ -76,6 +76,13 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/struts/struts/1.2.9/struts-1.2.9.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-core/1.3.8/struts-core-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-el/1.3.8/struts-el-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-extras/1.3.8/struts-extras-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-faces/1.3.8/struts-faces-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-mailreader-dao/1.3.8/struts-mailreader-dao-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-scripting/1.3.8/struts-scripting-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-taglib/1.3.8/struts-taglib-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-tiles/1.3.8/struts-tiles-1.3.8.pom</resource>
     </volume>
 </library>

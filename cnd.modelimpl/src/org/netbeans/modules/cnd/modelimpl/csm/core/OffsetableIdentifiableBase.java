@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @see CsmUID
  * @author Vladimir Voskresensky
  */
-public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase implements CsmIdentifiable<T>, Persistent, SelfPersistent {
+public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase implements CsmIdentifiable, Persistent, SelfPersistent {
     
     private CsmUID uid = null;
 

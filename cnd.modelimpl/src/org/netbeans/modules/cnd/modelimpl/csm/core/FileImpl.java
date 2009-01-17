@@ -99,7 +99,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvashin
  */
 public class FileImpl implements CsmFile, MutableDeclarationsContainer,
-        Disposable, Persistent, SelfPersistent {
+        Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
@@ -944,7 +944,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void addInclude(IncludeImpl includeImpl) {
-        CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
+        CsmUID<CsmInclude> inclUID = RepositoryUtils.put((CsmInclude)includeImpl);
         assert inclUID != null;
         try {
             includesLock.writeLock().lock();
@@ -1121,7 +1121,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return UIDCsmConverter.UIDsToDeclarations(res).iterator();
     }
 
-    @SuppressWarnings("unchecked")
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
@@ -1179,7 +1178,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return uids;
     }
 
-    @SuppressWarnings("unchecked")
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {

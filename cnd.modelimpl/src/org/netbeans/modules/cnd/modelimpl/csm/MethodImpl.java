@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * @param T 
  * @author Vladimir Kvashin
  */
-public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
+public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
 
     private final CsmVisibility visibility;
     private static final byte ABSTRACT = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);

@@ -500,20 +500,25 @@ final class ModuleListParser {
     /**
      * Find all modules in a binary build, possibly from cache.
      */
-    private static Map<String,Entry> scanBinaries(Project project, File build) throws IOException {
-        Map<String,Entry> entries = BINARY_SCAN_CACHE.get(build);
-        if (entries == null) {
-            if (project != null) {
-                project.log("Scanning for modules in " + build);
+    private static Map<String,Entry> scanBinaries(Project project, File[] clusters) throws IOException {
+        Map<String,Entry> allEntries = new HashMap<String,Entry>();
+
+        for (File cluster : clusters) {
+            Map<String, Entry> entries = BINARY_SCAN_CACHE.get(cluster);
+            if (entries == null) {
+                if (project != null) {
+                    project.log("Scanning for modules in " + cluster);
+                }
+                entries = new HashMap<String, Entry>();
+                doScanBinaries(cluster, entries);
+                if (project != null) {
+                    project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                }
+                BINARY_SCAN_CACHE.put(cluster, entries);
             }
-            entries = new HashMap<String,Entry>();
-            doScanBinaries(build, entries);
-            if (project != null) {
-                project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
-            }
-            BINARY_SCAN_CACHE.put(build, entries);
+            allEntries.putAll(entries);
         }
-        return entries;
+        return allEntries;
     }
     
     private static final String[] MODULE_DIRS = {
@@ -528,14 +533,9 @@ final class ModuleListParser {
      * Checks modules/{,autoload/,eager/}*.jar as well as well-known core/*.jar and lib/boot.jar in each cluster.
      * XXX would be slightly more precise to check config/Modules/*.xml rather than scan for module JARs.
      */
-    private static void doScanBinaries(File build, Map<String,Entry> entries) throws IOException {
-        File[] clusters = build.listFiles();
-        if (clusters == null) {
-            throw new IOException("Cannot examine dir " + build);
-        }
-        for (int i = 0; i < clusters.length; i++) {
+    private static void doScanBinaries(File cluster, Map<String,Entry> entries) throws IOException {
             for (int j = 0; j < MODULE_DIRS.length; j++) {
-                File dir = new File(clusters[i], MODULE_DIRS[j].replace('/', File.separatorChar));
+                File dir = new File(cluster, MODULE_DIRS[j].replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;
                 }
@@ -577,7 +577,7 @@ final class ModuleListParser {
                         String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
                         
                         
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),
+                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
                                 parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
@@ -589,7 +589,6 @@ final class ModuleListParser {
                     }
                 }
             }
-        }
     }
     
     private static Map<String,Entry> scanSuiteSources(Map<String,String> properties, Project project) throws IOException {
@@ -666,7 +665,8 @@ final class ModuleListParser {
      * Properties interpreted:
      * <ol>
      * <li> ${nb_all} - location of NB sources (used only for netbeans.org modules)
-     * <li> ${netbeans.dest.dir} - location of NB build
+     * <li> ${netbeans.dest.dir} - location of NB build (used only for NB.org modules)
+     * <li> ${cluster.path} - location of clusters to build against (used only for suite and standalone modules)
      * <li> ${basedir} - directory of the project initiating the scan (most significant for standalone modules)
      * <li> ${suite.dir} - directory of the suite (used only for suite modules)
      * <li> ${nb.cluster.TOKEN} - list of module paths included in cluster TOKEN (comma-separated) (used only for netbeans.org modules)
@@ -679,23 +679,46 @@ final class ModuleListParser {
      */
     public ModuleListParser(Map<String,String> properties, int type, Project project) throws IOException {
         String nball = properties.get("nb_all");
-        String buildS = properties.get("netbeans.dest.dir");
         File basedir = new File(properties.get("basedir"));
-        if (buildS == null) {
-            throw new IOException("No definition of netbeans.dest.dir in " + basedir);
-        }
-        // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
-        // Neither operation is likely to be needed, but just in case.
-        File build = FileUtils.getFileUtils().normalize(FileUtils.getFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
-        if (!build.isDirectory()) {
-            throw new IOException("No such netbeans.dest.dir: " + build);
-        }
+        final FileUtils fu = FileUtils.getFileUtils();
+
         if (type != ParseProjectXml.TYPE_NB_ORG) {
+            // add extra clusters
+            String suiteDirS = properties.get("suite.dir");
+            boolean hasSuiteDir = suiteDirS != null && suiteDirS.length() > 0;
+            String clusterPath = properties.get("cluster.path");
+            File[] clusters = null;
+
+            if (clusterPath != null) {
+                String[] clustersS;
+                if (hasSuiteDir) {
+                    // resolve suite modules against fake suite project
+                    Project fakeproj = new Project();
+                    fakeproj.setBaseDir(new File(suiteDirS));
+                    clustersS = Path.translatePath(fakeproj, clusterPath);
+                } else {
+                    clustersS = Path.translatePath(project, clusterPath);
+                }
+                clusters = new File[clustersS.length];
+                if (clustersS != null && clustersS.length > 0) {
+                    for (int j = 0; j < clustersS.length; j++) {
+                        File cluster = new File(clustersS[j]);
+                        if (! cluster.isDirectory()) {
+                            throw new IOException("No such cluster " + cluster + " referred to from ${cluster.path}: " + clusterPath);
+                        }
+                        clusters[j] = cluster;
+                    }
+                }
+            }
+
+            if (clusters == null || clusters.length == 0)
+                throw new IOException("Invalid ${cluster.path}: " + clusterPath);
+
             // External module.
             if (nball != null && project != null) {
                 project.log("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema", Project.MSG_WARN);
             }
-            entries = scanBinaries(project, build);
+            entries = scanBinaries(project, clusters);
             if (type == ParseProjectXml.TYPE_SUITE) {
                 entries.putAll(scanSuiteSources(properties, project));
             } else {
@@ -705,12 +728,29 @@ final class ModuleListParser {
             }
         } else {
             // netbeans.org module.
+            String buildS = properties.get("netbeans.dest.dir");
+            if (buildS == null) {
+                throw new IOException("No definition of netbeans.dest.dir in " + basedir);
+            }
+            // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
+            // Neither operation is likely to be needed, but just in case.
+            File build = fu.normalize(fu.resolveFile(basedir, buildS).getAbsolutePath());
+            if (!build.isDirectory()) {
+                throw new IOException("No such netbeans.dest.dir: " + build);
+            }
+
+            // expand clusters in build
+            File[] clusters = build.listFiles();
+            if (clusters == null) {
+                throw new IOException("Cannot examine dir " + build);
+            }
+
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
             if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans"))) {
                 // Potentially orphaned module to be built against specific binaries, plus perhaps other source deps.
-                entries = scanBinaries(project, build);
+                entries = scanBinaries(project, clusters);
                 // Add referenced module in case it does not appear otherwise.
                 Entry e = scanStandaloneSource(properties, project);
                 if (e != null) {

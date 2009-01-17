@@ -96,7 +96,6 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQtApplication.html"/>
                 </file>
 
-<!--
                 <file name="newQtLibrary.xml">
                     <attr name="position" intvalue="600"/>
                     <attr name="template" boolvalue="true"/>
@@ -105,7 +104,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQtLibrary.html"/>
                 </file>
--->
 
             </folder>
             
