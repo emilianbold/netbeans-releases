@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmFinderFactory;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
@@ -324,15 +325,14 @@ public final class CompletionSupport {
         for (int i = 0; i < cnt; i++) {
             // Use constructor conversion to allow to use it too for the constructors
             CsmFunction m = methodList.get(i);
-            @SuppressWarnings("unchecked")
-            CsmParameter[] methodParms = (CsmParameter[]) m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
+            CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
             if (methodParms.length == parmTypeCnt || (acceptMoreParameters && methodParms.length >= parmTypeCnt)) {
                 boolean accept = true;
                 boolean bestMatch = !acceptMoreParameters;
                 int matched = 0;
                 for (int j = 0; accept && j < parmTypeCnt; j++) {
                     if (methodParms[j] == null) {
-                        System.err.println("Null parameter " + j + " in function " + m.getUID()); //NOI18N
+                        System.err.println("Null parameter " + j + " in function " + UIDs.get(m)); //NOI18N
                         bestMatch = false;
                         continue;
                     }

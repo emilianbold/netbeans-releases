@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -147,16 +148,16 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     }
     
     private CsmCompoundClassifier getClassifier(){
-        CsmIdentifiable object = getHostId().getObject();
+        Object object = getHostId().getObject();
         if (object instanceof CsmCompoundClassifier) {
             return (CsmCompoundClassifier)object;
-        } else if (CsmKindUtilities.isTypedef(object)){
+        } else if (CsmKindUtilities.isCsmObject(object) && CsmKindUtilities.isTypedef((CsmObject)object)){
             CsmTypedef def = (CsmTypedef) object;
 	    CsmType type = def.getType();
 	    if( type != null ) {
 		return (CsmCompoundClassifier)type.getClassifier();
 	    }
-        } else if (CsmKindUtilities.isClassForwardDeclaration(object)){
+        } else if (CsmKindUtilities.isCsmObject(object) && CsmKindUtilities.isClassForwardDeclaration((CsmObject)object)){
             CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) object;
 	    CsmClass cls = fd.getCsmClass();
 	    if( cls != null ) {

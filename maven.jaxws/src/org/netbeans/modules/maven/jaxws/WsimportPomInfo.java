@@ -37,48 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
-import java.io.File;
+package org.netbeans.modules.maven.jaxws;
 
-import java.util.EventObject;
+import java.util.List;
 
-import org.openide.filesystems.FileObject;
-
-import org.openide.filesystems.FileUtil;
-
-/**
- * Event indicating that a file named by a given path was created, deleted, or changed.
- * @author Jesse Glick
+/** Used to model wsimport configuration in pom file for one client or service from wsdl.
+ *
+ * @author mkuchtiak
  */
-public final class FileChangeSupportEvent extends EventObject {
+public class WsimportPomInfo {
+    private String wsdlPath;
+    private String handlerFile;
+    private List<String> bindingFiles;
 
-    public static final int EVENT_CREATED = 0;
-    public static final int EVENT_DELETED = 1;
-    public static final int EVENT_MODIFIED = 2;
+    public WsimportPomInfo(String wsdlPath) {
+        this.wsdlPath = wsdlPath;
+    }
 
-    private final int type;
-    private final File path;
-    
-    FileChangeSupportEvent(FileChangeSupport support, int type, File path) {
-        super(support);
-        this.type = type;
-        this.path = path;
+    public List<String> getBindingFiles() {
+        return bindingFiles;
     }
-    
-    public int getType() {
-        return type;
+
+    public void setBindingFiles(List<String> bindingFiles) {
+        this.bindingFiles = bindingFiles;
     }
-    
-    public File getPath() {
-        return path;
+
+    public String getHandlerFile() {
+        return handlerFile;
     }
-    
-    public FileObject getFileObject() {
-        return FileUtil.toFileObject(path);
+
+    public void setHandlerFile(String handlerFile) {
+        this.handlerFile = handlerFile;
     }
-    
-    public String toString() {
-        return "FCSE[" + "CDM".charAt(type) + ":" + path + "]"; // NOI18N
+
+    public String getWsdlPath() {
+        return wsdlPath;
     }
-    
+
+    public void setWsdlPath(String wsdlPath) {
+        this.wsdlPath = wsdlPath;
+    }
 }

@@ -329,7 +329,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
                 FileObject root = cp.findOwnerRoot(folder);
                 String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
-                String postfix = FileUtil.getRelativePath(folder, fo.getParent()).replace('/', '.');
+                String postfix = FileUtil.getRelativePath(folder, fo.isFolder() ? fo : fo.getParent()).replace('/', '.');
                 String t = concat(prefix, getNewPackageName(), postfix);
                 return t;
             }

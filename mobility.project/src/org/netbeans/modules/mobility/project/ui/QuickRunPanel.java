@@ -67,7 +67,7 @@ public class QuickRunPanel extends JPanel implements ActionListener {
     private static String lastDeviceName = null;
     
     /** Creates new form QuickRunPanel */
-    public QuickRunPanel(String platformName, String deviceName) {
+    public QuickRunPanel(String platformType, String platformName, String deviceName) {
         if (lastPlatformName == null) {
             lastPlatformName = platformName;
             lastDeviceName = deviceName;
@@ -75,7 +75,7 @@ public class QuickRunPanel extends JPanel implements ActionListener {
         
         initComponents();
         initAccessibility();
-        JavaPlatform jp[] = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+        JavaPlatform jp[] = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null));
         Vector<J2MEPlatform> a = new Vector<J2MEPlatform>();
         int selected = 0;
         for (int i=0; i<jp.length; i++) {

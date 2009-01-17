@@ -285,7 +285,7 @@ class GroovyParser implements Parser {
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
 
-                        if (line.endsWith("?.")) { // NOI18N
+                        if (line.endsWith("?.") || line.endsWith(".&")) { // NOI18N
                             removeChars = 2;
                         } else if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
                             removeChars = 1; 

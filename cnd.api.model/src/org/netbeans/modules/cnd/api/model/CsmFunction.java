@@ -49,7 +49,7 @@ import java.util.Map;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
+public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
     
     public enum OperatorKind {
         COMMA(",", true), //NOI18N

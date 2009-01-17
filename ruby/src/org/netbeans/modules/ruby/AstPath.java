@@ -51,8 +51,7 @@ import java.util.logging.Logger;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * This represents a path in a JRuby AST.

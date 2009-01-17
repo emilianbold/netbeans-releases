@@ -565,4 +565,11 @@ public class GeneralPHP extends JellyTestCase {
     {
       CheckCompletionItems( jlist.listItself, asIdeal );
     }
+
+  protected void Backit( EditorOperator eoPHP, int iCount )
+  {
+    for( int i = 0; i < iCount; i++ )
+      eoPHP.pressKey( KeyEvent.VK_BACK_SPACE );
+  }
+
 }
