@@ -466,7 +466,7 @@ public class CsmFinderImpl implements CsmFinder {
         if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
             Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
             for (CsmReference ref : res) {
-                if (ref.getReferencedObject() instanceof CsmLabel) {
+                if (CsmKindUtilities.isLabel(ref.getReferencedObject())) {
                     CsmLabel label = (CsmLabel) ref.getReferencedObject();
                     if (CsmSortUtilities.matchName(label.getLabel(), name, exactMatch, caseSensitive)) {
                         out.add(label);
