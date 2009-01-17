@@ -188,10 +188,10 @@ public class ConfigurationDescriptorProvider {
                         type = "STATIC_LIB"; // NOI18N
                         break;
                     case MakeConfiguration.TYPE_QT_APPLICATION:
-                        type = "QT_APPLICATION";
+                        type = "QT_APPLICATION"; // NOI18N
                         break;
                     case MakeConfiguration.TYPE_QT_LIBRARY:
-                        type = "QT_LIBRARY";
+                        type = "QT_LIBRARY"; // NOI18N
                         break;
                     default:
                         type = "UNKNOWN"; // NOI18N

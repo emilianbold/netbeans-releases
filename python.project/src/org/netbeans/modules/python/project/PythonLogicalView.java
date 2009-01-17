@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.python.project;
 
 import java.awt.Image;
@@ -43,12 +42,14 @@ import org.openide.xml.XMLUtil;
  * @author Tomas Zezula
  */
 class PythonLogicalView implements LogicalViewProvider {
+
     private PythonProject project;
+
     public PythonLogicalView(PythonProject project) {
         this.project = project;
     }
 
-    public Node createLogicalView() {        
+    public Node createLogicalView() {
         return new PythonProjectNode();
     }
 
@@ -56,7 +57,7 @@ class PythonLogicalView implements LogicalViewProvider {
         Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
-        }        
+        }
         if (target instanceof FileObject) {
             FileObject targetFO = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(targetFO);
@@ -74,27 +75,30 @@ class PythonLogicalView implements LogicalViewProvider {
 
         return null;
     }
-    
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/python/project/resources/brokenProjectBadge.gif", true);
-    
+
     private final class PythonProjectNode extends AbstractNode {
-        
+
         private boolean broken; //for future use, marks the project as broken
-                             
+
         public PythonProjectNode() {
-            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-python-project/Nodes"), 
-                  Lookups.singleton(project));
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-python-project/Nodes"),
+                    Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/python/project/resources/py_25_16.png");
-            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );            
+            super.setName(ProjectUtils.getInformation(project).getDisplayName());
         }
-        
-        public @Override String getShortDescription() {
+
+        public 
+        @Override
+        String getShortDescription() {
             //todo: Add python platform description
             String dirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
             return NbBundle.getMessage(PythonLogicalView.class, "PythonLogicalView.ProjectTooltipDescription", dirName);
         }
-        
-        public @Override String getHtmlDisplayName() {
+
+        public 
+        @Override
+        String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
             try {
                 dispName = XMLUtil.toElementContent(dispName);
@@ -105,42 +109,41 @@ class PythonLogicalView implements LogicalViewProvider {
             return broken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
 
-       @Override
-       public Image getIcon(int type) {
-           Image original = super.getIcon(type);
-           return broken ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;          
-       }
-        
-       @Override
-       public Image getOpenedIcon(int type) {
-           Image original = super.getOpenedIcon(type);
-           return broken ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;                     
-       }
-       
-       @Override
-       public Action[] getActions( boolean context ) {
+        @Override
+        public Image getIcon(int type) {
+            Image original = super.getIcon(type);
+            return broken ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            Image original = super.getOpenedIcon(type);
+            return broken ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
             return getAdditionalActions();
         }
-        
-       @Override
-       public boolean canRename() {
-           return true;
-       }
-        
-       @Override
-       public void setName(String s) {
-           DefaultProjectOperations.performDefaultRenameOperation(project, s);
-       }
-        
-       
-       @Override
-       public HelpCtx getHelpCtx() {
-           return new HelpCtx(PythonProjectNode.class);
-       }
-       
-       private Action[] getAdditionalActions () {
-           final List<Action> actions = new ArrayList<Action>();            
-           actions.add(CommonProjectActions.newFileAction());
+
+        @Override
+        public boolean canRename() {
+            return true;
+        }
+
+        @Override
+        public void setName(String s) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, s);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(PythonProjectNode.class);
+        }
+
+        private Action[] getAdditionalActions() {
+            final List<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
 //            The action provider is not done yet
 //            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null)); // NOI18N
@@ -148,9 +151,12 @@ class PythonLogicalView implements LogicalViewProvider {
 //            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
 //            actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, bundle.getString("LBL_JavadocAction_Name"), null)); // NOI18N
 //            actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(PythonLogicalView.class,"LBL_RunAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(PythonLogicalView.class,"LBL_DebugAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(PythonLogicalView.class,"LBL_TestAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(PythonLogicalView.class, "LBL_RunAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(PythonLogicalView.class, "LBL_DebugAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(PythonLogicalView.class, "LBL_TestAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(PythonLogicalView.class, "LBL_BuildAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(PythonLogicalView.class, "LBL_CleanBuildAction_Name"), null)); // NOI18N
+
 //            actions.addAll(Utilities.actionsForPath("Projects/Debugger_Actions_temporary")); //NOI18N
 //            actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
 //            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
@@ -171,14 +177,13 @@ class PythonLogicalView implements LogicalViewProvider {
             actions.add(new ChangePackageViewTypeAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
-            
+
             // honor 57874 contact
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
-            
-            actions.add(null);            
-            actions.add(CommonProjectActions.customizeProjectAction());            
+
+            actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);
-       }
-        
+        }
     }
 }
