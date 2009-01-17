@@ -1300,8 +1300,9 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
                 <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest</xsl:attribute>
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
+                <nbstartserver debugmode="true"/>
                 <antcall target="connect-debugger"/>
+                <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
                 <antcall target="debug-display-browser"/>
                 <antcall target="connect-client-debugger"/>
             </target>
