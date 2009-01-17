@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  * Represents include directive
  * @author Vladimir Kvashin
  */
-public interface CsmInclude extends CsmOffsetable, CsmIdentifiable<CsmInclude> {
+public interface CsmInclude extends CsmOffsetable {
 
     /**
      * Returns the name that of the included file,

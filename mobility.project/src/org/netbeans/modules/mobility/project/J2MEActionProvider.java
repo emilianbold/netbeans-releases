@@ -47,7 +47,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -239,7 +241,7 @@ public class J2MEActionProvider implements ActionProvider {
                     }
                 }
                 if (COMMAND_RUN_WITH.equals(command)) {
-                    QuickRunPanel qrp = new QuickRunPanel(evaluateProperty(ep, DefaultPropertiesDescriptor.PLATFORM_ACTIVE, activeConfiguration), evaluateProperty(ep, DefaultPropertiesDescriptor.PLATFORM_DEVICE, activeConfiguration));
+                    QuickRunPanel qrp = new QuickRunPanel(J2MEPlatform.SPECIFICATION_NAME, evaluateProperty(ep, DefaultPropertiesDescriptor.PLATFORM_ACTIVE, activeConfiguration), evaluateProperty(ep, DefaultPropertiesDescriptor.PLATFORM_DEVICE, activeConfiguration));
                     DialogDescriptor dd = new DialogDescriptor(qrp, NbBundle.getMessage(J2MEActionProvider.class, "Title_QuickRun"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(J2MEActionProvider.class), null); //NOI18N
                     if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) && qrp.getPlatformName() != null && qrp.getDeviceName() != null) {
                         p.put(DefaultPropertiesDescriptor.PLATFORM_ACTIVE, qrp.getPlatformName());
@@ -351,7 +353,30 @@ public class J2MEActionProvider implements ActionProvider {
     }
     
     public boolean isActionEnabled( @SuppressWarnings("unused") final String command,
-            @SuppressWarnings("unused") final Lookup context ) {
+            final Lookup context ) {
+        if (COMMAND_RUN_WITH.equals(command)) {
+            //Temporary workaround for http://www.netbeans.org/issues/show_bug.cgi?id=151778 -
+            //disable Run With on CDC projects
+            Collection<? extends Project> projects = context.lookupAll(Project.class);
+            for (Project p : projects) {
+                J2MEProject meProj = p.getLookup().lookup(J2MEProject.class); //wrapping
+                if (meProj == null) { //multi-selection of heterogenous types
+                    System.err.println("No J2MEProject in " + p + " lookup contents " + p.getLookup().lookupAll(Object.class));
+                    return false;
+                }
+                EditableProperties props = meProj.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (props != null) {
+                    String trig = props.getProperty("platform.trigger"); //NOI18N
+                    if ("CDC".equals(trig)) { //NOI18N
+                        System.err.println("Found CDC trigger: " + trig);
+                        return false;
+                    }
+                } else {
+                    System.err.println("No props, bail");
+                    return false;
+                }
+            }
+        }
         return true;
     }
 }

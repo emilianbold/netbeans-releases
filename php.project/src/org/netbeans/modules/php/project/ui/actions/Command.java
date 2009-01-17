@@ -92,7 +92,10 @@ public abstract class Command {
 
     protected boolean isTestFile(Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
-        assert fileObj != null : "No fileobject found for context: " + context;
+        // #156939
+        if (fileObj == null) {
+            return false;
+        }
         return CommandUtils.isUnderTests(project, fileObj, false);
     }
 }

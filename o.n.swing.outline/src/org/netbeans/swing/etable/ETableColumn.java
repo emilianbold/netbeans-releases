@@ -44,9 +44,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -581,10 +583,18 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
                 valueString = et.getColumnDisplayName(valueString);
             }
             Icon sortIcon = null;
+
+            List<TableColumn> sortedColumns = ((ETableColumnModel) table.getColumnModel ()).getSortedColumns ();
+
             if (sortRank != 0) {
-                label.setText((value == null) ? 
-                    Integer.toString(sortRank) : 
-                    sortRank+" "+valueString);
+                if (sortedColumns.size () > 1) {
+                    label.setText((value == null) ?
+                        Integer.toString(sortRank) :
+                        sortRank+" "+valueString);
+                }
+                // don't use deriveFont() - see #49973 for details
+                label.setFont (new Font (getFont ().getName (), Font.BOLD, getFont ().getSize ()));
+
                 if (ascending) {
                     sortIcon = UIManager.getIcon("ETableHeader.ascendingIcon");
                     if (sortIcon == null) {

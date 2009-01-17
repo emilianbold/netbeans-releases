@@ -50,6 +50,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -100,7 +101,7 @@ public class ForeignKeyColumnNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -122,7 +123,7 @@ public class ForeignKeyColumnNode extends BaseNode {
             addProperty(FKREFERREDCOLUMN, FKREFERREDCOLUMNDESC, String.class, false, referred.getName());
 
         } catch (Exception e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -140,7 +141,7 @@ public class ForeignKeyColumnNode extends BaseNode {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

@@ -319,11 +319,15 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        List<String> wsdlFiles = MavenModelUtils.getWsdlFiles(prj);
-        if (wsdlFiles.size() > 0) {
-            for (String wsdlPath : wsdlFiles) {
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            for (WsimportPomInfo candidate : candidates) {
+                String wsdlPath = candidate.getWsdlPath();
                 if (isClient(prj, jaxWsSupport, wsdlPath)) {
                     JaxWsService client = new JaxWsService(wsdlPath, false);
+                    if (candidate.getHandlerFile() != null) {
+                        client.setHandlerBindingFile(candidate.getHandlerFile());
+                    }
                     jaxWsSupport.addService(client);
                 }
             }
@@ -340,11 +344,15 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        List<String> wsdlFiles = MavenModelUtils.getWsdlFiles(prj);
+        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
         List<JaxWsService> clients = new ArrayList<JaxWsService>();
-        for (String wsdlPath : wsdlFiles) {
+        for (WsimportPomInfo candidate : canditates) {
+            String wsdlPath = candidate.getWsdlPath();
             if (isClient(prj, jaxWsSupport, wsdlPath)) {
                 JaxWsService client = new JaxWsService(wsdlPath, false);
+                if (candidate.getHandlerFile() != null) {
+                    client.setHandlerBindingFile(candidate.getHandlerFile());
+                }
                 clients.add(client);
             }
         }

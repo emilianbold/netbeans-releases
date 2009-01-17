@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
 
     private final CsmObject selectedElement;
-    private CsmFunction<CsmFunction> functionObj;
+    private CsmFunction functionObj;
     private ParamTableModel model;
     private ChangeListener parent;
     
@@ -119,11 +119,11 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             return;
         }
         @SuppressWarnings("unchecked")
-        CsmFunction<CsmFunction> fun = ((CsmFunction<CsmFunction>) CsmRefactoringUtils.getReferencedElement(selectedElement)).getDeclaration();
+        CsmFunction fun = ((CsmFunction) CsmRefactoringUtils.getReferencedElement(selectedElement)).getDeclaration();
         functionObj = fun;
         returnType = functionObj.getReturnType().getCanonicalText().toString();
         if (CsmKindUtilities.isMethod(functionObj)) {
-            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) functionObj);
+            CsmMethod method = (CsmMethod)CsmBaseUtilities.getFunctionDeclaration(functionObj);
             modifiersCombo.setEnabled(true);
             setModifier(method.getVisibility());
         } else {
@@ -467,12 +467,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             typeList.add(par.getType());
         }
 
-        Collection<CsmFunction<CsmFunction>> allMethods = new ArrayList<CsmFunction<CsmFunction>>();
+        Collection<CsmFunction> allMethods = new ArrayList<CsmFunction>();
 //        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
 //        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
         allMethods.add(functionObj);
         
-        for (CsmFunction<CsmFunction> currentMethod: allMethods) {
+        for (CsmFunction currentMethod: allMethods) {
             int originalIndex = 0;
             for (CsmParameter par: currentMethod.getParameters()) {
                 CsmType desc = par.getType();

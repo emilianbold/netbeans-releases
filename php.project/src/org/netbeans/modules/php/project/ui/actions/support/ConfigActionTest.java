@@ -134,11 +134,16 @@ public class ConfigActionTest extends ConfigAction {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must be known already";
 
+        FileObject runFile = null;
+        if (context == null) {
+            runFile = testDirectory;
+        }
+
         // ugly :/
         if (debug) {
-            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
+            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
         } else {
-            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory).run(context);
+            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
         }
     }
 
@@ -162,6 +167,6 @@ public class ConfigActionTest extends ConfigAction {
         assert testDirectory != null : "Test directory should be defined for running a test file";
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
         assert fileObj != null : "Fileobject not found for context: " + context;
-        return Pair.of(fileObj.getParent(), fileObj.getNameExt());
+        return Pair.of(fileObj.getParent(), fileObj.getName());
     }
 }
