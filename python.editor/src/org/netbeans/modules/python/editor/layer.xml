@@ -3,7 +3,7 @@
 <filesystem>
     
     <folder name="Editors">
-        <folder name="text">            
+        <folder name="text">
             <folder name="x-python">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
 
@@ -154,7 +154,7 @@
             <folder name="x-python">
                 <folder name="hints">
                     <folder name="general">
-                       <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.hints.Bundle"/>
                         <file name="org-netbeans-modules-python-editor-hints-NameRule.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-CreateDocString.instance"/>
@@ -170,8 +170,8 @@
                         <file name="org-netbeans-modules-python-editor-hints-AccessToProtected.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-AttributeDefinedOutsideInit.instance"/>
                         <file name="org-netbeans-modules-python-editor-hints-ClassCircularRedundancy.instance"/>
-                    </folder>    
-                </folder>    
+                    </folder>
+                </folder>
                 <folder name="selection">
                     <file name="org-netbeans-modules-python-editor-hints-SurroundWith.instance"/>
                     <file name="org-netbeans-modules-python-editor-hints-ExtractCode.instance"/>
@@ -180,7 +180,7 @@
         </folder>
     </folder>
     
-     <folder name="GsfPlugins">
+    <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-python">
                 <file name="language.instance">
@@ -189,7 +189,7 @@
                 </file>
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.python.editor.PythonStructureScanner"/>
-                </file> 
+                </file>
                 <file name="hints.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.python.editor.hints.PythonHintsProvider"/>
                 </file>
@@ -197,7 +197,7 @@
             </folder>
         </folder>
     </folder>
-     <folder name="Loaders">
+    <folder name="Loaders">
         <folder name="text">
             <folder name="x-python">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
@@ -347,15 +347,15 @@
                     </folder>
                 </folder>
             </folder>
-          <folder name="Formatting">
-              <attr name="position" intvalue="0"/>
-              <folder name="text">
-                  <folder name="x-python">
-                      <file name="Imports.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.python.editor.options.FmtImports.getController"/>
-                          <attr name="position" intvalue="150"/>
-                      </file>
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-python">
+                        <file name="Imports.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.python.editor.options.FmtImports.getController"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
                       <!-- Not yet implemented
                       <file name="TabsAndIndents.instance">
                           <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
@@ -378,28 +378,28 @@
                           <attr name="position" intvalue="500"/>
                       </file>
                       -->
-                      <file name="Spaces.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.python.editor.options.FmtSpaces.getController"/>
-                          <attr name="position" intvalue="600"/>
-                      </file>
-                  </folder>
-              </folder>
-          </folder>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.python.editor.options.FmtSpaces.getController"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 
-    <folder name="Templates">  
-        <folder name="Python">           
+    <folder name="Templates">
+        <folder name="Python">
             <attr name="position" intvalue="1403"/>
             <file name="_main.py" url="templates/executable_module.py.ftl">
                 <attr name="position" intvalue="888"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/ExecutableModule.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>           
+            </file>
             <file name="_module.py" url="templates/module.py.ftl">
                 <attr name="position" intvalue="900"/>
                 <attr name="templateCategory" stringvalue="python"/>
@@ -407,8 +407,8 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/Module.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
-            </file>        
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
+            </file>
             <file name="_empty_module.py" url="templates/emptymodule.py.ftl">
                 <attr name="position" intvalue="905"/>
                 <attr name="templateCategory" stringvalue="python"/>
@@ -435,7 +435,7 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/templates/init.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyNode25.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.python.editor.Bundle"/>
             </file>
             <file name="_package">
                 <attr name="position" intvalue="908"/>
@@ -445,6 +445,13 @@
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/python/editor/wizards/pypackage/pythonPackage.html"/>
             </file>
+
+            <file name="_setup.py" url="templates/setup.py.ftl">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="false"></attr>
+            </file>
+                
+
             
         </folder>
     </folder>

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -253,7 +254,7 @@ public final class ReferencesSupport {
             if (CsmKindUtilities.isFunctionDefinition(scope)) {
                 Collection<CsmReference> labels = CsmLabelResolver.getDefault().getLabels(
                         (CsmFunctionDefinition) scope, csmGoto.getLabel(),
-                        CsmLabelResolver.LabelKind.Definiton);
+                        EnumSet.of(CsmLabelResolver.LabelKind.Definiton));
                 if (!labels.isEmpty()) {
                     csmItem = labels.iterator().next().getReferencedObject();
                 }

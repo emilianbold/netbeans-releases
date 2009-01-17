@@ -81,14 +81,6 @@ public class CsmSortUtilities {
     }
     
     /// match names
-        
-    public static boolean matchName(CharSequence name, CharSequence strPrefix) {
-	return matchName(name, strPrefix, false);
-    }
-    
-    public static boolean matchName(CharSequence name, CharSequence strPrefix, boolean match) {
-	return matchName(name, strPrefix, match, false);
-    }
     
     public static boolean matchName(CharSequence name_, CharSequence strPrefix_, boolean match, boolean caseSensitive) {
         int n1 = name_.length();
