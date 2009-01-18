@@ -85,18 +85,23 @@ public class TermExecutor extends PtyExecutor {
             if (pty.isRaw())
                 return;     // otherwise SWINSZ will give us an IOException
             */
-            // On Linux and Solaris setting WINSZ from the master
+
+            // On Linux, Solaris and Mac setting WINSZ from the master
             // fd works.
-            // On Linux and (I think) on Solaris setting it from the
+            // On Linux and (I think) on Solaris and Mac setting it from the
             // slave fd works.
-            // On Mac setting it from the master fd seems to not work.
-            if (true) {
-                pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                     pixels.height, pixels.width);
-            } else {
-                pty.slaveTIOCSWINSZ(cells.height, cells.width,
-                                     pixels.height, pixels.width);
-            }
+	    switch (OS.get()) {
+		/* OLD
+		case MACOS:
+		    pty.slaveTIOCSWINSZ(cells.height, cells.width,
+					 pixels.height, pixels.width);
+		    break;
+		 */
+		default:
+		    pty.masterTIOCSWINSZ(cells.height, cells.width,
+					 pixels.height, pixels.width);
+		    break;
+	    }
         }
     }
 
@@ -170,7 +175,8 @@ public class TermExecutor extends PtyExecutor {
         if (debug)
             term.setDebugFlags(Term.DEBUG_INPUT |
                                Term.DEBUG_OUTPUT |
-                               Term.DEBUG_OPS);
+                               Term.DEBUG_OPS |
+			       Term.DEBUG_KEYS);
 
         if (pty != null)
             term.addListener(new MyTermListener(pty));
