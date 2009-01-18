@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
@@ -47,12 +46,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProgram;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -61,7 +55,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * @author Radek Matous, Tomas Mysik
@@ -69,53 +62,27 @@ import org.openide.util.Lookup;
 public class RunScript {
     protected static final Logger LOGGER = Logger.getLogger(RunScript.class.getName());
 
-    protected final PhpProject project;
-    protected final PhpProgram program;
-    // can be null
-    protected final ExecutionDescriptor descriptor;
-    // can be null
-    protected final ExternalProcessBuilder processBuilder;
-    // can be null
-    protected final FileObject sourceRoot;
-    // can be null
-    protected final FileObject runFile;
+    private final Provider provider;
 
-    public RunScript(PhpProject project) {
-        this(project, ProjectPropertiesSupport.getPhpInterpreter(project), null, null, null, null);
-    }
+    public RunScript(Provider provider) {
+        assert provider != null;
 
-    public RunScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot, FileObject runFile) {
-        assert project != null;
-        assert program != null;
-
-        this.project = project;
-        this.program = program;
-        this.descriptor = descriptor;
-        this.processBuilder = processBuilder;
-        this.sourceRoot = sourceRoot != null ? sourceRoot : ProjectPropertiesSupport.getSourcesDirectory(project);
-        this.runFile = runFile;
+        this.provider = provider;
     }
 
     public void run() {
-        run(null);
-    }
-
-    public void run(final Lookup context) {
         try {
-            getCallable(context).call();
+            getCallable().call();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    protected final Callable<Cancellable> getCallable(final Lookup context)  {
+    protected final Callable<Cancellable> getCallable()  {
         return new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
-
-                final FileObject runFo = getRunFile(context);
-                final File scriptFile = runFo != null ? FileUtil.toFile(runFo) : null;
-                if (!program.isValid() || scriptFile == null) {
-                    LOGGER.info(String.format("Program is not valid or no run file found (%s, %s)", program, scriptFile));
+                if (!provider.isValid()) {
+                    LOGGER.info("RunScript provider is not valid");
                     return new Cancellable() {
                         public boolean cancel() {
                             return true;
@@ -124,9 +91,9 @@ public class RunScript {
                 }
 
                 final ExecutionService service = ExecutionService.newService(
-                        getProcessBuilder(program, scriptFile),
-                        getDescriptor(scriptFile),
-                        getOutputTabTitle(program.getProgram(), scriptFile));
+                        getProcessBuilder(),
+                        getDescriptor(),
+                        getOutputTabTitle());
                 final Future<Integer> result = service.run();
                 // #155251, #155741
 //                try {
@@ -147,87 +114,45 @@ public class RunScript {
         return true;
     }
 
-    protected ExecutionDescriptor getDescriptor(File scriptFile) throws IOException {
-        if (descriptor != null) {
-            return descriptor;
-        }
-        InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
-        return new ExecutionDescriptor()
-                .controllable(isControllable())
-                .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
-                .inputVisible(true)
-                .showProgress(true)
-                .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
-                .outProcessorFactory(redirector)
-                .postExecution(redirector);
+    protected ExecutionDescriptor getDescriptor() throws IOException {
+        return provider.getDescriptor().controllable(isControllable());
     }
 
-    protected FileObject getRunFile(Lookup context) {
-        if (runFile != null) {
-            return runFile;
-        }
-        if (context == null) {
-            return CommandUtils.fileForProject(project, sourceRoot);
-        }
-        return CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
+    protected ExternalProcessBuilder getProcessBuilder() {
+        return provider.getProcessBuilder();
     }
 
-    protected ExternalProcessBuilder getProcessBuilder(PhpProgram program, File scriptFile) {
-        if (processBuilder != null) {
-            return processBuilder;
-        }
-        ExternalProcessBuilder builder = new ExternalProcessBuilder(program.getProgram());
-        for (String param : program.getParameters()) {
-            builder = builder.addArgument(param);
-        }
-        builder = builder.addArgument(scriptFile.getName());
-        String argProperty = ProjectPropertiesSupport.getArguments(project);
-        if (PhpProjectUtils.hasText(argProperty)) {
-            for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
-                builder = builder.addArgument(argument);
-            }
-        }
-        builder = builder.workingDirectory(scriptFile.getParentFile());
-        return builder;
+    protected String getOutputTabTitle() {
+        return provider.getOutputTabTitle();
     }
 
-    private static File tempFileForScript(File scriptFile) throws IOException {
-        File retval = File.createTempFile(scriptFile.getName(), ".html"); // NOI18N
-        retval.deleteOnExit();
-        return retval;
-    }
-
-    protected String getOutputTabTitle(String command, File scriptFile) {
-        return String.format("%s - %s", command, scriptFile.getName());
-    }
-
-    private static final class InOutPostRedirector implements InputProcessorFactory, Runnable {
+    public static final class InOutPostRedirector implements InputProcessorFactory, Runnable {
         private final File tmpFile;
         private final Charset encoding;
         private BufferedWriter fileWriter;
 
         public InOutPostRedirector(File scriptFile) throws IOException {
+            assert scriptFile != null;
+
             tmpFile = FileUtil.normalizeFile(tempFileForScript(scriptFile));
             encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(scriptFile));
         }
 
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.proxy(defaultProcessor,
-                new InputProcessor() {
+            return InputProcessors.proxy(defaultProcessor, new InputProcessor() {
 
-                    public void processInput(char[] chars) throws IOException {
-                        getFileWriter().write(chars);
-                    }
+                public void processInput(char[] chars) throws IOException {
+                    getFileWriter().write(chars);
+                }
 
-                    public void reset() throws IOException {
-                    }
+                public void reset() throws IOException {
+                }
 
-                    public void close() throws IOException {
-                        getFileWriter().flush();
-                        getFileWriter().close();
-                    }
-
-                });
+                public void close() throws IOException {
+                    getFileWriter().flush();
+                    getFileWriter().close();
+                }
+            });
         }
 
         public void run() {
@@ -265,6 +190,18 @@ public class RunScript {
         public synchronized void setFileWriter(BufferedWriter fileWriter) {
             this.fileWriter = fileWriter;
         }
+
+        private static File tempFileForScript(File scriptFile) throws IOException {
+            File retval = File.createTempFile(scriptFile.getName(), ".html"); // NOI18N
+            retval.deleteOnExit();
+            return retval;
+        }
     }
 
+    public interface Provider {
+        ExecutionDescriptor getDescriptor() throws IOException;
+        ExternalProcessBuilder getProcessBuilder();
+        String getOutputTabTitle();
+        boolean isValid();
+    }
 }

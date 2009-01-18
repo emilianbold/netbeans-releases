@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
@@ -50,6 +53,7 @@ import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Action implementation for TEST configuration.
@@ -87,7 +91,7 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject(PhpProject project) {
-        invoke(project, null, false);
+        run(project, null);
     }
 
     @Override
@@ -97,58 +101,38 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(PhpProject project, Lookup context) {
-        invoke(project, context, false);
+        run(project, context);
     }
 
     @Override
     public void debugFile(PhpProject project, Lookup context) {
-        invoke(project, context, true);
+        debug(project, context);
     }
 
-    private void invoke(PhpProject project, Lookup context, boolean debug) {
-        Pair<FileObject, String> pair = getPair(project, context);
+    private void run(PhpProject project, Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(project, context);
         if (pair == null) {
             return;
         }
 
-        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
-        if (phpUnit == null) {
+        new RunScript(new ScriptProvider(project, pair, context)).run();
+    }
+
+    private void debug(PhpProject project, Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(project, context);
+        if (pair == null) {
             return;
         }
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .showProgress(true)
-                .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
 
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(FileUtil.toFile(pair.first));
-        for (String param : phpUnit.getParameters()) {
-            externalProcessBuilder = externalProcessBuilder.addArgument(param);
+        new DebugScript(new ScriptProvider(project, pair, context)).run();
+    }
+
+    private Pair<FileObject, String> getValidPair(PhpProject project, Lookup context) {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        if (phpUnit == null) {
+            return null;
         }
-        externalProcessBuilder = externalProcessBuilder
-                .addArgument(PhpUnitConstants.PARAM_XML_LOG)
-                .addArgument(PhpUnitConstants.XML_LOG.getAbsolutePath())
-                .addArgument(pair.second);
-
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        assert testDirectory != null : "Test directory must be known already";
-
-        FileObject runFile = null;
-        if (context == null) {
-            runFile = testDirectory;
-        } else {
-            runFile = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
-            assert runFile != null;
-            assert runFile.getName().equals(pair.second) : String.format("Names differ: %s <-> %s", runFile.getName(), pair.second);
-        }
-
-        // ugly :/
-        if (debug) {
-            new DebugScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
-        } else {
-            new RunScript(project, phpUnit, executionDescriptor, externalProcessBuilder, testDirectory, runFile).run(context);
-        }
+        return getPair(project, context);
     }
 
     // <working directory, unit test name (script name without extension)>
@@ -173,5 +157,81 @@ public class ConfigActionTest extends ConfigAction {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
         assert fileObj != null : "Fileobject not found for context: " + context;
         return Pair.of(fileObj.getParent(), fileObj.getName());
+    }
+
+    private final class ScriptProvider implements DebugScript.Provider {
+        private final PhpProject project;
+        private final Lookup context;
+        private final Pair<FileObject, String> pair;
+        private final PhpUnit program;
+        private final File startFile;
+
+        public ScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
+            assert project != null;
+            assert pair != null;
+
+            this.project = project;
+            this.pair = pair;
+            this.context = context;
+            program = CommandUtils.getPhpUnit(false);
+            startFile = getStartFile(context);
+        }
+
+        public Project getProject() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return project;
+        }
+
+        public FileObject getStartFile() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return FileUtil.toFileObject(startFile);
+        }
+
+        public ExecutionDescriptor getDescriptor() throws IOException {
+            return new ExecutionDescriptor()
+                    .frontWindow(true)
+                    .showProgress(true)
+                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+        }
+
+        public ExternalProcessBuilder getProcessBuilder() {
+            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(program.getProgram())
+                    .workingDirectory(FileUtil.toFile(pair.first));
+            for (String param : program.getParameters()) {
+                externalProcessBuilder = externalProcessBuilder.addArgument(param);
+            }
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnitConstants.PARAM_XML_LOG)
+                    .addArgument(PhpUnitConstants.XML_LOG.getAbsolutePath())
+                    .addArgument(pair.second);
+            return externalProcessBuilder;
+        }
+
+        public String getOutputTabTitle() {
+            String title = null;
+            if (pair.second == CWD) {
+                title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+            } else {
+                title = pair.second;
+            }
+            return String.format("%s - %s", program.getProgram(), title);
+        }
+
+        public boolean isValid() {
+            return program.isValid() && pair.first != null && pair.second != null;
+        }
+
+        private File getStartFile(Lookup context) {
+            if (context == null) {
+                return null;
+            }
+            FileObject testRoot = ProjectPropertiesSupport.getTestDirectory(project, false);
+            assert testRoot != null : "Test root must be known already";
+            FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, testRoot);
+            assert file != null : "Start file must be found";
+            return FileUtil.toFile(file);
+        }
     }
 }
