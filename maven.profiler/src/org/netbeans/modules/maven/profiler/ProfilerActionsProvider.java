@@ -55,7 +55,7 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!action.equals("profile")) {
+        if (!(action.equals("profile") || action.equals("profile-single"))) {
             return false;
         }
         NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
