@@ -55,13 +55,14 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 public final class CreateHostVisualPanel2 extends JPanel {
 
     private final ChangeListener wizardListener;
-    /** Creates new form CreateHostVisualPanel2 */
+
     public CreateHostVisualPanel2(ChangeListener listener) {
         wizardListener = listener;
         initComponents();
@@ -98,9 +99,11 @@ public final class CreateHostVisualPanel2 extends JPanel {
     }
 
     private String hostname;
+    private ToolsCacheManager cacheManager;
 
-    void setHostname(String hostname) {
+    void init(String hostname, ToolsCacheManager cacheManager) {
         this.hostname = hostname;
+        this.cacheManager = cacheManager;
     }
 
     String getLoginName() {
@@ -250,17 +253,13 @@ public final class CreateHostVisualPanel2 extends JPanel {
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             enableButtons(false);
-            //hideReason();
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
             userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
             pbarStatusPanel.removeAll();
             pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
             pbarStatusPanel.setVisible(true);
-//            revalidate();
             phandle.start();
-            // TODO: not good to use object's toString as resource key
-            //tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, RemoteServerRecord.State.INITIALIZING.toString()));
             tpOutput.setText("");
             // move expensive operation out of EDT
             RequestProcessor.getDefault().post(new Runnable() {
@@ -296,7 +295,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                             }
 
                         };
-                        CompilerSetManager csm = getCompilerSetManagerCopy(entry);
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
                         csm.initialize(false);
                         hostFound = csm.getHost(); //TODO: no validations, pure cheat
                         wizardListener.stateChanged(null);
@@ -308,21 +307,11 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         public void run() {
                             pbarStatusPanel.setVisible(false);
                             enableButtons(true);
-                            //valueChanged(null);
                         }
                     });
                 }
             });
         }
-    }
-
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        // TODO: all this is very bad, it should never be in remote -- do service, etc...
-        CompilerSetManager out = CompilerSetManager.getDefault(hKey).deepCopy();
-        if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
-            out.remove(out.getCompilerSets().get(0));
-        }
-        return out;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
