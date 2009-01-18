@@ -2452,7 +2452,8 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor);
+                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
+                    request.dotContext != null && request.dotContext.isMethodsOnly());
         proposals.addAll(result.values());
 
         return true;
