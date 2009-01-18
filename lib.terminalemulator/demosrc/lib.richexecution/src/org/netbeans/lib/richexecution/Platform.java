@@ -42,36 +42,86 @@
 package org.netbeans.lib.richexecution;
 
 /**
- * Describes the kind of operating system we're running on.
+ * Describes the kind of platform system running on.
  * <br>
  * Pty's are notoriously un-standardized. Their use varies subtly between
  * Linux, BSD and Solaris, not to mention MacOS.
  * This enum helps with customization of behaviour.
  * @author ivan
  */
-public enum OS {
+public enum Platform {
 
-    OTHER, LINUX, WINDOWS, SOLARIS, MACOS;
+    Other,
+
+    LinuxIntel32,
+    LinuxIntel64,
+
+    WindowsIntel32,
+
+    SolarisSparc32,
+    SolarisSparc64,
+    SolarisIntel32,
+    SolarisIntel64,
+
+    MacosIntel32;
 
     /**
-     * Returns the kind of OS we're running on.
-     * @return The kind of OS we're running on.
+     * Returns the platform we're running on.
+     * @return The kind of platform we're running on.
      */
-    public static OS get() {
-        String osName = System.getProperty("os.name");
-        osName = osName.toLowerCase();
-        System.out.printf("os.name: \'%s\'\n", osName);
-
-        if (osName.startsWith("windows")) {
-            return OS.WINDOWS;
-        } else if (osName.startsWith("linux")) {
-            return OS.LINUX;
-        } else if (osName.startsWith("sunos")) {
-            return OS.SOLARIS;
+    public static Platform get() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase();
+        System.out.printf("Platform.get: os.name: \'%s\' os.arch: '%s'\n", osName, osArch);
+        if (osName.equals("sunos")) {
+            if (osArch.equals("sparc"))
+                return SolarisSparc32;
+	    else if (osArch.equals("sparcv9"))
+                return SolarisSparc64;
+            else if (osArch.equals("x86"))
+                return SolarisIntel32;
+            else if (osArch.equals("amd64"))
+                return SolarisIntel64;
+	    else
+		return Other;
+        } else if (osName.equals("linux")) {
+            if (osArch.equals("i386"))
+                return LinuxIntel32;
+	    else if (osArch.equals("amd64"))
+                return LinuxIntel64;
+	    else
+		return Other;
         } else if (osName.startsWith("mac os x")) {
-            return OS.MACOS ;
+            if (osArch.equals("i386"))
+                return MacosIntel32;
+	    else
+		return Other;
         } else {
-            return OS.OTHER;
-        }
+		return Other;
+	}
+    }
+
+    /**
+     * Returns the platform string used for finding helper executables.
+     * @return
+     */
+    public String platform() {
+	switch (get()) {
+	    case LinuxIntel32:
+	    case LinuxIntel64:
+                return "linux-intel";
+	    case SolarisSparc32:
+	    case SolarisSparc64:
+                return "solaris-sparc";
+	    case SolarisIntel32:
+	    case SolarisIntel64:
+                return "solaris-intel";
+	    case MacosIntel32:
+                return "mac-intel";
+	    case WindowsIntel32:
+	    case Other:
+	    default:
+		return null;
+	}
     }
 }

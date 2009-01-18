@@ -239,7 +239,7 @@ public class PtyExecutor {
      */
     private static String getWrapper() {
         if (wrapper == null) {
-            if ((wrapper = findBin("process_start" + "-" + OS.platform())) != null) {
+            if ((wrapper = findBin("process_start" + "-" + Platform.get().platform())) != null) {
                 pgrp = null;
             } else if ((wrapper = findBin("process_start.sh")) != null) {
                 pgrp = setpgrpCmd();
