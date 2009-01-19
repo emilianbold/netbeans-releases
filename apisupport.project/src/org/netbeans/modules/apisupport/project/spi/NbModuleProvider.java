@@ -133,6 +133,9 @@ public interface NbModuleProvider {
      * @return location of the root directory of NetBeans platform installation
      */ 
     File getActivePlatformLocation();
-    
-    
+
+    /**
+     * Returns location of built module JAR (file need not exist).
+     */
+    File getModuleJarLocation();
 }

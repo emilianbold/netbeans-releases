@@ -732,7 +732,7 @@ public final class UIUtil {
         return path;
     }
     
-    private static Project chooseProject(Component parent) {
+    public static Project chooseProject(Component parent) {
         JFileChooser chooser = ProjectChooser.projectChooser();
         int option = chooser.showOpenDialog(parent);
         Project project = null;

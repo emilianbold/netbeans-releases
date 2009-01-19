@@ -57,6 +57,7 @@ public class ModuleUISettings {
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
     private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformID"; // NOI18N
     private static final String HARNESSES_UPGRADED = "harnessesUpgraded"; // NOI18N
+    private static final String LAST_USED_CLUSTER_LOCATION = "lastUsedClusterLocation";    // NOI18N
 
     public static ModuleUISettings getDefault() {
         return new ModuleUISettings(); // stateless
@@ -89,6 +90,15 @@ public class ModuleUISettings {
     public void setLastUsedNbPlatformLocation(String location) {
         assert location != null : "Location can not be null"; // NOI18N
         prefs().put(LAST_USED_NB_PLATFORM_LOCATION, location);
+    }
+
+    public String getLastUsedClusterLocation() {
+        return prefs().get(LAST_USED_CLUSTER_LOCATION, System.getProperty("user.home")); // NOI18N
+    }
+
+    public void setLastUsedClusterLocation(String location) {
+        assert location != null : "Location can not be null"; // NOI18N
+        prefs().put(LAST_USED_CLUSTER_LOCATION, location);
     }
 
     public boolean getConfirmReloadInIDE() {

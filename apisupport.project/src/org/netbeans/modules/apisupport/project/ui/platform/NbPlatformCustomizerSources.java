@@ -66,14 +66,14 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class NbPlatformCustomizerSources extends JPanel {
+public final class NbPlatformCustomizerSources extends JPanel {
     
     private NbPlatform plaf;
     private PlatformComponentFactory.NbPlatformSourceRootsModel model;
     private final ListListener listListener;
     
     /** Creates new form NbPlatformCustomizerModules */
-    NbPlatformCustomizerSources() {
+    public NbPlatformCustomizerSources() {
         initComponents();
         initAccessibility();
         this.listListener = new ListListener() {

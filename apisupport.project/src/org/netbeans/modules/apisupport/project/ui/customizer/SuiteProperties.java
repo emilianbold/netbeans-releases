@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -58,6 +60,9 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Provides convenient access to a lot of Suite Module's properties.
@@ -72,6 +77,8 @@ public final class SuiteProperties extends ModuleProperties {
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
+    public static final String CLUSTER_DIR = "build/cluster";    // NOI18N
+    public static final String ACTIVE_NB_PLATFORM_PROPERTY = "nbplatform.active";    // NOI18N
     
     private NbPlatform activePlatform;
     private JavaPlatform activeJavaPlatform;
@@ -97,6 +104,7 @@ public final class SuiteProperties extends ModuleProperties {
     
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
+    private Set<File> clusterPath;
     
     /**
      * Creates a new instance of SuiteProperties
@@ -261,7 +269,15 @@ public final class SuiteProperties extends ModuleProperties {
             return physicalName;
         }
     }
-    
+
+    Set<File> getClusterPath() {
+        if (clusterPath == null) {
+            clusterPath = new HashSet<File>();
+            // TODO - add folders on cluster.path
+        }
+        return clusterPath;
+    }
+
     Set<NbModuleProject> getSubModules() {
         return getModulesListModel().getSubModules();
     }

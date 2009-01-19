@@ -69,6 +69,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -932,9 +933,9 @@ public final class ModuleList {
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         if (suiteComponent) {
-            defaults.put("cluster", "${suite.dir}/build/cluster"); // NOI18N
+            defaults.put("cluster", "${suite.dir}/" + SuiteProperties.CLUSTER_DIR); // NOI18N
         } else if (standalone) {
-            defaults.put("cluster", "build/cluster"); // NOI18N
+            defaults.put("cluster", SuiteProperties.CLUSTER_DIR); // NOI18N
         } else {
             // netbeans.org
             String cluster = findClusterLocation(basedir, root);
