@@ -37,58 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.util;
+package org.netbeans.modules.cnd.spi.model;
 
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.spi.model.UIDProvider;
-import org.openide.util.Lookup;
 
 /**
- * Utility class to get Object UID
- * @author Egor Ushakov
+ *
+ * @author Vladimir Voskresensky
+ * The <code>UIDProvider</code> should be registered using {@link org.openide.util.lookup.ServiceProvider}.
  */
-public final class UIDs {
-    private static UIDProvider provider;
-    private static final UIDProvider EMPTY = new SelfUIDProvider();
-    private UIDs() {
-    }
-
-    /**
-     * returns never-null handler which can be used to restore object
-     * @param <T>
-     * @param obj object for which handler should be returned
-     * @return never-null handler
-     */
-    public static <T> CsmUID<T> get(T obj) {
-        return getProvider().get(obj);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // impl details
-    
-    private static synchronized UIDProvider getProvider() {
-        if (provider == null) {
-            provider = Lookup.getDefault().lookup(UIDProvider.class);
-        }
-        return provider == null ? EMPTY : provider;
-    }
-
-    private final static class SelfUIDProvider implements UIDProvider {
-        public <T> CsmUID<T> get(T obj) {
-            return new SelfUID<T>(obj);
-        }
-
-        private static final class SelfUID<T> implements CsmUID<T> {
-
-            private final T element;
-
-            SelfUID(T element) {
-                this.element = element;
-            }
-
-            public T getObject() {
-                return this.element;
-            }
-        }
-    }
+public interface UIDProvider {
+    <T> CsmUID<T> get(T obj);
 }

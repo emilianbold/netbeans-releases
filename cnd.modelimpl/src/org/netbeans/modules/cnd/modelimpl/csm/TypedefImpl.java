@@ -47,7 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -85,7 +86,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
         super(ast, file);
 
-        if (CsmKindUtilities.isIdentifiable(container)) {
+        if (UIDCsmConverter.isIdentifiable(container)) {
             this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
             assert (containerUID != null || container == null);
             this.containerRef = null;

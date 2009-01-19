@@ -41,20 +41,19 @@
 
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -63,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * utilities to convert between CsmUID and CsmObjects
  * @author Vladimir Voskresensky
  */
-public class UIDCsmConverter {
+public final class UIDCsmConverter {
    
     private UIDCsmConverter() {
     }
@@ -72,7 +71,10 @@ public class UIDCsmConverter {
     // UID -> Object
     
 //    private static int lastHash = 0;
-	    
+    public static boolean isIdentifiable(Object obj) {
+        return obj instanceof CsmIdentifiable;
+    }
+
     public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {
         try {
             CsmFile result = uid == null ? null : uid.getObject();
@@ -219,13 +221,9 @@ public class UIDCsmConverter {
             return new ArrayList<CsmUID<T>>(0);
         }
         Collection<CsmUID<T>> out = new ArrayList<CsmUID<T>>(objs.size());
-        for (CsmObject csmObj : objs) {
-            if (CsmKindUtilities.isIdentifiable(csmObj)) {
-                // we need to cast from ? to the exact type
-                @SuppressWarnings("unchecked") // checked
-                CsmUID<T> uid = (CsmUID<T>)((CsmIdentifiable) csmObj).getUID();
-                out.add(uid);
-            }
+        for (T csmObj : objs) {
+            CsmUID<T> uid = UIDs.get(csmObj);
+            out.add(uid);
         }
         return out;
     }

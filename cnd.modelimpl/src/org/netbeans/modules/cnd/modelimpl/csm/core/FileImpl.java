@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
