@@ -95,23 +95,11 @@ implements PropertyChangeListener, LookupListener {
 
 
     public static Map<String,String> nbprojectTypes() {
-        Map<String,String> map = new HashMap<String, String>();
-
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances()) {
-            map.putAll(info.nbproject);
-        }
-        return map;
+        return FeatureInfo.nbprojectTypes();
     }
 
     public static Map<String,String> projectFiles() {
-        Map<String,String> map = new HashMap<String, String>();
-
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances()) {
-            map.putAll(info.files);
-        }
-        return map;
+        return FeatureInfo.projectFiles();
     }
     
     public static Collection<? extends FeatureInfo> features() {
@@ -166,7 +154,7 @@ implements PropertyChangeListener, LookupListener {
     }
 
     private static Lookup featureTypesLookup;
-    public static synchronized Lookup featureTypesLookup() {
+    private static synchronized Lookup featureTypesLookup() {
         if (featureTypesLookup != null) {
             return featureTypesLookup;
         }

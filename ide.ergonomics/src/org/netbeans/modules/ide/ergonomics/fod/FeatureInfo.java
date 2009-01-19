@@ -67,8 +67,8 @@ public final class FeatureInfo {
     private final URL delegateLayer;
     private XMLFileSystem fs;
     private final Set<String> cnbs;
-    final Map<String,String> nbproject = new HashMap<String,String>();
-    final Map<String,String> files = new HashMap<String,String>();
+    private final Map<String,String> nbproject = new HashMap<String,String>();
+    private final Map<String,String> files = new HashMap<String,String>();
     private Properties properties;
     final String clusterName;
 
@@ -242,5 +242,25 @@ public final class FeatureInfo {
     }
     final void projectFile(String file, String clazz) {
         files.put(file, clazz);
+    }
+    final void projectFile(String file, String xpath, String clazz) {
+        files.put(file, clazz);
+    }
+    static Map<String,String> nbprojectTypes() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        for (FeatureInfo info : FeatureManager.features()) {
+            map.putAll(info.nbproject);
+        }
+        return map;
+    }
+
+    static Map<String,String> projectFiles() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        for (FeatureInfo info : FeatureManager.features()) {
+            map.putAll(info.files);
+        }
+        return map;
     }
 }
