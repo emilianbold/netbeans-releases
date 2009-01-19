@@ -39,9 +39,20 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProgram;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -78,21 +89,95 @@ public class ConfigActionScript extends ConfigAction {
 
     @Override
     public void runProject(PhpProject project) {
-        new RunScript(project).run();
+        new RunScript(new ScriptProvider(project, null)).run();
     }
 
     @Override
     public void debugProject(PhpProject project) {
-        new DebugScript(project).run();
+        new DebugScript(new ScriptProvider(project, null)).run();
     }
 
     @Override
     public void runFile(PhpProject project, Lookup context) {
-        new RunScript(project).run(context);
+        new RunScript(new ScriptProvider(project, context)).run();
     }
 
     @Override
     public void debugFile(PhpProject project, Lookup context) {
-        new DebugScript(project).run(context);
+        new DebugScript(new ScriptProvider(project, context)).run();
+    }
+
+    private final class ScriptProvider implements DebugScript.Provider {
+        private final PhpProject project;
+        private final PhpProgram program;
+        private final File startFile;
+
+        public ScriptProvider(PhpProject project, Lookup context) {
+            assert project != null;
+
+            this.project = project;
+            program = ProjectPropertiesSupport.getPhpInterpreter(project);
+            startFile = getStartFile(context);
+        }
+
+        public Project getProject() {
+            return project;
+        }
+
+        public FileObject getStartFile() {
+            assert startFile != null;
+            return FileUtil.toFileObject(startFile);
+        }
+
+        public ExecutionDescriptor getDescriptor() throws IOException {
+            assert startFile != null;
+            RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
+            return new ExecutionDescriptor()
+                    .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
+                    .inputVisible(true)
+                    .showProgress(true)
+                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .outProcessorFactory(redirector)
+                    .postExecution(redirector);
+
+        }
+
+        public ExternalProcessBuilder getProcessBuilder() {
+            assert startFile != null;
+            ExternalProcessBuilder builder = new ExternalProcessBuilder(program.getProgram());
+            for (String param : program.getParameters()) {
+                builder = builder.addArgument(param);
+            }
+            builder = builder.addArgument(startFile.getName());
+            String argProperty = ProjectPropertiesSupport.getArguments(project);
+            if (PhpProjectUtils.hasText(argProperty)) {
+                for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
+                    builder = builder.addArgument(argument);
+                }
+            }
+            builder = builder.workingDirectory(startFile.getParentFile());
+            return builder;
+        }
+
+        public String getOutputTabTitle() {
+            assert startFile != null;
+            return String.format("%s - %s", program.getProgram(), startFile.getName());
+        }
+
+        public boolean isValid() {
+            return program.isValid() && startFile != null;
+        }
+
+        private File getStartFile(Lookup context) {
+            FileObject file = null;
+            FileObject sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
+            if (context == null) {
+                file = CommandUtils.fileForProject(project, sourceRoot);
+            } else {
+                file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
+            }
+            assert file != null : "Start file must be found";
+            return FileUtil.toFile(file);
+        }
     }
 }
