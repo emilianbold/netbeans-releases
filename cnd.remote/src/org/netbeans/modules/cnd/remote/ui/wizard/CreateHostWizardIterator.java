@@ -44,8 +44,11 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
@@ -126,43 +129,22 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    // If something changes dynamically (besides moving between panels), e.g.
-    // the number of panels changes in response to user input, then uncomment
-    // the following and call when needed: fireChangeEvent();
-    /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
-    protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
-    }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
-    public static void invokeMe() {
+    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
+
+    public static String invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
+        wizardDescriptor.putProperty(PROP_CACHE_MANAGER, cacheManager);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            // do something
+            return (String)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY);
+        } else {
+            return null;
         }
 
     }

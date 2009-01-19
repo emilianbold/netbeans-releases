@@ -59,6 +59,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.awt.Mnemonics;
@@ -347,7 +348,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     public void setClass(CsmClass cls){
-        object = cls.getUID();
+        object = UIDs.get(cls);
         subDirection = true;
         updateButtons();
         update(cls);

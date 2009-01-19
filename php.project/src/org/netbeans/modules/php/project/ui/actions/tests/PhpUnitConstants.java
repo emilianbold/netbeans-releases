@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.actions.tests;
 import java.io.File;
 
 /**
+ * PHP Unit 3.x constants.
  * @author Tomas Mysik
  */
 public final class PhpUnitConstants {

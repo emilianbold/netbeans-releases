@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Map;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -59,6 +58,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
@@ -268,7 +268,7 @@ public class ConnectionNode extends BaseNode {
                 addProperty(DefaultAdaptor.PROP_CATALOGS_SEPARATOR, null, String.class, false, md.getCatalogSeparator());
             }
         } catch (Exception e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -308,7 +308,7 @@ public class ConnectionNode extends BaseNode {
             try {
                 result = conn.isClosed();
             } catch (SQLException e) {
-                
+                Exceptions.printStackTrace(e);
             }
         }
         
@@ -323,7 +323,7 @@ public class ConnectionNode extends BaseNode {
                     try {
                         ConnectionList.getDefault().remove(connection);
                     } catch (DatabaseException e) {
-
+                        Exceptions.printStackTrace(e);
                     }
                 }
             }
@@ -347,6 +347,7 @@ public class ConnectionNode extends BaseNode {
             try {
                 disconnected = c.isClosed();
             } catch (SQLException e) {
+                Exceptions.printStackTrace(e);
             }
         }
         

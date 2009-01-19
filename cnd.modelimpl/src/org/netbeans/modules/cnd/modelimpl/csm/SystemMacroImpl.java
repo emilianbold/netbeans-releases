@@ -43,11 +43,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -57,7 +59,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Sergey Grinev
  */
-public class SystemMacroImpl implements CsmMacro {
+public class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     
     private final CharSequence macroName;
     private final CharSequence macroBody;
@@ -77,7 +79,7 @@ public class SystemMacroImpl implements CsmMacro {
         }
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
-        uid = new SelfUID<CsmMacro>(this);
+        uid = UIDs.selfUID((CsmMacro)this);
     }
     
     public List<? extends CharSequence> getParameters() {
@@ -170,15 +172,4 @@ public class SystemMacroImpl implements CsmMacro {
     public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
         return null;
     }
-
-    private static final class SelfUID<T> implements CsmUID<T> {
-        private final T element;
-        SelfUID(T element) {
-            this.element = element;
-        }
-        public T getObject() {
-            return this.element;
-        }
-    }    
-    
 }

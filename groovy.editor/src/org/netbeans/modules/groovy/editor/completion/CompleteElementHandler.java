@@ -76,12 +76,12 @@ public final class CompleteElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(
-            ClassNode source, ClassNode node, String prefix, int anchor) {
+            ClassNode source, ClassNode node, String prefix, int anchor, boolean nameOnly) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
 
         Map<MethodSignature, CompletionItem> result = getMethodsInner(
-                source, node, prefix, anchor, 0, AccessLevel.create(source, node));
+                source, node, prefix, anchor, 0, AccessLevel.create(source, node), nameOnly);
 
         //fillSuggestions(meta, result);
         return result;
@@ -99,7 +99,7 @@ public final class CompleteElementHandler {
 
     // FIXME configure acess levels
     private Map<MethodSignature, CompletionItem> getMethodsInner(
-            ClassNode source, ClassNode node, String prefix, int anchor, int level, Set<AccessLevel> access) {
+            ClassNode source, ClassNode node, String prefix, int anchor, int level, Set<AccessLevel> access, boolean nameOnly) {
 
         boolean leaf = (level == 0);
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
@@ -108,7 +108,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = loadDefinition(node);
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, leaf, access);
+                .getMethods(typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
 
         fillSuggestions(groovyItems, result);
 
@@ -129,28 +129,28 @@ public final class CompleteElementHandler {
 
             fillSuggestions(JavaElementHandler.forCompilationInfo(info)
                     .getMethods(typeNode.getName(), prefix, anchor, typeParameters,
-                            leaf, modifiedAccess), result);
+                            leaf, modifiedAccess, nameOnly), result);
         }
 
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor), result);
+                .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
 
         fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
                 .getMethods(source.getName(), typeNode.getName(), prefix, anchor), result);
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
-                    prefix, anchor, level + 1, modifiedAccess), result);
+                    prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         } else if (leaf) {
             fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                    .getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, modifiedAccess), result); // NOI18N
+                    .getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, modifiedAccess, nameOnly), result); // NOI18N
         }
 
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getMethodsInner(source, inter,
-                    prefix, anchor, level + 1, modifiedAccess), result);
+                    prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         }
 
         return result;

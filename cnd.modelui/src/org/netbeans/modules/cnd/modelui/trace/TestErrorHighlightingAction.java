@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -238,7 +239,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         private CsmErrorInfo errorInfo;
 
         public OffsetableImpl(CsmFile file, CsmErrorInfo errorInfo) {
-            this.fileUID = file.getUID();
+            this.fileUID = UIDs.get(file);
             this.errorInfo = errorInfo;
         }
 
@@ -338,7 +339,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             private CsmUID<CsmFile> fileUID;
 
             protected Element(CsmFile file) {
-                fileUID = file.getUID();
+                fileUID = UIDs.get(file);
             }
 
             protected abstract OutputListener getOutputListener();

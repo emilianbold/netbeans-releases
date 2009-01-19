@@ -102,7 +102,6 @@ public final class CreateHostVisualPanel1 extends JPanel {
         jScrollPane2.setViewportView(tableHostsList);
         tableHostsList.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title0")); // NOI18N
         tableHostsList.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title1")); // NOI18N
-        tableHostsList.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.tableHostsList.columnModel.title2")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -115,7 +114,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
+                        .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2))
                 .addContainerGap())
         );

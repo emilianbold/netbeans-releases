@@ -44,6 +44,7 @@ import org.openide.WizardDescriptor;
 import org.netbeans.api.project.Project;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,7 +63,7 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
         this.title= title;
     }
 
-    public java.awt.Component getComponent() {
+    public HibernateConfigurationWizardPanel getComponent() {
         if (panel == null) {
             panel = new HibernateConfigurationWizardPanel();
             panel.addChangeListener(this);
@@ -87,6 +88,12 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
     }
 
     public boolean isValid() {
+        if(!getComponent().isPanelValid()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateConfigurationWizardDescriptor.class, "ERR_No_DB_Connection_Exists")); // NOI18N
+            return false;
+        } else {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+        }
         return true;
     }
 

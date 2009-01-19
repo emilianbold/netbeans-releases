@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -58,6 +60,7 @@ import org.openide.util.lookup.Lookups;
  * @author Rob Englander
  */
 public class ActionRegistry implements ChangeListener {
+    private static final Logger LOGGER = Logger.getLogger(ActionRegistry.class.getName());
     
     private static final String PATH = "Databases/Explorer/"; //NOI18N
     private static final String ACTIONS = "/Actions"; //NOI18N
@@ -110,7 +113,7 @@ public class ActionRegistry implements ChangeListener {
             } else if (action instanceof javax.swing.JSeparator) {
                 actions.add(null);
             } else {
-                // TODO log this?  or throw exception?
+                LOGGER.log(Level.INFO, "Cannot use " + action.getClass() + " instance as DB Explorer Action"); // NOI18N
             }
         }
     }

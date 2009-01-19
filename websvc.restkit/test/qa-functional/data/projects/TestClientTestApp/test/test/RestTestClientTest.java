@@ -84,6 +84,7 @@ public class RestTestClientTest extends TelluriumJavaTestCase {
         try {
             JSONObject json = new JSONObject(s);
         } catch (JSONException ex) {
+            ex.printStackTrace(System.err);
             fail("invalid JSON string: [" + s + "]"); //NOI18N
         }
         // check app/xml response format
@@ -94,6 +95,7 @@ public class RestTestClientTest extends TelluriumJavaTestCase {
         try {
             Utils.readXml(s);
         } catch (SAXParseException se) {
+            se.printStackTrace(System.err);
             fail("invalid xml response [" + s + "]"); //NOI18N
         }
     }
@@ -117,6 +119,7 @@ public class RestTestClientTest extends TelluriumJavaTestCase {
         try {
             Utils.readXml(s);
         } catch (SAXParseException se) {
+            se.printStackTrace(System.err);
             fail("invalid xml response [" + s + "]"); //NOI18N
         }
 
@@ -128,6 +131,7 @@ public class RestTestClientTest extends TelluriumJavaTestCase {
         try {
             JSONObject json = new JSONObject(s);
         } catch (JSONException ex) {
+            ex.printStackTrace(System.err);
             fail("invalid JSON string: [" + s + "]"); //NOI18N
         }
     }

@@ -389,7 +389,6 @@ made subject to such option by the copyright holder.
             
         </folder> <!-- End cppFiles folder -->
 
-<!--
         <folder name="qtFiles">
 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -489,7 +488,6 @@ made subject to such option by the copyright holder.
             </file>
 
         </folder>
--->
 
         <folder name="fortranFiles">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
