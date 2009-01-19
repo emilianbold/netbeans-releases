@@ -134,7 +134,6 @@ public final class VCSContext {
             Node node = nodes[i];
             File aFile = node.getLookup().lookup(File.class);
             if (aFile != null) {
-                files.add(aFile);
                 rootFiles.add(aFile);
                 continue;
             }
@@ -143,7 +142,7 @@ public final class VCSContext {
                 addProjectFiles(rootFiles, rootFileExclusions, project);
                 continue;
             }
-            addFileObjects(node, files, rootFiles);
+            addFileObjects(node, rootFiles);
         }
         
         VCSContext ctx = new VCSContext(nodes, rootFiles, rootFileExclusions);
@@ -287,7 +286,7 @@ public final class VCSContext {
         }
     }
     
-    private static void addFileObjects(Node node, Set<File> files, Set<File> rootFiles) {
+    private static void addFileObjects(Node node, Set<File> rootFiles) {
         Collection<? extends NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template<NonRecursiveFolder>(NonRecursiveFolder.class)).allInstances();
         List<File> nodeFiles = new ArrayList<File>();
         if (folders.size() > 0) {
@@ -313,7 +312,6 @@ public final class VCSContext {
                 }
             }
         }
-        files.addAll(nodeFiles);
         rootFiles.addAll(nodeFiles);
     }
     
