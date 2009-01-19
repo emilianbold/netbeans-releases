@@ -64,10 +64,7 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            //xxx is it possible to register a task for a mimetype so that it will
-            //be called whenever a file with such embedded language changes?
-            //or do I have to do it this way? Will it even work? ;-)
-            if(mimeType.equals("text/html") || mimeType.equals("text/x-jsp") || mimeType.equals("text/x-tag") || mimeType.equals("text/x-php5")) {
+            if(mimeType.equals("text/html")) {
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
                 return Collections.EMPTY_LIST;

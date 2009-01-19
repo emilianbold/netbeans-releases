@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,25 +39,64 @@
 
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
- * just fake class, we need the parser and the StructureScanner to enable 
- * navigator of embedded languages
+ * Provides model for html code
  *
- * @author marek
+ * @author Marek Fukala
  */
-public class JspParserResult extends ParserResult {
+public class JspEmbeddingProvider extends EmbeddingProvider {
 
-    JspParserResult(Parser parser, ParserFile parserFile) {
-        super(parser, parserFile, JSPKit.JSP_MIME_TYPE);
+    @Override
+    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), JspTokenId.language());
+        TokenSequence<JspTokenId> sequence = th.tokenSequence(JspTokenId.language());
+        sequence.moveStart();
+        List<Embedding> embeddings = new ArrayList<Embedding>();
+        while(sequence.moveNext()) {
+            Token t = sequence.token();
+            if(t.id() == JspTokenId.TEXT) {
+                //lets suppose the text is always html :-(
+                embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/html")); //NOI18N
+            }
+        }
+        if(embeddings.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(Embedding.create(embeddings));
+        }
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public void cancel() {
+        //do nothing
     }
     
-    @Override
-    public AstTreeNode getAst() {
-        return  null;
+    public static final class Factory extends TaskFactory {
+
+        @Override
+        public Collection<SchedulerTask> create(final Snapshot snapshot) {
+            return Collections.<SchedulerTask>singletonList(new JspEmbeddingProvider());
+        }
+        
     }
+
 }
