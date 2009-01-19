@@ -73,6 +73,7 @@ public class QmakeProjectWriter {
         TEMPLATE,
         TARGET,
         CONFIG,
+        QT,
         SOURCES,
         HEADERS,
         FORMS,
@@ -157,6 +158,8 @@ public class QmakeProjectWriter {
                 configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
         write(bw, Variable.CONFIG, Operation.APPEND,
                 configuration.getQmakeConfiguration().getConfig().getValue());
+        write(bw, Variable.QT, Operation.APPEND,
+                configuration.getQmakeConfiguration().getModules().getValue());
 
         Item[] items = projectDescriptor.getProjectItems();
         write(bw, Variable.SOURCES, Operation.APPEND, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
