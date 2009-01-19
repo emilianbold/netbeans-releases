@@ -1446,7 +1446,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         List<TestIndexDocumentImpl> result = _indexFile(relFilePath);
-        String annotatedSource = prettyPrint(result, localUrl);
+        String annotatedSource = result == null ? "" : prettyPrint(result, localUrl);
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
     }
