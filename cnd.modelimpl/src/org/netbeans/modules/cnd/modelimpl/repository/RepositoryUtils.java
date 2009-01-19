@@ -104,7 +104,7 @@ public final class RepositoryUtils {
             System.err.println(index + ":getting key " + key);
             Persistent out = repository.get(key);
             time = System.currentTimeMillis() - time;
-            System.err.println(index + ":got in " + time + "ms the key " + key);
+            System.err.println(index + ":got in " + time + "ms the key " + key + (out == null ? " - NULL":""));
             return out;
         }
         return repository.get(key);
