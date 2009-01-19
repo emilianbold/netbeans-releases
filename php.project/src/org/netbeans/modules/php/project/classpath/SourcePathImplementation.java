@@ -46,10 +46,10 @@ import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.modules.php.project.SourceRoots;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.WeakListeners;
 
 /**
