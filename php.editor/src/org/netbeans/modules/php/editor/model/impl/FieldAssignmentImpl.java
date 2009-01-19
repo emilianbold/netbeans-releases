@@ -36,16 +36,22 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.model.*;
-import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 
 /**
- *
  * @author Radek Matous
  */
-interface VarAssignment extends ModelElement {
-    List<? extends TypeScope> getTypes();
+class FieldAssignmentImpl extends AssignmentImpl<FieldElementImpl> {
+    FieldAssignmentImpl(FieldElementImpl field, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+            Map<String, AssignmentImpl> allAssignments) {
+        super(field, scope, scopeRange, nameRange, assignment, allAssignments);
+    }
+
+    FieldAssignmentImpl(FieldElementImpl field, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+        super(field, scope, scopeRange, nameRange, typeName);
+    }
 }

@@ -67,7 +67,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
-    VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
+    VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
         addElement(retval);
         return retval;
@@ -109,7 +109,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         });
     }
 
-    public VarAssignment findAssignment(int offset) {
+    public AssignmentImpl findAssignment(int offset) {
         VarAssignmentImpl retval = null;
         List<? extends VarAssignmentImpl> assignments = getAssignments();
         if (assignments.size() == 1) {
@@ -141,7 +141,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     public List<? extends TypeScope> getTypes(int offset) {
         List<? extends TypeScope> empty = Collections.emptyList();
-        VarAssignment assignment = findAssignment(offset);
+        if (representsThis()) {
+            MethodScope methodScope = (MethodScope) getInScope();
+            return Collections.singletonList(methodScope.getClassScope());
+        }
+        AssignmentImpl assignment = findAssignment(offset);
         return (assignment != null) ? assignment.getTypes() : empty;
     }
 
