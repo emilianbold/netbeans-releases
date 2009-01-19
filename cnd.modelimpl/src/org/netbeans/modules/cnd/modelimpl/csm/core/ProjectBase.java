@@ -320,6 +320,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CharSequence[] allClassifiersUniqueNames = Utils.getAllClassifiersUniqueNames(result.getUniqueName());
             for (CharSequence curUniqueName : allClassifiersUniqueNames) {
                 Collection<? extends CsmDeclaration> decls = this.findDeclarations(curUniqueName);
+                @SuppressWarnings("unchecked")
                 Collection<CsmClassifier> classifiers = (Collection<CsmClassifier>)decls;
                 out.addAll(classifiers);
             }
