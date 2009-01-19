@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.BorderLayout;
@@ -48,35 +47,33 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
-
 /** Implementation of C/C++ Options panel */
 public final class CndOptionsPanel extends JPanel {
 
     private JTabbedPane tabbedPane = new JTabbedPane();
-    
+
     public CndOptionsPanel() {
         // no logic in constructor to speedup Tools->Options display time
     }
-    
+
     /*package*/ void updateControllers(OptionsPanelController[] comps) {
         String name;
-        char mnem;
         tabbedPane.removeAll();
-	for (int i = 0; i < comps.length; i++) {
-	    comps[i].getComponent(null).setBorder(new EmptyBorder(8, 8, 8, 8));
+        for (int i = 0; i < comps.length; i++) {
+            comps[i].getComponent(null).setBorder(new EmptyBorder(8, 8, 8, 8));
             name = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName());
-	    tabbedPane.addTab(name, comps[i].getComponent(null));
+            tabbedPane.addTab(name, comps[i].getComponent(null));
             // it's impossible to support unique mnemonics for tabs due to expansive growth of options panes and their's content.
             // So lets remove them at all as most NetBeans components did. (IZ127911)
-            // mnem = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName() + "_Mnemonic").charAt(0); // NOI18N
-	    // tabbedPane.setMnemonicAt(i, mnem);
-	}      
-        
+            // char mnem = NbBundle.getMessage(comps[i].getClass(), comps[i].getComponent(null).getName() + "_Mnemonic").charAt(0); // NOI18N
+            // tabbedPane.setMnemonicAt(i, mnem);
+        }
+
         tabbedPane.getAccessibleContext().setAccessibleDescription(""); // NOI18N //Not sure we have anything meaningfull to put here
         tabbedPane.getAccessibleContext().setAccessibleName(""); // NOI18N  //Not sure we have anything meaningfull to put here
-        
+
         setLayout(new BorderLayout());
-        add(tabbedPane, BorderLayout.CENTER);        
+        add(tabbedPane, BorderLayout.CENTER);
     }
 }
 
