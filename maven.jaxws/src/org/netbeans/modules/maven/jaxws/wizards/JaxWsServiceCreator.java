@@ -194,7 +194,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (addJaxWsLib) {
                 MavenModelUtils.addJaxws21Library(project);
             }
-            generateJaxWSImplFromTemplate(pkg);
+            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
         }
     }
@@ -275,7 +275,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 // create empty web service implementation class
                 FileObject pkg = Templates.getTargetFolder(wiz);
-                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg);
+                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
 
                 // execute wsimport goal
                 RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport",
@@ -312,11 +312,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
         handle.finish();
     }
     
-    private FileObject generateJaxWSImplFromTemplate(FileObject pkg) throws IOException {
+    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if (WSUtils.isEJB(project)) { //EJB Web Service
+        if (isEjbTemplate) { //EJB Web Service
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }
