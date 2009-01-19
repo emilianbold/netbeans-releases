@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.*;
 import java.util.List;
 
@@ -72,7 +73,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> 
-        implements CsmFunction<T>, Disposable, RawNamable, CsmTemplate {
+        implements CsmFunction, Disposable, RawNamable, CsmTemplate {
     
     private static final String OPERATOR = "operator"; // NOI18N;
     

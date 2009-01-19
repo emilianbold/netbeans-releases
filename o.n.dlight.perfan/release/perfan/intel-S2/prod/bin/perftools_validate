@@ -1,0 +1,765 @@
+#!/bin/sh 
+#set -x
+#
+# Copyright 08/23/08 Sun Microsystems, Inc. All rights reserved.
+#
+# @(#)perftools_validate.ver.sh 1.133 08/08/23 SMI
+#
+# SUN PROPRIETARY/CONFIDENTIAL 
+# Use is subject to license terms.
+#
+
+# This string is here for the 'version' command:
+# It gets sed'ed in at build-time:
+# @(#)RELEASE VERSION Sun Ceres Analyzer 7.7 SunOS_i386 mt154047 2008/09/18
+
+# Product and J2SE Validation script 
+script_version=1.133
+
+# default location check?
+default_loc_warning="off"
+
+# check for V9 patches?
+V9patches="yes"
+
+# Expected changes needed before FCS:
+#  FIXUP: Will need to require latest libC patch, all platforms
+
+# Default install locations for Java
+# NOTE: THESE CHANGE WITH EACH RELEASE
+solaris_java_loc="/usr/jdk/jdk1.5.0_08/bin/java"
+linux_java_loc="/usr/java/jdk1.5.0_08/bin/java"
+if [ "`uname`" = "Linux" ]; then
+    default_java_loc="${linux_java_loc}"
+else
+    default_java_loc="${solaris_java_loc}"
+fi
+version_1_6_needed="1.6.0_03 or later 1.6.0 updates"
+
+##########################################################################
+# NOTE: These are the required patches, and may not be the latest patches.
+#       Sunsolve will probably not have these specific patches available for
+#       download, and the newer revs (which should be fine) may require
+#       additional patches that are not in this list.
+#       This list of patches may not be completely contained, i.e. these
+#       patches may require additional patches not in this list. This
+#       should be ok, in that this is a validation and not a patch installation
+#       script, in theory all we need to do is check for the patches we
+#       require and we need not verify that the complete patch tree is
+#       on the system.
+#	If a patch we wish to install has a newer rev on the system, then
+#	that patch is satisfied by this newer rev patch.
+#	If a patch has been made obsolete by some other patch on the system
+#	then that patch is also considered satisfied by the other patch.
+#
+# --When adding a patch, please include the reason (bugid if possible) and component--
+#
+##########################################################################
+
+# Patches needed for sparc/5.10 ...
+collect_sparc_510_patches=""
+collect_sparc_510_patches="${collect_sparc_510_patches} 120753-05" # libmtsk (mars: tha)
+collect_sparc_510_patches="${collect_sparc_510_patches} 117461-04" # Linker (venus: req'd patch)
+collect_sparc_510_patches="${collect_sparc_510_patches} 118822-23" # Kernel (dbx)
+collect_sparc_510_patches="${collect_sparc_510_patches} 119963-08" # libCstd
+sparc_510_patches="${collect_sparc_510_patches}"
+sparc_510v9_patches=""
+
+# Patches needed for intel/5.10 ...
+collect_intel_510_patches=""
+collect_intel_510_patches="${collect_intel_510_patches} 120754-05" # libmtsk (mars: tha)
+collect_intel_510_patches="${collect_intel_510_patches} 118345-03" # Linker (venus: req'd patch)
+collect_intel_510_patches="${collect_intel_510_patches} 119964-08" # liCstd
+intel_510_patches="${collect_intel_510_patches}"
+
+
+# Patches needed for sparc/5.9 ...
+collect_sparc_59_patches=""
+collect_sparc_59_patches="${collect_sparc_59_patches} 117560-06" # libmtsk (mars: tha)
+collect_sparc_59_patches="${collect_sparc_59_patches} 112963-26" # Linker (venus: req'd patch)
+collect_sparc_59_patches="${collect_sparc_59_patches} 112233-06" # Kernel (4793905: %y register corruption)
+collect_sparc_59_patches="${collect_sparc_59_patches} 111711-16" # libCstd
+sparc_59_patches="${collect_sparc_59_patches}"
+
+collect_sparc_59v9_patches=""
+collect_sparc_59v9_patches="${collect_sparc_59v9_patches} 111712-16" # libCstd patch
+sparc_59v9_patches="${collect_sparc_59v9_patches}"
+
+# Patches needed for intel/5.9 ...
+collect_intel_59_patches=""
+collect_intel_59_patches="${collect_intel_59_patches} 117559-06" # libmtsk (mars: tha)
+collect_intel_59_patches="${collect_intel_59_patches} 113986-18" # Linker (venus: req'd patch)
+collect_intel_59_patches="${collect_intel_59_patches} 112234-08" # Kernel
+collect_intel_59_patches="${collect_intel_59_patches} 111713-13" # libCstd
+intel_59_patches="${collect_intel_59_patches}"
+
+##########################################################################
+
+# System commands used (don't rely on search paths)
+RM=/bin/rm
+CAT=/bin/cat
+TTY=/usr/bin/tty
+XDPYINFO=/usr/openwin/bin/xdpyinfo
+DTERROR=/usr/dt/bin/dterror.ds
+UNAME=/bin/uname
+if [ "`${UNAME}`" = "Linux" ]; then
+    HOSTNAME=`/bin/hostname -s`
+    if [ "${HOSTNAME}" = "localhost" ]; then
+	HOSTNAME=`/bin/hostname`
+    fi
+else
+    HOSTNAME=`/bin/hostname`
+fi
+DTDSPMSG=/usr/dt/bin/dtdspmsg
+DIRNAME=/usr/bin/dirname
+CUT=/usr/bin/cut
+SED=/bin/sed
+if [ -x /bin/sort ]; then
+    SORT=/bin/sort
+else
+    SORT=/usr/bin/sort
+fi
+UNIQ=/usr/bin/uniq
+EXPR=/usr/bin/expr
+GREP=/bin/grep
+SHOWREV=/usr/bin/showrev
+TOUCH=/bin/touch
+CHMOD=/bin/chmod
+if [ -x /bin/basename ]; then
+    BASENAME=/bin/basename
+else
+    BASENAME=/usr/bin/basename
+fi
+
+ISALIST=/usr/bin/isalist
+SLEEP=/usr/bin/sleep
+
+# Name of this script (aka "perftools_validate" last time it got named)
+scriptname="`${BASENAME} $0`"
+
+# find the full path to the script
+
+PRG=$0
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
+    if expr "$link" : '^/' > /dev/null 2>/dev/null; then
+	PRG="$link"
+    else
+	PRG="`dirname $PRG`/$link"
+    fi
+done
+
+progdir=`dirname $PRG`
+
+# Location of script
+scriptdir1="`${DIRNAME} $0`"
+scriptdir="`cd ${scriptdir1} && pwd`"
+if [ -d ${scriptdir1}/../READMEs ] ; then
+    readmedir="`cd ${scriptdir1}/../READMEs && pwd`"
+else
+    readmedir="/opt/SUNWspro/prod/READMEs"
+fi
+
+# The website to get patches/J2SE
+website="http://access1.sun.com/sundev"
+jwebsite="http://java.sun.com/j2se"
+
+# Cache file
+cache_file=/tmp/${scriptname}_ok.${script_version}
+cache_file_collect=/tmp/${scriptname}_collect_ok.${script_version}
+patch_check="yes"
+
+# Buffering file
+bufferfile=/tmp/${scriptname}_message_buffer.$$
+${RM} -f ${bufferfile}
+
+# Exit status for this script
+exit_status=0  
+
+# List of missing patches
+missing_patches=""
+
+# Obsolete list
+obsolete_list=""
+obsolete_base_list=""
+
+# Java version
+javaversion=""
+
+# File that will contain showrev -p output
+sys_patches=/tmp/.${scriptname}_showrev.$$
+
+# Get OS type and version
+osver=`${progdir}/perftools_whichami -o`
+ostype=`${progdir}/perftools_whichami -O`
+
+
+##########################################################################
+#  Subroutines used
+##########################################################################
+Usage()
+{
+    echo "${scriptname}: Validates that the system/J2SE can run the Performance Tools"
+    echo " " 
+    echo "USAGE: ${scriptname} [-c] [-j javapath] [-H java_how] [-q] [-b] [-f] [-h] [-d] [-D] [-9]"
+    echo "      -c            Collect only, also don't check default loc of J2SE"
+    echo "      -j javapath   Java for Java profiling, check it"
+    echo "      -H java_how   How the Java for -j or -J was picked"
+    echo "      -q            Quiet mode, if system ok, say nothing"
+    echo "      -p N          Pause for N seconds after issuing warnings"
+    echo "      -b            Buffer up messages and send all at once"
+    echo "      -f            Bypass the cache"
+    echo "      -h            Print this help message"
+    echo "      -d            Use dt"
+    echo "      -D            Debug mode, script gets really noisy"
+    echo " Exit status:"
+    echo "    0 - ok"
+    echo "    1 - warnings, not fatal to run J2SE"
+    echo "    2 - bad J2SE, do not run"
+    echo "    3 - missing patches, do not run"
+    echo "    4 - internal error, contact support"
+}
+
+##########################################################################
+InternalError()
+{
+    DumpBuffer
+    echo "INTERNAL ERROR: $1"
+    Usage
+    exit 4
+}
+
+##########################################################################
+Debugmessage()
+{
+    if [ "${debugmode}" = "on" ] ; then
+        echo "DEBUG: $1"
+    fi
+}
+
+##########################################################################
+SetExitStatus()
+{
+    if [ ${exit_status} -eq 0 ] ; then
+	exit_status=$1
+    fi
+}
+
+##########################################################################
+Console()
+{
+    message="$1"
+    if [ "${use_dt}" = "no" ] ; then
+	echo "${message}"
+    else
+	${DTERROR} "${message}" "The Performance Tools" 'Continue'
+    fi
+}
+
+##########################################################################
+# Dump buffer load of messages
+DumpBuffer()
+{
+    if [ "${buffering}" = "on" ] ; then
+	if [ -s ${bufferfile} ] ; then
+	    Console "`${CAT} ${bufferfile}`"
+	    ${RM} -f ${bufferfile}
+	fi
+    fi
+}
+
+##########################################################################
+# GTXT -- L10N Message translation utility
+
+GTXT()
+{
+    eval I18Ntxt$2='$1'
+}
+
+# define all i18n messages -- used by I18Ncheck in the build
+
+GTXT "NOTE: You can download and install the required Solaris[tm] patches from %s.\n" 1
+GTXT "WARNING: The J2SE[tm] version \"%s\" found at \"%s\" (picked by %s) is not supported by the Performance tools;\n" 2
+GTXT "WARNING: No J2SE[tm] was found at %s (picked by %s).\n" 3
+GTXT "WARNING: The recommended default install location for J2SE[tm] %s is %s, not %s.\n" 4
+GTXT "WARNING: The following required %s patches have not been installed on system \"%s\": %s\n" 5
+GTXT "NOTE: %s system \"%s\" is correctly patched and set up for use with the Performance tools.\n" 6
+GTXT "WARNING: %s system \"%s\" is not supported by the Performance tools.\n" 7
+GTXT "NOTE: J2SE[tm] version %s was found at %s (picked by %s).\n" 8
+GTXT "NOTE: %s system \"%s\" is supported by the Performance tools.\n" 9
+GTXT "NOTE: You can download and install the J2SE[tm] from %s.\n" 10
+GTXT "      J2SE[tm] %s\n" 11
+GTXT "NOTE: The J2SE[tm] version %s found at %s (picked by %s) is supported by the Performance tools.\n" 12
+GTXT "    The following J2SE[tm] versions are recommended:\n" 13
+GTXT "WARNING: No java found\n" 14
+
+##########################################################################
+Message()
+{
+  # Message() - display message from ${scriptname}.cat
+  #   $1 - message id
+
+  text=I18Ntxt$1
+
+  if [ "${buffering}" = "on" ] ; then
+      if [ -x $DTDSPMSG ]; then
+	  eval eval $DTDSPMSG -s 18 analyzer.cat $1 \\\"\\\${$text}\\\"  ${2:+"\\\"$2\\\""} ${3:+"\\\"$3\\\""} ${4:+"\\\"$4\\\""} >> ${bufferfile}
+      else
+	  eval eval printf \\\"\\\${$text}\\\" ${2:+"\\\"$2\\\""} ${3:+"\\\"$3\\\""} ${4:+"\\\"$4\\\""} >> ${bufferfile}
+      fi
+      if [ "${use_dt}" = "yes" ] ; then
+	  printf '\\n' >> ${bufferfile}
+      fi
+  else
+      if [ -x $DTDSPMSG ]; then
+	  eval eval $DTDSPMSG -s 18 analyzer.cat $1 \\\"\\\${$text}\\\"  ${2:+"\\\"$2\\\""} ${3:+"\\\"$3\\\""} ${4:+"\\\"$4\\\""}
+      else
+	  eval eval printf \\\"\\\${$text}\\\" ${2:+"\\\"$2\\\""} ${3:+"\\\"$3\\\""} ${4:+"\\\"$4\\\""}
+      fi
+  fi
+}
+
+##########################################################################
+Recommendation()
+{
+    Message 1 "${website}"
+}
+
+##########################################################################
+JRecommendation()
+{
+    Message 13
+    Message 11 "${version_1_6_needed}"
+    Message 10 "${jwebsite}"
+}
+
+##########################################################################
+JNotSupported()
+{
+    Message 2 "${javaversion}" "${javapath}" "${java_how}"
+    JRecommendation
+    SetExitStatus 2
+}
+
+##########################################################################
+JNotRecommended()
+{
+    Message 8 "${javaversion}" "${javapath}" "${java_how}"
+    JRecommendation
+    SetExitStatus 2
+}
+
+##########################################################################
+JNotAvailable()
+{
+    Message 3 "${javapath}" "${java_how}"
+    JRecommendation
+    SetExitStatus 2
+}
+
+##########################################################################
+JNotNormal()
+{
+    Message 4 "${version_1_6_needed}" "${default_java_loc}" "${javapath}"
+    JRecommendation
+    SetExitStatus 2
+}
+##########################################################################
+JOK()
+{
+    if [ ${quietmode} = "off" ] ; then
+	Message 12 "${javaversion}" "${javapath}" "${java_how}"
+    fi
+}
+
+##########################################################################
+MissingPatches()
+{
+    Message 5 "${osver}" "${HOSTNAME}" "${missing_patches}"
+    Recommendation
+    SetExitStatus 1
+}
+
+##########################################################################
+OSUnsupported()
+{
+    Message 7 "${ostype}" "${HOSTNAME}" 
+    SetExitStatus 1
+}
+
+##########################################################################
+Validated()
+{
+    if [ ${quietmode} = "off" ] ; then
+        if [ ${patch_check} = "no" ] ; then
+            Message 9 "${ostype}" "${HOSTNAME}" 
+	else
+	    Message 6 "${ostype}" "${HOSTNAME}"
+        fi
+    fi
+}
+
+##########################################################################
+# Get obsolete patch list
+GetObsoleteList()
+{
+    Debugmessage "Looking for obsolete patches"
+    raw_obsolete_list="`${GREP} 'Obsoletes:' ${sys_patches} | ${SED} 's/.*Obsoletes:\([\ \	,0-9-]*\).*/\1/' | ${SED} -e 's/,/ /g'`"
+    for i in ${raw_obsolete_list} END ; do
+	if [ "${i}" = "END" ] ; then
+	   break;
+	fi
+        for x in ${obsolete_list} END ; do
+	    if [ "${x}" = "${i}" ] ; then
+		break;
+	    fi
+	done
+	if [ "${x}" != "${i}" ] ; then
+	    obsolete_list="${obsolete_list} $i"
+	fi
+    done
+    if [ "${obsolete_list}" != "" ] ; then
+	obsolete_base_list="`echo ${obsolete_list} | ${SED} 's/\([1-9][0-9][0-9][0-9][0-9][0-9]\)-[0-9][0-9]/\1/g'`"
+        Debugmessage "Obsolete base list: ${obsolete_base_list}"
+    fi
+    Debugmessage "Obsolete list: ${obsolete_list}"
+}
+
+##########################################################################
+# See if a specific patch is on the system
+CheckPatch() 
+{
+    foundpatch=""
+    p=$1
+    
+    # See if patch is in the obsolete list
+    Debugmessage "Looking for patch $p"
+    base="`echo $p | ${SED} 's/\([1-9][0-9][0-9][0-9][0-9][0-9]\)-[0-9][0-9]/\1/'`"
+    rev="`echo $p | ${SED} 's/[1-9][0-9][0-9][0-9][0-9][0-9]-\([0-9][0-9]\)/\1/'`"
+    if [ "${obsolete_base_list}" != "" ] ; then
+	for obase in ${obsolete_base_list} ; do
+	    if [ "${base}" = "${obase}" ] ; then
+		Debugmessage "Checking base patch ${base} for obsoleteness"
+		orev=`echo "${obsolete_list}" | ${SED} "s/.*${base}-\([0-9][0-9]\).*/\1/"`
+		Debugmessage "rev=${rev}, orev=${orev}"
+		if [ `${EXPR} ${rev} '<=' ${orev}` = '1' ] ; then
+		    Debugmessage "Found patch $i to be obsolete, making $p obsolete"
+		    return
+		fi
+	    fi
+	done
+    fi
+
+    all=`${GREP} "Patch: $base" $sys_patches`
+    Debugmessage "Base of patch is ${base}, rev is ${rev}"
+    if [ "$all" != "" ] ; then
+        revs=`echo "$all" | ${SED} 's/^Patch: [1-9][0-9][0-9][0-9][0-9][0-9]-\([0-9][0-9]\).*$/\1/' | ${SORT} | ${UNIQ}`
+        Debugmessage "Found the following revs: ${revs}"
+	for r in $revs ; do
+	    if [ `${EXPR} $rev '<=' $r` = '1' ] ; then
+		foundpatch="$base-$r"
+                Debugmessage "Found patch $p in form of $base-$r"
+		break
+	    fi
+	done
+    fi
+    if [ "$foundpatch" = "" ] ; then
+	Debugmessage "Missing patch $p"
+        missing_patches="${missing_patches} ${p}"
+    fi
+}
+
+##########################################################################
+# Function that checks all the patches
+CheckAllPatches() # osver sparc_patches intel_patches
+{
+    # Get obsolete list
+    GetObsoleteList
+
+    osver="$1"
+    arch="`${UNAME} -p`"
+    if [ "${arch}" = sparc ] ; then
+	patches="$2"
+    else
+	patches="$3"
+    fi
+    Debugmessage "Looking for ${arch} ${osver} patches ${patches}"
+    for i in ${patches} ; do
+	CheckPatch $i
+    done
+}
+
+##########################################################################
+# Get the version of java at javapath
+GetJavaVersion()
+{
+    javaversion=`${javapath} -version 2>&1 | ${GREP} 'java version' | ${CUT} -f2 -d'"'`
+    Debugmessage "Got javaversion \"${javaversion}\" from ${javapath} -version 2>&1 | ${GREP} 'java version'"
+    javasversion=`echo "${javaversion}" | ${SED} s/_/./ `
+    Debugmessage "sed ${javaversion} to \"${javasversion}\" from ${SED} 's/_/./'"
+}
+
+##########################################################################
+##########################################################################
+#  Main program starts here...
+##########################################################################
+##########################################################################
+
+# l10n update this
+
+NLSPATH="${scriptdir}/locale/%L/%N:${scriptdir}/../lib/locale/%L/LC_MESSAGES/%N:${NLSPATH}"
+export NLSPATH
+
+# Set default values
+quietmode="off"
+buffering="off"
+use_dt="no"
+
+# If standard input is NOT a terminal, then we assume no console? Use popup.
+${TTY} -s
+if [ $? -ne 0 ] ; then
+    use_dt="yes"
+fi
+
+javapath=""
+java_how="?"
+collectmode="off"
+debugmode="off"
+forcemode="off"
+psecs=""
+
+#-------------------------------
+# Parse the options from the command line
+
+while getopts bcdDfhj:J:H:qp:V option
+do
+  case $option in
+      # -c
+      c) collectmode="on"; use_dt="no";cache_file=$cache_file_collect;; # disable popups and display validation
+      # -d
+      d) use_dt="yes";;
+      # -D
+      D) debugmode="on";;
+      # -f
+      f) forcemode="on";;
+      # -j javapath
+      j) javapath="$OPTARG";;
+      # -J javapath
+      J) javapath="$OPTARG";;
+      # -H java_how
+      H) java_how="$OPTARG";;
+      # -p N
+      p) psecs="$OPTARG";;
+      # -q
+      q) quietmode="on";;
+      # -b
+      b) buffering="on";;
+      # -h
+      h) Usage
+	 exit 0;;
+      # -V
+      V)  echo `${BASENAME} $0`: "Sun Ceres Analyzer 7.7 SunOS_i386 mt154047 2008/09/18"; exit 0;;
+      # Unknown
+      \?) InternalError "Unknown option";;
+    esac
+done
+shift `${EXPR} $OPTIND - 1`
+if [ "$*" != "" ] ; then
+    InternalError "Illegal input on command line: $*"
+fi
+
+# If using popup, make sure display is valid
+if [ "${use_dt}" = "yes" ] ; then
+    ${XDPYINFO} > /dev/null 2>&1 
+    if [ $? -ne 0 ] ; then
+	use_dt="no"
+    else
+        buffering="on"
+    fi
+fi
+
+#-------------------------------
+# The collect option may change the patch list
+if [ "${collectmode}" = "on" ] ; then
+    default_loc_warning="off"
+    # Skip java check unless -j options seen
+    if [ "${javapath}" = "" ] ; then
+	# Just check collector patches
+	Debugmessage "Changing patch list for collect"
+        intel_59_patches="${collect_intel_59_patches}"
+        intel_510_patches="${collect_intel_510_patches}"
+	sparc_510v9_patches=""
+        sparc_59_patches="${collect_sparc_59_patches}"
+        sparc_510_patches="${collect_sparc_510_patches}"
+    fi
+else
+    # Use default javapath  if not set
+    if [ "${javapath}" = "" ] ; then
+	javapath="${default_java_loc}"
+    fi
+fi
+
+# If debugging mode is on, say what was requested
+Debugmessage "quietmode=${quietmode}"
+Debugmessage "collectmode=${collectmode}"
+Debugmessage "debugmode=${debugmode}"
+Debugmessage "forcemode=${forcemode}"
+Debugmessage "javapath=${javapath}"
+
+#-------------------------------
+# Check system version first
+
+# Solaris:
+if [ "${osver}" = "5.11" ] ; then
+    Debugmessage "${osver} is ok"
+elif [ "${osver}" = "5.10" ] ; then
+    Debugmessage "${osver} is ok"
+
+# RedHat Linux Flavors:
+elif [ "${osver}" = "RHEL_5" ] ; then		#RedHat 5
+    Debugmessage "${osver} is ok"
+    patch_check="no"
+elif [ "${osver}" = "RHEL_5.1" ] ; then		#RedHat 5.1
+    Debugmessage "${osver} is ok"
+    patch_check="no"
+elif [ "${osver}" = "RHEL_5.2" ] ; then		#RedHat 5.2
+    Debugmessage "${osver} is ok"
+    patch_check="no"
+elif [ "${osver}" = "CentOS_5.1" ] ; then	#CentOS 5.1
+    Debugmessage "${osver} is ok"
+    patch_check="no"
+
+# SuSE Linux Flavors:
+elif [ "${osver}" = "SLES_10" ] ; then		#SuSE 10
+     Debugmessage "${osver} is ok"
+     patch_check="no"
+elif [ "${osver}" = "SLES_10.1" ] ; then	#SuSE 10.1
+     Debugmessage "${osver} is ok"
+     patch_check="no"
+
+# Ubuntu Linux Flavors:
+elif [ "${osver}" = "Ubuntu_8.04" ] ; then	#Ubuntu 8.04
+     Debugmessage "${osver} is ok"
+     patch_check="no"
+
+else
+    OSUnsupported
+    patch_check="no"
+fi
+
+#-------------------------------
+# Check for system patches
+
+if [ "${patch_check}" = "yes" ] ; then
+    # If cache file doesn't exist, do the checks for patches
+    if [ "${forcemode}" = "on" -o ! -f ${cache_file} ] ; then
+
+	# Remove v9 patches
+	if [ "${V9patches}" = "no" -o "`${ISALIST} | ${GREP} sparcv9`" = "" ] ; then
+	    sparc_59v9_patches=""
+	    sparc_510v9_patches=""
+	fi
+
+	# Check the Solaris patches
+	${RM} -f ${sys_patches}
+	if [ "${osver}" = "5.10" ] ; then
+	    ${SHOWREV} -p > ${sys_patches}
+	    CheckAllPatches ${osver} \
+		"${sparc_510_patches} ${sparc_510v9_patches}" "${intel_510_patches}"
+	elif [ "${osver}" = "5.9" ] ; then
+	    ${SHOWREV} -p > ${sys_patches}
+	    CheckAllPatches ${osver} \
+		"${sparc_59_patches} ${sparc_59v9_patches}" "${intel_59_patches}"
+	fi
+	${RM} -f ${sys_patches}
+	
+	# Check to see if there were missing patches
+	if [ "${missing_patches}" != "" ] ; then
+	    MissingPatches
+	else
+	    Validated
+	fi
+
+	# Touch cache file if we think it's ok
+	if [ ${exit_status} = 0 ] ; then
+	     ${TOUCH} -f ${cache_file}
+	     ${CHMOD} a+rw ${cache_file}
+	fi
+    else
+	Validated
+    fi
+else
+    if [ ${exit_status} = 0 ] ; then
+	Validated
+    fi
+fi
+
+#-------------------------------
+# Check for the right Java
+
+# If not your normal javapath, say so
+if [ "${default_loc_warning}" = "on" -a "${javapath}" != "" -a "${javapath}" != "${default_java_loc}" ] ; then
+    JNotNormal
+fi
+
+# If we have a java to run, we check the java version
+if [ "${javapath}" != "" ] ; then
+
+    # Get the version of java being used
+    GetJavaVersion
+    Debugmessage "Found version \"${javaversion}\" from ${javapath}"
+
+    # Check J2SE version
+    if [ "${javaversion}" = "" ] ; then
+	JNotAvailable
+    else
+	majorno="`echo ${javasversion} | cut -f1 -d'.' `"
+	minorno="`echo ${javasversion} | cut -f2 -d'.' `"
+	microno="`echo ${javasversion} | sed 's/-/./' | cut -f3 -d'.' `"
+	patchno="`echo ${javasversion} | sed 's/-/./' | cut -f4 -d'.' `"
+        if [ -z "$microno" ]; then microno=0 ; fi
+        if [ -z "$patchno" ]; then patchno=0 ; fi
+	Debugmessage "Found that java major version is ${majorno}"
+	Debugmessage "Found that java minor version is ${minorno}"
+	Debugmessage "Found that java micro version is ${microno}"
+	Debugmessage "Found that java patch version is ${patchno}"
+
+	if [ ${majorno} -ne 1 ]; then
+	    Debugmessage "Found java ${majorno}.${minorno}.${microno}_${patchno}"
+	    JNotSupported
+	elif [ ${minorno} -le 5 ] ; then
+	    Debugmessage "Found java minorno = ${minorno} <= 5"
+	    JNotSupported
+	elif [ ${minorno} -eq 6 ] ; then
+	    Debugmessage "Found java minorno = 6"
+	    if [ ${patchno} -lt 03 ] ; then
+		Debugmessage "Found JVM 1.6, patchno = ${patchno} < 03"
+		JNotSupported
+	    else
+	        JOK
+	    fi
+	else
+	    Debugmessage "Found java 1.${minorno}, assumed OK"
+	    JOK
+	fi
+    fi
+fi
+Debugmessage "DumpBuffer"
+
+# If we are buffering up messages (-b option) dump the messages now
+DumpBuffer
+
+#-------------------------------
+# If any warnings, wait a little to make sure they read them
+
+if [ ${exit_status} != 0 ] ; then
+    if [ "${psecs}" != "" ] ; then
+        ${SLEEP} ${psecs}
+    fi
+fi
+
+#-------------------------------
+#  Now exit with the appropriate status
+
+exit ${exit_status}

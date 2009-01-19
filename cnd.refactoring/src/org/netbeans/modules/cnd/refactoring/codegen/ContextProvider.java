@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -53,13 +55,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Vladimir Voskresensky
  */
 public final class ContextProvider implements CodeGeneratorContextProvider {
-    private static final ContextProvider instance = new ContextProvider();
     
     public ContextProvider() {
-    }
-
-    public ContextProvider create() {
-        return instance;
     }
 
     public void runTaskWithinContext(final Lookup context, final Task task) {
@@ -67,8 +64,11 @@ public final class ContextProvider implements CodeGeneratorContextProvider {
         if (component != null) {
                 CsmFile csmFile = CsmUtilities.getCsmFile(component, true);
                 if (csmFile != null) {
-                    final int caretOffset = component.getCaretPosition();
-                    Lookup newContext = new ProxyLookup(context, Lookups.fixed(csmFile, new CsmContext(csmFile, caretOffset)));
+                    final int startOffset = component.getSelectionStart();
+                    final int endOffset = component.getSelectionEnd();
+                    final Document doc = component.getDocument();
+                    final FileObject fo = CsmUtilities.getFileObject(doc);
+                    Lookup newContext = new ProxyLookup(context, Lookups.fixed(csmFile, new CsmContext(csmFile, fo, doc, startOffset, endOffset)));
                     task.run(newContext);
                     return;
                 }

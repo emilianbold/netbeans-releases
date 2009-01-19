@@ -27,44 +27,39 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.io.File;
 import java.util.concurrent.Callable;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProgram;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+
 /**
  * @author Radek Matous, Tomas Mysik
  */
 public class DebugScript  extends RunScript {
+    private final Provider provider;
 
-    public DebugScript(PhpProject project) {
-        super(project);
-    }
-
-    public DebugScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot) {
-        super(project, program, descriptor, processBuilder, sourceRoot);
+    public DebugScript(Provider provider) {
+        super(provider);
+        this.provider = provider;
     }
 
     @Override
-    public void run(final Lookup context) {
+    public void run() {
         //temporary; after narrowing deps. will be changed
-        Callable<Cancellable> callable = getCallable(context);
+        Callable<Cancellable> callable = getCallable();
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         assert dbgStarter != null;
         if (dbgStarter.isAlreadyRunning()) {
             if (CommandUtils.warnNoMoreDebugSession()) {
                 dbgStarter.stop();
-                run(context);
+                run();
             }
         } else {
-            dbgStarter.start(project, callable, getStartFile(context), true);
+            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true);
         }
     }
 
@@ -74,13 +69,18 @@ public class DebugScript  extends RunScript {
     }
 
     @Override
-    protected String getOutputTabTitle(String command, File scriptFile) {
-        return String.format("%s %s", super.getOutputTabTitle(command, scriptFile), NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug"));
+    protected String getOutputTabTitle() {
+        return String.format("%s %s", super.getOutputTabTitle(), NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug"));
     }
 
     @Override
-    protected ExternalProcessBuilder getProcessBuilder(PhpProgram program, File scriptFile) {
-        return super.getProcessBuilder(program, scriptFile)
+    protected ExternalProcessBuilder getProcessBuilder() {
+        return super.getProcessBuilder()
                 .addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
+    }
+
+    public interface Provider extends RunScript.Provider {
+        Project getProject();
+        FileObject getStartFile();
     }
 }

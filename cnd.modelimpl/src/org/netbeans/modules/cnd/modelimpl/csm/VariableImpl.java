@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
@@ -62,7 +63,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @param T 
  * @author Dmitriy Ivanov
  */
-public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
+public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, Disposable {
 
     private final CharSequence name;
     private final CsmType type;

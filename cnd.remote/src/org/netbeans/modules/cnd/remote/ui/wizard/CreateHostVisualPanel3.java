@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 
 public final class CreateHostVisualPanel3 extends JPanel {
 
@@ -58,11 +59,13 @@ public final class CreateHostVisualPanel3 extends JPanel {
     }
 
     private String hkey;
+    private ToolsCacheManager cacheManager;
 
-    void setHkey(String hkey) {
+    void init(String hkey, ToolsCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
         this.hkey = hkey;
         textHostDisplayName.setText(RemoteUtils.getHostName(hkey));
-        CompilerSetManager csm = CompilerSetManager.getDefault(hkey);
+        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hkey);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
         labelUsernameValue.setText(RemoteUtils.getUserName(hkey));
         labelHostnameValue.setText(RemoteUtils.getHostName(hkey));
@@ -74,7 +77,10 @@ public final class CreateHostVisualPanel3 extends JPanel {
             st.append(set.getName()).append(" (").append(set.getDirectory()).append(")\n");//NOI18N
         }
         jTextArea1.setText(st.toString());
+    }
 
+    String getDefaultCompilerSetDisplayName() {
+        return (String)cbDefaultToolchain.getSelectedItem();
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -114,7 +120,7 @@ public final class CreateHostVisualPanel3 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
 
         jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
+        jTextArea1.setRows(1);
         jTextArea1.setFocusable(false);
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);

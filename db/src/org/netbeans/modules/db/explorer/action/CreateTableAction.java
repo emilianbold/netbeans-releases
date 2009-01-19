@@ -45,6 +45,7 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -70,7 +71,7 @@ public class CreateTableAction extends BaseAction {
                     enabled = !conn.isClosed();
                 }
             } catch (SQLException e) {
-
+                Exceptions.printStackTrace(e);
             }
         }
 

@@ -52,9 +52,11 @@ public class QmakeConfiguration implements Cloneable {
     public static final String RELEASE_FLAG = "release"; // NOI18N
 
     private StringConfiguration config;
+    private StringConfiguration modules;
 
     public QmakeConfiguration() {
         config = new StringConfiguration(null, ""); // NOI18N
+        modules = new StringConfiguration(null, ""); // NOI18N
     }
 
     public Sheet getGeneralSheet() {
@@ -65,6 +67,7 @@ public class QmakeConfiguration implements Cloneable {
         basic.setDisplayName(getString("QmakeGeneralTxt")); // NOI18N
         basic.setShortDescription(getString("QmakeGeneralHint")); // NOI18N
         basic.put(new StringNodeProp(config, "CONFIG", getString("QmakeConfigTxt"), getString("QmakeConfigHint"))); // NOI18N
+        basic.put(new StringNodeProp(modules, "MODULES", getString("QmakeModulesTxt"), getString("QmakeModulesHint"))); // NOI18N
         sheet.put(basic);
 
         return sheet;
@@ -78,8 +81,17 @@ public class QmakeConfiguration implements Cloneable {
         this.config = config;
     }
 
+    public StringConfiguration getModules() {
+        return modules;
+    }
+
+    public void setModules(StringConfiguration modules) {
+        this.modules = modules;
+    }
+
     public void assign(QmakeConfiguration other) {
         getConfig().setValue(other.getConfig().getValue());
+        getModules().setValue(other.getModules().getValue());
     }
 
     @Override
@@ -87,6 +99,7 @@ public class QmakeConfiguration implements Cloneable {
         try {
             QmakeConfiguration clone = (QmakeConfiguration) super.clone();
             clone.setConfig(getConfig().clone());
+            clone.setModules(getModules().clone());
             return clone;
         } catch (CloneNotSupportedException ex) {
             // should not happen while this class implements Cloneable

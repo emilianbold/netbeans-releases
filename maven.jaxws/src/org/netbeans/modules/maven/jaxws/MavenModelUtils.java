@@ -119,10 +119,21 @@ public final class MavenModelUtils {
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
      * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
-     * @param model
-     * @return
+     * @param model POMModel
+     * @return JAX-WS Plugin instance
      */
     public static Plugin addJaxWSPlugin(POMModel model) {
+        return MavenModelUtils.addJaxWSPlugin(model, null);
+    }
+
+    /**
+     * adds jaxws plugin, requires the model to have a transaction started,
+     * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
+     * @param model POMModel
+     * @param jaxWsVersion version of sources to generate. Value null means default version.
+     * @return JAX-WS Plugin instance
+     */
+    public static Plugin addJaxWSPlugin(POMModel model, String jaxWsVersion) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
         Build bld = model.getProject().getBuild();
         if (bld == null) {
@@ -151,7 +162,9 @@ public final class MavenModelUtils {
         config.setSimpleParameter("verbose", "true"); //NOI18N
         config.setSimpleParameter("extension", "true"); //NOI18N
         config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
-        
+        if (jaxWsVersion != null) {
+            config.setSimpleParameter("target", jaxWsVersion); //NOI18N
+        }
         return plugin; 
     }
 
@@ -266,6 +279,15 @@ public final class MavenModelUtils {
         return null;
     }
 
+    private static POMExtensibilityElement findElementForValue(List<POMExtensibilityElement> elems, String value) {
+        for (POMExtensibilityElement e : elems) {
+            if (value.equals(e.getElementText())) {
+                return e;
+            }
+        }
+        return null;
+    }
+
     public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath) {
         POMModel model = plugin.getModel();
         assert model.isIntransaction();
@@ -307,21 +329,30 @@ public final class MavenModelUtils {
             for (PluginExecution exec : executions) {
                 if (execId.equals(exec.getId())) {
                     Configuration config = exec.getConfiguration();
+                    if (config != null) {
+                        QName qname = POMQName.createQName("bindingDirectory", model.getPOMQNames().isNSAware()); //NOI18N
+                        if (config.getChildElementText(qname) == null) {
+                            POMExtensibilityElement bindingDir = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingDir.setElementText("${basedir}/src/jaxws-bindings");
+                            config.addExtensibilityElement(bindingDir);
+                        }
+                        POMExtensibilityElement bindingFiles =
+                                findChild(config.getConfigurationElements(), "bindingFiles"); //NOI18N
+                        if (bindingFiles == null) {
+                            qname = POMQName.createQName("bindingFiles", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFiles = model.getFactory().createPOMExtensibilityElement(qname);
+                            config.addExtensibilityElement(bindingFiles);
+                        }
 
-                    QName qname = POMQName.createQName("bindingDirectory", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingDir = model.getFactory().createPOMExtensibilityElement(qname);
-                    bindingDir.setElementText("${basedir}/src/jaxws-bindings");
-                    config.addExtensibilityElement(bindingDir);
-
-                    qname = POMQName.createQName("bindingFiles", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingFiles = model.getFactory().createPOMExtensibilityElement(qname);
-                    config.addExtensibilityElement(bindingFiles);
-
-                    qname = POMQName.createQName("bindingFile", model.getPOMQNames().isNSAware()); //NOI18N
-                    POMExtensibilityElement bindingFile = model.getFactory().createPOMExtensibilityElement(qname);
-                    bindingFile.setElementText(bindingFilePath);
-                    bindingFiles.addExtensibilityElement(bindingFile);
-
+                        POMExtensibilityElement bindingFile =
+                                findElementForValue(bindingFiles.getExtensibilityElements(), bindingFilePath);
+                        if (bindingFile == null) {
+                            qname = POMQName.createQName("bindingFile", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFile = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingFile.setElementText(bindingFilePath);
+                            bindingFiles.addExtensibilityElement(bindingFile);
+                        }
+                    }
                     break;
                 }
             }
@@ -418,12 +449,12 @@ public final class MavenModelUtils {
      * @param project Maven project instance
      * @return list of wsdl files
      */
-    public static List<String> getWsdlFiles(Project project) {
+    public static List<WsimportPomInfo> getWsdlFiles(Project project) {
         MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         assert mavenProject != null;
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = mavenProject.getBuildPlugins();
-        List<String> wsdlList = new ArrayList<String>();
+        List<WsimportPomInfo> wsdlList = new ArrayList<WsimportPomInfo>();
         for (org.apache.maven.model.Plugin plg : plugins) {
             if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
                 @SuppressWarnings("unchecked")
@@ -434,13 +465,34 @@ public final class MavenModelUtils {
                         Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
                         if (wsdlFiles != null) {
                             Xpp3Dom wsdlFile = wsdlFiles.getChild("wsdlFile"); //NOI18N
-                            if (wsdlFile != null) wsdlList.add(wsdlFile.getValue());
+                            if (wsdlFile != null) {
+                                WsimportPomInfo pomInfo = new WsimportPomInfo(wsdlFile.getValue());
+                                // detect handler binding file
+                                Xpp3Dom bindingFiles = conf.getChild("bindingFiles"); //NOI18N
+                                if (bindingFiles != null) {
+                                    String bindingPath = findHandler(bindingFiles);
+                                    if (bindingPath != null) {
+                                        pomInfo.setHandlerFile(bindingPath);
+                                    }
+                                }
+                                wsdlList.add(pomInfo);
+                            }
                         }
                     }
                 }
             }
         }
         return wsdlList;
+    }
+
+    private static String findHandler(Xpp3Dom parent) {
+        for (Xpp3Dom child : parent.getChildren("bindingFile")) { //NOI18N
+            String bindingPath = child.getValue();
+            if (bindingPath != null && bindingPath.endsWith("_handler.xml")) { //NOI18N
+                return bindingPath;
+            }
+        }
+        return null;
     }
 
 }

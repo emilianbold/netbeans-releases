@@ -44,8 +44,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -76,7 +77,7 @@ public final class RepositoryUtils {
     // repository access wrappers
     private static volatile int counter = 0;
 
-    public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
+    public static <T> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         Persistent obj = get(key);
         assert obj == null || (obj instanceof CsmIdentifiable);
@@ -103,7 +104,7 @@ public final class RepositoryUtils {
             System.err.println(index + ":getting key " + key);
             Persistent out = repository.get(key);
             time = System.currentTimeMillis() - time;
-            System.err.println(index + ":got in " + time + "ms the key " + key);
+            System.err.println(index + ":got in " + time + "ms the key " + key + (out == null ? " - NULL":""));
             return out;
         }
         return repository.get(key);
@@ -141,10 +142,10 @@ public final class RepositoryUtils {
         }
     }
 
-    public static <T> CsmUID<T> put(CsmIdentifiable<T> csmObj) {
+    public static <T> CsmUID<T> put(T csmObj) {
         CsmUID<T> uid = null;
         if (csmObj != null) {
-            uid = csmObj.getUID();
+            uid = UIDs.get(csmObj);
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
@@ -175,10 +176,10 @@ public final class RepositoryUtils {
         }
     }
 
-    public static void hang(CsmIdentifiable csmObj) {
+    public static void hang(Object csmObj) {
         CsmUID uid = null;
         if (csmObj != null) {
-            uid = csmObj.getUID();
+            uid = UIDs.get(csmObj);
             assert uid != null;
             Key key = UIDtoKey(uid);
             hang(key, (Persistent) csmObj);
@@ -205,9 +206,7 @@ public final class RepositoryUtils {
         List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());
         for (T decl : decls) {
             if (decl instanceof CsmIdentifiable) {
-                @SuppressWarnings("unchecked")
-                CsmIdentifiable<T> id = (CsmIdentifiable<T>) decl;
-                CsmUID<T> uid = put(id);
+                CsmUID<T> uid = put(decl);
                 uids.add(uid);
             }
         }

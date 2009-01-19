@@ -1,0 +1,85 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+package org.netbeans.dlight.webstack;
+
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.dlight.indicators.ClockIndicator;
+import org.netbeans.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
+import org.netbeans.modules.dlight.spi.indicator.support.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
+import org.netbeans.modules.dlight.util.Util;
+
+/**
+ *
+ * @author mt154047
+ */
+public final class MySQLConfigurationProvider implements DLightToolConfigurationProvider {
+
+  public MySQLConfigurationProvider() {
+  }
+
+  public DLightToolConfiguration create() {
+    final String toolName = "Web Stack MySQL Monitor";
+    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+    List<Column> mysqlColumns = Arrays.asList(
+            new Column("timestamp", Long.class, "Timestamp", null),
+            new Column("query", String.class, "SQL Query", null),
+            new Column("time", Double.class, "Execution time", null));
+
+/// "`pgrep -x mysqld`"
+    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns);
+    DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
+            "org/netbeans/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata));
+    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner"));
+    dcConfiguration.setScriptArgs("`pgrep -x mysqld`");
+    toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
+    toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
+    IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+    ClockIndicator clockIndicator = new ClockIndicator(indicatorMetadata1);
+    toolConfiguration.addIndicator(clockIndicator);
+    clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
+    return toolConfiguration;
+  }
+}

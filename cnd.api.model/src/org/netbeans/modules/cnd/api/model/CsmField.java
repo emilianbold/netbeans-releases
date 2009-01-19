@@ -45,5 +45,5 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmField extends CsmVariable<CsmField>, CsmMember<CsmField> {
+public interface CsmField extends CsmVariable, CsmMember {
 }

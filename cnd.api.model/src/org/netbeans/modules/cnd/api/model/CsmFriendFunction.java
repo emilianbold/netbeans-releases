@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Alexander Simon
  */
-public interface CsmFriendFunction extends CsmFriend<CsmFriendFunction>, CsmFunction<CsmFriendFunction> {
+public interface CsmFriendFunction extends CsmFriend, CsmFunction {
 
     /** gets correspondent function */
     CsmFunction getReferencedFunction();

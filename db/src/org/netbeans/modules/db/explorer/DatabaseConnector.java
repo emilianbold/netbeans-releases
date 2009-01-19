@@ -43,8 +43,10 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -64,6 +66,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,6 +88,10 @@ public class DatabaseConnector {
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
+    }
+
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -185,7 +192,7 @@ public class DatabaseConnector {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
 
-                //message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
+                message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
             }
 
             // XXX hack for Derby
@@ -211,7 +218,6 @@ public class DatabaseConnector {
             connection = null;
         }
 
-        //databaseConnection.getConnectionPCS().firePropertyChange(CONNECTION, oldval, databaseConnection);
         notifyChange();
     }
 
