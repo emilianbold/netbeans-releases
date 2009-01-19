@@ -119,10 +119,21 @@ public final class MavenModelUtils {
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
      * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
-     * @param model
-     * @return
+     * @param model POMModel
+     * @return JAX-WS Plugin instance
      */
     public static Plugin addJaxWSPlugin(POMModel model) {
+        return MavenModelUtils.addJaxWSPlugin(model, null);
+    }
+
+    /**
+     * adds jaxws plugin, requires the model to have a transaction started,
+     * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
+     * @param model POMModel
+     * @param jaxWsVersion version of sources to generate. Value null means default version.
+     * @return JAX-WS Plugin instance
+     */
+    public static Plugin addJaxWSPlugin(POMModel model, String jaxWsVersion) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
         Build bld = model.getProject().getBuild();
         if (bld == null) {
@@ -151,7 +162,9 @@ public final class MavenModelUtils {
         config.setSimpleParameter("verbose", "true"); //NOI18N
         config.setSimpleParameter("extension", "true"); //NOI18N
         config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
-        
+        if (jaxWsVersion != null) {
+            config.setSimpleParameter("target", jaxWsVersion); //NOI18N
+        }
         return plugin; 
     }
 
