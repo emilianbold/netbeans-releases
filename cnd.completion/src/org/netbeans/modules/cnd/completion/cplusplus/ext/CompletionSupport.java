@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmFinderFactory;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
@@ -171,7 +172,9 @@ public final class CompletionSupport {
     }
 
     private int doc2context(int docPos) {
-        return this.contextOffset == NOT_INITIALIZED ? docPos : this.contextOffset;
+        int offset = this.contextOffset == NOT_INITIALIZED ? docPos : this.contextOffset;
+        offset = CsmMacroExpansion.getOffsetInOriginalText(getDocument(), offset);
+        return offset;
     }
     
     protected void setLastSeparatorOffset(int lastSeparatorOffset) {

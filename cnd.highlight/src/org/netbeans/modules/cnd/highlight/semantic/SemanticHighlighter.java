@@ -163,6 +163,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     private void update(BaseDocument doc, final Interrupter interrupter) {
+        boolean macroExpansionView = (doc.getProperty("macro-expansion-view-doc") != null); // NOI18N
         PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();
         final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
@@ -175,7 +176,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
                 SemanticEntity se = i.next();
-                if (NamedEntityOptions.instance().isEnabled(se)) {
+                if (NamedEntityOptions.instance().isEnabled(se) && 
+                        (!macroExpansionView || !se.getName().equals("macros"))) { // NOI18N
                     ReferenceCollector collector = se.getCollector();
                     if (collector != null) {
                         // remember the collector for future use
