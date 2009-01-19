@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import javax.script.Bindings;
@@ -65,7 +64,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
-import org.netbeans.modules.mobility.e2e.classdata.FieldData;
 import org.netbeans.modules.mobility.end2end.output.OutputLogger;
 import org.netbeans.modules.mobility.end2end.output.OutputLogger.LogLevel;
 import org.netbeans.modules.mobility.end2end.util.Util;
@@ -77,7 +75,6 @@ import org.netbeans.modules.mobility.javon.OutputFileFormatter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -213,8 +210,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
             ScriptEngine eng = mgr.getEngineByName( "freemarker" ); //NOI18N
             Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
-            FileObject template = Repository.getDefault().getDefaultFileSystem().
-                getRoot().getFileObject( "Templates/Client/Bean.java" ); //NOI18N
+            FileObject template = FileUtil.getConfigFile( "Templates/Client/Bean.java" ); //NOI18N
             OutputLogger.getInstance().log(
                     NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
                             "MSG_ConfigureBindings"));//NOI18N

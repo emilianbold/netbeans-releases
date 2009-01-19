@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  * for those cases, when they coinside (i.e. implivit inlines)
  * @author Vladimir Kvasihn
  */
-public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition<T> {
+public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition {
     
     private final CsmCompoundStatement body;
 

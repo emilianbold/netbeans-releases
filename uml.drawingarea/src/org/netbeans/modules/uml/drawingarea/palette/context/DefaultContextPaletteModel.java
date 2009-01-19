@@ -45,8 +45,7 @@ import java.util.ArrayList;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.dataobject.ContextPaletteItem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -84,48 +83,43 @@ public class DefaultContextPaletteModel implements ContextPaletteModel
     public void initialize(String path)
     {
         
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
         ArrayList < ContextPaletteItem > retVal = 
                         new ArrayList <ContextPaletteItem>();
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            try
             {
-                try
+                df.setSortMode(DataFolder.SortMode.NONE);
+                DataObject[] dObjs = df.getChildren();
+                for(DataObject curDObj : dObjs)
                 {
-                    df.setSortMode(DataFolder.SortMode.NONE);
-                    DataObject[] dObjs = df.getChildren();
-                    for(DataObject curDObj : dObjs)
-                    {
-                        ContextPaletteItem item = curDObj.getLookup().lookup(ContextPaletteItem.class);
+                    ContextPaletteItem item = curDObj.getLookup().lookup(ContextPaletteItem.class);
 //                        FileObject descriptorFO = curDObj.getPrimaryFile();
-                        if(item != null)
+                    if(item != null)
+                    {
+                        addDescriptor(createButton(item, curDObj));
+                    }
+                    else if(curDObj.getPrimaryFile().isFolder() == true)
+                    {
+                        DefaultGroupButtonModel group = new DefaultGroupButtonModel();
+                        DataFolder folder = (DataFolder)curDObj;
+                        for(DataObject groupObj : folder.getChildren())
                         {
-                            addDescriptor(createButton(item, curDObj));
+                           ContextPaletteItem groupItem = groupObj.getLookup().lookup(ContextPaletteItem.class);
+                           if(groupItem != null)
+                           {
+                               group.add(createButton(groupItem, groupObj));
+                           }
                         }
-                        else if(curDObj.getPrimaryFile().isFolder() == true)
-                        {
-                            DefaultGroupButtonModel group = new DefaultGroupButtonModel();
-                            DataFolder folder = (DataFolder)curDObj;
-                            for(DataObject groupObj : folder.getChildren())
-                            {
-                               ContextPaletteItem groupItem = groupObj.getLookup().lookup(ContextPaletteItem.class);
-                               if(groupItem != null)
-                               {
-                                   group.add(createButton(groupItem, groupObj));
-                               } 
-                            }
-                            addDescriptor(group);
-                        }
+                        addDescriptor(group);
                     }
                 }
-                catch(IOException e)
-                {
-                    
-                }
+            }
+            catch(IOException e)
+            {
+
             }
         }
     }
@@ -168,28 +162,22 @@ public class DefaultContextPaletteModel implements ContextPaletteModel
     
     protected ArrayList < ContextPaletteItem > getInstanceFromFilesSystem(String path)
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
         ArrayList < ContextPaletteItem > retVal = 
                         new ArrayList <ContextPaletteItem>();
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] dObjs = df.getChildren();
+            for(DataObject curDObj : dObjs)
             {
-                DataObject[] dObjs = df.getChildren();
-                for(DataObject curDObj : dObjs)
+                ContextPaletteItem item = curDObj.getLookup().lookup(ContextPaletteItem.class);
+                if(item != null)
                 {
-                    ContextPaletteItem item = curDObj.getLookup().lookup(ContextPaletteItem.class);
-                    if(item != null)
-                    {
-                        retVal.add(item);
-                    }
+                    retVal.add(item);
                 }
             }
         }
-        
         return retVal;
     }
     

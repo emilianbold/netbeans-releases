@@ -78,7 +78,7 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
@@ -723,7 +723,7 @@ final class NbInstaller extends ModuleInstaller {
             return;
         }
         if (autoDepsHandler == null) {
-            FileObject depsFolder = Repository.getDefault().getDefaultFileSystem().findResource("ModuleAutoDeps");
+            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
             if (depsFolder != null) {
                 FileObject[] kids = depsFolder.getChildren();
                 List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));

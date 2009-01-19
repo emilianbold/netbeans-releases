@@ -109,14 +109,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configFields = new JTextField[] {
             portField,
+            urlTextField,
             rakeTextField
         };
         JLabel[] configLabels = new JLabel[] {
             portLabel,
+            urlLabel,
             rakeLabel
         };
         configPropsKeys = new String[] {
             RailsProjectProperties.RAILS_PORT,
+            RailsProjectProperties.RAILS_URL,
             RailsProjectProperties.RAKE_ARGS
         };
         assert configFields.length == configPropsKeys.length;
@@ -340,11 +343,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         serverLabel = new javax.swing.JLabel();
         railsEnvCombo = new javax.swing.JComboBox();
         railsEnvLabel = new javax.swing.JLabel();
-        encoding = new javax.swing.JComboBox();
-        encodingLabel = new javax.swing.JLabel();
+        urlLabel = new javax.swing.JLabel();
+        urlTextField = new javax.swing.JTextField();
+        urlHelpLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
         rakeLabel = new javax.swing.JLabel();
+        encodingLabel = new javax.swing.JLabel();
         rakeHelpLabel = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
 
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
@@ -402,50 +408,43 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(railsEnvLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RailsEnv")); // NOI18N
 
-        encodingLabel.setLabelFor(encoding);
-        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "TXT_Encoding")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, "UR&L:");
 
-        rakeLabel.setLabelFor(rakeTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(rakeLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgs")); // NOI18N
+        urlTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                urlTextFieldActionPerformed(evt);
+            }
+        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(rakeHelpLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlHelpLabel, "(relative, e.g. products/list)");
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanelLayout.createSequentialGroup()
+            .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(mainPanelLayout.createSequentialGroup()
-                            .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(serverLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .add(railsEnvLabel))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                        .add(mainPanelLayout.createSequentialGroup()
-                            .add(encodingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                            .add(64, 64, 64)))
-                    .add(mainPanelLayout.createSequentialGroup()
-                        .add(rakeLabel)
-                        .add(34, 34, 34)))
+                    .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(serverLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(railsEnvLabel)
+                    .add(urlLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(mainPanelLayout.createSequentialGroup()
-                        .add(rakeHelpLabel)
+                        .add(urlHelpLabel)
                         .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(railsEnvCombo, 0, 476, Short.MAX_VALUE)
-                        .add(serverComboBox, 0, 476, Short.MAX_VALUE)
-                        .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                        .add(encoding, 0, 476, Short.MAX_VALUE)
-                        .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))))
+                    .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(railsEnvCombo, 0, 458, Short.MAX_VALUE)
+                        .add(serverComboBox, 0, 458, Short.MAX_VALUE)
+                        .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                        .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addContainerGap(18, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
                     .add(serverComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -457,17 +456,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(railsEnvCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(railsEnvLabel))
-                .add(18, 18, 18)
-                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(encodingLabel)
-                    .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rakeLabel)
-                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(urlLabel)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rakeHelpLabel)
-                .addContainerGap())
+                .add(urlHelpLabel)
+                .add(57, 57, 57))
         );
 
         portLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_ServerPort")); // NOI18N
@@ -475,23 +470,28 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         serverComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_ServerEnvironment")); // NOI18N
         railsEnvCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RailsEnv")); // NOI18N
         railsEnvLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RailsEnv")); // NOI18N
-        encoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Encoding")); // NOI18N
-        rakeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RakeArguments")); // NOI18N
+
+        rakeLabel.setLabelFor(rakeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(rakeLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgs")); // NOI18N
+
+        encodingLabel.setLabelFor(encoding);
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "TXT_Encoding")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rakeHelpLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(rubyPlatformLabel)
                     .add(configLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(configCombo, 0, 410, Short.MAX_VALUE)
-                    .add(platforms, 0, 410, Short.MAX_VALUE))
+                    .add(configCombo, 0, 392, Short.MAX_VALUE)
+                    .add(platforms, 0, 392, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(manageButton)
@@ -499,6 +499,24 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         .add(configNew)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configDel))))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(encodingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                        .add(64, 64, 64))
+                    .add(layout.createSequentialGroup()
+                        .add(rakeLabel)
+                        .add(34, 34, 34)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(rakeHelpLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(encoding, 0, 458, Short.MAX_VALUE)
+                        .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -516,7 +534,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .add(14, 14, 14)
                 .add(configSep, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(mainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 168, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(encodingLabel)
+                    .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rakeLabel)
+                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rakeHelpLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -524,6 +552,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_NewConfiguration")); // NOI18N
         platforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RubyPlatformLabel")); // NOI18N
         manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RubyHomeBrowse")); // NOI18N
+        rakeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RakeArguments")); // NOI18N
+        encoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Encoding")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
@@ -557,6 +587,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
         initServerComboBox();
     }//GEN-LAST:event_platformsActionPerformed
+
+    private void urlTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_urlTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_urlTextFieldActionPerformed
 
     private void initServerComboBox(){
         if (getPlatform() == null) {
@@ -653,6 +687,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel rubyPlatformLabel;
     private javax.swing.JComboBox serverComboBox;
     private javax.swing.JLabel serverLabel;
+    private javax.swing.JLabel urlHelpLabel;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {

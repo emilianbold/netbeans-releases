@@ -52,9 +52,7 @@ import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -154,10 +152,9 @@ public class JDBCDriverConvertorTest extends TestBase {
     public void testImportOldDrivers() throws Exception {
         final String UNENCODED_URL = "file:///foo 1.jar";
         
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject oldRoot = sfs.findResource(JDBCDriverConvertor.OLD_DRIVERS_PATH);
+        FileObject oldRoot = FileUtil.getConfigFile(JDBCDriverConvertor.OLD_DRIVERS_PATH);
         if (oldRoot == null) {
-            oldRoot = FileUtil.createFolder(sfs.getRoot(), JDBCDriverConvertor.OLD_DRIVERS_PATH);
+            oldRoot = FileUtil.createFolder(FileUtil.getConfigRoot(), JDBCDriverConvertor.OLD_DRIVERS_PATH);
         }
         URL[] urls = new URL[] { new URL(UNENCODED_URL) };
         createDriverFile10("testdriver.xml", oldRoot, urls);

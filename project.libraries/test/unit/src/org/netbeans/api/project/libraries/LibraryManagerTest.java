@@ -56,7 +56,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.lookup.Lookups;
@@ -87,7 +87,7 @@ public class LibraryManagerTest extends NbTestCase {
 
     private static void registerLibraryTypeProvider () throws Exception {
         StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         while (tk.hasMoreElements()) {
             String pathElement = tk.nextToken();
             FileObject tmp = root.getFileObject(pathElement);

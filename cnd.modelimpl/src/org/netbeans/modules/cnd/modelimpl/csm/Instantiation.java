@@ -68,12 +68,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author eu155513
  */
-public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T>, CsmInstantiation {
-    protected final CsmOffsetableDeclaration declaration;
+public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
+    protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmType> mapping;
     private String fullName = null;
 
-    private Instantiation(CsmOffsetableDeclaration declaration, CsmType instType) {
+    private Instantiation(T declaration, CsmType instType) {
         this.declaration = declaration;
         this.mapping = new HashMap<CsmTemplateParameter, CsmType>();
         // create mapping map
@@ -88,7 +88,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
                         CsmType defaultType = (CsmType) defaultValue;
                         defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
                         // See IZ 146522 (we need to create a new Instantiation with all parameters up to the current one)
-                        defaultType = Instantiation.createType(defaultType, new Instantiation(this.declaration, new HashMap<CsmTemplateParameter, CsmType>(this.mapping)));
+                        defaultType = Instantiation.createType(defaultType, new Instantiation<T>(this.declaration, new HashMap<CsmTemplateParameter, CsmType>(this.mapping)));
                         if (defaultType != null) {
                             mapping.put(param, defaultType);
                         }
@@ -98,7 +98,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
     }
     
-    private Instantiation(CsmOffsetableDeclaration declaration, Map<CsmTemplateParameter, CsmType> mapping) {
+    private Instantiation(T declaration, Map<CsmTemplateParameter, CsmType> mapping) {
         this.declaration = declaration;
         this.mapping = mapping;
     }
@@ -131,7 +131,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         return fullName;
     }
 
-    public CsmOffsetableDeclaration getTemplateDeclaration() {
+    public T getTemplateDeclaration() {
         return declaration;
     }
 
@@ -210,13 +210,13 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         return getTemplateDeclaration().getScope();
     }
 
-    public CsmUID<T> getUID() {
+    public CsmUID<Instantiation> getUID() {
         return new InstantiationUID(this);
     }
     
     //////////////////////////////
     ////////////// STATIC MEMBERS
-    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate,
+    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
                                     SelectImpl.FilterableMembers {
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
@@ -228,11 +228,11 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
-            return ((CsmClass)declaration).getScopeElements();
+            return declaration.getScopeElements();
         }
 
         public Collection<CsmTypedef> getEnclosingTypedefs() {
-            return ((CsmClass)declaration).getEnclosingTypedefs();
+            return declaration.getEnclosingTypedefs();
         }
 
         public boolean isTemplate() {
@@ -260,7 +260,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public Collection<CsmMember> getMembers() {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
-            for (CsmMember member : ((CsmClass)declaration).getMembers()) {
+            for (CsmMember member : declaration.getMembers()) {
                 res.add(createMember(member));
             }
             return res;
@@ -268,7 +268,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public Iterator<CsmMember> getMembers(CsmFilter filter) {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
-            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass) declaration, filter);
+            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(declaration, filter);
             while(it.hasNext()){
                 res.add(createMember(it.next()));
             }
@@ -276,16 +276,16 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
         
         public int getLeftBracketOffset() {
-            return ((CsmClass)declaration).getLeftBracketOffset();
+            return declaration.getLeftBracketOffset();
         }
 
         public Collection<CsmFriend> getFriends() {
-            return ((CsmClass)declaration).getFriends();
+            return declaration.getFriends();
         }
 
         public Collection<CsmInheritance> getBaseClasses() {
             Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
-            for (CsmInheritance inh : ((CsmClass)declaration).getBaseClasses()) {
+            for (CsmInheritance inh : declaration.getBaseClasses()) {
                 res.add(new Inheritance(inh, this));
             }
             return res;
@@ -381,7 +381,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
     }
     
-    private static class Function extends Instantiation<CsmFunction> implements CsmFunction<CsmFunction> {
+    private static class Function extends Instantiation<CsmFunction> implements CsmFunction {
         private final CsmType retType;
         
         public Function(CsmFunction function, CsmType instantiation) {
@@ -396,7 +396,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
-            return ((CsmFunction)declaration).getScopeElements();
+            return declaration.getScopeElements();
         }
 
         public boolean isTemplate() {
@@ -404,19 +404,19 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public boolean isInline() {
-            return ((CsmFunction)declaration).isInline();
+            return declaration.isInline();
         }
 
         public boolean isOperator() {
-            return ((CsmFunction)declaration).isOperator();
+            return declaration.isOperator();
         }
         
         public OperatorKind getOperatorKind() {
-            return ((CsmFunction)declaration).getOperatorKind();
+            return declaration.getOperatorKind();
         }
         
         public CharSequence getSignature() {
-            return ((CsmFunction)declaration).getSignature();
+            return declaration.getSignature();
         }
 
         public CsmType getReturnType() {
@@ -425,17 +425,17 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public CsmFunctionParameterList getParameterList() {
             ArrayList<CsmParameter> res = new ArrayList<CsmParameter>();
-            Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
+            Collection<CsmParameter> parameters = declaration.getParameterList().getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
             }
             res.trimToSize();
-            return FunctionParameterListImpl.create(((CsmFunction) declaration).getParameterList(), res);
+            return FunctionParameterListImpl.create(declaration.getParameterList(), res);
         }
 
         public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
-            Collection<CsmParameter> parameters = ((CsmFunction)declaration).getParameters();
+            Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
             }
@@ -443,15 +443,15 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public CsmFunctionDefinition getDefinition() {
-            return ((CsmFunction)declaration).getDefinition();
+            return declaration.getDefinition();
         }
 
         public CsmFunction getDeclaration() {
-            return ((CsmFunction)declaration).getDeclaration();
+            return declaration.getDeclaration();
         }
         
         public CharSequence getDeclarationText() {
-            return ((CsmFunction)declaration).getDeclarationText();
+            return declaration.getDeclarationText();
         }
 
         @Override
@@ -469,7 +469,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public boolean isExtern() {
-            return ((CsmField)declaration).isExtern();
+            return declaration.isExtern();
         }
 
         public CsmType getType() {
@@ -477,31 +477,31 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public CsmExpression getInitialValue() {
-            return ((CsmField)declaration).getInitialValue();
+            return declaration.getInitialValue();
         }
 
         public CharSequence getDisplayText() {
-            return ((CsmField)declaration).getDisplayText();
+            return declaration.getDisplayText();
         }
 
         public CsmVariableDefinition getDefinition() {
-            return ((CsmField)declaration).getDefinition();
+            return declaration.getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return ((CsmField)declaration).getDeclarationText();
+            return declaration.getDeclarationText();
         }
 
         public boolean isStatic() {
-            return ((CsmField)declaration).isStatic();
+            return declaration.isStatic();
         }
 
         public CsmVisibility getVisibility() {
-            return ((CsmField)declaration).getVisibility();
+            return declaration.getVisibility();
         }
 
         public CsmClass getContainingClass() {
-            return ((CsmField)declaration).getContainingClass();
+            return declaration.getContainingClass();
         }
 
         @Override
@@ -510,7 +510,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
     }
     
-    private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember<CsmTypedef> {
+    private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
         private final CsmType type;
 
         public Typedef(CsmTypedef typedef, CsmInstantiation instantiation) {
@@ -519,7 +519,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public boolean isTypeUnnamed() {
-            return ((CsmTypedef)declaration).isTypeUnnamed();
+            return declaration.isTypeUnnamed();
         }
 
         public CsmType getType() {
@@ -544,7 +544,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
     }
     
-    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember<CsmClassForwardDeclaration> {
+    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
 
         public ClassForward(CsmClassForwardDeclaration forward, Map<CsmTemplateParameter, CsmType> mapping) {
@@ -565,7 +565,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public CsmClass getCsmClass() {
             if (csmClass == null) {
-                csmClass = (CsmClass)Instantiation.create((CsmTemplate)((CsmClassForwardDeclaration)declaration).getCsmClass(), getMapping());
+                csmClass = (CsmClass)Instantiation.create((CsmTemplate)declaration.getCsmClass(), getMapping());
             }
             return csmClass;
         }
@@ -576,7 +576,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
     }
 
-    private static class Method extends Instantiation<CsmMethod> implements CsmMethod<CsmMethod>, CsmFunctionDefinition<CsmMethod> {
+    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
 
@@ -587,19 +587,19 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
-            return ((CsmMethod)declaration).getScopeElements();
+            return declaration.getScopeElements();
         }
 
         public boolean isStatic() {
-            return ((CsmMethod)declaration).isStatic();
+            return declaration.isStatic();
         }
 
         public CsmVisibility getVisibility() {
-            return ((CsmMethod)declaration).getVisibility();
+            return declaration.getVisibility();
         }
 
         public CsmClass getContainingClass() {
-            return ((CsmMethod)declaration).getContainingClass();
+            return declaration.getContainingClass();
         }
 
         public boolean isTemplate() {
@@ -607,11 +607,11 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public boolean isInline() {
-            return ((CsmMethod)declaration).isInline();
+            return declaration.isInline();
         }
 
         public CharSequence getSignature() {
-            return ((CsmMethod)declaration).getSignature();
+            return declaration.getSignature();
         }
 
         public CsmType getReturnType() {
@@ -629,7 +629,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
-            Collection<CsmParameter> parameters = ((CsmMethod)declaration).getParameters();
+            Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, instantiation));
             }
@@ -637,35 +637,35 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public CsmFunctionDefinition getDefinition() {
-            return ((CsmMethod)declaration).getDefinition();
+            return declaration.getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return ((CsmMethod)declaration).getDeclarationText();
+            return declaration.getDeclarationText();
         }
 
         public boolean isVirtual() {
-            return ((CsmMethod)declaration).isVirtual();
+            return declaration.isVirtual();
         }
 
         public boolean isExplicit() {
-            return ((CsmMethod)declaration).isExplicit();
+            return declaration.isExplicit();
         }
 
         public boolean isConst() {
-            return ((CsmMethod)declaration).isConst();
+            return declaration.isConst();
         }
 
         public boolean isAbstract() {
-            return ((CsmMethod)declaration).isAbstract();
+            return declaration.isAbstract();
         }
 
         public boolean isOperator() {
-            return ((CsmMethod)declaration).isOperator();
+            return declaration.isOperator();
         }
 
         public OperatorKind getOperatorKind() {
-            return ((CsmMethod)declaration).getOperatorKind();
+            return declaration.getOperatorKind();
         }
         
         public CsmCompoundStatement getBody() {
@@ -691,7 +691,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public boolean isExtern() {
-            return ((CsmParameter)declaration).isExtern();
+            return declaration.isExtern();
         }
 
         public CsmType getType() {
@@ -699,23 +699,23 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public CsmExpression getInitialValue() {
-            return ((CsmParameter)declaration).getInitialValue();
+            return declaration.getInitialValue();
         }
 
         public CharSequence getDisplayText() {
-            return ((CsmParameter)declaration).getDisplayText();
+            return declaration.getDisplayText();
         }
 
         public CsmVariableDefinition getDefinition() {
-            return ((CsmParameter)declaration).getDefinition();
+            return declaration.getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return ((CsmParameter)declaration).getDeclarationText();
+            return declaration.getDeclarationText();
         }
 
         public boolean isVarArgs() {
-            return ((CsmParameter)declaration).isVarArgs();
+            return declaration.isVarArgs();
         }
 
         @Override
@@ -1013,13 +1013,13 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         return org.netbeans.modules.cnd.modelimpl.csm.NestedType.getNestedClassifier(memberResolver, parentClassifier, ownText);
     }
 
-    public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {
-        private final T ref;
-        private InstantiationUID(T ref) {
+    public final static class InstantiationUID implements CsmUID<Instantiation>, SelfPersistent {
+        private final Instantiation ref;
+        private InstantiationUID(Instantiation ref) {
             this.ref = ref;
         }
 
-        public T getObject() {
+        public Instantiation getObject() {
             return this.ref;
         }
         ////////////////////////////////////////////////////////////////////////////

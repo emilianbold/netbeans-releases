@@ -126,6 +126,24 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         assertEquals(79, loc.getOffset());
     }
 
+    public void testTestClassDeclarationWithNonExistingMethod() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/testfile.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        // tests that the class declaration is found even if the given method doesn't exist
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/a_non_existing_method", true);
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+        assertEquals(0, loc.getOffset());
+
+        // tests that NONE is returned for a non-existing method when we don't want the location for the class
+        loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/a_non_existing_method", false);
+        assertEquals(DeclarationLocation.NONE, loc);
+    }
+
     // I don't actually get multiple locations for a single method out of the index
     //public void testTestDeclaration3() throws Exception {
     //    // Make sure the test file is indexed

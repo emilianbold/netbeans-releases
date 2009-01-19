@@ -49,7 +49,6 @@ import org.netbeans.modules.db.explorer.DatabaseConnectionConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -69,13 +68,11 @@ public class Util {
     }
     
     public static FileObject getConnectionsFolder() throws IOException {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        return FileUtil.createFolder(root, DatabaseConnectionConvertor.CONNECTIONS_PATH);
+        return FileUtil.createFolder(FileUtil.getConfigRoot(), DatabaseConnectionConvertor.CONNECTIONS_PATH);
     }
     
     public static FileObject getDriversFolder() throws IOException {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        return FileUtil.createFolder(root, JDBCDriverConvertor.DRIVERS_PATH);
+        return FileUtil.createFolder(FileUtil.getConfigRoot(), JDBCDriverConvertor.DRIVERS_PATH);
     }
     
     private static void deleteFileObjects(FileObject[] fos) throws IOException {

@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.editor.AnnotationType;
 import java.util.LinkedList;
 import javax.swing.Action;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Processing of folders with annotation types actions.
  *
@@ -76,7 +76,7 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
     /** Factory method for AnnotationTypeActionsFolder instance. */
     public static boolean readActions(AnnotationType type, String subFolder) {
 
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(FOLDER + subFolder);
+        FileObject f = FileUtil.getConfigFile(FOLDER + subFolder);
         if (f == null) {
             return false;
         }

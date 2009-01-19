@@ -8,10 +8,11 @@
             <friend-packages>
                 <friend>org.netbeans.modules.asm</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
-                <friend>org.netbeans.modules.cnd.make2netbeans</friend>
-                <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.fortran</friend>
+                <friend>org.netbeans.modules.cnd.make2netbeans</friend>
+                <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.modelui</friend>
                 <package>antlr</package>
                 <package>antlr.ASdebug</package>
                 <package>antlr.collections</package>

@@ -318,9 +318,9 @@ final class JUnitOutputReader {
                         expectedOneSuiteTests = executedOneSuiteTests;
                     }
                     progressLogger.finest("test finished");             //NOI18N
+                    updateProgress();
+                    manager.displayReport(session, sessionType, report, false, statistics);
                 }
-                updateProgress();
-                manager.displayReport(session, sessionType, report, true, statistics);
                 return;
             }
             if (shortMsg.equals(ADD_FAILURE_PREFIX)
@@ -329,9 +329,7 @@ final class JUnitOutputReader {
                     return;
                 }
                 int lastCharIndex = testListenerMsg.length() - 1;
-                if (testListenerMsg.charAt(lastCharIndex) != ')') {
-                    return;
-                }
+
                 String insideBrackets = testListenerMsg.substring(
                                                         shortMsg.length() + 1,
                                                         lastCharIndex);
@@ -797,7 +795,7 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
-        closePreviousReport();
+        closePreviousReport(false, true);
 
         progressLogger.finer("ACTUAL # OF SUITES: " + executedSuitesCount);
 
@@ -953,7 +951,7 @@ final class JUnitOutputReader {
             buildFinished(event.getException());
 
             if (report != null) {
-                closePreviousReport(true);  //true ... interrupted
+                closePreviousReport(true, false );  //true ... interrupted
             }
 
             manager.sessionFinished(session, sessionType);
@@ -997,14 +995,14 @@ final class JUnitOutputReader {
     
     /**
      */
-    private void suiteFinished(final Report report, boolean interrupted) {
+    private void suiteFinished(final Report report, boolean interrupted, boolean taskFinished) {
         if (progressLogger.isLoggable(FINER)) {
             progressLogger.finer("actual # of tests in a suite: " + executedOneSuiteTests);
         }
         executedSuitesCount++;
 
         updateProgress();
-        manager.displayReport(session, sessionType, report, true, statistics);
+        manager.displayReport(session, sessionType, report, taskFinished, statistics);
     }
     
     private void buildFinished(final Throwable exception) {
@@ -1095,10 +1093,10 @@ final class JUnitOutputReader {
     }
     
     private void closePreviousReport() {
-        closePreviousReport(false);
+        closePreviousReport(false, false);
     }
 
-    private void closePreviousReport(boolean interrupted) {
+    private void closePreviousReport(boolean interrupted, boolean taskFinished) {
         if (xmlOutputBuffer != null) {
             try {
                 String xmlOutput = xmlOutputBuffer.toString();
@@ -1133,7 +1131,7 @@ final class JUnitOutputReader {
                     }
                 }
             }
-            suiteFinished(report, interrupted);
+            suiteFinished(report, interrupted, taskFinished);
         }
         
         xmlOutputBuffer = null;

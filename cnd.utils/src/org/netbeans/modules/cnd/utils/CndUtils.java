@@ -64,4 +64,13 @@ public class CndUtils {
     public static boolean isDebugMode() {
         return ! isReleaseMode();
     }
+
+    public static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }
+
 }

@@ -44,8 +44,7 @@ package org.netbeans.spi.palette;
 import java.io.FileNotFoundException;
 import junit.framework.TestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -62,16 +61,14 @@ public class PaletteFactoryTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
+        paletteRootFolder = FileUtil.getConfigFile( PALETTE_ROOT_FOLDER_NAME );
         if( null != paletteRootFolder )
             paletteRootFolder.delete();
-        paletteRootFolder = fs.getRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
+        paletteRootFolder = FileUtil.getConfigRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
     }
 
     protected void tearDown() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
+        paletteRootFolder = FileUtil.getConfigFile( PALETTE_ROOT_FOLDER_NAME );
         if( null != paletteRootFolder )
             paletteRootFolder.delete();
     }

@@ -97,7 +97,6 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -378,6 +377,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
 
                 public Object run() throws Exception {
+                    initIndexer();
                     //need to delete the index and recreate? the scan(update) parameter doesn't work?
                     IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
                     if (cntx != null) {
@@ -553,7 +553,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         if (userdir != null) {
             cacheDir = new File(new File(new File(userdir, "var"), "cache"), MAVENINDEX_PATH);//NOI18N
         } else {
-            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheDir = new File(root, MAVENINDEX_PATH);//NOI18N
         }
         cacheDir.mkdirs();

@@ -254,7 +254,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         
         return _findSchemas(namespace, result, null);
     }
-    
+
     protected enum ReferenceType { IMPORT, INCLUDE, REDEFINE }
     
     Set<Schema> _findSchemas(String namespace, Set<Schema> result, ReferenceType refType) {
@@ -412,4 +412,9 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     public Map<QName,List<QName>> getQNameValuedAttributes() {
         return SchemaAttributes.getQNameValuedAttributes();
     }
+
+    public boolean isEmbedded() {
+        return false;
+    }
+
 }

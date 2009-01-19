@@ -48,11 +48,10 @@ import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -103,7 +102,7 @@ public final class UISupport {
     
     private static Image computeIcon(ServerIcon serverIcon) {
         // get the default folder icon
-        Node folderNode = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        Node folderNode = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         Image folder;
         if (serverIcon == ServerIcon.EJB_OPENED_FOLDER || serverIcon == ServerIcon.WAR_OPENED_FOLDER 
                 || serverIcon == ServerIcon.EAR_OPENED_FOLDER) {

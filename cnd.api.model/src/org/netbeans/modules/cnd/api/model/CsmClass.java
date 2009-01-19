@@ -49,7 +49,7 @@ import java.util.Collection;
  *
  * TODO: think over how to represent built-in types
  */
-public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
+public interface CsmClass extends CsmCompoundClassifier {
 
 //    public static class Kind extends TypeSafeEnum {
 //

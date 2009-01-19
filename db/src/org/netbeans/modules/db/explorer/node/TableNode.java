@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [propName of copyright owner]"
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -58,6 +58,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -102,13 +104,24 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                         public void run(Metadata metaData) {
                             Table table = tableHandle.resolve(metaData);
                             name = table.getName();
+
+                            updateProperties(table);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
+
         }
+    }
+
+    private void updateProperties(Table table) {
+        PropertySupport ps = new PropertySupport.Name(TableNode.this);
+        addProperty(ps);
+
+        addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
+        addProperty(SCHEMA, SCHEMADESC, String.class, false, getSchemaName());
     }
 
     public MetadataElementHandle<Table> getTableHandle() {
@@ -139,6 +152,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             command.setObjectOwner(schemaName);
             command.execute();
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
@@ -208,7 +222,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -230,7 +244,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

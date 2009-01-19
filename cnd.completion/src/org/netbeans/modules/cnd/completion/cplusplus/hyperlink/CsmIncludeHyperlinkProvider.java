@@ -52,9 +52,11 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -73,7 +75,7 @@ import org.openide.windows.OutputWriter;
  */
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
-    private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = getBoolean("cnd.modelimpl.trace.failed.include", false); // NOI18N
+    private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = CndUtils.getBoolean("cnd.modelimpl.trace.failed.include", false); // NOI18N
     private final static boolean TRACE_INCLUDES = Boolean.getBoolean("cnd.trace.includes"); // NOI18N
 
     /** Creates a new instance of CsmIncludeHyperlinkProvider */
@@ -129,14 +131,6 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return ReferencesSupport.findInclude(csmFile, offset);
         }
         return null;
-    }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
     }
 
     private static final class IncludeTarget implements CsmOffsetable {
@@ -261,11 +255,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         private final CsmUID<? extends CsmObject> uid;
 
         public RefLink(CsmInclude incl) {
-            uid = incl.getUID();
+            uid = UIDs.get(incl);
         }
 
         public RefLink(CsmFile file) {
-            uid = file.getUID();
+            uid = UIDs.get(file);
         }
 
         public void outputLineSelected(OutputEvent ev) {

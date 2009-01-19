@@ -86,8 +86,9 @@ public class MfoOnSFSTestHid extends TestBaseHid {
     }    
 
     
+    @Override
     protected void setUp() throws Exception {
-        this.testedFS = sfs = Repository.getDefault().getDefaultFileSystem();;
+        this.testedFS = sfs = FileUtil.getConfigRoot().getFileSystem();
     }
     
 }

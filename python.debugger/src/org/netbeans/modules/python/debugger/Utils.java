@@ -58,7 +58,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.windows.TopComponent;
@@ -322,7 +321,7 @@ public class Utils {
   }
 
   public static EditorCookie getEditorFromFileName(String fName) {
-    FileObject sfo = Repository.getDefault().getDefaultFileSystem().findResource(fName);
+    FileObject sfo = FileUtil.getConfigFile(fName);
     // obtain dat object
     DataObject doDo;
     try {

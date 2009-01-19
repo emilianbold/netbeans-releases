@@ -65,7 +65,6 @@ import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -79,7 +78,7 @@ public class Util {
     
     public static void registerXMLKit() {
         String[] path = new String[] { "Editors", "application", "x-schema+xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         try {
             for (int i=0; i<path.length; i++) {
                 FileObject f = target.getFileObject(path[i]);

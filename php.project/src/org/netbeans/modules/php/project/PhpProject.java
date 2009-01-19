@@ -59,10 +59,9 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -88,7 +87,7 @@ import org.w3c.dom.Text;
 /**
  * @author ads, Tomas Mysik
  */
-public class PhpProject implements Project, AntProjectListener {
+public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
 
@@ -96,21 +95,29 @@ public class PhpProject implements Project, AntProjectListener {
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
     final AntProjectHelper helper;
+    final UpdateHelper updateHelper;
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
+    private final Lookup lookup;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
+
     // @GuardedBy(this)
     private FileObject sourcesDirectory;
-    private Lookup lookup;
+    // @GuardedBy(this)
+    private FileObject testsDirectory;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
         this.helper = helper;
+        updateHelper = new UpdateHelper(UpdateImplementation.NULL, helper);
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
-        helper.addAntProjectListener(this);
-        initLookup(configuration);
+        sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, false);
+        testRoots = SourceRoots.create(updateHelper, eval, refHelper, true);
+        lookup = createLookup(configuration);
     }
 
     public Lookup getLookup() {
@@ -150,6 +157,14 @@ public class PhpProject implements Project, AntProjectListener {
         return getHelper().getProjectDirectory();
     }
 
+    public SourceRoots getSourceRoots() {
+        return sourceRoots;
+    }
+
+    public SourceRoots getTestRoots() {
+        return testRoots;
+    }
+
     synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
@@ -160,23 +175,57 @@ public class PhpProject implements Project, AntProjectListener {
 
     private FileObject resolveSourcesDirectory() {
         // get the first source root
-        //  in fact, there should *always* be only 1 source root but see #141200, #141204 or #141229
         FileObject[] sourceObjects = Utils.getSourceObjects(this);
         if (sourceObjects.length > 0) {
             return sourceObjects[0];
         }
+        return restoreDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderRestored", "MSG_SourcesFolderTemporaryToProjectDirectory");
+    }
+
+    /**
+     * @return tests directory or <code>null</code>
+     */
+    synchronized FileObject getTestsDirectory() {
+        if (testsDirectory == null) {
+            testsDirectory = resolveTestsDirectory();
+        }
+        return testsDirectory;
+    }
+
+    synchronized void setTestsDirectory(FileObject testsDirectory) {
+        assert this.testsDirectory == null : "Project test directory already set to " + this.testsDirectory;
+        assert testsDirectory != null && testsDirectory.isValid();
+        this.testsDirectory = testsDirectory;
+    }
+
+    private FileObject resolveTestsDirectory() {
+        // get the second source root
+        FileObject[] sourceObjects = Utils.getSourceObjects(this);
+        if (sourceObjects.length > 1) {
+            return sourceObjects[1];
+        }
+        // similar to source directory
+        String testsProperty = eval.getProperty(PhpProjectProperties.TEST_SRC_DIR);
+        if (testsProperty == null) {
+            // test directory not set yet
+            return null;
+        }
+        return restoreDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderRestored", "MSG_TestsFolderTemporaryToProjectDirectory");
+    }
+
+    private FileObject restoreDirectory(String propertyName, String infoMessageKey, String errorMessageKey) {
         // #144371 - source folder probably deleted => so:
         //  1. try to restore it - if it fails, then
         //  2. just return the project directory & warn user about impossibility of creating src dir
         String projectName = getName();
-        File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
-        if (srcDir.mkdirs()) {
+        File dir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(propertyName))));
+        if (dir.mkdirs()) {
             // original sources restored
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
-            return FileUtil.toFileObject(srcDir);
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
+            return FileUtil.toFileObject(dir);
         }
         // temporary set sources to project directory, do not store it anywhere
-        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderTemporaryToProjectDirectory", srcDir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
+        informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         return helper.getProjectDirectory();
     }
 
@@ -188,27 +237,6 @@ public class PhpProject implements Project, AntProjectListener {
                 type,
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION));
-    }
-
-    public void configurationXmlChanged(AntProjectEvent event) {
-        /*
-         *  The code below is standart and copied f.e. from MakeProject
-         */
-        if (event.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info) getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-        // We are interested only to listen to changes in sources.
-        // PhpSources will do it itself
-        /*
-         * Also copied from  MakeProject
-         */
-        //  currently ignored (probably better to listen to evaluator() if you need to)
     }
 
     /*
@@ -265,28 +293,26 @@ public class PhpProject implements Project, AntProjectListener {
         return getLookup().lookup(CopySupport.class);
     }
 
-    private void initLookup(AuxiliaryConfiguration configuration) {
-        PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
-
-        lookup = Lookups.fixed(new Object[] {
+    private Lookup createLookup(AuxiliaryConfiguration configuration) {
+        return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
+                new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
+                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                getHelper().createSharabilityQuery(getEvaluator(),
-                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
+                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
-                phpSources,
+                new PhpSources(getHelper(), getEvaluator(), sourceRoots, testRoots),
                 getHelper(),
                 getEvaluator()
                 // ?? getRefHelper()
@@ -357,6 +383,7 @@ public class PhpProject implements Project, AntProjectListener {
             // clear reference so the next time the project is opened we can check it again
             synchronized (PhpProject.this) {
                 sourcesDirectory = null;
+                testsDirectory = null;
             }
 
             try {
@@ -389,6 +416,18 @@ public class PhpProject implements Project, AntProjectListener {
                 return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
             }
             return PropertyUtils.fixedPropertyProvider(Collections.<String, String>emptyMap());
+        }
+    }
+
+    public final class PhpProjectXmlSavedHook extends ProjectXmlSavedHook {
+
+       public PhpProjectXmlSavedHook() {}
+
+        protected void projectXmlSaved() throws IOException {
+            Info info = getLookup().lookup(Info.class);
+            assert info != null;
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
 }

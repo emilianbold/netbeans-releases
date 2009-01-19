@@ -59,23 +59,16 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 
 public class ContextUtils {
-    public static final boolean USE_REFERENCE_RESOLVER = getBoolean("hierarchy.use.reference", true); // NOI18N
+    public static final boolean USE_REFERENCE_RESOLVER = CndUtils.getBoolean("hierarchy.use.reference", true); // NOI18N
     
     private ContextUtils() {
     }
 
-    public static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }
-    
     public static CsmFile findFile(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
@@ -240,10 +233,37 @@ public class ContextUtils {
                 if(inScope != null) {
                     return inScope;
                 } else {
-                    return (CsmScope) item;
+                    if(CsmKindUtilities.isClass(item) ||
+                            CsmKindUtilities.isNamespace(item) ||
+                            CsmKindUtilities.isFunction(item) ||
+                            CsmKindUtilities.isEnum(item) ||
+                            CsmKindUtilities.isUnion(item) ||
+                            CsmKindUtilities.isFile(item)) {
+                        return (CsmScope) item;
+                    }
                 }
             }
         }
+        if (CsmKindUtilities.isNamespaceDefinition(outScope)) {
+            for (CsmDeclaration item : ((CsmNamespaceDefinition) outScope).getDeclarations()) {
+                if (CsmKindUtilities.isScope(item) && isInObject(item, offset)) {
+                    CsmScope inScope = findInnerScope((CsmScope) item, offset);
+                    if (inScope != null) {
+                        return inScope;
+                    } else {
+                        if (CsmKindUtilities.isClass(item) ||
+                                CsmKindUtilities.isNamespace(item) ||
+                                CsmKindUtilities.isFunction(item) ||
+                                CsmKindUtilities.isEnum(item) ||
+                                CsmKindUtilities.isUnion(item) ||
+                                CsmKindUtilities.isFile(item)) {
+                            return (CsmScope) item;
+                        }
+                    }
+                }
+            }
+        }
+
         return null;
     }
 

@@ -65,7 +65,7 @@ import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlighted;
 import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -74,7 +74,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -337,8 +336,7 @@ public abstract class FolderNode extends AbstractNode
         }
         
         private static Image getSystemFolderImage(boolean isOpened, int type) {
-                Node n = DataFolder.findFolder(Repository.getDefault()
-                                    .getDefaultFileSystem().getRoot()).getNodeDelegate();
+                Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
                 return isOpened ? n.getOpenedIcon(type) : n.getIcon(type);
         }
     }

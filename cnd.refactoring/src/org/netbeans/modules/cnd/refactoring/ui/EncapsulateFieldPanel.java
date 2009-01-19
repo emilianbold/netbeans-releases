@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -70,13 +71,13 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.netbeans.modules.cnd.refactoring.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -175,8 +176,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         for (CsmField field : initFields(selectedObject)) {
             boolean createGetter = field.equals(selectedResolvedObject);
             boolean createSetter = createGetter && !isConstant(field);
-            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+            String getName = GeneratorUtils.computeGetterName(field);
+            String setName = GeneratorUtils.computeSetterName(field);
             model.addRow(new Object[] {
                 MemberInfo.create(field),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,
@@ -234,9 +235,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 parent.stateChanged(null);
             }
         });
-//
-//        initInsertPoints(selectedPath);
-//        
+
+        initInsertPoints(selectedObject);
+        
         initialized = true;
     }
     
@@ -558,61 +559,55 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return result;
     }
     
-//    private void initInsertPoints(TreePath selectedField, CompilationInfo javac) {
-//        Element elm = javac.getTrees().getElement(selectedField);
-//        TypeElement encloser = null;
-//        if (ElementKind.FIELD == elm.getKind()) {
-//            encloser = (TypeElement) elm.getEnclosingElement();
-//        } else {
-//            encloser = (TypeElement) elm;
-//        }
-//
-//        List<InsertPoint> result = new ArrayList<InsertPoint>();
-//        int idx = 0;
+    private void initInsertPoints(CsmObject selectedObject) {
+        CsmClass encloser = csmClassContainer;
+
+        List<InsertPoint> result = new ArrayList<InsertPoint>();
+        int idx = 0;
 //        TreePath encloserPath = javac.getTrees().getPath(encloser);
 //        ClassTree encloserTree = (ClassTree) encloserPath.getLeaf();
-//        for (Tree memberTree : encloserTree.getMembers()) {
-//            if (memberTree.getKind() == Tree.Kind.METHOD) {
-//                Element member = javac.getTrees().getElement(new TreePath(encloserPath, memberTree));
-//                if (member != null && !javac.getElementUtilities().isSynthetic(member)) {
-//                    InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
-//                            EncapsulateFieldPanel.class,
-//                            "MSG_EncapsulateFieldInsertPointMethod",
-//                            CsmField.create(member, javac).getHtmlText()
-//                            ));
-//                    result.add(ip);
-//                }
-//            }
-//            ++idx;
-//        }
-//        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
-//        if (!result.isEmpty()) {
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
-//            for (InsertPoint ip : result) {
-//                jComboInsertPoint.addItem(ip);
-//            }
-//        }
-//        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
-//    }
+        for (CsmMember member : encloser.getMembers()) {
+            if (CsmKindUtilities.isMethod(member)) {
+                CsmMethod method = (CsmMethod) member;
+                InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
+                        EncapsulateFieldPanel.class,
+                        "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
+                        MemberInfo.create(method).getHtmlText()
+                        ));
+                result.add(ip);
+            }
+            ++idx;
+        }
+        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
+        if (!result.isEmpty()) {
+            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
+            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
+            for (InsertPoint ip : result) {
+                jComboInsertPoint.addItem(ip);
+            }
+        }
+        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+    }
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
-//        List rows = model.getDataVector();
-//        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
-//            List row = (List) rowIt.next();
-//            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
-//            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
-//            if (getterName != null || setterName != null) {
-//                CsmField mi = (CsmField) row.get(0);
-//                result.add(new EncapsulateFieldInfo(
-//                        (TreePathHandle) mi.getElementHandle(),
-//                        "".equals(getterName)?null:getterName, // NOI18N
-//                        "".equals(setterName)?null:setterName)); // NOI18N
-//            }
-//        }
+        List rows = model.getDataVector();
+        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
+            List row = (List) rowIt.next();
+            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
+            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
+            if (getterName != null || setterName != null) {
+                // this item contains info about fields
+                @SuppressWarnings("unchecked")
+                MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
+                result.add(new EncapsulateFieldInfo(
+                        mi.getElementHandle(),
+                        "".equals(getterName)?null:getterName, // NOI18N
+                        "".equals(setterName)?null:setterName)); // NOI18N
+            }
+        }
 
         return result;
     }
@@ -728,7 +723,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         String accessorToolTip;
         String defaultAccessorToolTip;
         MemberInfo<? extends CsmMember> accessor;
-        private CsmUID<CsmField> fieldHandle;
+        private CsmField fieldHandle;
         private boolean isGetter;
 
         public static AccessorInfo createGetter(CsmField field, String proposedName) {
@@ -744,8 +739,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         private static AccessorInfo create(CsmField field, CsmMethod method, String proposedName, boolean isGetter) {
             AccessorInfo ai = new AccessorInfo();
             ai.name = ai.defaultName = proposedName;
-            ai.accessor = ai.defaultAccessor = method != null ? MemberInfo.create(method) : null; 
-            ai.accessorToolTip = ai.defaultAccessorToolTip = method != null
+            ai.accessor = ai.defaultAccessor = (method != null) ? MemberInfo.create(method) : null;
+            ai.accessorToolTip = ai.defaultAccessorToolTip = (method != null)
                     ? NbBundle.getMessage(
                             EncapsulateFieldPanel.class,
                             isGetter ? "MSG_EncapsulateFieldDeclaredGetter" : "MSG_EncapsulateFieldDeclaredSetter", // NOI18N
@@ -753,7 +748,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                             method.getName().toString())
                     : null;
             ai.isGetter = isGetter;
-            ai.fieldHandle = CsmRefactoringUtils.getHandler(field);
+            ai.fieldHandle = field;
             return ai;
         }
         
@@ -765,7 +760,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         public void setName(String s) {
             name = s;
-            CsmField field = null;//fieldHandle.resolve(javac);
+            CsmField field = fieldHandle;
             CsmMethod method = null;
             method = isGetter
                     ? EncapsulateFieldRefactoringPlugin.findMethod(field.getContainingClass(), s, Collections.<CsmVariable>emptyList(), true)

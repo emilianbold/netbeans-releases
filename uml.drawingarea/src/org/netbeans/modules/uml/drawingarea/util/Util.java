@@ -63,12 +63,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
-import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -84,19 +82,14 @@ public class Util
                                       ActionMap actions,
                                       String filesystem)
     {
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(filesystem);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(filesystem);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] actionsDataObjects = df.getChildren();
+            for (DataObject dObj : actionsDataObjects)
             {
-                DataObject[] actionsDataObjects = df.getChildren();
-                for (DataObject dObj : actionsDataObjects)
-                {
-                    InstanceCookie ic = dObj.getCookie(org.openide.cookies.InstanceCookie.class);
-                }
+                InstanceCookie ic = dObj.getCookie(org.openide.cookies.InstanceCookie.class);
             }
         }
     }

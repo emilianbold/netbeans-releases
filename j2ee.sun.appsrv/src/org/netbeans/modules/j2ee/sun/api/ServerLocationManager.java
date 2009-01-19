@@ -58,8 +58,7 @@ import java.util.logging.Logger;
 import org.openide.modules.InstalledFileLocator;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 
@@ -91,8 +90,7 @@ public class ServerLocationManager  {
                 System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot);
             }
             
-            Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-            FileObject bridgesDir = rep.getDefaultFileSystem().findResource(JAR_BRIGDES_DEFINITION_LAYER);
+            FileObject bridgesDir = FileUtil.getConfigFile(JAR_BRIGDES_DEFINITION_LAYER);
             FileObject[] ch =new  FileObject[0];
             if(bridgesDir!=null){
                 ch = bridgesDir.getChildren();

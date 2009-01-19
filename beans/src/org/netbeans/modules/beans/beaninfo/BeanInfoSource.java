@@ -47,7 +47,7 @@ import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.modules.beans.GenerateBeanException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -168,7 +168,7 @@ public final class BeanInfoSource extends Object {
 
     /** Creates beanInfo data object */
     void createFromTemplate( boolean iconBlock ) {        
-        FileObject foTemplates = Repository.getDefault().getDefaultFileSystem().findResource("Templates"); //NOI18N ;
+        FileObject foTemplates = FileUtil.getConfigFile("Templates"); //NOI18N ;
         if ( foTemplates == null ) {
             return;
         }

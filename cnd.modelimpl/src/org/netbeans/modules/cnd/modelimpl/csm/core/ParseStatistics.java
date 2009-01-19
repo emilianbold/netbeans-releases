@@ -49,6 +49,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -133,7 +134,7 @@ public class ParseStatistics {
     
     public synchronized void clear(CsmProject project) {
         if (enabled) {
-            projectMaps.remove(project.getUID());
+            projectMaps.remove(UIDs.get(project));
         }
     }
     
@@ -143,7 +144,7 @@ public class ParseStatistics {
     
     public synchronized void printResults(CsmProject project, PrintWriter out) {
         if (enabled) {
-            printResults(project.getUID(), out);
+            printResults(UIDs.get(project), out);
         } else {
             out.printf("Statistics is disabled"); //NOI18N
         }

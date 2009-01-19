@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
+import hidden.org.codehaus.plexus.util.Base64;
 import hidden.org.codehaus.plexus.util.FileUtils;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.StringUtils;
@@ -70,7 +71,6 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
@@ -210,7 +210,16 @@ public class PluginIndexManager {
 
     }
 
-    public static Set<String[]> getPluginParameterExpressions(String groupId, String artifactId, String version, String mojo) throws Exception {
+    /**
+     * 
+     * @param groupId
+     * @param artifactId
+     * @param version
+     * @param mojo
+     * @return null if not found, else a set of parameter information objects
+     * @throws java.lang.Exception
+     */
+    public static Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, String mojo) throws Exception {
         assert groupId != null && artifactId != null && version != null;
         IndexSearcher searcher = getIndexSearcher();
         String id = groupId + "|" + artifactId + "|" + version; //NOI18N
@@ -220,7 +229,7 @@ public class PluginIndexManager {
             return null;
         }
         Iterator it = hits.iterator();
-        TreeSet<String[]> toRet = new TreeSet<String[]>(new SComparator());
+        TreeSet<ParameterDetail> toRet = new TreeSet<ParameterDetail>(new PComparator());
         while (it.hasNext()) { //well should be just one anyway..
             Hit hit = (Hit) it.next();
             Document doc = hit.getDocument();
@@ -234,11 +243,27 @@ public class PluginIndexManager {
                         String[] paramDet = StringUtils.split(line, "|"); //NOI18N
                         String name = paramDet[0];
                         String editable = paramDet[1];
+                        String required = paramDet[2];
+                        boolean req = "true".equals(required);
                         if ("true".equals(editable)) { //NOI18N
                             String expr = paramDet[3];
-                            if (expr != null && !"null".equals(expr)) {
-                                toRet.add(new String[] {name, expr});
+                            if (expr != null && "null".equals(expr)) {
+                                expr = null;
                             }
+                            String defVal = paramDet[4];
+                            if (defVal != null && "null".equals(defVal)) {
+                                defVal = null;
+                            }
+                            String desc;
+                            if (paramDet.length > 5) {
+                                desc = paramDet[5];
+                                byte[] dec = Base64.decodeBase64(desc.getBytes());
+                                desc =  new String(dec, "UTF-8");
+                            } else {
+                                desc = null;
+                            }
+                            ParameterDetail pm = new ParameterDetail(name, expr, defVal, req, desc);
+                            toRet.add(pm);
                         }
                     }
                 }
@@ -246,6 +271,7 @@ public class PluginIndexManager {
         }
         return toRet;
     }
+
 
     /**
      * find the plugins which are behind the given goal prefix.
@@ -370,7 +396,7 @@ public class PluginIndexManager {
         if (userdir != null) {
             cacheDir = new File(new File(new File(userdir, "var"), "cache"), INDEX_PATH);//NOI18N
         } else {
-            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
             cacheDir = new File(root, INDEX_PATH);//NOI18N
         }
         cacheDir.mkdirs();
@@ -435,10 +461,59 @@ public class PluginIndexManager {
         }
     }
 
-    private static class SComparator implements Comparator<String[]> {
-        public int compare(String[] o1, String[] o2) {
-            return o1[0].compareTo(o2[0]);
+    private static class PComparator implements Comparator<ParameterDetail> {
+        public int compare(ParameterDetail o1, ParameterDetail o2) {
+            return o1.getName().compareTo(o2.getName());
         }
+    }
+
+    /**
+     * Detailed information about a given parameter
+     */
+    public static class ParameterDetail {
+        private String name;
+        private String expression;
+        private String defaultValue;
+        private boolean required;
+        private String description;
+
+        public ParameterDetail(String name, String expression, String defaultValue, boolean required, String description) {
+            this.name = name;
+            this.expression = expression;
+            this.defaultValue = defaultValue;
+            this.required = required;
+            this.description = description;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getExpression() {
+            return expression;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isRequired() {
+            return required;
+        }
+
+        public String getHtmlDetails(boolean includeName) {
+            return "<html>" + (includeName ? ("<h3>Plugin Parameter: " + getName() + "</h3>") : "") +
+            "<p><b>Expression: </b>" +  (getExpression() != null ? ("${" + getExpression() + "}") : "&lt;Undefined&gt;") + "<br>" +
+            "<b>Default Value: </b>" + (getDefaultValue() != null ? getDefaultValue() : "&lt;Undefined&gt;")  +
+            "</p>" +
+            "<h4>Description:</h4><p>"+ getDescription() + "</p></html>";
+        }
+
+
     }
 
 }

@@ -49,7 +49,7 @@ import java.util.Set;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -95,7 +95,7 @@ public class NbInstallerTest4 extends SetupHid {
             assertEquals("base contents", slurp("foo/file1.txt"));
             assertEquals("customized contents", slurp("foo/file3.txt"));
             assertEquals(null, slurp("foo/file4.txt"));
-            assertEquals("someotherval", Repository.getDefault().getDefaultFileSystem().findResource("foo/file5.txt").getAttribute("myattr"));
+            assertEquals("someotherval", FileUtil.getConfigFile("foo/file5.txt").getAttribute("myattr"));
             mgr.disable(m1m2);
             assertEquals(null, slurp("foo/file1.txt"));
             mgr.delete(m2);

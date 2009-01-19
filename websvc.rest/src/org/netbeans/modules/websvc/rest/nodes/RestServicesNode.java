@@ -51,7 +51,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -59,7 +59,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -91,7 +90,7 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
      */
     static synchronized Icon getFolderIcon(boolean opened) {
         if (openedFolderIconCache == null) {
-            Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
             openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
             folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
         }

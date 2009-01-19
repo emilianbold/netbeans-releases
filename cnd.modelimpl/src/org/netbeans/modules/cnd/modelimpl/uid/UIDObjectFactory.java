@@ -93,15 +93,16 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
     
     public void writeUID(CsmUID anUID, DataOutput aStream) throws IOException {
-        assert anUID == null || anUID instanceof SelfPersistent;
+        assert anUID == null || anUID instanceof SelfPersistent : anUID + ", " + anUID.getObject();
         super.writeSelfPersistent((SelfPersistent)anUID, aStream);
     }
-    
-    public CsmUID readUID(DataInput aStream) throws IOException {
+
+    @SuppressWarnings("unchecked") // okay
+    public <T> CsmUID<T> readUID(DataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out == null || out instanceof CsmUID;
-        return (CsmUID)out;
+        return (CsmUID<T>)out;
     }
     
     public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, DataOutput aStream , boolean sync) throws IOException {
@@ -120,7 +121,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
-    public  <T extends Collection> T readUIDCollection(T aCollection, DataInput aStream) throws IOException {
+    public  <A,T extends Collection<CsmUID<A>>> T readUIDCollection(T aCollection, DataInput aStream) throws IOException {
         assert aCollection != null;
         assert aStream != null;
         int collSize = aStream.readInt();
@@ -128,7 +129,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             return null;
         } else {
             for (int i = 0; i < collSize; ++i) {
-                CsmUID anUID = readUID(aStream);
+                CsmUID<A> anUID = readUID(aStream);
                 assert anUID != null;
                 aCollection.add(anUID);
             }
@@ -210,18 +211,18 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
-    private static Collection copySyncCollection(Collection col) {
-        Collection out;
+    private static <T> Collection<CsmUID<T>> copySyncCollection(Collection<CsmUID<T>> col) {
+        Collection<CsmUID<T>> out;
         synchronized (col) {
-            out = new ArrayList(col);
+            out = new ArrayList<CsmUID<T>>(col);
         }
         return out;
     }
     
-    private static Map copySyncMap(Map map) {
-        Map out;
+    private static <K,V> Map<K,V> copySyncMap(Map<K,V> map) {
+        Map<K,V> out;
         synchronized (map) {
-            out = new HashMap(map);
+            out = new HashMap<K,V>(map);
         }
         return out;
     }
@@ -236,7 +237,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CharSequence key = PersistentUtils.readUTF(aStream);
             key = manager == null ? key : manager.getString(key);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }
@@ -251,7 +252,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (int i = 0; i < collSize; ++i) {
             FileImpl.OffsetSortedKey key = new FileImpl.OffsetSortedKey(aStream);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }
@@ -266,7 +267,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (int i = 0; i < collSize; ++i) {
             FileImpl.NameSortedKey key = new FileImpl.NameSortedKey(aStream);
             assert key != null;
-            CsmUID uid = readUID(aStream);
+            CsmUID<T> uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
         }

@@ -121,4 +121,8 @@ public class PythonParserTest extends PythonTestBase {
     public void testCastException2() throws Exception {
         checkNoParseAbort("testfiles/errors9.py");
     }
+
+    public void testPython26Syntax() throws Exception {
+        checkNoParseAbort("testfiles/exceptas.py");
+    }
 }

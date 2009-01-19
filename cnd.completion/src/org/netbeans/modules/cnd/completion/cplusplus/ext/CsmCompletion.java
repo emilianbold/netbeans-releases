@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 
 /**
  * Java completion query specifications
@@ -270,7 +272,7 @@ abstract public class CsmCompletion {
         return new BaseType(getSimpleClass(cls), arrayDepth);
     }
 
-    public static class SimpleClass implements CsmClassifier<CsmClassifier> {
+    public static class SimpleClass implements CsmClassifier, CsmIdentifiable {
 
         protected CharSequence name;
         protected String packageName = "";
@@ -441,7 +443,7 @@ abstract public class CsmCompletion {
         @SuppressWarnings("unchecked")
         public CsmUID<CsmClassifier> getUID() {
             if (clazz != null) {
-                return clazz.getUID();
+                return UIDs.get(clazz);
             }
             return null;
         }

@@ -95,9 +95,9 @@ public abstract class SourceTestSupport extends NbTestCase {
         super.tearDown();
         getSystemFs().reset();
     }
-    
-    private RepositoryImpl.MultiFileSystemImpl getSystemFs(){
-        return (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
+
+    private RepositoryImpl.MultiFileSystemImpl getSystemFs() throws Exception {
+        return (RepositoryImpl.MultiFileSystemImpl)FileUtil.getConfigRoot().getFileSystem();
     }
     
     private void setCacheFolder() throws IOException{

@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmMember<T> extends CsmOffsetableDeclaration<T> {
+public interface CsmMember extends CsmOffsetableDeclaration {
 
 
     // TODO: virtual, volatile

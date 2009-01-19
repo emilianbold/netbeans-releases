@@ -374,8 +374,7 @@ public class ClassPathUtils {
         FileObject folder = null;
         if (folderName != null) {
             try {
-                folder = Repository.getDefault().getDefaultFileSystem()
-                             .findResource(CL_LAYER_BASE + folderName);
+                folder = FileUtil.getConfigFile(CL_LAYER_BASE + folderName);
             }
             catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

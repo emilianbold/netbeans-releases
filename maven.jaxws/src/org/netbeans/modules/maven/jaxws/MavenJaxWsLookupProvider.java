@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.jaxws;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +57,6 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
@@ -321,11 +319,15 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        String[] wsdlPaths = getWsdlPaths(prj);
-        if (wsdlPaths != null) {
-            for (String wsdlPath : wsdlPaths) {
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            for (WsimportPomInfo candidate : candidates) {
+                String wsdlPath = candidate.getWsdlPath();
                 if (isClient(prj, jaxWsSupport, wsdlPath)) {
                     JaxWsService client = new JaxWsService(wsdlPath, false);
+                    if (candidate.getHandlerFile() != null) {
+                        client.setHandlerBindingFile(candidate.getHandlerFile());
+                    }
                     jaxWsSupport.addService(client);
                 }
             }
@@ -342,28 +344,19 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        String[] wsdlPaths = getWsdlPaths(prj);
-        if (wsdlPaths != null) {
-            List<JaxWsService> clients = new ArrayList<JaxWsService>();
-            for (String wsdlPath : wsdlPaths) {
-                if (isClient(prj, jaxWsSupport, wsdlPath)) {
-                    JaxWsService client = new JaxWsService(wsdlPath, false);
-                    clients.add(client);
+        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
+        List<JaxWsService> clients = new ArrayList<JaxWsService>();
+        for (WsimportPomInfo candidate : canditates) {
+            String wsdlPath = candidate.getWsdlPath();
+            if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                JaxWsService client = new JaxWsService(wsdlPath, false);
+                if (candidate.getHandlerFile() != null) {
+                    client.setHandlerBindingFile(candidate.getHandlerFile());
                 }
+                clients.add(client);
             }
-            return clients;
-        } else {
-            return Collections.<JaxWsService>emptyList();
         }
-    }
-
-    String[] getWsdlPaths(Project prj) {
-        return PluginPropertyUtils.getPluginPropertyList(prj,
-                "org.codehaus.mojo", //NOI18N
-                "jaxws-maven-plugin", //NOI18N
-                "wsdlFiles", //NOI18N
-                "wsdlFile", //NOI18N
-                "wsimport"); //NOI18N
+        return clients;
     }
 
     private boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {

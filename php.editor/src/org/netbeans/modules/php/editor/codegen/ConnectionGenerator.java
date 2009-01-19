@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
-import org.netbeans.modules.php.editor.codegen.ui.ConnectionGeneratorPanel;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -47,6 +46,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.php.editor.codegen.DatabaseURL.Server;
+import org.netbeans.modules.php.editor.sql.DatabaseConnectionSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,7 +77,10 @@ public class ConnectionGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-        DatabaseConnection dbconn = ConnectionGeneratorPanel.selectConnection(null, true, true);
+        DatabaseConnection dbconn = DatabaseConnectionSupport.selectDatabaseConnection(true, true);
+        if (dbconn.getPassword() == null) {
+            dbconn = null;
+        }
         if (dbconn == null) {
             return;
         }

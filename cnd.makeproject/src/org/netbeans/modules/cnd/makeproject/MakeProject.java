@@ -221,7 +221,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
                     new NativeProjectProvider(this, projectDescriptorProvider),
-                    new RecommendedTemplatesImpl(),
+                    new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
                     new MakeProjectType(),
@@ -430,18 +430,10 @@ public final class MakeProject implements Project, AntProjectListener {
             "cpp-types", // NOI18N
             "shell-types", // NOI18N
             "makefile-types", // NOI18N
-            "c-types", // NOI18N
-            "simple-files", // NOI18N
-            "asm-types"}; // NOI18N
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{
-            "c-types", // NOI18N
-            "cpp-types", // NOI18N
-            "shell-types", // NOI18N
-            "makefile-types", // NOI18N
-            "c-types", // NOI18N
             "simple-files", // NOI18N
             "fortran-types", // NOI18N
-            "asm-types"}; // NOI18N
+            "asm-types", // NOI18N
+            "qt-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
@@ -450,11 +442,18 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/cppFiles/main.cc", // NOI18N
             "Templates/cppFiles/file.cc", // NOI18N
             "Templates/cppFiles/file.h", // NOI18N
+            "Templates/fortranFiles/fortranFreeFormatFile.f90", // NOI18N
             "Templates/MakeTemplates/ComplexMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{
+        private static final String[] PRIVILEGED_NAMES_QT = new String[]{
+            // Qt-specific templates fist:
+            "Templates/qtFiles/main.cc", // NOI18N
+            "Templates/qtFiles/form.ui", // NOI18N
+            "Templates/qtFiles/resource.qrc", // NOI18N
+            "Templates/qtFiles/translation.ts", // NOI18N
+            // the rest is exact copy of PRIVILEGED_NAMES:
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
             "Templates/cFiles/file.h", // NOI18N
@@ -468,12 +467,26 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
+        private final ConfigurationDescriptorProvider configurationProvider;
+
+        public RecommendedTemplatesImpl(ConfigurationDescriptorProvider configurationProvider) {
+            this.configurationProvider = configurationProvider;
+        }
+
         public String[] getRecommendedTypes() {
-            return RECOMMENDED_TYPES_FORTRAN;
+            return RECOMMENDED_TYPES;
         }
 
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES_FORTRAN;
+            ConfigurationDescriptor configurationDescriptor =
+                    configurationProvider.getConfigurationDescriptor(false);
+            if (configurationDescriptor != null) {
+                MakeConfiguration conf = (MakeConfiguration)configurationDescriptor.getConfs().getActive();
+                if (conf != null && conf.isQmakeConfiguration()) {
+                    return PRIVILEGED_NAMES_QT;
+                }
+            }
+            return PRIVILEGED_NAMES;
         }
     }
 

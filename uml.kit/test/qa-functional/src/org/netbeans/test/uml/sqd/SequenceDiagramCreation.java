@@ -84,7 +84,7 @@ public class SequenceDiagramCreation extends DiagramCreation {
         suite.addTest(new SequenceDiagramCreation("testAddDiagramModel"));
         suite.addTest(new SequenceDiagramCreation("testAddDiagramDiagram"));
         suite.addTest(new SequenceDiagramCreation("testAddPackageWithDiagram"));
-//nb6.5 tests are comment due to open diagram bugs 132674 
+//nb7.0 tests are comment due to open diagram bugs 132674 
         //      suite.addTest(new SequenceDiagramCreation("testOpenExistingWithDoubleClick"));
 //        suite.addTest(new SequenceDiagramCreation("testOpenExistingWithOpen"));
 //        suite.addTest(new SequenceDiagramCreation("testOpenExistingWithEnter"));

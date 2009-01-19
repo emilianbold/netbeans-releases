@@ -63,7 +63,6 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -129,7 +128,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         assert mimePath != null : "The parameter mimePath must not be null"; //NOI18N
         assert profile != null : "The parameter profile must not be null"; //NOI18N
         
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
+        FileObject baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
         SettingsType.Locator locator = SettingsType.getLocator(this);
         locator.scan(baseFolder, mimePath.getPath(), profile, true, true, !defaults, false, files);
@@ -264,16 +263,15 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         assert mimePath != null : "The parameter mimePath must not be null"; //NOI18N
         assert profile != null : "The parameter profile must not be null"; //NOI18N
         
-        final FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         final String settingFileName = SettingsType.getLocator(this).getWritableFileName(
                 mimePath.getPath(), 
                 profile, 
                 tokenColoringStorage ? "-tokenColorings" : "-highlights", //NOI18N
                 defaults);
 
-        sfs.runAtomicAction(new FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                FileObject baseFolder = sfs.findResource("Editors"); //NOI18N
+                FileObject baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
                 FileObject f = FileUtil.createData(baseFolder, settingFileName);
                 f.setAttribute(FA_TYPE, tokenColoringStorage ? FAV_TOKEN : FAV_HIGHLIGHT);
                 
@@ -296,8 +294,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         assert mimePath != null : "The parameter mimePath must not be null"; //NOI18N
         assert profile != null : "The parameter profile must not be null"; //NOI18N
         
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject baseFolder = sfs.findResource("Editors"); //NOI18N
+        FileObject baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
         SettingsType.getLocator(this).scan(baseFolder, mimePath.getPath(), profile, true, defaults, !defaults, false, files);
         
@@ -305,7 +302,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
 
         final List<Object []> profileInfos = files.get(profile);
         if (profileInfos != null) {
-            sfs.runAtomicAction(new FileSystem.AtomicAction() {
+            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     for(Object [] info : profileInfos) {
                         FileObject settingFile = (FileObject) info[1];

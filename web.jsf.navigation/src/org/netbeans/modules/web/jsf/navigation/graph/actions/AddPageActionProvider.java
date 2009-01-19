@@ -10,17 +10,14 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
-import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
@@ -103,7 +100,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
         
         private void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
             
-            final FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+            final FileObject jspTemplate = FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
             
             if (jspTemplate == null) {
                 return; // Don't know the template

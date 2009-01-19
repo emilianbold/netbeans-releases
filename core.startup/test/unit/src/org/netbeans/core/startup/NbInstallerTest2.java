@@ -45,9 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Locale;
 import org.netbeans.Module;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -82,7 +80,7 @@ public class NbInstallerTest2 extends SetupHid {
                 mgr.enable(m1);
                 assertEquals("prekladany obsah", slurp("foo/file1.txt"));
                 assertEquals("base contents", slurp("foo/file2.txt"));
-                assertEquals("someval", Repository.getDefault().getDefaultFileSystem().findResource("foo/file5.txt").getAttribute("myattr"));
+                assertEquals("someval", FileUtil.getConfigFile("foo/file5.txt").getAttribute("myattr"));
                 mgr.disable(m1);
                 mgr.delete(m1);
             } finally {

@@ -404,7 +404,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         } else {
             FileSystem fs;
             if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
-                fs = Repository.getDefault().getDefaultFileSystem();
+                fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 // Even if it is specified, we no longer have mounts, so we can no longer find it.
                 fs = fileObject.getFileSystem();
@@ -431,7 +431,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         } else {
             FileSystem fs;
             if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
-                fs = Repository.getDefault().getDefaultFileSystem();
+                fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 fs = fileObject.getFileSystem();
             }

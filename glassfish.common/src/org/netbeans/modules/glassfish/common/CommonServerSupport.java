@@ -70,9 +70,7 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -159,8 +157,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     private FileObject getInstanceFileObject() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject dir = fs.findResource(GlassfishInstanceProvider.DIR_GLASSFISH_INSTANCES);
+        FileObject dir = FileUtil.getConfigFile(GlassfishInstanceProvider.DIR_GLASSFISH_INSTANCES);
         if(dir != null) {
             String instanceFN = properties.get(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {

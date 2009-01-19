@@ -97,7 +97,7 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
         // XXX cannot use MockLookup for now or MetaInfServicesTest fails
         // (clash between org.foo.Interface in openide.util/test and services-jar-1)
         System.setProperty(Lookup.class.getName(), MyLkp.class.getName());
-        FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver");
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
 
@@ -144,7 +144,7 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
         
         err.log("starting to create the resolver");
         FileObject res = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            FileUtil.getConfigRoot(),
             "Services/MIMEResolver/Lenkaresolver.xml"
         );
         err.log("file created: " + res);

@@ -66,7 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -248,8 +248,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
     private static ImageIcon getFolderIcon() {
 
         if ( ICON_FOLDER == null ) {
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-            DataFolder dataFolder = DataFolder.findFolder( root );
+            DataFolder dataFolder = DataFolder.findFolder( FileUtil.getConfigRoot() );
             ICON_FOLDER = new ImageIcon( dataFolder.getNodeDelegate().getIcon( BeanInfo.ICON_COLOR_16x16 ) );
         }
 
