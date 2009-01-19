@@ -50,11 +50,11 @@ import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -90,7 +90,8 @@ import org.w3c.dom.Text;
 public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
-
+    public static final String BOOT_CP = "classpath/php-boot"; //NOI18N
+    public static final String SOURCE_CP = "classpath/php-source"; //NOI18N
     private static final Icon PROJECT_ICON = new ImageIcon(
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
@@ -361,8 +362,8 @@ public class PhpProject implements Project {
             getSourcesDirectory();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().register(BOOT_CP, cpProvider.getProjectClassPaths(BOOT_CP));
+            GlobalPathRegistry.getDefault().register(SOURCE_CP, cpProvider.getProjectClassPaths(SOURCE_CP));
 
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
@@ -372,8 +373,8 @@ public class PhpProject implements Project {
 
         protected void projectClosed() {
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().unregister(BOOT_CP, cpProvider.getProjectClassPaths(BOOT_CP));
+            GlobalPathRegistry.getDefault().unregister(SOURCE_CP, cpProvider.getProjectClassPaths(SOURCE_CP));
 
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
