@@ -63,6 +63,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.UserQuestionException;
 
 public final class ShowMacroExpansionAction extends CookieAction {
@@ -91,6 +92,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
         expandedContextDoc.putProperty(CsmFile.class, csmFile);
         expandedContextDoc.putProperty(FileObject.class, expandedContextFile);
         expandedContextDoc.putProperty("beforeSaveRunnable", null); // NOI18N
+        expandedContextDoc.putProperty("macro-expansion-view-doc", true); // NOI18N
 
         mainDoc.putProperty(Document.class, expandedContextDoc);
         expandedContextDoc.putProperty(Document.class, mainDoc);
