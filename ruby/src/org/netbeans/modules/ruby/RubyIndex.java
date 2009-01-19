@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -130,8 +131,8 @@ public final class RubyIndex {
 
     public static RubyIndex get(final Parser.Result result) {
         FileObject fo = RubyUtils.getFileObject(result);
-        return fo == null ? null
-                : RubyIndex.get(GsfUtilities.getRoots(fo, null, Collections.<String>emptySet()));
+        return fo == null ? null : RubyIndex.get(
+                GsfUtilities.getRoots(fo, RubyLanguage.BOOT_AND_SOURCE, null));
     }
 
     private Collection<? extends IndexResult> query(

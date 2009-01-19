@@ -80,6 +80,8 @@ public class RubyLanguage extends DefaultLanguageConfig {
     public final static String COMPILE = "ruby/classpath/compile";
     public final static String EXECUTE = "ruby/classpath/execute";
     public final static String SOURCE = "ruby/classpath/source";
+
+    public final static Set<String> BOOT_AND_SOURCE = new HashSet<String>(Arrays.asList(BOOT, SOURCE));
     
     public RubyLanguage() {
     }
@@ -197,7 +199,7 @@ public class RubyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getSourcePathIds() {
-        return new HashSet<String>(Arrays.asList(BOOT, SOURCE));
+        return BOOT_AND_SOURCE;
     }
 
 }
