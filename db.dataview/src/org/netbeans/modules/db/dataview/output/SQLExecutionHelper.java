@@ -152,7 +152,7 @@ class SQLExecutionHelper {
                 try {
                     int pos = 1;
                     for (int i = 0; i < insertedRow.length; i++) {
-                        if (insertedRow[i] != null && !insertedRow[i].equals("<DEFAULT>")) {
+                        if (insertedRow[i] != null) {
                             DBReadWriteHelper.setAttributeValue(pstmt, pos++, dataView.getDataViewDBTable().getColumnType(i), insertedRow[i]);
                         }
                     }
