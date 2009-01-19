@@ -72,7 +72,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         }
         CsmObject ref = CsmRefactoringUtils.findContextObject(lookup);
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
-            return CsmRefactoringUtils.isSupportedReference(ref);
+            return true;
         } else {
             return CsmKindUtilities.isFunction(ref);
         }
@@ -107,7 +107,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         }
         CsmObject ref = CsmRefactoringUtils.findContextObject(lookup);
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
-            return CsmRefactoringUtils.isSupportedReference(ref);
+            return true;
         } else {
             return CsmKindUtilities.isField(ref) || CsmKindUtilities.isClass(ref);
         }

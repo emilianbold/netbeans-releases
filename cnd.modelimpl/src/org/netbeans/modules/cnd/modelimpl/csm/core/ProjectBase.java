@@ -54,6 +54,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -98,7 +99,7 @@ import org.openide.util.Cancellable;
  * @author Dmitry Ivanov
  * @author Vladimir Kvashin
  */
-public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent {
+public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
 
     private transient boolean needParseOrphan;
 
@@ -319,6 +320,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CharSequence[] allClassifiersUniqueNames = Utils.getAllClassifiersUniqueNames(result.getUniqueName());
             for (CharSequence curUniqueName : allClassifiersUniqueNames) {
                 Collection<? extends CsmDeclaration> decls = this.findDeclarations(curUniqueName);
+                @SuppressWarnings("unchecked")
                 Collection<CsmClassifier> classifiers = (Collection<CsmClassifier>)decls;
                 out.addAll(classifiers);
             }
@@ -370,7 +372,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public boolean registerDeclaration(CsmOffsetableDeclaration decl) {
 
         if( !ProjectBase.canRegisterDeclaration(decl) ) {
-            if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + decl.getUID());} //NOI18N
+            if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl));} //NOI18N
             return false;
         }
 
@@ -384,12 +386,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (old != null) {
                     // don't register if the new one is weaker
                     if (cls.shouldBeReplaced(old)) {
-                        if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + decl.getUID());} //NOI18N
+                        if (TraceFlags.TRACE_REGISTRATION) {traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl));} //NOI18N
                         return false;
                     }
                     // remove the old one if the new one is stronger
                     if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
-                        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("disposing old decl " + old + " UID " + decl.getUID());} //NOI18N
+                        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl));} //NOI18N
                         ((ClassEnumBase) old).dispose();
                     }
                 }
@@ -406,13 +408,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getDeclarationsSorage().putDeclaration(decl);
         }
 
-        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("registered " + decl + " UID " + decl.getUID());} //NOI18N
+        if (TraceFlags.TRACE_REGISTRATION) {System.err.println("registered " + decl + " UID " + UIDs.get(decl));} //NOI18N
         return true;
     }
 
     public void unregisterDeclaration(CsmDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
-            traceRegistration("unregistered " + decl+ " UID " + decl.getUID()); //NOI18N
+            traceRegistration("unregistered " + decl+ " UID " + UIDs.get(decl)); //NOI18N
         }
         if( decl instanceof CsmClassifier ) {
             classifierContainer.removeClassifier(decl);
@@ -1785,7 +1787,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (ns != null);
         CharSequence key = ns.getQualifiedName();
         assert (key != null && !(key instanceof String) );
-        CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
+        CsmUID<CsmNamespace> nsUID = RepositoryUtils.<CsmNamespace>put(ns);
         assert nsUID != null;
         namespaces.put(key, nsUID);
     }

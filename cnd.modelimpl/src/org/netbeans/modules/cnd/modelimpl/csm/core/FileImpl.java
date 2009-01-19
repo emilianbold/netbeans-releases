@@ -99,7 +99,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvashin
  */
 public class FileImpl implements CsmFile, MutableDeclarationsContainer,
-        Disposable, Persistent, SelfPersistent {
+        Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
@@ -634,7 +634,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private TokenStream createFullTokenStream() {
+    private TokenStream createFullTokenStream(boolean filtered) {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
         try {
@@ -653,12 +653,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return null;
         }
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
-        return walker.getFilteredTokenStream(getLanguageFilter(ppState));
+        if(filtered) {
+            return walker.getFilteredTokenStream(getLanguageFilter(ppState));
+        } else {
+            return walker.getTokenStream(false);
+        }
     }
     private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> ref = new SoftReference<OffsetTokenStream>(null);
 
-    public TokenStream getTokenStream(int startOffset, int endOffset) {
+    public TokenStream getTokenStream(int startOffset, int endOffset, boolean filtered) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
@@ -671,7 +675,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                stream = new OffsetTokenStream(createFullTokenStream());
+                stream = new OffsetTokenStream(createFullTokenStream(filtered));
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }
@@ -944,7 +948,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void addInclude(IncludeImpl includeImpl) {
-        CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
+        CsmUID<CsmInclude> inclUID = RepositoryUtils.put((CsmInclude)includeImpl);
         assert inclUID != null;
         try {
             includesLock.writeLock().lock();
@@ -1121,7 +1125,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return UIDCsmConverter.UIDsToDeclarations(res).iterator();
     }
 
-    @SuppressWarnings("unchecked")
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
@@ -1179,7 +1182,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return uids;
     }
 
-    @SuppressWarnings("unchecked")
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {

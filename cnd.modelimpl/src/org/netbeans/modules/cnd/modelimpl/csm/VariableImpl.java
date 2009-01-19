@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @param T 
  * @author Dmitriy Ivanov
  */
-public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
+public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, Disposable {
 
     private final CharSequence name;
     private final CsmType type;

@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
  * Represents function definition
  * @author Vladimir Kvashin
  */
-public interface CsmFunctionDefinition<T> extends CsmFunction<T> {
+public interface CsmFunctionDefinition extends CsmFunction {
 
     /** Gets this function body */
     CsmCompoundStatement getBody();

@@ -37,21 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
-import java.util.EventListener;
+package org.netbeans.modules.maven.jaxws;
 
-/**
- * Listener for changes in file existence and/or contents.
- * Unlike the Filesystems API, renames etc. are not considered special;
- * the "file" is identified uniquely by its path, not an object.
- * @author Jesse Glick
+import java.util.List;
+
+/** Used to model wsimport configuration in pom file for one client or service from wsdl.
+ *
+ * @author mkuchtiak
  */
-public interface FileChangeSupportListener extends EventListener {
+public class WsimportPomInfo {
+    private String wsdlPath;
+    private String handlerFile;
+    private List<String> bindingFiles;
 
-    void fileCreated(FileChangeSupportEvent event);
+    public WsimportPomInfo(String wsdlPath) {
+        this.wsdlPath = wsdlPath;
+    }
 
-    void fileDeleted(FileChangeSupportEvent event);
+    public List<String> getBindingFiles() {
+        return bindingFiles;
+    }
 
-    void fileModified(FileChangeSupportEvent event);
+    public void setBindingFiles(List<String> bindingFiles) {
+        this.bindingFiles = bindingFiles;
+    }
 
+    public String getHandlerFile() {
+        return handlerFile;
+    }
+
+    public void setHandlerFile(String handlerFile) {
+        this.handlerFile = handlerFile;
+    }
+
+    public String getWsdlPath() {
+        return wsdlPath;
+    }
+
+    public void setWsdlPath(String wsdlPath) {
+        this.wsdlPath = wsdlPath;
+    }
 }

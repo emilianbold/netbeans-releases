@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
@@ -56,7 +55,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * help class for CsmUID based on repository Key
  * @author Vladimir Voskresensky
  */
-public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable<CsmUID<T>> {
+public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable<CsmUID<T>> {
     private final Key key;
     
     protected KeyBasedUID(Key key) {
@@ -108,6 +107,7 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
         key = KeyObjectFactory.getDefaultFactory().readKey(aStream);
     }
 
+    @SuppressWarnings("unchecked")
     public int compareTo(CsmUID<T> o) {
         assert o != null;
         assert o instanceof KeyBasedUID;

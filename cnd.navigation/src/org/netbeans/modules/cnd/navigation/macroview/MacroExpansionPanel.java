@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.navigation.macroview;
 
+import java.awt.Cursor;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -83,6 +85,8 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
+        jCodeExpansionEditorPane.enableInputMethods(false);
+        doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
     }
 
     /** This method is called from within the constructor to

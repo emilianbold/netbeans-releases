@@ -39,23 +39,14 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
 public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    /**
-     * The visual component that displays this panel. If you need to access the
-     * component from this class, just use getComponent().
-     */
     private CreateHostVisualPanel3 component;
 
-    // Get the visual component for the panel. In this template, the component
-    // is kept separate. This can be more efficient: if the wizard is created
-    // but never displayed, or not all panels are displayed, it is better to
-    // create only those which really need to be visible.
     public CreateHostVisualPanel3 getComponent() {
         if (component == null) {
             component = new CreateHostVisualPanel3();
@@ -66,18 +57,10 @@ public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDesc
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
-    // If you have context help:
-    // return new HelpCtx(SampleWizardPanel1.class);
     }
 
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
         return true;
-    // If it depends on some condition (form filled out...), then:
-    // return someCondition();
-    // and when this condition changes (last form field filled in...) then:
-    // fireChangeEvent();
-    // and uncomment the complicated stuff below.
     }
 
     public final void addChangeListener(ChangeListener l) {
@@ -87,11 +70,17 @@ public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDesc
     }
 
     public void readSettings(WizardDescriptor settings) {
-        getComponent().setHkey((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY));
+        getComponent().init(
+            (String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY),
+            (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
+        );
     }
 
+    static final String PROP_DEFAULT_TC = "defaulttoolchain"; //NOI18N
+
     public void storeSettings(WizardDescriptor settings) {
-        Lookup.getDefault().lookup(ServerList.class).addServer((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY), false, false);
+        settings.putProperty(PROP_DEFAULT_TC, getComponent().getDefaultCompilerSetDisplayName());
+        //Lookup.getDefault().lookup(ServerList.class).addServer((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY), false, false);
     }
 }
 

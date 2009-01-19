@@ -368,6 +368,7 @@ public final class CreateTestsAction extends NodeAction {
                         }
                     }
                 } finally {
+                    out.flush();
                     out.close();
                 }
             } finally {

@@ -908,7 +908,7 @@ public final class ParseProjectXml extends Task {
         File jar = module.getJar();
         if (jar == null) return null;
 
-        if (clusterPath != null) {
+        if (module.getClusterName() != null && clusterPath != null) {
             File clusterF = jar.getParentFile().getParentFile();
             if (! clusterPath.contains(clusterF))
                 throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster "
