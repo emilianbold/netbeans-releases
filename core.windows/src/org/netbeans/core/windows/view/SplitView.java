@@ -44,7 +44,6 @@ package org.netbeans.core.windows.view;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.core.windows.Constants;
@@ -152,9 +151,11 @@ public class SplitView extends ViewElement {
             updateSplitPane();
 
             
-            splitPane.setDividerSize(orientation == JSplitPane.VERTICAL_SPLIT
-                ? Constants.DIVIDER_SIZE_VERTICAL
-                : Constants.DIVIDER_SIZE_HORIZONTAL);
+            if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                splitPane.setDividerSize(orientation == JSplitPane.VERTICAL_SPLIT
+                    ? Constants.DIVIDER_SIZE_VERTICAL
+                    : Constants.DIVIDER_SIZE_HORIZONTAL);
+            }
             
             splitPane.setBorder(BorderFactory.createEmptyBorder());
             
@@ -182,6 +183,7 @@ public class SplitView extends ViewElement {
         return getSplitPane().getDividerSize();
     }
     
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append( super.toString() );
