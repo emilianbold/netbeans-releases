@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -225,6 +226,21 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         }
         return check.setLastModified(stamp);
+    }
+
+    public static boolean hasCoSTimeStamp(Project prj) {
+        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+        if (nbprj == null) {
+            return false;
+        }
+        Build build = nbprj.getMavenProject().getBuild();
+        if (build == null || build.getOutputDirectory() == null) {
+            return false;
+        }
+        File fl = new File(build.getOutputDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        File check = new File(fl, NB_COS);
+        return check.exists();
     }
 
 
