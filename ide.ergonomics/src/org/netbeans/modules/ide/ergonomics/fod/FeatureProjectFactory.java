@@ -42,7 +42,11 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -74,10 +78,79 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
 public class FeatureProjectFactory implements ProjectFactory {
+    final static class Data {
+        private final boolean deepCheck;
+        private final FileObject dir;
+        private Map<String,String> data;
+
+        public Data(FileObject dir, boolean deepCheck) {
+            this.deepCheck = deepCheck;
+            this.dir = dir;
+        }
+
+        final boolean hasFile(String relative) {
+            return dir.getFileObject(relative) != null;
+        }
+
+        final boolean isDeepCheck() {
+            return deepCheck;
+        }
+
+        @Override
+        public String toString() {
+            return dir.getPath();
+        }
+
+        final synchronized String is(String relative) {
+            FileObject prj = dir.getFileObject(relative);
+            if (prj == null) {
+                return null;
+            }
+
+            String content = data == null ? null : data.get(relative);
+            if (content != null) {
+                return content;
+            }
+
+            byte[] arr = new byte[4000];
+            int len;
+            InputStream is = null;
+            try {
+                is = prj.getInputStream();
+                len = is.read(arr);
+                content = new String(arr, 0, len, "UTF-8");
+            } catch (IOException ex) {
+                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
+                len = -1;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
+            if (len == -1) {
+                return null;
+            }
+
+            if (data == null) {
+                data = new HashMap<String,String>();
+            }
+
+            data.put(relative, content);
+            return content;
+        }
+    }
+
 
     public boolean isProject(FileObject projectDirectory) {
+        Data d = new Data(projectDirectory, false);
+
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(projectDirectory, false)) {
+            if (!info.isEnabled() && info.isProject(d)) {
                 return true;
             }
         }
@@ -85,8 +158,10 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+        Data d = new Data(projectDirectory, true);
+        
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(projectDirectory, true)) {
+            if (!info.isEnabled() && info.isProject(d)) {
                 return new FeatureNonProject(projectDirectory, info, state);
             }
         }

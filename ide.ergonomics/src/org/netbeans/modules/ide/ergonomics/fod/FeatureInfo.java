@@ -41,7 +41,6 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +51,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
@@ -151,10 +149,10 @@ public final class FeatureInfo {
         return fs;
     }
 
-    boolean isProject(FileObject dir, boolean deepCheck) {
-        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", dir);
+    boolean isProject(FeatureProjectFactory.Data data) {
+        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", data);
         boolean toRet;
-        if (isNbProject(dir, deepCheck)) {
+        if (isNbProject(data)) {
             toRet = true;
         } else {
             if (files.isEmpty()) {
@@ -163,7 +161,7 @@ public final class FeatureInfo {
                 toRet = false;
                 for (String s : files.keySet()) {
                     FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
-                    if (dir.getFileObject(s) != null) {
+                    if (data.hasFile(s)) {
                         FoDFileSystem.LOG.log(Level.FINER, "    found", s);
                         toRet = true;
                         break;
@@ -187,44 +185,24 @@ public final class FeatureInfo {
         return codeNames.isEmpty();
     }
     
-    private boolean isNbProject(FileObject dir, boolean deepCheck) {
+    private boolean isNbProject(FeatureProjectFactory.Data data) {
         if (nbproject.isEmpty()) {
             return false;
         } else {
-            FileObject prj = dir.getFileObject("nbproject/project.xml");
-            if (prj == null) {
+            if (!data.hasFile("nbproject/project.xml")) { // NOI18N
                 FoDFileSystem.LOG.log(Level.FINEST, "    nbproject/project.xml not found"); // NOI18N
                 return false;
             }
-            if (!deepCheck) {
+            if (!data.isDeepCheck()) {
                 FoDFileSystem.LOG.log(Level.FINEST, "    no deep check, OK"); // NOI18N
                 return true;
             }
-            byte[] arr = new byte[4000];
-            int len;
-            InputStream is = null;
-            try {
-                is = prj.getInputStream();
-                len = is.read(arr);
-            } catch (IOException ex) {
-                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
-                len = -1;
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
-            if (len == -1) {
+            String text = data.is("nbproject/project.xml"); // NOI18N
+            if (text == null) {
                 return false;
             }
-            String text = new String(arr, 0, len);
             for (String t : nbproject.keySet()) {
-                final String pattern = "<type>" + t + "</type>";
+                final String pattern = "<type>" + t + "</type>"; // NOI18N
                 if (text.indexOf(pattern) >= 0) { // NOI18N
                     FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' found, OK"); // NOI18N
                     return true;
