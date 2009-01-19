@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.spi.model.UIDProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -55,14 +56,8 @@ public final class UIDProviderIml implements UIDProvider {
 
     private static final Set<Class> nonIdentifiable = new HashSet<Class>();
     private static final Logger LOG = Logger.getLogger(UIDs.class.getName());
-    private static final boolean debugMode;
+    private static final boolean debugMode = CndUtils.isDebugMode();
 
-    static {
-        boolean debug = false;
-        assert debug = true;
-        debugMode = debug;
-    }
-    
     public <T> CsmUID<T> get(T obj) {
         CsmUID<T> out;
         if (UIDCsmConverter.isIdentifiable(obj)) {
@@ -70,11 +65,11 @@ public final class UIDProviderIml implements UIDProvider {
             // we need to cast to the exact type
             @SuppressWarnings("unchecked") // checked
             CsmUID<T> uid = (CsmUID<T>) ident.getUID();
-            if (debugMode) {
+            if (false && debugMode) {
                 Object object = uid.getObject();
                 if (object == null) {
-                    // sometimes it is ok that we are unable to get the object
-                    //LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                    // is it ok that we are unable to get the object?
+                    LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
                 } else {
                     final Class<? extends Object> derefClass = object.getClass();
                     if (!derefClass.isAssignableFrom(obj.getClass())) {
