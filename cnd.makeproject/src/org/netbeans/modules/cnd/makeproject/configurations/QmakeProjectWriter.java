@@ -229,7 +229,8 @@ public class QmakeProjectWriter {
         switch (configuration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_APPLICATION:
                 return "app"; // NOI18N
-            case MakeConfiguration.TYPE_QT_LIBRARY:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 return "lib"; // NOI18N
             default:
                 return ""; // NOI18N
