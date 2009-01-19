@@ -112,11 +112,11 @@ public class GroovyIndexerTest extends GroovyTestBase {
         assertEquals(6, classes.size());
     }
 
-    public void testProperties() throws Exception {
-        FileObject fo = getTestFile("testfiles/indexer/Properties1.groovy");
-        GsfTestCompilationInfo info = getInfo(fo);
-        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-
-        // FIXME
-    }
+//    public void testProperties() throws Exception {
+//        FileObject fo = getTestFile("testfiles/indexer/Properties1.groovy");
+//        GsfTestCompilationInfo info = getInfo(fo);
+//        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+//
+//        // FIXME
+//    }
 }
