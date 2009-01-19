@@ -39,68 +39,79 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.spi.model.UIDProvider;
+import org.openide.util.Lookup;
 
 /**
  * Utility class to get Object UID
  * @author Egor Ushakov
  */
 public final class UIDs {
+    private static UIDProvider provider;
+    private static final UIDProvider EMPTY = new SelfUIDProvider();
     private UIDs() {
     }
-    private static final Set<Class> nonIdentifiable = new HashSet<Class>();
-    private static final Logger LOG = Logger.getLogger(UIDs.class.getName());
-    private static final boolean debugMode;
-    static {
-        boolean debug = false;
-        assert debug = true;
-        debugMode = debug;
-    }
+
+    /**
+     * returns never-null handler which can be used to restore object
+     * @param <T>
+     * @param obj object for which handler should be returned
+     * @return never-null handler
+     */
     public static <T> CsmUID<T> get(T obj) {
-        CsmUID<T> out;
-        if (CsmKindUtilities.isCsmObject(obj) && CsmKindUtilities.isIdentifiable((CsmObject)obj)) {
-            final CsmIdentifiable ident = (CsmIdentifiable) obj;
-            // we need to cast to the exact type
-            @SuppressWarnings("unchecked") // checked
-            CsmUID<T> uid = (CsmUID<T>)ident.getUID();
-            /*if (debugMode) {
-                Object object = uid.getObject();
-                if (object == null) {
-                    // sometimes it is ok that we are unable to get the object
-                    //LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
-                } else {
-                    final Class<? extends Object> derefClass = object.getClass();
-                    if (!derefClass.isAssignableFrom(obj.getClass())) {
-                        LOG.severe("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
-                    }
-                }
-            }*/
-            out = uid;
-        } else {
-            if (debugMode && nonIdentifiable.add(obj.getClass())) {
-                LOG.severe("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
+        return getProvider().get(obj);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // impl details
+    
+    private static synchronized UIDProvider getProvider() {
+        if (provider == null) {
+            provider = Lookup.getDefault().lookup(UIDProvider.class);
+        }
+        return provider == null ? EMPTY : provider;
+    }
+
+    private final static class SelfUIDProvider implements UIDProvider {
+        public <T> CsmUID<T> get(T obj) {
+            return new SelfUID<T>(obj);
+        }
+
+        private static final class SelfUID<T> implements CsmUID<T> {
+
+            private final T element;
+
+            SelfUID(T element) {
+                assert element != null : "impossible to wrap null object";
+                this.element = element;
             }
-            out = selfUID(obj);
-        }
-        return out;
-    }
 
-    public static <T> CsmUID<T> selfUID(T obj) {
-        return new SelfUID<T>(obj);
-    }
+            public T getObject() {
+                return this.element;
+            }
 
-    private static final class SelfUID<T> implements CsmUID<T> {
-        private final T element;
-        SelfUID(T element) {
-            this.element = element;
-        }
-        public T getObject() {
-            return this.element;
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final SelfUID other = (SelfUID) obj;
+                if (this.element != other.element && !this.element.equals(other.element)) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 89 * hash + this.element.hashCode();
+                return hash;
+            }
         }
     }
 }

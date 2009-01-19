@@ -41,12 +41,12 @@ package test
 import org.tellurium.dsl.DslContext
 
 class TestClient extends DslContext {
-    void defineUi() {
-        ui.Container(uid: "links", locator: "//body") {
-            // ------------------------------------------------- navigation tree
 
+    void defineUi() {
+        // navigation tree
+        ui.Container(uid: "navigation", clocator: [tag: "td", id: "leftSidebar"]) {
             // CustomerDB
-            // /html/body/div/div[2]/table/tbody/tr/td/span/div/a
+            // html/body/div/div[2]/table/tbody/tr/td/span/div/a
             UrlLink(uid: "customersdb", locator: "//a[text() = \"CustomerDB\"]")
             // customers
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span/div/a
@@ -56,7 +56,7 @@ class TestClient extends DslContext {
             Image(uid: "customersExpander", locator: "//*[@id=\"I1/customers/_1\"]")
             // {customerId}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[2]/span/div/a
-            UrlLink(uid: "customerId", locator: "//td/span/span/span/div/a[text() = \"{customerId}\"]")
+            UrlLink(uid: "customerId", locator: "/span/span/span/div/a[text() = \"{customerId}\"]")
 
             // discountCodes
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[3]/div/a
@@ -66,14 +66,14 @@ class TestClient extends DslContext {
             Image(uid: "dcodesExpander", locator: "//*[@id=\"I1/discountCodes/_4\"]")
             // {discountCode}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[4]/span/div/a
-            UrlLink(uid: "discountCodeId", locator: "//td/span/span/span/div/a[text() = \"{discountCode}\"]")
+            UrlLink(uid: "discountCodeId", locator: "/span/span/span/div/a[text() = \"{discountCode}\"]")
+        }
 
-
-            // ------------------------------------------------------- test form
-
+        // test form
+        ui.Container(uid: "testform", clocator: [tag: "td", id: "content"]) {
             // add param button
             // /html/body/div/div[2]/table/tbody/tr/td[3]/div[3]/table/tbody/tr/td[6]/span/a
-            UrlLink(uid: "addParam", locator: "/div/div[2]/table/tbody/tr/td[3]/div[3]/table/tbody/tr/td[6]/span/a")
+            UrlLink(uid: "addParam", clocator: [onclick: "ts.addParam()"])
 
             // test button
             UrlLink(uid: "test", clocator: [onclick: "ts.testResource()"])
@@ -92,8 +92,10 @@ class TestClient extends DslContext {
             TextBox(uid: "content", clocator: [tag: "textarea", name: "params", id: "blobParam"])
 
             InputBox(uid: "resourceId", clocator: [id: "tparams"])
+        }
 
-            // --------------------------------------------------- results table
+        // results table
+        ui.Container(uid: "results", clocator: [tag: "div", id: "result"]) {
 
             // tab view
             // //*[@id="tabtable"]
@@ -127,23 +129,22 @@ class TestClient extends DslContext {
             //monitor view content
             // //*[@id="monitorContent"]
             Div(uid: "monitorContent", clocator: [id: "monitorContent"])
-
         }
     }
 
     def clickOn(String node) {
         switch (node) {
             case "customers" :
-            click "links.customers"
+            click "navigation.customers"
             break
             case "customerId" :
-            click "links.customerId"
+            click "navigation.customerId"
             break
             case "dCodes" :
-            click "links.discountCodes"
+            click "navigation.discountCodes"
             break
             case "dCodeId" :
-            click "links.discountCodeId"
+            click "navigation.discountCodeId"
             break
             default:
             throw new UnsupportedOperationException("$node not implemented")
@@ -154,10 +155,10 @@ class TestClient extends DslContext {
     def expand(String node) {
         switch (node) {
             case "customers" :
-            click "links.customersExpander"
+            click "navigation.customersExpander"
             break
             case "dCodes" :
-            click "links.dcodesExpander"
+            click "navigation.dcodesExpander"
             break
             default:
             throw new UnsupportedOperationException("$node not implemented")
@@ -166,75 +167,55 @@ class TestClient extends DslContext {
     }
 
     void doTest() {
-        click "links.test"
+        click "testform.test"
         pause 1500
     }
 
     String[] getAvailableRMethods() {
-        return getSelectOptions("links.method")
+        return getSelectOptions("testform.method")
     }
 
     String[] getAvailableMIMETypes() {
-        return getSelectOptions("links.mime")
+        return getSelectOptions("testform.mime")
     }
 
     String getSelectedRMethod() {
-        getSelectedLabel("links.method")
+        getSelectedLabel("testform.method")
     }
 
     String getSelectedMIMEType() {
-        getSelectedLabel "links.mime"
+        getSelectedLabel "testform.mime"
     }
 
     void setSelectedRMethod(String method) {
-        selectByLabel("links.method", method)
+        selectByLabel("testform.method", method)
         pause 1000
     }
 
     void setSelectedMIMEType(String mime) {
-        selectByLabel "links.mime", mime
-        pause 1000
-    }
-
-    def setView(String type) {
-        switch (node) {
-            case "raw" :
-            click "links.customers"
-            break
-            case "monitor" :
-            click "links.customerId"
-            break
-            case "table" :
-            click "links.discountCodes"
-            break
-            case "subResources" :
-            click "links.discountCodeId"
-            break
-            default:
-            throw new UnsupportedOperationException("$node not implemented")
-        }
+        selectByLabel "testform.mime", mime
         pause 1000
     }
 
     String getContentFromView(String viewId) {
         //XXX - prints ERROR to the log if @name is not present at all
         //      how can we avoid that?
-        if (getAttribute("links.${viewId}View", "name") != "selectedTabAnchor") {
-            click "links.${viewId}View"
+        if (getAttribute("results.${viewId}View", "name") != "selectedTabAnchor") {
+            click "results.${viewId}View"
             pause 1000
         }
-        return getText("links.${viewId}Content")
+        return getText("results.${viewId}Content")
     }
 
     void setTestArg(String name, String value) {
         if (!"resourceId".equals(value)) {
-            clearText "links.$name"
+            clearText "testform.$name"
         }
-        type "links.$name", value
+        type "testform.$name", value
     }
 
     String getTestArg(String name) {
-        getText "links.$name"
+        getText "testform.$name"
     }
 
 }
