@@ -113,7 +113,7 @@ tellurium{
             //we may have a series of screenshots, specify the file name pattern here
             //Here the ? will be replaced by the timestamp and you might also want to put
             //file path in the file name pattern
-            filenamePattern = "Screenshot?.png"
+            filenamePattern = "build/Screenshot?.png"
         }
     }
     uiobject{
