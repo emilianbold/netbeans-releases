@@ -82,13 +82,11 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            Object val = insertedRow[i];
-
-            if (dbcol.isGenerated()) { // NOI18N
+            if (dbcol.isGenerated()) {
                 continue;
             }
 
-            if (val.equals("<NULL>") && !dbcol.isNullable()) { // NOI18N
+            if (insertedRow[i] == null && !dbcol.isNullable()) {
                 throw new DBException(NbBundle.getMessage(SQLStatementGenerator.class,"MSG_nullable_check"));
             }
 
@@ -100,15 +98,8 @@ class SQLStatementGenerator {
                 comma = true;
             }
 
-            // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (val instanceof String && ((String) val).startsWith("<") && ((String) val).endsWith(">")) {
-                    String constStr = ((String) val).substring(1, ((String) val).length() - 1);
-                    values += constStr;
-                    rawvalues += constStr;
-            } else { // ELSE literals
-                values += insertedRow[i] == null ? " NULL " : "?"; // NOI18N
-                rawvalues += getQualifiedValue(dbcol.getJdbcType(), insertedRow[i]);
-            }
+            values += insertedRow[i] == null ? " NULL " : "?"; // NOI18N
+            rawvalues += getQualifiedValue(dbcol.getJdbcType(), insertedRow[i]);
             colNames += dbcol.getQualifiedName();
         }
 
