@@ -110,20 +110,22 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
-                    StructureScanner scanner = language.getStructure();
-                    if (scanner != null) {
-                        long startTime = System.currentTimeMillis();
-                        Parser.Result r = resultIterator.getParserResult();
-                        if (r instanceof ParserResult) {
-                            List<? extends StructureItem> children = scanner.scan((ParserResult) r);
-                            long endTime = System.currentTimeMillis();
-                            Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
-                                    new Object[]{fileObject, endTime - startTime});
+                    if(language != null) { //check for non csl results
+                        StructureScanner scanner = language.getStructure();
+                        if (scanner != null) {
+                            long startTime = System.currentTimeMillis();
+                            Parser.Result r = resultIterator.getParserResult();
+                            if (r instanceof ParserResult) {
+                                List<? extends StructureItem> children = scanner.scan((ParserResult) r);
+                                long endTime = System.currentTimeMillis();
+                                Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
+                                        new Object[]{fileObject, endTime - startTime});
 
-                            if (children.size() > 0) {
-                                mimetypesWithElements[0]++;
+                                if (children.size() > 0) {
+                                    mimetypesWithElements[0]++;
+                                }
+                                roots.add(new MimetypeRootNode(language, children));
                             }
-                            roots.add(new MimetypeRootNode(language, children));
                         }
                     }
 
