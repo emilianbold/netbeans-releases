@@ -43,21 +43,21 @@ package org.netbeans.modules.ruby.railsprojects.classpath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Map;
 import java.util.HashMap;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
- * Defines the various class paths for a J2SE project.
+ * Defines the various load paths for a Rails project.
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
 

@@ -38,6 +38,7 @@
  */
 
 package org.netbeans.modules.ruby.railsprojects.classpath;
+
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
@@ -45,10 +46,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
 /**

@@ -40,10 +40,13 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -72,6 +75,11 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class RubyLanguage extends DefaultLanguageConfig {
+
+    public final static String BOOT = "ruby/classpath/boot";
+    public final static String COMPILE = "ruby/classpath/compile";
+    public final static String EXECUTE = "ruby/classpath/execute";
+    public final static String SOURCE = "ruby/classpath/source";
     
     public RubyLanguage() {
     }
@@ -185,6 +193,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public EmbeddingIndexerFactory getIndexerFactory() {
         return new RubyIndexer.Factory();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return new HashSet<String>(Arrays.asList(BOOT, SOURCE));
     }
 
 }
