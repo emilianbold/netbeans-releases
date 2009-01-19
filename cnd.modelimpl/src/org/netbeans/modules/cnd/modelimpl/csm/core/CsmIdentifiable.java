@@ -39,12 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.model;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
+
+import org.netbeans.modules.cnd.api.model.*;
 
 /**
  * intefrace to present object that has unique ID
  * unique ID is used to long-time stored references on Csm Objects
- * 
+ * class which implements CsmIdentifiable must return CsmUID<T> where T is
+ * the same as implementation class or one of it's super types
  * @see CsmUID
  * @author Vladimir Voskresensky
  */

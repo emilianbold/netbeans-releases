@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -624,13 +623,5 @@ public class CsmKindUtilities {
             return ((CsmVariable)decl).isExtern();
         }
         return false;
-    }
-    
-    public static <T extends CsmObject> boolean isIdentifiable(T obj) {
-        if (obj instanceof CsmIdentifiable) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }
