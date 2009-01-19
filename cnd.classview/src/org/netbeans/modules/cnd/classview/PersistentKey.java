@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.classview;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
@@ -63,7 +63,7 @@ public final class PersistentKey {
     private static final byte DECLARATION = 1<<2;
     private static final byte PROJECT = 1<<3;
     private static final byte STATE = 1<<4;
-    
+    private static final byte MASK = STATE - 1;
     private Object key;
     private CsmProject project;
     private byte kind;
@@ -90,21 +90,21 @@ public final class PersistentKey {
     }
     
     public static PersistentKey createKey(Object object){
-        if (object instanceof CsmNamespace){
+        if (CsmKindUtilities.isNamespace(object)) {
             CsmNamespace ns = (CsmNamespace) object;
             CharSequence uniq = ns.getQualifiedName();
             CsmProject project = ns.getProject();
             if (project != null) {
                 return new PersistentKey(uniq, project, NAMESPACE, false);
             }
-        } else if (object instanceof CsmEnumerator){
+        } else if (CsmKindUtilities.isEnumerator(object)) {
             // special hack.
-        } else if (object instanceof CsmOffsetableDeclaration){
+        } else if (CsmKindUtilities.isOffsetableDeclaration(object)) {
             CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) object;
             CharSequence name = decl.getName();
             CharSequence uniq = decl.getUniqueName();
             CsmScope scope = decl.getScope();
-            if ((scope instanceof CsmCompoundClassifier) && name.length() > 0) {
+            if (CsmKindUtilities.isCompoundClassifier(scope) && name.length() > 0) {
                 CsmCompoundClassifier cls = (CsmCompoundClassifier) scope;
                 name = cls.getName();
             }
@@ -114,7 +114,7 @@ public final class PersistentKey {
             } else {
                 //System.out.println("Skip "+uniq);
             }
-        } else if (object instanceof CsmProject){
+        } else if (CsmKindUtilities.isProject(object)){
             return new PersistentKey(null, (CsmProject)object, PROJECT, false);
         }
         return new PersistentKey(UIDs.get(object), getStateBit(object));
@@ -125,8 +125,7 @@ public final class PersistentKey {
             CsmTypedef typedef = (CsmTypedef) object;
             if (((CsmTypedef)object).isTypeUnnamed()){
                 CsmClassifier cls = typedef.getType().getClassifier();
-                if (cls != null && cls.getName().length()==0 &&
-                   (cls instanceof CsmCompoundClassifier)) {
+                if (cls != null && cls.getName().length()==0 && CsmKindUtilities.isCompoundClassifier(cls)) {
                     return true;
                 }
             }
@@ -135,7 +134,7 @@ public final class PersistentKey {
     }
     
     public Object getObject(){
-        int maskKind = kind & 31;
+        int maskKind = kind & MASK;
         switch(maskKind){
             case UID:
                 return ((CsmUID)key).getObject();
@@ -156,7 +155,7 @@ public final class PersistentKey {
             if (kind != what.kind) {
                 return false;
             }
-            int maskKind = kind & 31;
+            int maskKind = kind & MASK;
             switch(maskKind){
                 case UID:
                     return key.equals(what.key);
@@ -175,9 +174,9 @@ public final class PersistentKey {
     
     @Override
     public int hashCode() {
-        int maskKind = kind & 31;
+        int maskKind = kind & MASK;
         int res = 0;
-        if ((kind & 32) == 32) {
+        if ((kind & STATE) == STATE) {
             res = 17;
         }
         switch(maskKind){
@@ -194,7 +193,7 @@ public final class PersistentKey {
     
     @Override
     public String toString() {
-        int maskKind = kind & 31;
+        int maskKind = kind & MASK;
         switch(maskKind){
             case UID:
                 return "UID "+key.toString(); // NOI18N
