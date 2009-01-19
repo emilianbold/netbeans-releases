@@ -1369,6 +1369,7 @@ public class PythonDebugContainer implements PythonContainer {
 
       add(BorderLayout.NORTH, _statusBar);
       add(BorderLayout.CENTER, _setoutPane);
+      add(BorderLayout.SOUTH, _msgBar ) ; 
       setActions();
 
       add(BorderLayout.CENTER, _setoutPane);
