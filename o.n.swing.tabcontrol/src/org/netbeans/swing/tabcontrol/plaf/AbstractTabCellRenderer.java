@@ -363,46 +363,55 @@ public abstract class AbstractTabCellRenderer extends JLabel
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public void revalidate() {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public void repaint() {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public void validate() {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public void repaint(long tm) {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public void repaint(long tm, int x, int y, int w, int h) {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     protected final void firePropertyChange(String s, Object a, Object b) {
         //do nothing - performance
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public final void addHierarchyBoundsListener(HierarchyBoundsListener hbl) {
         //do nothing
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public final void addHierarchyListener(HierarchyListener hl) {
         //do nothing
     }
 
     /** Overridden to be a no-op for performance reasons */
+    @Override
     public final void addContainerListener(ContainerListener cl) {
         //do nothing
     }
@@ -410,6 +419,7 @@ public abstract class AbstractTabCellRenderer extends JLabel
     /**
      * Overridden to paint the interior of the polygon if the border is an instance of TabPainter.
      */
+    @Override
     public void paintComponent(Graphics g) {
         g.setColor(getBackground());
         if (getBorder() instanceof TabPainter) {
@@ -440,6 +450,16 @@ public abstract class AbstractTabCellRenderer extends JLabel
      * @param g The graphics context
      */
     protected void paintIconAndText(Graphics g) {
+        paintIconAndText(g, true);
+    }
+
+    /**
+     * Paint tab text or just retrieve the binding rectangle for tab text.
+     * @param g
+     * @param paint True to actually paint the text, false to calculate the rectangle only.
+     * @return Rectangle for tab text.
+     */
+    private Rectangle paintIconAndText( Graphics g, boolean paint ) {
         g.setFont(getFont());
         FontMetrics fm = g.getFontMetrics(getFont());
         //Find out what height we need
@@ -489,26 +509,36 @@ public abstract class AbstractTabCellRenderer extends JLabel
         }
 
         txtY += getCaptionYAdjustment();
-        
+
         //Get the available horizontal pixels for text
         int txtW = getWidth() - (txtX + ins.right);
         if (isClipLeft()) {
             //fiddle with the string to get "...blah"
             String s = preTruncateString(getText(), g, txtW - 4); //subtract 4 so it's not flush w/ tab edge
-            HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), HtmlRenderer.STYLE_CLIP, true);
+            txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
+                              getForeground(), HtmlRenderer.STYLE_CLIP, paint);
         } else {
             String s;
             if (isClipRight()) {
                 //Jano wants to always show a "..." for cases where a tab is truncated,
-                //even if we've really painted all the text.  
+                //even if we've really painted all the text.
                 s = getText() + "..."; //NOI18N
             } else {
                 s = getText();
             }
-            HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), HtmlRenderer.STYLE_TRUNCATE, true);
+            txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
+                              getForeground(), HtmlRenderer.STYLE_TRUNCATE, paint);
         }
+        return new Rectangle(txtX, txtY-txtH, txtW, txtH);
+    }
+
+    /**
+     * Retrieve the binding rectangle which will contain the tab text.
+     * @param g
+     * @return Rectangle which the tab text will be painted into.
+     */
+    protected final Rectangle getTextRectangle(Graphics g) {
+        return paintIconAndText(g, false);
     }
 
     static String preTruncateString(String s, Graphics g, int availPixels) {

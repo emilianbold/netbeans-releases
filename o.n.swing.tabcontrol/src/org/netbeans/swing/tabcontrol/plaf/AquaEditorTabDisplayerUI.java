@@ -46,14 +46,11 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.plaf.ComponentUI;
 import java.util.HashMap;
@@ -70,44 +67,31 @@ import javax.swing.UIManager;
  */
 public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
 
-    /** Color used in drawing the line behind the tabs */
-    private Color lineMiddleColor = null;
-    /** Color used in drawing the line behind the tabs */
-    private Color lineHlColor = null;
-
     private static Map<Integer, String[]> buttonIconPaths;
 
     public AquaEditorTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
     }
 
-    public void install() {
-        super.install();
-        scroll().setMinimumXposition(9);
-    }
-
     protected TabCellRenderer createDefaultRenderer() {
         return new AquaEditorTabCellRenderer();
     }
 
-    public Insets getTabAreaInsets() {
-        Insets result = super.getTabAreaInsets();
-        result.bottom = 2;
-        return result;
-    }
-    
     public static ComponentUI createUI(JComponent c) {
         return new AquaEditorTabDisplayerUI ((TabDisplayer) c);
     }
 
+    @Override
     protected boolean isAntialiased() {
         return true;
     }
     
+    @Override
     protected Font createFont() {
         return UIManager.getFont("Label.font"); //NOI18N
     }    
     
+    @Override
     protected int createRepaintPolicy () {
         return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
                 | TabState.REPAINT_ON_SELECTION_CHANGE
@@ -117,6 +101,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
                 | TabState.REPAINT_ON_MOUSE_PRESSED;
     }
     
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 28;
         //Never call getGraphics() on the control, it resets in-process
@@ -133,23 +118,20 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         return new Dimension(displayer.getWidth(), prefHeight);
     }
 
+    @Override
+    protected void paintBackground(Graphics g) {
+        g.setColor(UIManager.getColor("NbTabControl.editorTabBackground"));
+        g.fillRect(0, 0, displayer.getWidth(), displayer.getHeight());
+    }
+
+
+    @Override
     protected void paintAfterTabs(Graphics g) {
-        //Draw the continuation of the rounded border behind the buttons
-        //and tabs
-        
-        int centerY = (((displayer.getHeight() - 
-            (AquaEditorTabCellRenderer.TOP_INSET + AquaEditorTabCellRenderer.BOTTOM_INSET)) / 2) 
-            + AquaEditorTabCellRenderer.TOP_INSET - 1) + getTabAreaInsets().top + 1;
-        
-        if (lineMiddleColor == null) {
-            lineMiddleColor = ColorUtil.getMiddle(UIManager.getColor("controlShadow"), 
-            UIManager.getColor("control")); //NOI18N
-        }
-        g.setColor (lineMiddleColor);
-        
-        int rightLineStart = getTabsAreaWidth() - 13;
-        int rightLineEnd = displayer.getWidth() - 9;
-        
+        int rightLineStart = getTabsAreaWidth();
+        int rightLineEnd = displayer.getWidth();
+
+        int y = displayer.getHeight();
+
         if (displayer.getModel().size() > 0 && !scroll().isLastTabClipped()) {
             //Extend the line out to the edge of the last visible tab
             //if none are clipped
@@ -158,24 +140,8 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         } else if (displayer.getModel().size() == 0) {
             rightLineStart = 6;
         }
-        
-        if (scroll().getOffset() >= 0) {
-            //fill the left edge notch
-            g.drawLine(6, centerY, 11, centerY);
-        }
-        g.drawLine(rightLineStart, centerY, rightLineEnd, centerY);
-        
-        if (lineHlColor == null) {
-            lineHlColor = ColorUtil.getMiddle (lineMiddleColor, 
-            UIManager.getColor("control"));
-        }
-        
-        g.setColor (lineHlColor); //NOI18N
-        g.drawLine(rightLineStart, centerY+1, rightLineEnd, centerY+1);
-        if (scroll().getOffset() > 0) {
-            //fill the left edge notch
-            g.drawLine(6, centerY+1, 11, centerY+1);
-        }
+        g.setColor(UIManager.getColor("NbTabControl.borderColor"));
+        g.drawLine(rightLineStart, y-1, rightLineEnd, y-1);
     }
     
 
@@ -224,6 +190,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();
@@ -232,17 +199,5 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
             res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }
         return res;
-    }
-
-    protected Rectangle getControlButtonsRectangle(Container parent) {
-        int centerY = (((displayer.getHeight() - (AquaEditorTabCellRenderer.TOP_INSET
-                + AquaEditorTabCellRenderer.BOTTOM_INSET)) / 2) + AquaEditorTabCellRenderer.TOP_INSET)
-                + getTabAreaInsets().top;
-        
-        int width = parent.getWidth();
-        int height = parent.getHeight();
-        int buttonsWidth = getControlButtons().getWidth();
-        int buttonsHeight = getControlButtons().getHeight();
-        return new Rectangle( width-buttonsWidth-3, centerY-buttonsHeight/2, buttonsWidth, buttonsHeight );
     }
 }
