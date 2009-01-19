@@ -210,7 +210,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
         copyInterval(inDoc, outDoc, new Interval(inIntervalStart, endOffset), shift, tt);
 
         for (IntervalCorrespondence ic : tt.intervals) {
-            System.out.println("[" + ic.inInterval.start + " - " + ic.inInterval.end + "]" + " => " + "[" + ic.outInterval.start + " - " + ic.outInterval.end + "]");
+            System.err.println("[" + ic.inInterval.start + " - " + ic.inInterval.end + "]" + " => " + "[" + ic.outInterval.start + " - " + ic.outInterval.end + "]");
         }
 
         outDoc.putProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER, tt);
