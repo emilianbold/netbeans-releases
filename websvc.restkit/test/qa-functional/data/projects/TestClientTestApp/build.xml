@@ -86,11 +86,11 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
             <include name="customProfileDirCUSTFF/extensions/readystate@openqa.org/install.rdf"/>
             <include name="customProfileDirCUSTFF/extensions/{538F0036-F358-4f84-A764-89FB437166B4}/install.rdf"/>
         </patternset>
-        <unzip src="${jar.seleniumserver}" dest="${java.io.tmpdir}/xxx2">
+        <unzip src="${jar.seleniumserver}" dest="${java.io.tmpdir}/rest-client-test-tmp">
             <patternset refid="to.patch"/>
         </unzip>
         <replace dir="${java.io.tmpdir}/rest-client-test-tmp" token="2.0.0.*" value="3.0.*.*"/>
-        <jar destfile="${jar.seleniumserver}" duplicate="preserve" update="true" basedir="${java.io.tmpdir}/xxx2" includes="**/*.rdf"/>
+        <jar destfile="${jar.seleniumserver}" duplicate="preserve" update="true" basedir="${java.io.tmpdir}/rest-client-test-tmp" includes="**/*.rdf"/>
     </target>
 
     <target name="get-seleniumdriver" unless="have.seleniumdriver">
