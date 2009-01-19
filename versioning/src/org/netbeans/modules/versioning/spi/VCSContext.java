@@ -145,7 +145,36 @@ public final class VCSContext {
             }
             addFileObjects(node, files, rootFiles);
         }
-        
+
+        List<File> unversionedFiles = new ArrayList<File>(rootFiles.size());
+        Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);
+        for (File root : rootFiles) {
+            VersioningSystem owner = VersioningManager.getInstance().getOwner(root);
+            if (owner == null) {
+                unversionedFiles.add(root);
+            } else {
+                projectOwners.add(owner);
+            }
+        }
+        if(projectOwners.size() == 0) {
+            // all roots are unversioned -> keep them
+        } else if(projectOwners.size() == 1) {
+            // context contais one owner -> remove unversioned files
+            for (File unversionedFile : unversionedFiles) {
+                for (Iterator<File> i = rootFileExclusions.iterator(); i.hasNext(); ) {
+                    File exclusion = i.next();
+                    if (Utils.isAncestorOrEqual(unversionedFile, exclusion)) {
+                        i.remove();
+                    }
+                }
+            }
+            rootFiles.removeAll(unversionedFiles);
+        } else {
+            // more than one owner -> return empty context
+            rootFileExclusions.clear();
+            rootFiles.clear();
+        }
+
         VCSContext ctx = new VCSContext(nodes, rootFiles, rootFileExclusions);
         contextCached = new WeakReference<VCSContext>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
@@ -249,19 +278,11 @@ public final class VCSContext {
     private static void addProjectFiles(Collection<File> rootFiles, Collection<File> rootFilesExclusions, Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        List<File> unversionedFiles = new ArrayList<File>(sourceGroups.length);
-        Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);
         for (int j = 0; j < sourceGroups.length; j++) {
             SourceGroup sourceGroup = sourceGroups[j];
             FileObject srcRootFo = sourceGroup.getRootFolder();
             File rootFile = FileUtil.toFile(srcRootFo);
             if (rootFile == null) continue;
-            VersioningSystem owner = VersioningManager.getInstance().getOwner(rootFile);
-            if (owner == null) {
-                unversionedFiles.add(rootFile);
-            } else {
-                projectOwners.add(owner);
-            }
             rootFiles.add(rootFile);
             FileObject [] rootChildren = srcRootFo.getChildren();
             for (int i = 0; i < rootChildren.length; i++) {
@@ -271,18 +292,6 @@ public final class VCSContext {
                 if (child != null && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
                     rootFilesExclusions.add(child);
                 }
-            }
-        }
-        if (projectOwners.size() == 1 && projectOwners.iterator().next() != null) {
-            rootFiles.removeAll(unversionedFiles);
-            outter: for (Iterator<File> i = rootFilesExclusions.iterator(); i.hasNext(); ) {
-                File exclusion = i.next();
-                for (File rootFile : rootFiles) {
-                    if (Utils.isAncestorOrEqual(rootFile, exclusion)) {
-                        continue outter;
-                    }
-                }
-                i.remove();
             }
         }
     }
