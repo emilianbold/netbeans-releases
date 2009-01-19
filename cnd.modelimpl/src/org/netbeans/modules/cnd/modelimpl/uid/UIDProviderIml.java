@@ -96,11 +96,34 @@ public final class UIDProviderIml implements UIDProvider {
         private final T element;
 
         SelfUID(T element) {
+            assert element != null : "impossible to wrap null object";
             this.element = element;
         }
 
         public T getObject() {
             return this.element;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SelfUID other = (SelfUID) obj;
+            if (this.element != other.element && !this.element.equals(other.element)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 89 * hash + this.element.hashCode();
+            return hash;
         }
     }
 }
