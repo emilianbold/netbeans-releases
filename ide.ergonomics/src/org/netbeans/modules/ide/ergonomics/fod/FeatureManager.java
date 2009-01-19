@@ -44,8 +44,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -165,7 +166,9 @@ implements PropertyChangeListener, LookupListener {
         } else {
             InstanceContent ic = new InstanceContent();
             AbstractLookup l = new AbstractLookup(ic);
-            for (String c : clusters.split(File.pathSeparator)) {
+            String[] paths = clusters.split(File.pathSeparator);
+            Collections.reverse(Arrays.asList(paths));
+            for (String c : paths) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1).replaceFirst("[0-9\\.]*$", "");
                 String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;

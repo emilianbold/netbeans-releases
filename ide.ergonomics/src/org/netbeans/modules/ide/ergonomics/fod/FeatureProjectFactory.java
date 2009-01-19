@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,7 @@ import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.parsers.DocumentBuilder;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -71,6 +73,11 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.w3c.dom.Document;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.openide.filesystems.FileUtil;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -82,10 +89,44 @@ public class FeatureProjectFactory implements ProjectFactory {
         private final boolean deepCheck;
         private final FileObject dir;
         private Map<String,String> data;
+        private Map<String,Document> doms;
 
         public Data(FileObject dir, boolean deepCheck) {
             this.deepCheck = deepCheck;
             this.dir = dir;
+        }
+
+        Document dom(String relative) {
+            Document doc = doms == null ? null : doms.get(relative);
+            if (doc != null) {
+                return doc;
+            }
+            FileObject fo = dir.getFileObject(relative);
+            if (fo == null) {
+                return null;
+            }
+            File f = FileUtil.toFile(fo);
+            try {
+                DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                if (f != null) {
+                    doc = b.parse(f);
+                } else {
+                    InputStream is = fo.getInputStream();
+                    doc = b.parse(is);
+                }
+                if (doms == null) {
+                    doms = new HashMap<String,Document>();
+                }
+                doms.put(relative, doc);
+                return doc;
+            } catch (ParserConfigurationException parserConfigurationException) {
+                Exceptions.printStackTrace(parserConfigurationException);
+            } catch (SAXException sAXException) {
+                Exceptions.printStackTrace(sAXException);
+            } catch (IOException iOException) {
+                Exceptions.printStackTrace(iOException);
+            }
+            return null;
         }
 
         final boolean hasFile(String relative) {

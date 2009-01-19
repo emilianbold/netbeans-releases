@@ -51,6 +51,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathExpression;
+import org.w3c.dom.Document;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
@@ -66,7 +70,7 @@ public final class FeatureInfo {
     private XMLFileSystem fs;
     private final Set<String> cnbs;
     private final Map<String,String> nbproject = new HashMap<String,String>();
-    private final Map<String,String> files = new HashMap<String,String>();
+    private final Map<Object[],String> files = new HashMap<Object[],String>();
     private Properties properties;
     final String clusterName;
 
@@ -98,10 +102,14 @@ public final class FeatureInfo {
                 );
             }
             if (key.startsWith(prefFile)) {
-                info.projectFile(
-                    key.substring(prefFile.length()),
-                    p.getProperty(key)
-                );
+                try {
+                    String xpath = p.getProperty("xpath." + key);
+                    info.projectFile(key.substring(prefFile.length()), xpath, p.getProperty(key));
+                } catch (XPathExpressionException ex) {
+                    IOException e = new IOException(ex.getMessage());
+                    e.initCause(ex);
+                    throw e;
+                }
             }
         }
         return info;
@@ -159,11 +167,32 @@ public final class FeatureInfo {
                 toRet = false;
             } else {
                 toRet = false;
-                for (String s : files.keySet()) {
+                for (Object[] required : files.keySet()) {
+                    String s = (String)required[0];
                     FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
                     if (data.hasFile(s)) {
                         FoDFileSystem.LOG.log(Level.FINER, "    found", s);
-                        toRet = true;
+                        if (data.isDeepCheck() && required[1] != null) {
+                            XPathExpression e = (XPathExpression)required[1];
+                            Document content = data.dom(s);
+                            try {
+                                String res = e.evaluate(content);
+                                FoDFileSystem.LOG.log(
+                                    Level.FINER,
+                                    "Parsed result {0} of type {1}",
+                                    new Object[] {
+                                        res, res == null ? null : res.getClass()
+                                    }
+                                );
+                                if (res != null && res.length() > 0) {
+                                    toRet = true;
+                                }
+                            } catch (XPathExpressionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        } else {
+                            toRet = true;
+                        }
                         break;
                     }
                 }
@@ -183,6 +212,11 @@ public final class FeatureInfo {
             codeNames.remove(moduleInfo.getCodeNameBase());
         }
         return codeNames.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "FeatureInfo[" + clusterName + "]";
     }
     
     private boolean isNbProject(FeatureProjectFactory.Data data) {
@@ -218,11 +252,13 @@ public final class FeatureInfo {
     final void nbproject(String prjType, String clazz) {
         nbproject.put(prjType, clazz);
     }
-    final void projectFile(String file, String clazz) {
-        files.put(file, clazz);
-    }
-    final void projectFile(String file, String xpath, String clazz) {
-        files.put(file, clazz);
+    final void projectFile(String file, String xpath, String clazz) throws XPathExpressionException {
+        XPathExpression e = null;
+        if (xpath != null) {
+            e = XPathFactory.newInstance().newXPath().compile(xpath);
+        }
+
+        files.put(new Object[] { file, e }, clazz);
     }
     static Map<String,String> nbprojectTypes() {
         Map<String,String> map = new HashMap<String, String>();
@@ -237,7 +273,9 @@ public final class FeatureInfo {
         Map<String,String> map = new HashMap<String, String>();
 
         for (FeatureInfo info : FeatureManager.features()) {
-            map.putAll(info.files);
+            for (Map.Entry<Object[], String> e : info.files.entrySet()) {
+                map.put((String)(e.getKey()[0]), e.getValue());
+            }
         }
         return map;
     }
