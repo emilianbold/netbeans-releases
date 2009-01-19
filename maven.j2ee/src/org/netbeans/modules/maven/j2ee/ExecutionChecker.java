@@ -38,10 +38,13 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -53,6 +56,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -80,6 +84,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
 
+    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+
+
     ExecutionChecker(Project prj) {
         project = prj;
     }
@@ -87,6 +94,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                //dump the nb java support's timestamp fil in output directory..
+                touchCoSTimeStamp(config, System.currentTimeMillis());
+            }
             String moduleUri = config.getProperties().getProperty(MODULEURI);
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
@@ -190,6 +201,32 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
         return true;
     }
+
+    private boolean touchCoSTimeStamp(RunConfig rc, long stamp) {
+        if (rc.getProject() == null) {
+            return false;
+        }
+        Build build = rc.getMavenProject().getBuild();
+        if (build == null || build.getOutputDirectory() == null) {
+            return false;
+        }
+        File fl = new File(build.getOutputDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        if (!fl.exists()) {
+            //the project was not built
+            return false;
+        }
+        File check = new File(fl, NB_COS);
+        if (!check.exists()) {
+            try {
+                return check.createNewFile();
+            } catch (IOException ex) {
+                return false;
+            }
+        }
+        return check.setLastModified(stamp);
+    }
+
 
     private static class DLogger implements Deployment.Logger {
 
