@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -104,7 +104,7 @@ public final class RepositoryUtils {
             System.err.println(index + ":getting key " + key);
             Persistent out = repository.get(key);
             time = System.currentTimeMillis() - time;
-            System.err.println(index + ":got in " + time + "ms the key " + key);
+            System.err.println(index + ":got in " + time + "ms the key " + key + (out == null ? " - NULL":""));
             return out;
         }
         return repository.get(key);
