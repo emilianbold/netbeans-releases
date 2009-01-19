@@ -333,7 +333,7 @@ public class AstUtilities {
             for (Object object : classNode.getProperties()) {
                 PropertyNode property = (PropertyNode) object;
                 if (property.getLineNumber() >= 0) {
-                    children.add(property);
+                    //children.add(property);
 
                     FieldNode field = property.getField();
                     String name = field.getName();
