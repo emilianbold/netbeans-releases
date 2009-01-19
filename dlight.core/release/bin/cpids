@@ -1,0 +1,8 @@
+#!/bin/sh
+
+ownpid=$$
+PS=/bin/ps
+GREP=/bin/grep
+SED=/bin/sed
+
+${PS} -a -o ppid,pid | ${GREP} -v ${ownpid} | ${GREP} "^ *$1" | ${SED} -e "s/ *$1 *//"
