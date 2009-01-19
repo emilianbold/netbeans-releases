@@ -160,14 +160,52 @@ bool NbLauncher::initBaseNames() {
     return true;
 }
 
-void NbLauncher::addCluster(const char *cl) {
-    string cluster = (baseDir + '\\' + cl);
-    if (dirExists(cluster.c_str())) {
+void NbLauncher::addCluster(const char *cluster) {
+
+    class SetCurDir {
+    public:
+        SetCurDir(const char *dir) {
+            oldCurDir[0] = '\0';
+            DWORD rc = GetCurrentDirectory(MAX_PATH, oldCurDir);
+            if (rc == 0) {
+                logErr(true, false, "Failed to get current directory");
+                return;
+            }
+            if (rc > MAX_PATH) {
+                logMsg("Failed to get current directory, buffer is too small.");
+                return;
+            }
+            if (!SetCurrentDirectory(dir)) {
+                logErr(true, true, "Failed to set current directory to \"%s\"", dir);
+                oldCurDir[0] = '\0';
+            }
+        }
+
+        ~SetCurDir() {
+            if (oldCurDir[0]) {
+                if (!SetCurrentDirectory(oldCurDir)) {
+                    logErr(true, true, "Failed to set current directory to \"%s\"", oldCurDir);
+                }
+            }
+        }
+    private:
+        char oldCurDir[MAX_PATH];
+    };
+
+    logMsg("addCluster: %s", cluster);
+    SetCurDir setCurDir(baseDir.c_str());
+    char clusterPath[MAX_PATH + 1] = {0};
+    strncpy(clusterPath, cluster, MAX_PATH);
+    if (!normalizePath(clusterPath, MAX_PATH)) {
+        logMsg("Invalid cluster path: %s", cluster);
+        return;
+    }
+    if (dirExists(clusterPath)) {
         if (!clusters.empty()) {
             clusters += ';';
         }
-        logMsg("Adding cluster %s", cluster.c_str());
-        clusters += cluster;
+        logMsg("Adding cluster %s", clusterPath);
+        clusters += clusterPath;
     }
 }
 
@@ -246,7 +284,7 @@ bool NbLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
             strncpy(tmp, argv[++i], MAX_PATH);
-            if (!normalizePath(tmp)) {
+            if (!normalizePath(tmp, MAX_PATH)) {
                 logErr(false, true, "User directory path \"%s\" is not valid.", argv[i]);
                 return false;
             }
