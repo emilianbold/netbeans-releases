@@ -260,7 +260,7 @@ public class CsmKindUtilities {
         }
     }
     
-    public static boolean isEnumerator(CsmObject obj) {
+    public static boolean isEnumerator(Object obj) {
         if (obj instanceof CsmEnumerator) {
             return true;
         } else {
@@ -400,7 +400,7 @@ public class CsmKindUtilities {
         }
     } 
 
-    public static boolean isNamespace(CsmObject obj) {
+    public static boolean isNamespace(Object obj) {
         if (obj instanceof CsmNamespace) {
             return true;
         } else {
