@@ -138,7 +138,7 @@ public final class CompleteElementHandler {
                 .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
 
         fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getMethods(source.getName(), typeNode.getName(), prefix, anchor), result);
+                .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly), result);
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
