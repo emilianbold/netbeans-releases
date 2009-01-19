@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -81,7 +80,6 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    @SuppressWarnings("unchecked")
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
 
         super(ast, file);
