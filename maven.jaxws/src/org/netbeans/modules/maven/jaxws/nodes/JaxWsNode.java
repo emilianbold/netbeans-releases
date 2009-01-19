@@ -585,7 +585,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         if (service.getLocalWsdl() != null) {
             // remove execution from pom file
             final FileObject wsdlFileObject = getLocalWsdl();
-            if (project != null) {
+            if (wsdlFileObject != null) {
                 ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
@@ -616,11 +616,13 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 
     private FileObject getLocalWsdl() {
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
-        FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
-        if (localWsdlocalFolder!=null) {
-            String relativePath = service.getLocalWsdl();
-            if (relativePath != null) {
-                return localWsdlocalFolder.getFileObject(relativePath);
+        if (jaxWsSupport != null) {
+            FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+            if (localWsdlocalFolder!=null) {
+                String relativePath = service.getLocalWsdl();
+                if (relativePath != null) {
+                    return localWsdlocalFolder.getFileObject(relativePath);
+                }
             }
         }
         return null;
