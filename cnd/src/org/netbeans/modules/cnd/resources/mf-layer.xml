@@ -1178,7 +1178,7 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance">
+                    <file name="org-netbeans-modules-cnd-actions-OpenWithQtLinguistAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="sep-1.instance">

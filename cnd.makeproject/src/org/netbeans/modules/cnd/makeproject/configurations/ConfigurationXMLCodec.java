@@ -170,7 +170,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else if (atts.getValue(index).equals("4")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_APPLICATION;
             } else if (atts.getValue(index).equals("5")) { // NOI18N
-                confType = MakeConfiguration.TYPE_QT_LIBRARY;
+                confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
+            } else if (atts.getValue(index).equals("6")) { // NOI18N
+                confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
         } else if (element.equals(NEO_CONF_ELEMENT)) {
