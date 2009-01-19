@@ -66,7 +66,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -259,10 +258,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final String serviceName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
-                        org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
+                        org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                WSUtils.isEJB(project) ?
+                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                    MavenModelUtils.addJaxWSPlugin(model);
                         MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
-                        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-                        if (provider != null) { // expecting web project
+                        if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
@@ -291,7 +292,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final WsdlPort wsdlPort = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
 
                 try {
-                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, "WEB-INF/wsdl/"+relativePath); //NOI18N
+                    String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
+                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
                     DataObject targetDo = DataObject.find(targetFile);
                     if (targetDo != null) {
                         SaveCookie save = targetDo.getCookie(SaveCookie.class);
@@ -313,6 +315,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
     private FileObject generateJaxWSImplFromTemplate(FileObject pkg) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
+
+        if (WSUtils.isEJB(project)) { //EJB Web Service
+            FileObject templateParent = template.getParent();
+            template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
+        }
         
         DataObject dTemplate = DataObject.find(template);
 
@@ -392,13 +399,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
 
                     // add @Stateless annotation
-//                    if (projectType == EJB_PROJECT_TYPE) {//EJB project
-//                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
-//                        AnnotationTree StatelessAnnotation = make.Annotation(
-//                                make.QualIdent(StatelessAn),
-//                                Collections.<ExpressionTree>emptyList());
-//                        modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
-//                    }
+                    if (WSUtils.isEJB(project)) {
+                        TypeElement statelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+                        if (statelessAn != null) {
+                            AnnotationTree StatelessAnnotation = make.Annotation(
+                                    make.QualIdent(statelessAn),
+                                    Collections.<ExpressionTree>emptyList());
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                        }
+                    }
 
                     List<WsdlOperation> operations = port.getOperations();
                     for (WsdlOperation operation : operations) {
