@@ -200,7 +200,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
     private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
     private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
-    private List<CsmReference> lastMacroUsages;
+    private Reference<List<CsmReference>> lastMacroUsages = null;
     private ChangeListener fileBufferChangeListener = new ChangeListener() {
 
         public void stateChanged(ChangeEvent e) {
@@ -454,7 +454,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             if (invalidateCache) {
                 synchronized (tokStreamLock) {
-                    ref = null;
+                    tsRef = null;
                 }
                 APTDriver.getInstance().invalidateAPT(this.getBuffer());
             }
@@ -666,14 +666,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     private final Object tokStreamLock = new Object();
-    private Reference<OffsetTokenStream> ref = new SoftReference<OffsetTokenStream>(null);
+    private Reference<OffsetTokenStream> tsRef = new SoftReference<OffsetTokenStream>(null);
 
     public TokenStream getTokenStream(int startOffset, int endOffset, boolean filtered) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
-                stream = ref != null ? ref.get() : null;
-                ref = new SoftReference<OffsetTokenStream>(null);
+                stream = tsRef != null ? tsRef.get() : null;
+                tsRef = new SoftReference<OffsetTokenStream>(null);
             }
             if (stream == null || stream.getStartOffset() > startOffset) {
                 if (stream == null) {
@@ -698,8 +698,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (ts instanceof OffsetTokenStream) {
             OffsetTokenStream offsTS = (OffsetTokenStream) ts;
             synchronized (tokStreamLock) {
-                if (ref != null && ref.get() == null) {
-                    ref = new SoftReference<OffsetTokenStream>(offsTS);
+                if (tsRef != null && tsRef.get() == null) {
+                    tsRef = new SoftReference<OffsetTokenStream>(offsTS);
 //                    System.err.println("caching stream finished on " + offsTS.getStartOffset());                    
                 }
             }
@@ -940,15 +940,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public List<CsmReference> getLastMacroUsages() {
-        List<CsmReference> res = lastMacroUsages;
-        if (res != null) {
-            return new ArrayList<CsmReference>(res);
-        }
-        return res;
+        Reference<List<CsmReference>> ref = lastMacroUsages;
+        return ref != null ? ref.get() : null;
     }
 
     public void setLastMacroUsages(List<CsmReference> res) {
-        lastMacroUsages = new ArrayList<CsmReference>(res);
+        lastMacroUsages = new WeakReference<List<CsmReference>>(Collections.unmodifiableList(res));
     }
 
     public long getLastParsedTime() {
