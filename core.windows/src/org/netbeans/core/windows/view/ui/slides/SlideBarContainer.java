@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -49,8 +50,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Window;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.core.windows.Constants;
@@ -97,6 +100,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         tabbedHandler.cancelRequestAttention (tc);
     }    
     
+    @Override
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         super.setTopComponents(tcs, selected);
     }
@@ -141,11 +145,22 @@ public final class SlideBarContainer extends AbstractModeContainer {
     protected void updateTitle(String title) {
         // XXX - we have no title?
     }
+
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+
+    private static Border bottomBorder;
+    private static Border bottomEmptyBorder;
+    private static Border leftEmptyBorder;
+    private static Border leftBorder;
+    private static Border rightEmptyBorder;
+    private static Border rightBorder;
     
     /** Builds empty border around slide bar. Computes its correct size
      * based on given orientation
      */
     private static Border computeBorder(String orientation) {
+        if( isAqua )
+            return BorderFactory.createEmptyBorder();
         int bottom = 0, left = 0, right = 0, top = 0;
         if (Constants.LEFT.equals(orientation)) {
             top = 1; left = 1; bottom = 1; right = 2; 
@@ -166,12 +181,42 @@ public final class SlideBarContainer extends AbstractModeContainer {
     private static class VisualPanel extends JPanel implements ModeComponent, TopComponentDroppable {
     
         private final SlideBarContainer modeContainer;
+        private final String side;
+
+        static {
+            if( isAqua ) {
+                bottomBorder = BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderColor")), //NOI18N
+                                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(187,187,187) ) );
+
+                bottomEmptyBorder = BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
+
+                leftEmptyBorder = BorderFactory.createMatteBorder(0, 0, 0, 3, UIManager.getColor("NbSplitPane.background")); //NOI18N
+
+                leftBorder = BorderFactory.createCompoundBorder(
+                        BorderFactory.createCompoundBorder( leftEmptyBorder,
+                            BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("NbTabControl.borderColor"))),
+                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderShadowColor"))); //NOI18N
+
+                rightEmptyBorder = BorderFactory.createMatteBorder(0, 3, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
+
+                rightBorder = BorderFactory.createCompoundBorder(
+                        BorderFactory.createCompoundBorder( rightEmptyBorder,
+                            BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("NbTabControl.borderColor"))), //NOI18N
+                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderShadowColor"))); //NOI18N
+            }
+        }
         
         public VisualPanel (SlideBarContainer modeContainer) {
             super(new BorderLayout());
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            side = modeContainer.getSlidingView().getSide();
+            if( isAqua ) {
+                setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+                setOpaque(true);
+            }
         }
         
         public ModeView getModeView() {
@@ -215,6 +260,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         }
         // TopComponentDroppable<<
 
+        @Override
         public Dimension getMinimumSize() {
             if (modeContainer.getTopComponents().length == 0) {
                 // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
@@ -226,11 +272,44 @@ public final class SlideBarContainer extends AbstractModeContainer {
                 }
                 return new Dimension(1,1);
             }
-            Dimension retValue;
-            retValue = super.getMinimumSize();
-            return retValue;
+            return super.getMinimumSize();
         }
         
+        @Override
+        public Dimension getPreferredSize() {
+            if( isAqua && modeContainer.getTopComponents().length == 0) {
+                return getMinimumSize();
+            }
+            return super.getPreferredSize();
+        }
+
+        @Override
+        public Border getBorder() {
+            if( !isAqua || null == modeContainer )
+                return super.getBorder();
+
+            Border result;
+            if( Constants.BOTTOM.equals(side) ) {
+                if( modeContainer.getTopComponents().length == 0 )
+                    result = bottomEmptyBorder;
+                else
+                    result = bottomBorder;
+            } else if( Constants.RIGHT.equals(side) ) {
+                if( modeContainer.getTopComponents().length == 0 )
+                    result = rightEmptyBorder;
+                else
+                    result = rightBorder;
+            } else if( Constants.LEFT.equals(side) ) {
+                if( modeContainer.getTopComponents().length == 0 )
+                    result = leftEmptyBorder;
+                else
+                    result = leftBorder;
+            } else {
+                result = BorderFactory.createEmptyBorder();
+            }
+
+            return result;
+        }
     } // End of VisualPanel
     
 }
