@@ -61,7 +61,7 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class AddIndexAction extends BaseAction {
-    private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class .getName());
+    private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class.getName());
 
     public String getName() {
         return bundle().getString("AddIndex"); // NOI18N

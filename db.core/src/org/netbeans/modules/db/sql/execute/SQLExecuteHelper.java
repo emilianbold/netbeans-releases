@@ -53,7 +53,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Support class for executing SQL statements.
@@ -65,7 +65,7 @@ public final class SQLExecuteHelper {
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private static final int DEFAULT_PAGE_SIZE = 20;
-    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
+    private static final FileObject USERDIR = FileUtil.getConfigRoot();
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution

@@ -46,13 +46,13 @@ import org.netbeans.modules.vmd.api.palette.PaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.palette.wizard.AddToPaletteWizardAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.util.actions.SystemAction;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -80,9 +80,9 @@ public class MidpPaletteProvider implements PaletteProvider {
         }
         
         try {
-            FileObject paletteFolder = Repository.getDefault().getDefaultFileSystem().findResource(projectType + "/palette"); // NOI18N
+            FileObject paletteFolder = FileUtil.getConfigFile(projectType + "/palette"); // NOI18N
             if (paletteFolder == null) {
-                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+                FileObject root = FileUtil.getConfigRoot();
                 assert root != null;
                 FileObject projectFolder = root.getFileObject(projectType);
                 if (projectFolder == null) {

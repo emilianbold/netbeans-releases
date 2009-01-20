@@ -80,6 +80,7 @@ public class RepositoryTestHid extends TestBaseHid {
     
     /** Test of getDefaultFileSystem method, of class org.openide.filesystems.Repository. */
     public void testGetDefaultFileSystem() {
+        @SuppressWarnings("deprecation")
         FileSystem retFs = repo.getDefaultFileSystem();
         fsAssert("Default file system should not be null", retFs != null);        
         fsAssert(defFs + " should be default file system", defFs.equals(retFs));

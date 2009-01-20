@@ -46,8 +46,8 @@ package org.netbeans.modules.cnd.api.model;
  * @author Vladimir Kvasihn
  */
 public interface CsmClassForwardDeclaration extends
-        CsmOffsetableDeclaration<CsmClassForwardDeclaration>,
-        CsmClassifier<CsmClassForwardDeclaration> {
+        CsmOffsetableDeclaration,
+        CsmClassifier {
 
     /** gets correspondent class */
     CsmClass getCsmClass();

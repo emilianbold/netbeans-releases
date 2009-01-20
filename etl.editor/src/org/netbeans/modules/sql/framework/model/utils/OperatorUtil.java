@@ -44,7 +44,7 @@ import org.netbeans.modules.sql.framework.model.impl.OperatorXmlInfoModelX;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoModel;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorXmlInfoModel;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -68,7 +68,7 @@ public class OperatorUtil {
 
 		org.openide.filesystems.FileObject fo=null;
 		try {
-			fo = Repository.getDefault().getDefaultFileSystem().findResource(folderName);
+			fo = FileUtil.getConfigFile(folderName);
 		} catch (Exception e) {
 
 		}

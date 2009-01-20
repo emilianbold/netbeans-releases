@@ -209,7 +209,7 @@ public class NameRule extends PythonAstRule {
     }
 
     private void addError(String name, PythonRuleContext context, String message, PythonTree node, List<Hint> result, List<HintFix> fixList) {
-        if (ignoredNames.length() > 0) {
+        if (name != null && ignoredNames.length() > 0) {
             for (String ignoredName : ignoredNames.split(",")) { // NOI18N
                 ignoredName = ignoredName.trim();
                 if (name.equals(ignoredName)) {

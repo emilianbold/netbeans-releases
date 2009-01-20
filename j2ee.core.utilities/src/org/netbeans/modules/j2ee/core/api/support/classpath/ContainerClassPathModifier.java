@@ -62,6 +62,7 @@ public interface ContainerClassPathModifier {
 
     public final String API_SERVLET = "servlet-api";
     public final String API_JSP = "jsp-api";
+    public final String API_J2EE = "j2ee-api";
 
 
     /**

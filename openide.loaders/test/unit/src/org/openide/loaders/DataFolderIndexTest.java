@@ -49,7 +49,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
@@ -85,12 +84,12 @@ public class DataFolderIndexTest extends NbTestCase {
         
         ERR = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
         
-        FileObject old = Repository.getDefault().getDefaultFileSystem().findResource("TestTemplates");
+        FileObject old = FileUtil.getConfigFile("TestTemplates");
         if (old != null) {
             old.delete();
         }
         
-        fo = Repository.getDefault().getDefaultFileSystem().getRoot().createFolder("TestTemplates");
+        fo = FileUtil.getConfigRoot().createFolder("TestTemplates");
         df = DataFolder.findFolder(fo);
         assertNotNull("DataFolder found for AA", df);
         

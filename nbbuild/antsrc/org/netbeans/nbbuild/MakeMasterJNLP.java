@@ -44,10 +44,13 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.jar.JarFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.FileResource;
 
 /** Generates JNLP files for signed versions of the module JAR files.
  *
@@ -55,13 +58,17 @@ import org.apache.tools.ant.types.FileSet;
  */
 public class MakeMasterJNLP extends Task {
     /** the files to work on */
-    private FileSet files;
+    private ResourceCollection files;
     
-    public FileSet createModules() 
+    public FileSet createModules()
     throws BuildException {
-        if (files != null) throw new BuildException("modules can be created just once");
-        files = new FileSet();
-        return files;
+        addConfigured(new FileSet());
+        return (FileSet) files;
+    }
+
+    public void addConfigured(ResourceCollection rc) throws BuildException {
+        if (files != null) throw new BuildException("modules can be specified just once");
+        files = rc;
     }
     
     private File target;
@@ -86,9 +93,10 @@ public class MakeMasterJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
-        for (String nm : files.getDirectoryScanner(getProject()).getIncludedFiles()) {
-            File jar = new File (files.getDir(getProject()), nm);
-            
+        for (Iterator fileIt = files.iterator(); fileIt.hasNext();) {
+            FileResource fr = (FileResource) fileIt.next();
+            File jar = fr.getFile();
+
             if (!jar.canRead()) {
                 throw new BuildException("Cannot read file: " + jar);
             }

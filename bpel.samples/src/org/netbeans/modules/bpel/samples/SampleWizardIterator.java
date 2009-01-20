@@ -50,7 +50,6 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.filesystems.Repository;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,7 +82,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     public Set<FileObject> instantiate() throws IOException {
       final Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
 
-      Repository.getDefault().getDefaultFileSystem().runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
+      FileUtil.runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
         public void run() throws IOException {
           File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJECT_DIR));
           dirF.mkdirs();

@@ -41,7 +41,7 @@ package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -76,7 +76,7 @@ public class ApplicationsNode extends AbstractNode {
     }
 
     private Node getIconDelegate() {
-        return DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
 
     private static class ApplicationsChildren extends Children.Keys<Node> {

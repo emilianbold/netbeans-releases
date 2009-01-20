@@ -43,7 +43,6 @@ import java.io.File;
 import org.netbeans.modules.python.api.PythonOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /** 
  * @author jean-yves Mengant
@@ -143,7 +142,7 @@ public class PythonDebugParameters {
   }
 
   public static File checkSettingsDirectory() {
-    FileObject netbeansRoot = Repository.getDefault().getDefaultFileSystem().getRoot();
+    FileObject netbeansRoot = FileUtil.getConfigRoot();
     File root = FileUtil.toFile(netbeansRoot);
     File nbPythonDebugHome = new File(root, _NBPYTHON_DEBUG_HOME_);
     if (nbPythonDebugHome.isDirectory()) {

@@ -44,7 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -63,7 +63,7 @@ public class Installer extends ModuleInstall {
         // Disable old importer module if present.
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(
+                final FileObject fo = FileUtil.getConfigFile(
                         "Modules/org-netbeans-modules-projectimport.xml"); // NOI18N
                 if (fo == null) {
                     return;

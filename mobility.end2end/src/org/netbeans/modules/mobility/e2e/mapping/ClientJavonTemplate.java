@@ -67,7 +67,6 @@ import org.netbeans.modules.mobility.javon.OutputFileFormatter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
@@ -149,8 +148,7 @@ public class ClientJavonTemplate extends JavonTemplate {
             Bindings bind = eng.getContext().getBindings(
                     ScriptContext.ENGINE_SCOPE);
 
-            FileObject template = Repository.getDefault()
-                    .getDefaultFileSystem().getRoot().getFileObject(
+            FileObject template = FileUtil.getConfigFile(
                             "Templates/Client/Client.java");
 
             OutputLogger.getInstance().log(

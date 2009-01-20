@@ -36,6 +36,11 @@
 *
 * Portions Copyrighted 2009 Sun Microsystems, Inc.
 """
+import sys
+import traceback
+import os
+import string
+import threading
 
 
 """ misc utility modules used by jpydbg stuff """
@@ -46,15 +51,11 @@ __author__= 'Jean-Yves Mengant'
 
 # $Source: /cvsroot/jpydbg/jpydebugforge/src/python/jpydbg/dbgutils.py,v $
 
-import sys
-import traceback
-import os
-import socket
-import string
-import threading
+class JpyDbgQuit(Exception):
+    """Jpydbg Exception to Give up on debugging"""
 
 
-class jpyutils :
+class JpyUtils :
 
     def __init__( self ):
         if ( os.name == 'java' ):
@@ -142,6 +143,12 @@ class jpyutils :
             return string.strip(toParse[:nextSpace]) , string.strip(toParse[nextSpace+1:])
 
 
+
+# common global instance
+jpyutils = JpyUtils()
+
+
+
 class PythonPathHandler:
     "store the python path in a text file for jpydebug usage"
     def __init__(self , pyPathFName):
@@ -179,98 +186,26 @@ _DEBUGLOG = _debugPath + "/jpydbg.log"
 class DebugLogger :
 
   def __init__( self  ) :
-      f = file( _DEBUGLOG ,"w") ;
-      f.close() # reset log on startup
+     self.lock = threading.Lock()
+     self._acquire_lock = self.lock.acquire
+     self._release_lock = self.lock.release
+     f = file( _DEBUGLOG ,"w")
+     f.close() # reset log on startup
 
   def debug( self , toWrite ) :
-      f = file( _DEBUGLOG ,"a+") ;
-      f.write( toWrite + '\n')
-      f.close()
+      self._acquire_lock()
+      try :
+          f = file( _DEBUGLOG ,"a+") ;
+          f.write( toWrite + '\n')
+          f.close()
+      finally :
+          self._release_lock()
 
 ###############################################################################
 # do a touch of jpydbg.log in same directory as jpydebug.py to get debug traces on
 ###############################################################################
-_debugLogger = None
+debugLogger = None
 if os.path.exists(_DEBUGLOG) :
-    _debugLogger = DebugLogger()
-    _debugLogger.debug("***** Debug Session Started ******")
+    debugLogger = DebugLogger()
+    debugLogger.debug("***** Debug Session Started ******")
 
-
-class NetworkSession:
-    """ handle network session for JpyDbg and Completion engine """
-
-    def __init__( self , connection ) :
-        self._connection = connection
-        self._lastBuffer = ''
-        self.lock = threading.Lock()
-        self._acquire_lock = self.lock.acquire
-        self._release_lock = self.lock.release
-
-    def _DBG( self , toWrite ):
-        if _debugLogger :
-            _debugLogger.debug(toWrite)
-
-    def populateToClient( self , bufferList ) :
-        """ populate back bufferList to client side """
-        self._DBG( "populateXmlToClient --> " + buffer )
-        self._connection.send( ''.join(bufferList) )
-
-    def populateXmlToClient( self , bufferList ) :
-        """ populate JpyDbg Xml buffer back """
-        mbuffer = '<JPY>'
-        for element in bufferList:
-            mbuffer = mbuffer + ' ' + str(element)
-        mbuffer = mbuffer + '</JPY>\n'
-        self._DBG( "populateToClient --> " + mbuffer )
-        self._connection.send( mbuffer )
-
-
-    def readNetBuffer( self ):
-        """ reading on network socket """
-        try:
-            if ( self._lastBuffer.find('\n') != -1 ):
-                return self._lastBuffer ; # buffer stills contains commands
-            networkData = self._connection.recv(1024)
-            if not networkData:  # capture network interuptions if any
-                return None
-            data = self._lastBuffer + networkData
-            return data
-        except socket.error, (errno,strerror):
-            print "recv interupted errno(%s) : %s" % ( errno , strerror )
-            return None
-
-
-    def _receiveCommand( self ):
-        """ receive a command back """
-        data = self.readNetBuffer() ;
-        # data reception from Ip
-        while ( data != None and data):
-            eocPos = data.find('\n')
-            nextPos = eocPos ;
-            while (  nextPos < len(data) and \
-                   ( data[nextPos] == '\n' or data[nextPos] == '\r') ): # ignore consecutive \n\r
-                nextPos = nextPos+1
-            if ( eocPos != -1 ): # full command received in buffer
-                self._lastBuffer = data[nextPos:] # cleanup received command from buffer
-                returned = data[:eocPos]
-                self._DBG( "<-- received Command " + returned )
-                if (returned[-1] == '\r'):
-                    return returned[:-1]
-                return returned
-            data = self.readNetBuffer() ;
-        # returning None on Ip Exception
-        return None
-
-    def receiveCommand( self ):
-        self._acquire_lock()
-        try :
-            returned = self._receiveCommand()
-        finally :
-            self._release_lock()
-        return returned
-
-
-    def close( self ):
-        """ close the associated ip session """
-        self._DBG( "**** DEBUGGER CONNECTION CLOSED ***" )
-        self._connection.close()

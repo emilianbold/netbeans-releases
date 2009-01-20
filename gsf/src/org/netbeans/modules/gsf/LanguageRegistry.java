@@ -74,9 +74,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -518,8 +516,7 @@ public class LanguageRegistry implements Iterable<Language> {
     private ConfigListener listener;
     private FileChangeListener weakListener;
     private void readSfs() {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f = sfs.findResource(FOLDER);
+        FileObject f = FileUtil.getConfigFile(FOLDER);
 
         if (f == null) {
             return;
@@ -561,7 +558,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
                 
                 // Try to obtain icon from (new) IDE location for icons per mime type:
-                FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime); // NOI18N
+                FileObject loaderMimeFile = FileUtil.getConfigFile("Loaders/" + mime); // NOI18N
 
                 if (loaderMimeFile != null) {
                     String iconBase = (String)loaderMimeFile.getAttribute(ICON_BASE);

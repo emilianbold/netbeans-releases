@@ -45,9 +45,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -57,10 +60,12 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -90,12 +95,12 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         this.cdo = cdo;
         this.ui = ui;
         actions = new Action[]{
-            new ShowForwardFunctionDeclarationsAction(),
-            new ShowMacroAction(),
-            new ShowIncludeAction(),
-            new ShowTypedefAction(),
-            new ShowVariableAction(),
-            new ShowUsingAction()
+            new SortByNameAction(),
+            new SortBySourceAction(),
+            new GroupByKindAction(),
+            new ExpandAllAction(),
+            null,
+            new FilterSubmenuAction(),
                               };
         root = new AbstractNode(new Children.Array()) {
             @Override
@@ -156,12 +161,16 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     private void update(final CsmFile csmFile) {
+        update(csmFile, false);
+    }
+
+    private void update(final CsmFile csmFile, boolean force) {
         try {
             if (busyListener != null) {
                 busyListener.busyStart();
             }
             synchronized(lock) {
-                if (fileModel.setFile(csmFile)){
+                if (fileModel.setFile(csmFile, force)){
                     final Children children = root.getChildren();
                     if (!Children.MUTEX.isReadAccess()){
                          Children.MUTEX.writeAccess(new Runnable(){
@@ -233,8 +242,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         CppEditorSupport support = getCppEditorSupport();
         if (support != null) {
             JEditorPane[] jEditorPanes = support.getOpenedPanes();
-            if (jEditorPanes == null)
+            if (jEditorPanes == null) {
                 return null;
+            }
             if (jEditorPanes.length >= 1) {
                 currentJEditorPane = jEditorPanes[0];
             }
@@ -286,24 +296,24 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     public void projectLoaded(CsmProject project) {
-	CsmFile file = getCsmFile();
-	if( file != null && project.equals(file.getProject()) ) {
-	    if( file.isParsed() ) {
-		fileParsedOrProjectLoaded(file); 
-	    }
-	}
+        CsmFile file = getCsmFile();
+        if( file != null && project.equals(file.getProject()) ) {
+            if( file.isParsed() ) {
+                fileParsedOrProjectLoaded(file);
+            }
+        }
     }    
     
     public void fileParsingFinished(CsmFile file) {
         if (file.equals(getCsmFile())) {
-	    fileParsedOrProjectLoaded(file);
+    	    fileParsedOrProjectLoaded(file);
         }
     }
     
     private void fileParsedOrProjectLoaded(CsmFile file) {
-	stopTimers();
-	update(file);
-	restartTimers();
+        stopTimers();
+        update(file);
+        restartTimers();
     }
     
     public void parserIdle() {
@@ -336,6 +346,23 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
 
+    private int storeSelection(){
+        if (ui != null) {
+            Node[] selection = ui.getExplorerManager().getSelectedNodes();
+            if (selection != null && selection.length == 1) {
+                Node selected = selection[0];
+                if (selected instanceof CppDeclarationNode) {
+                    return ((CppDeclarationNode) selected).getOffset();
+                }
+            }
+        }
+        return -1;
+    }
+
+    public CsmFileFilter getFilter(){
+        return fileModel.getFilter();
+    }
+
     private class ShowForwardFunctionDeclarationsAction extends AbstractAction implements Presenter.Popup {
         private JCheckBoxMenuItem menuItem;
         public ShowForwardFunctionDeclarationsAction() {
@@ -346,7 +373,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowForwardFunctionDeclarations(!fileModel.getFilter().isShowForwardFunctionDeclarations());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
@@ -365,7 +396,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowMacro(!fileModel.getFilter().isShowMacro());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
@@ -384,7 +419,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowInclude(!fileModel.getFilter().isShowInclude());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
@@ -403,7 +442,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowTypedef(!fileModel.getFilter().isShowTypedef());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
@@ -422,7 +465,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowVariable(!fileModel.getFilter().isShowVariable());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
@@ -440,12 +487,136 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
  
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowUsing(!fileModel.getFilter().isShowUsing());
+            int selection = storeSelection();
             update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
         }
 
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(fileModel.getFilter().isShowUsing());
             return menuItem;
+        }
+    }
+    private class SortByNameAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public SortByNameAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortByNameText")); // NOI18N
+            putValue(Action.SMALL_ICON,
+                    new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/sortAlpha.png"))); // NOI18N
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            //Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (fileModel.getFilter().getSortMode() != SortMode.Name) {
+                fileModel.getFilter().setSortMode(SortMode.Name);
+                int selection = storeSelection();
+                update(getCsmFile(), true);
+                if (selection >= 0) {
+                    setSelection(selection);
+                }
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().getSortMode()== SortMode.Name);
+            return menuItem;
+        }
+    }
+
+    private class SortBySourceAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public SortBySourceAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortBySourceText")); // NOI18N
+            putValue(Action.SMALL_ICON, 
+                    new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/sortPosition.png"))); // NOI18N
+            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            //Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (fileModel.getFilter().getSortMode() != SortMode.Offset) {
+                fileModel.getFilter().setSortMode(SortMode.Offset);
+                int selection = storeSelection();
+                update(getCsmFile(), true);
+                if (selection >= 0) {
+                    setSelection(selection);
+                }
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().getSortMode() == SortMode.Offset);
+            return menuItem;
+        }
+    }
+
+    private class GroupByKindAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public GroupByKindAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "GroupByKindText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setGroupByKind(!fileModel.getFilter().isGroupByKind());
+            int selection = storeSelection();
+            update(getCsmFile(), true);
+            if (selection >= 0) {
+                setSelection(selection);
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isGroupByKind());
+            return menuItem;
+        }
+    }
+
+    private class ExpandAllAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ExpandAllAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ExpandAll")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setExpandAll(!fileModel.getFilter().isExpandAll());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isExpandAll());
+            return menuItem;
+        }
+    }
+
+    private class FilterSubmenuAction extends AbstractAction implements Presenter.Popup {
+
+        public FilterSubmenuAction() {
+        }
+
+        public void actionPerformed(ActionEvent ev) {
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return createSubmenu();
+        }
+
+        private JMenuItem createSubmenu () {
+            JMenuItem menu = new JMenu(NbBundle.getMessage(NavigatorModel.class, "FilterSubmenu")); //NOI18N
+            menu.add(new ShowForwardFunctionDeclarationsAction().getPopupPresenter());
+            menu.add(new ShowMacroAction().getPopupPresenter());
+            menu.add(new ShowIncludeAction().getPopupPresenter());
+            menu.add(new ShowTypedefAction().getPopupPresenter());
+            menu.add(new ShowVariableAction().getPopupPresenter());
+            menu.add(new ShowUsingAction().getPopupPresenter());
+            return menu;
         }
     }
 }

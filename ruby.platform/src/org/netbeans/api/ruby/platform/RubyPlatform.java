@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;
@@ -802,7 +802,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.2");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.4");
             }
         };
         if (!EventQueue.isDispatchThread()) {

@@ -48,11 +48,58 @@ made subject to such option by the copyright holder.
     <target name="taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${harness.file}"/>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
+                 classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
     </target>
 
-    <target name="common-init" depends="taskdefs">
+    <target name="-convert-old-project" unless="cluster.path.evaluated">
+        <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
+
+        <pathconvert property="old.project.update.tracking">
+            <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
+        </pathconvert>
+
+        <selector id="old.project.included.files">
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                <param name="excludeModules" value="${disabled.modules}"/>
+                <!-- XXX inc/exc clusters -->
+                <param name="includeClusters" value="${enabled.clusters}"/>
+                <param name="excludeClusters" value="${disabled.clusters}"/>
+                <param name="updateTrackingFiles" value="${old.project.update.tracking}"/>
+            </custom>
+        </selector>
+
+        <pathconvert property="old.project.clusters.duplicates" pathsep="&#10;">
+            <fileset dir="${netbeans.dest.dir}">
+                <selector refid="old.project.included.files"/>
+            </fileset>
+            <chainedmapper>
+                <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+                <filtermapper>
+                    <linecontainsregexp negate="true">
+                        <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
+                    </linecontainsregexp>
+                </filtermapper>
+            </chainedmapper>
+        </pathconvert>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <mkdir dir="${basedir}/build"/>
+        <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
+
+        <pathconvert property="cluster.path.evaluated">
+            <union id="old.project.clusters"> <!-- union removes duplicates -->
+                <files includesfile="${old.project.clusters.duplicates.file}"/>
+            </union>
+        </pathconvert>
+    </target>
+
+    <target name="common-init" depends="taskdefs,-convert-old-project">
         <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+        <condition property="cluster.path.basedir" value="${suite.dir}" else="${basedir}">
+            <isset property="suite.dir"/>
+        </condition>
+        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id" basedir="${cluster.path.basedir}"/>
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">
@@ -152,9 +199,9 @@ made subject to such option by the copyright holder.
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <!-- As a fallback for old platforms which do not include the right modules: -->
-            <fileset dir="${netbeans.dest.dir}">
-                <include name="*/modules/ext/junit-*.jar"/>
-            </fileset>
+            <pathfileset include="modules/ext/junit-*.jar">
+                <path refid="cluster.path.id"/>
+            </pathfileset>
             <fileset dir="${netbeans.home}/..">
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
@@ -201,20 +248,27 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="netbeans">
-        <ant antfile="${harness.dir}/run.xml" target="run"/>
+        <ant antfile="${harness.dir}/run.xml" target="run">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="profile" depends="netbeans,-jdk-presetdef-nbprofiledirect">
-        <ant antfile="${harness.dir}/run.xml" target="profile"/>
+        <ant antfile="${harness.dir}/run.xml" target="profile">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="debug" depends="netbeans,-jdk-presetdef-nbjpdastart">
-        <ant antfile="${harness.dir}/run.xml" target="debug"/>
+        <ant antfile="${harness.dir}/run.xml" target="debug">
+            <reference refid="cluster.path.id"/>
+        </ant>
     </target>
 
     <target name="reload" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <property name="run.args" value='--reload "${cluster}/${module.jar}"'/>
+            <reference refid="cluster.path.id"/>
         </ant>
     </target>
 

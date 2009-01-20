@@ -63,7 +63,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -160,7 +159,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
             targetFolder = FileUtil.createFolder(targetFolder, packageName);
         }
         
-        final FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/MIDP/E2EWebApplication.wsclient"); // NOI18N
+        final FileObject tempFO = FileUtil.getConfigFile("Templates/MIDP/E2EWebApplication.wsclient"); // NOI18N
         final DataObject template = DataObject.find(tempFO);
         final E2EDataObject e2eDO = (E2EDataObject) template.createFromTemplate(
                 (DataFolder)DataObject.find(targetFolder),

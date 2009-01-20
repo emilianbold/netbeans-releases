@@ -79,22 +79,22 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsComponentFactory;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChain;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChains;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsComponentFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandler;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChain;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChains;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerClass;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.DefinitionsBindings;
+import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerName;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -106,7 +106,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -172,8 +171,7 @@ public class ClientHandlerButtonListener implements ActionListener {
             final FileObject bindingHandlerFO = FileUtil.createData(bindingsFolder, bindingsHandlerFile);
             //if bindingsModel is null, create it
             if (bindingsModel == null) {
-                InputStream is = Repository.getDefault().getDefaultFileSystem().
-                        findResource("jax-ws/default-binding-handler.xml").getInputStream();
+                InputStream is = FileUtil.getConfigFile("jax-ws/default-binding-handler.xml").getInputStream();
                 final String bindingsContent = readResource(is); //NOI18N
                 is.close();
 

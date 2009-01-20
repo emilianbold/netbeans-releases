@@ -49,11 +49,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +82,7 @@ public class UserConfigurationTemplatesProvider implements ProjectConfigurationF
 
     public List<Descriptor> getChildren() {
         ArrayList<Descriptor> a = new ArrayList();
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(CFG_TEMPLATES_PATH);
+        FileObject root = FileUtil.getConfigFile(CFG_TEMPLATES_PATH);
         if (root != null) {
             for (final FileObject fo : root.getChildren()) {
                 if (CFG_EXT.equals(fo.getExt())) {

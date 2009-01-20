@@ -414,7 +414,11 @@ public class Outline extends ETable {
                 if (obj2 == null) {
                     return 1;
                 }
-                if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
+                // check nested comparator
+                if (getNestedComparator () != null) {
+                    int res = getNestedComparator ().compare (obj1, obj2);
+                    return ascending ? res : -res;
+                } else if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
                     Comparable c1 = (Comparable) obj1;
                     return ascending ? c1.compareTo(obj2) : - c1.compareTo(obj2);
                 }

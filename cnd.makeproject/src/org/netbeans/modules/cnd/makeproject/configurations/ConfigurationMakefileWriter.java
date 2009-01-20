@@ -597,7 +597,9 @@ public class ConfigurationMakefileWriter {
     private String getOutput(MakeConfiguration conf) {
         if (conf.isLinkerConfiguration()) {
             String output = conf.getLinkerConfiguration().getOutputValue();
-            if (conf.isApplicationConfiguration() && conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+            if (conf.isApplicationConfiguration() &&
+                    conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
+                    !output.endsWith(".exe")) { // NOI18N
                 output += ".exe"; // NOI18N
             }
             return output;

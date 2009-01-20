@@ -53,7 +53,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelperTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -126,7 +125,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
 
     public void testCorrectableInvalidProject() throws Exception { // #143966
         clearWorkDir();
-        TestFileUtils.writeFile(Repository.getDefault().getDefaultFileSystem().getRoot(), "ProjectXMLCatalog/foo/1.xsd",
+        TestFileUtils.writeFile(FileUtil.getConfigRoot(), "ProjectXMLCatalog/foo/1.xsd",
                 "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'\n" +
                 "            targetNamespace='http://www.netbeans.org/ns/foo/1'\n" +
                 "            xmlns='http://www.netbeans.org/ns/foo/1'\n" +
@@ -141,7 +140,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
                 "  </xsd:complexType>\n" +
                 " </xsd:element>\n" +
                 "</xsd:schema>");
-        TestFileUtils.writeFile(Repository.getDefault().getDefaultFileSystem().getRoot(), "ProjectXMLCatalog/foo/2.xsd",
+        TestFileUtils.writeFile(FileUtil.getConfigRoot(), "ProjectXMLCatalog/foo/2.xsd",
                 "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'\n" +
                 "            targetNamespace='http://www.netbeans.org/ns/foo/2'\n" +
                 "            xmlns='http://www.netbeans.org/ns/foo/2'\n" +

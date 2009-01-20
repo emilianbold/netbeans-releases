@@ -5,7 +5,6 @@
 package org.netbeans.modules.python.editor.wizards.pypackage;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -19,7 +18,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -74,9 +72,7 @@ public final class PythonPackageWizardIterator implements WizardDescriptor.Insta
 
     public Set instantiate() throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
-        FileObject template =
-                Repository.getDefault().getDefaultFileSystem().findResource(
-                "Templates/Python/_init.py"); // NOI18N
+        FileObject template = FileUtil.getConfigFile("Templates/Python/_init.py"); // NOI18N
         FileObject dir = Templates.getTargetFolder(wizard);
         String targetName = Templates.getTargetName(wizard);
 

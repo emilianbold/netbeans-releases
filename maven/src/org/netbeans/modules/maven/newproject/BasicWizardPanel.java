@@ -63,15 +63,21 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
 
     private final String[] eeLevels;
     private final Archetype[] archs;
+    private final boolean isFinish;
     
     /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(String[] eeLevels, Archetype[] archs) {
+    public BasicWizardPanel(String[] eeLevels, Archetype[] archs, boolean isFinish) {
         this.archs = archs;
         this.eeLevels = eeLevels;
+        this.isFinish = isFinish;
     }
 
     public BasicWizardPanel() {
-        this(new String[0], null);
+        this(new String[0], null, true);
+    }
+
+    public BasicWizardPanel(boolean isFinish) {
+        this(new String[0], null, isFinish);
     }
     
     public Component getComponent() {
@@ -132,7 +138,7 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return isFinish;
     }
     
     public void validate() throws WizardValidationException {

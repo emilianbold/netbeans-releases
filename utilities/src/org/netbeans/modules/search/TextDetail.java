@@ -361,7 +361,7 @@ final class TextDetail {
         }
       
         /** Displays the matching string in a text editor. */
-        private void gotoDetail() {
+        void gotoDetail() {
             txtDetail.showDetail(TextDetail.DH_GOTO);
         }
 

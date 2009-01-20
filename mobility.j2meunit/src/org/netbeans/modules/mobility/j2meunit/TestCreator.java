@@ -85,7 +85,7 @@ import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -350,7 +350,7 @@ public class TestCreator {
     private DataObject loadTestTemplate(String templateID) {
         String path = NbBundle.getMessage(TestCreator.class, templateID);
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(path);
+            FileObject fo = FileUtil.getConfigFile(path);
             if (fo == null) {
                 System.out.println("Cannot find template.");
                 return null;

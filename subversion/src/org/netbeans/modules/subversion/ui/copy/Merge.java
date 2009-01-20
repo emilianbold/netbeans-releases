@@ -97,12 +97,12 @@ public class Merge extends CopyDialog implements ItemListener {
         mergeTypeSelected(((MergeType) panel.typeComboBox.getSelectedItem()));
     }            
     
-    SVNUrl getMergeStartUrl() {
-        return getSelectedType().getMergeStartUrl();
+    RepositoryFile getMergeStartRepositoryFile() {
+        return getSelectedType().getMergeStartRepositoryFile();
     }
 
-    SVNUrl getMergeEndUrl() {
-        return getSelectedType().getMergeEndUrl();
+    RepositoryFile getMergeEndRepositoryFile() {
+        return getSelectedType().getMergeEndRepositoryFile();
     }    
 
     SVNRevision getMergeStartRevision() {
@@ -233,9 +233,9 @@ public class Merge extends CopyDialog implements ItemListener {
         protected abstract JComboBox getEndUrlComboBox();
         protected abstract void setPreviewLabels();
 
-        public SVNUrl getMergeStartUrl() {
+        public RepositoryFile getMergeStartRepositoryFile() {
             try {
-                return mergeStartRepositoryPaths.getRepositoryFiles()[0].getFileUrl();
+                return mergeStartRepositoryPaths.getRepositoryFiles()[0];
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
@@ -244,9 +244,9 @@ public class Merge extends CopyDialog implements ItemListener {
             return null;
         }
 
-        public SVNUrl getMergeEndUrl() {
+        public RepositoryFile getMergeEndRepositoryFile() {
             try {
-                return mergeEndRepositoryPaths.getRepositoryFiles()[0].getFileUrl();
+                return mergeEndRepositoryPaths.getRepositoryFiles()[0];
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
@@ -427,9 +427,10 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         
-        public SVNUrl getMergeStartUrl() {
-            // in this case iths the same folder url
-            return getMergeEndUrl();
+        @Override
+        public RepositoryFile getMergeStartRepositoryFile() {
+            // in this case its the same folder url
+            return getMergeEndRepositoryFile();
         }
 
         public String getDisplayName() {
@@ -504,7 +505,8 @@ public class Merge extends CopyDialog implements ItemListener {
             return previewPanel;
         }
 
-        public SVNUrl getMergeStartUrl() {
+        @Override
+        public RepositoryFile getMergeStartRepositoryFile() {
             return null;
         }
 

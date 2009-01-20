@@ -1368,7 +1368,7 @@ public class AstRenderer {
         AST firstChild = ast.getFirstChild();
         if (firstChild != null) {
             if (firstChild.getType() == CPPTokenTypes.ELLIPSIS) {
-                ParameterImpl parameter = new ParameterImpl(ast.getFirstChild(), file, null, "...", scope1); // NOI18N
+                ParameterEllipsisImpl parameter = new ParameterEllipsisImpl(ast.getFirstChild(), file, null, scope1); // NOI18N
                 result.add(parameter);
                 return result;
             }
@@ -1388,7 +1388,12 @@ public class AstRenderer {
             @Override
             protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
                 type = TemplateUtils.checkTemplateType(type, scope1);
-                ParameterImpl parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+                ParameterImpl parameter;
+                if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {
+                    parameter = new ParameterEllipsisImpl(offsetAst, file, type, scope1);
+                } else {
+                    parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+                }
                 result.add(parameter);
                 return parameter;
             }

@@ -81,7 +81,7 @@ public class SystemCatalogReader implements EntityResolver, CatalogReader, Seria
         
         // inspect system/xml/entities
         
-        FileObject root = Repository.getDefault ().getDefaultFileSystem().findResource("xml/entities");
+        FileObject root = FileUtil.getConfigFile("xml/entities");
         Enumeration en = root.getChildren(true);
         while (en.hasMoreElements()) {
             FileObject next = (FileObject) en.nextElement();

@@ -49,9 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -70,8 +68,7 @@ public class BuildExtension {
         FileObject projDir = proj.getProjectDirectory();
         FileObject jnlpBuildFile = projDir.getFileObject("nbproject/extendArchiveGF.xml"); // NOI18N
         if (jnlpBuildFile == null) {
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject templateFO = sfs.findResource("Templates/SunResources/extendArchiveGF.xml"); // NOI18N
+            FileObject templateFO = FileUtil.getConfigFile("Templates/SunResources/extendArchiveGF.xml"); // NOI18N
             if (templateFO != null) {
                 FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "extendArchiveGF"); // NOI18N
             }

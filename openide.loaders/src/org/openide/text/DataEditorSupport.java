@@ -109,7 +109,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     private final DataObject obj;
     /** listener to associated node's events */
     private NodeListener nodeL;
-    
+
     /** Editor support for a given data object. The file is taken from the
     * data object and is updated if the object moves or renames itself.
     * @param obj object to work with
@@ -596,6 +596,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
          */
         private transient boolean warned;
 
+        /** Atomic action used to ignore fileChange event from FileObject.refresh */
+        private transient FileSystem.AtomicAction action = null;
+
         /** Constructor.
         * @param obj this support should be associated with
         */
@@ -713,7 +716,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public Date getTime() {
             // #32777 - refresh file object and return always the actual time
-            getFileImpl().refresh(false);
+            action = new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    getFileImpl().refresh(false);
+                }
+            };
+            try {
+                getFileImpl().getFileSystem().runAtomicAction(action);
+            } catch (IOException ex) {
+                //Nothing to do here
+            }
+            
             return getFileImpl ().lastModified ();
         }
         
@@ -774,13 +787,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @param expected is the change expected
         * @param time of the change
         */
-        final void fileChanged (boolean expected, long time) {
-            ERR.fine("fileChanged: " + expected + " for " + fileObject); // NOI18N
-            if (expected) {
+        final void fileChanged (FileEvent fe) {
+            ERR.fine("fileChanged: " + fe.isExpected() + " for " + fileObject); // NOI18N
+            //#155680: We will ignore events generated from FileObject.refresh() in getTime().
+            if ((action != null) && fe.firedFrom(action)) {
+                return;
+            }
+            if (fe.isExpected()) {
                 // newValue = null means do not ask user whether to reload
                 firePropertyChange (PROP_TIME, null, null);
             } else {
-                firePropertyChange (PROP_TIME, null, new Date (time));
+                firePropertyChange (PROP_TIME, null, new Date (fe.getTime()));
             }
         }
 
@@ -944,7 +961,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 myEnv.fileRemoved(true);
                 fe.getFile().addFileChangeListener(this);
             } else {
-                myEnv.fileChanged (fe.isExpected (), fe.getTime ());
+                myEnv.fileChanged (fe);
             }
         }
         

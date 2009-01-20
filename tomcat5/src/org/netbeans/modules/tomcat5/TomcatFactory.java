@@ -63,9 +63,7 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -281,8 +279,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     private static void autoregisterTomcatInstance() {
         
-        Repository repository = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject serverInstanceDir = repository.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
         
         if (serverInstanceDir == null) {
             err.log(Level.INFO, "Cannot register the default Tomcat server.  The //J2EE//InstalledServers folder cannot be found."); // NOI18N

@@ -41,98 +41,46 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 
-import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.support.DebugScript;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
-public class DebugFileCommand extends DebugProjectCommand {
+public class DebugFileCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
     public static final String DISPLAY_NAME = DebugProjectCommand.DISPLAY_NAME;
-    private final DebugScript debugScript;
 
     public DebugFileCommand(PhpProject project) {
         super(project);
-        debugScript = new DebugScript(project);
     }
 
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationValid(false)) {
-            // property not set yet
-            return;
-        }
-        if (isScriptSelected()) {
-            debugScript.invokeAction(context);
+    public void invokeAction(final Lookup context) {
+        if (isTestFile(context)) {
+            // test
+            ConfigAction.get(ConfigAction.Type.TEST).debugFile(getProject(), context);
         } else {
-            // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-            final FileObject startFile = fileForContext(context);
-            final URL[] url = new URL[1];
-            try {
-                url[0] = getURLForDebug(context, true);
-            } catch (MalformedURLException ex) {
-                //TODO improve error handling
-                Exceptions.printStackTrace(ex);
+            // source
+            if (!isRunConfigurationValid(false)) {
+                // property not set yet
+                return;
             }
-
-            eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    try {
-                        showURLForDebug(url[0]);
-                    } catch (MalformedURLException ex) {
-                        //TODO improve error handling
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            };
-
-            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
-            if (jsDebuggingAvailable) {
-                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
-                if (!keepDebugging) {
-                    return;
-                }
-            }
-
-            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
-                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-                if (dbgStarter != null) {
-                    if (dbgStarter.isAlreadyRunning()) {
-                        if (CommandUtils.warnNoMoreDebugSession()) {
-                            dbgStarter.stop();
-                            invokeAction(context);
-                        }
-                    } else {
-                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
-                    }
-                }
-            } else {
-                runnable.run();
-            }
+            getConfigAction().debugFile(getProject(), context);
         }
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        FileObject file = fileForContext(context);
-        boolean enabled = file != null;
-        if (isScriptSelected()) {
-            enabled = isPhpFileSelected(file);
+    public boolean isActionEnabled(Lookup context) {
+        if (isTestFile(context)) {
+            // test
+            return ConfigAction.get(ConfigAction.Type.TEST).isDebugFileEnabled(getProject(), context);
         }
-        return enabled && XDebugStarterFactory.getInstance() != null;
+        // source
+        return getConfigAction().isDebugFileEnabled(getProject(), context);
     }
 
     @Override

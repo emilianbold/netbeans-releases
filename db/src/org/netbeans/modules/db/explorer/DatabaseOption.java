@@ -59,7 +59,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -240,7 +240,7 @@ public class DatabaseOption {
     }
     
     private void deleteAdaptorsFolder() {    
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Database"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Database"); //NOI18N
         try {
             if (fo != null)
                 fo.delete();

@@ -70,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -102,16 +103,6 @@ public class GrabTableAction extends BaseAction {
         return enabled;
     }
 
-    public void performActionXXX (Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    //perform(node);
-                }
-            }
-        );
-    }
-
     public void performAction(Node[] activatedNodes) {
         final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
 
@@ -127,13 +118,14 @@ public class GrabTableAction extends BaseAction {
             chooser.setDialogTitle(bundle().getString("GrabTableFileSaveDialogTitle")); //NOI18N
             chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
             chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                                      public boolean accept(File f) {
-                                          return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
-                                      }
-                                      public String getDescription() {
-                                          return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
-                                      }
-                                  });
+                public boolean accept(File f) {
+                  return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
+                }
+
+                public String getDescription() {
+                  return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
+                }
+            });
 
             java.awt.Component par = WindowManager.getDefault().getMainWindow();
             boolean noResult = true;
@@ -232,7 +224,7 @@ public class GrabTableAction extends BaseAction {
                             }
                         );
                     } catch (MetadataModelException e) {
-                        // TODO report exception
+                        Exceptions.printStackTrace(e);
                     }
                 }
             });

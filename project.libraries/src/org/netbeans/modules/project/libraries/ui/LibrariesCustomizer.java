@@ -80,7 +80,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -691,7 +691,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
 
         private Node delegate() {
-            return DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
         public Image getIcon(int type) {
@@ -737,7 +737,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         public CategoryNode(LibraryTypeProvider provider, LibraryStorageArea area) {
             super(new CategoryChildren(provider, area), Lookups.fixed(provider, area));
             this.provider = provider;       
-            this.iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            this.iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
         }
         
         public String getName () {

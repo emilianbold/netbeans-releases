@@ -39,94 +39,20 @@
 
 package org.netbeans.modules.php.project.util;
 
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.util.Utilities;
-
 /**
  * @author Tomas Mysik
  */
-public final class PhpInterpreter {
-    private static final Logger LOGGER = Logger.getLogger(PhpInterpreter.class.getName());
-    private static final String[] NO_PARAMETERS = new String[0];
-
-    private final String interpreter;
-    private final String[] parameters;
-    private final String fullCommand;
+public final class PhpInterpreter extends PhpProgram {
 
     /**
-     * Parse command which can be just binary or binary with parameters.
-     * As a parameter separator, "-" or "/" is used.
-     * @param command command to parse, can be <code>null</code>.
-     * @see #isValid()
+     * {@inheritDoc}
      */
     public PhpInterpreter(String command) {
-        if (command == null) {
-            // avoid NPE
-            command = ""; // NOI18N
-        }
-
-        // try to find interpreter (search for " -" or " /" after space)
-        String[] tokens = command.split(" * (?=\\-|/)", 2); // NOI18N
-        switch (tokens.length) {
-            case 1:
-                LOGGER.fine("Only interpreter given (no parameters)");
-
-                interpreter = tokens[0].trim();
-                parameters = NO_PARAMETERS;
-                fullCommand = interpreter;
-                break;
-
-            default:
-                assert tokens.length > 1;
-                interpreter = tokens[0].trim();
-                parameters = Utilities.parseParameters(tokens[1].trim());
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Parameters parsed: %s => %s", tokens[1].trim(), Arrays.asList(parameters)));
-                }
-                fullCommand = command.trim();
-                break;
-        }
-    }
-
-    /**
-     * @return PHP interpreter, never <code>null</code>.
-     */
-    public String getInterpreter() {
-        return interpreter;
-    }
-
-    /**
-     * @return parameters, can be an empty array but never <code>null</code>.
-     */
-    public String[] getParameters() {
-        return parameters;
-    }
-
-    /**
-     * @return the full command, in the original form (just without leading and trailing whitespace).
-     */
-    public String getFullCommand() {
-        return fullCommand;
-    }
-
-    /**
-     * @return <code>true</code> if interpreter is set, <code>false</code> otherwise.
-     */
-    public boolean isValid() {
-        return interpreter.length() > 0;
+        super(command);
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(200);
-        sb.append(getClass().getName());
-        sb.append(" [interpreter: "); // NOI18N
-        sb.append(interpreter);
-        sb.append(", parameters: "); // NOI18N
-        sb.append(Arrays.asList(parameters));
-        sb.append("]"); // NOI18N
-        return sb.toString();
+    public boolean isValid() {
+        return super.isValid();
     }
 }

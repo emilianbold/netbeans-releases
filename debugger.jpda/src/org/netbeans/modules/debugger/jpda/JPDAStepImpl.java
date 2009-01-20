@@ -140,10 +140,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean[] setStoppedStateNoContinue = new boolean[] { false };
-        synchronized (((JPDADebuggerImpl) debugger).LOCK) {
-        // synchronize on debugger LOCK first so that it can not happen that we
-        // take locks in the oposite order
-        synchronized (tr) {
+        trImpl.accessLock.readLock().lock();
         try {
             ((JPDAThreadImpl) tr).waitUntilMethodInvokeDone();
             EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
@@ -197,8 +194,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         } catch (InternalExceptionWrapper ex) {
         } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (ObjectCollectedExceptionWrapper ex) {
-        }
-        }
+        } finally {
+            trImpl.accessLock.readLock().unlock();
         }
         if (setStoppedStateNoContinue[0]) {
             debuggerImpl.setStoppedStateNoContinue(trImpl.getThreadReference());
@@ -396,9 +393,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         boolean stepAdded = false;
         boolean[] setStoppedStateNoContinue = new boolean[] { false };
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
-        JPDAThreadImpl tr;
-        synchronized (debuggerImpl.LOCK) {
-            tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
+        JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
+        tr.accessLock.readLock().lock();
+        try {
             VirtualMachine vm = debuggerImpl.getVirtualMachine();
             if (vm == null) {
                 return false; // The session has finished
@@ -469,6 +466,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return false;
             }
+        } finally {
+            tr.accessLock.readLock().unlock();
         }
         if (stepAdded) {
             if (setStoppedStateNoContinue[0]) {
@@ -526,11 +525,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         JPDAThreadImpl t;
         if (er instanceof StepRequest) {
             StepRequest sr = (StepRequest) er;
-            t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(StepRequestWrapper.thread(sr));
+            t = ((JPDADebuggerImpl) debugger).getThread(StepRequestWrapper.thread(sr));
         } else {
             ThreadReference tr = (ThreadReference) EventRequestWrapper.getProperty(er, "thread"); // NOI18N
             if (tr != null) {
-                t = (JPDAThreadImpl) ((JPDADebuggerImpl) debugger).getThread(tr);
+                t = ((JPDADebuggerImpl) debugger).getThread(tr);
             } else {
                 t = null;
             }
@@ -586,117 +585,118 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
      */
     private boolean shouldNotStopHere(Event ev) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
-        synchronized (debuggerImpl.LOCK) {
-            // 2) init info about current state
-            LocatableEvent event = (LocatableEvent) ev;
-            //String className = event.location ().declaringType ().name ();
-            //JPDAThreadImpl ct = (JPDAThreadImpl) debuggerImpl.getCurrentThread();
-            try {
+        // 2) init info about current state
+        LocatableEvent event = (LocatableEvent) ev;
+        try {
             ThreadReference tr = LocatableEventWrapper.thread (event);
+            JPDAThreadImpl t = debuggerImpl.getThread (tr);
+            t.accessLock.readLock().lock();
             try {
-                // Synthetic method?
-                if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
-                    //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
-                    
-                    VirtualMachine vm = debuggerImpl.getVirtualMachine ();
-                    if (vm == null) {
-                        return false; // The session has finished
-                    }
-                    StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
-                        VirtualMachineWrapper.eventRequestManager(vm),
-                        tr,
-                        StepRequest.STEP_LINE,
-                        getDepth()
-                    );
-                    EventRequestWrapper.addCountFilter(stepRequest, 1);
-                    String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-                    for (int i = 0; i < exclusionPatterns.length; i++) {
-                        StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
-                    }
-                    debuggerImpl.getOperator ().register (stepRequest, this);
-                    EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
-                    try {
-                        EventRequestWrapper.enable (stepRequest);
-                        requestsToCancel.add(stepRequest);
-                    } catch (IllegalThreadStateException itsex) {
-                        // the thread named in the request has died.
-                        debuggerImpl.getOperator ().unregister (stepRequest);
-                    }
-                    return true;
-                }
-            } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
-                return false;
-            } catch (InvalidStackFrameExceptionWrapper e) {
-                ErrorManager.getDefault().notify(e);
-                return false;
-            } catch (IllegalThreadStateExceptionWrapper e) {
-                return false;
-            } catch (ObjectCollectedExceptionWrapper e) {
-                return false;
-            }
-            
-            // Not synthetic
-            JPDAThread t = debuggerImpl.getThread (tr);
-            if (debuggerImpl.stopHere(t)) {
-                //S ystem.out.println("/nStepAction.exec end - do not resume");
-                return false; // do not resume
-            }
-
-            // do not stop here -> start smart stepping!
-            VirtualMachine vm = debuggerImpl.getVirtualMachine ();
-            if (vm == null) {
-                return false; // The session has finished
-            }
-            int depth;
-            Map properties = session.lookupFirst(null, Map.class);
-            if (properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT)) {
-                depth = StepRequest.STEP_OUT;
-            } else {
-                depth = StepRequest.STEP_INTO;
-            }
-            StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
-                VirtualMachineWrapper.eventRequestManager(vm),
-                tr,
-                StepRequest.STEP_LINE,
-                depth
-            );
-            if (logger.isLoggable(Level.FINE)) {
                 try {
-                    logger.fine("Can not stop at " + ThreadReferenceWrapper.frame(tr, 0) + ", smart-stepping. Submitting step = " + stepRequest + "; depth = " + depth);
-                } catch (InternalExceptionWrapper ex) {
-                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
-                } catch (ObjectCollectedExceptionWrapper ex) {
-                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
-                } catch (IllegalThreadStateExceptionWrapper ex) {
-                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
-                } catch (IncompatibleThreadStateException ex) {
-                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    // Synthetic method?
+                    if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
+                        //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
+
+                        VirtualMachine vm = debuggerImpl.getVirtualMachine ();
+                        if (vm == null) {
+                            return false; // The session has finished
+                        }
+                        StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm),
+                            tr,
+                            StepRequest.STEP_LINE,
+                            getDepth()
+                        );
+                        EventRequestWrapper.addCountFilter(stepRequest, 1);
+                        String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                        for (int i = 0; i < exclusionPatterns.length; i++) {
+                            StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                        }
+                        debuggerImpl.getOperator ().register (stepRequest, this);
+                        EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
+                        try {
+                            EventRequestWrapper.enable (stepRequest);
+                            requestsToCancel.add(stepRequest);
+                        } catch (IllegalThreadStateException itsex) {
+                            // the thread named in the request has died.
+                            debuggerImpl.getOperator ().unregister (stepRequest);
+                        }
+                        return true;
+                    }
+                } catch (IncompatibleThreadStateException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return false;
+                } catch (InvalidStackFrameExceptionWrapper e) {
+                    ErrorManager.getDefault().notify(e);
+                    return false;
+                } catch (IllegalThreadStateExceptionWrapper e) {
+                    return false;
+                } catch (ObjectCollectedExceptionWrapper e) {
+                    return false;
                 }
-            }
-            String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-            for (int i = 0; i < exclusionPatterns.length; i++) {
-                StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
-                logger.finer("   add pattern: "+exclusionPatterns[i]);
-            }
-            
-            debuggerImpl.getOperator ().register (stepRequest, this);
-            EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
-            try {
-                EventRequestWrapper.enable (stepRequest);
-                requestsToCancel.add(stepRequest);
-            } catch (IllegalThreadStateException itsex) {
-                // the thread named in the request has died.
-                debuggerImpl.getOperator ().unregister (stepRequest);
+
+                // Not synthetic
+                if (debuggerImpl.stopHere(t)) {
+                    //S ystem.out.println("/nStepAction.exec end - do not resume");
+                    return false; // do not resume
+                }
+
+                // do not stop here -> start smart stepping!
+                VirtualMachine vm = debuggerImpl.getVirtualMachine ();
+                if (vm == null) {
+                    return false; // The session has finished
+                }
+                int depth;
+                Map properties = session.lookupFirst(null, Map.class);
+                if (properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT)) {
+                    depth = StepRequest.STEP_OUT;
+                } else {
+                    depth = StepRequest.STEP_INTO;
+                }
+                StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
+                    VirtualMachineWrapper.eventRequestManager(vm),
+                    tr,
+                    StepRequest.STEP_LINE,
+                    depth
+                );
+                if (logger.isLoggable(Level.FINE)) {
+                    try {
+                        logger.fine("Can not stop at " + ThreadReferenceWrapper.frame(tr, 0) + ", smart-stepping. Submitting step = " + stepRequest + "; depth = " + depth);
+                    } catch (InternalExceptionWrapper ex) {
+                        logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                        logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    } catch (IncompatibleThreadStateException ex) {
+                        logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                    }
+                }
+                String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                for (int i = 0; i < exclusionPatterns.length; i++) {
+                    StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                    logger.finer("   add pattern: "+exclusionPatterns[i]);
+                }
+
+                debuggerImpl.getOperator ().register (stepRequest, this);
+                EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
+                try {
+                    EventRequestWrapper.enable (stepRequest);
+                    requestsToCancel.add(stepRequest);
+                } catch (IllegalThreadStateException itsex) {
+                    // the thread named in the request has died.
+                    debuggerImpl.getOperator ().unregister (stepRequest);
+                }
+            } finally {
+                t.accessLock.readLock().unlock();
             }
             return true; // resume
-            } catch (InternalExceptionWrapper e) {
-                return false;
-            } catch (VMDisconnectedExceptionWrapper e) {
-                return false;
-            }
+        } catch (InternalExceptionWrapper e) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return false;
         }
     }
 

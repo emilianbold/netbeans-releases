@@ -55,6 +55,7 @@ import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -112,8 +113,7 @@ public final class Main extends Object {
       try {
           if (wantTheme) {
               //Put a couple things into UIDefaults for the plaf library to process if it wants
-               FileObject fo =
-                    Repository.getDefault().getDefaultFileSystem().findResource("themes.xml"); //NOI18N
+               FileObject fo = FileUtil.getConfigFile("themes.xml"); //NOI18N
                if (fo == null) {            
                     // File on SFS failed --> try to load from a jar from path
                     // /org/netbeans/core/startup/resources/themes.xml
@@ -150,7 +150,7 @@ public final class Main extends Object {
 
             StartLog.logStart ("Modules initialization"); // NOI18N
             try {
-                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());
+                moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
             } catch (IOException ioe) {
                 // System will be screwed up.
                 throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N

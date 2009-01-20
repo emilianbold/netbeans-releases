@@ -47,14 +47,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.server.ServerRegistry;
-import org.netbeans.spi.server.ServerInstanceProvider;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -78,8 +76,7 @@ public class MockWizardProvider implements ServerWizardProvider {
 
         Lookup.getDefault().lookup(ModuleInfo.class);
 
-        FileObject servers = Repository.getDefault().getDefaultFileSystem().getRoot()
-                .getFileObject(ServerRegistry.SERVERS_PATH);
+        FileObject servers = FileUtil.getConfigFile(ServerRegistry.SERVERS_PATH);
         FileObject testProvider = FileUtil.createData(servers, instanceName);
 
         testProvider.setAttribute("instanceOf", ServerWizardProvider.class.getName()); // NOI18N

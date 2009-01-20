@@ -57,8 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.core.windows.persistence.*;
 import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.*;
@@ -121,8 +120,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             Exceptions.attachLocalizedMessage(exc, "Cannot load window system persistent data, user directory content is broken. Resetting to default layout..."); //NOI18N
             Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, exc); // NOI18N
             // try to delete local winsys data and try once more
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject rootFolder = fs.getRoot().getFileObject(PersistenceManager.ROOT_LOCAL_FOLDER);
+            FileObject rootFolder = FileUtil.getConfigFile(PersistenceManager.ROOT_LOCAL_FOLDER);
             if (null != rootFolder) {
                 try {
                     rootFolder.delete();

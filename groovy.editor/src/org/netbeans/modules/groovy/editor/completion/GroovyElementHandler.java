@@ -81,7 +81,7 @@ public final class GroovyElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels) {
+            String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
 
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
@@ -111,7 +111,7 @@ public final class GroovyElementHandler {
 
         LOGGER.log(Level.FINEST, "Found this number of methods : {0} ", methods.size());
 
-        Map<MethodSignature, CompletionItem.JavaMethodItem> result = new HashMap<MethodSignature, CompletionItem.JavaMethodItem>();
+        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         for (IndexedMethod indexedMethod : methods) {
             LOGGER.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
 
@@ -130,9 +130,9 @@ public final class GroovyElementHandler {
                 sb.append(NbUtilities.stripPackage(string));
             }
 
-            // FIXME retrurn type
-            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), indexedMethod.getReturnType(),
-                    org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise));
+            // FIXME return type
+            result.put(getSignature(indexedMethod), CompletionItem.forJavaMethod(className, indexedMethod.getName(), sb.toString(), indexedMethod.getReturnType(),
+                    org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise, nameOnly));
         }
 
         return result;

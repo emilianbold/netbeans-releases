@@ -46,7 +46,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * Test for compilation unit creation.
@@ -75,8 +74,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         File fakeFile = new File(getWorkDir(), "Fake.java");
         FileObject fakeFO = FileUtil.createData(fakeFile);
 
-        FileObject rootFS = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject emptyJava = FileUtil.createData(rootFS, "Templates/Classes/Empty.java");
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         emptyJava.setAttribute("template", Boolean.TRUE);
         FileObject testSourceFO = FileUtil.createData(testFile);
         assertNotNull(testSourceFO);
@@ -159,8 +157,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "  }\n" +
             "}");
         
-        FileObject rootFS = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject emptyJava = FileUtil.createData(rootFS, "Templates/Classes/Empty.java");
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         emptyJava.setAttribute("template", Boolean.TRUE);
         FileObject testSourceFO = FileUtil.toFileObject(testFile);
         assertNotNull(testSourceFO);
@@ -248,8 +245,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "}\n"
         );
         
-        FileObject rootFS = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject emptyJava = FileUtil.createData(rootFS, "Templates/Classes/Empty.java");
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         emptyJava.setAttribute("template", Boolean.TRUE);
         FileObject testSourceFO = FileUtil.toFileObject(testFile);
         assertNotNull(testSourceFO);
@@ -338,8 +334,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "}\n"
         );
         
-        FileObject rootFS = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject emptyJava = FileUtil.createData(rootFS, "Templates/Classes/Empty.java");
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         emptyJava.setAttribute("template", Boolean.TRUE);
         FileObject testSourceFO = FileUtil.toFileObject(testFile);
         assertNotNull(testSourceFO);

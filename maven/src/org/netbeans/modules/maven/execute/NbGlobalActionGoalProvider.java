@@ -53,7 +53,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * user defined global definitions, to be found in the layers.
@@ -72,7 +72,7 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     }
     
     public InputStream getActionDefinitionStream() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(FILENAME);
+        FileObject fo = FileUtil.getConfigFile(FILENAME);
         lastTimeExists = fo != null;
         if (fo != null) {
             try {
@@ -123,7 +123,7 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     @Override
     protected boolean reloadStream() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(FILENAME);
+        FileObject fo = FileUtil.getConfigFile(FILENAME);
         boolean prevExists = lastTimeExists;
         lastTimeExists = fo != null;
         return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));

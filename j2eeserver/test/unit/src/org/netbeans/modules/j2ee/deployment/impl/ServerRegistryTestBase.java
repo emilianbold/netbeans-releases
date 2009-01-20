@@ -56,6 +56,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
@@ -121,7 +122,7 @@ public class ServerRegistryTestBase extends NbTestCase {
         mkdir("system/J2EE/InstalledServers");
         mkdir("system/J2EE/DeploymentPlugins");
         System.setProperty("SYSTEMDIR", new File(scratchF, "system").getAbsolutePath());
-        FileObject sfs = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject sfs = FileUtil.getConfigRoot();
         assertNotNull("no default FS", sfs);
         FileObject j2eeFolder = sfs.getFileObject("J2EE");
         assertNotNull("have J2EE", j2eeFolder);

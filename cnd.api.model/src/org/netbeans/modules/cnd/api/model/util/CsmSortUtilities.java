@@ -81,14 +81,6 @@ public class CsmSortUtilities {
     }
     
     /// match names
-        
-    public static boolean matchName(CharSequence name, CharSequence strPrefix) {
-	return matchName(name, strPrefix, false);
-    }
-    
-    public static boolean matchName(CharSequence name, CharSequence strPrefix, boolean match) {
-	return matchName(name, strPrefix, match, false);
-    }
     
     public static boolean matchName(CharSequence name_, CharSequence strPrefix_, boolean match, boolean caseSensitive) {
         int n1 = name_.length();
@@ -420,8 +412,8 @@ public class CsmSortUtilities {
     private static int compareFunctions(CsmFunction fun1, CsmFunction fun2, boolean sensitive) {
         int order = compareNames(fun1, fun2, sensitive);
         if (order == 0 ){
-            CsmParameter[] param1 = (CsmParameter[]) fun1.getParameters().toArray(new CsmParameter[0]);
-            CsmParameter[] param2 = (CsmParameter[]) fun2.getParameters().toArray(new CsmParameter[0]);
+            CsmParameter[] param1 = fun1.getParameters().toArray(new CsmParameter[0]);
+            CsmParameter[] param2 = fun2.getParameters().toArray(new CsmParameter[0]);
 
             int commonCnt = Math.min(param1.length, param2.length);
             for (int i = 0; i < commonCnt; i++) {

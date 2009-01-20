@@ -45,6 +45,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ThreadReference;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
@@ -89,7 +90,20 @@ public interface JPDAThread {
      * @since 2.16     */
     public static final String PROP_BREAKPOINT = "currentBreakpoint";
 
-    
+
+    /**
+     * Getter for the "read" lock under which it's guaranteed that the thread
+     * does not change it's suspended state.
+     *
+     * Multiple threads can acquire this "read" lock at the same time. But the
+     * thread state can be changed only under an internal "write" lock.
+     * Clients can use this lock while retrieving data to assure that the thread
+     * is not resumed in the mean time.
+     *
+     * @return The read access lock.
+     * @since 2.18
+     */
+    public Lock getReadAccessLock();
     
     /**
      * Getter for the name of thread property.

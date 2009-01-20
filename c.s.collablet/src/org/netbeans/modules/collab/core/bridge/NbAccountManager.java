@@ -126,7 +126,7 @@ public class NbAccountManager extends AccountManager implements LookupListener {
      *                        instance.
      */
     public Object addAccount(Account account) throws IOException {
-        DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot());
+        DataFolder root = DataFolder.findFolder(FileUtil.getConfigRoot());
         DataFolder folder = DataFolder.create(root, ACCOUNT_FOLDER);
 
         final String NAME = "Account"; // NOI18N
@@ -144,7 +144,7 @@ public class NbAccountManager extends AccountManager implements LookupListener {
      */
     public DataObject findAccountDataObject(Account account)
     throws IOException {
-        DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot());
+        DataFolder root = DataFolder.findFolder(FileUtil.getConfigRoot());
         DataFolder folder = DataFolder.create(root, ACCOUNT_FOLDER);
 
         // Find the InstanceDataObject with the matching account object

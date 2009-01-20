@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.editor.jspel.JSFBeanCache;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.DialogDisplayer;
@@ -92,7 +93,7 @@ public final class EntityClassCustomizer extends javax.swing.JPanel {
         this.entityClass = entityClass;
         this.target = target;
         targetFileObject = EntityClass.getFO(target);
-        hasModuleJsf = EntityClass.hasModuleJsf(target);
+        hasModuleJsf = JSFConfigUtilities.hasJsfFramework(targetFileObject);
         
         initComponents();
         Mnemonics.setLocalizedText(empty, bundle.getString("LBL_Empty" + entityClass.getName())); // NOI18N

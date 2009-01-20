@@ -60,7 +60,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -369,7 +368,7 @@ public class J2SEProjectGenerator {
             return;
         }
         
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Classes/Main.java" ); // NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile( "Templates/Classes/Main.java" ); // NOI18N
 
         if ( mainTemplate == null ) {
             return; // Don't know the template

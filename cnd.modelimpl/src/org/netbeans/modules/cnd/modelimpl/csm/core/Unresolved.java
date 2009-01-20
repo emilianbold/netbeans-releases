@@ -157,7 +157,7 @@ public final class Unresolved implements Disposable {
 	}
     }
     
-    public final class UnresolvedFile implements CsmFile {
+    public final class UnresolvedFile implements CsmFile, CsmIdentifiable {
 	
         private UnresolvedFile() {
         }

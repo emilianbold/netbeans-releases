@@ -87,7 +87,7 @@ implements java.net.URLStreamHandlerFactory {
     
     protected void setUp() throws Exception {
         
-        lfs = Repository.getDefault ().getDefaultFileSystem ();
+        lfs = FileUtil.getConfigRoot().getFileSystem();
         
         FileObject[] delete = lfs.getRoot().getChildren();
         for (int i = 0; i < delete.length; i++) {
@@ -155,7 +155,7 @@ implements java.net.URLStreamHandlerFactory {
         
         DataFolder what  = DataFolder.findFolder(lfs.getRoot());
         assertNotNull(what);
-        FileObject whereFo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject whereFo = FileUtil.getConfigRoot();
         assertNotNull(whereFo);
         
         DataFolder where = DataFolder.findFolder(whereFo);
@@ -171,8 +171,7 @@ implements java.net.URLStreamHandlerFactory {
     }
     
     public void testBrokenShadow55115 () throws Exception {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject brokenShadow = FileUtil.createData(sfs.getRoot(),"brokenshadows/brokon.shadow");
+        FileObject brokenShadow = FileUtil.createData(FileUtil.getConfigRoot(),"brokenshadows/brokon.shadow");
         assertNotNull (brokenShadow);
         // intentionally not set attribute "originalFile" to let that shadow be broken 
         //brokenShadow.setAttribute("originalFile", null);
