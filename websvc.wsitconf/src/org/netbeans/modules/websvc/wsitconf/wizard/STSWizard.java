@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
@@ -308,7 +309,7 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         project = Templates.getProject(wiz);
 
-        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && Util.isGlassfish(project);
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project);
 
         versionPanel = new STSVersionPanel(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
