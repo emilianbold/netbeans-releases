@@ -49,6 +49,7 @@ import org.openide.util.*;
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.collab.core.Debug;
 import org.openide.awt.Mnemonics;
 
@@ -70,6 +71,8 @@ public class LoginAccountPanel extends JPanel {
     private Set pendingLogins = Collections.synchronizedSet(new HashSet());
     private Account newAccount;
     private int locks;
+
+    private static final Preferences prefs = NbPreferences.forModule(LoginAccountPanel.class);
 
     /**
      *
@@ -360,6 +363,11 @@ public class LoginAccountPanel extends JPanel {
         CollabManager manager = CollabManager.getDefault();
         assert manager != null : "Could not find default CollabManager"; // NOI18N
 
+        if (account.getServer().startsWith("share.java.net") && // NOI18N
+            prefs.getBoolean("server.warning.show", Boolean.TRUE)) { // NOI18N
+            ServerWarningAction a = SharedClassObject.findObject(ServerWarningAction.class, true);
+            a.showDialog();
+        }
         loginButton.setEnabled(false);
 
         // Prompt for the login
@@ -390,6 +398,11 @@ public class LoginAccountPanel extends JPanel {
         CollabManager manager = CollabManager.getDefault();
         assert manager != null : "Could not find default CollabManager"; // NOI18N
 
+        if (account.getServer().startsWith("share.java.net") && // NOI18N
+            prefs.getBoolean("server.warning.show", Boolean.TRUE)) { // NOI18N
+            ServerWarningAction a = SharedClassObject.findObject(ServerWarningAction.class, true);
+            a.showDialog();
+        }
         loginButton.setEnabled(false);
 
         // Prompt for the login

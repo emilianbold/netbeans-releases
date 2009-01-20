@@ -55,7 +55,7 @@ disabled.clusters=\
     groovy1,\
     gsf1,\
     harness,\
-    ide10,\
+    ide11,\
     java2,\
     profiler3,\
     visualweb2,\
@@ -85,8 +85,8 @@ disabled.modules=\
     org.openide.options,\
     org.openide.util.enumerations
 enabled.clusters=\
-    nb6.5,\
-    platform9
+    nb7.0,\
+    platform10
 nbplatform.active=default
 
 """

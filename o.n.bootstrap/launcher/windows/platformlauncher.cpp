@@ -216,7 +216,7 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
             strncpy(tmp, argv[++i], MAX_PATH);
-            if (!normalizePath(tmp)) {
+            if (!normalizePath(tmp, MAX_PATH)) {
                 logErr(false, true, "User directory path \"%s\" is not valid.", argv[i]);
                 return false;
             }
