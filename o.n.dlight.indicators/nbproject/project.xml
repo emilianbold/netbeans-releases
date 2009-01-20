@@ -20,7 +20,7 @@
                 <friend>org.netbeans.dlight.fops</friend>
                 <friend>org.netbeans.dlight.simpletool</friend>
                 <friend>org.netbeans.dlight.sync</friend>
-                <friend>org.netbeans.dlight.webstack</friend>
+                <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.dlight.indicators</package>
                 <package>org.netbeans.dlight.indicators.dataprovider</package>
             </friend-packages>
