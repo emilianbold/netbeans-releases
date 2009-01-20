@@ -55,8 +55,8 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        //suite.addTest(new XMLSyntaxSupportTest("testParse1"));
-        suite.addTest(new XMLSyntaxSupportTest("testParse2"));
+        suite.addTest(new XMLSyntaxSupportTest("testParse1"));
+        //suite.addTest(new XMLSyntaxSupportTest("testParse2"));
         return suite;
     }
 

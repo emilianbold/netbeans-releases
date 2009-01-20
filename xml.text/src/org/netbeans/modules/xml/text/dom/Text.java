@@ -63,15 +63,15 @@ public class Text extends SyntaxNode implements org.w3c.dom.Text {
     /**
      * Create content text node.
      */
-    public Text(XMLSyntaxSupport support, Token from, int to) {
-        super( support, from, to );
+    public Text(XMLSyntaxSupport support, Token from, int start, int end) {
+        super( support, from, start, end);
     }
     
     /**
      * Create attribute text node.
      */
-    Text(XMLSyntaxSupport syntax, Token from, Attr parent) {
-        super( syntax, from, 0);
+    Text(XMLSyntaxSupport syntax, Token from, int start, int end, Attr parent) {
+        super( syntax, from, start, end);
         if (parent == null) throw new IllegalArgumentException();
         this.parent = parent;
     }
