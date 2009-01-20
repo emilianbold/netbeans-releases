@@ -106,6 +106,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
                 21 : fm.getAscent() + 2 * fm.getDescent() + 3;
+        height += 1; //align with editor tabs
         Insets insets = c.getInsets();
         prefSize.height = height + insets.bottom + insets.top;
         return prefSize;
@@ -134,10 +135,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 Dimension buttonsSize = buttons.getPreferredSize();
 
                 textW = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                if (index == getDataModel().size() - 1) {
-                    textW -= 3;
-                }
-                buttons.setLocation( x + textW+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                buttons.setLocation( x + textW+2*TXT_X_PAD-2, y + (height-buttonsSize.height)/2 );
             }
         } else {
             textW = width - 2 * TXT_X_PAD;
@@ -160,12 +158,15 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             textY = (height / 2) - (textHeight / 2) + fm.getAscent();
         }
 
-        if( isFocused(index) && isSelected(index) ) {
-            int realTextWidth = (int)HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),
-                              UIManager.getColor("textText"), //NOI18N
-                              HtmlRenderer.STYLE_TRUNCATE, false);
-            int highlightY = (height - textHeight)/2;
+        int realTextWidth = (int)HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),
+                          UIManager.getColor("textText"), //NOI18N
+                          HtmlRenderer.STYLE_TRUNCATE, false);
+        realTextWidth = Math.min(realTextWidth, textW);
+        if( textW > realTextWidth )
+            textX += (textW - realTextWidth) / 2;
 
+        if( isFocused(index) && isSelected(index) ) {
+            int highlightY = (height - textHeight)/2;
             Shape s = new RoundRectangle2D.Float(textX, highlightY, realTextWidth, textHeight, 5, 5);
 
             Graphics2D g2d = (Graphics2D) g;
@@ -206,6 +207,10 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.drawLine(x, y+height-1, x+width, y+height-1);
         }
         g.drawLine(x, y, x+width, y);
+        if( getDataModel().size() == 1 ) {
+            g.setColor(UIManager.getColor("NbTabControl.editorTabBackground"));
+            g.drawLine(x, y+height-1, x+width, y+height-1);
+        }
     }
 
     protected void paintTabBackground(Graphics g, int index, int x, int y,

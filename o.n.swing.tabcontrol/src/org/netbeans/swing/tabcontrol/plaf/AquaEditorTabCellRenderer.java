@@ -71,6 +71,28 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
         super(leftClip, normal, rightClip, new Dimension(32, 42));
     }
 
+    private Font txtFont;
+
+    @Override
+    public Font getFont() {
+        if (txtFont == null) {
+
+            txtFont = (Font) UIManager.get("windowTitleFont");
+            if (txtFont == null) {
+                txtFont = new Font("Dialog", Font.PLAIN, 11);
+            } else if (txtFont.isBold()) {
+                // don't use deriveFont() - see #49973 for details
+                txtFont = new Font(txtFont.getName(), Font.PLAIN, txtFont.getSize());
+            }
+        }
+        return txtFont;
+    }
+
+    @Override
+    protected void paintIconAndText(Graphics g) {
+        super.paintIconAndText(g);
+    }
+
     /**
      * Mac look and feel makes selected tab wider by 2 pixels on each side
      */
@@ -177,7 +199,7 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
             Icon icon = TabControlButtonFactory.getIcon(iconPath);
             int iconWidth = icon.getIconWidth();
             int iconHeight = icon.getIconHeight();
-            rect.x = bounds.x + bounds.width - iconWidth - 2;
+            rect.x = bounds.x + bounds.width - iconWidth - 5;
             rect.y = bounds.y + (Math.max(0, bounds.height / 2 - iconHeight / 2));
             rect.width = iconWidth;
             rect.height = iconHeight;
@@ -247,6 +269,9 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 g.drawLine(x+width-1, y, x+width-1, y+height-1);
                 g.setColor(shadowColor);
                 g.drawLine(x+width-2, y+1, x+width-2, y+height-(ren.isSelected() ? 1 : 2));
+            } else if( ren.isSelected() ) {
+                g.setColor(borderColor);
+                g.drawLine(x+width-1, y, x+width-1, y+height-1);
             }
             //left
             if( !ren.isLeftmost() && !ren.isSelected() ) {

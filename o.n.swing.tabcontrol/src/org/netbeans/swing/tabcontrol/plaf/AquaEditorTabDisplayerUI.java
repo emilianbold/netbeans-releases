@@ -86,10 +86,26 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         return true;
     }
     
+    private Font txtFont;
+    
     @Override
     protected Font createFont() {
-        return UIManager.getFont("Label.font"); //NOI18N
-    }    
+        if (txtFont == null) {
+
+            txtFont = (Font) UIManager.get("windowTitleFont");
+            if (txtFont == null) {
+                txtFont = new Font("Dialog", Font.PLAIN, 11);
+            } else if (txtFont.isBold()) {
+                // don't use deriveFont() - see #49973 for details
+                txtFont = new Font(txtFont.getName(), Font.PLAIN, txtFont.getSize());
+            }
+        }
+        return txtFont;
+    }
+
+    protected Font getTxtFont() {
+        return createFont();
+    }
     
     @Override
     protected int createRepaintPolicy () {
