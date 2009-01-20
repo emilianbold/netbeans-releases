@@ -68,11 +68,14 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.csl.editor.fold.GsfFoldManager;
 import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.csl.editor.semantic.GoToMarkOccurrencesAction;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -211,6 +214,14 @@ public class GsfEditorKitFactory {
                 actions.add(new CommentAction(lineCommentPrefix));
                 actions.add(new UncommentAction(lineCommentPrefix));
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
+            }
+
+            if(gsfLanguage instanceof DefaultLanguageConfig) {
+                CommentHandler ch = ((DefaultLanguageConfig)gsfLanguage).getCommentHandler();
+                if(ch != null) {
+                    actions.add(new ToggleBlockCommentAction(ch));
+                }
+
             }
 
             actions.add(new InstantRenameAction());
