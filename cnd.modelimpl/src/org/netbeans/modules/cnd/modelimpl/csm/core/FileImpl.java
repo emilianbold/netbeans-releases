@@ -160,6 +160,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * It's a map since we need to eliminate duplications 
      */
     private SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+    private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
@@ -540,6 +541,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             uids = declarations.values();
             declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
             staticFunctionDeclarationUIDs.clear();
+            staticVariableUIDs.clear();
+            sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -1088,37 +1091,127 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
-    public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
+    public int getDeclarationsSize(){
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
             fixFakeRegistrations();
         }
-        List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         try {
             declarationsLock.readLock().lock();
-            OffsetSortedKey key = new OffsetSortedKey(offset+1,""); // NOI18N
-            while(true) {
-                SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
-                if (head.isEmpty()) {
+            return declarations.size();
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+    }
+
+    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, String prefix) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
+        try {
+            declarationsLock.readLock().lock();
+            Map<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>> map = null;
+            if (sortedDeclarations != null) {
+                map = sortedDeclarations.get();
+            }
+            if (map == null) {
+                map = new HashMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>();
+                for(CsmUID<CsmOffsetableDeclaration> anUid : declarations.values()){
+                    CsmDeclaration.Kind kind = UIDUtilities.getKind(anUid);
+                    SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
+                    if (val == null){
+                        val = new TreeMap<NameKey, CsmUID<CsmOffsetableDeclaration>>();
+                        map.put(kind, val);
+                    }
+                    val.put(new NameKey(anUid), anUid);
+                }
+                sortedDeclarations = new WeakReference<Map<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>>(map);
+            }
+            out = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            for(CsmDeclaration.Kind kind : kinds) {
+                 SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
+                 if (val != null) {
+                     if (prefix == null) {
+                         out.addAll(val.values());
+                     } else {
+                         NameKey fromKey = new NameKey(prefix, 0);
+                         NameKey toKey = new NameKey(prefix, Integer.MAX_VALUE);
+                         out.addAll(val.subMap(fromKey, toKey).values());
+                     }
+                 }
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        List<CsmUID<CsmOffsetableDeclaration>> res;
+        try {
+            declarationsLock.readLock().lock();
+            res = getDeclarationsByOffset(startOffset-1);
+            OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,""); // NOI18N
+            OffsetSortedKey toKey = new OffsetSortedKey(endOffset,""); // NOI18N
+            SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
+            for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
+                CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
+                int start = UIDUtilities.getStartOffset(anUid);
+                int end = UIDUtilities.getEndOffset(anUid);
+                if (start >= endOffset) {
                     break;
                 }
-                OffsetSortedKey last = head.lastKey();
-                if (last == null) {
-                    break;
-                }
-                CsmUID<CsmOffsetableDeclaration> aUid = declarations.get(last);
-                int from = UIDUtilities.getStartOffset(aUid);
-                int to = UIDUtilities.getEndOffset(aUid);
-                if (from <= offset && offset <= to) {
-                    res.add(0, aUid);
-                    key = last;
-                } else {
-                    break;
+                if(end >= startOffset && start < endOffset) {
+                    res.add(anUid);
                 }
             }
         } finally {
             declarationsLock.readLock().unlock();
         }
+        return res;
+    }
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        List<CsmUID<CsmOffsetableDeclaration>> res;
+        try {
+            declarationsLock.readLock().lock();
+            res = getDeclarationsByOffset(offset);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
         return UIDCsmConverter.UIDsToDeclarations(res).iterator();
+    }
+
+    // call under read lock
+    private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
+        List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        OffsetSortedKey key = new OffsetSortedKey(offset+1,""); // NOI18N
+        while(true) {
+            SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
+            if (head.isEmpty()) {
+                break;
+            }
+            OffsetSortedKey last = head.lastKey();
+            if (last == null) {
+                break;
+            }
+            CsmUID<CsmOffsetableDeclaration> aUid = declarations.get(last);
+            int from = UIDUtilities.getStartOffset(aUid);
+            int to = UIDUtilities.getEndOffset(aUid);
+            if (from <= offset && offset <= to) {
+                res.add(0, aUid);
+                key = last;
+            } else {
+                break;
+            }
+        }
+        return res;
     }
 
     public void addMacro(CsmMacro macro) {
@@ -1183,6 +1276,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.writeLock().lock();
             declarations.put(getOffsetSortKey(decl), uidDecl);
+            sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -1281,6 +1375,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.writeLock().lock();
             uidDecl = declarations.remove(getOffsetSortKey(declaration));
+            sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -1556,6 +1651,28 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         return lineCol;
+    }
+
+    public static class NameKey implements Comparable<NameKey> {
+        private int start = 0;
+        private CharSequence name;
+        private NameKey(CsmUID<CsmOffsetableDeclaration> anUid) {
+            name = UIDUtilities.getName(anUid);
+            start = UIDUtilities.getStartOffset(anUid);
+        }
+
+        private NameKey(String name, int offset) {
+            this.name = name;
+            start = offset;
+        }
+
+        public int compareTo(NameKey o) {
+            int res = CharSequenceKey.Comparator.compare(name, o.name);
+            if (res == 0) {
+                res = start - o.start;
+            }
+            return res;
+        }
     }
 
     public static class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
