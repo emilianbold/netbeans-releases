@@ -108,6 +108,7 @@ public class ActionProviderImpl implements ActionProvider {
     private NbMavenProjectImpl project;
     private static String[] supported = new String[]{
         COMMAND_BUILD,
+        "build-with-dependencies", //NOI18N
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         "javadoc", //NOI18N

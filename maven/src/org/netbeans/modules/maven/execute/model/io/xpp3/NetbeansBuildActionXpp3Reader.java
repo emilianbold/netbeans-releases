@@ -415,6 +415,15 @@ public class NetbeansBuildActionXpp3Reader {
                 parsed.add( "displayName" );
                 netbeansActionMapping.setDisplayName( getTrimmedValue( parser.nextText()) );
             }
+            else if ( parser.getName().equals( "basedir" )  )
+            {
+                if ( parsed.contains( "basedir" ) )
+                {
+                    throw new XmlPullParserException( "Duplicated tag: '" + parser.getName() + "'", parser, null );
+                }
+                parsed.add( "basedir" );
+                netbeansActionMapping.setBasedir( getTrimmedValue( parser.nextText()) );
+            }
             else if ( parser.getName().equals( "recursive" )  )
             {
                 if ( parsed.contains( "recursive" ) )

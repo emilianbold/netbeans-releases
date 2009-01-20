@@ -57,10 +57,21 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     private java.util.List<String> activatedProfiles;
 
+    private String basedir;
+
 
       //-----------/
      //- Methods -/
     //-----------/
+    
+    public String getBasedir() {
+        return basedir;
+    }
+
+    public void setBasedir(String basedir) {
+        this.basedir = basedir;
+    }
+
 
     /**
      * Method addActivatedProfile.
