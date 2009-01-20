@@ -60,7 +60,8 @@ char * trimWhitespaces(char *str);
 void logMsg(const char *format, ...);
 void logErr(bool appendSysError, bool showMsgBox, const char *format, ...);
 bool checkLoggingArg(int argc, char *argv[], bool delFile);
-bool setUpProcess(int &argc, char *argv[]);
+bool setUpProcess(int &argc, char *argv[], const char *attachMsg = 0);
+bool printToConsole(const char *msg);
 
 #endif	/* _UTILSFUNCS_H */
 
