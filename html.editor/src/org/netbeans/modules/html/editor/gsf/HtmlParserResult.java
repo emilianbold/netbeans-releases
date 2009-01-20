@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -140,8 +141,7 @@ public class HtmlParserResult extends ParserResult {
 
     @Override
     public List<? extends Error> getDiagnostics() {
-        //todo - we provide errors somewhere else
-        return Collections.EMPTY_LIST;
+        return errors;
     }
 
     @Override
@@ -160,7 +160,7 @@ public class HtmlParserResult extends ParserResult {
                             AstNode unmatched = node.children().get(0);
                             if (dtd != null) {
                                 //check the unmatched tag according to the DTD
-                                Element element = dtd.getElement(node.name().toUpperCase());
+                                Element element = dtd.getElement(node.name().toUpperCase(Locale.US));
                                 if (element != null) {
                                     if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
                                         return;
