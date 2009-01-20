@@ -60,6 +60,11 @@ made subject to such option by the copyright holder.
             <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
         </pathconvert>
 
+        <!-- standalone modules don't specify enabled/disabled clusters -->
+        <property name="enabled.clusters" value=""/>
+        <property name="disabled.clusters" value=""/>
+        <property name="disabled.modules" value=""/>
+
         <selector id="old.project.included.files">
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                 <param name="excludeModules" value="${disabled.modules}"/>
