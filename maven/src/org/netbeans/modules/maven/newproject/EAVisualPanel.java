@@ -44,6 +44,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 public final class EAVisualPanel extends JPanel {
 
@@ -54,7 +55,7 @@ public final class EAVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #1";
+        return NbBundle.getMessage(EAWizardPanel.class, "LBL_EESettings");
     }
 
     void readSettings(WizardDescriptor wizardDescriptor) {
@@ -78,7 +79,7 @@ public final class EAVisualPanel extends JPanel {
             d.putProperty("ejb_versionInfo", new NBVersionInfo(
                     null, (String)d.getProperty("groupId"),
                     (String)d.getProperty("artifactId")+"-ejb", (String)d.getProperty("version"),
-                    null, null, null, null, null)
+                    "ejb", null, null, null, null)
             );
             d.putProperty("ejb_archetype", ArchetypeWizardUtils.EJB_ARCHS[eeLevelIdx]);
         } else {
@@ -92,7 +93,7 @@ public final class EAVisualPanel extends JPanel {
             d.putProperty("web_versionInfo", new NBVersionInfo(
                     null, (String)d.getProperty("groupId"),
                     (String)d.getProperty("artifactId")+"-web", (String)d.getProperty("version"),
-                    null, null, null, null, null)
+                    "war", null, null, null, null)
             );
             d.putProperty("web_archetype", ArchetypeWizardUtils.WEB_APP_ARCHS[eeLevelIdx]);
 
