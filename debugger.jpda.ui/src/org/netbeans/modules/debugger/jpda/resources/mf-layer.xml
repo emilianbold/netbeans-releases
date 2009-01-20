@@ -306,4 +306,17 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <!--folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="controller" newvalue="org.netbeans.modules.debugger.jpda.ui.options.JavaDebuggerOptionsPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.jpda.ui.options.Bundle#LBL_JavaDebugger"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.debugger.jpda.ui.options.Bundle#HINT_JavaDebugger"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.debugger.jpda.ui.options.Bundle#KW_JavaDebugger"/>
+                <attr name="keywordsCategory" stringvalue="Advanced/JavaDebugger"/>
+            </file>
+        </folder>
+    </folder-->
 </filesystem>
