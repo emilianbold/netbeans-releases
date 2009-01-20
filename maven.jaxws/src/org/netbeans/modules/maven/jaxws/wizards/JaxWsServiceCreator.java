@@ -110,7 +110,10 @@ import org.openide.util.RequestProcessor;
  * @author Radko, Milan Kuchtiak
  */
 public class JaxWsServiceCreator implements ServiceCreator {
-
+    private static final String SOAP_BINDING_TYPE = "javax.xml.ws.soap.SOAPBinding";  //NOI18N
+    private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
+    private static final String SOAP12_HTTP_BINDING = "SOAP12HTTP_BINDING"; //NOI18N
+    
     private Project project;
     private WizardDescriptor wiz;
     private boolean addJaxWsLib;
@@ -387,15 +390,18 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, WSAnnotation);
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
-                        TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+                        //if SOAP 1.2 binding, add BindingType annotation
+                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
+                        if (bindingElement != null) {
+                            TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
+                            ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
 
-                        List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
-                        bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
-                                make.Identifier("javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING"))); //NOI18N
-                        AnnotationTree bindingAnnotation = make.Annotation(
-                                make.QualIdent(BindingAn),
-                                bindingAttrs);
-                        modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                            AnnotationTree bindingAnnotation = make.Annotation(
+                                    make.QualIdent(bindingElement),
+                                    Collections.<ExpressionTree>singletonList(exp));
+
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                        }
                     }
 
                     // add @Stateless annotation
@@ -463,19 +469,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
 
-//                    if (port.getSOAPVersion().equals(SOAP12_VERSION)) {  //if SOAP 1.2 binding, add BindingType annotation
-//                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
-//                        if (bindingElement != null) {
-//                            ModifiersTree modifiersTree = modifiedClass.getModifiers();
-//                            AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
-//                            AnnotationTree soapVersionAnnotation = make.Annotation(
-//                                    make.QualIdent(bindingElement),
-//                                    Collections.<ExpressionTree>singletonList(soapVersion));
-//
-//                            ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
-//                            workingCopy.rewrite(modifiersTree, newModifiersTree);
-//                        }
-//                    }
                 }
             }
 
