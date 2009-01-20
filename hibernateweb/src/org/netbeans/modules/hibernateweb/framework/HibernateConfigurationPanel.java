@@ -80,8 +80,9 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel implements D
 
     public void fillPanel() {
         if (forNewProjectWizard) {
-            if (cmbDbConnection.getItemCount() != 0 && cmbDbConnection.getItemCount() > 1) {
-                cmbDbConnection.setSelectedIndex(1);
+            // #155965. Select a db connection only if one exists already.
+            if (cmbDbConnection.getItemCount() > 1) {
+                cmbDbConnection.setSelectedIndex(0);
             }
         }
     }
@@ -100,6 +101,11 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel implements D
 
     public boolean isPanelValid() {
         if (forNewProjectWizard) { // Validate only in case of New Project Wizard.
+            if(cmbDbConnection.getModel().getSize() <= 1) {
+                // #155965. There are no registered db connection exists with the IDE...
+                // For Hibernate framework, developer should establish one db connection.
+                return false;
+            }
         }
         return true;
     }

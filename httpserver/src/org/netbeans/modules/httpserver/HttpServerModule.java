@@ -57,7 +57,6 @@ import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.service.PoolTcpConnector;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -244,8 +243,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
         final EmbededTomcat tc=new EmbededTomcat();
         
-        File wd = FileUtil.toFile (
-                      Repository.getDefault ().getDefaultFileSystem().getRoot());
+        File wd = FileUtil.toFile (FileUtil.getConfigRoot());
         wd = new File(wd, "httpwork"); // NOI18N
         tc.setWorkDir(wd.getAbsolutePath());
         
@@ -354,8 +352,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 	    ClassLoader cl = (ClassLoader)res.allInstances ().iterator ().next ();
             cm.setParentClassLoader (cl);
             
-            File wd = FileUtil.toFile (
-                          Repository.getDefault ().getDefaultFileSystem().getRoot());
+            File wd = FileUtil.toFile (FileUtil.getConfigRoot());
             wd = new File(wd, "httpwork"); // NOI18N
             
             Enumeration e = cm.getContexts ();

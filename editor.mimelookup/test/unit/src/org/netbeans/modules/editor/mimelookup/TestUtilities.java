@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.RequestProcessor;
 
 
@@ -101,7 +100,7 @@ public class TestUtilities {
     private static void deleteFileImpl(File workDir, String path) throws IOException{
         FileObject fo = FileUtil.toFileObject(new File(workDir, path));
         if (fo == null) {
-            fo = Repository.getDefault().getDefaultFileSystem().findResource(path); // NOI18N
+            fo = FileUtil.getConfigFile(path); // NOI18N
             if (fo == null){
                 return;
             }

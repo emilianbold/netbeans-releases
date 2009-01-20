@@ -104,6 +104,12 @@ public class GotoTestTest extends PythonTestBase {
         assertEquals(getTestFile("testfiles/tests/test_baz.py"), loc.getFileObject());
     }
 
+    public void testGotoTestUnit8() {
+        LocationResult loc = gotoTest.findTest(getTestFile("testfiles/whatever.py"), -1);
+        assertNotSame(NONE, loc);
+        assertEquals(getTestFile("testfiles/testwhatever.py"), loc.getFileObject());
+    }
+
     // Not yet working
     //public void testGotoTestUnit8() {
     //    LocationResult loc = gotoTest.findTested(getTestFile("testfiles/tests/test_baz.py"), -1);

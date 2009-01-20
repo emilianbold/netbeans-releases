@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -61,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
@@ -200,7 +200,7 @@ public class ModelUtils {
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (isWanted(obj, file)) {
-                CsmUID uid = ((CsmVariable)obj).getUID();
+                CsmUID uid = UIDs.get(obj);
                 ReferenceCounter counter = counters.get(uid);
                 if (counter == null) {
                     counter = new ReferenceCounter(ref);
@@ -231,7 +231,7 @@ public class ModelUtils {
             }
             if (CsmKindUtilities.isParameter(obj)) {
                 Set<CsmUID> set = getFunctionDefinitionParameters(file);
-                return set.contains(var.getUID());
+                return set.contains(UIDs.get(var));
             } else {
                 return true;
             }
@@ -240,13 +240,12 @@ public class ModelUtils {
             if (parameters == null) {
                 parameters = new HashSet<CsmUID>();
                 CsmSelect select = CsmSelect.getDefault();
-                CsmFilter filter = select.getFilterBuilder().createKindFilter(
-                        new CsmDeclaration.Kind[] {CsmDeclaration.Kind.FUNCTION_DEFINITION});
+                CsmFilter filter = select.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION);
                 Iterator<CsmOffsetableDeclaration> i = select.getDeclarations(file, filter);
                 while (i.hasNext()) {
                     CsmFunctionDefinition fundef = (CsmFunctionDefinition)i.next();
                     for (Object obj : fundef.getParameters()) {
-                        parameters.add(((CsmParameter)obj).getUID());
+                        parameters.add(UIDs.get(obj));
                     }
                 }
             }

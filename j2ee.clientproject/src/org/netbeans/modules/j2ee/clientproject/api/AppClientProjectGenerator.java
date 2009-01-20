@@ -79,7 +79,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
@@ -167,7 +166,7 @@ public class AppClientProjectGenerator {
         } else {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
         }
-        FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "application-client"); //NOI18N
+        FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "application-client"); //NOI18N
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
         appClient.setDisplayName(name);
         appClient.write(ddFile);
@@ -355,7 +354,7 @@ public class AppClientProjectGenerator {
             } else {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
             }  
-            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource),
+            FileUtil.copyFile(FileUtil.getConfigFile(resource),
                     confFolderFO, "application-client"); //NOI18N
         }
         createManifest(confFolderFO, MANIFEST_FILE);
@@ -707,7 +706,7 @@ public class AppClientProjectGenerator {
             return;
         }
         
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Classes/Main.java" ); // NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile( "Templates/Classes/Main.java" ); // NOI18N
         
         if ( mainTemplate == null ) {
             return; // Don't know the template

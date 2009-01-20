@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -154,8 +155,16 @@ final class ResultView extends TopComponent {
         pop.add(new CloseAllButCurrent());
         popL = new PopupListener();
         closeL = new CloseListener();
+
+        initActions();
     }
     
+    private void initActions() {
+        ActionMap map = getActionMap();
+
+        map.put("jumpNext", new PrevNextAction (false)); // NOI18N
+        map.put("jumpPrev", new PrevNextAction (true)); // NOI18N
+    }
     
     
     /** Overriden to explicitely set persistence type of ResultView
@@ -570,4 +579,18 @@ final class ResultView extends TopComponent {
         }
     }
 
+    private final class PrevNextAction extends javax.swing.AbstractAction {
+        private boolean prev;
+
+        public PrevNextAction (boolean prev) {
+            this.prev = prev;
+        }
+
+        public void actionPerformed (java.awt.event.ActionEvent actionEvent) {
+            ResultViewPanel panel = getCurrentResultViewPanel();
+            if (panel != null) {
+                panel.goToNext(!prev);
+            }
+        }
+    }
 }

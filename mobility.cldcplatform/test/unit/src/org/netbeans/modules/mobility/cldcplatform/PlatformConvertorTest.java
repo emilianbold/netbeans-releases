@@ -58,7 +58,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -135,10 +134,9 @@ public class PlatformConvertorTest extends NbTestCase {
     public void testInstanceCreate() throws Exception {
         System.out.println("instanceCreate");
         
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject folder = root.getFileObject("Services/Platforms/org-netbeans-api-java-Platform");
+        FileObject folder = FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform");
         if (folder == null) {
-            folder = root.createFolder("Services");
+            folder = FileUtil.getConfigRoot().createFolder("Services");
             folder = folder.createFolder("Platforms");
             folder = folder.createFolder("org-netbeans-api-java-Platform");
         }

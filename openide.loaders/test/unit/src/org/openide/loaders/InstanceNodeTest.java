@@ -58,7 +58,7 @@ public class InstanceNodeTest extends NbTestCase {
     }
 
     protected void setUp () throws Exception {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot ();
         DataObject dobj = InstanceDataObject.create (DataFolder.findFolder (root), null, A.class);
         node = dobj.getNodeDelegate ();
         assertTrue ("Is InstanceNode", node instanceof InstanceNode);

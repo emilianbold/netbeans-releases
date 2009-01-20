@@ -60,7 +60,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -293,7 +292,7 @@ public class SCFTHandlerTest extends NbTestCase {
     }
 
      public void testUTF8() throws Exception {
-         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+         FileObject root = FileUtil.getConfigRoot();
          FileObject xmldir = FileUtil.createFolder(root, "xml");
          FileObject xml = FileUtil.createData(xmldir, "class.txt");
          OutputStream os = xml.getOutputStream();

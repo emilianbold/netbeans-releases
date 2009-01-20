@@ -43,7 +43,6 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import org.netbeans.junit.*;
 
 /*
@@ -53,8 +52,6 @@ import org.netbeans.junit.*;
  *
  * @author Jaroslav Tulach
  */
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 public class Issue136931Test extends NbTestCase {
     private DataFolder root;
     private DataFolder to;
@@ -72,11 +69,11 @@ public class Issue136931Test extends NbTestCase {
         FileUtil.setMIMEType("attr", "text/x-art");
         FileUtil.setMIMEType("block", "text/x-block");
         FileObject fo = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            FileUtil.getConfigRoot(),
             "Loaders/text/x-art/Factories/" + BLoader.class.getName().replace('.', '-') + ".instance"
         );
         FileObject bo = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            FileUtil.getConfigRoot(),
             "Loaders/text/x-block/Factories/" + BLoader.class.getName().replace('.', '-') + ".instance"
         );
         

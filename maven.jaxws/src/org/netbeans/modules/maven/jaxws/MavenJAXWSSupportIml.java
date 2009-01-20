@@ -46,16 +46,12 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.filesystems.FileObject;
@@ -111,8 +107,8 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public FileObject getLocalWsdlFolder(boolean createFolder) {
-        String wsdlFolderPath = getWsdlDir();
-        File wsdlDir = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), wsdlFolderPath);
+        File wsdlDir = FileUtilities.resolveFilePath(
+                FileUtil.toFile(prj.getProjectDirectory()), "src/wsdl");
         if (wsdlDir.exists()) {
             return FileUtil.toFileObject(wsdlDir);
         } else if (createFolder) {
@@ -125,7 +121,17 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public FileObject getBindingsFolder(boolean createFolder) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File bindingsDir = FileUtilities.resolveFilePath(
+                FileUtil.toFile(prj.getProjectDirectory()), "src/jaxws-bindings"); //NOI18N
+        if (bindingsDir .exists()) {
+            return FileUtil.toFileObject(bindingsDir);
+        } else if (createFolder) {
+            boolean created = bindingsDir.mkdirs();
+            if (created) {
+                return FileUtil.toFileObject(bindingsDir);
+            }
+        }
+        return null;
     }
 
     public URL getCatalog() {
@@ -149,26 +155,4 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
-
-    private String getWsdlDir() {
-        MavenProject mavproj = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
-        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavproj);
-        if (jaxWsPlugin != null) {
-            String dirPath = PluginPropertyUtils.getPluginProperty(prj,
-                    "org.codehaus.mojo", //NOI18N
-                    "jaxws-maven-plugin", //NOI18N
-                    "wsdlDirectory", //NOI18N
-                    "wsimport"); //NOI18N
-            if (dirPath != null) {
-                return dirPath;
-            } else {
-                return "src/wsdl"; //NOI18N
-            }
-        } else {
-            //TODO  is null or src/wsdl correct?
-            return "src/wsdl"; //NOI18N
-        }
-    }
-
-
 }

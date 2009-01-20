@@ -167,7 +167,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     void notifyToBeResumed(ThreadsCache tc) {
         List<ThreadReference> threads = tc.getThreads(tgr);
         for (ThreadReference threadRef : threads) {
-            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread(threadRef);
+            JPDAThreadImpl thread = debugger.getThread(threadRef);
             thread.notifyToBeResumed();
         }
         List<ThreadGroupReference> groups = tc.getGroups(tgr);
@@ -180,7 +180,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     void notifySuspended(ThreadsCache tc) {
         List<ThreadReference> threads = tc.getThreads(tgr);
         for (ThreadReference threadRef : threads) {
-            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread(threadRef);
+            JPDAThreadImpl thread = debugger.getThread(threadRef);
             thread.notifySuspended();
         }
         List<ThreadGroupReference> groups = tc.getGroups(tgr);

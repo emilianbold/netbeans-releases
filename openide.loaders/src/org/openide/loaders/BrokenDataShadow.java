@@ -67,7 +67,6 @@ import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -190,8 +189,7 @@ final class BrokenDataShadow extends MultiDataObject {
         
         // #43315 hotfix: disable validity checking for non-SFS filesystem
         try {
-            if (!file.getFileSystem().equals(
-                    Repository.getDefault().getDefaultFileSystem())) {
+            if (!file.getFileSystem().isDefault()) {
                 return;
             }
         } catch (FileStateInvalidException e) {

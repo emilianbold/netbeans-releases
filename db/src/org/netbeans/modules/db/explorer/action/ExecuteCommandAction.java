@@ -44,6 +44,7 @@ import java.sql.SQLException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -67,7 +68,7 @@ public class ExecuteCommandAction extends BaseAction {
                     enabled = !conn.isClosed();
                 }
             } catch (SQLException e) {
-
+                Exceptions.printStackTrace(e);
             }
         }
 

@@ -76,7 +76,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -427,7 +426,7 @@ public final class VisualConfigSupport {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        final FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
+        final FileObject dir = FileUtil.getConfigFile(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
         if (dir != null) {
             final Enumeration en = dir.getData(false);
             while (en.hasMoreElements()) {
@@ -440,12 +439,12 @@ public final class VisualConfigSupport {
     
     private void saveConfigurationTemplate(final String cfgName, final String tmpName) {
         try {
-            Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
+            FileUtil.runAtomicAction(new AtomicAction() {
                 public void run() {
                     FileLock lock = null;
                     OutputStream out = null;
                     try {
-                        final FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+tmpName+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
+                        final FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+tmpName+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
                         lock = fo.lock();
                         out = fo.getOutputStream(lock);
                         extractConfigurationTemplate(cfgName, tmpName).store(out, null);

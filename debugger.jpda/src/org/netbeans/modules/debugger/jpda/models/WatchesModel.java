@@ -68,7 +68,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
-import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -532,7 +532,7 @@ public class WatchesModel implements TreeModel {
         
         // currently waiting / running refresh task
         // there is at most one
-        private RequestProcessor.Task task;
+        private Task task;
         
         @Override
         public void propertyChange (PropertyChangeEvent evt) {
@@ -562,7 +562,7 @@ public class WatchesModel implements TreeModel {
             }
             
             if (task == null) {
-                task = RequestProcessor.getDefault ().create (new Runnable () {
+                task = m.debugger.getRequestProcessor().create (new Runnable () {
                     public void run () {
                         if (verbose)
                             System.out.println("WM do task " + task);

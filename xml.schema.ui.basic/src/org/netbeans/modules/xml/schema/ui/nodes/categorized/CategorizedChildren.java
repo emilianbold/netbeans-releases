@@ -68,11 +68,10 @@ import org.netbeans.modules.xml.schema.ui.nodes.RefreshableChildren;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaUIContext;
 import org.netbeans.modules.xml.schema.ui.nodes.StructuralSchemaNodeFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -371,8 +370,7 @@ public class CategorizedChildren<C extends SchemaComponent>
 
 
         private static Node getFolderNode() {
-	    FileObject fo =
-		Repository.getDefault().getDefaultFileSystem().getRoot();
+	    FileObject fo = FileUtil.getConfigRoot();
 	    Node n = null;
 	    try {
 		DataObject dobj = DataObject.find(fo);

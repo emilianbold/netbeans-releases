@@ -49,7 +49,7 @@ import org.netbeans.spi.palette.DummyActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
@@ -74,7 +74,7 @@ public class UtilsTest extends AbstractPaletteTestHid {
 
     /** Tests order of nodes after SortCategoriesAction is performed (see issue 146337). */
     public void testSortAction() throws Exception {
-        FileObject rootFO = Repository.getDefault().getDefaultFileSystem().getRoot().createFolder(getName());
+        FileObject rootFO = FileUtil.getConfigRoot().createFolder(getName());
         FileObject cat1FO = rootFO.createData("cat1");
         FileObject cat2FO = rootFO.createData("cat2");
         FileObject cat3FO = rootFO.createData("cat3");

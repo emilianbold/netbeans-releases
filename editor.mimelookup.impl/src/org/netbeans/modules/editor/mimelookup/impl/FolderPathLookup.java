@@ -400,7 +400,7 @@ public final class FolderPathLookup extends AbstractLookup {
 //        }
 //        
 //        private InstanceCookie getInstanceCookie(String filePath) throws IOException {
-//            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(filePath);
+//            FileObject file = FileUtil.getConfigFile(filePath);
 //            if (file == null) {
 //                // Should not occure
 //                throw new IOException("The file does not exist '" + filePath + "'"); //NOI18N

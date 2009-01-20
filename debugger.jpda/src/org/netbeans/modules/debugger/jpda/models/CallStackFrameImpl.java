@@ -101,7 +101,7 @@ import org.openide.util.Exceptions;
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
-    private JPDAThreadImpl      thread;
+    private final JPDAThreadImpl thread;
     private StackFrame          sf;
     private int                 depth;
     private JPDADebuggerImpl    debugger;
@@ -405,10 +405,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     List<LocalVariable> findOperationArguments(Operation operation) {
         if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
-        JPDAThreadImpl thread = (JPDAThreadImpl) getThread();
-        synchronized (debuggerImpl.LOCK) {
-            synchronized (thread) {
-                try {
+        thread.accessLock.writeLock().lock();
+        try {
+            try {
                 ThreadReference tr = thread.getThreadReference();
                 com.sun.jdi.VirtualMachine vm = MirrorWrapper.virtualMachine(tr);
                 com.sun.jdi.request.StepRequest step = EventRequestManagerWrapper.createStepRequest(
@@ -526,7 +525,8 @@ public class CallStackFrameImpl implements CallStackFrame {
                 Exceptions.printStackTrace(e);
                 return null;
             }
-            }
+        } finally {
+            thread.accessLock.writeLock().unlock();
         }
         return null;
     }

@@ -114,7 +114,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         this.lp = lp;
         this.ec = ec;
-        RequestProcessor.getDefault ().post (this);
+        currentEngine.lookupFirst(null, RequestProcessor.class).post (this);
         return null;
     }
 

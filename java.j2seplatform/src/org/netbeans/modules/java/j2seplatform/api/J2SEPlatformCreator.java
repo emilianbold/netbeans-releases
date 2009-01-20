@@ -47,7 +47,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvert
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -75,7 +75,7 @@ public class J2SEPlatformCreator {
         String antName = createPlatformAntName(displayName);
         plat.setDisplayName(displayName);
         plat.setAntName(antName);
-        FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
+        FileObject platformsFolder = FileUtil.getConfigFile(
                 "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
         assert platformsFolder != null;
         DataObject dobj = PlatformConvertor.create(plat, DataFolder.findFolder(platformsFolder), antName);

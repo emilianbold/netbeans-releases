@@ -64,7 +64,7 @@ public final class DummyModuleInfo extends ModuleInfo {
 //     */
 //    private static synchronized AutomaticDependencies getAutoDepsHandler() {
 //        if (autoDepsHandler == null) {
-//            FileObject depsFolder = Repository.getDefault().getDefaultFileSystem().findResource("ModuleAutoDeps"); // NOI18N
+//            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps"); // NOI18N
 //            if (depsFolder != null) {
 //                FileObject[] kids = depsFolder.getChildren();
 //                List urls = new ArrayList(Math.max(kids.length, 1)); // List<URL>

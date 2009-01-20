@@ -60,7 +60,7 @@ import org.netbeans.spi.mobility.project.ui.customizer.HelpCtxCallback;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -81,7 +81,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
     /** Creates new form CustomizerPlatform */
     public CustomizerPlatform() {
         initComponents();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Customizer/org.netbeans.modules.kjava.j2meproject/Platform"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Customizer/org.netbeans.modules.kjava.j2meproject/Platform"); //NOI18N
         DataFolder df = DataFolder.findFolder(fo);
         DataObject dob[] = df.getChildren();
         for (int i=0; i<dob.length; i++) {

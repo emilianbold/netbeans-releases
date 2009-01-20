@@ -57,8 +57,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
@@ -157,13 +156,11 @@ public class ProjectCustomizerTest extends NbTestCase {
     }
     
     public void testReadCategories() {
-        FileSystem sysFS = Repository.getDefault().getDefaultFileSystem();
         // creating direcotry structure on System FileSystem
-        FileObject projectFO = sysFS.findResource("Projects");
+        FileObject projectFO = FileUtil.getConfigFile("Projects");
         if (projectFO == null) {
-            FileObject rootFO = sysFS.getRoot();
             try {
-                projectFO = rootFO.createFolder("Projects");
+                projectFO = FileUtil.getConfigRoot().createFolder("Projects");
             } catch (IOException ex) {
                 fail("Cannot create 'Projects' folder.");
             }

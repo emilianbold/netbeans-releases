@@ -1786,6 +1786,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 "items = new ArrayList<$ITEM_CONVERTER$>();" +
                 "}" +
                 "if (entities != null) {" +
+                "items.clear();" +
                 "for ($CLASS$ entity : entities) {" +
                 "items.add(new $ITEM_CONVERTER$(entity, uri, expandLevel, true));" +
                 "}" +

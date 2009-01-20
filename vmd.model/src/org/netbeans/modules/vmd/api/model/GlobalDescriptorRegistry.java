@@ -100,7 +100,7 @@ final class GlobalDescriptorRegistry {
         assert projectType != null  && projectType.length () > 0 : "Invalid project-type: " + projectType; // NOI18N
         this.projectType = projectType;
 
-        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components"); // NOI18N
+        FileObject registryFileObject = FileUtil.getConfigFile (projectType + "/components"); // NOI18N
         if (registryFileObject != null) {
             registryFolder = DataFolder.findFolder (registryFileObject);
             registryFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
@@ -114,7 +114,7 @@ final class GlobalDescriptorRegistry {
         } else
             registryFolder = null;
 
-        FileObject producersFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/producers"); // NOI18N
+        FileObject producersFileObject = FileUtil.getConfigFile (projectType + "/producers"); // NOI18N
         if (producersFileObject != null) {
             producersFolder = DataFolder.findFolder (producersFileObject);
             producersFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
@@ -476,7 +476,7 @@ final class GlobalDescriptorRegistry {
         final FileObject fo = weakReference != null ? weakReference.get() : null;
         if (fo != null) {
             try {
-                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
+                FileUtil.runAtomicAction(new AtomicAction() {
                     public void run() {
                         try {
                             fo.delete();
@@ -495,7 +495,7 @@ final class GlobalDescriptorRegistry {
         final FileObject fo1 = weakReference != null ? weakReference.get() : null;
         if (fo1 != null) {
             try {
-                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
+                FileUtil.runAtomicAction(new AtomicAction() {
                     public void run() {
                         try {
                             fo1.delete();

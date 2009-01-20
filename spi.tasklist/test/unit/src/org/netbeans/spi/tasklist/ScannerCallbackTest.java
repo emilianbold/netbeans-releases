@@ -45,12 +45,10 @@ import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.junit.*;
-import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -108,7 +106,7 @@ public class ScannerCallbackTest extends NbTestCase {
         assertEquals( fileScanner, taskManager.refreshedScanner );
         
         taskManager.refreshedScanner = null;
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fo = FileUtil.getConfigRoot();
         callback.refresh( fo );
         assertEquals( fileScanner, taskManager.refreshedScanner );
         assertEquals( fo, taskManager.refreshedResources[0] );
@@ -127,7 +125,7 @@ public class ScannerCallbackTest extends NbTestCase {
         assertEquals( simpleScanner, taskManager.clearedScanner );
         
         
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fo = FileUtil.getConfigRoot();
         List<? extends Task> tasks = new ArrayList<Task>();
         callback.setTasks(fo, tasks);
         assertEquals( simpleScanner, taskManager.setTasksScanner );

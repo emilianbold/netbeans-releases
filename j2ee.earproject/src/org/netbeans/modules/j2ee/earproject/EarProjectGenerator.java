@@ -85,7 +85,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -182,7 +181,7 @@ public final class EarProjectGenerator {
         FileObject docBase = FileUtil.createFolder(prjDirFO, DEFAULT_DOC_BASE_FOLDER);
         
         // create a default manifest
-        FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
+        FileUtil.copyFile(FileUtil.getConfigFile(
                 "org-netbeans-modules-j2ee-earproject/MANIFEST.MF"), docBase, "MANIFEST"); // NOI18N
         
         final EarProject p = (EarProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
@@ -485,11 +484,11 @@ public final class EarProjectGenerator {
         }
         FileObject template = null;
         if (EarProjectUtil.isDDCompulsory(earProject)) {
-            template = Repository.getDefault().getDefaultFileSystem().findResource(
+            template = FileUtil.getConfigFile(
                     "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
         } else if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
             if (force) {
-                template = Repository.getDefault().getDefaultFileSystem().findResource(
+                template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
             } else {
                 String newLine = System.getProperty("line.separator");

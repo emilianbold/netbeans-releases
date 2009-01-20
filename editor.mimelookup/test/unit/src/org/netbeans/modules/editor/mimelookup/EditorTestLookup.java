@@ -135,7 +135,8 @@ public class EditorTestLookup extends ProxyLookup {
         
         setLookup(new FileSystem [] { writeableFs, layersFs }, instances, cl, exclude);
     }
-    
+
+    @SuppressWarnings("deprecation")
     private static void setLookup(FileSystem [] fs, Object[] instances, ClassLoader cl, Class [] exclude)
     throws IOException, PropertyVetoException {
 

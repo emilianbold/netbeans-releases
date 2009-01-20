@@ -9,15 +9,12 @@ package org.netbeans.modules.languages.dataobject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.DefaultListModel;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -92,8 +89,7 @@ public class GLFFilesCustomEditor extends javax.swing.JPanel {
 
     private static List<String> getSupportedMimeTypes () {
         List<String> result = new ArrayList<String> ();
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject root = fs.findResource ("Editors");
+        FileObject root = FileUtil.getConfigFile ("Editors");
         Enumeration e1 = root.getChildren (false);
         while (e1.hasMoreElements ()) {
             FileObject f1 = (FileObject) e1.nextElement ();
@@ -113,7 +109,7 @@ public class GLFFilesCustomEditor extends javax.swing.JPanel {
     private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bEditActionPerformed
         String mimeType = (String) lFiles.getSelectedValue ();
         if (mimeType == null) return;
-        FileObject fileObject = Repository.getDefault ().getDefaultFileSystem ().findResource ("Editors/" + mimeType + "/language.nbs");
+        FileObject fileObject = FileUtil.getConfigFile ("Editors/" + mimeType + "/language.nbs");
         try {
             DataObject dataObject = DataObject.find (fileObject);
             OpenCookie openCookie = dataObject.getCookie (OpenCookie.class);

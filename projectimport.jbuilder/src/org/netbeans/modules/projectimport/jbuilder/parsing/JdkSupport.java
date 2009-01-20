@@ -54,7 +54,6 @@ import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -124,7 +123,7 @@ public final class JdkSupport {
             
     private static Collection getPlatformInstallers() {
         Collection result =  new HashSet();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(INSTALLER_REGISTRY_FOLDER);
+        FileObject fo = FileUtil.getConfigFile(INSTALLER_REGISTRY_FOLDER);
         assert fo != null;
         assert fo.isFolder();
         FileObject[] children = fo.getChildren();

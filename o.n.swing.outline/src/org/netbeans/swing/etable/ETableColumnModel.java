@@ -291,6 +291,10 @@ public class ETableColumnModel extends DefaultTableColumnModel {
             }
         }
     }
+
+    List<TableColumn> getSortedColumns () {
+        return sortedColumns;
+    }
     
     /**
      * Comparator that delegates to individual comparators supplied by

@@ -44,8 +44,7 @@ package org.netbeans.modules.settings;
 import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.loaders.InstanceDataObject;
@@ -145,27 +144,26 @@ public final class Env implements Environment.Provider {
     /** look up appropriate provider according to clazz */
     public static FileObject findProvider(Class clazz) throws IOException {
         String prefix = "xml/memory/"; //NOI18N
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject memContext = sfs.findResource(prefix);
+        FileObject memContext = FileUtil.getConfigFile(prefix);
         if (memContext == null) throw new java.io.FileNotFoundException("SFS/xml/memory/"); //NOI18N
         Class c = clazz;
         while (c != null) {
             String name = c.getName().replace('.', '/');
             String convertorPath = new StringBuffer(200).append(prefix).
                 append(name).toString(); // NOI18N
-            FileObject fo = sfs.findResource(convertorPath);
+            FileObject fo = FileUtil.getConfigFile(convertorPath);
             if (fo != null) {
                 String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
                 if (providerPath != null) {
                     if (c.equals(clazz)) {
-                        return sfs.findResource(providerPath);
+                        return FileUtil.getConfigFile(providerPath);
                     } else {
                         // check the special subclasses attribute
                         Object inheritAttribute = fo.getAttribute(EA_SUBCLASSES);
                         if (inheritAttribute instanceof Boolean) {
                             boolean subclasses = ((Boolean)inheritAttribute).booleanValue();
                             if (subclasses) {
-                                return sfs.findResource(providerPath);
+                                return FileUtil.getConfigFile(providerPath);
                             }
                         }
                     }
@@ -192,6 +190,6 @@ public final class Env implements Environment.Provider {
         String resource = xmlEntitiesPrefix +
             filename.substring(xmlLookupsPrefix.length(), filename.length());
         
-        return Repository.getDefault().getDefaultFileSystem().findResource(resource);
+        return FileUtil.getConfigFile(resource);
     }
 }

@@ -46,6 +46,7 @@ import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  * @author David Kaspar
@@ -62,6 +63,14 @@ public class CodeEditorTopComponent extends EditorTopComponent implements Clonea
         if (pane == null) {
             JComponent view = getView ();
             pane = view instanceof CloneableEditorSupport.Pane ? ((CloneableEditorSupport.Pane) view).getEditorPane () : null;
+            
+            //TODO This is temporary work around for NPE
+            Debug.warning("Pane is " + pane);
+            Debug.warning("Actin Map is "+ getActionMap());
+            if (pane == null) {
+                return null;
+            }
+            // End
             getActionMap ().setParent (pane.getActionMap ());
             pane.getActionMap ().remove ("cloneWindow"); // NOI18N
         }

@@ -45,11 +45,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -122,7 +121,7 @@ implements Runnable {
     }
 
     public org.openide.util.Lookup lookupCacheLoad () {
-        FileObject services = Repository.getDefault().getDefaultFileSystem().findResource("Services"); // NOI18N
+        FileObject services = FileUtil.getConfigFile("Services"); // NOI18N
         if (services != null) {
             StartLog.logProgress("Got Services folder"); // NOI18N
             DataFolder servicesF;

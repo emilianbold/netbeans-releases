@@ -46,8 +46,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 public class Utils {
@@ -58,13 +57,10 @@ public class Utils {
     throws IOException {
         FileObject r = (FileObject) filesCache.get (name + '.' + ext);
         if (r != null) return r;
-        FileSystem fs = Repository.getDefault ().
-            getDefaultFileSystem ();
-        FileObject rootFolder = fs.getRoot ();
-        FileObject optionsFolder = rootFolder.getFileObject ("Options");
+        FileObject optionsFolder = FileUtil.getConfigFile("Options");
         if (optionsFolder == null) {
             if (create) 
-                optionsFolder = rootFolder.createFolder ("Options");
+                optionsFolder = FileUtil.getConfigRoot().createFolder ("Options");
             else 
                 return null;
         }

@@ -84,7 +84,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -343,13 +342,13 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         }
 
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName, Map<String, ?> params) throws IOException {
-            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
+            FileObject templateFO = FileUtil.getConfigFile("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName, params).getPrimaryFile();
         }
 
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
-            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
+            FileObject templateFO = FileUtil.getConfigFile("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
         }

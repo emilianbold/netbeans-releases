@@ -66,7 +66,6 @@ import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -80,6 +79,7 @@ import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -105,7 +105,7 @@ public class Converter {
             
             final List<ConverterItem> items = getConverterItems (rootNode);
 
-            DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/ConverterVisualMIDlet.java")); // NOI18N
+            DataObject template = DataObject.find (FileUtil.getConfigFile ("Templates/MIDP/ConverterVisualMIDlet.java")); // NOI18N
             final DataObject outputDesign = template.createFromTemplate (folder, outputFileName);
             DocumentSerializer serializer = IOSupport.getDocumentSerializer (outputDesign);
             serializer.waitDocumentLoaded ();

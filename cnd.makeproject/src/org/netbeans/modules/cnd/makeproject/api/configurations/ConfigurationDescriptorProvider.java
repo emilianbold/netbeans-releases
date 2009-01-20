@@ -167,6 +167,11 @@ public class ConfigurationDescriptorProvider {
                 if (descr.getConfs() == null || descr.getConfs().getActive() == null){
                     return;
                 }
+                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
+                if (projectItems == null || projectItems.length == 0) {
+                    // do not track empty applications
+                    return;
+                }
                 MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -181,6 +186,12 @@ public class ConfigurationDescriptorProvider {
                         break;
                     case MakeConfiguration.TYPE_STATIC_LIB:
                         type = "STATIC_LIB"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_APPLICATION:
+                        type = "QT_APPLICATION"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_LIBRARY:
+                        type = "QT_LIBRARY"; // NOI18N
                         break;
                     default:
                         type = "UNKNOWN"; // NOI18N
@@ -224,7 +235,6 @@ public class ConfigurationDescriptorProvider {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
                 makeConfiguration.reCountLanguages((MakeConfigurationDescriptor) descr);
-                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
                 int size = 0;
                 int allItems = projectItems.length;
                 boolean cLang = false;

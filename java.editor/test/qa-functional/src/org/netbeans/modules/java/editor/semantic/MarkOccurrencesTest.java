@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -49,6 +50,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
@@ -67,9 +69,7 @@ import org.openide.util.Exceptions;
 public class MarkOccurrencesTest extends NbTestCase {
     
     private FileObject fileObject;
-    
-    private MarkOccurrencesHighlighterFactory factory;
-    
+       
     private JEditorPane editorPane;
     
     private DataObject dataObject;
@@ -209,31 +209,12 @@ public class MarkOccurrencesTest extends NbTestCase {
         if(ec != null) ec.close();
     }
     
-//    static boolean firstStart = true;
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-//        if(firstStart) {
-//            js = openFile("Test.java");
-//            sleep(2000);
-//            try {
-//                Caret c = editorPane.getCaret();
-//                c.setDot(66);
-//                sleep(2000);
-//                c.setDot(272);
-//                sleep(2000);
-//            } catch(Exception e) {
-//                //ignoring
-//            } finally {
-//                closeFile();
-//            }
-//            firstStart = false;
-//        }
+        System.out.println("##### "+this.getName()+" #####");
     }
-    
-    
-    
+       
     @Override
     protected void tearDown() throws Exception {
         closeFile();
@@ -301,14 +282,11 @@ public class MarkOccurrencesTest extends NbTestCase {
         
         fileObject = FileUtil.toFileObject(sample);
         dataObject = DataObject.find(fileObject);
-        JavaSource js = JavaSource.forFileObject(fileObject);
-        factory = new MarkOccurrencesHighlighterFactory();
-        //sleep(500);
+        JavaSource js = JavaSource.forFileObject(fileObject);                
         final EditorCookie ec = dataObject.getCookie(EditorCookie.class);
         ec.openDocument();
         ec.open();
-        
-        //sleep(500);
+                
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 JEditorPane[] panes = ec.getOpenedPanes();
@@ -325,6 +303,7 @@ public class MarkOccurrencesTest extends NbTestCase {
         c.setDot(pos);
         foundMarks=null;
         int cycles = 0;
+        sleep(500);
         while(foundMarks==null && cycles<10) {
             sleep(200);
             cycles++;
@@ -340,9 +319,7 @@ public class MarkOccurrencesTest extends NbTestCase {
         //not locking, should be fine in tests:
         if(foundMarks==null) {
             ref = "";
-        } else {
-            //HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
-            //while (hs.moveNext()) {
+        } else {            
             Collections.sort(foundMarks, new Comparator<int[]>(){
 
                 public int compare(int[] o1, int[] o2) {
@@ -353,35 +330,31 @@ public class MarkOccurrencesTest extends NbTestCase {
                     return 0;
                 }
             });
-            for(int[] mark:foundMarks) {
-                //ref = ref + "[" + hs.getStartOffset() + "," + hs.getEndOffset() + "] ";
+            for(int[] mark:foundMarks) {                
                 ref = ref + "[" + mark[0] + "," + mark[1] + "] ";
             }
-        }
+        }        
         assertEquals(etalon, ref);
-        
-        
-        
     }
     
     public void testType() throws Exception {
         SimpleMark[] marks = TEST_TYPE;
-        js = openFile("Test.java");       
-        setAndCheck(66, marks);       
+        js = openFile("Test.java");
+        setAndCheck(66, marks);
         setAndCheck(272, marks);
-        
+
     }
-    
+
     public void testMethod() throws Exception {
         SimpleMark[] marks = TEST_METHOD;
-        js = openFile("Test2.java");        
+        js = openFile("Test2.java");
         setAndCheck(153, marks);
         setAndCheck(185, marks);
         setAndCheck(260, marks);
         setAndCheck(340, marks);
         setAndCheck(385, marks);
     }
-    
+
     public void testField() throws Exception {
         SimpleMark[] marks = TEST_FIELD;
         js = openFile("Test3.java");
@@ -391,7 +364,7 @@ public class MarkOccurrencesTest extends NbTestCase {
         setAndCheck(188, marks);
         setAndCheck(225, marks);
     }
-    
+
     public void testConstant() throws Exception {
         SimpleMark[] marks = TEST_CONST;
         js = openFile("Test4.java");
@@ -401,11 +374,11 @@ public class MarkOccurrencesTest extends NbTestCase {
         setAndCheck(246, marks);
         setAndCheck(276, marks);
     }
-    
+
     public void testLocal() throws Exception {
         SimpleMark[] marks = TEST_LOCAL1;
         js = openFile("Test5.java");
-        
+
         setAndCheck(109, marks);
         setAndCheck(182, marks);
         setAndCheck(217, marks);
@@ -416,130 +389,139 @@ public class MarkOccurrencesTest extends NbTestCase {
         setAndCheck(248, marks);
         setAndCheck(290, marks);
     }
-    
+
     public void testThrowingPoints() throws Exception {
         SimpleMark[] marks = TEST_THROWING1;
         js = openFile("Test6.java");
         setAndCheck(295, marks);
-        
+
         marks = TEST_THROWING2;
         setAndCheck(315, marks);
     }
-    
+
     public void testExitPoints() throws Exception {
         SimpleMark[] marks = TEST_EXIT;
         js = openFile("Test6.java");
         setAndCheck(250, marks);
     }
-    
+
     public void testImplementing() throws Exception {
         SimpleMark[] marks = TEST_IMPLEMENT1;
         js = openFile("Test8.java");
         setAndCheck(60, marks);
-        
+
         marks = TEST_IMPLEMENT2;
         setAndCheck(70, marks);
     }
-    
+
     public void testOverriding() throws Exception {
         SimpleMark[] marks = TEST_OVERRIDE;
         js = openFile("Test9.java");
         setAndCheck(130, marks);
     }
-    
+
     public void testLabels() throws Exception {
         SimpleMark[] marks = TEST_LABELS1;
         js = openFile("Testa.java");
         setAndCheck(162, marks);
         setAndCheck(284, marks);
-        
+
         marks = TEST_LABELS2;
         setAndCheck(333, marks);
-        
+
     }
-    
-    public void testOptions() throws Exception {
-        Preferences setting = MarkOccurencesSettings.getCurrentNode();
-        setting.putBoolean(MarkOccurencesSettings.ON_OFF, false);
-        js = openFile("Test.java");
-        setAndCheck(80, EMPTY);
-        setAndCheck(205, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.ON_OFF, true);
-        setAndCheck(168, new SimpleMark[]{new SimpleMark(166,170,null)});
-        closeFile();
+
+    private void setAndFlush(String key,boolean value) {
+        try {
+            Preferences pref = MarkOccurencesSettings.getCurrentNode();
+            pref.putBoolean(key, value);
+            pref.flush();            
+        } catch (BackingStoreException ex) {
+            fail("Error while storing settings");
+        }
+    }
+
+    public void testOptions() throws Exception {        
+//        setAndFlush(MarkOccurencesSettings.ON_OFF, false);
+//        js = openFile("Test.java");
+//        setAndCheck(80, EMPTY);
+//        setAndCheck(205, EMPTY);
+//        setAndFlush(MarkOccurencesSettings.ON_OFF, true);
+//        setAndCheck(168, new SimpleMark[]{new SimpleMark(166,170,null)});
+//        closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.BREAK_CONTINUE, false);
+        setAndFlush(MarkOccurencesSettings.BREAK_CONTINUE, false);
         js = openFile("Testa.java");
-        setAndCheck(162, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.BREAK_CONTINUE, true);
+        setAndCheck(162, EMPTY);        
+        setAndFlush(MarkOccurencesSettings.BREAK_CONTINUE, true);        
         setAndCheck(162, TEST_LABELS1);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.CONSTANTS, false);
+        setAndFlush(MarkOccurencesSettings.CONSTANTS, false);
         js = openFile("Test4.java");
-        setAndCheck(78, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.CONSTANTS, true);
+        setAndCheck(78, EMPTY);       
+        setAndFlush(MarkOccurencesSettings.CONSTANTS, true);        
         setAndCheck(78, TEST_CONST);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.EXCEPTIONS, false);
+        setAndFlush(MarkOccurencesSettings.EXCEPTIONS, false);
         js = openFile("Test6.java");
-        setAndCheck(295, new SimpleMark[]{new SimpleMark(73,94,null),new SimpleMark(281,302,null)});
-        setting.putBoolean(MarkOccurencesSettings.EXCEPTIONS, true);
+        setAndCheck(295, new SimpleMark[]{new SimpleMark(73,94,null),new SimpleMark(281,302,null)});        
+        setAndFlush(MarkOccurencesSettings.EXCEPTIONS, true);        
         setAndCheck(295, TEST_THROWING1);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.EXIT, false);
+        setAndFlush(MarkOccurencesSettings.EXIT, false);
         js = openFile("Test6.java");
         setAndCheck(250,  new SimpleMark[]{new SimpleMark(246,252,null),
                                            new SimpleMark(261,267,null),
-                                           new SimpleMark(481,487,null)});                        
-        setting.putBoolean(MarkOccurencesSettings.EXIT, true);
+                                           new SimpleMark(481,487,null)});
+        setAndFlush(MarkOccurencesSettings.EXIT, true);        
         setAndCheck(250, TEST_EXIT);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.FIELDS, false);
+        setAndFlush(MarkOccurencesSettings.FIELDS, false);
         js = openFile("Test3.java");
         setAndCheck(61, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.FIELDS, true);
+        setAndFlush(MarkOccurencesSettings.FIELDS, true);
         setAndCheck(61, TEST_FIELD);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.IMPLEMENTS, false);
+        setAndFlush(MarkOccurencesSettings.IMPLEMENTS, false);
         js = openFile("Test8.java");
         setAndCheck(60, new SimpleMark[]{new SimpleMark(57,65,null)});
         
-        setting.putBoolean(MarkOccurencesSettings.IMPLEMENTS, true);
+        setAndFlush(MarkOccurencesSettings.IMPLEMENTS, true);
         setAndCheck(60, TEST_IMPLEMENT1);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.LOCAL_VARIABLES, false);
+        setAndFlush(MarkOccurencesSettings.LOCAL_VARIABLES, false);
         js = openFile("Test5.java");
         setAndCheck(109, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.LOCAL_VARIABLES, true);
+        setAndFlush(MarkOccurencesSettings.LOCAL_VARIABLES, true);
         setAndCheck(109, TEST_LOCAL1);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.METHODS, false);
+        setAndFlush(MarkOccurencesSettings.METHODS, false);
         js = openFile("Test2.java");
         setAndCheck(153, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.METHODS, true);
+        setAndFlush(MarkOccurencesSettings.METHODS, true);
         setAndCheck(153, TEST_METHOD);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.OVERRIDES, false);
+        setAndFlush(MarkOccurencesSettings.OVERRIDES, false);
         js = openFile("Test9.java");
         setAndCheck(130,new SimpleMark[]{new SimpleMark(77,94,null),
                                            new SimpleMark(124,141,null)
                                         });                 
-        setting.putBoolean(MarkOccurencesSettings.OVERRIDES, true);
+        setAndFlush(MarkOccurencesSettings.OVERRIDES, true);
         setAndCheck(130, TEST_OVERRIDE);
         closeFile();
         
-        setting.putBoolean(MarkOccurencesSettings.TYPES, false);
+        setAndFlush(MarkOccurencesSettings.TYPES, false);
         js = openFile("Test.java");
         setAndCheck(66, EMPTY);
-        setting.putBoolean(MarkOccurencesSettings.TYPES, true);
+        setAndFlush(MarkOccurencesSettings.TYPES, true);
         setAndCheck(66, TEST_TYPE);
         
     }

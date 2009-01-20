@@ -29,70 +29,58 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProgram;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class DebugScript  extends RunScript {
-    public static final String ID = "debug.local"; //NOI18N
 
     public DebugScript(PhpProject project) {
         super(project);
     }
 
+    public DebugScript(PhpProject project, PhpProgram program, ExecutionDescriptor descriptor, ExternalProcessBuilder processBuilder, FileObject sourceRoot, FileObject runFile) {
+        super(project, program, descriptor, processBuilder, sourceRoot, runFile);
+    }
+
     @Override
-    public void invokeAction(final Lookup context) throws IllegalArgumentException {
+    public void run(final Lookup context) {
         //temporary; after narrowing deps. will be changed
         Callable<Cancellable> callable = getCallable(context);
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
-        if (dbgStarter != null) {
-            if (dbgStarter.isAlreadyRunning()) {
-                if (CommandUtils.warnNoMoreDebugSession()) {
-                    dbgStarter.stop();
-                    invokeAction(context);
-                }
-            } else {
-                dbgStarter.start(getProject(), callable,
-                        (context == null) ? fileForProject(false) : fileForContext(context), isScriptSelected());
+        assert dbgStarter != null;
+        if (dbgStarter.isAlreadyRunning()) {
+            if (CommandUtils.warnNoMoreDebugSession()) {
+                dbgStarter.stop();
+                run(context);
             }
+        } else {
+            dbgStarter.start(project, callable, getRunFile(context), true);
         }
     }
 
+    @Override
     protected boolean isControllable() {
         return false;
     }
 
     @Override
     protected String getOutputTabTitle(String command, File scriptFile) {
-        return super.getOutputTabTitle(command, scriptFile) + " "+
-                NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug");//NOI18N
-    }
-
-
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
+        return String.format("%s %s", super.getOutputTabTitle(command, scriptFile), NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug"));
     }
 
     @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(DebugScript.class, "LBL_DebugScript");
-    }
-
-    @Override
-    protected ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
-        ExternalProcessBuilder ret = super.initProcessBuilder(processBuilder);
-        return ret.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); //NOI18N
+    protected ExternalProcessBuilder getProcessBuilder(PhpProgram program, File scriptFile) {
+        return super.getProcessBuilder(program, scriptFile)
+                .addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
     }
 }

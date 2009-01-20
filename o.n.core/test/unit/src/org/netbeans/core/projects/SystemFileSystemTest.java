@@ -49,7 +49,6 @@ import org.netbeans.core.startup.ModuleHistory;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import java.io.File;
@@ -115,7 +114,7 @@ public class SystemFileSystemTest extends NbTestCase {
     }
     
     public void testLocalizingBundle() throws Exception {
-        FileObject bar = Repository.getDefault().getDefaultFileSystem().findResource("foo/bar.txt");
+        FileObject bar = FileUtil.getConfigFile("foo/bar.txt");
         Node n = DataObject.find(bar).getNodeDelegate();
         assertEquals("correct localized data object name", "Localized Name", n.getDisplayName());
     }
@@ -125,18 +124,18 @@ public class SystemFileSystemTest extends NbTestCase {
         String dir = "/yarda/own/file";
         org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);
         
-        assertNull ("File is not there yet", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
+        assertNull ("File is not there yet", FileUtil.getConfigFile (dir));
         MainLookup.register (mem);
         try {
-            assertNotNull ("The file is there now", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
+            assertNotNull ("The file is there now", FileUtil.getConfigFile (dir));
         } finally {
             MainLookup.unregister (mem);
         }
-        assertNull ("File is no longer there", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
+        assertNull ("File is no longer there", FileUtil.getConfigFile (dir));
     }
     
     public void testIconFromURL() throws Exception {
-        FileObject bar = Repository.getDefault().getDefaultFileSystem().findResource("foo/bar.txt");
+        FileObject bar = FileUtil.getConfigFile("foo/bar.txt");
         Node n = DataObject.find(bar).getNodeDelegate();
         Image reference = Toolkit.getDefaultToolkit().createImage(new URL("jar:" + satJar.toURL() + "!/sfs_attr_test/main.gif"));
         Image tested = n.getIcon(BeanInfo.ICON_COLOR_16x16);
@@ -147,7 +146,7 @@ public class SystemFileSystemTest extends NbTestCase {
     
     /** @see "#18832" */
     public void testIconFromImageMethod() throws Exception {
-        FileObject baz = Repository.getDefault().getDefaultFileSystem().findResource("foo/baz.txt");
+        FileObject baz = FileUtil.getConfigFile("foo/baz.txt");
         Node n = DataObject.find(baz).getNodeDelegate();
         Image reference = Toolkit.getDefaultToolkit().createImage(new URL("jar:" + satJar.toURL() + "!/sfs_attr_test/main-plus-badge.gif"));
         Image tested = n.getIcon(BeanInfo.ICON_COLOR_16x16);

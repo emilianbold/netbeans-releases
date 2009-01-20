@@ -45,16 +45,10 @@ import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
-import org.netbeans.junit.NbTestCase;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 
 /** It must be possible to create lookup anytime, if there is no deadlock,
@@ -75,7 +69,7 @@ public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends Loggi
     
     public void testCreateAndImmediatellyQueryWhenThereIsALotfSlowDataObjectsTheLookup() throws Exception {
         MyLoader m = (MyLoader)MyLoader.getLoader(MyLoader.class);
-        m.button = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "FolderLookup");
+        m.button = FileUtil.createFolder(FileUtil.getConfigRoot(), "FolderLookup");
         DataObject instance = InstanceDataObject.create(DataFolder.findFolder(m.button), "SomeName", JButton.class);
         m.instanceFile = instance.getPrimaryFile();
         for (int i = 0; i < 15; i++) {
@@ -87,7 +81,7 @@ public class CanYouCreateFolderLookupFromHandleFindSlowVersionTest extends Loggi
         instance = null;
         assertGC("Object must disappear first", ref);
         
-        FileObject any = Repository.getDefault().getDefaultFileSystem().getRoot().createData("Ahoj.txt");
+        FileObject any = FileUtil.getConfigRoot().createData("Ahoj.txt");
         DataObject obj = DataObject.find(any);
         
         assertEquals("The right object found", m, obj.getLoader());

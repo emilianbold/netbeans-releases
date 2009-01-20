@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.model.xref;
 
 import java.util.Collection;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.openide.util.Lookup;
 
@@ -57,7 +58,7 @@ public abstract class CsmLabelResolver {
      * If label name not null then service searches exact label references.
      */
     public abstract Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction,
-            CharSequence label, LabelKind kind);
+            CharSequence label, Set<LabelKind> kinds);
     
     protected CsmLabelResolver() {
     }
@@ -73,7 +74,6 @@ public abstract class CsmLabelResolver {
     public static enum LabelKind {
         Definiton,
         Reference,
-        Both
     }
     /**
      * Implementation of the default selector
@@ -85,9 +85,9 @@ public abstract class CsmLabelResolver {
         }
 
         @Override
-        public Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction, CharSequence label, LabelKind kind) {
+        public Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction, CharSequence label, Set<LabelKind> kinds) {
             for (CsmLabelResolver selector : res.allInstances()) {
-                return selector.getLabels(referencedFunction, label, kind);
+                return selector.getLabels(referencedFunction, label, kinds);
             }
             return null;
         }

@@ -49,7 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.options.indentation.CustomizerSelector;
 import org.netbeans.modules.options.indentation.IndentationPanel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -76,7 +76,7 @@ final class CustomizerFactories {
 
                 String path = (String) file.getAttribute("previewTextFile"); //NOI18N
                 if (path != null) {
-                    FileObject previewTextFile = Repository.getDefault().getDefaultFileSystem().findResource(path);
+                    FileObject previewTextFile = FileUtil.getConfigFile(path);
                     if (previewTextFile != null) {
                         try {
                             preview = new IndentationPanel.TextPreview(preferences, customizerMimeType, previewTextFile);
@@ -87,8 +87,7 @@ final class CustomizerFactories {
                 }
 
                 if (preview == null && customizerMimeType != null) {
-                    FileObject previewTextFile = Repository.getDefault().getDefaultFileSystem()
-                            .findResource("OptionsDialog/PreviewExamples/" + customizerMimeType); //NOI18N
+                    FileObject previewTextFile = FileUtil.getConfigFile("OptionsDialog/PreviewExamples/" + customizerMimeType); //NOI18N
                     if (previewTextFile != null && previewTextFile.isData()) {
                         try {
                             preview = new IndentationPanel.TextPreview(preferences, customizerMimeType, previewTextFile);
