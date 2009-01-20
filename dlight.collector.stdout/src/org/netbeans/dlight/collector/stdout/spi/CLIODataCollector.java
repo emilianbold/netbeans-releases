@@ -80,7 +80,9 @@ import org.netbeans.modules.nativeexecution.ObservableActionListener;
 import org.openide.util.NbBundle;
 
 /**
- * Command Line inout/output data collector.
+ * Command Line output data collector.
+ * Implements both {@link org.netbeans.modules.dlight.spi.collectorDataCollector}
+ * and {@link org.netbeans.modules.dlight.spi.collector.DataCollector} via invocation of a command-line tool and parsing its output.
  */
 public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements DataCollector<CLIODCConfiguration> {
 
@@ -96,15 +98,15 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
 
 
-  public CLIODataCollector(){
-    
+  public CLIODataCollector(){   
   }
+  
   /**
    *
-   * @param command
-   * @param arguments
-   * @param parser
-   * @param dataTablesMetadata
+   * @param command command to invoke (without arguments)
+   * @param arguments command arguments
+   * @param parser a {@link org.netbeans.dlight.collector.stdout.api.CLIOParser} to parse command output with
+   * @param dataTablesMetadata describes the tables to store parsed data in
    */
   CLIODataCollector(CLIODCConfiguration configuration) {
     this.command = CLIODCConfigurationAccessor.getDefault().getCommand(configuration);
@@ -114,6 +116,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
 
+  /** {@inheritDoc */
   public String getID(){
     return CLIODCConfigurationAccessor.getDefault().getCLIODCConfigurationID();
   }
@@ -203,28 +206,40 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     outProcessingThread.interrupt();
   }
 
+  /** {@inheritDoc */
   public List<? extends DataTableMetadata> getDataTablesMetadata() {
     return dataTablesMetadata;
   }
 
+  /** {@inheritDoc */
   public boolean isAttachable() {
     return true;
   }
 
+  /** {@inheritDoc */
   public String getCmd() {
     return command;
   }
 
+  /** {@inheritDoc */
   public String[] getArgs() {
     return null;
   }
 
+  /**
+   * Registers a validation listener
+   * @param listener a validation listener to add
+   */
   public void addValidationListener(ValidationListener listener) {
     if (!validationListeners.contains(listener)) {
       validationListeners.add(listener);
     }
   }
 
+  /**
+   * Removes a validation listener
+   * @param listener a listener to remove
+   */
   public void removeValidationListener(ValidationListener listener) {
     validationListeners.remove(listener);
   }

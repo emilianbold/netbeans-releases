@@ -42,9 +42,15 @@ package org.netbeans.dlight.collector.stdout.api;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 
 /**
- *
- * 
+ * Command line tool output parser used by
+ * {@link org.netbeans.dlight.collector.stdout.api.CLIODCConfiguration}.
  */
 public interface CLIOParser {
-  public DataRow process(String line);
+    /**
+     * Parses a single line of the command line tool output
+     * and transforms it to a data row     
+     * @param line line to parse
+     * @return data row or null if the line does not contain data
+     */
+    public DataRow process(String line);
 }
