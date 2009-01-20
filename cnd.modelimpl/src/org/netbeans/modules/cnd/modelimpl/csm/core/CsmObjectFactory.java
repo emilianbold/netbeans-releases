@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
@@ -223,6 +224,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 aHandler = VARIABLE_DEF_IMPL;
             } else if (object instanceof FieldImpl) {
                 aHandler = FIELD_IMPL;
+            } else if (object instanceof ParameterEllipsisImpl) {
+                aHandler = PARAMETER_ELLIPSIS_IMPL;
             } else if (object instanceof ParameterImpl) {
                 aHandler = PARAMETER_IMPL;
             } else {
@@ -395,6 +398,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case PARAMETER_IMPL:
                 obj = new ParameterImpl(stream);
                 break;
+
+            case PARAMETER_ELLIPSIS_IMPL:
+                obj = new ParameterEllipsisImpl(stream);
+                break;
                 
             case VARIABLE_IMPL:
                 obj = new VariableImpl(stream);
@@ -526,8 +533,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
     private static final int FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
     private static final int PARAMETER_IMPL                 = FIELD_IMPL + 1;
+    private static final int PARAMETER_ELLIPSIS_IMPL        = PARAMETER_IMPL + 1;
     
-    private static final int ENUMERATOR_IMPL                = PARAMETER_IMPL + 1;
+    private static final int ENUMERATOR_IMPL                = PARAMETER_ELLIPSIS_IMPL + 1;
 
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
     private static final int PARAM_LIST_IMPL                = INCLUDE_IMPL + 1;

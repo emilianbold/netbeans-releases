@@ -20,6 +20,9 @@ import org.netbeans.modules.python.project.ui.actions.MoveCommand;
 import org.netbeans.modules.python.project.ui.actions.RenameCommand;
 import org.netbeans.modules.python.project.ui.actions.RunCommand;
 import org.netbeans.modules.python.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.python.project.ui.actions.BuildCommand;
+import org.netbeans.modules.python.project.ui.actions.CleanBuildCommand;
+
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
 import org.openide.util.Lookup;
@@ -51,7 +54,9 @@ public class PythonActionProvider implements ActionProvider {
             new RunCommand(project, true), // Run project as Test
             new DebugCommand(project) ,
             new DebugSingleCommand(project, false),
-            new DebugSingleCommand(project, true) // Debug as Test
+            new DebugSingleCommand(project, true), // Debug as Test
+            new BuildCommand(project), //Build Egg
+            new CleanBuildCommand(project) //Clean and Build Egg
         };
         for (Command command : commandArray) {
             commands.put(command.getCommandId(), command);

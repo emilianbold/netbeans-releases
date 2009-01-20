@@ -49,10 +49,12 @@ import java.io.ObjectStreamException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -440,9 +442,9 @@ public class DatabaseConnection implements DBConnection {
     public void setRememberPassword(boolean flag) {
         Boolean oldrpwd = rpwd;
         rpwd = Boolean.valueOf(flag);
-        if(propertySupport!=null)
-            propertySupport.firePropertyChange(
-                    PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
+        if (propertySupport != null) {
+            propertySupport.firePropertyChange(PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
+        }
     }
 
     /** Returns password */
@@ -650,6 +652,7 @@ public class DatabaseConnection implements DBConnection {
                     doConnect();
                 } catch (Exception e) {
                     sendException(e);
+
                 }
             }
         };
@@ -700,12 +703,17 @@ public class DatabaseConnection implements DBConnection {
     }
 
     private void sendException(Exception exc) {
+        List<ExceptionListener> listeners = new ArrayList<ExceptionListener>();
         synchronized (exceptionListeners) {
             Iterator it = exceptionListeners.iterator();
             while (it.hasNext()) {
                 ExceptionListener l = (ExceptionListener) it.next();
-                l.exceptionOccurred(exc);
+                listeners.add(l);
             }
+        }
+
+        for (ExceptionListener listener : listeners) {
+            listener.exceptionOccurred(exc);
         }
     }
 
@@ -887,7 +895,10 @@ public class DatabaseConnection implements DBConnection {
         Collection<? extends Node> children = root.getChildNodes();
         for (Node node : children) {
             if (node instanceof ConnectionNode) {
-                return (ConnectionNode)node;
+                ConnectionNode cnode = (ConnectionNode)node;
+                if (cnode.getName().equals(connection)) {
+                    return cnode;
+                }
             }
         }
 

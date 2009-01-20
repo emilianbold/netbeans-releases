@@ -254,10 +254,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
             TypeScope type = this;
             if (type instanceof ClassScope) {
                 ClassScope clz = (ClassScope) type;
-                while (type != null && allConstants.isEmpty()) {
-                    type = ModelUtils.getFirst(clz.getSuperClasses());
-                    if (type != null) {
-                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, type.getName(), queryName, NameKind.PREFIX);
+                while (clz != null && allConstants.isEmpty()) {
+                    clz = ModelUtils.getFirst(clz.getSuperClasses());
+                    if (clz != null) {
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), queryName, NameKind.PREFIX);
                         for (IndexedConstant indexedConstant : indexedConstants) {
                             allConstants.add(new ClzConstantElementImpl((TypeScopeImpl) type, indexedConstant));
                         }

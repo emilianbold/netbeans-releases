@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -303,6 +305,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
             }
+            // remove stale file
+            try {
+                removeStaleFile(project, wsdlFileObject.getName());
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsClientNode.class.getName()).log(
+                        Level.FINE, "Cannot remove stale file", ex); //NOI18N
+            }
             // remove wsdl file
             wsdlFileObject.delete();
         }
@@ -439,7 +448,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                         wsdlFo = WSUtils.retrieveResource(
                                 localWsdlFolder,
                                 jaxWsSupport.getCatalog().toURI(),
-                                new URI(wsdlUrl));
+                                new URI(newWsdlUrl));
                     } catch (URISyntaxException ex) {
                         //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_IncorrectURI", wsdlUrl); // NOI18N
@@ -458,21 +467,23 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                     }
                     if (wsdlFo != null) {
                         final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                        Project project = FileOwnerQuery.getOwner(wsdlFo);
+
+                        final String oldId = wsdlFileObject.getName();
+                        final String newId = wsdlFo.getName();
+
+                        // update wsdl URL property
+                        if (wsdlUrlChanged) {
+                            wsdlUrl = newWsdlUrl;
+                            client.setWsdlUrl(wsdlUrl);
+                            Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
+                            if (prefs != null) {
+                                prefs.remove(MavenWebService.CLIENT_PREFIX+oldId);
+                                prefs.put(MavenWebService.CLIENT_PREFIX+newId, newWsdlUrl);
+                            }
+                        }
 
                         if (!relativePath.equals(client.getLocalWsdl())) {
-                            Project project = FileOwnerQuery.getOwner(wsdlFo);
-                            // update wsdl URL property
-                            if (wsdlUrlChanged) {
-                                wsdlUrl = newWsdlUrl;
-                                client.setWsdlUrl(wsdlUrl);
-                                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
-                                if (prefs != null) {
-                                    prefs.remove(MavenWebService.CLIENT_PREFIX+wsdlFileObject.getName());
-                                    prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
-                                }
-                            }
-                            final String oldId = wsdlFileObject.getName();
-                            final String newId = wsdlFo.getName();
                             wsdlFileObject = wsdlFo;
                             // update project's pom.xml
                             ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
@@ -482,6 +493,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                             };
                             FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                             Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+                            // remove stale file
+                            try {
+                                removeStaleFile(project, oldId);
+                            } catch (IOException ex) {
+                                Logger.getLogger(JaxWsClientNode.class.getName()).log(
+                                        Level.FINE, "Cannot remove stale file", ex); //NOI18N
+                            }
                         }
                     } // endif
                     updateNode();
@@ -535,6 +553,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             return null;
         }
         return bindingsModel;
+    }
+
+    private void removeStaleFile(Project prj, String name) throws IOException {
+        FileObject staleFile = prj.getProjectDirectory().getFileObject("target/jaxws/stale/"+name+".stale");
+        if (staleFile != null) {
+            staleFile.delete();
+        }
     }
  
 }

@@ -72,7 +72,7 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
       end
       example_group_start_time = Time.now
       puts "%RSPEC_SUITE_STARTING% #{example_group.description}"
-      success = success & example_group.run
+      success = success & run_example_group(example_group)
       elapsed_time = Time.now - example_group_start_time
       puts "%RSPEC_SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
     end
@@ -84,6 +84,13 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
   end
 
   private
+
+  def run_example_group(example_group)
+    # in rspec 1.1.12 the run method requires options as an arg
+    run_method = example_group.method(:run)
+    run_method.arity > 0 ? run_method.call(@options) : run_method.call
+  end
+
   def exclude?(example_group)
     if (@spec_parser != nil && example_group.description != @spec_parser.example_group_description)
       return true

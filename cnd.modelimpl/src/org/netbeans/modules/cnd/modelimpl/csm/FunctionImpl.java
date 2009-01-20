@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.*;
 import java.util.List;
 
@@ -72,7 +73,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> 
-        implements CsmFunction<T>, Disposable, RawNamable, CsmTemplate {
+        implements CsmFunction, Disposable, RawNamable, CsmTemplate {
     
     private static final String OPERATOR = "operator"; // NOI18N;
     
@@ -97,6 +98,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
+    protected static final int LAST_USED_FLAG_INDEX = 3;
     private byte flags;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
@@ -207,11 +209,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
-    private boolean hasFlags(byte mask) {
+    protected boolean hasFlags(byte mask) {
         return (flags & mask) == mask;
     }
     
-    private void setFlags(byte mask, boolean value) {
+    protected void setFlags(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {

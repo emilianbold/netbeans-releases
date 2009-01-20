@@ -90,11 +90,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (0, originalSnapshot.getOriginalOffset (0));
         assertEquals (10, originalSnapshot.getOriginalOffset (10));
         assertEquals(originalSnapshot.getText ().length (),originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()));
-//        try {
+        try {
             assertEquals(-1, originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()+1));
-//            assert (false);
-//        } catch (ArrayIndexOutOfBoundsException ex) {
-//        }
+            assert (false);
+        } catch (IndexOutOfBoundsException ex) {
+        }
         assertEquals (0, originalSnapshot.getEmbeddedOffset (0));
         assertEquals (10, originalSnapshot.getEmbeddedOffset (10));
 //        try {
@@ -102,16 +102,16 @@ public class SnapshotTest extends NbTestCase {
 //            assert (false);
 //        } catch (ArrayIndexOutOfBoundsException ex) {
 //        }
-        assertEquals("stovaci fi", originalSnapshot.create (10, 10, "language/jedna").getSnapshot ().getText ());
-        assertEquals("1234567890", originalSnapshot.create ("1234567890", "language/jedna").getSnapshot ().getText ());
+        assertEquals("stovaci fi", originalSnapshot.create (10, 10, "text/jedna").getSnapshot ().getText ());
+        assertEquals("1234567890", originalSnapshot.create ("1234567890", "text/jedna").getSnapshot ().getText ());
         Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
-            originalSnapshot.create (10, 10, "language/jedna"),
-            originalSnapshot.create ("1234567890", "language/jedna"),
-            originalSnapshot.create (30, 10, "language/jedna"),
+            originalSnapshot.create (10, 10, "text/jedna"),
+            originalSnapshot.create ("1234567890", "text/jedna"),
+            originalSnapshot.create (30, 10, "text/jedna"),
         }));
-        assertEquals ("language/jedna", languageJednaEmbedding.getMimeType ());
+        assertEquals ("text/jedna", languageJednaEmbedding.getMimeType ());
         Snapshot languageJednaSnapshot = languageJednaEmbedding.getSnapshot ();
-        assertEquals ("language/jedna", languageJednaSnapshot.getMimeType ());
+        assertEquals ("text/jedna", languageJednaSnapshot.getMimeType ());
         assertEquals ("stovaci fi1234567890rem se bud", languageJednaSnapshot.getText ().toString ());
         assertEquals (10, languageJednaSnapshot.getOriginalOffset (0));
         assertEquals (12, languageJednaSnapshot.getOriginalOffset (2));
@@ -120,11 +120,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (30, languageJednaSnapshot.getOriginalOffset (20));
         assertEquals (33, languageJednaSnapshot.getOriginalOffset (23));
         assertEquals (40, languageJednaSnapshot.getOriginalOffset (30));
-//        try {
-            assertEquals(-1, languageJednaSnapshot.getOriginalOffset (31));
-//            assert (false);
-//        } catch (ArrayIndexOutOfBoundsException ex) {
-//        }
+        try {
+            assertEquals (-1, languageJednaSnapshot.getOriginalOffset (31));
+            assert (false);
+        } catch (IndexOutOfBoundsException ex) {
+        }
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (5));
         assertEquals (0, languageJednaSnapshot.getEmbeddedOffset (10));
@@ -141,7 +141,7 @@ public class SnapshotTest extends NbTestCase {
 //            assert (false);
 //        } catch (ArrayIndexOutOfBoundsException ex) {
 //        }
-        Embedding petaEmbedding = languageJednaSnapshot.create (5, 20, "peta");
+        Embedding petaEmbedding = languageJednaSnapshot.create (5, 20, "text/peta");
         Snapshot petaSnapshot = petaEmbedding.getSnapshot ();
         assertEquals ("ci fi1234567890rem s", petaSnapshot.getText ().toString ());
         assertEquals (15, petaSnapshot.getOriginalOffset (0));
@@ -152,11 +152,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (30, petaSnapshot.getOriginalOffset (15));
         assertEquals (34, petaSnapshot.getOriginalOffset (19));
         assertEquals (35, petaSnapshot.getOriginalOffset (20));
-//        try {
-            assertEquals(-1, petaSnapshot.getOriginalOffset (21));
-//            assert (false);
-//        } catch (ArrayIndexOutOfBoundsException ex) {
-//        }
+        try {
+            assertEquals (-1, petaSnapshot.getOriginalOffset (21));
+            assert (false);
+        } catch (IndexOutOfBoundsException ex) {
+        }
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (10));
         assertEquals (0, petaSnapshot.getEmbeddedOffset (15));
@@ -167,7 +167,7 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (20, petaSnapshot.getEmbeddedOffset (35));
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (36));
 
-        Embedding fullSpanEmbedding = originalSnapshot.create (0, originalSnapshot.getText().length(), "peta");
+        Embedding fullSpanEmbedding = originalSnapshot.create (0, originalSnapshot.getText().length(), "text/peta");
         Snapshot fullSpanSnapshot = fullSpanEmbedding.getSnapshot ();
         assertEquals(originalSnapshot.getText().toString(), fullSpanSnapshot.getText().toString());
     }
@@ -183,14 +183,14 @@ public class SnapshotTest extends NbTestCase {
         Source source = Source.create (testFile);
         Snapshot originalSnapshot = source.createSnapshot ();
         Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
-            originalSnapshot.create (10, 10, "language/jedna"),
-            originalSnapshot.create ("12345", "language/jedna"),
-            originalSnapshot.create ("67890", "language/jedna"),
-            originalSnapshot.create (30, 10, "language/jedna"),
+            originalSnapshot.create (10, 10, "text/jedna"),
+            originalSnapshot.create ("12345", "text/jedna"),
+            originalSnapshot.create ("67890", "text/jedna"),
+            originalSnapshot.create (30, 10, "text/jedna"),
         }));
-        assertEquals ("language/jedna", languageJednaEmbedding.getMimeType ());
+        assertEquals ("text/jedna", languageJednaEmbedding.getMimeType ());
         Snapshot languageJednaSnapshot = languageJednaEmbedding.getSnapshot ();
-        assertEquals ("language/jedna", languageJednaSnapshot.getMimeType ());
+        assertEquals ("text/jedna", languageJednaSnapshot.getMimeType ());
         assertEquals ("stovaci fi1234567890rem se bud", languageJednaSnapshot.getText ().toString ());
         assertEquals (10, languageJednaSnapshot.getOriginalOffset (0));
         assertEquals (12, languageJednaSnapshot.getOriginalOffset (2));
@@ -202,7 +202,7 @@ public class SnapshotTest extends NbTestCase {
         try {
             languageJednaSnapshot.getOriginalOffset (31);
             assert (false);
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (IndexOutOfBoundsException ex) {
         }
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (5));

@@ -44,6 +44,8 @@ package org.netbeans.modules.search;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 import org.openidex.search.SearchType;
 
 /**
@@ -52,6 +54,7 @@ import org.openidex.search.SearchType;
  * of the IDE.
  *
  * @author Marian Petras
+ * @author kaktus
  */
 public final class FindDialogMemory {
 
@@ -102,11 +105,23 @@ public final class FindDialogMemory {
      * whether file name pattern was used last time
      */
     private boolean fileNamePatternSpecified;
-    
+
+    /** Preferences node for storing history info */
+    private static Preferences prefs;
+    /** Name of preferences node where we persist history */
+    private static final String PREFS_NODE = "FindDialogMemory";  //NOI18N
+    private static final String PROP_WHOLE_WORDS = "whole_words";  //NOI18N
+    private static final String PROP_CASE_SENSITIVE = "case_sensitive";  //NOI18N
+    private static final String PROP_REGULAR_EXPRESSION = "regular_expression";  //NOI18N
+    private static final String PROP_FILENAME_PATTERN_SPECIFIED = "filename_specified";  //NOI18N
+    private static final String PROP_FILENAME_PATTERN_PREFIX = "filename_pattern_";  //NOI18N
+    private static final String PROP_REPLACE_PATTERN_PREFIX = "replace_pattern_";  //NOI18N
     /** Creates a new instance of FindDialogMemory */
-    private FindDialogMemory() { }
-    
-    
+    private FindDialogMemory() {
+        prefs = NbPreferences.forModule(FindDialogMemory.class).node(PREFS_NODE);
+        load();
+    }
+
     /**
      */
     public static FindDialogMemory getDefault() {
@@ -115,7 +130,28 @@ public final class FindDialogMemory {
         }
         return singleton;
     }
-    
+
+    /** 
+     *  Loads search history stored in previous system sessions.
+     */
+    private void load () {
+        wholeWords = prefs.getBoolean(PROP_WHOLE_WORDS, false);
+        caseSensitive = prefs.getBoolean(PROP_CASE_SENSITIVE, false);
+        regularExpression = prefs.getBoolean(PROP_REGULAR_EXPRESSION, false);
+        fileNamePatternSpecified = prefs.getBoolean(PROP_FILENAME_PATTERN_SPECIFIED, false);
+
+        fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
+        replExpressions = new ArrayList<String>(maxReplExprCount);
+        for(int i=0; i < maxFileNamePatternCount; i++){
+            String fileNamePattern = prefs.get(PROP_FILENAME_PATTERN_PREFIX + i, null);
+            if (fileNamePattern != null)
+                fileNamePatterns.add(fileNamePattern);
+            String replacePattern = prefs.get(PROP_REPLACE_PATTERN_PREFIX + i, null);
+            if (replacePattern != null)
+                replExpressions.add(replacePattern);
+        }
+    }
+
     /**
      */
     public void setLastUsedSearchType(SearchType searchType){
@@ -137,14 +173,6 @@ public final class FindDialogMemory {
      * @param  pattern  pattern to be stored
      */
     void storeFileNamePattern(String pattern) {
-        if (fileNamePatterns == null) {
-            fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
-            fileNamePatterns.add(pattern);
-            return;
-        }
-
-        assert !fileNamePatterns.isEmpty();
-
         int index = fileNamePatterns.indexOf(pattern);
         if (index != -1) {
             if (index == fileNamePatterns.size() - 1) {
@@ -156,6 +184,10 @@ public final class FindDialogMemory {
             fileNamePatterns.remove(0);
         }
         fileNamePatterns.add(pattern);
+
+        for(int i=0;i < fileNamePatterns.size();i++){
+            prefs.put(PROP_FILENAME_PATTERN_PREFIX + i, fileNamePatterns.get(i));
+        }
     }
 
     /**
@@ -166,8 +198,6 @@ public final class FindDialogMemory {
      *          if no file name patterns are stored
      */
     List<String> getFileNamePatterns() {
-        assert fileNamePatterns == null || !fileNamePatterns.isEmpty();
-
         return (fileNamePatterns != null) ? fileNamePatterns
                                           : Collections.<String>emptyList();
     }
@@ -181,14 +211,6 @@ public final class FindDialogMemory {
      * @param  expression  replacement expression to be stored
      */
     void storeReplacementExpression(String expression) {
-        if (replExpressions == null) {
-            replExpressions = new ArrayList<String>(maxReplExprCount);
-            replExpressions.add(expression);
-            return;
-        }
-
-        assert !replExpressions.isEmpty();
-
         int index = replExpressions.indexOf(expression);
         if (index != -1) {
             if (index == replExpressions.size() - 1) {
@@ -200,6 +222,10 @@ public final class FindDialogMemory {
             replExpressions.remove(0);
         }
         replExpressions.add(expression);
+
+        for(int i=0;i < replExpressions.size();i++){
+            prefs.put(PROP_REPLACE_PATTERN_PREFIX + i, replExpressions.get(i));
+        }
     }
 
     /**
@@ -210,8 +236,6 @@ public final class FindDialogMemory {
      *          if no replacement expressions are stored
      */
     List<String> getReplacementExpressions() {
-        assert replExpressions == null || !replExpressions.isEmpty();
-
         return (replExpressions != null) ? replExpressions
                                           : Collections.<String>emptyList();
     }
@@ -222,6 +246,7 @@ public final class FindDialogMemory {
 
     public void setWholeWords(boolean wholeWords) {
         this.wholeWords = wholeWords;
+        prefs.putBoolean(PROP_WHOLE_WORDS, wholeWords);
     }
 
     public boolean isCaseSensitive() {
@@ -230,6 +255,7 @@ public final class FindDialogMemory {
 
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        prefs.putBoolean(PROP_CASE_SENSITIVE, caseSensitive);
     }
 
     public boolean isRegularExpression() {
@@ -238,6 +264,7 @@ public final class FindDialogMemory {
 
     public void setRegularExpression(boolean regularExpression) {
         this.regularExpression = regularExpression;
+        prefs.putBoolean(PROP_REGULAR_EXPRESSION, regularExpression);
     }
 
     boolean isTextPatternSpecified() {
@@ -254,6 +281,7 @@ public final class FindDialogMemory {
 
     void setFileNamePatternSpecified(boolean specified) {
         fileNamePatternSpecified = specified;
+        prefs.putBoolean(PROP_FILENAME_PATTERN_SPECIFIED, specified);
     }
 
 }

@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -64,6 +63,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.UserQuestionException;
 
 public final class ShowMacroExpansionAction extends CookieAction {
@@ -91,6 +91,8 @@ public final class ShowMacroExpansionAction extends CookieAction {
         expandedContextDoc.putProperty(Document.TitleProperty, mainDoc.getProperty(Document.TitleProperty));
         expandedContextDoc.putProperty(CsmFile.class, csmFile);
         expandedContextDoc.putProperty(FileObject.class, expandedContextFile);
+        expandedContextDoc.putProperty("beforeSaveRunnable", null); // NOI18N
+        expandedContextDoc.putProperty("macro-expansion-view-doc", true); // NOI18N
 
         mainDoc.putProperty(Document.class, expandedContextDoc);
         expandedContextDoc.putProperty(Document.class, mainDoc);
@@ -98,29 +100,16 @@ public final class ShowMacroExpansionAction extends CookieAction {
 
         CsmScope scope = ContextUtils.findScope(activatedNodes[0]);
         if (CsmKindUtilities.isOffsetable(scope)) {
-            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset());
-            try {
-                expandedContextDoc.insertString(0, expandedText, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            CsmMacroExpansion.expand(mainDoc, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset(), expandedContextDoc);
         } else {
-            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, 0, mainDoc.getLength());
-            try {
-                expandedContextDoc.insertString(0, expandedText, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            CsmMacroExpansion.expand(mainDoc, 0, mainDoc.getLength(), expandedContextDoc);
         }
 
-
-
-
-        reformat(expandedContextDoc);
         saveFile(expandedContextFile);
-//        lockFile(expandedContextFile);
+        lockFile(expandedContextFile);
 
         // Init expanded macro field
+        
         FileObject expandedMacroFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
         if(expandedMacroFile == null) {
             return;
@@ -140,7 +129,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
             }
         }
 
-        reformat(expandedMacroDoc);
+//        reformat(expandedMacroDoc);
         saveFile(expandedMacroFile);
         lockFile(expandedMacroFile);
 
@@ -237,20 +226,6 @@ public final class ShowMacroExpansionAction extends CookieAction {
             return ContextUtils.findFile(activatedNodes[0]) != null;
         }
         return false;
-    }
-
-    private void reformat(Document doc) {
-        Reformat reformat = Reformat.get(doc);
-        reformat.lock();
-        try {
-            try {
-                reformat.reformat(0, doc.getLength());
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } finally {
-            reformat.unlock();
-        }
     }
 
     protected int mode() {

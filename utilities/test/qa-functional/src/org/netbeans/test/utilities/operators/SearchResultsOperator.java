@@ -53,7 +53,7 @@ import org.netbeans.test.utilities.actions.SearchResultsViewAction;
  */
 public class SearchResultsOperator extends TopComponentOperator {
     
-    private static final Action invokeAction = new SearchResultsViewAction();
+//    private static Action invokeAction;// = new SearchResultsViewAction();
     
     /**
      * Creates a new instance of SearchResultsOperator
@@ -75,7 +75,7 @@ public class SearchResultsOperator extends TopComponentOperator {
      * @return instance of ResultsWindowOperatorOperator
      */
     public static SearchResultsOperator invoke() {
-        invokeAction.perform();
+//        invokeAction.perform();
         return new SearchResultsOperator();
     }
     

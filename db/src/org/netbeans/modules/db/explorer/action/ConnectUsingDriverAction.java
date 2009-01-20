@@ -218,7 +218,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                         try {
                             cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
                         } catch (DatabaseException exc) {
-                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            LOGGER.log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                             return;
                         }
@@ -266,9 +266,9 @@ public class ConnectUsingDriverAction extends BaseAction {
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
                     if (exc instanceof DDLException) {
-                        Logger.getLogger("global").log(Level.INFO, null, exc.getCause());
+                        LOGGER.log(Level.INFO, null, exc.getCause());
                     } else {
-                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                        LOGGER.log(Level.INFO, null, exc);
                     }
                     
                     String message = null;

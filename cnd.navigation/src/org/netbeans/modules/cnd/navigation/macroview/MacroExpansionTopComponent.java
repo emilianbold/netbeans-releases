@@ -66,7 +66,7 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
 
     private static MacroExpansionTopComponent instance;
     /** path to the icon used by the component and its open action */
-    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.gif"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
 
     private JComponent last = null;

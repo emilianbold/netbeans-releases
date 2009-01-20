@@ -55,4 +55,10 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/jsr311-api-doc.zip!/</resource>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/javax/ws/rs/jsr311-api/1.0/jsr311-api-1.0.pom</resource>
+    </volume>
+
 </library>

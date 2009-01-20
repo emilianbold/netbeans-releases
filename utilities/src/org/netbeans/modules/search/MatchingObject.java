@@ -692,8 +692,8 @@ final class MatchingObject implements PropertyChangeListener {
             int matchOffset = currLineOffset + inlineOffsetShift
                               + (textDetail.getColumn() - 1);
             int matchEndOffset = matchOffset + matchLength;
-            if (!content.substring(matchOffset, matchEndOffset)
-                .equals(textDetail.getLineText().substring(
+            String matchedSubstring = content.substring(matchOffset, matchEndOffset);
+            if (!matchedSubstring.equals(textDetail.getLineText().substring(
                                 textDetail.getColumn() - 1,
                                 textDetail.getColumn() - 1 + matchLength))) {
                 log(SEVERE, "file match part differs from the expected match");
@@ -709,11 +709,13 @@ final class MatchingObject implements PropertyChangeListener {
                 }
                 return InvalidityStatus.CHANGED;
             }
-            
-            content.replace(matchOffset, matchEndOffset,
-                            resultModel.replaceString);
-            inlineOffsetShift += resultModel.replaceString.length()
-                                 - matchLength;
+
+            String replacedString = resultModel.replaceString;
+            if (resultModel.basicCriteria.isRegexp()){
+                replacedString = matchedSubstring.replaceFirst(resultModel.basicCriteria.getTextPatternExpr(), resultModel.basicCriteria.getReplaceExpr());
+            }
+            content.replace(matchOffset, matchEndOffset, replacedString);
+            inlineOffsetShift += replacedString.length() - matchLength;
         }
         return null;
     }

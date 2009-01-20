@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -72,7 +74,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Kvashin
  */
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
-        Persistent, SelfPersistent, Disposable {
+        Persistent, SelfPersistent, Disposable, CsmIdentifiable {
     
     private static final CharSequence GLOBAL = CharSequenceKey.create("$Global$"); // NOI18N
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
@@ -299,10 +301,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
     
-    @SuppressWarnings("unchecked")
     private void addNestedNamespace(NamespaceImpl nsp) {
         assert nsp != null;
-        CsmUID<CsmNamespace> nestedNsUid = RepositoryUtils.put(nsp);
+        CsmUID<CsmNamespace> nestedNsUid = RepositoryUtils.put((CsmNamespace)nsp);
         assert nestedNsUid != null;
         nestedNamespaces.put(nsp.getQualifiedName(), nestedNsUid);
         RepositoryUtils.put(this);
@@ -408,7 +409,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> declarationUid;
         if (declaration.getName().length() == 0) {
-            declarationUid = declaration.getUID();
+            declarationUid = UIDs.get(declaration);
             unnamedDeclarations.remove(declarationUid);
         } else {
             getDeclarationsSorage().removeDeclaration(declaration);
@@ -432,7 +433,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return defs;
     }
     
-    @SuppressWarnings("unchecked")
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
         CsmUID<CsmNamespaceDefinition> definitionUid = RepositoryUtils.put(def);
         try {

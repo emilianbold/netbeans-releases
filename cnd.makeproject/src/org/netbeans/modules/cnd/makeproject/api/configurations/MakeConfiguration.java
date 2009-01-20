@@ -78,8 +78,9 @@ public class MakeConfiguration extends Configuration {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),
-        getString("QtAppName"),
-        getString("QtLibName")
+        getString("QtApplicationName"),
+        getString("QtDynamicLibraryName"),
+        getString("QtStaticLibraryName")
     };
 
     public static final int TYPE_MAKEFILE = 0;
@@ -87,7 +88,8 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
     public static final int TYPE_QT_APPLICATION = 4;
-    public static final int TYPE_QT_LIBRARY = 5;
+    public static final int TYPE_QT_DYNAMIC_LIB = 5;
+    public static final int TYPE_QT_STATIC_LIB = 6;
 
     // Configurations
     private IntConfiguration configurationType;
@@ -267,7 +269,14 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isQmakeConfiguration() {
-        return getConfigurationType().getValue() == TYPE_QT_APPLICATION || getConfigurationType().getValue() == TYPE_QT_LIBRARY;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_QT_APPLICATION:
+            case TYPE_QT_DYNAMIC_LIB:
+            case TYPE_QT_STATIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {

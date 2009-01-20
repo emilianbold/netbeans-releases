@@ -106,7 +106,12 @@ abstract class WrappedLabel extends JPanel {
     }
     
     public void setText(String text ){
-        myText = text;
+        if ( text == null || text.length() ==0 ){
+            myText = " ";
+        }
+        else {
+            myText = text;
+        }
     }
    
     protected Mode getMode(){

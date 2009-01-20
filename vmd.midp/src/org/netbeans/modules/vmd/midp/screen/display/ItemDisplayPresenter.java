@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
@@ -57,6 +58,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -197,5 +199,5 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         }
         return new ScreenMoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
     }
-    
+
 }

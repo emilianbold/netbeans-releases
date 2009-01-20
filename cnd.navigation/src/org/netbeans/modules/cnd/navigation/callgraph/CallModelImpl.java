@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
@@ -249,7 +250,7 @@ public class CallModelImpl implements CallModel {
         private FunctionUIN(CsmProject project, CsmFunction root) {
             this.project = project;
             functionUin = root.getUniqueName();
-            fileUid = root.getContainingFile().getUID();
+            fileUid = UIDs.get(root.getContainingFile());
         }
 
         private CsmFunction getFunction() {
