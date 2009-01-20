@@ -135,9 +135,9 @@ public class FileObj extends BaseFileObj {
         MutualExclusionSupport.Closeable closeableReference = null;
         
         try {
-            if (!Utilities.isWindows() && !f.isFile()) { 
-                return new ByteArrayInputStream(new byte[] {});  
-            }             
+            if (!Utilities.isWindows() && !f.isFile()) {
+                return new ByteArrayInputStream(new byte[] {});
+            }
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
             closeableReference = closable;            
             inputStream = new FileInputStream(f) {

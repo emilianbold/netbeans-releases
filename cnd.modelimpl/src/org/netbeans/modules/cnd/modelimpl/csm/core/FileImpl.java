@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
@@ -634,7 +635,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private TokenStream createFullTokenStream() {
+    private TokenStream createFullTokenStream(boolean filtered) {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
         try {
@@ -653,12 +654,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return null;
         }
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
-        return walker.getFilteredTokenStream(getLanguageFilter(ppState));
+        if(filtered) {
+            return walker.getFilteredTokenStream(getLanguageFilter(ppState));
+        } else {
+            return walker.getTokenStream(false);
+        }
     }
     private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> ref = new SoftReference<OffsetTokenStream>(null);
 
-    public TokenStream getTokenStream(int startOffset, int endOffset) {
+    public TokenStream getTokenStream(int startOffset, int endOffset, boolean filtered) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
@@ -671,7 +676,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                stream = new OffsetTokenStream(createFullTokenStream());
+                stream = new OffsetTokenStream(createFullTokenStream(filtered));
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }

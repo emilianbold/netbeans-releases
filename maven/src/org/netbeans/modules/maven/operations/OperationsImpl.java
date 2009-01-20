@@ -44,20 +44,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
@@ -65,7 +61,6 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,6 +91,7 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         addFile(projectDirectory, "pom.xml", files); // NOI18N
         addFile(projectDirectory, "profiles.xml", files); // NOI18N
         addFile(projectDirectory, "nbactions.xml", files); //NOI18N
+        addFile(projectDirectory, "nb-configuration.xml", files); //NOI18N
         
         return files;
     }

@@ -107,6 +107,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         key = KeyObjectFactory.getDefaultFactory().readKey(aStream);
     }
 
+    @SuppressWarnings("unchecked")
     public int compareTo(CsmUID<T> o) {
         assert o != null;
         assert o instanceof KeyBasedUID;

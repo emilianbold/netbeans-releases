@@ -244,8 +244,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                         internalFolders.toArray(new FileObject[internalFolders.size()]));
                 ClassPath includePath = ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
-                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
-                IncludePathClassPathProvider.addProjectIncludePath(includePath);
+                        new String[] {PhpProjectProperties.INCLUDE_PATH}));                
                 cp = ClassPathSupport.createProxyClassPath(internalClassPath, includePath);
                 cache.put(ClassPathCache.PLATFORM, cp);
             }

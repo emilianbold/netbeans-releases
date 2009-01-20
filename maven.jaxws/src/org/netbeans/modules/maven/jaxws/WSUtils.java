@@ -61,6 +61,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -425,6 +427,7 @@ public class WSUtils {
         return DEFAULT_PACKAGE_NAME;
         
     }
+
     public static boolean isProjectReferenceable(Project sourceProject, Project targetProject) {
         if (sourceProject == targetProject) {
             return true;
@@ -436,28 +439,29 @@ public class WSUtils {
             return false;
         }
     }
-    
-//    public static String getPackageNameForWsdl(File wsdl) {
-//        WsdlNamespaceHandler handler = new WsdlNamespaceHandler();
-//        try {
-//            handler.parse(wsdl);
-//        } catch (ParserConfigurationException ex) {
-//            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//        } catch (SAXException ex) {
-//            if (WsdlNamespaceHandler.SAX_PARSER_FINISHED_OK.equals(ex.getMessage())) {
-//                // THIS IS OK, parser finished correctly
-//            } else {
-//                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//            }
-//        }
-//        String targetNamespace = handler.getTargetNamespace();
-//        if (targetNamespace != null) {
-//            return getPackageNameFromNamespace(targetNamespace);
-//        } else {
-//            return null;
-//        }
-//    }
+
+
+    public static boolean isEJB(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            if (J2eeModule.EJB.equals(moduleType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isWeb(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+            if (J2eeModule.WAR.equals(moduleType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     
 }

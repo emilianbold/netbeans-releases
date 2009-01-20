@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.dlight.collector.stdout
+OpenIDE-Module-Localizing-Bundle: org/netbeans/dlight/collector/stdout/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

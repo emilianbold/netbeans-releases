@@ -73,6 +73,7 @@ public class QmakeProjectWriter {
         TEMPLATE,
         TARGET,
         CONFIG,
+        QT,
         SOURCES,
         HEADERS,
         FORMS,
@@ -157,6 +158,8 @@ public class QmakeProjectWriter {
                 configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
         write(bw, Variable.CONFIG, Operation.APPEND,
                 configuration.getQmakeConfiguration().getConfig().getValue());
+        write(bw, Variable.QT, Operation.APPEND,
+                configuration.getQmakeConfiguration().getModules().getValue());
 
         Item[] items = projectDescriptor.getProjectItems();
         write(bw, Variable.SOURCES, Operation.APPEND, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
@@ -226,7 +229,8 @@ public class QmakeProjectWriter {
         switch (configuration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_APPLICATION:
                 return "app"; // NOI18N
-            case MakeConfiguration.TYPE_QT_LIBRARY:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 return "lib"; // NOI18N
             default:
                 return ""; // NOI18N

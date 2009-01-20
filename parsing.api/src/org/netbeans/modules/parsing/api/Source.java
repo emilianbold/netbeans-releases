@@ -250,45 +250,55 @@ public final class Source {
      * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
-        final String [] text = new String [] { "" }; //NOI18N
-        Document doc = _getDocument(false);
+        final String [] text = new String [] {""}; //NOI18N
+        Document doc = _getDocument (false);
         if (doc == null) {
-            EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
-            Document customDoc = kit.createDefaultDocument();
+            EditorKit kit = CloneableEditorSupport.getEditorKit (mimeType);
+            Document customDoc = kit.createDefaultDocument ();
             try {
-                InputStream is = fileObject.getInputStream();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, FileEncodingQuery.getEncoding(fileObject)));
+                if (fileObject.isValid ()) {
+                    InputStream is = fileObject.getInputStream ();
                     try {
-                        kit.read(reader, customDoc, 0);
-                        doc = customDoc;
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        BufferedReader reader = new BufferedReader (
+                            new InputStreamReader (
+                                is,
+                                FileEncodingQuery.getEncoding (fileObject)
+                            )
+                        );
+                        try {
+                            kit.read (reader, customDoc, 0);
+                            doc = customDoc;
+                        } catch (BadLocationException ble) {
+                            LOG.log (Level.WARNING, null, ble);
+                        } finally {
+                            reader.close ();
+                        }
                     } finally {
-                        reader.close();
+                        is.close ();
                     }
-                    } finally {
-                    is.close();
                 }
             } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
+                LOG.log (Level.WARNING, null, ioe);
             }
         }
         if (doc != null) {
             final Document d = doc;
-            d.render(new Runnable() {
-                public void run() {
+            d.render (new Runnable () {
+                public void run () {
                     try {
-                        text[0] = d.getText(0, d.getLength());
+                        text[0] = d.getText (0, d.getLength());
                     } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        LOG.log (Level.WARNING, null, ble);
                     }
-                    }
+                }
             });
         }
 
-        return new Snapshot(
-            text[0], this, MimePath.get (mimeType), new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
+        return new Snapshot (
+            text [0], this,
+            MimePath.get (mimeType),
+            new int[][] {new int[] {0, 0}},
+            new int[][] {new int[] {0, 0}}
         );
     }
     

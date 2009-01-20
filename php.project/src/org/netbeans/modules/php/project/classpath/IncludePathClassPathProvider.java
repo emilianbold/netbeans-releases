@@ -60,7 +60,7 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
     /** Default constructor for lookup. */
     public IncludePathClassPathProvider() {
     }
-    static void addProjectIncludePath(ClassPath cp) {
+    public static void addProjectIncludePath(ClassPath cp) {
         projectIncludes.add(cp);
     }
     public ClassPath findClassPath(FileObject file, String type) {

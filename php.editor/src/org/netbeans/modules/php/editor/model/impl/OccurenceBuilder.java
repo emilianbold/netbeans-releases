@@ -816,7 +816,8 @@ class OccurenceBuilder {
     }
 
     private static List<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
-        String vartype = VariousUtils.extractTypeFroVariableBase(varBase, new HashMap<String, VariableNameImpl>());
+        String vartype = VariousUtils.extractTypeFroVariableBase(varBase, 
+                Collections.<String,AssignmentImpl>emptyMap());
         ModelScope modelScope = ModelUtils.getModelScope(scp);
         return VariousUtils.getType(modelScope, scp, vartype, varBase.getStartOffset(), true);
     }
