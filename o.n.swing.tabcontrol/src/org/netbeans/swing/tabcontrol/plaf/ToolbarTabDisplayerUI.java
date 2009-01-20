@@ -106,6 +106,8 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
         toolbar.setLayout (new AutoGridLayout());
         toolbar.setFloatable (false);
         toolbar.setRollover( true );
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            toolbar.setBackground( UIManager.getColor("NbExplorerView.background") ); //NOI18N
         displayer.setLayout (new BorderLayout());
         displayer.add (toolbar, BorderLayout.CENTER);
         if (displayer.getModel() != null && displayer.getModel().size() > 0) {
