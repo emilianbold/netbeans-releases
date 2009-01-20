@@ -274,6 +274,8 @@ public class OutlineView extends JScrollPane {
     public void addNotify () {
         super.addNotify ();
         lookupExplorerManager ();
+        ViewUtil.adjustBackground(outline);
+        ViewUtil.adjustBackground(getViewport());
     }
     
     /**
