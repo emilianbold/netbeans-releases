@@ -119,7 +119,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
                     int dso = snapshot.getOriginalOffset(node.startOffset());
                     int deo =snapshot.getOriginalOffset(node.endOffset());
 
-                    if (dso >= 0 || deo >= 0) { //filter virtual nodes
+                    if (dso >= 0 && deo >= 0) { //filter virtual nodes
                         //check vendor speficic property
                         OffsetRange range = new OffsetRange(dso, deo);
 
