@@ -64,20 +64,22 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     private final String[] eeLevels;
     private final Archetype[] archs;
     private final boolean isFinish;
+    private boolean additional;
     
     /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(String[] eeLevels, Archetype[] archs, boolean isFinish) {
+    public BasicWizardPanel(String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
         this.archs = archs;
         this.eeLevels = eeLevels;
         this.isFinish = isFinish;
+        this.additional = additional;
     }
 
     public BasicWizardPanel() {
-        this(new String[0], null, true);
+        this(new String[0], null, true, true);
     }
 
     public BasicWizardPanel(boolean isFinish) {
-        this(new String[0], null, isFinish);
+        this(new String[0], null, isFinish, false);
     }
     
     public Component getComponent() {
@@ -86,6 +88,10 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
             component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
         }
         return component;
+    }
+
+    boolean areAdditional() {
+        return additional;
     }
 
     Archetype[] getArchetypes() {
