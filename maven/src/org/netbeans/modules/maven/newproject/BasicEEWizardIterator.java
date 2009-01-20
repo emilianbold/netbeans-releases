@@ -78,7 +78,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(eeLevels, archs, true)
+            new BasicWizardPanel(eeLevels, archs, true, false)
         };
     }
     

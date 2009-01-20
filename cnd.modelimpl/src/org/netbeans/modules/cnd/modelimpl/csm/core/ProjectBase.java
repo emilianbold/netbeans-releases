@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -320,6 +321,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CharSequence[] allClassifiersUniqueNames = Utils.getAllClassifiersUniqueNames(result.getUniqueName());
             for (CharSequence curUniqueName : allClassifiersUniqueNames) {
                 Collection<? extends CsmDeclaration> decls = this.findDeclarations(curUniqueName);
+                @SuppressWarnings("unchecked")
                 Collection<CsmClassifier> classifiers = (Collection<CsmClassifier>)decls;
                 out.addAll(classifiers);
             }

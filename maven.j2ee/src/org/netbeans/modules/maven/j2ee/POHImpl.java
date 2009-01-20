@@ -60,6 +60,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
@@ -77,6 +79,7 @@ public class POHImpl extends ProjectOpenedHook {
     private Project project;
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
+    private J2eeModuleProvider lastJ2eeProvider;
 
     public POHImpl(Project prj, J2eeLookupProvider.Provider prov) {
         project = prj;
@@ -171,6 +174,22 @@ public class POHImpl extends ProjectOpenedHook {
             report.addReport(rep);
             
         }
+        J2eeModuleProvider prv = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (prv != null) {
+            lastJ2eeProvider = prv;
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+                Deployment.getDefault().enableCompileOnSaveSupport(prv);
+            } else {
+                Deployment.getDefault().disableCompileOnSaveSupport(prv);
+            }
+        } else {
+            if (lastJ2eeProvider != null) {
+                Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
+                lastJ2eeProvider = null;
+            }
+        }
+
+
     }
 
     protected void projectClosed() {
@@ -179,6 +198,10 @@ public class POHImpl extends ProjectOpenedHook {
             NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
             watcher.removePropertyChangeListener(refreshListener);
             refreshListener = null;
+        }
+        if (lastJ2eeProvider != null) {
+            Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
+            lastJ2eeProvider = null;
         }
     }
     

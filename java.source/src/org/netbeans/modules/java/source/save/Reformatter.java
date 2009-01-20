@@ -2596,7 +2596,7 @@ public class Reformatter implements ReformatTask {
                                 count--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                if (idx >= lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }

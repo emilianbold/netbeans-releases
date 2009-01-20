@@ -430,14 +430,20 @@ class CachedModelSupport {
             TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
         List<MethodScopeImpl> toFilter = methodScopes.get(typeScope);
         if (toFilter == null) return Collections.emptyList();
-        return ScopeImpl.filter(toFilter, new ScopeImpl.ElementFilter() {
+        List<? extends MethodScopeImpl> retval = ScopeImpl.filter(toFilter, new ScopeImpl.ElementFilter() {
+
             public boolean isAccepted(ModelElementImpl element) {
                 return element.getPhpKind().equals(PhpKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
-                        (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
+                        (modifiers.length == 0 || (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
             }
         });
+        /*for (MethodScopeImpl methodScopeImpl : retval) {
+            if (!methodScopeImpl.getClassScope().getFileObject().equals(typeScope.getFileObject())) {
+                return Collections.emptyList();
+            }
+        }*/
+        return retval;
     }
 
     private List<? extends InterfaceScopeImpl> getCachedIfaces(final String... queryName) {

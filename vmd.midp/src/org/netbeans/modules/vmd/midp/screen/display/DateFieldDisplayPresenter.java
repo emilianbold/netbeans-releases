@@ -99,7 +99,12 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         } else if (dateValue.getKind() == PropertyValue.Kind.VALUE) {
             text = format.format(new Date(MidpTypes.getLong(dateValue)));
         }
-        label.setText(text);
+        if ( text == null || text.length() ==0 ){
+            label.setText(" ");             // NOI18N
+        }
+        else {
+            label.setText(text);
+        }
     }
 
     @Override

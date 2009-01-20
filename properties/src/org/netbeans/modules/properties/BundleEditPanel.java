@@ -155,7 +155,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         });
         
         
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        ListSelectionListener listSelectionListener = new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent evt) {
                 final boolean correctCellSelection = !selectionUpdateDisabled;
                 SwingUtilities.invokeLater(new Runnable() {
@@ -164,7 +165,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     }
                 });
             }
-        });
+        };
+
+        table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
         
     } // End of constructor.
     
@@ -565,25 +569,33 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             // Starts "atomic" acion for special undo redo manager of open support.
             obj.getOpenSupport().atomicUndoRedoFlag = new Object();
             
+            String existingLocales = "";
+            String comma = ",\r\n"; //NOI18N
+            int count = obj.getBundleStructure().getEntryCount();
             // add key to all entries
-            for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+            for (int i=0; i < count; i++) {
                 PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
                 
                 if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
+                    existingLocales += Util.getLocaleLabel(entry) + comma;
+                } else {
+                    keyAdded = true;
+                }
+            }
+            if (!existingLocales.equals("")) {
+                    existingLocales = existingLocales.substring(0,existingLocales.length()-comma.length());
                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                     MessageFormat.format(
                     NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
                     new Object[] {
                         key,
-                        Util.getLocaleLabel(entry)
+                        existingLocales
                     }
                     ),
                     NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(msg);
-                } else {
-                    keyAdded = true;
-                }
             }
+
         } finally {
             // Finishes "atomic" undo redo action for special undo redo manager of open support.
             obj.getOpenSupport().atomicUndoRedoFlag = null;

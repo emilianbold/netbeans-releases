@@ -225,6 +225,47 @@ public class SelectImpl extends CsmSelect {
             FilterBuilder.InnerOffsetFilterImpl implOffset = (FilterBuilder.InnerOffsetFilterImpl) filter;
             return file.getDeclarations(implOffset.innerOffset);
         }
+        if (file.getDeclarationsSize() < 50) {
+            // no optimization
+            return file.getDeclarations(filter);
+        }
+        if (filter instanceof FilterBuilder.OffsetFilterImpl) {
+            FilterBuilder.OffsetFilterImpl implOffset = (FilterBuilder.OffsetFilterImpl) filter;
+            return UIDCsmConverter.UIDsToDeclarations(file.getDeclarations(implOffset.startOffset, implOffset.endOffset)).iterator();
+        } else {
+            FilterBuilder.NameFilterImpl implName = null;
+            FilterBuilder.KindFilterImpl implKind = null;
+            if (filter instanceof FilterBuilder.CompoundFilterImpl) {
+                FilterBuilder.CompoundFilterImpl implCompound = (FilterBuilder.CompoundFilterImpl) filter;
+                if ((implCompound.first instanceof FilterBuilder.KindFilterImpl) &&
+                    (implCompound.second instanceof FilterBuilder.NameFilterImpl)) {
+                    implName = (FilterBuilder.NameFilterImpl) implCompound.second;
+                    implKind = (FilterBuilder.KindFilterImpl) implCompound.first;
+                } else if ((implCompound.first instanceof FilterBuilder.NameFilterImpl) &&
+                           (implCompound.second instanceof FilterBuilder.KindFilterImpl)) {
+                    implName = (FilterBuilder.NameFilterImpl) implCompound.first;
+                    implKind = (FilterBuilder.KindFilterImpl) implCompound.second;
+                }
+            } else if (filter instanceof FilterBuilder.KindFilterImpl) {
+                implKind = (FilterBuilder.KindFilterImpl) filter;
+            }
+            Collection<CsmUID<CsmOffsetableDeclaration>> res = null;
+            if (implName != null && implKind != null) {
+                if (implName.caseSensitive && implName.match) {
+                    res = file.findDeclarations(implKind.kinds, implName.strPrefix);
+                    if (implName.allowEmptyName){
+                        res.addAll(file.findDeclarations(implKind.kinds, ""));
+                    }
+                } else {
+                    res = file.findDeclarations(implKind.kinds, null);
+                }
+            } else if (implKind != null) {
+                res = file.findDeclarations(implKind.kinds, null);
+            }
+            if (res != null) {
+                return UIDCsmConverter.UIDsToDeclarations(res, filter);
+            }
+        }
         return file.getDeclarations(filter);
     }
 

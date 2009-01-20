@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -361,8 +362,12 @@ public class PhpProject implements Project {
             getSourcesDirectory();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(ClassPath.BOOT);
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, bootClassPaths);
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            for (ClassPath classPath : bootClassPaths) {
+                IncludePathClassPathProvider.addProjectIncludePath(classPath);
+            }
 
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {

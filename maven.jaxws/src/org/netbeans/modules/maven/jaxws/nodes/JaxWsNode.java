@@ -47,6 +47,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -73,18 +74,23 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.ServerType;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.maven.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.maven.jaxws.actions.WsTesterPageAction;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
 import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
@@ -575,6 +581,28 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 
     @Override
     public void destroy() throws java.io.IOException {
+
+        if (service.getLocalWsdl() != null) {
+            // remove execution from pom file
+            final FileObject wsdlFileObject = getLocalWsdl();
+            if (wsdlFileObject != null) {
+                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
+                    }
+                };
+                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+                Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+            }
+            // remove stale file
+            try {
+                removeStaleFile(wsdlFileObject.getName());
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsClientNode.class.getName()).log(
+                        Level.FINE, "Cannot remove stale file", ex); //NOI18N
+            }
+        }
+
         WSUtils.removeImplClass(project, service.getImplementationClass());
     }
 
@@ -582,6 +610,20 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         String implBean = service.getImplementationClass();
         if (implBean != null) {
             return srcRoot.getFileObject(implBean.replace('.', '/') + ".java");
+        }
+        return null;
+    }
+
+    private FileObject getLocalWsdl() {
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
+        if (jaxWsSupport != null) {
+            FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+            if (localWsdlocalFolder!=null) {
+                String relativePath = service.getLocalWsdl();
+                if (relativePath != null) {
+                    return localWsdlocalFolder.getFileObject(relativePath);
+                }
+            }
         }
         return null;
     }
@@ -983,6 +1025,11 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 //        dialog.setVisible(true);
     }
 
-
+    private void removeStaleFile(String name) throws IOException {
+        FileObject staleFile = project.getProjectDirectory().getFileObject("target/jaxws/stale/"+name+".stale");
+        if (staleFile != null) {
+            staleFile.delete();
+        }
+    }
 
 }

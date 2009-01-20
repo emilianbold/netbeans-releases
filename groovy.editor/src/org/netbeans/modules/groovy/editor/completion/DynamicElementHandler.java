@@ -70,7 +70,7 @@ public final class DynamicElementHandler {
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
-            String className, String prefix, int anchor) {
+            String className, String prefix, int anchor, boolean nameOnly) {
 
         Map<MethodSignature, CompletionItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem>();
@@ -79,7 +79,7 @@ public final class DynamicElementHandler {
             for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), sourceClassName, className).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
                     resultDynamic.put(entry.getKey(), CompletionItem.forDynamicMethod(
-                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
+                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), nameOnly));
                 }
             }
         }

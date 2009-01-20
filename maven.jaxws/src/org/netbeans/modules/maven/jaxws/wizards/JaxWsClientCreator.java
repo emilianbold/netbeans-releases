@@ -46,7 +46,6 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -133,10 +132,12 @@ public class JaxWsClientCreator implements ClientCreator {
                 final String clientName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
-                        org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
+                        org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                WSUtils.isEJB(project) ?
+                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                    MavenModelUtils.addJaxWSPlugin(model);
                         MavenModelUtils.addWsimportExecution(plugin, clientName, relativePath);
-                        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-                        if (provider != null) { // expecting web project
+                        if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
@@ -153,5 +154,5 @@ public class JaxWsClientCreator implements ClientCreator {
             }
         }
     }
-
+    
 }

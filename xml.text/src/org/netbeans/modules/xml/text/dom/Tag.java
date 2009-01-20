@@ -64,9 +64,9 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
     
     protected String name;
     
-    public Tag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
-        super(support, from, to);
-        this.name = name;
+    public Tag(XMLSyntaxSupport support, Token from, int start, int end) {
+        super(support, from, start, end);
+        //this.name = name;
     }
     
     public final short getNodeType() {

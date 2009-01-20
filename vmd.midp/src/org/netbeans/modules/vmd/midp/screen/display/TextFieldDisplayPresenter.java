@@ -84,7 +84,13 @@ public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
         } else {
             text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextFieldCD.PROP_TEXT));
         }
-        label.setText(text);
+        // Fix for #155646 - TextField collapsed after erasing its content
+        if ( text == null || text.length() ==0 ){
+            label.setText(" ");             // NOI18N
+        }
+        else {
+            label.setText(text);
+        }
     }
 
     @Override

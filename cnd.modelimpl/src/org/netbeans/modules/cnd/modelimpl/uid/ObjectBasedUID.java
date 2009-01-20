@@ -95,6 +95,7 @@ public abstract class ObjectBasedUID<T> implements CsmUID<T>, SelfPersistent {
         CsmObjectFactory.instance().write(output, (Persistent)ref);
     }
     
+    @SuppressWarnings("unchecked")
     public ObjectBasedUID(DataInput input) throws IOException {
         ref = (T)CsmObjectFactory.instance().read(input);
     }

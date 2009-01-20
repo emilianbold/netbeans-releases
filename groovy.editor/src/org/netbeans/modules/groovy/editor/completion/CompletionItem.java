@@ -133,8 +133,8 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType) {
-        return new DynamicMethodItem(anchorOffset, name, parameters, returnType);
+    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
+        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly);
     }
 
 //    public static CompletionItem forMetaMethod(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
@@ -301,11 +301,14 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String returnType;
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType) {
+        private final boolean nameOnly;
+
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
             this.returnType = returnType;
+            this.nameOnly = nameOnly;
         }
 
         @Override
@@ -376,6 +379,15 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             return ElementHandleSupport.createHandle(null, name, ElementKind.METHOD,
                     Collections.singleton(Modifier.PROTECTED));
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (nameOnly) {
+                return name;
+            }
+            return super.getCustomInsertTemplate();
+        }
+
     }
 
     public static class MetaMethodItem extends CompletionItem {

@@ -44,13 +44,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -104,7 +105,7 @@ public final class RepositoryUtils {
             System.err.println(index + ":getting key " + key);
             Persistent out = repository.get(key);
             time = System.currentTimeMillis() - time;
-            System.err.println(index + ":got in " + time + "ms the key " + key);
+            System.err.println(index + ":got in " + time + "ms the key " + key + (out == null ? " - NULL":""));
             return out;
         }
         return repository.get(key);
@@ -145,7 +146,7 @@ public final class RepositoryUtils {
     public static <T> CsmUID<T> put(T csmObj) {
         CsmUID<T> uid = null;
         if (csmObj != null) {
-            uid = UIDs.get(csmObj);
+            uid = UIDProviderIml.get(csmObj, false);
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
@@ -179,7 +180,8 @@ public final class RepositoryUtils {
     public static void hang(Object csmObj) {
         CsmUID uid = null;
         if (csmObj != null) {
-            uid = UIDs.get(csmObj);
+            // during hang we suppress check for null
+            uid = UIDProviderIml.get(csmObj, false);
             assert uid != null;
             Key key = UIDtoKey(uid);
             hang(key, (Persistent) csmObj);
