@@ -47,12 +47,14 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.HTMLAutoCompletion;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -68,6 +70,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     //not used. HTMLKit coveres this functionality
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        HTMLAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
         return false;
     }
 

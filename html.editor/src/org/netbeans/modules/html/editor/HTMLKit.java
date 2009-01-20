@@ -279,6 +279,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
                     if (!handled) {
                         super.insertString(doc, dotPos, caret, str, overwrite);
+                        insertedText = str;
                         handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
                                 str.charAt(0));
                     }
@@ -289,7 +290,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
             super.insertString(doc, dotPos, caret, str, overwrite);
             insertedText = str;
-            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
 
         @Override
@@ -409,7 +409,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             
             
             super.charBackspaced(doc, dotPos, caret, ch);
-            HTMLAutoCompletion.charDeleted(doc, dotPos, caret, ch);
         }
 
         public boolean getNextChar() {
