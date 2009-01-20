@@ -39,13 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
+
 package org.netbeans.modules.xml.text.dom;
 
+
 import java.lang.ref.WeakReference;
-
-
-
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+
 
 /**
  *
@@ -61,25 +63,20 @@ import org.netbeans.api.lexer.Token;
  */
 public abstract class SyntaxElement {
     
-    // to do do not handle prolog as text!
-    // support PIs
-    
-    protected XMLSyntaxSupport support;  // it produced us
-    
+    protected XMLSyntaxSupport support;
     private WeakReference<Token> first; //a weak reference to the fist TokenItem of this SE
-    
     private WeakReference<SyntaxElement> previous;    // WR to the cached previous element
     private WeakReference<SyntaxElement> next;        // WR to the cached next element
     
     // let it be visible by static inner classes extending us
-    protected int offset;     // original position in document //??? use item instead
+    protected int offset;     // original position in document
     protected int length;     // original lenght in document
     
     /** Creates new SyntaxElement */
-    public SyntaxElement(XMLSyntaxSupport support, Token token, int to)  {
+    public SyntaxElement(XMLSyntaxSupport support, Token<XMLTokenId> token, int start, int end)  {
         this.support = support;
-        this.offset = 0; //TODO token.getOffset();
-        this.length = to-offset;
+        this.offset = start; //TODO token.getOffset();
+        this.length = end-start;
         this.first = new WeakReference(token);
     }
     
@@ -116,6 +113,9 @@ public abstract class SyntaxElement {
     }
     
     public int getElementLength() {
+        
+
+
         return length;
     }
     
@@ -168,30 +168,29 @@ public abstract class SyntaxElement {
      * or illegal location.
      */
     public SyntaxElement getNext() {
-//        try {
-//            SyntaxElement cached_next = next == null ? null : next.get();
-//            if( cached_next == null ) {
-//                //data not inialized yet or GC'ed already - we need to parse again
-//                SyntaxElement new_next = support.getElementChain( offset+length + 1 );
-//                if( new_next != null ) {
-//                    setNext(new_next); //weakly cache the element
-//                    new_next.setPrevious(this);
-//                    if (new_next.offset == offset) {
-//                        // TODO see #43297 for causes and try to relax them
-//                        //Exception ex = new IllegalStateException("Next cannot be the same as current element at offset " + offset);
-//                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                        return null;
-//                    }
-//                }
-//                return new_next;
-//            } else {
-//                //use cached data
-//                return cached_next;
-//            }
-//        } catch (BadLocationException ex) {
-//            return null;
-//        }
-        return null;
+        try {
+            SyntaxElement cached_next = next == null ? null : next.get();
+            if( cached_next == null ) {
+                //data not inialized yet or GC'ed already - we need to parse again
+                SyntaxElement new_next = support.getElementChain( offset+length);
+                if( new_next != null ) {
+                    setNext(new_next); //weakly cache the element
+                    new_next.setPrevious(this);
+                    if (new_next.offset == offset) {
+                        // TODO see #43297 for causes and try to relax them
+                        //Exception ex = new IllegalStateException("Next cannot be the same as current element at offset " + offset);
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        return null;
+                    }
+                }
+                return new_next;
+            } else {
+                //use cached data
+                return cached_next;
+            }
+        } catch (BadLocationException ex) {
+            return null;
+        }
     }
     
     /**
