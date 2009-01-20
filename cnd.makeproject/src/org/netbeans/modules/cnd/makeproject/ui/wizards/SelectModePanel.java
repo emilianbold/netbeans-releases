@@ -133,7 +133,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 200));
 
         instructions.setBorder(null);
-        instructions.setContentType("text/html");
         instructions.setEditable(false);
         instructions.setFocusable(false);
         jScrollPane1.setViewportView(instructions);
