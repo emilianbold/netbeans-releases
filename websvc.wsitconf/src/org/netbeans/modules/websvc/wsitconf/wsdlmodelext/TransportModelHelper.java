@@ -144,11 +144,13 @@ public class TransportModelHelper {
                 tcp.setPort(OptimizedTCPTransport.DEFAULT_PORT_VALUE);
             }
 
-            WsitProvider provider = p.getLookup().lookup(WsitProvider.class);
-            if (provider != null) {
-                ProjectSpecificTransport t = provider.getProjectTransportUpdater();
-                if (t != null) {
-                    t.setTCPUrl(s, tomcat);
+            if (p != null) {
+                WsitProvider provider = p.getLookup().lookup(WsitProvider.class);
+                if (provider != null) {
+                    ProjectSpecificTransport t = provider.getProjectTransportUpdater();
+                    if (t != null) {
+                        t.setTCPUrl(s, tomcat);
+                    }
                 }
             }
 
