@@ -131,6 +131,7 @@ public final class AquaLFCustoms extends LFCustoms {
             EDITOR_STATUS_RIGHT_BORDER, topOnly,
             EDITOR_STATUS_INNER_BORDER, topOnly,
             EDITOR_STATUS_ONLYONEBORDER, topOnly,
+            EDITOR_TOOLBAR_BORDER, BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(101,101,101)),
 
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
 
