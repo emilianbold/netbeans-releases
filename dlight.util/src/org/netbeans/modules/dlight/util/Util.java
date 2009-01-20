@@ -51,7 +51,13 @@ import org.openide.util.Exceptions;
 
 public class Util {
 
-    public static String getFullPath(String relpath) {
+    /**
+     * Gets an absolute path of the module-installed file.
+     * @param relpath path from install root, e.g. <samp>modules/ext/somelib.jar</samp>
+     * (always using <samp>/</samp> as a separator, regardless of platform).
+     * @return absolute path to the file
+     */
+    private static String getFullPath(String relpath) {
         File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
         if (file != null && file.exists()) {
             return file.getAbsolutePath();
@@ -59,6 +65,12 @@ public class Util {
         return relpath;
     }
 
+    /**
+     * Copies a file from resources to a temporary directory
+     * @param clazz Determines the jar from which the file should be copied
+     * @param resourceFileName The resource file name
+     * @return the canonical path of the newly-created file or null if the operation failed
+     */
     public static String copyResource(Class clazz, String resourceFileName) {
         try {
             InputStream is = clazz.getClassLoader().getResourceAsStream(resourceFileName);
@@ -88,6 +100,12 @@ public class Util {
         return result;
     }
 
+    /**
+     * Sets execution permission for a list of files
+     * @param files A list of files paths to set execution permissions.
+     * Paths are relative to the install root, e.g. <samp>modules/ext/somelib.jar</samp>
+     * (always using <samp>/</samp> as a separator, regardless of platform).
+     */
     public static void setExecutionPermissions(final List<String> files) {
         if (files.isEmpty()) {
             return;
@@ -118,18 +136,37 @@ public class Util {
         }
     }
 
-    /** gets a base path for a class: org.nebeabs.modules.dlight.MyClass -> org/nebeabs/modules/dlight */
+    /**
+     * Gets a base path that corresponds a class.
+     * For example, <samp>org.nebeabs.modules.dlight.MyClass -> org/nebeabs/modules/dlight</samp>.
+     * @param cls a class to return base path for
+     * @return the base path for the given class
+     */
     public static String getBasePath(Class cls) {
         String path = cls.getName().replace('.', '/');
         int pos = path.lastIndexOf('/');
         return (pos > 0) ? path.substring(0, pos) : path;
     }
 
+    /**
+     * The same as <code>Boolean.getBoolean(String)</code>,
+     * but allows to set a default value.
+     * @param name a name of a property
+     * @param defaultValue
+     * @return If the system property with the given name equals <code>"true"</code>,
+     * returns <code>true</code>; if the system property with the given name equals <code>"false"</code>,
+     * returns <code>false</code>; otherwise returns the <code>defaultValue</code>
+     */
     public static boolean getBoolean(String name, boolean defaultValue) {
         String value = System.getProperty(name);
         return (value == null) ? defaultValue : Boolean.parseBoolean(value);
     }
 
+    /**
+     * Removes a directory and all int content, recursively.
+     * @param path a path to the directory to delete
+     * @return true in the case of success, otherwise false
+     */
     public static boolean deleteLocalDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
