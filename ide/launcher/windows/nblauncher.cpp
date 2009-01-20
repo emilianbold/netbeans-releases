@@ -200,13 +200,11 @@ void NbLauncher::addCluster(const char *cluster) {
         logMsg("Invalid cluster path: %s", cluster);
         return;
     }
-    if (dirExists(clusterPath)) {
-        if (!clusters.empty()) {
-            clusters += ';';
-        }
-        logMsg("Adding cluster %s", clusterPath);
-        clusters += clusterPath;
+    if (!clusters.empty()) {
+        clusters += ';';
     }
+    logMsg("Adding cluster %s", clusterPath);
+    clusters += clusterPath;
 }
 
 void NbLauncher::addExtraClusters() {
