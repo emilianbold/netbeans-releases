@@ -3,15 +3,23 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.dlight.management</code-name-base>
+            <code-name-base>org.netbeans.modules.dlight.perfan</code-name-base>
             <suite-component/>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.core.stack</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -39,28 +47,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
@@ -69,15 +61,9 @@
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.dlight.collector.stdout</friend>
-                <friend>org.netbeans.modules.dlight.core</friend>
-                <friend>org.netbeans.modules.dlight.core.ui</friend>
-                <friend>org.netbeans.modules.dlight.dtrace</friend>
-                <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <package>org.netbeans.modules.dlight.management.api</package>
-                <package>org.netbeans.modules.dlight.management.ui.spi</package>
-            </friend-packages>
+            <public-packages>
+                <package>org.netbeans.dlight.perfan</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
