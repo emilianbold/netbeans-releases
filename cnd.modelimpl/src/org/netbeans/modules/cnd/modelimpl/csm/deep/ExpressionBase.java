@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;

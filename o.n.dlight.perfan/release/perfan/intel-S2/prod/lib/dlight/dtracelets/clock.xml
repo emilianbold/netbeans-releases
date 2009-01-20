@@ -1,0 +1,22 @@
+<dtracelet name="SView profiler" mode="pid" option="clock">
+<icon name="clock.png"/>
+<description>
+Samples user process at regular intervals and records information on function execution.
+</description>
+<script>
+#!/bin/sh
+echo Clock profiling is on.
+</script>
+<vis type="Xyplot">
+<timestamp value="TSTAMP"/>
+   <graph uname="User CPU time">
+      <filter value="MSTATE==0"/>
+      <x value="LEAF"/>
+      <arg value="LEAF"/>
+     <y value="NTICKS" aggr="SUM"/> 
+     <color value="USTACK"/> 
+   </graph>
+</vis>
+
+
+</dtracelet>

@@ -59,6 +59,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.GroovyCodeVisitor;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -329,10 +330,12 @@ public class AstUtilities {
             ClassNode classNode = (ClassNode) root;
 
             Set<String> possibleMethods = new HashSet<String>();
-            for (Object object : classNode.getFields()) {
-                FieldNode field = (FieldNode) object;
-                if (field.getLineNumber() >= 0) {
-                    children.add(field);
+            for (Object object : classNode.getProperties()) {
+                PropertyNode property = (PropertyNode) object;
+                if (property.getLineNumber() >= 0) {
+                    //children.add(property);
+
+                    FieldNode field = property.getField();
                     String name = field.getName();
                     if (name.length() > 0 && (field.getModifiers() & Opcodes.ACC_STATIC) == 0
                             && (field.getModifiers() & Opcodes.ACC_PRIVATE) != 0) {
@@ -344,6 +347,14 @@ public class AstUtilities {
                         }
                         possibleMethods.add("get" + name); // NOI18N
                     }
+                }
+
+            }
+
+            for (Object object : classNode.getFields()) {
+                FieldNode field = (FieldNode) object;
+                if (field.getLineNumber() >= 0) {
+                    children.add(field);
                 }
             }
 
@@ -359,7 +370,6 @@ public class AstUtilities {
                 }
 
             }
-
 
             for (Object object : classNode.getDeclaredConstructors()) {
                 ConstructorNode constructor = (ConstructorNode) object;
@@ -385,6 +395,8 @@ public class AstUtilities {
             if (expression != null) {
                 children.add(expression);
             }
+        } else if (root instanceof PropertyNode) {
+            // FIXME (?)
         } else if (root != null) {
             AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
             root.visit(astChildrenSupport);

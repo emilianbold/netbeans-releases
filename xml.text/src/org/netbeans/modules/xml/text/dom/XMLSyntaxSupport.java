@@ -45,8 +45,12 @@ import java.util.WeakHashMap;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.openide.util.WeakListeners;
 
@@ -57,17 +61,16 @@ import org.openide.util.WeakListeners;
  */
 public class XMLSyntaxSupport {
     
-    private static final String CDATA_START = "<![CDATA[";
-    private static final String CDATA_END = "]]>";
     /** Holds last character user have typed. */
     private char lastInsertedChar = 'X';  // NOI18N
     private final DocumentMonitor documentMonitor;
     private BaseDocument document;
-    private static WeakHashMap<BaseDocument, XMLSyntaxSupport> supportMap = null;
+    private static WeakHashMap<BaseDocument, XMLSyntaxSupport> supportMap =
+            new WeakHashMap<BaseDocument, XMLSyntaxSupport>();
     
     /** Creates new XMLSyntaxSupport */
     private XMLSyntaxSupport(BaseDocument doc) {
-        // listener has same lifetime as this class
+        this.document = doc;
         documentMonitor = new DocumentMonitor();
         DocumentListener l = WeakListeners.document(documentMonitor, doc);
         doc.addDocumentListener(l);
@@ -90,50 +93,56 @@ public class XMLSyntaxSupport {
      * @return TokenItem or <code>null</code> at the document beginning.
      */
     public Token getPreviousToken( int offset) throws BadLocationException {
-//
-//        if (offset == 0) return null;
-//        if (offset < 0) throw new BadLocationException("Offset " + offset + " cannot be less than 0.", offset);  //NOI18N
-//
-//        // find first token item at the offset
-//
-//        TokenItem item = null;
-//        int step = 11;
-//        int len = getDocument().getLength();  //??? read lock
-//        if (offset > len) throw new BadLocationException("Offset " + offset + " cannot be higher that document length " + len + " .", offset );  //NOI18N
-//        int from = Math.min(len, offset);
-//        int to = Math.min(len, offset);
-//
-//        // go ahead to document beginning
-//
-//        while ( item == null) {
-//            from = Math.max( from - step, 0);
-//            if ( from == 0) {
-//                to = Math.min(to + step, len);
-//            }
-//            item = getTokenChain( from, to);
-//            if ( from == 0 && to == len && item == null) {
-//                throw new IllegalStateException("Token at " + offset + " cannot be located!\nInspected range:[" + from + ", " + to + "].");  //NOI18N
-//            }
-//        }
-//
-//        // if we are are at token boundary or at the fist document tokem all is OK
-//        // otherwise the offset actually resides in some next token
-//
-//        while (item.getOffset() + item.getImage().length() < offset) {  // it must cross or touch it
-//            TokenItem next = item.getNext();
-//            if (next == null) {
-//                if (item.getOffset() + item.getImage().length() >= len) {
-//                    return item;  // we are at boundary at the end of document
-//                } else {
-//                    throw new IllegalStateException("Token at " + offset + " cannot be located!\nPrevious token: " + item);  //NOI18N
-//                }
-//            }
-//            item = next;
-//        }
-//
-//        return item;
-        return null;
+        if (offset == 0) return null;
+        if (offset < 0) throw new BadLocationException("Offset " +
+                offset + " cannot be less than 0.", offset);  //NOI18N
+
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(((AbstractDocument)document));
+            TokenSequence ts = th.tokenSequence();
+            return getToken(ts, offset, false);
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
     }
+
+    /**
+     * Get token at given offet or previous one if at token boundary.
+     * It does not lock the document.
+     * @param offset valid position in document
+     * @return TokenItem or <code>null</code> at the document beginning.
+     */
+    public Token getNextToken( int offset) throws BadLocationException {
+        if (offset == 0) return null;
+        if (offset < 0) throw new BadLocationException("Offset " +
+                offset + " cannot be less than 0.", offset);  //NOI18N
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(((AbstractDocument)document));
+            TokenSequence ts = th.tokenSequence();
+            return getToken(ts, offset, true);
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
+    }
+    
+    private Token getToken(TokenSequence ts, int offset, boolean next) {
+        ts.move(offset);
+        Token token = ts.token();
+        //there are cases when this could be null
+        //in which case use the next one.
+        if(token == null) {
+            if(next) {
+                ts.moveNext();
+            } else {
+                ts.movePrevious();
+            }
+            token = ts.token();
+        }
+        return token;
+    }
+
     
     /**
      * Returns SyntaxElement instance for block of tokens, which is either
@@ -142,350 +151,141 @@ public class XMLSyntaxSupport {
      * @return SyntaxElement Element surrounding or laying BEFORE the offset
      * or <code>null</code> at document begining.
      */
-    public SyntaxElement getElementChain( int offset ) throws BadLocationException {
-//
-//        TokenItem item = getPreviousToken( offset);
-//        if (item == null) return null;
-//
-//        // locate SyntaxElement start boundary by traversing previous tokens
-//        // then create element starting from that boundary
-//
-//        TokenID id = item.getTokenID();
-//        TokenItem first = item;
-//
-//        // reference can be in attribute or in content
-//
-//        if( id == CHARACTER ) {
-//            while( id == CHARACTER ) {
-//                item = item.getPrevious();
-//                if (item == null) break;
-//                id = item.getTokenID();
-//                first = item;
-//            }
-//
-//            // #62654 incorrect syntax element create for reference when it is right after a tag ( <atag>&ref;... )
-//            if(id == XMLDefaultTokenContext.TAG && item.getImage().endsWith(">")) {
-//                return createElement(item.getNext());
-//            }
-//
-//            // now item is either XMLSyntax.VALUE or we're in text, or at BOF
-//            if( id != VALUE && id != TEXT && id != CDATA_SECTION ) {
-//                // #34453 it may start of element tag or end of start tag (skip attributtes)
-//                if( id == XMLDefaultTokenContext.TAG ) {
-//                    if( item.getImage().startsWith( "<" ) ) {
-//                        return createElement( item );  // TAGO/ETAGO
-//                    } else {
-//                        do {
-//                            item = item.getPrevious();
-//                            id = item.getTokenID();
-//                        } while( id != XMLDefaultTokenContext.TAG );
-//                        return createElement( item );       // TAGC
-//                    }
-//                }
-//                return createElement( first );
-//            } // else ( for VALUE or TEXT ) fall through
-//
-//        }
-//
-//        // these are possible only in containers (tags or doctype)
-//        if ( id == XMLDefaultTokenContext.WS
-//                || id == XMLDefaultTokenContext.ARGUMENT
-//                || id == XMLDefaultTokenContext.OPERATOR
-//                || id == XMLDefaultTokenContext.VALUE)  // or doctype
-//        {
-//            while (true) {
-//                item = item.getPrevious();
-//                id = item.getTokenID();
-//                if (id == XMLDefaultTokenContext.TAG) break;
-//                if (id == XMLDefaultTokenContext.DECLARATION
-//                        && item.getImage().trim().length() > 0) break;
-//                if (isInPI(id, false)) break;
-//            };
-//        }
-//
-//        if( id == TEXT) {
-//
-//            while( id == TEXT || id == CHARACTER ) {
-//                first = item;
-//                item = item.getPrevious();
-//                if (item == null)  break;
-//                id = item.getTokenID();
-//            }
-//            return createElement( first ); // from start of continuous text
-//        }
-//
-//        if( id == CDATA_SECTION) {
-//            //the entire CDATA section is a one big fat token :-)
-//            return createElement( item );
-//        }
-//
-//        //
-//        // it may start of element tag or end of start tag (skip attributtes)
-//        //
-//        if( id == XMLDefaultTokenContext.TAG ) {
-//            if( item.getImage().startsWith( "<" ) ) {
-//                return createElement( item );  // TAGO/ETAGO
-//            } else {
-//                do {
-//                    item = item.getPrevious();
-//                    id = item.getTokenID();
-//                } while( id != XMLDefaultTokenContext.TAG );
-//                return createElement( item );       // TAGC
-//            }
-//        }
-//
-//        if( id == XMLDefaultTokenContext.ERROR )
-//            return new SyntaxElement.Error( this, item, getTokenEnd( item ) );
-//
-//        if( id == XMLDefaultTokenContext.BLOCK_COMMENT ) {
-//            while( id == XMLDefaultTokenContext.BLOCK_COMMENT && !item.getImage().startsWith( "<!--" ) ) { // NOI18N
-//                first = item;
-//                item = item.getPrevious();
-//                id = item.getTokenID();
-//            }
-//            return createElement( first ); // from start of Commment
-//        }
-//
-//
-//        if ( id == XMLDefaultTokenContext.DECLARATION ) {
-//            while(true) {
-//                first = item;
-//                if (id == XMLDefaultTokenContext.DECLARATION
-//                        && item.getImage().startsWith("<!"))                          // NOI18N
-//                {
-//                    break;
-//                }
-//                item = item.getPrevious();
-//                if (item == null) break;
-//                id = item.getTokenID();
-//            }
-//            return createElement( first );
-//        }
-//
-//        // PI detection
-//
-//        if (isInPI(id, false)) {
-//            do {
-//                item = item.getPrevious();
-//                id = item.getTokenID();
-//            } while (id != XMLDefaultTokenContext.PI_START);
-//        }
-//
-//        if (id == XMLDefaultTokenContext.PI_START) {
-//            return createElement(item);
-//        }
-//
+    public SyntaxElement getElementChain(final int offset ) throws BadLocationException {
+
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(((AbstractDocument)document));
+            TokenSequence<XMLTokenId> ts = th.tokenSequence();
+            Token<XMLTokenId> token = initialize(ts, offset);
+            if(token == null)
+                return null;
+            switch(token.id()) {
+                case PI_START:
+                case PI_END:
+                case PI_CONTENT:
+                case PI_TARGET: {
+                    while(token.id() != XMLTokenId.PI_START) {
+                        ts.movePrevious();
+                        token = ts.token();
+                    }
+                    return createElement(ts, token);
+                }
+
+                case TEXT:
+                case DECLARATION:
+                case CDATA_SECTION:
+                case BLOCK_COMMENT: {
+                    return createElement(ts, token);
+                }
+
+                case TAG: {
+                    return createElement(ts, token);
+                }
+            }
+
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
+
         return null;
     }
-    
-//    // return if in PI exluding PI_START and including WSes
-//    private boolean isInPI(TokenID id, boolean includeWS) {
-//        return id == XMLDefaultTokenContext.PI_TARGET
-//                || id == XMLDefaultTokenContext.PI_CONTENT
-//                || id == XMLDefaultTokenContext.PI_END
-//                || (includeWS && id == XMLDefaultTokenContext.WS);
-//    }
-    
+
+    private Token<XMLTokenId> initialize(TokenSequence ts, int offset) {
+        ts.move(offset);
+        Token<XMLTokenId> token = ts.token();
+        if(token == null) {
+            if(!ts.moveNext())
+                return null;
+            token = ts.token();
+        }
+        XMLTokenId id = token.id();
+        String image = token.text().toString();
+        if ( id == XMLTokenId.WS ||
+                id == XMLTokenId.ARGUMENT ||
+                id == XMLTokenId.OPERATOR ||
+                id == XMLTokenId.VALUE ||
+                (id == XMLTokenId.TAG &&
+                (">".equals(image) || "/>".equals(image)))) { //NOI18N
+            while (true) {
+                ts.movePrevious();
+                token = ts.token();
+                id = token.id();
+                if (id == XMLTokenId.TAG || id == XMLTokenId.PI_START)
+                    break;
+            } //while
+        } //if
+        return token;
+    }
+
+
+
     /**
      * Create elements starting with given item.
      *
      * @param  item or null if EOD
      * @return SyntaxElement startting at offset, or null, if EoD
      */
-    private SyntaxElement createElement( Token item ) throws BadLocationException {
+    private SyntaxElement createElement(final TokenSequence ts,
+            final Token<XMLTokenId> token) throws BadLocationException {
+        //default start and end.
+        int start = ts.offset();
+        int end = start + token.length();
+        switch(token.id()) {
+            
+            case PI_START: {
+                Token<XMLTokenId> t = token;
+                while(t.id() != XMLTokenId.PI_END) {
+                    ts.moveNext();
+                    t = ts.token();
+                }
+                end = ts.offset() + t.length();
+                return new ProcessingInstruction(this, token, start, end);
+            }
 
-//
-//        if( item == null ) return null; // on End of Document
-//
-////        System.err.println("Creating element for: "  + item.getTokenID().getName() + " " + item.getImage());
-//
-//        TokenID id = item.getTokenID();
-//        TokenItem first = item;
-//        int lastOffset = getTokenEnd( item );
-//        switch (id.getNumericID()) {
-//
-//            case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
-//
-//                while( id == XMLDefaultTokenContext.BLOCK_COMMENT ) {
-//                    lastOffset = getTokenEnd( item );
-//                    item = item.getNext();
-//                    if( item == null ) break; //EoD
-//                    id = item.getTokenID();
-//                }
-//                return new CommentImpl( this, first, lastOffset );
-//
-//            case XMLDefaultTokenContext.DECLARATION_ID:
-//
-//                // we treat internal DTD as one syntax element
-//                boolean seekforDTDEnd = false;;
-//                while( id == XMLDefaultTokenContext.DECLARATION
-//                        || id == XMLDefaultTokenContext.VALUE
-//                        || seekforDTDEnd) {
-//                    lastOffset = getTokenEnd( item );
-//                    if (seekforDTDEnd) {
-//                        if (item.getImage().endsWith("]>")) {
-//                            break;
-//                        }
-//                    } else if (id == DECLARATION) {
-//                        seekforDTDEnd = item.getImage().endsWith("[");
-//                    }
-//                    item = item.getNext();
-//                    if( item == null ) break; //EoD
-//                    id = item.getTokenID();
-//                }
-//                return new DocumentTypeImpl( this, first, lastOffset);
-//
-//            case XMLDefaultTokenContext.ERROR_ID:
-//
-//                return new SyntaxElement.Error( this, first, lastOffset);
-//
-//            case TEXT_ID:
-//            case CHARACTER_ID:
-//
-//                while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
-//                    lastOffset = getTokenEnd( item );
-//                    item = item.getNext();
-//                    if( item == null ) break; //EoD
-//                    id = item.getTokenID();
-//                }
-//                return new TextImpl( this, first, lastOffset );
-//
-//            case CDATA_SECTION_ID:
-//                return new CDATASectionImpl( this, first, first.getOffset() + first.getImage().length() );
-//
-//            case XMLDefaultTokenContext.TAG_ID:
-//
-//                String text = item.getImage();
-//                if ( text.startsWith( "</" ) ) {                 // endtag      // NOI18N
-//                    String name = text.substring( 2 );
-//                    item = item.getNext();
-//                    id = item == null ? null : item.getTokenID();
-//
+            case DECLARATION: {
+                return new DocumentType(this, token, start, end);
+            }
 
-//                    while( id == XMLDefaultTokenContext.WS ) {
-//                        lastOffset = getTokenEnd( item );
-//                        item = item.getNext();
-//                        id = item == null ? null : item.getTokenID();
-//                    }
-//
-//                    if( id == XMLDefaultTokenContext.TAG && item.getImage().equals( ">" ) ) {   // with this tag
-//                        return new EndTag( this, first, getTokenEnd( item ), name );
-//                    } else {                                                            // without this tag
-//                        return new EndTag( this, first, lastOffset, name );
-//                    }
-//                } else {                                                                // starttag
-//                    String name = text.substring( 1 );
-//                    ArrayList attrs = new ArrayList();
-//
-//                    // skip attributes
-//
-//                    item = item.getNext();
-//                    id = item == null ? null : item.getTokenID();
-//
-//                    while( id == XMLDefaultTokenContext.WS
-//                            || id == XMLDefaultTokenContext.ARGUMENT
-//                            || id == XMLDefaultTokenContext.OPERATOR
-//                            || id == XMLDefaultTokenContext.VALUE
-//                            || id == XMLDefaultTokenContext.CHARACTER) {
-//                        if ( id == XMLDefaultTokenContext.ARGUMENT ) {
-//                            attrs.add( item.getImage() );  // remember all attributes
-//                        }
-//                        lastOffset = getTokenEnd( item );
-//                        item = item.getNext();
-//                        if (item == null) break;
-//                        id = item.getTokenID();
-//                    }
-//
-//                    // empty or start tag handling
-//
-//                    if( id  == XMLDefaultTokenContext.TAG && (item.getImage().equals( "/>") || item.getImage().equals(">") || item.getImage().equals("?>"))){
-//                        if(item.getImage().equals("/>"))
-//                            return new EmptyTag( this, first, getTokenEnd( item ), name, attrs );
-//                        else if(item.getImage().equals("?>"))
-//                            return new EmptyTag( this, first, getTokenEnd( item ), name, attrs );
-//                        else
-//                            return new StartTag( this, first, getTokenEnd( item ), name, attrs );
-//                    } else {                                                            // without this tag
-//                        return new StartTag( this, first, lastOffset, name, attrs );
-//                    }
-//                }
-//
-//            case XMLDefaultTokenContext.PI_START_ID:
-//                do {
-//                    lastOffset = getTokenEnd( item );
-//                    item = item.getNext();
-//                    if( item == null ) break; //EoD
-//                    id = item.getTokenID();
-//                } while( isInPI(id, true));
-//                return new ProcessingInstructionImpl( this, first, lastOffset);
-//
-//            default:
-//                // BadLocationException
-//        }
-//
-//        throw new BadLocationException( "Cannot create SyntaxElement at " + item, item.getOffset() );  //NOI18N
+            case CDATA_SECTION: {
+                return new CDATASection(this, token, start, end);
+            }
+            
+            case BLOCK_COMMENT: {
+                return new Comment(this, token, start, end);
+            }
+            
+            case TEXT: {
+                return new Text(this, token, start, end);
+            }
+
+            case TAG: {
+                Token<XMLTokenId> t = token;
+                do {
+                    ts.moveNext();
+                    t = ts.token();
+                } while(t.id() != XMLTokenId.TAG);
+                end = ts.offset() + t.length();
+                //empty tag
+                if(t.text().toString().equals("/>")) {
+                    return new EmptyTag(this, token, start, end);
+                }
+                //end tag
+                if(token.text().toString().startsWith("</")) {//NOI18N
+                    return new EndTag(this, token, start, end);
+                }
+                return new StartTag(this, token, start, end);
+            }
+        }
+
         return null;
     }
-    
-    // ~~~~~~~~~~~~~~~~~ utility methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
-    /**
-     * Locate DOCTYPE from the start of document.
-     */
-//    public SyntaxElement.Declaration getDeclarationElement(){
-//        int offset = 5;
-//        SyntaxElement elem = null;
-//
-//        try {
-//            while(true){  //??? optimalize stop on first element
-//                elem = getElementChain(offset);
-//                if(elem instanceof SyntaxElement.Declaration || elem == null)
-//                    break;
-//                offset += elem.getElementLength()+1;
-//            }
-//        } catch (BadLocationException ble) {
-//            org.openide.TopManager.getDefault().notifyException(ble);
-//        }
-//        return elem != null ? (SyntaxElement.Declaration)elem : null;
-//    }
-    
-    
-    /**
-     * @return end offset of given item
-     */
-//    static int getTokenEnd( TokenItem item ) {
-//        return item.getOffset() + item.getImage().length();
-//    }
-    
-//    /** Returns last inserted character. It's most likely one recently typed by user. */
-//    public final char lastTypedChar() {
-//        return lastInsertedChar;
-//    }
-    
-//    /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
-//     * @tagTokenItem a token item whithin a tag
-//     * @return true is the token is a part of singleton tag
-//     */
-//    public boolean isSingletonTag(TokenItem tagTokenItem) {
-//        TokenItem ti = tagTokenItem;
-//        while(ti != null) {
-//            if(ti.getTokenID() == XMLTokenIDs.TAG) {
-//                if("/>".equals(ti.getImage())) { // NOI18N
-//                    return true;
-//                }
-//                if(">".equals(ti.getImage())) return false; // NOI18N
-//            }
-//            //break the loop on TEXT or on another open tag symbol
-//            //(just to prevent long loop in case the tag is not closed)
-//            if(ti.getTokenID() == XMLTokenIDs.TEXT) break;
-//
-//
-//            ti = ti.getNext();
-//        }
-//        return false;
-//    }
-//
-    
-    
+        
+    /** Returns last inserted character. It's most likely one recently typed by user. */
+    public final char lastTypedChar() {
+        return lastInsertedChar;
+    }
+        
     /** Keep track of last typed character */
     private class DocumentMonitor implements DocumentListener {
         
@@ -499,8 +299,6 @@ public class XMLSyntaxSupport {
                 String s = e.getDocument().getText(start + len - 1, 1);
                 lastInsertedChar = s.charAt(0);
             } catch (BadLocationException e1) {
-//                ErrorManager err = ErrorManager.getDefault();
-//                err.notify(e1);
             }
         }
         
