@@ -50,8 +50,9 @@ import org.w3c.dom.*;
 
 public class StartTag extends Tag {
 
-    public StartTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    StartTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
+        this.name = from.text().toString();
     }
 
     public boolean hasChildNodes() {
