@@ -134,7 +134,10 @@ public class CssAnalyser {
                 }
             }
         };
-        SimpleNodeUtil.visitChildren(node, visitor);
+        
+        if(node != null) {
+            SimpleNodeUtil.visitChildren(node, visitor);
+        }
         return errors;
     }
 
