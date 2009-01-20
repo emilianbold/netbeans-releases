@@ -269,8 +269,6 @@ public abstract class AbstractTabCellRenderer extends JLabel
         return new Dimension(padding);
     }
 
-    private int phash = -1;
-
     /** Set the state of the renderer, in preparation for painting it or evaluating a condition
      *  (such as the position of the close button) for which it must be correctly configured).
      *  This method will call stateChanged(), allowing the renderer to reconfigure itself if
