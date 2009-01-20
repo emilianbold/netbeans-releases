@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
@@ -62,7 +63,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @param T 
  * @author Dmitriy Ivanov
  */
-public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
+public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, Disposable {
 
     private final CharSequence name;
     private final CsmType type;
@@ -343,8 +344,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         super.write(output);
         assert this.name != null;
         output.writeUTF(this.name.toString());
-        output.writeBoolean(this._static);
-        output.writeBoolean(this._extern);
+        byte pack = (byte) ((this._static ? 1 : 0) | (this._extern ? 2 : 0));
+        output.writeByte(pack);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
 
@@ -352,13 +353,13 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
 
-    @SuppressWarnings("unchecked")
     public VariableImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
-        this._static = input.readBoolean();
-        this._extern = input.readBoolean();
+        byte pack = input.readByte();
+        this._static = (pack & 1) == 1;
+        this._extern = (pack & 2) == 2;
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
 

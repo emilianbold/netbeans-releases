@@ -1,0 +1,412 @@
+#!/bin/sh
+
+# Copyright 06/17/08 Sun Microsystems, Inc. All Rights Reserved
+#
+# @(#)perftools_whichami.ver.sh 1.27 08/06/17 SMI
+#
+
+##########################################################################
+#
+# Usage
+#
+Usage()
+{
+    scriptname=`basename $0`
+
+    echo "$scriptname: Determine the machine name and OS version, etc."
+    echo " "
+    echo "USAGE: $scriptname [-a] [-o] [-m] [-s] [-O] [-c] [-h] [-V]"
+    echo "      default       Print extended machine name, including os"
+    echo "      -a            Print all versions of the strings"
+    echo "      -o            Print operating system version <os>"
+    echo "      -m            Print cpu type"
+    echo "      -s            Print string with all info type"
+    echo "      -O            Print user-friendly operating system version <os>"
+    echo "      -c            Print cpu count"
+    echo "      -t            Print the tools archictecture {intel,sparc}-{S2,Linux}"
+    echo "      -k            Print the kernel release string"
+    echo "      -g            Print the gcc/g++/glibs release strings"
+    echo "      -h            Print this help message and exit"
+    echo "      -V            Print a version string and exit"
+    echo "      -D            Print debug info, -a output, and exit"
+    echo " Exit status:"
+    echo "    0 - ok"
+    echo "    1 - unrecognized OS"
+}
+
+# This string is here for the 'version' command:
+# It gets sed'ed in at build-time:
+# PRODVER="@(#)RELEASE VERSION Sun Ceres Analyzer 7.7 SunOS_i386 ak119685 2008/09/11"
+
+# resolve symlinks to find directory of this script
+#
+
+PRG=$0
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
+    if expr "$link" : '^/' > /dev/null 2>/dev/null; then
+	PRG="$link"
+    else
+	PRG="`dirname $PRG`/$link"
+    fi
+done
+
+progdir=`dirname $PRG`
+fdhome="$progdir/.."
+
+osmode=0
+debug=0
+
+while getopts aoOcmstkghDV option
+do
+    case $option in
+	a) osmode=-1;;
+
+	o) osmode=1;;
+
+	O) osmode=2;;
+
+	c) osmode=3;;
+
+	m) osmode=4;;
+
+	s) osmode=5;;
+
+	t) osmode=6;;
+
+	k) osmode=7;;
+
+	g) osmode=8;;
+
+	h) Usage
+	    exit 0;;
+
+	D) debug=1;;
+
+	V) echo `basename $PRG`: "Sun Ceres Analyzer 7.7 SunOS_i386 ak119685 2008/09/11"; exit 0;;
+
+	\?) echo "Unknown option"
+	    exit 1;;
+    esac
+done
+
+if [ $debug -eq 1 ]; then
+    echo
+    echo "cat /etc/release:"
+    cat /etc/release 2>/dev/null
+    echo
+    echo "cat /etc/SuSE-release:"
+    cat /etc/SuSE-release 2>/dev/null
+    echo
+    echo "cat /etc/sun-release:"
+    cat /etc/sun-release 2>/dev/null
+    echo
+    echo "cat /etc/redhat-release:"
+    cat /etc/redhat-release 2>/dev/null
+    echo
+    echo
+    echo "cat /etc/lsb-release:"
+    cat /etc/lsb-release 2>/dev/null
+    echo
+    echo "uname -a"
+    uname -a
+    echo
+    echo "uname -s"
+    uname -s
+    echo
+    echo "uname -r"
+    uname -r
+    echo
+    echo "uname -v"
+    uname -v
+    echo
+    echo "uname -m"
+    uname -m
+    echo
+    echo "uname -p"
+    uname -p
+    echo
+    echo "uname -i"
+    uname -i
+    echo
+    echo "uname -o"
+    uname -o
+    echo
+    echo "hostname -s"
+    hostname -s
+    echo
+    echo "hostname"
+    hostname
+    echo
+    echo "cat /proc/cpuinfo"
+    cat /proc/cpuinfo
+    echo
+    echo
+    osmode=-1;
+fi
+
+OSNAME=UNKNOWN
+OSARCH=UNKNOWN
+HOSTNAME=
+OS=
+FLAVOR=`uname -a | /usr/bin/cut -d" " -f1`
+BITS=32-bit
+
+if [ "$FLAVOR" = "SunOS" ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking SunOS path"
+		fi
+    OSARCH=SunOS
+    HOSTNAME=`hostname`
+    MACHINE=`hostname`_`uname -p`_`uname -r`
+    OS=`uname -r`
+    if [ "`/usr/bin/isalist | grep sparcv9`" != "" ]; then
+	BITS=64-bit
+    elif [ "`/usr/bin/isalist | grep amd64`" != "" ];  then
+	BITS=64-bit
+    fi
+    NCPUS=`/usr/sbin/psrinfo | wc -l | sed 's/^ *//'`
+    OSNAME="SunOS-$BITS, $NCPUS CPUs, `uname -p` `uname -r`"
+    CPUTYPE=`cputrack -h 2>&1 | grep  "CPU performance counter interface" | /usr/bin/cut -d":" -f2`
+    if [ -z "$CPUTYPE" ]; then
+        CPUTYPE=`/usr/sbin/prtconf -v 2>&1 | sed -n '/brand-string/{n;p;q;}' | sed 's/.*='"'//" | sed "s/'"'$//'`
+    fi
+    VERSION=`uname -r`
+    if [ "`/usr/bin/isalist | grep sparc`" != "" ]; then
+	TOOLSARCH=sparc-S2
+    else
+	TOOLSARCH=intel-S2
+    fi
+
+elif [ "$FLAVOR" = "Linux" ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking generic Linux path"
+		fi
+  # Generic code for all Linux flavors
+  OSARCH=Linux
+  if [ "`uname -m  | grep 64`" != "" ]; then
+	BITS=64-bit
+  fi
+  if [ "`uname -m | grep sparc`" != "" ]; then
+    TOOLSARCH=sparc-Linux
+  else
+    TOOLSARCH=intel-Linux
+  fi
+  NCPUS=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
+  if [ "$NCPUS" = "0" ]; then
+    NCPUS=`cat /proc/cpuinfo | grep CPU | wc -l | sed 's/^ *//'`
+  fi
+  CPUTYPE=`cat /proc/cpuinfo  | egrep "model name" | head -1 | /usr/bin/cut -d" " -f3-`
+  if [ "$CPUTYPE" = "" ]; then
+    CPUTYPE=`cat /proc/cpuinfo  | grep "cpu	" | /usr/bin/cut -d":" -f2`
+  fi
+
+  if [ -r /etc/SuSE-release ]; then
+    # this code is for any SuSE release
+		if [ $debug -eq 1 ]; then
+		    echo "taking SuSE path"
+		fi
+    MAJOR_V=`grep VERSION /etc/SuSE-release | /usr/bin/cut -d" " -f3`
+    MINOR_V=`grep PATCHLEVEL /etc/SuSE-release | /usr/bin/cut -d" " -f3`
+    if [ "$MINOR_V" == "" ]; then
+	VERSION=$MAJOR_V
+    else
+	VERSION=${MAJOR_V}.$MINOR_V
+    fi
+
+    HOSTNAME=`hostname -s`
+    if [ "$HOSTNAME" = "localhost" ]; then
+	HOSTNAME=`hostname`
+    fi
+
+    if [ -r /etc/sun-release ]; then
+	# distinguish Sun Desktop and Sun Java Desktop
+		if [ $debug -eq 1 ]; then
+		    echo "taking sun-release path"
+		fi
+	J=`grep "Sun Java" /etc/sun-release`
+	if [ -n "$J" ]; then
+	    if [ "$VERSION" == "9" ]; then
+		VER2=`grep Release /etc/sun-release | /usr/bin/cut -d" " -f6`
+	    fi
+	    if [ "$VER2" != "" ]; then
+		VERSION=$VER2
+	    fi
+	    OS=JDS_$VERSION
+	else
+	    OS=SDS_$VERSION
+	fi
+    else
+	OS=SLES_$VERSION
+    fi
+    # end of SuSE release handling
+    MACHINE=$HOSTNAME_`uname -m`_$OS
+    OSNAME="Linux-$BITS, $NCPUS CPUs, $OS"
+  fi
+
+  if [ -r /etc/redhat-release ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking redhat-release path"
+		fi
+    HOSTNAME=`hostname -s`
+    if [ "$HOSTNAME" = "localhost" ]; then
+	HOSTNAME=`hostname`
+    fi
+    XFLAVOR=`/usr/bin/cut -d" " -f3 /etc/redhat-release`
+    if [ "$XFLAVOR" = "Enterprise" ]; then
+	VERSION=`/usr/bin/cut -d" " -f7 /etc/redhat-release`
+	OS=RHEL_$VERSION
+    elif [ "$XFLAVOR" = "Linux" ]; then
+	VERSION=`/usr/bin/cut -d" " -f5 /etc/redhat-release`
+	OS=RHEL_$VERSION
+
+    else
+	if [ "`/usr/bin/cut -d" " -f1 /etc/redhat-release`" = "Fedora" ]; then
+	    VERSION=`/usr/bin/cut -d" " -f3 /etc/redhat-release`
+	    OS=Fedora_$VERSION
+	elif [ "`/usr/bin/cut -d" " -f1 /etc/redhat-release`" = "CentOS" ]; then
+	    VERSION=`rpm -qa '*release*' | grep centos-release-notes | cut -d "-" -f 4 | cut -d "." -f 1-2`
+	    OS=CentOS_$VERSION
+	else
+	    VERSION=_UNK
+	    OS=RH_UNK
+	    if [ $osmode -eq 2 ]; then
+		echo "Unknown Redhat Linux version" >&2
+		cat /etc/redhat-release >&2
+	    fi
+	fi
+    fi
+    MACHINE=${HOSTNAME}_`uname -m`_$OS
+    OSNAME="Linux-$BITS, $NCPUS CPUs, $OS"
+  fi
+
+  if [ -r /etc/debian_version ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking debian_version path"
+		fi
+    HOSTNAME=`hostname`
+    if [ -r /etc/lsb-release ]; then
+	VERSION=`cat  /etc/lsb-release  | grep "DISTRIB_RELEASE" | /usr/bin/cut -d"=" -f2`
+	OS=`cat  /etc/lsb-release  | grep "DISTRIB_ID" | /usr/bin/cut -d"=" -f2`_$VERSION
+    else
+	VERSION=`uname -r`
+	OS=Debian_`cat /etc/debian_version`
+    fi
+    MACHINE=${HOSTNAME}_`uname -m`_$OS
+    OSNAME="Linux-$BITS, $NCPUS CPUs, $OS"
+  fi
+
+  if [ -r /etc/lsb-release ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking lsb-release path"
+		fi
+    HOSTNAME=`hostname`
+    if [ "OS" = "" ]; then
+	VERSION=`cat  /etc/lsb-release  | grep "DISTRIB_RELEASE" | /usr/bin/cut -d"=" -f2`
+	OS=`cat  /etc/lsb-release  | grep "DISTRIB_ID" | /usr/bin/cut -d"=" -f2`_$VERSION
+    fi
+    MACHINE=${HOSTNAME}_`uname -m`_$OS
+    OSNAME="Linux-$BITS, $NCPUS CPUs, $OS"
+  fi
+
+  # have we figured out the hostname yet?
+  # if not, it must be some other unknown Linux
+  if [ "$HOSTNAME" = "" ]; then
+		if [ $debug -eq 1 ]; then
+		    echo "taking HOSTNAME not found path"
+		fi
+    HOSTNAME=`hostname`
+    NCPUS=`cat /proc/cpuinfo | grep CPU | wc -l | sed 's/^ *//'`
+    OS=`uname -r`
+    OSNAME="Linux-$BITS, $NCPUS CPUs, $OS"
+    MACHINE=${HOSTNAME}_`uname -m`_$OS
+    VERSION=`uname -r`
+    if [ $osmode -eq 2 ]; then
+	echo "Unknown Linux version" >&2
+	for i in /etc/*release* ; do
+	    echo "  $i: `cat $i`" >&2
+	done
+    fi
+  fi
+
+else
+    OSARCH=UNKNOWN
+    OS=`uname -r`
+    HOSTNAME=`hostname`
+    MACHINE=${HOSTNAME}_`uname -m`_$OS
+    OSNAME="UNKNOWN-$BITS, $NCPUS CPUs $OS"
+fi
+
+if [ $osmode -eq 7 ]; then
+    KERNEL_VERSION=`uname -r`
+fi
+if [ $osmode -eq 8 ] || [ $osmode -eq -1 ] ; then
+    if [ -x `which gcc` ]; then
+	GCC=`which gcc`
+	GPLUSPLUS=`which g++`
+	GCC_VERSION=`$GCC --version | grep GCC`
+	GPLUSPLUS_VERSION=`$GPLUSPLUS --version | grep GCC`
+	GLIBC_VERSION="<?>"
+	if [ "$BITS" = "64-bit" ]; then
+	    GLIBC64_VERSION="<?>"
+	else
+	    GLIBC64_VERSION="<not applicable>"
+	fi
+    else
+	GCC_VERSION="<none found on path>"
+	GPLUSPLUS_VERSION="<none found on path>"
+	GLIBC_VERSION="<none found>"
+	if [ "$BITS" = "64-bit" ]; then
+	    GLIBC64_VERSION="<none found>"
+	else
+	    GLIBC64_VERSION="<not applicable>"
+	fi
+    fi
+fi
+
+if [ "$OSARCH" = "UNKNOWN" ]; then
+    echo "-->`hostname` has an unrecognized OS"
+    exit 1
+else
+    if [ $osmode -eq -1 ]; then
+	echo "MACHINE: $MACHINE"
+	echo "HOSTNAME: $HOSTNAME"
+	echo "OS: $OS"
+	echo "OSARCH: $OSARCH"
+	echo "OSNAME: $OSNAME"
+	echo "NCPUs: $NCPUS"
+	echo "CPUTYPE: $CPUTYPE"
+	echo "FLAVOR: $FLAVOR"
+	echo "VERSION: $VERSION"
+	echo "SYSTEM: $OSNAME $CPUTYPE"
+	echo "TOOLSARCH: $TOOLSARCH"
+	echo "KERNEL_VERSION: $KERNEL_VERSION"
+	echo "GCC_VERSION: $GCC_VERSION"
+	echo "GPLUSPLUS_VERSION: $GPLUSPLUS_VERSION"
+	echo "GNU_libc_VERSION: $GLIBC_VERSION"
+	echo "GNU_libc64_VERSION: $GLIBC64_VERSION"
+
+    elif [ $osmode -eq 1 ]; then
+	echo "$OS"
+    elif [ $osmode -eq 2 ]; then
+	echo "$OSNAME"
+    elif [ $osmode -eq 3 ]; then
+	echo "$NCPUS"
+    elif [ $osmode -eq 4 ]; then
+	echo "$CPUTYPE"
+    elif [ $osmode -eq 5 ]; then
+	echo "$OSNAME $CPUTYPE"
+    elif [ $osmode -eq 6 ]; then
+	echo "$TOOLSARCH"
+    elif [ $osmode -eq 7 ]; then
+	echo "KERNEL_VERSION: $KERNEL_VERSION"
+    elif [ $osmode -eq 8 ]; then
+	echo "GCC_VERSION: $GCC_VERSION"
+	echo "GPLUSPLUS_VERSION version: $GPLUSPLUS_VERSION"
+	echo "GNU_libc_VERSION: $GLIBC_VERSION"
+	echo "GNU_libc64_VERSION: $GLIBC64_VERSION"
+    else
+	echo "$MACHINE"
+    fi
+fi

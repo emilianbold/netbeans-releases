@@ -48,6 +48,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Value;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -97,14 +99,23 @@ public class ReturnValueNode  extends BaseNode {
                             Value parameter = valueHandle.resolve(metaData);
                             if (parameter != null) {
                                 name = parameter.getName();
+                                updateProperties(parameter);
                             }
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    private void updateProperties(Value param) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("Return")); // NOI18N
+        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
     }
 
     protected void initialize() {

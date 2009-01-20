@@ -43,7 +43,6 @@ import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -71,16 +70,16 @@ public final class DynamicElementHandler {
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
-            String className, String prefix, int anchor) {
+            String className, String prefix, int anchor, boolean nameOnly) {
 
-        Map<MethodSignature, CompletionItem.DynamicMethodItem> resultDynamic =
-                new HashMap<MethodSignature, CompletionItem.DynamicMethodItem>();
+        Map<MethodSignature, CompletionItem> resultDynamic =
+                new HashMap<MethodSignature, CompletionItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
             for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), sourceClassName, className).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
-                    resultDynamic.put(entry.getKey(), new CompletionItem.DynamicMethodItem(
-                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
+                    resultDynamic.put(entry.getKey(), CompletionItem.forDynamicMethod(
+                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), nameOnly));
                 }
             }
         }

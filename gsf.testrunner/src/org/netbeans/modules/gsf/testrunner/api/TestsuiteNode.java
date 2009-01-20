@@ -100,8 +100,6 @@ public class TestsuiteNode extends AbstractNode {
         assert this.suiteName != null;
         
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/gsf/testrunner/resources/class.gif");     //NOI18N
     }
 
     /**
@@ -131,12 +129,13 @@ public class TestsuiteNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        Image classIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/class.gif"); //NOI18N
         if (containsFailed()) {
-            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"); //NOI18N
-            return ImageUtilities.mergeImages(classIcon, errorBadgeIcon, 0, 10);
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
         }
-        return classIcon;
+        if (report != null && Status.PENDING == report.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
     }
     
     /**

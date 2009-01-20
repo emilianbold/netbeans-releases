@@ -977,6 +977,10 @@ public class CompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
+        if (request.dotContext != null && request.dotContext.isMethodsOnly()) {
+            return false;
+        }
+
         ClassNode declaringClass;
 
         if (request.isBehindDot()) {
@@ -1548,7 +1552,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
 
-            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT && t.id() != GroovyTokenId.MEMBER_POINTER
                     && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 // is it prefix
                 if (t.id() != GroovyTokenId.IDENTIFIER) {
@@ -1561,7 +1565,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT) {
+        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -1573,10 +1577,15 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT)
+        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER)
                 || !remainingTokens) {
             // no astpath
             return null;
+        }
+
+        boolean methodsOnly = false;
+        if (ts.token().id() == GroovyTokenId.MEMBER_POINTER) {
+            methodsOnly = true;
         }
 
         // travel back on the token string till the token is neither a
@@ -1595,7 +1604,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         AstPath realPath = getPath(request.info, request.doc, astOffset);
 
-        return new DotCompletionContext(lexOffset, astOffset, realPath);
+        return new DotCompletionContext(lexOffset, astOffset, realPath, methodsOnly);
     }
 
     private static class DotCompletionContext {
@@ -1606,10 +1615,14 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         private final AstPath astPath;
 
-        public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath) {
+        private final boolean methodsOnly;
+
+        public DotCompletionContext(int lexOffset, int astOffset,
+                AstPath astPath, boolean methodsOnly) {
             this.lexOffset = lexOffset;
             this.astOffset = astOffset;
             this.astPath = astPath;
+            this.methodsOnly = methodsOnly;
         }
 
         public int getLexOffset() {
@@ -1623,6 +1636,11 @@ public class CompletionHandler implements CodeCompletionHandler {
         public AstPath getAstPath() {
             return astPath;
         }
+
+        public boolean isMethodsOnly() {
+            return methodsOnly;
+        }
+        
     }
 
     /**
@@ -2434,7 +2452,8 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor);
+                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
+                    request.dotContext != null && request.dotContext.isMethodsOnly());
         proposals.addAll(result.values());
 
         return true;

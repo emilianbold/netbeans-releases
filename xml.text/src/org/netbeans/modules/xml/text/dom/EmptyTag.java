@@ -41,16 +41,16 @@
 
 package org.netbeans.modules.xml.text.dom;
 
-import java.util.*;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.w3c.dom.*;
 import org.netbeans.modules.xml.spi.dom.*;
 
 public class EmptyTag extends Tag {
 
-    public EmptyTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
-        super( support, from, to, name, attribs );
+    public EmptyTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end);
     }
 
     public boolean hasChildNodes() {

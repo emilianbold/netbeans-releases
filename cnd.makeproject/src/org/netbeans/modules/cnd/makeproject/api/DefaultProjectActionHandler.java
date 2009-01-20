@@ -125,7 +125,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             CustomizerNode node = chooser.getNode();
             if (node instanceof CustomProjectActionHandlerProvider) {
                 return (CustomProjectActionHandlerProvider) node;
-            } else if (node.getClass().getName().toLowerCase().contains("dbx") && overrideActionHandlerProvider != null) { // NOI18N
+            } else if (node != null && overrideActionHandlerProvider != null && node.getClass().getName().toLowerCase().contains("dbx")) { // NOI18N
                 return overrideActionHandlerProvider;
             }
         }
@@ -407,6 +407,12 @@ public class DefaultProjectActionHandler implements ActionListener {
                                 args2 = b.toString();
                             } else {
                                 args2 = "";
+                            }
+                            if (pae.getID() == ProjectActionEvent.RUN &&
+                                    ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
+                                    HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS &&
+                                    !exe.endsWith(".exe")) { // NOI18N
+                                exe = exe + ".exe"; // NOI18N
                             }
                             args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();

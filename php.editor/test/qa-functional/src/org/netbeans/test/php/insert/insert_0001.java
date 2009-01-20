@@ -137,10 +137,11 @@ public class insert_0001 extends insert
     {
       "class a",
       "{",
-      "function __construct() {",
+      "function __construct()",
+      "{",
       "}"
     };
-    CheckResult( eoPHP, asResult, -2 );
+    CheckResult( eoPHP, asResult, -3 );
 
     endTest( );
   }

@@ -40,7 +40,9 @@
 package org.netbeans.modules.maven.jaxws;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -49,6 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
@@ -67,6 +70,13 @@ import org.netbeans.modules.maven.model.pom.Resource;
  */
 public final class MavenModelUtils {
 
+    private static final String WSIPMORT_GENERATE_PREFIF = "wsimport-generate-"; //NOI18N
+    private static final String STALE_FILE_DIRECTORY = "${project.build.directory}/jaxws/stale/"; //NOI18N
+    private static final String STALE_FILE_EXTENSION = ".stale"; //NOI18N
+    private static final String JAXWS_GROUP_ID = "org.codehaus.mojo"; //NOI18N
+    private static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
+    private static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
+
     private MavenModelUtils() { }
 
     /**
@@ -79,7 +89,7 @@ public final class MavenModelUtils {
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
         for (org.apache.maven.model.Plugin plg : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plg.getKey())) {
+            if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
                 //TODO CHECK THE ACTUAL PARAMETER VALUES..
                 return plg;
             }
@@ -98,7 +108,7 @@ public final class MavenModelUtils {
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
         for (org.apache.maven.model.Plugin plg : plugins) {
-            if ("org.apache.maven.plugins:maven-war-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
+            if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
                 //TODO CHECK THE ACTUAL PARAMETER VALUES..
                 return plg;
             }
@@ -109,46 +119,52 @@ public final class MavenModelUtils {
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
      * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
-     * @param model
-     * @return
+     * @param model POMModel
+     * @return JAX-WS Plugin instance
      */
     public static Plugin addJaxWSPlugin(POMModel model) {
+        return MavenModelUtils.addJaxWSPlugin(model, null);
+    }
+
+    /**
+     * adds jaxws plugin, requires the model to have a transaction started,
+     * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
+     * @param model POMModel
+     * @param jaxWsVersion version of sources to generate. Value null means default version.
+     * @return JAX-WS Plugin instance
+     */
+    public static Plugin addJaxWSPlugin(POMModel model, String jaxWsVersion) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             bld = model.getFactory().createBuild();
             model.getProject().setBuild(bld);
         }
-        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin"); //NOI18N
+        Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
             //TODO CHECK THE ACTUAL PARAMETER VALUES..
             return plugin;
         }
         plugin = model.getFactory().createPlugin();
-        plugin.setGroupId("org.codehaus.mojo"); //NOI18N
-        plugin.setArtifactId("jaxws-maven-plugin"); //NOI18N
+        plugin.setGroupId(JAXWS_GROUP_ID);
+        plugin.setArtifactId(JAXWS_ARTIFACT_ID);
         plugin.setVersion("1.10"); //NOI18N
         bld.addPlugin(plugin);
-        PluginExecution exec = plugin.findExecutionById("wsimport-generate"); //NOI18N
-        if (exec == null) {
-            exec = model.getFactory().createExecution();
-            exec.setId("wsimport-generate"); //NOI18N
-            exec.setPhase("generate-sources"); //NOI18N
-            exec.addGoal("wsimport"); //NOI18N
-            plugin.addExecution(exec);
-        } else {
-            //shall we do something here?
-        }
+
+        // setup global configuration
         Configuration config = plugin.getConfiguration();
         if (config == null) {
             config = model.getFactory().createConfiguration();
             plugin.setConfiguration(config);
         }
-
         config.setSimpleParameter("sourceDestDir", "${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
         config.setSimpleParameter("xnocompile", "true"); //NOI18N
         config.setSimpleParameter("verbose", "true"); //NOI18N
+        config.setSimpleParameter("extension", "true"); //NOI18N
         config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
+        if (jaxWsVersion != null) {
+            config.setSimpleParameter("target", jaxWsVersion); //NOI18N
+        }
         return plugin; 
     }
 
@@ -263,81 +279,138 @@ public final class MavenModelUtils {
         return null;
     }
 
-    public static void addWsdlFile(Plugin plugin, String wsdlPath) {
+    private static POMExtensibilityElement findElementForValue(List<POMExtensibilityElement> elems, String value) {
+        for (POMExtensibilityElement e : elems) {
+            if (value.equals(e.getElementText())) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public static void addWsimportExecution(Plugin plugin, String id, String wsdlPath) {
         POMModel model = plugin.getModel();
         assert model.isIntransaction();
-        Configuration config = plugin.getConfiguration();
-        if (config == null) {
-            config = model.getFactory().createConfiguration();
-            plugin.setConfiguration(config);
-            //TODO shall we add the other config elements
-        }
-        POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
-        if (wsdlFiles == null) {
-            QName qname = POMQName.createQName("wsdlFiles", model.getPOMQNames().isNSAware()); //NOI18N
-            wsdlFiles = model.getFactory().createPOMExtensibilityElement(qname);
-            config.addExtensibilityElement(wsdlFiles);
-        }
-        QName qname = POMQName.createQName("wsdlFile", model.getPOMQNames().isNSAware()); //NOI18N
-        List<POMExtensibilityElement> elems = wsdlFiles.getExtensibilityElements();
-        for (POMExtensibilityElement el : elems) {
-            if (qname.equals(el.getQName())) {
-                if (wsdlPath.equals(el.getElementText())) {
-                    //already there..
-                    return;
-                }
-            }
-        }
-        POMExtensibilityElement el = model.getFactory().createPOMExtensibilityElement(qname);
-        el.setElementText(wsdlPath);
-        wsdlFiles.addExtensibilityElement(el);
+
+        PluginExecution exec = model.getFactory().createExecution();
+        exec.setId(WSIPMORT_GENERATE_PREFIF+id);
+        exec.setPhase("generate-sources"); //NOI18N
+        exec.addGoal("wsimport"); //NOI18N
+        plugin.addExecution(exec);
+
+        Configuration config = model.getFactory().createConfiguration();
+        exec.setConfiguration(config);
+
+        QName qname = POMQName.createQName("wsdlFiles", model.getPOMQNames().isNSAware()); //NOI18N
+        POMExtensibilityElement wsdlFiles = model.getFactory().createPOMExtensibilityElement(qname);
+        config.addExtensibilityElement(wsdlFiles);
+
+        qname = POMQName.createQName("wsdlFile", model.getPOMQNames().isNSAware()); //NOI18N
+        POMExtensibilityElement wsdlFile = model.getFactory().createPOMExtensibilityElement(qname);
+        wsdlFile.setElementText(wsdlPath);
+        wsdlFiles.addExtensibilityElement(wsdlFile);
+
+        qname = POMQName.createQName("staleFile", model.getPOMQNames().isNSAware()); //NOI18N
+        POMExtensibilityElement staleFile = model.getFactory().createPOMExtensibilityElement(qname);
+        staleFile.setElementText(STALE_FILE_DIRECTORY+id+STALE_FILE_EXTENSION);
+        config.addExtensibilityElement(staleFile);
     }
-    
-    public static void removeWsdlFile(POMModel model, String wsdlPath) {
+
+    public static void addBindingFile(POMModel model, String id, String bindingFilePath) {
         assert model.isIntransaction();
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             return;
         }
-        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin");
+        Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
-            Configuration config = plugin.getConfiguration();
-            if (config != null) {
-                POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
-                if (wsdlFiles != null) {
-                    List<POMExtensibilityElement> files = wsdlFiles.getExtensibilityElements();
-                    for (POMExtensibilityElement el : files) {
-                        if ("wsdlFile".equals(el.getQName().getLocalPart()) &&
-                            wsdlPath.equals(el.getElementText())) {
-                            wsdlFiles.removeExtensibilityElement(el);
-                            break;
+            List<PluginExecution> executions = plugin.getExecutions();
+            String execId = WSIPMORT_GENERATE_PREFIF+id;
+            for (PluginExecution exec : executions) {
+                if (execId.equals(exec.getId())) {
+                    Configuration config = exec.getConfiguration();
+                    if (config != null) {
+                        QName qname = POMQName.createQName("bindingDirectory", model.getPOMQNames().isNSAware()); //NOI18N
+                        if (config.getChildElementText(qname) == null) {
+                            POMExtensibilityElement bindingDir = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingDir.setElementText("${basedir}/src/jaxws-bindings");
+                            config.addExtensibilityElement(bindingDir);
+                        }
+                        POMExtensibilityElement bindingFiles =
+                                findChild(config.getConfigurationElements(), "bindingFiles"); //NOI18N
+                        if (bindingFiles == null) {
+                            qname = POMQName.createQName("bindingFiles", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFiles = model.getFactory().createPOMExtensibilityElement(qname);
+                            config.addExtensibilityElement(bindingFiles);
+                        }
+
+                        POMExtensibilityElement bindingFile =
+                                findElementForValue(bindingFiles.getExtensibilityElements(), bindingFilePath);
+                        if (bindingFile == null) {
+                            qname = POMQName.createQName("bindingFile", model.getPOMQNames().isNSAware()); //NOI18N
+                            bindingFile = model.getFactory().createPOMExtensibilityElement(qname);
+                            bindingFile.setElementText(bindingFilePath);
+                            bindingFiles.addExtensibilityElement(bindingFile);
                         }
                     }
+                    break;
                 }
             }
         }
     }
-    
-    public static void renameWsdlFile(POMModel model, String oldWsdlPath, String newWsdlPath) {
+
+    public static void removeWsimportExecution(POMModel model, String id) {
         assert model.isIntransaction();
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             return;
         }
-        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin"); //NOI18N
+        Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
-            Configuration config = plugin.getConfiguration();
-            if (config != null) {
-                POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
-                if (wsdlFiles != null) {
-                    List<POMExtensibilityElement> files = wsdlFiles.getExtensibilityElements();
-                    for (POMExtensibilityElement el : files) {
-                        if ("wsdlFile".equals(el.getQName().getLocalPart()) && //NOI18N
-                            oldWsdlPath.equals(el.getElementText())) {
-                            el.setElementText(newWsdlPath);
-                            break;
+            List<PluginExecution> executions = plugin.getExecutions();
+            for (PluginExecution exec : executions) {
+                String execId = WSIPMORT_GENERATE_PREFIF+id;
+                if (execId.equals(exec.getId())) {
+                    plugin.removeExecution(exec);
+                    break;
+                }
+            }
+        }
+    }
+
+    public static void renameWsdlFile(POMModel model, String oldId, String newId, String oldWsdlPath, String newWsdlPath) {
+        assert model.isIntransaction();
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            return;
+        }
+        Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
+        if (plugin != null) {
+            List<PluginExecution> executions = plugin.getExecutions();
+            String execId = WSIPMORT_GENERATE_PREFIF+oldId;
+            for (PluginExecution exec : executions) {
+                Configuration config = exec.getConfiguration();
+                if (config != null && execId.equals(exec.getId())) {
+                    // replace wsdlFile element
+                    POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles"); //NOI18N
+                    if (wsdlFiles != null) {
+                        List<POMExtensibilityElement> files = wsdlFiles.getExtensibilityElements();
+                        for (POMExtensibilityElement el : files) {
+                            if ("wsdlFile".equals(el.getQName().getLocalPart()) && //NOI18N
+                                oldWsdlPath.equals(el.getElementText())) {
+                                el.setElementText(newWsdlPath);
+                                break;
+                            }
                         }
                     }
+                    // replace staleFile element
+                    POMExtensibilityElement staleFile = findChild(config.getConfigurationElements(), "staleFile"); //NOI18N
+                    if (staleFile != null) {
+                        staleFile.setElementText(STALE_FILE_DIRECTORY+newId+STALE_FILE_EXTENSION);
+                    }
+                    // replace exec id
+                    exec.setId(WSIPMORT_GENERATE_PREFIF+newId);
+                    break;
                 }
             }
         }
@@ -370,4 +443,56 @@ public final class MavenModelUtils {
             }
         }
     }
+
+    /** get list of wsdl files in Maven project
+     *
+     * @param project Maven project instance
+     * @return list of wsdl files
+     */
+    public static List<WsimportPomInfo> getWsdlFiles(Project project) {
+        MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        assert mavenProject != null;
+        @SuppressWarnings("unchecked")
+        List<org.apache.maven.model.Plugin> plugins = mavenProject.getBuildPlugins();
+        List<WsimportPomInfo> wsdlList = new ArrayList<WsimportPomInfo>();
+        for (org.apache.maven.model.Plugin plg : plugins) {
+            if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
+                @SuppressWarnings("unchecked")
+                List<org.apache.maven.model.PluginExecution> executions = plg.getExecutions();
+                for (org.apache.maven.model.PluginExecution exec : executions) {
+                    Xpp3Dom conf =  (Xpp3Dom)exec.getConfiguration();
+                    if (conf != null) {
+                        Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
+                        if (wsdlFiles != null) {
+                            Xpp3Dom wsdlFile = wsdlFiles.getChild("wsdlFile"); //NOI18N
+                            if (wsdlFile != null) {
+                                WsimportPomInfo pomInfo = new WsimportPomInfo(wsdlFile.getValue());
+                                // detect handler binding file
+                                Xpp3Dom bindingFiles = conf.getChild("bindingFiles"); //NOI18N
+                                if (bindingFiles != null) {
+                                    String bindingPath = findHandler(bindingFiles);
+                                    if (bindingPath != null) {
+                                        pomInfo.setHandlerFile(bindingPath);
+                                    }
+                                }
+                                wsdlList.add(pomInfo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return wsdlList;
+    }
+
+    private static String findHandler(Xpp3Dom parent) {
+        for (Xpp3Dom child : parent.getChildren("bindingFile")) { //NOI18N
+            String bindingPath = child.getValue();
+            if (bindingPath != null && bindingPath.endsWith("_handler.xml")) { //NOI18N
+                return bindingPath;
+            }
+        }
+        return null;
+    }
+
 }

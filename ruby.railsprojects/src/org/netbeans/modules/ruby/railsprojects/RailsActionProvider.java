@@ -617,11 +617,18 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         }
     }
     
-    private void runServer(final String path, final boolean serverDebug, final boolean clientDebug) {
+    private void runServer(String path, final boolean serverDebug, final boolean clientDebug) {
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
             server.setDebug(serverDebug);
             server.setClientDebug(clientDebug);
+            // use the url from project config if no path is specified
+            if (path == null || "".equals(path)) { //NOI18N
+                String url = project.evaluator().getProperty(RailsProjectProperties.RAILS_URL);
+                if (url != null) {
+                    path = url;
+                }
+            }
             server.showUrl(path);
         }
     }

@@ -47,7 +47,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement, CsmValidable {
+public interface CsmProject extends CsmNamedElement, CsmValidable {
 
     CsmNamespace getGlobalNamespace();
     

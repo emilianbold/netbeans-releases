@@ -86,10 +86,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmFile file;
     private boolean isFriend;
     private CsmFileModel model;
-    private String htmlDisplayName = NEEDS_INIT;
-    private final byte weight;
-    private static final String NEEDS_INIT = new String("");
-    
+    private boolean needInitHTML = true;
+    private String htmlDisplayName;
+    private String scopeName = "";
+    private byte weight;
+
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex) {
         this(element, model, null, lineNumberIndex);
     }
@@ -116,6 +117,30 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     private byte getObjectWeight(){
+        try {
+            if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
+                CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
+                if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
+                    CsmClass cls = ((CsmMember) function).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
+                        scopeName = cls.getName().toString();
+                    }
+                }
+            } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
+                CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
+                if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
+                    CsmClass cls = ((CsmMember) variable).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
+                        scopeName = cls.getName().toString();
+                    }
+                }
+            }
+        } catch (AssertionError ex) {
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         if(CsmKindUtilities.isNamespaceDefinition(object)) {
             return 0*0+2;
         } else if(CsmKindUtilities.isNamespaceAlias(object)) {
@@ -148,7 +173,6 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return 9*10+0;
     }
 
-
     public CsmObject getCsmObject() {
         if (CsmKindUtilities.isCsmObject(object)) {
             return (CsmObject) object;
@@ -163,6 +187,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     void resetNode(CppDeclarationNode node){
         object = node.object;
         file = object.getContainingFile();
+        weight = node.weight;
+        scopeName = node.scopeName;
+        isFriend = node.isFriend;
+        needInitHTML = node.needInitHTML;
+        htmlDisplayName = node.htmlDisplayName;
         fireIconChange();
     }
     
@@ -170,19 +199,22 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         int res = 0;
         switch(model.getFilter().getSortMode()) {
             case Name:
-                if (model.getFilter().isGroupByKind()) {
-                    res = weight/10 - o.weight/10;
-                    if (res == 0) {
+                res = scopeName.compareTo(o.scopeName);
+                if (res == 0) {
+                    if (model.getFilter().isGroupByKind()) {
+                        res = weight/10 - o.weight/10;
+                        if (res == 0) {
+                            res = getDisplayName().compareTo(o.getDisplayName());
+                            if (res == 0) {
+                                res = weight - o.weight;
+                            }
+                        }
+                    } else {
                         res = getDisplayName().compareTo(o.getDisplayName());
                         if (res == 0) {
-                            res = weight - o.weight;
-                        }
-                    }
-                } else {
-                    res = getDisplayName().compareTo(o.getDisplayName());
-                    if (res == 0) {
-                        if (res == 0) {
-                            res = weight - o.weight;
+                            if (res == 0) {
+                                res = weight - o.weight;
+                            }
                         }
                     }
                 }
@@ -203,53 +235,45 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.icon = icon;
     }
 
-
     @Override
     public String getHtmlDisplayName() {
-        if( htmlDisplayName == NEEDS_INIT ) {
+        if(needInitHTML) {
             htmlDisplayName = createHtmlDisplayName();
+            needInitHTML = false;
         }
         return htmlDisplayName;
     }
     
     private String createHtmlDisplayName() {
-        if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
-            // the try-catch is just a FIXUP for #118212 NPE when opening file from boost...
-            try {
-                CsmFunction function = ((CsmFunctionDefinition)object).getDeclaration();
-                if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
-                    CsmClass cls = ((CsmMember)function).getContainingClass();
-                    if (cls != null && cls.getName().length()>0) {
+        try {
+            if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
+                // the try-catch is just a FIXUP for #118212 NPE when opening file from boost...
+                CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
+                if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
+                    CsmClass cls = ((CsmMember) function).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
                         String name = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                         String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                         String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N
-                        return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
+                        return displayName + "<font color='!controlShadow'>  " + in + " " + name; // NOI18N
                     }
                 }
-            } catch( AssertionError ex ) {
-                // FIXUP for #118212 NPE when opening file from boost...
-                ex.printStackTrace();
-            } catch( Exception ex ) {
-                // FIXUP for #118212 NPE when opening file from boost...
-                ex.printStackTrace();
-            }
-        } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
-            try {
-                CsmVariable variable = ((CsmVariableDefinition)object).getDeclaration();
-                if (variable != null && !variable.equals(object) &&  CsmKindUtilities.isClassMember(variable)){
-                    CsmClass cls = ((CsmMember)variable).getContainingClass();
-                    if (cls != null && cls.getName().length()>0) {
+            } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
+                CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
+                if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
+                    CsmClass cls = ((CsmMember) variable).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
                         String name = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                         String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
                         String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N
-                        return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
+                        return displayName + "<font color='!controlShadow'>  " + in + " " + name; // NOI18N
                     }
                 }
-            } catch( AssertionError ex ) {
-                ex.printStackTrace();
-            } catch( Exception ex ) {
-                ex.printStackTrace();
             }
+        } catch (AssertionError ex) {
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return null;
     }

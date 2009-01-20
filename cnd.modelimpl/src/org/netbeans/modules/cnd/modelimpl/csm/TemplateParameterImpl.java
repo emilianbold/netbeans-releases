@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -119,7 +119,6 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         PersistentUtils.writeType(defaultValue, output);
     }
     
-    @SuppressWarnings("unchecked")
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());

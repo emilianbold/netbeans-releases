@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -196,7 +197,6 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
         this.alias = QualifiedNameCache.getManager().getString(input.readUTF());

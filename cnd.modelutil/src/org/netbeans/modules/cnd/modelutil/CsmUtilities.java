@@ -437,16 +437,18 @@ public class CsmUtilities {
     }
 
     public static Document getDocument(FileObject fo) {
-        try {
-            DataObject dob = DataObject.find(fo);
-            if (dob != null && dob.isValid()) {
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    return ec.getDocument();
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dob = DataObject.find(fo);
+                if (dob != null && dob.isValid()) {
+                    EditorCookie ec = dob.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        return ec.getDocument();
+                    }
                 }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return null;
     }

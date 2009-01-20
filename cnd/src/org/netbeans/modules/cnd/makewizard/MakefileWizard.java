@@ -266,8 +266,10 @@ public class MakefileWizard implements TemplateWizard.Iterator {
 
     /** The current panel.
      */
-    public WizardDescriptor.Panel current() {
-        return currentPanel;
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        @SuppressWarnings("unchecked")
+        WizardDescriptor.Panel<WizardDescriptor> res = currentPanel;
+        return res;
     }
 
     /** Current name of the panel */
@@ -879,6 +881,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         wd = null;
     }
 
+    @SuppressWarnings("fallthrough")
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         DataFolder targetFolder = wiz.getTargetFolder();
         DataObject template = wiz.getTemplate();
