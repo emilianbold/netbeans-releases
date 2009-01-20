@@ -111,13 +111,19 @@ public class CSSStructureScanner implements StructureScanner {
                                     //append simpleselectors and combinators
                                     if (n2.kind() == CSSParserTreeConstants.JJTSIMPLESELECTOR ||
                                             n2.kind() == CSSParserTreeConstants.JJTCOMBINATOR) {
-                                        if(n2.image().trim().length() > 0) {
-//                                            String nodeText = extractDocumentText(n2, info, source).trim();
-                                            CharSequence nodeText = snapshot.getText().subSequence(
-                                                    snapshot.getOriginalOffset(n2.startOffset()),
-                                                    snapshot.getOriginalOffset(n2.endOffset()));
-                                            content.append(nodeText);
-                                            content.append(' ');
+                                        if (n2.image().trim().length() > 0) {
+                                            try {
+                                                CharSequence nodeText = snapshot.getSource().createSnapshot().getText().subSequence(
+                                                        snapshot.getOriginalOffset(n2.startOffset()),
+                                                        snapshot.getOriginalOffset(n2.endOffset()));
+                                                content.append(nodeText);
+                                                content.append(' ');
+                                            } catch (StringIndexOutOfBoundsException e) {
+                                                //the source is not locked so it may change in the way that the boundaries doesn't fit
+                                                //the whole parsing process will be run again, so it doesn't matter that
+                                                //we will return a bad result now.
+                                            }
+
                                         }
                                     }
                                 }
@@ -132,7 +138,7 @@ public class CSSStructureScanner implements StructureScanner {
                         }
                         //filter empty(virtual) selector lists
                         if (selectorsListText.length() > 2 /* ", ".length() */) {
-                            
+
                             //possibly remove last space and comma
                             if (selectorsListText.charAt(selectorsListText.length() - 2) == ',') {
                                 selectorsListText.deleteCharAt(selectorsListText.length() - 2);
@@ -154,7 +160,6 @@ public class CSSStructureScanner implements StructureScanner {
 //        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
 //        return ci.getText().substring(documentSO, documentEO);
 //    }
-    
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
@@ -211,25 +216,25 @@ public class CSSStructureScanner implements StructureScanner {
         folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
-        
+
     }
-    
+
     public Configuration getConfiguration() {
         return new Configuration(true, false);
     }
-    
+
     private static class CssRuleStructureItem implements StructureItem {
 
         private String name;
         private CssAstElement element;
-        private int from, to;
+        private int from,  to;
 
         private static String escape(String s) {
             s = s.replace("<", "&lt;");
             s = s.replace(">", "&gt;");
             return s;
         }
-        
+
         private CssRuleStructureItem(String name, CssAstElement element, Snapshot source) {
             this.name = name;
             this.element = element;
