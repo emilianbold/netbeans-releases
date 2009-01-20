@@ -171,7 +171,7 @@ public class DynamicVerifyTest extends NbTestCase {
 
     public void testGetAllDebuggers() {
        List<String> lazyDebuggers = new ArrayList<String>();
-       Iterator<? extends FeatureInfo> it = FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
+       Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
        for (; it.hasNext(); ) {
            FeatureInfo featureInfo = it.next();
            if (featureInfo.getAttachTypeName() != null) {

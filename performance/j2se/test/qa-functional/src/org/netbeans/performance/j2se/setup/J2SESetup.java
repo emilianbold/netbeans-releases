@@ -57,14 +57,6 @@ public class J2SESetup extends JellyTestCase {
         super(testName);
     }
 
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
-
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
-    }
-
     public void testOpenDataProject() {
 
         try {
@@ -72,6 +64,10 @@ public class J2SESetup extends JellyTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
     }
 
     public void testOpenFoldersProject() {
@@ -83,7 +79,7 @@ public class J2SESetup extends JellyTestCase {
         }
     }
 
-    public void testOpenNBProject() {
+   public void testOpenNBProject() {
 
         try {
             this.openDataProjects("SystemProperties");
@@ -92,7 +88,8 @@ public class J2SESetup extends JellyTestCase {
         }
     }
 
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
     }
+
 }
