@@ -551,6 +551,7 @@ final class ToolbarContainer extends JPanel {
             super( new BorderLayout() );
             JSeparator sep = new JToolBar.Separator();
             sep.setOrientation(JSeparator.VERTICAL);
+            sep.setForeground(UIManager.getColor("NbSplitPane.background")); //NOI18N
             add( sep, BorderLayout.CENTER );
             dim = new Dimension (GRIP_WIDTH, GRIP_WIDTH);
             max = new Dimension (GRIP_WIDTH, Integer.MAX_VALUE);
