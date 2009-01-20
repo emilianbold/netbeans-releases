@@ -39,7 +39,6 @@
 
 package org.netbeans.dlight.dtrace.collector.support;
 
-import org.netbeans.dlight.dtrace.collector.support.DtraceParser;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -90,10 +89,12 @@ final class DtraceDataAndStackParser extends DtraceParser {
     int currCpu;
     int currThread;
     long currTimeStamp;
+    long prevTimeStamp;
     private List<CharSequence> currStack = new ArrayList<CharSequence>(32);
 
     private List<String> colNames;
     private int colCount;
+    private final boolean isProfiler;
 
     public DtraceDataAndStackParser(DataTableMetadata metadata) {
         super(metadata);
@@ -103,6 +104,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
           colNames.add(c.getColumnName());
         }
         colCount = metadata.getColumnsCount();
+        isProfiler = metadata.getName().equals("CallStack");
     }
 
     /** override of you need more smart data processing  */
@@ -125,15 +127,20 @@ final class DtraceDataAndStackParser extends DtraceParser {
                 currData = processDataLine(line);
                 DLightLogger.assertTrue(currData != null, "could not parse line " + line);
                 //currStack.clear();
-                state = State.WAITING_STACK;
-                return null;
+                if (!isProfiler) {
+                    state = State.WAITING_STACK;
+                    return null;
+                }
+                // fallthrough
             case WAITING_STACK:
                 if (line.length() == 0) {
                     state = State.WAITING_DATA;
                     return null;
                 }
                 String[] stackData = line.split("[ \t]+");
-                DLightLogger.assertTrue(stackData.length == 3, "stack marker should consist of CPU-id, thread-id and timestamp");
+                if (!isProfiler) {
+                    DLightLogger.assertTrue(stackData.length == 3, "stack marker should consist of CPU-id, thread-id and timestamp");
+                }
                 try {
                     currCpu = Integer.parseInt(stackData[0]);
                     currThread = Integer.parseInt(stackData[1]);
@@ -148,7 +155,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     //TODO:error-processing
                     DLightLogger.assertTrue(Character.isWhitespace(line.charAt(0)), "Stack row should start with ' '");
                     line = line.trim();
-                    if (!line.startsWith("libc.so.")) { //NOI18N
+                    if (isProfiler || !line.startsWith("libc.so.")) { //NOI18N
                         currStack.add(line);
                     }
                     return null;
@@ -156,7 +163,10 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     StackDataStorage sds = (StackDataStorage)DataStorageManager.getInstance().getDataStorage(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
                     DLightLogger.assertTrue(sds != null); //TODO:error-processing
                     Collections.reverse(currStack);
-                    int stackId = sds.getStackId(currStack, currCpu, currThread, currTimeStamp);
+                    int stackId;
+                    long sampleDuration = (isProfiler && 0 < prevTimeStamp)? currTimeStamp - prevTimeStamp : 0;
+                    stackId = sds.putStack(currStack, sampleDuration);
+                    prevTimeStamp = currTimeStamp;
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;

@@ -2,31 +2,47 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.dlight.dtrace.collector;
 
+import org.netbeans.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
 
 /**
  * This class is to configure
  */
-public final class MultipleDTDCConfiguration implements DataCollectorConfiguration{
-  private static final String ID = "MultipleDtraceDataCollectorConfiguration";
+public final class MultipleDTDCConfiguration implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
-  public MultipleDTDCConfiguration(){
-    
-  }
+    private static final String ID = "MultipleDtraceDataCollectorConfiguration";
 
-  public void addDTDCConfiguration(DTDCConfiguration dataCollectorConfiguration){
+    static {
+        MultipleDTDCConfigurationAccessor.setDefault(new MultipleDTDCConfigurationAccessorImpl());
+    }
 
-  }
+    private final DTDCConfiguration configuration;
 
-  public void addDTSTDCConfiguration(DTSTDCConfiguration stackDataCollectorConfiguration){
-    
-  }
+    public MultipleDTDCConfiguration(DTDCConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
-  public String getID() {
-    return ID;
-  }
+    public String getID() {
+        return ID;
+    }
 
+    /*package*/ DTDCConfiguration getDTDCConfiguration() {
+        return configuration;
+    }
+
+    private static final class MultipleDTDCConfigurationAccessorImpl extends MultipleDTDCConfigurationAccessor {
+
+        @Override
+        public String getID() {
+            return ID;
+        }
+
+        @Override
+        public DTDCConfiguration getDTDCConfiguration(MultipleDTDCConfiguration configuration) {
+            return configuration.getDTDCConfiguration();
+        }
+    }
 }

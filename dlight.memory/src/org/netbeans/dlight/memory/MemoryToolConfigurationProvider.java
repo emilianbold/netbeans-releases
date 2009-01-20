@@ -41,6 +41,7 @@ package org.netbeans.dlight.memory;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -85,8 +86,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     dataCollectorConfiguration.setIndicatorFiringFactor(1);
     dataCollectorConfiguration.setOutputPrefix("mem:");
    // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-    toolConfiguration.addDataCollectorConfiguration(dataCollectorConfiguration);
-    toolConfiguration.addIndicatorDataProviderConfiguration(dataCollectorConfiguration);
+    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration);
+    toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
+    toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 
     List<Column> indicatorColumns = Arrays.asList(
             totalColumn);

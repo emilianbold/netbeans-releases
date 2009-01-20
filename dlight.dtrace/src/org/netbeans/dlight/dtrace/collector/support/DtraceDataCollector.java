@@ -160,6 +160,10 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return localScriptPath;
     }
 
+    void setLocalScriptPath(String path) {
+        localScriptPath = path;
+    }
+
     ProcessLineCallback getProcessLineCallback() {
         return callback;
     }

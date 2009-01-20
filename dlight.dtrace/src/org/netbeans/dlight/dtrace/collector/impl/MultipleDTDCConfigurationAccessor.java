@@ -5,9 +5,7 @@
 
 package org.netbeans.dlight.dtrace.collector.impl;
 
-import java.util.List;
 import org.netbeans.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.dlight.dtrace.collector.DTSTDCConfiguration;
 import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 
 /**
@@ -41,7 +39,6 @@ private static volatile MultipleDTDCConfigurationAccessor DEFAULT;
   }
 
   public abstract String getID();
-  public abstract List<DTDCConfiguration> getDTDCConfigurations(MultipleDTDCConfiguration configuration);
-  public abstract List<DTSTDCConfiguration> getDTSTDCConfigurations(MultipleDTDCConfiguration configuration);
+  public abstract DTDCConfiguration getDTDCConfiguration(MultipleDTDCConfiguration configuration);
 
 }

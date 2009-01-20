@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.dlight.indicators.BarIndicator;
 import org.netbeans.dlight.indicators.BarIndicatorConfig;
 import org.netbeans.dlight.visualizers.api.TableVisualizerConfiguration;
@@ -90,9 +91,10 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
     dataCollectorConfiguration.setStackSupportEnabled(true);
     dataCollectorConfiguration.setIndicatorFiringFactor(1);
-    dataCollectorConfiguration.setOutputPrefix("sync:");    
-    toolConfiguration.addDataCollectorConfiguration(dataCollectorConfiguration);
-    toolConfiguration.addIndicatorDataProviderConfiguration(dataCollectorConfiguration);
+    dataCollectorConfiguration.setOutputPrefix("sync:");
+    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration);
+    toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
+    toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 
     List<Column> indicatorColumns = Arrays.asList(
             timeColumn);

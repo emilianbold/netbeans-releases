@@ -1,2 +1,2 @@
 org.netbeans.dlight.dtrace.collector.support.DtraceDataCollector
-org.netbeans.dlight.dtrace.collector.support.DtraceStackDataCollector
+org.netbeans.dlight.dtrace.collector.support.MultipleDtraceDataCollector
