@@ -945,7 +945,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void setLastMacroUsages(List<CsmReference> res) {
-        lastMacroUsages = new WeakReference<List<CsmReference>>(Collections.unmodifiableList(res));
+        lastMacroUsages = new SoftReference<List<CsmReference>>(Collections.unmodifiableList(res));
     }
 
     public long getLastParsedTime() {
