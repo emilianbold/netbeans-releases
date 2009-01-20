@@ -89,7 +89,12 @@ public class CSSGSFParser extends Parser {
         } catch (TokenMgrError tme) {
             parseExceptions.add(new ParseException(tme.getMessage()));
         }
-        this.lastResult = new CSSGSFParserResult(this, snapshot, root, errors(parseExceptions, snapshot.getSource().getFileObject()));
+
+        List<Error> errors = new ArrayList<Error>();
+        errors.addAll(errors(parseExceptions, snapshot.getSource().getFileObject())); //parser errors
+        errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
+        
+        this.lastResult = new CSSGSFParserResult(this, snapshot, root, errors);
     }
 
         @Override
@@ -171,29 +176,4 @@ public class CSSGSFParser extends Parser {
         return buff.toString();
     }
 
-//                for (Error error : css_result.errors(file)) {
-//                    job.listener.error(error);
-//                }
-//
-//                SimpleNode root = css_result.root();
-//                //test if the parsing succeeded
-//                if(root != null) {
-//                    //do some semantic checking of the parse tree
-//                    List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(root);
-//                    for (Error err : semanticErrors) {
-//                        job.listener.error(err);
-//                    }
-//                }
-//    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-//        if (object instanceof CssAstElement) {
-//            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-//            final TranslatedSource source = presult.getTranslatedSource();
-//            CssAstElement handle = (CssAstElement) object;
-//            return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source),
-//                    AstUtils.documentPosition(handle.node().endOffset(), source));
-//        } else {
-//            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
-//                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
-//        }
-//    }
 }

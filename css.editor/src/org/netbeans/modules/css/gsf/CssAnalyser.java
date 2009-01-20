@@ -52,6 +52,7 @@ import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,15 +66,8 @@ public class CssAnalyser {
     private static final String UNKNOWN_PROPERTY = "unknown_property";
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
     private static final String INVALID_CONTENT = "invalid_content";
-
     
-    private CSSGSFParserResult result;
-
-    public CssAnalyser(CSSGSFParserResult result) {
-        this.result = result;
-    }
-
-    public List<Error> checkForErrors(final SimpleNode node) {
+    public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
         final ArrayList<Error> errors = new ArrayList();
         final PropertyModel model = PropertyModel.instance();
         NodeVisitor visitor = new NodeVisitor() {
@@ -92,7 +86,7 @@ public class CssAnalyser {
                             Error error =
                                     new DefaultError(UNKNOWN_PROPERTY,
                                     NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
-                                    null, result.getSnapshot().getSource().getFileObject(),
+                                    null, snapshot.getSource().getFileObject(),
                                     propertyNode.startOffset(), propertyNode.endOffset(), Severity.WARNING);
                             errors.add(error);
                         }
@@ -121,7 +115,7 @@ public class CssAnalyser {
                                     Error error =
                                             new DefaultError(INVALID_PROPERTY_VALUE,
                                             errorMsg,
-                                            null, result.getSnapshot().getSource().getFileObject(),
+                                            null, snapshot.getSource().getFileObject(),
                                             valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
                                     errors.add(error);
                                 }
@@ -134,7 +128,7 @@ public class CssAnalyser {
                     Error error =
                             new DefaultError(INVALID_CONTENT,
                             NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT),
-                            null, result.getSnapshot().getSource().getFileObject(),
+                            null, snapshot.getSource().getFileObject(),
                             node.startOffset(), node.endOffset(), Severity.ERROR);
                     errors.add(error);
                 }
