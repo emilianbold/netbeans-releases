@@ -140,6 +140,31 @@ public class GroovyTestBase extends CslTestBase {
     }
 
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
+//        if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.CodeCompletionTest")) {
+//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
+//            if (getName().contains("Closure")) {
+//                map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+//                    FileUtil.toFileObject(getDataFile("/testfiles/completion/closures")) }));
+//            } else {
+//                map.put(ClassPath.SOURCE, createSourcePath());
+//            }
+//            map.put(ClassPath.BOOT, createBootClassPath());
+//            map.put(ClassPath.COMPILE, createCompilePath());
+//            return map;
+//        } else if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.MethodCompletionTest")) {
+//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
+//            map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+//                FileUtil.toFileObject(getDataFile("/testfiles/completion/method")) }));
+//            map.put(ClassPath.BOOT, createBootClassPath());
+//            map.put(ClassPath.COMPILE, createCompilePath());
+//            return map;
+//        } else if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.NewVarsTest")) {
+//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
+//            map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+//                FileUtil.toFileObject(getDataFile("/testfiles/completion/newvars")) }));
+//            map.put(ClassPath.BOOT, createBootClassPath());
+//            map.put(ClassPath.COMPILE, createCompilePath() );
+//            return map;
         if (getClass().getName().startsWith("org.netbeans.modules.groovy.editor.api.completion")) {
             Map<String, ClassPath> map = new HashMap<String, ClassPath>();
             map.put(ClassPath.SOURCE, createSourcePath());
@@ -177,7 +202,7 @@ public class GroovyTestBase extends CslTestBase {
     private ClassPath createSourcePath() {
         File srcDir = getDataFile("/testfiles/completion");
         File srcDir2 = getDataFile("/testfiles/completion/types");
-    	return ClassPathSupport.createClassPath(new FileObject[] {
+        return ClassPathSupport.createClassPath(new FileObject[] {
             FileUtil.toFileObject(srcDir), FileUtil.toFileObject(srcDir2)
         });
     }
