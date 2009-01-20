@@ -41,7 +41,6 @@
 package org.netbeans.modules.collab.ui;
 
 import java.awt.event.*;
-import java.beans.*;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -50,14 +49,19 @@ import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import com.sun.collablet.*;
 import java.awt.EventQueue;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
+import org.openide.util.NbPreferences;
+import org.openide.util.SharedClassObject;
 
 /**
  *
  * @author        Todd Fast, todd.fast@sun.com
  */
 public class Install extends ModuleInstall {
+
+    private static final Preferences prefs = NbPreferences.forModule(Install.class);
 
     public Install() {
         super();
@@ -191,7 +195,7 @@ public class Install extends ModuleInstall {
 
                 Account[] accounts = getAutoLoginAccounts();
                 boolean shownExplorer = false;
-
+                boolean serverWarningDialogShown = false;
                 for (int i = 0; i < accounts.length; i++) {
                     if (!shownExplorer) {
                         // If we don't do this here, then the session nodes 
@@ -210,6 +214,13 @@ public class Install extends ModuleInstall {
                         NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginStatus")
                     ); // NOI18N
 
+                    if (accounts[i].getServer().startsWith("share.java.net") // NOI18N
+                        && prefs.getBoolean("server.warning.show", Boolean.TRUE) // NOI18N
+                        && !serverWarningDialogShown) {
+                        ServerWarningAction a = SharedClassObject.findObject(ServerWarningAction.class, true);
+                        a.showDialog();
+                        serverWarningDialogShown = true;
+                    }
                     // Use the stored password to login.  Note, the 
                     // following call is asynchronous.
                     ui.login(accounts[i], accounts[i].getPassword(), new PostLoginTask(true), new PostLoginTask(false));
