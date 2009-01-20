@@ -591,9 +591,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     private static final class BottomBorder implements Border {
 
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            g.setColor(UIManager.getColor("NbTabControl.borderColor")); //NOI18N
+            g.setColor(UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
             g.drawLine(x, y, x, y+height);
-            g.setColor(UIManager.getColor("NbTabControl.borderShadowColor")); //NOI18N
+            g.setColor(UIManager.getColor("NbBrushedMetal.lightShadow")); //NOI18N
             g.drawLine(x+width-1, y, x+width-1, y+height);
         }
 
@@ -609,9 +609,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     private static final class VerticalBorder implements Border {
 
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            g.setColor(UIManager.getColor("NbTabControl.borderColor")); //NOI18N
+            g.setColor(UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
             g.drawLine(x, y, x+width-1, y);
-            g.setColor(UIManager.getColor("NbTabControl.borderShadowColor")); //NOI18N
+            g.setColor(UIManager.getColor("NbBrushedMetal.lightShadow")); //NOI18N
             g.drawLine(x, y+height-1, x+width-1, y+height-1);
         }
 

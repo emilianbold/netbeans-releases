@@ -186,7 +186,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         static {
             if( isAqua ) {
                 bottomBorder = BorderFactory.createCompoundBorder(
-                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderColor")), //NOI18N
+                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
                                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(187,187,187) ) );
 
                 bottomEmptyBorder = BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
@@ -195,15 +195,15 @@ public final class SlideBarContainer extends AbstractModeContainer {
 
                 leftBorder = BorderFactory.createCompoundBorder(
                         BorderFactory.createCompoundBorder( leftEmptyBorder,
-                            BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("NbTabControl.borderColor"))),
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderShadowColor"))); //NOI18N
+                            BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("NbBrushedMetal.darkShadow"))),
+                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow"))); //NOI18N
 
                 rightEmptyBorder = BorderFactory.createMatteBorder(0, 3, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
                 rightBorder = BorderFactory.createCompoundBorder(
                         BorderFactory.createCompoundBorder( rightEmptyBorder,
-                            BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("NbTabControl.borderColor"))), //NOI18N
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbTabControl.borderShadowColor"))); //NOI18N
+                            BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow"))), //NOI18N
+                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow"))); //NOI18N
             }
         }
         
