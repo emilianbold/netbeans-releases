@@ -138,7 +138,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     /** Initializes scope */
     protected final void initScope(CsmScope scope, AST ast) {
-        if (CsmKindUtilities.isIdentifiable(scope)) {
+        if (UIDCsmConverter.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
             this.scopeRef = null;

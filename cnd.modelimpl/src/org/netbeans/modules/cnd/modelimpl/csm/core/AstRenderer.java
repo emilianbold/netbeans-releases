@@ -71,6 +71,7 @@ public class AstRenderer {
         render(root, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
     }
 
+    @SuppressWarnings("fallthrough")
     public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (tree == null) {
             return; // paranoia
@@ -574,6 +575,7 @@ public class AstRenderer {
         return false;
     }
 
+    @SuppressWarnings("fallthrough")
     protected void renderVariableInClassifier(AST ast, CsmClassifier classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
         AST token = ast.getFirstChild();
@@ -667,6 +669,7 @@ public class AstRenderer {
         }
     }
 
+    @SuppressWarnings("fallthrough")
     protected CsmTypedef[] renderTypedef(AST ast, CsmClass cls, CsmObject container) {
 
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
@@ -740,6 +743,7 @@ public class AstRenderer {
         return results.toArray(new CsmTypedef[results.size()]);
     }
 
+    @SuppressWarnings("fallthrough")
     protected CsmTypedef[] renderTypedef(AST ast, FileImpl file, CsmScope scope, MutableDeclarationsContainer container) {
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if (ast != null) {
@@ -1252,6 +1256,7 @@ public class AstRenderer {
         return false;
     }
 
+    @SuppressWarnings("fallthrough")
     protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst, AST classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
             FileImpl file, boolean _static, boolean inFunctionParameters) {

@@ -76,6 +76,21 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 
     <target name="get-seleniumserver" unless="have.seleniumserver">
         <get src="http://aost.googlecode.com/svn/tags/tellurium-0.5.0/lib/selenium-server.jar" dest="${jar.seleniumserver}" verbose="true"/>
+        <!-- see http://jira.openqa.org/browse/SIDE-171 -->
+        <!-- see http://www.spacevatican.org/2008/9/27/selenium-and-firefox-3 -->
+        <mkdir dir="${java.io.tmpdir}/rest-client-test-tmp"/>
+        <patternset id="to.patch">
+            <include name="customProfileDirCUSTFFCHROME/extensions/readystate@openqa.org/install.rdf"/>
+            <include name="customProfileDirCUSTFFCHROME/extensions/{538F0036-F358-4f84-A764-89FB437166B4}/install.rdf"/>
+            <include name="customProfileDirCUSTFFCHROME/extensions/{503A0CD4-EDC8-489b-853B-19E0BAA8F0A4}/install.rdf"/>
+            <include name="customProfileDirCUSTFF/extensions/readystate@openqa.org/install.rdf"/>
+            <include name="customProfileDirCUSTFF/extensions/{538F0036-F358-4f84-A764-89FB437166B4}/install.rdf"/>
+        </patternset>
+        <unzip src="${jar.seleniumserver}" dest="${java.io.tmpdir}/rest-client-test-tmp">
+            <patternset refid="to.patch"/>
+        </unzip>
+        <replace dir="${java.io.tmpdir}/rest-client-test-tmp" token="2.0.0.*" value="3.0.*.*"/>
+        <jar destfile="${jar.seleniumserver}" duplicate="preserve" update="true" basedir="${java.io.tmpdir}/rest-client-test-tmp" includes="**/*.rdf"/>
     </target>
 
     <target name="get-seleniumdriver" unless="have.seleniumdriver">

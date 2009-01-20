@@ -106,18 +106,37 @@ public final class RunUtils {
 
     /**
      *
+     * @param project
+     * @return true if compile on save is allowed for running the application.
+     */
+    public static boolean hasApplicationCompileOnSaveEnabled(Project prj) {
+        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+    }
+
+    /**
+     *
      * @param config
      * @return true if compile on save is allowed for running the application.
      */
     public static boolean hasApplicationCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {
-              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
-              return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+            return hasApplicationCompileOnSaveEnabled(prj);
         }
         return false;
     }
 
+    /**
+     *
+     * @param project
+     * @return true if compile on save is allowed for running tests.
+     */
+    public static boolean hasTestCompileOnSaveEnabled(Project prj) {
+        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        //COS for tests is the default value.
+        return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+    }
     /**
      *
      * @param config
@@ -126,9 +145,7 @@ public final class RunUtils {
     public static boolean hasTestCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {
-              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
-              //COS for tests is the default value.
-              return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+            return hasTestCompileOnSaveEnabled(prj);
         }
         return false;
     }
