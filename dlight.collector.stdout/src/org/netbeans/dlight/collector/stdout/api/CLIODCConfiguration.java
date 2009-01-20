@@ -11,7 +11,11 @@ import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
- *
+ * Implementation of the <code>DataCollectorConfiguration</code> interface
+ * that uses the output of a command as its data source.
+ * It invokes the given command, feds the given parser with its output line by line
+ * and stores the data it returns in the tables described in the given tables metadata.
+ * 
  * @author masha
  */
 public final class CLIODCConfiguration implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
@@ -39,6 +43,14 @@ public final class CLIODCConfiguration implements DataCollectorConfiguration, In
         this.indicatorDataProvider = indicatorDataProvider;
     }
 
+    /**
+     * Gets this configuration unique ID (implements both
+     * {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration} and
+     * {@link org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration}.
+     * method <code>getID()</code>).
+     *
+     * @return this configuration unique ID
+     */
     public String getID() {
         return ID;
     }
