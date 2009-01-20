@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.dlight.core.ui</code-name-base>
+            <code-name-base>org.netbeans.modules.dlight.core.ui</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>

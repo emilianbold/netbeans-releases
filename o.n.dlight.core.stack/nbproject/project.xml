@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.dlight.core.stack</code-name-base>
+            <code-name-base>org.netbeans.modules.dlight.core.stack</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>
@@ -30,11 +30,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.dlight.db.h2</friend>
-                <friend>org.netbeans.dlight.derby.support</friend>
-                <friend>org.netbeans.dlight.dtrace</friend>
-                <friend>org.netbeans.dlight.perfan</friend>
-                <friend>org.netbeans.dlight.visualizers</friend>
+                <friend>org.netbeans.modules.dlight.db.h2</friend>
+                <friend>org.netbeans.modules.dlight.derby.support</friend>
+                <friend>org.netbeans.modules.dlight.dtrace</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.dlight.core.stack.dataprovider</package>
                 <package>org.netbeans.dlight.core.stack.model</package>
                 <package>org.netbeans.dlight.core.stack.storage</package>

@@ -3,11 +3,11 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.dlight.fops</code-name-base>
+            <code-name-base>org.netbeans.modules.dlight.fops</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.dlight.collector.stdout</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.collector.stdout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -15,7 +15,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.dlight.dtrace</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.dtrace</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -23,7 +23,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.dlight.indicators</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.indicators</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -31,7 +31,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.dlight.visualizers</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.visualizers</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
