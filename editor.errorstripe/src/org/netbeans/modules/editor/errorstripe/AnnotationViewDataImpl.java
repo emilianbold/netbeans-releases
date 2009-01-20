@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -93,7 +94,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private List<MarkProvider> markProviders = new ArrayList<MarkProvider>();
     private List<UpToDateStatusProvider> statusProviders = new ArrayList<UpToDateStatusProvider>();
     
-    private List<Mark> currentMarks = null;
+    private Collection<Mark> currentMarks = null;
     private SortedMap<Integer, List<Mark>> marksMap = null;
     
     /** Creates a new instance of AnnotationViewData */
@@ -223,8 +224,8 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
     }
     
-    /*package private*/ static List<Mark> createMergedMarks(List<MarkProvider> providers) {
-        List<Mark> result = new ArrayList<Mark>();
+    /*package private*/ static Collection<Mark> createMergedMarks(List<MarkProvider> providers) {
+        Collection<Mark> result = new LinkedHashSet<Mark>();
         
         for(MarkProvider provider : providers) {
             result.addAll(provider.getMarks());
@@ -233,7 +234,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return result;
     }
     
-    /*package private for tests*/synchronized List<Mark> getMergedMarks() {
+    /*package private for tests*/synchronized Collection<Mark> getMergedMarks() {
         if (currentMarks == null) {
             currentMarks = createMergedMarks(markProviders);
         }
@@ -401,7 +402,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     
     /*package private for tests*/synchronized SortedMap<Integer, List<Mark>> getMarkMap() {
         if (marksMap == null) {
-            List<Mark> marks = getMergedMarks();
+            Collection<Mark> marks = getMergedMarks();
             marksMap = new TreeMap<Integer, List<Mark>>();
             
             for (Mark mark : marks) {
@@ -481,8 +482,8 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     nue = ((MarkProvider) evt.getSource()).getMarks();
                 
                 if (old != null && nue != null) {
-                    List<Mark> added = new ArrayList<Mark>(nue);
-                    List<Mark> removed = new ArrayList<Mark>(old);
+                    Collection<Mark> added = new LinkedHashSet<Mark>(nue);
+                    Collection<Mark> removed = new LinkedHashSet<Mark>(old);
                     
                     added.removeAll(old);
                     removed.removeAll(nue);

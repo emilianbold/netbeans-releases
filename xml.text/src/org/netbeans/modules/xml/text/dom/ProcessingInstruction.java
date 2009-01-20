@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
 
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -56,8 +57,8 @@ public final class ProcessingInstruction extends SyntaxNode {
     
     
     /** Creates a new instance of ProcessingInstructionImpl */
-    public ProcessingInstruction(XMLSyntaxSupport syntax, Token from, int to) {
-        super(syntax, from, to);
+    public ProcessingInstruction(XMLSyntaxSupport syntax, Token<XMLTokenId> from, int start, int end) {
+        super(syntax, from, start, end);
     }
     
     /**

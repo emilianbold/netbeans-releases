@@ -116,6 +116,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (panel.getArchetypes() == null) {
             lblEEVersion.setVisible(false);
             comboEEVersion.setVisible(false);
+        } else {
+
         }
     }
     
@@ -467,16 +469,19 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
         ngprovider = (ArchetypeWizardUtils)settings.getProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR);
-        final Archetype arch = getArchetype(settings);
-        lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
-        lblAdditionalProps.setVisible(true);
-        tblAdditionalProps.setVisible(false);
-        jScrollPane1.setVisible(false);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                prepareAdditionalProperties(arch);
-            }
-        });
+        // skip additional properties if direct known archetypes without additional props used
+        if (panel.areAdditional()) {
+            final Archetype arch = getArchetype(settings);
+            lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
+            lblAdditionalProps.setVisible(true);
+            tblAdditionalProps.setVisible(false);
+            jScrollPane1.setVisible(false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    prepareAdditionalProperties(arch);
+                }
+            });
+        }
     }
     
     private void prepareAdditionalProperties(Archetype arch) {

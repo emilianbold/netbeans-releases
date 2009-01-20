@@ -1,0 +1,125 @@
+# System-wide startup file for dbx
+#
+#	dbxrc 1.7 07/04/04
+
+FVERBOSE=0x1
+FDYNAMIC=0x2
+FRECURSE=0x4
+FFORMAT=0x8
+FLITERAL=0x10
+
+function prettyprint {
+	set -- "$@"
+	typeset -i flags=$FVERBOSE
+	typeset fargs=
+	typeset format=
+	typeset do_lhs=true
+
+	while [ -n "$1" ]
+	do
+		case "$1" in
+		-p|+p) ;;
+		-f)	fargs="$fargs $1 \"$2\""; ((flags |= $FFORMAT))
+			format="$2"; shift ;;
+		-F)	fargs="$fargs $1 \"$2\""; ((flags |= $FFORMAT))
+			format="$2"; shift; do_lhs=false ;;
+		-d)	fargs="$fargs $1"; ((flags |= $FDYNAMIC)) ;;
+		+d)	fargs="$fargs $1"; ((flags &= ~$FDYNAMIC)) ;;
+		-r)	fargs="$fargs $1"; ((flags |= $FRECURSE)) ;;
+		-l)	fargs="$fargs $1"; ((flags |= $FLITERAL))
+			do_lhs=false ;;
+		*)	break ;;
+		esac
+		shift
+	done
+
+	typeset p="$*"
+	
+	if	exists ``db_pretty_print(&($p),$flags,"$format")
+	then
+	    if  $do_lhs
+	    then
+		echo "$p = $[-l ``db_pretty_print(&($p),$flags,\"$format\") ]"
+	    else	
+		echo "$[-l ``db_pretty_print(&($p),$flags,\"$format\") ]"
+	    fi
+	else
+		history -  # suppress adding overload choice to history
+		builtin rprint +p $fargs -- "$p" <<-EOF
+		$last_choice
+		EOF
+		history +
+	fi
+}
+typeset -q prettyprint
+
+kalias pp=prettyprint
+
+kalias lo=loadobject
+
+
+function _find_executable {
+	typeset _x="$(whence $1)"
+	shift
+	case "$_x" in
+	(/*) echo - $_x $* ;;
+	esac
+}
+
+function paged-help {
+	typeset _PAGER="$(_find_executable ${PAGER:--})"
+	: ${_PAGER:=/usr/ucb/more}
+	if test -x ${_PAGER%%\ *}
+	then builtin help "$@" | $_PAGER
+	else builtin help "$@"
+	fi
+}
+
+function paged-commands {
+	typeset _PAGER="$(_find_executable ${PAGER:--})"
+	: ${_PAGER:=/usr/ucb/more}
+	if test -x ${_PAGER%%\ *}
+	then builtin commands "$@" | $_PAGER
+	else builtin commands "$@"
+	fi
+}
+
+if $havegui
+then
+	:
+else
+	kalias help=paged-help
+	kalias commands=paged-commands
+fi
+
+function sh-cmd { 
+	if (($#>0))
+	then /bin/sh -c "$*"
+	else /bin/sh
+	fi
+}
+typeset -q sh-cmd
+
+kalias sh=sh-cmd
+
+function bind-arrow-keys {
+
+        # Bind ANSI arrow key escapes to history and editing commands.
+        # These come into play when "set -o emacs" is used.
+        # When "set -o vi" is used the builtin vi editor handles them.
+
+	# if fd 0 and fd 1 are ttys ...
+	if test -t 0 && test -t 1
+        then
+                # NOTE: dbx _can_ recognize ESC represented as '^' and '[' as
+                # two distinct characters.
+                bind ^[[=prefix-1
+                bind ^[[A=up-history
+                bind ^[[B=down-history
+                bind ^[[D=backward-char
+                bind ^[[C=forward-char
+        fi
+}
+
+bind-arrow-keys
+
