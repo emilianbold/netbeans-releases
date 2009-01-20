@@ -51,86 +51,86 @@ import org.openide.util.Exceptions;
 
 public class Util {
 
-  public static String getFullPath(String relpath) {
-    File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
-    if (file != null && file.exists()) {
-      return file.getAbsolutePath();
-    }
-    return relpath;
-  }
-
-  public static String copyResource(Class clazz, String resourceFileName) {
-    try {
-      InputStream is = clazz.getClassLoader().getResourceAsStream(resourceFileName);
-      if (is == null) {
-          return null;
-      }
-      String prefix = "_dlight_" + getBriefName(resourceFileName);
-      File result_file = File.createTempFile(prefix, ".d");
-      OutputStream os = new FileOutputStream(result_file);
-      FileUtil.copy(is, os);
-      is.close();
-      os.flush();
-      os.close();
-      return result_file.getCanonicalPath();
-    } catch (IOException ex) {
-      Exceptions.printStackTrace(ex);
-    }
-    return null;
-
-  }
-
-  private static String getBriefName(String resourceFileName) {
-      int pos = resourceFileName.lastIndexOf('.');
-      String result = (pos > 0) ? resourceFileName.substring(0, pos) : resourceFileName;
-      pos = resourceFileName.lastIndexOf('/');
-      result = (pos >= 0) ? resourceFileName.substring(pos+1) : resourceFileName;
-      return result;
-  }
-
-  public static void setExecutionPermissions(final List<String> files) {
-    if (files.isEmpty()) {
-      return;
+    public static String getFullPath(String relpath) {
+        File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
+        if (file != null && file.exists()) {
+            return file.getAbsolutePath();
+        }
+        return relpath;
     }
 
-    List<String> paths = new ArrayList<String>();
-    for (String f : files) {
-      String fullPath = f;
-      if (!(new File(f)).exists()) {
-        fullPath = getFullPath(f);
-      }
+    public static String copyResource(Class clazz, String resourceFileName) {
+        try {
+            InputStream is = clazz.getClassLoader().getResourceAsStream(resourceFileName);
+            if (is == null) {
+                return null;
+            }
+            String prefix = "_dlight_" + getBriefName(resourceFileName);
+            File result_file = File.createTempFile(prefix, ".d");
+            OutputStream os = new FileOutputStream(result_file);
+            FileUtil.copy(is, os);
+            is.close();
+            os.flush();
+            os.close();
+            return result_file.getCanonicalPath();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
 
-      if (new File(fullPath).exists()) {
-        paths.add(fullPath);
-      }
     }
 
-    List<String> commands = new ArrayList<String>();
-    commands.add("/bin/chmod"); // NOI18N
-    commands.add("755"); // NOI18N
-    commands.addAll(paths);
-    ProcessBuilder pb = new ProcessBuilder(commands);
-    try {
-      pb.start();
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
+    private static String getBriefName(String resourceFileName) {
+        int pos = resourceFileName.lastIndexOf('.');
+        String result = (pos > 0) ? resourceFileName.substring(0, pos) : resourceFileName;
+        pos = resourceFileName.lastIndexOf('/');
+        result = (pos >= 0) ? resourceFileName.substring(pos + 1) : resourceFileName;
+        return result;
     }
-  }
 
-  /** gets a base path for a class: org.nebeabs.modules.dlight.MyClass -> org/nebeabs/modules/dlight */
-  public static String getBasePath(Class cls) {
-    String path = cls.getName().replace('.', '/');
-    int pos = path.lastIndexOf('/');
-    return (pos > 0) ? path.substring(0, pos) : path;
-  }
+    public static void setExecutionPermissions(final List<String> files) {
+        if (files.isEmpty()) {
+            return;
+        }
 
-  public static boolean getBoolean(String name, boolean defaultValue) {
-    String value = System.getProperty(name);
-    return (value == null) ? defaultValue : Boolean.parseBoolean(value);
-  }
+        List<String> paths = new ArrayList<String>();
+        for (String f : files) {
+            String fullPath = f;
+            if (!(new File(f)).exists()) {
+                fullPath = getFullPath(f);
+            }
 
-  public static boolean deleteLocalDirectory(File path) {
+            if (new File(fullPath).exists()) {
+                paths.add(fullPath);
+            }
+        }
+
+        List<String> commands = new ArrayList<String>();
+        commands.add("/bin/chmod"); // NOI18N
+        commands.add("755"); // NOI18N
+        commands.addAll(paths);
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        try {
+            pb.start();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
+        }
+    }
+
+    /** gets a base path for a class: org.nebeabs.modules.dlight.MyClass -> org/nebeabs/modules/dlight */
+    public static String getBasePath(Class cls) {
+        String path = cls.getName().replace('.', '/');
+        int pos = path.lastIndexOf('/');
+        return (pos > 0) ? path.substring(0, pos) : path;
+    }
+
+    public static boolean getBoolean(String name, boolean defaultValue) {
+        String value = System.getProperty(name);
+        return (value == null) ? defaultValue : Boolean.parseBoolean(value);
+    }
+
+    public static boolean deleteLocalDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
             for (int i = 0; i < files.length; i++) {
