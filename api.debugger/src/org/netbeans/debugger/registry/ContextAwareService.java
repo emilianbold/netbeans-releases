@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.debugger;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
-
-import java.beans.PropertyChangeEvent;
-import java.util.*;
+package org.netbeans.debugger.registry;
 
 /**
- * A base utility class for debugger unit tests.
+ * Instance of registry entry, that delegates to a debugger service, that can be
+ * context-aware.
+ * This instances should be registered in layers and created by <code>createService</code> factory
+ * method as follows:
  *
- * @author Maros Sandor
+ *   <pre style="background-color: rgb(255, 255, 153);">
+ *   &lt;folder name="Debugger"&gt;
+ *       &lt;file name="MyDebuggerService.instance"&gt;
+ *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.debugger.registry.ContextAwareServiceHandler.createService"/&gt;
+ *           &lt;attr name="serviceName" stringvalue="org.netbeans.my_debugger.MyServiceImpl"/&gt;
+ *           &lt;attr name="serviceClass" stringvalue="org.netbeans.debugger.Service"/&gt;
+ *       &lt;/file&gt;
+ *   &lt;/folder&gt;</pre>
+ *
+ * <br/>
+ *
+ * @author Martin Entlicher
  */
-public abstract class DebuggerApiTestBase extends NbTestCase {
+public interface ContextAwareService {
 
-    protected DebuggerApiTestBase(String s) {
-        super(s);
-    }
-
-    protected void assertInstanceOf(String msg, Object obj, Class aClass) {
-        assertNotNull("An object is not an instance of "+aClass+", because it is 'null'.", obj);
-        if (!aClass.isAssignableFrom(obj.getClass()))
-        {
-            fail(msg);
-        }
-    }
-
-    protected static void printEvents(List events) {
-        System.out.println("events: " + events.size());
-        for (Iterator i = events.iterator(); i.hasNext();) {
-            TestDebuggerManagerListener.Event event1 = (TestDebuggerManagerListener.Event) i.next();
-            System.out.println("event: " + event1.getName());
-            if (event1.getParam() instanceof PropertyChangeEvent) {
-                PropertyChangeEvent pce = (PropertyChangeEvent) event1.getParam();
-                System.out.println("PCS name: " + pce.getPropertyName());
-            }
-            System.out.println(event1.getParam());
-        }
-    }
+    String serviceName();
+    
 }

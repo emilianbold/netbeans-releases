@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.api.debugger;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
-
-import java.beans.PropertyChangeEvent;
-import java.util.*;
+import java.util.List;
+import org.netbeans.api.debugger.test.TestLookupServiceFirst;
+import org.netbeans.api.debugger.test.TestNodeModelContext;
+import org.netbeans.spi.viewmodel.NodeModel;
 
 /**
- * A base utility class for debugger unit tests.
  *
- * @author Maros Sandor
+ * @author Martin Entlicher
  */
-public abstract class DebuggerApiTestBase extends NbTestCase {
+public class LookupWithForPathTest  extends DebuggerApiTestBase {
 
-    protected DebuggerApiTestBase(String s) {
+    static {
+        String[] layers = new String[] {"org/netbeans/api/debugger/test/mf-layer.xml"};//NOI18N
+        Object[] instances = new Object[] { };
+        IDEInitializer.setup(layers,instances);
+    }
+
+    public LookupWithForPathTest(String s) {
         super(s);
     }
 
-    protected void assertInstanceOf(String msg, Object obj, Class aClass) {
-        assertNotNull("An object is not an instance of "+aClass+", because it is 'null'.", obj);
-        if (!aClass.isAssignableFrom(obj.getClass()))
-        {
-            fail(msg);
-        }
-    }
+    public void testForPath() throws Exception {
+        Lookup.MetaInf l = new Lookup.MetaInf("unittest");
+        List list = l.lookup(null, TestLookupServiceFirst.class);
+        assertEquals("Wrong looked up object", 2, list.size());
+        assertInstanceOf("Wrong looked up object", list.get(0), TestLookupServiceFirst.class);
+        assertInstanceOf("Wrong looked up object", list.get(1), TestLookupServiceFirst.class);
 
-    protected static void printEvents(List events) {
-        System.out.println("events: " + events.size());
-        for (Iterator i = events.iterator(); i.hasNext();) {
-            TestDebuggerManagerListener.Event event1 = (TestDebuggerManagerListener.Event) i.next();
-            System.out.println("event: " + event1.getName());
-            if (event1.getParam() instanceof PropertyChangeEvent) {
-                PropertyChangeEvent pce = (PropertyChangeEvent) event1.getParam();
-                System.out.println("PCS name: " + pce.getPropertyName());
-            }
-            System.out.println(event1.getParam());
-        }
+        Lookup testContext = new Lookup.Instance(new Object[] {});
+        l.setContext(testContext);
+        List<? extends NodeModel> nodeModelList = l.lookup(null, NodeModel.class);
+        assertEquals("Wrong looked up object", 2, nodeModelList.size());
+        assertInstanceOf("Wrong looked up object", nodeModelList.get(0), NodeModel.class);
+        assertInstanceOf("Wrong looked up object", nodeModelList.get(1), NodeModel.class);
+        assertInstanceOf("Wrong looked up object", nodeModelList.get(1), TestNodeModelContext.class);
+        TestNodeModelContext nmc = (TestNodeModelContext) nodeModelList.get(1);
+        assertNotNull(nmc.getContext());
+        assertEquals(testContext, nmc.getContext());
     }
 }

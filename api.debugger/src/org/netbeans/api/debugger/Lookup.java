@@ -68,13 +68,17 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.debugger.registry.ContextAwareService;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Item;
 import org.openide.util.LookupEvent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup.Result;
 
 
 /**
@@ -251,9 +255,11 @@ abstract class Lookup implements ContextProvider {
         
         private List<String> list(String folder, Class<?> service) {
             String name = service.getName ();
-            String resourceName = "META-INF/debugger/" +
-                ((rootFolder == null) ? "" : rootFolder + "/") + 
-                ((folder == null) ? "" : folder + "/") + 
+            String pathResourceName = "debugger/" +
+                ((rootFolder == null) ? "" : rootFolder + "/") +
+                ((folder == null) ? "" : folder + "/");
+            String resourceName = "META-INF/" +
+                pathResourceName +
                 name;
             synchronized(registrationCache) {
                 List<String> l = registrationCache.get(resourceName);
@@ -265,6 +271,13 @@ abstract class Lookup implements ContextProvider {
             }
         }
     
+        private Result<?> listLookup(String folder, Class<?> service) {
+            String pathResourceName = "Debugger/" +
+                ((rootFolder == null) ? "" : rootFolder + "/") +
+                ((folder == null) ? "" : folder + "/");
+            return Lookups.forPath(pathResourceName).lookupResult(service);
+        }
+
         private static Set<String> getHiddenClassNames(List l) {
             Set<String> s = null;
             int i, k = l.size ();
@@ -580,40 +593,56 @@ abstract class Lookup implements ContextProvider {
             public int notifyUnloadOrder = 0;
             
             public MetaInfLookupList(String folder, Class<T> service) {
-                this(list(folder, service), service);
+                this(list(folder, service), listLookup(folder, service), service);
                 this.folder = folder;
             }
             
-            private MetaInfLookupList(List<String> l, Class<T> service) {
-                this(l, getHiddenClassNames(l), service);
+            private MetaInfLookupList(List<String> l, Result<?> lr, Class<T> service) {
+                this(l, lr, getHiddenClassNames(l), service);
             }
             
-            private MetaInfLookupList(List<String> l, Set<String> s, Class<T> service) {
+            private MetaInfLookupList(List<String> l, Result<?> lr, Set<String> s, Class<T> service) {
                 super(s);
                 assert service != null;
                 this.service = service;
-                fillInstances(l, s);
+                fillInstances(l, lr, s);
                 listenOnDisabledModules();
             }
             
-            private void fillInstances(List<String> l, Set<String> s) {
+            private void fillInstances(List<String> l, Result<?> lr, Set<String> s) {
                 for (String className : l) {
                     if (className.endsWith(HIDDEN)) continue;
                     if (s != null && s.contains (className)) continue;
-                    Object instance = null;
-                    synchronized(instanceCache) {
-                        instance = instanceCache.get (className);
+                    fillClassInstance(className);
+                }
+                for (Item<? extends Object> li : lr.allItems()) {
+                    add(new LazyInstance<T>(service, li));
+                }
+                /*
+                for (Object lri : lr.allInstances()) {
+                    if (lri instanceof ContextAwareService) {
+                        String className = ((ContextAwareService) lri).serviceName();
+                        if (s != null && s.contains (className)) continue;
+                        fillClassInstance(className);
                     }
-                    if (instance != null) {
-                        try {
-                            add(service.cast(instance), className);
-                        } catch (ClassCastException cce) {
-                            Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
-                        }
-                        listenOn(instance.getClass().getClassLoader());
-                    } else if (checkClassName(className)) {
-                        add(new LazyInstance<T>(service, className), className);
+                }
+                 */
+            }
+
+            private void fillClassInstance(String className) {
+                Object instance = null;
+                synchronized(instanceCache) {
+                    instance = instanceCache.get (className);
+                }
+                if (instance != null) {
+                    try {
+                        add(service.cast(instance), className);
+                    } catch (ClassCastException cce) {
+                        Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                     }
+                    listenOn(instance.getClass().getClassLoader());
+                } else if (checkClassName(className)) {
+                    add(new LazyInstance<T>(service, className), className);
                 }
             }
 
@@ -645,9 +674,10 @@ abstract class Lookup implements ContextProvider {
                 // can sync on it
                 clear();
                 List<String> l = list(folder, service);
+                Result lr = listLookup(folder, service);
                 Set<String> s = getHiddenClassNames(l);
                 hiddenClassNames = s;
-                fillInstances(l, s);
+                fillInstances(l, lr, s);
                 firePropertyChange();
             }
             
@@ -704,25 +734,44 @@ abstract class Lookup implements ContextProvider {
             }
 
             private class LazyInstance<T> extends LookupLazyEntry<T> {
+
                 private String className;
                 private Class<T> service;
+                Item<? extends Object> lookupItem;
+
                 public LazyInstance(Class<T> service, String className) {
                     this.service = service;
                     this.className = className;
+                }
+
+                public LazyInstance(Class<T> service, Item<? extends Object> lookupItem) {
+                    this.service = service;
+                    this.lookupItem = lookupItem;
                 }
 
                 private final Object instanceCreationLock = new Object();
                 
                 protected T getEntry() {
                     Object instance = null;
-                    synchronized (instanceCreationLock) {
-                        synchronized(instanceCache) {
-                            instance = instanceCache.get (className);
+                    if (lookupItem != null) {
+                        instance = lookupItem.getInstance();
+                        if (instance instanceof ContextAwareService) {
+                            ContextAwareService cas = (ContextAwareService) instance;
+                            className = cas.serviceName();
+                            lookupItem = null;
+                            instance = null;
                         }
-                        if (instance == null) {
-                            instance = createInstance (className);
-                            synchronized (instanceCache) {
-                                instanceCache.put (className, instance);
+                    }
+                    if (instance == null) {
+                        synchronized (instanceCreationLock) {
+                            synchronized(instanceCache) {
+                                instance = instanceCache.get (className);
+                            }
+                            if (instance == null) {
+                                instance = createInstance (className);
+                                synchronized (instanceCache) {
+                                    instanceCache.put (className, instance);
+                                }
                             }
                         }
                     }
