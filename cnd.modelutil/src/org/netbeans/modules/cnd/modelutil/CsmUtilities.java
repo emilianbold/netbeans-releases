@@ -437,7 +437,7 @@ public class CsmUtilities {
     }
 
     public static Document getDocument(FileObject fo) {
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             try {
                 DataObject dob = DataObject.find(fo);
                 if (dob != null && dob.isValid()) {
