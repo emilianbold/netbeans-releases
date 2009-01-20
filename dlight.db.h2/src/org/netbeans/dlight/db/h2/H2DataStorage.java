@@ -185,12 +185,8 @@ public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
   }
 
-  public void putStack(List<CharSequence> stack, int cpuId, int threadId, long sampleTimestamp, long sampleDuration) {
-    stackStorage.putStack(stack, cpuId, threadId, sampleTimestamp, sampleDuration);
-  }
-
-  public int getStackId(List<CharSequence> stack, int cpuId, int threadId, long timestamp) {
-    return stackStorage.getStackId(stack, cpuId, threadId, timestamp);
+  public int putStack(List<CharSequence> stack, long sampleDuration) {
+    return stackStorage.putStack(stack, sampleDuration);
   }
 
   public void flush() {

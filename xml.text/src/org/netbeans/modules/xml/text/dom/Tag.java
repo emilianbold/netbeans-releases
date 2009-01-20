@@ -64,9 +64,8 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
     
     protected String name;
     
-    public Tag(XMLSyntaxSupport support, Token from, int start, int end) {
+    Tag(XMLSyntaxSupport support, Token from, int start, int end) {
         super(support, from, start, end);
-        //this.name = name;
     }
     
     public final short getNodeType() {
@@ -278,15 +277,8 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
     protected abstract Tag getStartTag();
     
     protected abstract Tag getEndTag();
-    
-    //    public boolean equals(Object obj) {
-    //        if ((obj instanceof Tag) == false) return false;
-    //        return false;
-    //    }
-    
-    
-    // unsupported DOM level 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+        
+    // unsupported DOM level 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     public String getAttributeNS(String namespaceURI, String localName) {
         throw new UOException();
     }
@@ -319,15 +311,6 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
         throw new UOException();
     }
     
-//    public void retokenizeObject() {
-//        // Update this object's member variables
-//        try {
-//            first = support.getTokenChain(offset, support.getDocument().getLength());
-//        } catch (BadLocationException e) {
-//            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
-//        }
-//    }
-
     /**
      * We guarantee DOM Node equality by using Java Object's equals.
      * It's potentionally dangerous as it mixes StartTags and EndTags.

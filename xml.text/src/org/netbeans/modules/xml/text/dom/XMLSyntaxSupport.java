@@ -47,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -96,7 +97,6 @@ public class XMLSyntaxSupport {
         if (offset == 0) return null;
         if (offset < 0) throw new BadLocationException("Offset " +
                 offset + " cannot be less than 0.", offset);  //NOI18N
-
         ((AbstractDocument)document).readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(((AbstractDocument)document));
@@ -218,8 +218,6 @@ public class XMLSyntaxSupport {
         return token;
     }
 
-
-
     /**
      * Create elements starting with given item.
      *
@@ -234,13 +232,20 @@ public class XMLSyntaxSupport {
         switch(token.id()) {
             
             case PI_START: {
+                String target = null;
+                String content = null;
                 Token<XMLTokenId> t = token;
                 while(t.id() != XMLTokenId.PI_END) {
+                    if(t.id() == XMLTokenId.PI_TARGET)
+                        target = t.text().toString();
+                    if(t.id() == XMLTokenId.PI_CONTENT)
+                        content = t.text().toString();
                     ts.moveNext();
                     t = ts.token();
                 }
                 end = ts.offset() + t.length();
-                return new ProcessingInstruction(this, token, start, end);
+                return new ProcessingInstruction(this, token, start,
+                        end, target, content);
             }
 
             case DECLARATION: {
@@ -280,7 +285,49 @@ public class XMLSyntaxSupport {
 
         return null;
     }
-        
+
+    /**
+     * No completion inside PI, CDATA, comment section.
+     * True only inside PI or CDATA section, false otherwise.
+     * @param target
+     */
+    public static boolean noCompletion(JTextComponent target) {
+        if(target == null || target.getCaret() == null)
+            return false;
+        int offset = target.getCaret().getDot();
+        if(offset < 0)
+            return false;
+        //no completion inside CDATA or comment section
+        BaseDocument document = (BaseDocument)target.getDocument();
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            if(ts == null)
+                return false;
+            ts.move(offset);
+            Token token = ts.token();
+            if(token == null) {
+                ts.moveNext();
+                token = ts.token();
+                if(token == null)
+                    return false;
+            }
+            if( token.id() == XMLTokenId.CDATA_SECTION ||
+               token.id() == XMLTokenId.BLOCK_COMMENT ||
+               token.id() == XMLTokenId.PI_START ||
+               token.id() == XMLTokenId.PI_END ||
+               token.id() == XMLTokenId.PI_CONTENT ||
+               token.id() == XMLTokenId.PI_TARGET ) {
+               return true;
+            }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
+
+        return false;
+    }
+
     /** Returns last inserted character. It's most likely one recently typed by user. */
     public final char lastTypedChar() {
         return lastInsertedChar;

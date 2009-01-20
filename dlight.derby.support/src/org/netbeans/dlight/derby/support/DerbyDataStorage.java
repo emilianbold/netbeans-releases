@@ -174,12 +174,8 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     return true;
   }
 
-  public void putStack(List<CharSequence> stack, int cpuId, int threadId, long sampleTimestamp, long sampleDuration) {
-    stackStorage.putStack(stack, cpuId, threadId, sampleTimestamp, sampleDuration);
-  }
-
-  public int getStackId(List<CharSequence> stack, int cpuId, int threadId, long timestamp) {
-    return stackStorage.getStackId(stack, cpuId, threadId, timestamp);
+  public int putStack(List<CharSequence> stack, long sampleDuration) {
+    return stackStorage.putStack(stack, sampleDuration);
   }
 
   public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
