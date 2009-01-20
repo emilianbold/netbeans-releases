@@ -81,7 +81,7 @@ tellurium{
         //  *iexplore [absolute path]
         //  *chrome
         //   *iehta
-        browser = "*firefox /usr/lib/firefox-3.0.5/firefox-3.0"
+        browser = "*firefox"
     }
     datadriven{
         dataprovider{

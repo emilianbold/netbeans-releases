@@ -89,7 +89,7 @@ class TestClient extends DslContext {
             InputBox(uid: "max", clocator: [name: "max"])
             InputBox(uid: "expandLevel", clocator: [name: "expandLevel"])
             InputBox(uid: "query", clocator: [name: "query"])
-            TextBox(uid: "content", clocator: [tag: "textarea", name: "params", id: "blobParam"])
+            InputBox(uid: "content", clocator: [tag: "textarea", name: "params", id: "blobParam"])
 
             InputBox(uid: "resourceId", clocator: [id: "tparams"])
         }
