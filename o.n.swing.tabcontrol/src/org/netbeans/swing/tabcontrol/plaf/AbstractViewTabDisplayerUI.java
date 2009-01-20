@@ -113,7 +113,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     private TabControlButton btnClose;
     private TabControlButton btnAutoHidePin;
-    private TabControlButton btnMaximizeRestore;
     
     /** Pin action */
     private final Action pinAction = new PinAction();
