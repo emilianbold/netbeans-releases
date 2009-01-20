@@ -17,20 +17,33 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
-set -e
 
 script_dir=`dirname "$0"`
 
-#add Product ID
-"$script_dir"/addproduct_id.sh "FX"
+. "$script_dir"/env.sh
 
-if [ -d "/Library/Receipts/javafx.pkg" ] ; then
-    rm -rf "/Library/Receipts/javafx.pkg"
+jdk_home=`"$script_dir"/get_current_jdk.sh`
+
+java_exe="$jdk_home/bin/java"
+
+if [ -n "$1" ] ; then
+
+    . "$script_dir"/env.sh
+    netbeansHome=`ls -d "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/platform*`
+
+    ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
+
+    "$java_exe" -Dnetbeans.home="$netbeansHome" -Dservicetag.source="$SERVICE_TAG_SOURCE" -jar "$script_dir"/servicetag.jar "$1"
+
+    errorCode=$?
+
+    [ -d ~/.netbeans ]                && chown "$ownership" ~/.netbeans
+    [ -f ~/.netbeans/.superId ]       && chown "$ownership" ~/.netbeans/.superId
+
+    if [ $errorCode -ne 0 ] ; then   
+	echo "SERVICE TAGS: Cannot create ST for $1, error code is $errorCode"
+    else
+	echo "SERVICE TAGS: ST for $1 was successfully created"
+    fi
 fi
 
-"$script_dir"/add_cluster.sh "javafx2"
-
-touch ~/.javafx_eula_accepted
-
-#create ST for JavaFX
-"$script_dir"/servicetag.sh "javafx"
