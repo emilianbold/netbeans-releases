@@ -895,7 +895,7 @@ public class JaxWsUtils {
                     AnnotationTree bindingAnnotation = null;
                     List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
                     for (AnnotationTree an : annots) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                        Tree ident = an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
                         if (anElement != null && anElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) {
