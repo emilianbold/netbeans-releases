@@ -125,7 +125,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             CustomizerNode node = chooser.getNode();
             if (node instanceof CustomProjectActionHandlerProvider) {
                 return (CustomProjectActionHandlerProvider) node;
-            } else if (node.getClass().getName().toLowerCase().contains("dbx") && overrideActionHandlerProvider != null) { // NOI18N
+            } else if (node != null && overrideActionHandlerProvider != null && node.getClass().getName().toLowerCase().contains("dbx")) { // NOI18N
                 return overrideActionHandlerProvider;
             }
         }

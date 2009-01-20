@@ -74,3 +74,6 @@ chmod g+w .
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
 fi
+
+#create ST for NB
+"$dirname"/servicetag.sh "nb"

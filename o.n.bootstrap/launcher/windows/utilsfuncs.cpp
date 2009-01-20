@@ -119,8 +119,10 @@ bool dirExists(const char *path) {
     HANDLE hFind = 0;
     hFind = FindFirstFile(path, &fd);
     if (hFind == INVALID_HANDLE_VALUE) {
+        logMsg("Dir \"%s\" does not exist", path);
         return false;
     }
+    logMsg("Dir \"%s\" exists", path);
     FindClose(hFind);
     return (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
@@ -139,7 +141,7 @@ bool fileExists(const char *path) {
     return true;
 }
 
-bool normalizePath(char *path) {
+bool normalizePath(char *path, int len) {
     char tmp[MAX_PATH] = "";
     int i = 0;
     while (path[i] && i < MAX_PATH - 1) {
@@ -147,7 +149,7 @@ bool normalizePath(char *path) {
         i++;
     }
     tmp[i] = '\0';
-    return _fullpath(path, tmp, MAX_PATH) != NULL;
+    return _fullpath(path, tmp, len) != NULL;
 }
 
 bool createPath(const char *path) {

@@ -135,7 +135,12 @@ public class FileObj extends BaseFileObj {
         MutualExclusionSupport.Closeable closeableReference = null;
         
         try {
-            if (!Utilities.isWindows() && !f.isFile()) {
+            if (Utilities.isWindows()) {
+                // #157056 - don't try to open locked windows files
+                if (getName().toLowerCase().contains("ntuser")) {  //NOI18N
+                    return new ByteArrayInputStream(new byte[] {});
+                }
+            } else if (!f.isFile()) {
                 return new ByteArrayInputStream(new byte[] {});
             }
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
