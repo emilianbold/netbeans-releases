@@ -155,6 +155,7 @@ public class SearchTest extends PerformanceTestCase {
     public void close() {
         if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
             srchResult = (TopComponentOperator) testedComponentOperator;
+//            srchResult.close();
 /*
             if (flag) {
                 JTabbedPaneOperator tpo = new JTabbedPaneOperator(srchResult);
@@ -163,6 +164,13 @@ public class SearchTest extends PerformanceTestCase {
             flag = true;
             srchResult.close();
  **/
+        }
+    }
+
+    public void shutdown() {
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            srchResult = (TopComponentOperator) testedComponentOperator;
+            srchResult.close();
         }
     }
 

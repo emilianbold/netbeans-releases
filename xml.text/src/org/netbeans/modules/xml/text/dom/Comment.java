@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.ROException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -53,8 +54,8 @@ import org.w3c.dom.Text;
  */
 public class Comment extends SyntaxNode implements org.w3c.dom.Comment {
 
-    public Comment(XMLSyntaxSupport support, Token from, int to) {
-        super( support, from, to );
+    public Comment(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end);
     }
 
     public String toString() {

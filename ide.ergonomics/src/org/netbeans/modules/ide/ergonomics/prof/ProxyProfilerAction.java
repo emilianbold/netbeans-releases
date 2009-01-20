@@ -74,7 +74,7 @@ abstract class ProxyProfilerAction implements ActionListener {
 
             public void run() {
                 FeatureInfo featureInfo = null;
-                for (FeatureInfo info : FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                for (FeatureInfo info : FeatureManager.features()) {
                     if ("Attach Profiler".equals(info.getProfilerAttachName())) { // NOI18N
                         featureInfo = info;
                         break;

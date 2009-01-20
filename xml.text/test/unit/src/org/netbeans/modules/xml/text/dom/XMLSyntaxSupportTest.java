@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http:www.netbeans.org/cddl-gplv2.html
+ * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.performance;
 
-import junit.framework.*;
+package org.netbeans.modules.xml.text.dom;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.xml.text.AbstractTestCase;
 
 /**
  *
- * @author radim
+ * @author Samaresh
  */
-public class ClassTest extends TestCase {
+public class XMLSyntaxSupportTest extends AbstractTestCase {
 
-    public ClassTest(String testName) {
+    public XMLSyntaxSupportTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
-    public static junit.framework.Test suite() {
-
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(ClassTest.class);
-
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLSyntaxSupportTest("testParse1"));
         return suite;
     }
 
-    // TODO add test methods here. The name must begin with 'test'. For example:
-    public void testInit() {
-        Class clz = new Class ();
+    /**
+     * Parses a valid xml documents and reads one node at a time.
+     */
+    public void testParse1() throws Exception {
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(getDocument("syntax/test.xml"));
+        SyntaxElement se = support.getElementChain(1);
+        while( se != null) {
+            System.out.println("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
+            se = se.getNext();
+        }
     }
-    
 }
