@@ -41,20 +41,20 @@
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 
 /**
