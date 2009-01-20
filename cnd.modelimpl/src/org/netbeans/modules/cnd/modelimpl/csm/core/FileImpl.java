@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
@@ -640,6 +639,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         APTFile apt = null;
         try {
             apt = APTDriver.getInstance().findAPT(fileBuffer);
+        } catch (FileNotFoundException ex) {
+            // file could be removed
+            apt = null;
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }
@@ -803,6 +805,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             parser.setLazyCompound(false);
             parser.translation_unit();
             return new ParserBasedTokenBuffer(parser);
+        } catch (FileNotFoundException ex) {
+            // probably file was removed
+            return null;
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             return null;
@@ -848,8 +853,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
         } catch (FileNotFoundException ex) {
-            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
-            DiagnosticExceptoins.register(ex);
+            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }

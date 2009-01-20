@@ -67,8 +67,8 @@ import org.w3c.dom.UserDataHandler;
 public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.Node {
 
     /** Creates new SyntaxNode */
-    public SyntaxNode(XMLSyntaxSupport support, Token first, int to)  {
-        super( support, first, to);
+    public SyntaxNode(XMLSyntaxSupport support, Token first, int start, int end)  {
+        super( support, first, start, end);
     }
 
     /**
