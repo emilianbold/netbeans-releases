@@ -81,7 +81,15 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="build-pkg" depends="init, build-app,build-servicetag">
-        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;${line.separator}MYSQL_INSTALL_DIR=&quot;${mysql.install.dir}&quot;${line.separator}SERVICE_TAG_SOURCE=&quot;{servicetag.source}&quot;${line.separator}" file="${scriptsdir}/env.sh"/>
+        <echo file="${scriptsdir}/env.sh"><![CDATA[
+NETBEANS_INSTALL_DIR="${app.name}"
+GLASSFISH_INSTALL_DIR="{glassfish.install.dir}"
+TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
+NB_CLUSTER_DIR="${nbClusterDir}"
+GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
+MYSQL_INSTALL_DIR="${mysql.install.dir}"
+SERVICE_TAG_SOURCE="{servicetag.source}"
+]]></echo>
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
