@@ -263,18 +263,18 @@ public class SourceTest extends NbTestCase {
         if (nueParent == null) {
             nueParent = wd.createFolder("test2");
         }
-        
+
         dfile.move(DataFolder.findFolder(nueParent));
         source = Source.create(doc);
         assertNotNull("No Source for " + doc, source);
         assertEquals("Correct FileObject", dfile.getPrimaryFile(), source.getFileObject());
     }
-    
+
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject f = FileUtil.createData(workDir, name);
         writeToFileObject(f, documentContent, eol);
-        
+
         return f;
     }
 

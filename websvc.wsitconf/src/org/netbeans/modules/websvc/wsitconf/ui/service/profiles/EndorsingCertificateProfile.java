@@ -50,6 +50,8 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeatu
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
+import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
@@ -121,10 +123,10 @@ public class EndorsingCertificateProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
-            String storeLoc = Util.getStoreLocation(p, false, false);
+            String storeLoc = ServerUtils.getStoreLocation(p, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, false);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, DefaultSettings.getDefaultPassword(p), false, false);
 //        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
@@ -134,15 +136,15 @@ public class EndorsingCertificateProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);        
 //        if (Util.isTomcat(p)) {
-            String kstoreLoc = Util.getStoreLocation(p, false, true);
+            String kstoreLoc = ServerUtils.getStoreLocation(p, false, true);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, kstoreLoc, false, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, DefaultSettings.getDefaultPassword(p), false, true);
 
-            String tstoreLoc = Util.getStoreLocation(p, true, true);
+            String tstoreLoc = ServerUtils.getStoreLocation(p, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, tstoreLoc, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), true, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, DefaultSettings.getDefaultPassword(p), true, true);
 //        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
@@ -153,8 +155,8 @@ public class EndorsingCertificateProfile extends ProfileBase
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
-            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+        if ((Util.isEqual(DefaultSettings.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(ServerUtils.getStoreLocation(p, false, false), keyLoc)) &&
             (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
             return true;
         }
@@ -171,10 +173,10 @@ public class EndorsingCertificateProfile extends ProfileBase
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         if ((Util.isEqual(ProfilesModelHelper.XWS_SECURITY_CLIENT, keyAlias)) &&
             (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, trustAlias)) &&
-            (Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
-            (Util.isEqual(Util.getDefaultPassword(p), trustPasswd)) &&
-            (Util.isEqual(Util.getStoreLocation(p, true, true), trustLoc)) &&
-            (Util.isEqual(Util.getStoreLocation(p, false, true), keyLoc))) {
+            (Util.isEqual(DefaultSettings.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(DefaultSettings.getDefaultPassword(p), trustPasswd)) &&
+            (Util.isEqual(ServerUtils.getStoreLocation(p, true, true), trustLoc)) &&
+            (Util.isEqual(ServerUtils.getStoreLocation(p, false, true), keyLoc))) {
             return true;
         }
         return false;

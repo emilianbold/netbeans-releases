@@ -53,6 +53,8 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeatu
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
+import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
@@ -61,7 +63,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ValidatorConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -69,7 +70,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 
 /**
  * Transport Security Profile definition
@@ -132,8 +132,8 @@ public class UsernameAuthenticationProfile extends ProfileBase
         String storeAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if ((Util.isEqual(Util.getDefaultPassword(p), storePasswd)) &&
-            (Util.isEqual(Util.getStoreLocation(p, false, false), storeLoc)) &&
+        if ((Util.isEqual(DefaultSettings.getDefaultPassword(p), storePasswd)) &&
+            (Util.isEqual(ServerUtils.getStoreLocation(p, false, false), storeLoc)) &&
             (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, storeAlias))) { 
             return true;
         }
@@ -145,12 +145,12 @@ public class UsernameAuthenticationProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
-            String storeLoc = Util.getStoreLocation(p, false, false);
+            String storeLoc = ServerUtils.getStoreLocation(p, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, false);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, DefaultSettings.getDefaultPassword(p), false, false);
 //        }
-        if (Util.isGlassfish(p)) {
+        if (ServerUtils.isGlassfish(p)) {
             try {
                 p.getProjectDirectory().getFileObject("nbproject").createData("wsit.createuser");
             } catch (IOException ex) {
@@ -170,7 +170,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
                 (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, DEFAULT_PASSWORD, true);
         ProprietarySecurityPolicyModelHelper.setHandlerTimestampTimeout((Binding) component, null, true);
 //        if (Util.isTomcat(p)) {
-            String tstoreLoc = Util.getStoreLocation(p, true, true);
+            String tstoreLoc = ServerUtils.getStoreLocation(p, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, tstoreLoc, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
@@ -188,8 +188,8 @@ public class UsernameAuthenticationProfile extends ProfileBase
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
             if ((Util.isEqual(DEFAULT_PASSWORD, passwd)) &&
                 (Util.isEqual(DEFAULT_USERNAME, user)) && 
-                (Util.isEqual(Util.getDefaultPassword(p), trustPasswd)) && 
-                (Util.isEqual(Util.getStoreLocation(p, true, true), trustLoc))) {
+                (Util.isEqual(DefaultSettings.getDefaultPassword(p), trustPasswd)) &&
+                (Util.isEqual(ServerUtils.getStoreLocation(p, true, true), trustLoc))) {
                 return true;
             }
         }

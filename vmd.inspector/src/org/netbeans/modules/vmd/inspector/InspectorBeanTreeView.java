@@ -56,7 +56,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -65,63 +64,63 @@ import org.openide.util.Utilities;
 final class InspectorBeanTreeView extends BeanTreeView {
 
     public InspectorBeanTreeView(final ExplorerManager explorerManager) {
-        final JPopupMenu popupMenu = new JPopupMenu();
-        Image collapseImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
-        Image expandImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
+//        final JPopupMenu popupMenu = new JPopupMenu();
+//        Image collapseImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
+//        Image expandImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
         this.setAllowedDragActions(DnDConstants.ACTION_COPY_OR_MOVE);
         
-        popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorExpandAction" ), expandImage) { //NOI18N
-            public void actionPerformed(ActionEvent e) {
-                InspectorBeanTreeView.this.expandAll();
-            }
-        });
-        
-        popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorCollapseAction" ), collapseImage ) { //NOI18N
-            public void actionPerformed(ActionEvent e) { 
-                if  (explorerManager.getRootContext().getChildren().getNodes() == null 
-                     || explorerManager.getRootContext().getChildren().getNodes().length == 0 )
-                        return;
-                
-                Node[] rootNodes = explorerManager.getRootContext().getChildren().getNodes();
-                for (Node node : rootNodes) {
-                    deepDive(node);
-                }
-            }
-            
-            private void deepDive(Node parentNode) {
-                for (Node node  : parentNode.getChildren().getNodes()) {
-                    deepDive(node);
-                }
-                collapseNode(parentNode);
-            }
-        });
-        
-        tree.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == 3
-                    && explorerManager.getSelectedNodes().length == 1
-                    && explorerManager.getSelectedNodes()[0] == explorerManager.getRootContext()) {
-                        popupMenu.show(e.getComponent(),e.getX(), e.getY());
-                }
-            }
-            public void mouseEntered(MouseEvent e) {
-            }
-            public void mouseExited(MouseEvent e) {
-            }
-            public void mousePressed(MouseEvent e) {
-            }
-            public void mouseReleased(MouseEvent e) {
-            }
-        });
+//        popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorExpandAction" ), expandImage) { //NOI18N
+//            public void actionPerformed(ActionEvent e) {
+//                InspectorBeanTreeView.this.expandAll();
+//            }
+//        });
+//
+//        popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorCollapseAction" ), collapseImage ) { //NOI18N
+//            public void actionPerformed(ActionEvent e) {
+//                if  (explorerManager.getRootContext().getChildren().getNodes() == null
+//                     || explorerManager.getRootContext().getChildren().getNodes().length == 0 )
+//                        return;
+//
+//                Node[] rootNodes = explorerManager.getRootContext().getChildren().getNodes();
+//                for (Node node : rootNodes) {
+//                    deepDive(node);
+//                }
+//            }
+//
+//            private void deepDive(Node parentNode) {
+//                for (Node node  : parentNode.getChildren().getNodes()) {
+//                    deepDive(node);
+//                }
+//                collapseNode(parentNode);
+//            }
+//        });
+//
+//        tree.addMouseListener(new MouseListener() {
+//            public void mouseClicked(MouseEvent e) {
+//                if (e.getButton() == 3
+//                    && explorerManager.getSelectedNodes().length == 0
+//                    && explorerManager.getSelectedNodes()[0] == explorerManager.getRootContext()) {
+//                        popupMenu.show(e.getComponent(),e.getX(), e.getY());
+//                }
+//            }
+//            public void mouseEntered(MouseEvent e) {
+//            }
+//            public void mouseExited(MouseEvent e) {
+//            }
+//            public void mousePressed(MouseEvent e) {
+//            }
+//            public void mouseReleased(MouseEvent e) {
+//            }
+//        });
         
     }
     
-    private abstract class MenuAction extends AbstractAction {
-        public MenuAction(String name, Image icon) {
-            putValue(Action.NAME, name);
-            putValue(Action.SMALL_ICON, new ImageIcon(icon));
-        }
-    }
+//    private abstract class MenuAction extends AbstractAction {
+//        public MenuAction(String name, Image icon) {
+//            putValue(Action.NAME, name);
+//            putValue(Action.SMALL_ICON, new ImageIcon(icon));
+//        }
+//    }
     
     
 }

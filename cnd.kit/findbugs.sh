@@ -5,16 +5,18 @@ workspace="$2"
 out="$3"
 
 #don't want to clean everything - for example, jars are needed...
-rm ${workspace}/cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated/*
-rm ${workspace}/cnd.apt/build/classes/org/netbeans/modules/cnd/apt/impl/support/generated/*
-rm ${workspace}/cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/generated/*
-rm ${workspace}/cnd.modelimpl/build/classes/org/netbeans/modules/cnd/modelimpl/parser/generated/*
+rm ${workspace}/cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated/* 2>/dev/null
+rm ${workspace}/cnd.apt/build/classes/org/netbeans/modules/cnd/apt/impl/support/generated/* 2>/dev/null
+rm ${workspace}/cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/generated/* 2>/dev/null
+rm ${workspace}/cnd.modelimpl/build/classes/org/netbeans/modules/cnd/modelimpl/parser/generated/* 2>/dev/null
 
 prj="/tmp/cnd.fbp"
 echo "<Project filename=\"CND\" projectName=\"CND\">" > ${prj}
 for D in `ls -d ${workspace}/cnd* ${workspace}/asm ${workspace}/lib.terminalemulator | grep -v cnd.antlr`; do
-	echo "    <Jar>$D/build/classes</Jar>" >> ${prj}
-	echo "    <AuxClasspathEntry>$D/src</AuxClasspathEntry>" >> ${prj}
+	if [ -d $D/build/classes ]; then
+		echo "    <Jar>$D/build/classes</Jar>" >> ${prj}
+		echo "    <AuxClasspathEntry>$D/src</AuxClasspathEntry>" >> ${prj}
+	fi
 done
 echo "<SuppressionFilter>"  >> ${prj}
 echo "    <LastVersion value=\"-1\" relOp=\"NEQ\"/>"  >> ${prj}

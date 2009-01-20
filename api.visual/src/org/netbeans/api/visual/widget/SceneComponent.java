@@ -51,6 +51,7 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 import java.util.Map;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -77,8 +78,11 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         setRequestFocusEnabled (true);
         setFocusable (true);
         setFocusTraversalKeysEnabled (false);
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SceneComponent.class, "ACS_SceneComponentName"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SceneComponent.class, "ACS_SceneComponentDesc"));
     }
 
+    @Override
     public void addNotify () {
         super.addNotify ();
         ToolTipManager.sharedInstance ().registerComponent (this);
@@ -88,16 +92,19 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         scene.validate ();
     }
 
+    @Override
     public void removeNotify () {
         super.removeNotify ();
         ToolTipManager.sharedInstance ().unregisterComponent (this);
         scene.setViewShowing (false);
     }
 
+    @Override
     public AccessibleContext getAccessibleContext () {
         return accessible;
     }
 
+    @Override
     public void setBounds (int x, int y, int width, int height) {
         super.setBounds (x, y, width, height);
 
@@ -110,6 +117,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         scene.validate ();
     }
 
+    @Override
     public void paint (Graphics g) {
 //        System.out.println ("CLIP: " + g.getClipBounds ());
 //        long s = System.currentTimeMillis ();
