@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.dlight.dtrace.collector.DTSTDCConfiguration;
+import org.netbeans.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
@@ -19,6 +20,7 @@ import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
+import org.netbeans.modules.dlight.util.Util;
 
 /**
  *
@@ -45,11 +47,16 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     indConfiguration.put("aggregation", "avrg");
     DataTableMetadata functionsListMetaData = null;
     if (USE_DTRACE) {
-      DTSTDCConfiguration dtraceDataStackCollectorConfiguration = new DTSTDCConfiguration();
-      dtraceDataStackCollectorConfiguration.setOutputPrefix("cpu:");
-      toolConfiguration.addDataCollectorConfiguration(dtraceDataStackCollectorConfiguration);
-      functionsListMetaData  = DTSTDCConfiguration.getMetadaData();
-
+      Column cpuId = new Column("cpu_id", Integer.class, "CPU", null);
+      Column threadId = new Column("thread_id", Integer.class, "Thread", null);
+      Column timestamp = new Column("time_stamp", Long.class, "Timestamp", null);
+      Column stackId = new Column("leaf_id", Integer.class, "Stack", null);
+      functionsListMetaData = new DataTableMetadata("CallStack", Arrays.asList(cpuId, threadId, timestamp, stackId));
+      String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/calls.d");
+      DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(functionsListMetaData));
+      dtraceDataCollectorConfiguration.setOutputPrefix("cpu:");
+      dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
+      toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration));
     } else {
       SunStudioDCConfiguration sunStudioConfiguration = new SunStudioDCConfiguration(Arrays.asList(SunStudioDCConfiguration.CollectedInfo.FUNCTIONS_LIST));
       toolConfiguration.addDataCollectorConfiguration(sunStudioConfiguration);

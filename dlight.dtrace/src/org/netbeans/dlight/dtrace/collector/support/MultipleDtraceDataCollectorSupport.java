@@ -39,6 +39,7 @@
 
 package org.netbeans.dlight.dtrace.collector.support;
 
+import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 
 /**
@@ -85,11 +86,11 @@ public final class MultipleDtraceDataCollectorSupport {
      * @param collector  collector to be merged with others
      * @return  merged collector
      */
-    public DataCollector getCollector(DtraceDataCollector collector) {
+    public DataCollector getCollector(MultipleDTDCConfiguration configuration) {
         if (collectorInstance == null) {
-            collectorInstance = new MultipleDtraceDataCollector(collector);
+            collectorInstance = new MultipleDtraceDataCollector(configuration);
         } else {
-            collectorInstance.addCollector(collector);
+            collectorInstance.addConfiguration(configuration);
         }
         return collectorInstance;
     }

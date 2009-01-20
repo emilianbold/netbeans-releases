@@ -85,7 +85,7 @@ public class SQLStackStorage {
         executor.start();
     }
 
-    public void putStack(List<CharSequence> stack, int cpuId, int threadId, long sampleTimestamp, long sampleDuration) {
+    public int putStack(List<CharSequence> stack, long sampleDuration) {
         int callerId = 0;
         Set<Integer> funcs = new HashSet<Integer>();
         for (int i = 0; i < stack.size(); ++i) {
@@ -98,16 +98,6 @@ public class SQLStackStorage {
             updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
             callerId = nodeId;
         }
-        store(callerId, cpuId, threadId, sampleTimestamp);
-    }
-
-    public int getStackId(List<CharSequence> stack, int cpuId, int threadId, long timestamp) {
-        int callerId = 0;
-        for (CharSequence funcName : stack) {
-            int funcId = generateFuncId(funcName);
-            callerId = generateNodeId(callerId, funcId);
-        }
-        store(callerId, cpuId, threadId, timestamp);
         return callerId;
     }
 
@@ -185,26 +175,19 @@ public class SQLStackStorage {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-    private void store(int leafId, int cpuId, int threadId, long timestamp) {
-        AddStack cmd = new AddStack();
-        cmd.leafId = leafId;
-        cmd.cpuId = cpuId;
-        cmd.threadId = threadId;
-        cmd.timestamp = timestamp;
-        executor.submitCommand(cmd);
-    }
-
     private void updateMetrics(int id, boolean funcOrCall, long sampleDuration, boolean addIncl, boolean addExcl) {
-        UpdateMetrics cmd = new UpdateMetrics();
-        cmd.objId = id;
-        cmd.funcOrNode = funcOrCall;
-        if (addIncl) {
-            cmd.cpuTimeInclusive = sampleDuration;
+        if (0 < sampleDuration) {
+            UpdateMetrics cmd = new UpdateMetrics();
+            cmd.objId = id;
+            cmd.funcOrNode = funcOrCall;
+            if (addIncl) {
+                cmd.cpuTimeInclusive = sampleDuration;
+            }
+            if (addExcl) {
+                cmd.cpuTimeExclusive = sampleDuration;
+            }
+            executor.submitCommand(cmd);
         }
-        if (addExcl) {
-            cmd.cpuTimeExclusive = sampleDuration;
-        }
-        executor.submitCommand(cmd);
     }
 
     private int generateNodeId(int callerId, int funcId) {
@@ -366,13 +349,6 @@ public class SQLStackStorage {
         }
     }
 
-    private static class AddStack {
-        public int cpuId;
-        public int threadId;
-        public long timestamp;
-        public int leafId;
-    }
-
     private static class AddFunction {
         public int id;
         public CharSequence name;
@@ -449,15 +425,7 @@ public class SQLStackStorage {
                     while (cmdIterator.hasNext()) {
                         Object cmd = cmdIterator.next();
                         try {
-                            if (cmd instanceof AddStack) {
-                                AddStack addStackCmd = (AddStack) cmd;
-                                PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO CallStack (leaf_id, cpu_id, thread_id, time_stamp) VALUES (?, ?, ?, ?)");
-                                stmt.setInt(1, addStackCmd.leafId);
-                                stmt.setInt(2, addStackCmd.cpuId);
-                                stmt.setInt(3, addStackCmd.threadId);
-                                stmt.setLong(4, addStackCmd.timestamp);
-                                stmt.executeUpdate();
-                            } else if (cmd instanceof AddFunction) {
+                            if (cmd instanceof AddFunction) {
                                 AddFunction addFunctionCmd = (AddFunction) cmd;
                                 PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?)");
                                 stmt.setInt(1, addFunctionCmd.id);
