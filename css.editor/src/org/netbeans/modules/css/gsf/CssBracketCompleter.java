@@ -79,6 +79,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         return -1;
     }
 
+    @Override
     public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
         Caret caret = target.getCaret();
 
@@ -181,10 +182,12 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     }
 
+    @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
+    @Override
     public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
         if(justAddedPairOffset - 1 == dot) {
             //removed the paired char, remove the pair as well
@@ -199,6 +202,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     //this method is called within Indent.get(doc).lock() and unlock() section, no need for additional locking
+    @Override
     public int beforeBreak(final Document doc, final int dot, final JTextComponent jtc) throws BadLocationException {
         if (dot == 0 || dot == doc.getLength()) { //check corners
             return -1;
@@ -232,11 +236,13 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     }
 
+    @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
         //XXX returning null or the default should cause GSF to use the IDE default matcher
         return OffsetRange.NONE;
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
         //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
@@ -257,7 +263,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
                     if (last == null || !(last.getStart() == from && last.getEnd() == to)) {
-                        ranges.add(new OffsetRange(from, to));
+                        ranges.add(new OffsetRange(snapshot.getOriginalOffset(from), snapshot.getOriginalOffset(to)));
                     }
                 } while ((node = (SimpleNode) node.jjtGetParent()) != null);
             }
