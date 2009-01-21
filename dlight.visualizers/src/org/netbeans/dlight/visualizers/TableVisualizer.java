@@ -50,12 +50,12 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.support.TableDataProvider;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataProvider;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizer.spi.VisualizerContainer;
 import org.openide.util.RequestProcessor;
 
 /**

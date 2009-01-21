@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,21 +45,22 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
 import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.execution.api.impl.DLightToolkitManager;
 import org.netbeans.modules.dlight.indicator.api.Indicator;
 import org.netbeans.modules.dlight.indicator.api.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.indicator.api.impl.IndicatorActionListener;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerFactory;
+import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
+import org.netbeans.modules.dlight.visualizer.spi.VisualizerContainer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;

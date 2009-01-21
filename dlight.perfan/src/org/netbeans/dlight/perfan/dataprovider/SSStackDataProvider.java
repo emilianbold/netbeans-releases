@@ -62,10 +62,11 @@ import org.netbeans.modules.dlight.util.CollectionToStringConvertor;
 import org.netbeans.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+
 
 public class SSStackDataProvider implements StackDataProvider {
 

@@ -38,7 +38,6 @@
  */
 package org.netbeans.dlight.core.stack.storage;
 
-import org.netbeans.modules.dlight.spi.storage.support.SQLDataStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,6 +54,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.dlight.core.stack.model.Function;
 import org.netbeans.dlight.core.stack.model.FunctionCall;
 import org.netbeans.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 
 /**
  * Stack data storage over a relational database.

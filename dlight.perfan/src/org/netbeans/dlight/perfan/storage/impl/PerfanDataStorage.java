@@ -44,14 +44,14 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.dlight.perfan.spi.SunStudioDataCollector;
 import org.netbeans.dlight.perfan.dbe.ConnectorListener;
 import org.netbeans.dlight.perfan.dbe.DbeConnector;
 import org.netbeans.dlight.perfan.dbe.IDBEInterface;
-import org.netbeans.modules.dlight.spi.storage.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 import org.openide.util.Exceptions;
 
 // TODO: implement SessionListener - kill idbe on Session closure

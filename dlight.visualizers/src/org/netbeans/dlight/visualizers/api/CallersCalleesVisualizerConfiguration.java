@@ -52,7 +52,7 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
  *
  * @author mt154047
  */
-public class CallersCalleesVisualizerConfiguration extends TreeTableVisualizerConfiguration{
+public final class CallersCalleesVisualizerConfiguration extends TreeTableVisualizerConfiguration{
     
   public CallersCalleesVisualizerConfiguration(List<FunctionMetric> metrics, boolean isPlainTable) {
     List<Column> columns = new ArrayList<Column>();

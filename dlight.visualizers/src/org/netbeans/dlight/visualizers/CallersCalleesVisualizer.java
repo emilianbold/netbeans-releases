@@ -38,9 +38,7 @@
  */
 package org.netbeans.dlight.visualizers;
 
-import org.netbeans.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
-import org.netbeans.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
+
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,10 +55,12 @@ import org.netbeans.dlight.core.stack.model.FunctionCall;
 import org.netbeans.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.dlight.visualizers.ImageLoader;
+import org.netbeans.dlight.visualizers.api.TreeTableVisualizerConfiguration;
+import org.netbeans.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
+import org.netbeans.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;

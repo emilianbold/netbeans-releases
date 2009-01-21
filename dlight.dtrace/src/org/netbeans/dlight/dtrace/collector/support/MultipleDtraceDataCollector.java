@@ -24,12 +24,12 @@ import org.netbeans.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccess
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.spi.storage.support.SQLDataStorage;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
 

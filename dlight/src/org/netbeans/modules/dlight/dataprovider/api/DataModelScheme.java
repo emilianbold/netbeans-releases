@@ -40,10 +40,8 @@
 package org.netbeans.modules.dlight.dataprovider.api;
 
 /**
- * This is marker class which is used to set correspondence
- * between {@link org.netbeans.dlight.core.visualizer.model.Visualizer} and
- * {@link  org.netbeans.dlight.core.dataprovider.model.DataProvider}
- * @author masha
+ * This is marker class  which declares scheme which
+ * will be used to find {@link org.netbeans.
  */
 public class DataModelScheme {
   private String id;
@@ -55,7 +53,7 @@ public class DataModelScheme {
 
   /**
    * Id used to identify model
-   * @return
+   * @return unqiue id
    */
   public String getID() {
     return id;

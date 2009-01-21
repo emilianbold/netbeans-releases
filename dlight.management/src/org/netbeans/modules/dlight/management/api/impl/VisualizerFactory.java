@@ -41,10 +41,11 @@ package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.dlight.spi.visualizer.*;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.openide.util.Lookup;
+
 
 public final class VisualizerFactory {
   private static VisualizerFactory instance = null;

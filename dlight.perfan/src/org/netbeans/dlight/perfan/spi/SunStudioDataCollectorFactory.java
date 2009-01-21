@@ -40,7 +40,7 @@ package org.netbeans.dlight.perfan.spi;
 
 import java.util.List;
 import org.netbeans.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
 
 /**
  * Use this class when you want to create DataCollectors which uses

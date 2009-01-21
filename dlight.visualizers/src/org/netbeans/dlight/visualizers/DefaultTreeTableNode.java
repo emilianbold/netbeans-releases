@@ -39,7 +39,7 @@
 
 package org.netbeans.dlight.visualizers;
 
-import org.netbeans.modules.dlight.spi.dataprovider.support.TreeTableNode;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableNode;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
