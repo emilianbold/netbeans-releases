@@ -59,6 +59,12 @@ public interface RunConfig {
      */
     File getExecutionDirectory();
 
+    void setExecutionDirectory(File directory);
+
+    RunConfig getPreExecution();
+
+//    void setPreExecution(RunConfig config);
+
     /**
      * project that is being used for execution, can be null.
      * @return 
