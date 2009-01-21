@@ -617,7 +617,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     private FileObject getLocalWsdl() {
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
         if (jaxWsSupport != null) {
-            FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+            FileObject localWsdlocalFolder = jaxWsSupport.getWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
                 String relativePath = service.getLocalWsdl();
                 if (relativePath != null) {

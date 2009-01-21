@@ -142,16 +142,12 @@ public final class JAXWSLightSupport {
     }
 
 
-    /** Get WSDL folder for the project (folder containing wsdl files).
+    /** Get deployment descriptor folder for the project (folder containing configuration files, like web.xml).
      *
-     *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
-     *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
-     *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     *  @return the file object (folder) where wsdl files are located in project
-     *  @throws IOException trown when folder cannot be created
+     *  @return the folder where xml configuration files are located
      */
-    public FileObject getWsdlFolder(boolean createFolder) throws java.io.IOException {
-        return impl.getWsdlFolder(createFolder);
+    public FileObject getDeploymentDescriptorFolder(boolean createFolder) {
+        return impl.getDeploymentDescriptorFolder();
     }
 
     /** Get folder for local WSDL and XML artifacts for given service.
@@ -161,8 +157,8 @@ public final class JAXWSLightSupport {
      * @param createFolder if (createFolder==true) the folder will be created (if not created before)
      * @return the file object (folder) where wsdl files are located in project
      */
-    public FileObject getLocalWsdlFolder(boolean createFolder) {
-        return impl.getLocalWsdlFolder(createFolder);
+    public FileObject getWsdlFolder(boolean createFolder) {
+        return impl.getWsdlFolder(createFolder);
     }
 
     /** Get folder for local jaxb binding (xml) files for given service.
