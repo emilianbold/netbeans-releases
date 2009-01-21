@@ -37,13 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.dlight.cpu;
+package org.netbeans.modules.dlight.cpu;
 
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicator.api.Indicator;
-import org.netbeans.dlight.cpu.graph.PercentageGraph;
-import org.netbeans.dlight.cpu.graph.PercentageGraphComponent;
+import org.netbeans.modules.dlight.cpu.graph.PercentageGraph;
+import org.netbeans.modules.dlight.cpu.graph.PercentageGraphComponent;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

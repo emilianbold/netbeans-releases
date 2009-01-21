@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.dlight.cpu;
+package org.netbeans.modules.dlight.cpu;
 
 
 import java.util.Arrays;
