@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.support.TreeTableDataModel;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableDataModel;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 

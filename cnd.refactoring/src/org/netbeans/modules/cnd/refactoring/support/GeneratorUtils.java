@@ -80,7 +80,7 @@ public class GeneratorUtils {
     }
 
     public static boolean isConstant(CsmVariable var) {
-        return var.getType().isConst();
+        return var.getType() != null && var.getType().isConst();
     }
 //    public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
 //        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
@@ -336,15 +336,28 @@ public class GeneratorUtils {
     public static String computeSetterName(CsmField field) {
         StringBuilder name = getCapitalizedName(field);
 
-        name.insert(0, "set"); //NOI18N
+        name.insert(0, toPrefix("set")); //NOI18N
         return name.toString();
     }
 
     public static String computeGetterName(CsmField field) {
         StringBuilder name = getCapitalizedName(field);
         CsmType type = field.getType();
-        name.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        name.insert(0, toPrefix(getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get")); //NOI18N
         return name.toString();
+    }
+
+    private static String toPrefix(String str) {
+        StringBuilder pref = new StringBuilder(str);
+        boolean isUpperCase = true;
+        char first = pref.charAt(0);
+        if (isUpperCase) {
+            first = Character.toUpperCase(first);
+        } else {
+            first = Character.toLowerCase(first);
+        }
+        pref.setCharAt(0, first);
+        return pref.toString();
     }
 
     private static enum TypeKind {

@@ -39,8 +39,8 @@
 package org.netbeans.dlight.visualizers;
 
 import org.netbeans.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.support.TreeTableNode;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableNode;
 import java.awt.BorderLayout;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -58,12 +58,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.spi.dataprovider.support.TreeTableDataProvider;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizer.spi.VisualizerContainer;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.dlight.visualizers.ImageLoader;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableDataProvider;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.Model;

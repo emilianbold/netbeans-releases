@@ -40,7 +40,7 @@
 package org.netbeans.dlight.dtrace.collector.support;
 
 import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
 
 /**
  * This class merges several

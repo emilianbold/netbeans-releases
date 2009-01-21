@@ -41,28 +41,37 @@ package org.netbeans.dlight.visualizers.api;
 
 import org.netbeans.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.spi.dataprovider.support.TableDataModel;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataModel;
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 
+/**
+ * This configuration is used to be able to show data collected
+ * in Table View.
+ */
 public final  class TableVisualizerConfiguration implements VisualizerConfiguration {
   private DataTableMetadata metadata;
 
+  /**
+   * Creates new configuration to display meta table <code>metadata</code>
+   * @param metadata see {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/storage/api/DataTableMetadata.html}
+   */
   public TableVisualizerConfiguration(DataTableMetadata metadata) {
     this.metadata = metadata;
   }
 
-  public DataTableMetadata getMetadata() {
+
+  public final DataTableMetadata getMetadata() {
     return metadata;
   }
 
 
-  public DataModelScheme getSupportedDataScheme() {
+  public final DataModelScheme getSupportedDataScheme() {
     return TableDataModel.instance;
   }
 
-  public String getID() {
+  public final String getID() {
     return VisualizerConfigurationIDsProvider.TABLE_VISUALIZER;
   }
 

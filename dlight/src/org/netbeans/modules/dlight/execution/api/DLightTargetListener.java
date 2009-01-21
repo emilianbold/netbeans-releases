@@ -40,7 +40,7 @@
 package org.netbeans.modules.dlight.execution.api;
 
 /**
- * Listen for starting and finishing of {@link  org.netbeans.dlight.core.execution.model.DLightTarget}.
+ * Listen for starting and finishing of {@link  org.netbeans.modules.dlight.execution.api.DLightTarget}.
  */
 public interface DLightTargetListener {
   /**

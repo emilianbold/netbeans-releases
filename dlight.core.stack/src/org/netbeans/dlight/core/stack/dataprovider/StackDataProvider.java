@@ -39,10 +39,10 @@
 
 package org.netbeans.dlight.core.stack.dataprovider;
 
-import org.netbeans.modules.dlight.spi.dataprovider.support.TreeTableDataProvider;
 import java.util.List;
 import org.netbeans.dlight.core.stack.model.FunctionCall;
 import org.netbeans.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableDataProvider;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 

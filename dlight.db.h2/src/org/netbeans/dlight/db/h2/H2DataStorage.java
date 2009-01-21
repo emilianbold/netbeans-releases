@@ -56,10 +56,10 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.dlight.core.stack.model.FunctionCall;
 import org.netbeans.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.spi.storage.support.SQLDataStorage;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 
 public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 

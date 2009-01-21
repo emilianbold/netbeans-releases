@@ -15,7 +15,7 @@ import org.netbeans.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
@@ -28,7 +28,7 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class DLightCPUToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-  private static final boolean USE_DTRACE = true;//Boolean.getBoolean("gizmo.cpu.dtrace");
+  private static final boolean USE_DTRACE = Boolean.getBoolean("gizmo.cpu.dtrace");
 
   public DLightToolConfiguration create() {
     final String toolName = "CPU Monitor";

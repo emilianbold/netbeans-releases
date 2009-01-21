@@ -40,18 +40,18 @@ package org.netbeans.dlight.core.stack.dataprovider.impl;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.dlight.core.stack.dataprovider.StackDataModel;
 import org.netbeans.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.dlight.core.stack.model.FunctionCall;
 import org.netbeans.dlight.core.stack.model.FunctionMetric;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
-import org.netbeans.modules.dlight.spi.storage.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 
 /**
  * @author Alexey Vladykin
