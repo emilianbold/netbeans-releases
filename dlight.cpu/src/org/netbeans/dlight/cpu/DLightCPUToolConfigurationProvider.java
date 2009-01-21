@@ -54,9 +54,8 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
       functionsListMetaData = new DataTableMetadata("CallStack", Arrays.asList(cpuId, threadId, timestamp, stackId));
       String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/calls.d");
       DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(functionsListMetaData));
-      dtraceDataCollectorConfiguration.setOutputPrefix("cpu:");
       dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
-      toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration));
+      toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "cpu:"));
     } else {
       SunStudioDCConfiguration sunStudioConfiguration = new SunStudioDCConfiguration(Arrays.asList(SunStudioDCConfiguration.CollectedInfo.FUNCTIONS_LIST));
       toolConfiguration.addDataCollectorConfiguration(sunStudioConfiguration);

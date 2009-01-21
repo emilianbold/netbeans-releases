@@ -18,11 +18,12 @@ public final class MultipleDTDCConfiguration implements DataCollectorConfigurati
     static {
         MultipleDTDCConfigurationAccessor.setDefault(new MultipleDTDCConfigurationAccessorImpl());
     }
-
     private final DTDCConfiguration configuration;
+    private final String prefix;
 
-    public MultipleDTDCConfiguration(DTDCConfiguration configuration) {
+    public MultipleDTDCConfiguration(DTDCConfiguration configuration, String prefix) {
         this.configuration = configuration;
+        this.prefix = prefix;
     }
 
     public String getID() {
@@ -31,6 +32,10 @@ public final class MultipleDTDCConfiguration implements DataCollectorConfigurati
 
     /*package*/ DTDCConfiguration getDTDCConfiguration() {
         return configuration;
+    }
+
+    /*package*/ String getOutputPrefix() {
+        return prefix;
     }
 
     private static final class MultipleDTDCConfigurationAccessorImpl extends MultipleDTDCConfigurationAccessor {
@@ -43,6 +48,10 @@ public final class MultipleDTDCConfiguration implements DataCollectorConfigurati
         @Override
         public DTDCConfiguration getDTDCConfiguration(MultipleDTDCConfiguration configuration) {
             return configuration.getDTDCConfiguration();
+        }
+
+        public String getOutputPrefix(MultipleDTDCConfiguration configuration) {
+            return configuration.getOutputPrefix();
         }
     }
 }

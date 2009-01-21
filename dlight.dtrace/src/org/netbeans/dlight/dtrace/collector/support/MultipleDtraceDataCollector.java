@@ -58,7 +58,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     DtraceDataCollector slaveCollector = new DtraceDataCollector(
             MultipleDTDCConfigurationAccessor.getDefault().getDTDCConfiguration(configuration));
     slaveCollector.setSlave(true);
-    slaveCollectors.put(slaveCollector.getOutputPrefix(), slaveCollector);
+    slaveCollectors.put(MultipleDTDCConfigurationAccessor.getDefault().getOutputPrefix(configuration), slaveCollector);
   }
 
 //  @Override
@@ -106,12 +106,13 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
       BufferedWriter w = new BufferedWriter(new FileWriter(output));
       try {
         w.write("#!/usr/sbin/dtrace -Cs\n");
-        for (DtraceDataCollector ddc : slaveCollectors.values()) {
+        for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+          DtraceDataCollector ddc = entry.getValue();
           BufferedReader r = new BufferedReader(new FileReader(ddc.getLocalScriptPath()));
           try {
             for (String line = r.readLine(); line != null; line = r.readLine()) {
               if (!line.startsWith("#!")) {
-                w.write(line.replaceAll("(printf\\(\")", "$1" + ddc.getOutputPrefix()));
+                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey()));
                 w.write('\n');
               }
             }

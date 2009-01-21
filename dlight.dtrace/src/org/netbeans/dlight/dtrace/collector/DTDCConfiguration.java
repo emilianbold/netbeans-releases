@@ -61,7 +61,6 @@ public final class DTDCConfiguration implements DataCollectorConfiguration, Indi
   private List<String> requiredPrivileges;
   private boolean stackSupportEnabled = false;
   private int indicatorFiringFactor;
-  private String prefixString = null;
 
   static {
     DTDCConfigurationAccessor.setDefault(new DTDCConfigurationAccessorImpl());
@@ -99,14 +98,6 @@ public final class DTDCConfiguration implements DataCollectorConfiguration, Indi
 
   public void setIndicatorFiringFactor(int indicatorFiringFactor) {
     this.indicatorFiringFactor = indicatorFiringFactor;
-  }
-
-  public void setOutputPrefix(String prefix){
-    this.prefixString = prefix;
-  }
-
-  String getOutputPrefix(){
-    return prefixString;
   }
 
   /**
@@ -188,11 +179,6 @@ public final class DTDCConfiguration implements DataCollectorConfiguration, Indi
     @Override
     public boolean isStackSupportEnabled(DTDCConfiguration conf) {
       return conf.isStackSupportEnabled();
-    }
-
-    @Override
-    public String getOutputPrefix(DTDCConfiguration conf) {
-      return conf.getOutputPrefix();
     }
 
     @Override

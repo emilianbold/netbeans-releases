@@ -38,8 +38,6 @@
  */
 package org.netbeans.dlight.sync;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -91,8 +89,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
     dataCollectorConfiguration.setStackSupportEnabled(true);
     dataCollectorConfiguration.setIndicatorFiringFactor(1);
-    dataCollectorConfiguration.setOutputPrefix("sync:");
-    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration);
+    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "sync:");
     toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
     toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 

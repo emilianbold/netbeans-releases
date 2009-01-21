@@ -63,10 +63,10 @@ public class H2DataStorageTest {
 
     @Test
     public void testSimple() {
-        db.putStack(Arrays.<CharSequence>asList("func1"), 0, 0, 10l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2"), 0, 0, 20l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 0, 0, 30l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 0, 0, 40l, 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1", "func2"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 10l);
         db.flush();
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
@@ -99,10 +99,10 @@ public class H2DataStorageTest {
 
     @Test
     public void testCallersCallees() {
-        db.putStack(Arrays.<CharSequence>asList("func1", "func1"), 0, 0, 10l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func2", "func1"), 0, 0, 20l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 0, 0, 30l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("func3", "func2", "func1"), 0, 0, 40l, 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1", "func1"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func2", "func1"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("func3", "func2", "func1"), 10l);
         db.flush();
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
@@ -147,11 +147,11 @@ public class H2DataStorageTest {
 
     @Test
     public void testDeepCallers() {
-        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "c", "x"), 0, 0, 10l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "x"), 0, 0, 20l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c"), 0, 0, 30l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 0, 0, 40l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("x", "b", "c"), 0, 0, 50l, 10l);
+        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "c", "x"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("x", "a", "b", "x"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("a", "b", "c"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("x", "b", "c"), 10l);
         db.flush();
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
@@ -182,12 +182,12 @@ public class H2DataStorageTest {
 
     @Test
     public void testDeepCallees() {
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "e"), 0, 0, 1l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "f"), 0, 0, 2l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "e"), 0, 0, 3l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "f"), 0, 0, 4l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("c", "d", "e"), 0, 0, 5l, 10l);
-        db.putStack(Arrays.<CharSequence>asList("c", "d", "f"), 0, 0, 6l, 10l);
+        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "e"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("a", "b", "c", "d", "f"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "e"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "f"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("c", "d", "e"), 10l);
+        db.putStack(Arrays.<CharSequence>asList("c", "d", "f"), 10l);
         db.flush();
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);

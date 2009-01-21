@@ -141,15 +141,10 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration) == null ? ultimateDTracePrivilegesList : DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration);
         this.configuration = configuration;
         this.indicatorFiringFactor = DTDCConfigurationAccessor.getDefault().getIndicatorFiringFactor(configuration);
-        this.prefix = DTDCConfigurationAccessor.getDefault().getOutputPrefix(configuration);
     }
 
     void setProcessLineCallback(ProcessLineCallback callback) {
         this.callback = callback;
-    }
-
-    String getOutputPrefix() {
-        return prefix;
     }
 
     void setSlave(boolean isSlave) {

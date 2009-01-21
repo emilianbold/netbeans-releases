@@ -84,9 +84,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(dbTableMetadata));
     dataCollectorConfiguration.setStackSupportEnabled(true);
     dataCollectorConfiguration.setIndicatorFiringFactor(1);
-    dataCollectorConfiguration.setOutputPrefix("mem:");
    // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration);
+    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
     toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
     toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 

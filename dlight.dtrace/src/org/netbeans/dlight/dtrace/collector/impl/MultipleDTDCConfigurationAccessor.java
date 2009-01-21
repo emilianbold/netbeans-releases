@@ -40,5 +40,6 @@ private static volatile MultipleDTDCConfigurationAccessor DEFAULT;
 
   public abstract String getID();
   public abstract DTDCConfiguration getDTDCConfiguration(MultipleDTDCConfiguration configuration);
+  public abstract String getOutputPrefix(MultipleDTDCConfiguration configuration);
 
 }
