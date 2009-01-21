@@ -42,6 +42,7 @@
 package org.netbeans.api.extexecution.input;
 
 import java.io.Closeable;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Processes the lines fetched by {@link InputReader} usually with help
@@ -61,7 +62,7 @@ public interface LineProcessor extends Closeable {
      *
      * @param line the line to process
      */
-    void processLine(String line);
+    void processLine(@NonNull String line);
 
     /**
      * Notifies the processor that it should reset its state.
