@@ -62,7 +62,7 @@ public class RemotePathMap implements PathMap {
 
     private final static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
 
-    public static RemotePathMap getMapper(String hkey) {
+    public static RemotePathMap getRemotePathMapInstance(String hkey) {
         RemotePathMap pathmap = pmtable.get(hkey);
 
         if (pathmap == null) {
@@ -75,7 +75,7 @@ public class RemotePathMap implements PathMap {
     }
 
     public static boolean isReady(String hkey) {
-            return pmtable.get(hkey) != null;
+        return pmtable.get(hkey) != null;
     }
 
     //
@@ -286,5 +286,32 @@ public class RemotePathMap implements PathMap {
             }
         }
         return false;
+    }
+
+    //debug variables
+    public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
+    public static final String REMOTE_BASE_PATH = "NetBeansProjects/remote"; //NOI18N
+
+    public static PathMap getPathMap(String hkey) {
+        return useRsync ? rsyncMapper : getRemotePathMapInstance(hkey);
+    }
+
+    private static PathMap rsyncMapper = new RsyncPathMap();
+
+    private static class RsyncPathMap implements PathMap {
+
+        public boolean isRemote(String path, boolean fixMissingPath) {
+            return true;
+        }
+
+        public String getLocalPath(String rpath) {
+            return rpath;
+        }
+
+        public String getRemotePath(String lpath) {
+            String name = lpath.substring(lpath.lastIndexOf("\\")+1);
+            return REMOTE_BASE_PATH + "/" + name;
+        }
+
     }
 }
