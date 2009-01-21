@@ -368,12 +368,20 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        
-        if (projectNameTextField.getText().length() == 0) {
+
+        String projName = projectNameTextField.getText();
+        if (projName.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG,
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_is_not_valid"));
             return false; // Display name not specified
         }
+
+        if(projName.indexOf(File.separatorChar) != -1) {
+            wizardDescriptor.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_has_slash"));
+            return false;
+        }
+
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path");
@@ -405,21 +413,37 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
             return false;
         }
-        if (txtArtifactId.getText().trim().length() == 0) {
+
+        String coord = txtArtifactId.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Require_artifactId"));
             return false;
         }
-        if (txtGroupId.getText().trim().length() == 0) {
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
+        coord = txtGroupId.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_groupId"));
             return false;
         }
-        if (txtVersion.getText().trim().length() == 0) {
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
+        coord = txtVersion.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_version"));
             return false;
         }
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
     }
