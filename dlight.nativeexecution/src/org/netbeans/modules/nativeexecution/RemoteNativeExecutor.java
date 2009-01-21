@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeExecutor;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
@@ -45,11 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import org.netbeans.modules.nativeexecution.util.Logger;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-class RemoteNativeExecutor extends NativeExecutor {
+public final class RemoteNativeExecutor extends NativeExecutor {
 
     private ChannelExec channel;
     private ExecutionEnvironment execEnv;
@@ -63,7 +67,7 @@ class RemoteNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    int doInvoke() throws Exception {
+    protected int doInvoke() throws Exception {
         final Session session = ConnectionManager.getInstance().getConnectionSession(execEnv);
 
         if (session == null) {
@@ -119,17 +123,17 @@ class RemoteNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    InputStream getTaskInputStream() throws IOException {
+    protected InputStream getTaskInputStream() throws IOException {
         return out;
     }
 
     @Override
-    InputStream getTaskErrorStream() throws IOException {
+    protected InputStream getTaskErrorStream() throws IOException {
         return err;
     }
 
     @Override
-    OutputStream getTaskOutputStream() throws IOException {
+    protected OutputStream getTaskOutputStream() throws IOException {
         return in;
     }
 
@@ -138,7 +142,7 @@ class RemoteNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    synchronized Integer get() {
+    protected synchronized Integer get() {
         while (!channel.isClosed()) {
             try {
                 Thread.sleep(200);

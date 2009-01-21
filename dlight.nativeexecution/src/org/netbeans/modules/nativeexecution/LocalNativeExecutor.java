@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeExecutor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openide.util.Exceptions;
 
-final class LocalNativeExecutor extends NativeExecutor {
+public final class LocalNativeExecutor extends NativeExecutor {
 
     private final Integer TIMEOUT_TO_USE =
             Integer.valueOf(System.getProperty("dlight.localnativeexecutor.timeout", "3")); // NOI18N
@@ -126,7 +129,7 @@ final class LocalNativeExecutor extends NativeExecutor {
         boolean isUnix = false;
 
         try {
-            isUnix = HostInfo.isUnix(task.getExecEnv());
+            isUnix = task.getExecEnv().isUnix();
         } catch (HostNotConnectedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -184,7 +187,7 @@ final class LocalNativeExecutor extends NativeExecutor {
         return true;
     }
 
-    public int doInvoke() throws Exception {
+    protected int doInvoke() throws Exception {
         int pid = -1;
 
         synchronized (rt) {
@@ -235,20 +238,20 @@ final class LocalNativeExecutor extends NativeExecutor {
         return pid;
     }
 
-    public InputStream getTaskInputStream() throws IOException {
+    protected InputStream getTaskInputStream() throws IOException {
         return processOutput;
     }
 
-    public InputStream getTaskErrorStream() throws IOException {
+    protected InputStream getTaskErrorStream() throws IOException {
         return processError;
     }
 
-    public OutputStream getTaskOutputStream() throws IOException {
+    protected OutputStream getTaskOutputStream() throws IOException {
         return processInput;
     }
 
     @Override
-    synchronized Integer get() {
+    protected synchronized Integer get() {
         try {
             process.waitFor();
         } catch (InterruptedException ex) {

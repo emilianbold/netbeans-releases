@@ -36,8 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api;
 
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
@@ -197,7 +199,7 @@ public class NativeTask implements Future<Integer>, Runnable {
         showProgress = b;
     }
 
-    final NativeExecutor getExecutor() {
+    final protected NativeExecutor getExecutor() {
         return executor;
     }
 

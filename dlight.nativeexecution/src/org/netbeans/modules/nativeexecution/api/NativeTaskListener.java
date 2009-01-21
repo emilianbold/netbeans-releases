@@ -36,13 +36,48 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api;
+
+import java.util.concurrent.CancellationException;
 
 /**
- * This exception is thrown to indicate that no ssh connection with a host has
- * been established prior to an attempt to execute NativeTask on it.
- * 
+ * The listener interface for receiving task's execution state shanges events.
  * @author ak119685
  */
-public final class HostNotConnectedException extends Throwable {
+public interface NativeTaskListener {
+
+    /**
+     * Invoked when <tt>NativeTask</tt> started.
+     * Task is considered to be started if and only if it has been submitted,
+     * native process has been crreated and PID of this process has been
+     * obtained.
+     *
+     * @param task task that started
+     */
+    public void taskStarted(NativeTask task);
+
+    /**
+     * Invoked when <tt>NativeTask</tt> finished.
+     * Task is considered to be finished if underlaying system process exited
+     * normally.
+     *
+     * @param task task that finished
+     * @param result exit code of the underlaying system process
+     */
+    public void taskFinished(NativeTask task, Integer result);
+
+    /**
+     * Invoked when <tt>NativeTask</tt> cancelled.
+     *
+     * @param task task that was cancelled
+     * @param cex <tt>CancellationException</tt> that causes cancellation.
+     */
+    public void taskCancelled(NativeTask task, CancellationException cex);
+
+    /**
+     * Invoked when some exception occured during <tt>NativeTask</tt> execution.
+     * @param task task that failed due to error
+     * @param t causing <tt>Throwable</tt>
+     */
+    public void taskError(NativeTask task, Throwable t);
 }

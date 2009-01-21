@@ -48,13 +48,25 @@ import java.util.concurrent.Future;
  * Currently it just uses Executors.newCachedThreadPool() as a thread
  * pool for tasks execution threads.
  */
-class NativeTaskExecutorService {
+public class NativeTaskExecutorService {
 
     private static ExecutorService executorService = Executors.newCachedThreadPool();
+
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                executorService.shutdown();
+            }
+        });
+    }
 
     public static <T> Future<T> submit(Callable<T> task) {
         return executorService.submit(task);
     }
+
     public static void submit(Runnable task) {
         executorService.submit(task);
     }

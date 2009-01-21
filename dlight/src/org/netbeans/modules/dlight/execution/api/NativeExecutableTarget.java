@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.NativeTaskListener;
-import org.netbeans.modules.nativeexecution.NativeTask;
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Wrapper of {@link org.netbeans.modules.nativeexecution.NativeTask}
