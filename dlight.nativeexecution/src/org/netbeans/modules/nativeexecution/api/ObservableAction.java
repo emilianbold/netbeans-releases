@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;

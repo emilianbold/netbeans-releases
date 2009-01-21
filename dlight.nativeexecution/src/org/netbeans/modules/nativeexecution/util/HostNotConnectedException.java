@@ -36,37 +36,13 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.nativeexecution;
-
-import javax.swing.Action;
+package org.netbeans.modules.nativeexecution.util;
 
 /**
- * The listener interface for receiving ObservableAction's start/completion
- * events. The class that is interested in processing an action event implements
- * this interface, and the object created with that class is registered with a
- * component, using the component's addActionListener method
- * <tt>addObservableActionListener</tt>. When the action starts, that object's
- * <tt>actionStarted</tt> method is invoked. On action completion
- * <tt>actionCompleted</tt> is invoked.
+ * This exception is thrown to indicate that no ssh connection with a host has
+ * been established prior to an attempt to execute NativeTask on it.
  * 
- * @param <T> type of action's result.
- *
  * @author ak119685
  */
-
-public interface ObservableActionListener<T> {
-
-    /**
-     * Notifies listeners that action started.
-     * @param source the Action that has been started.
-     */
-    public void actionStarted(Action source);
-
-    /**
-     * Notifies listeners that action completed.
-     * @param source the Action that has been completed.
-     * @param result result of the action.
-     */
-    public void actionCompleted(Action source, T result);
+public final class HostNotConnectedException extends Throwable {
 }

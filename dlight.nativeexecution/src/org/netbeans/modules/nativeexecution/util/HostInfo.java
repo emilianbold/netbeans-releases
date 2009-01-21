@@ -1,5 +1,7 @@
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.util;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -226,7 +228,7 @@ public final class HostInfo {
         return platformPath;
     }
 
-    static boolean isUnix(ExecutionEnvironment execEnv) throws HostNotConnectedException {
+    public static final boolean isUnix(ExecutionEnvironment execEnv) throws HostNotConnectedException {
         String os = getOS(execEnv);
         return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
     }

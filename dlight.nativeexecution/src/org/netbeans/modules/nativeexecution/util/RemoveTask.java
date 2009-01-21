@@ -38,12 +38,66 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-public class Logger {
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.io.File;
+import java.util.concurrent.ExecutionException;
+import org.openide.util.Exceptions;
 
-    private static java.util.logging.Logger instance =
-            java.util.logging.Logger.getLogger("nativeexecution.support.logger");
+/**
+ *
+ * @author ak119685
+ */
+public class RemoveTask {
 
-    public static java.util.logging.Logger getInstance() {
-        return instance;
+    private RemoveTask() {
+    }
+
+    /**
+     * Removes directory an it's content
+     * @param execEnv <tt>ExecutionEnvironment</tt> where to delete directory
+     * @param dir directory to remove
+     * @param force whether delete directory's content or not
+     * @return true on successfull removal
+     */
+    public static boolean removeDirectory(ExecutionEnvironment execEnv, String dir, boolean force) {
+        if (execEnv.isLocal()) {
+            return deleteLocalDirectory(new File(dir));
+        }
+
+        String flags = "-r"; // NOI18N
+
+        if (force) {
+            flags = flags.concat("f"); // NOI18N
+        }
+
+        NativeTask ddt = new NativeTask(execEnv, "/bin/rm", new String[]{flags, dir});
+        ddt.submit();
+
+        Integer result = -1;
+        
+        try {
+            result = ddt.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result == 0;
+    }
+
+    private static boolean deleteLocalDirectory(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteLocalDirectory(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return (path.delete());
     }
 }
