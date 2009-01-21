@@ -56,51 +56,50 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-  public MemoryToolConfigurationProvider() {
-  
-  }
+    public MemoryToolConfigurationProvider() {
+    }
 
-  public DLightToolConfiguration create() {
-    final String toolName = "Memory Tool";
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-    Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-    Column timeColumn = new Column("kind", Integer.class, "Kind", null);
-    Column sizeColumn = new Column("size", Integer.class, "Size", null);
-    Column addressColumn = new Column("address", Integer.class, "Address", null);
-    Column totalColumn = new Column("total", Integer.class, "Heap size", null);
-    Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
+    public DLightToolConfiguration create() {
+        final String toolName = "Memory Tool";
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+        Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
+        Column timeColumn = new Column("kind", Integer.class, "Kind", null);
+        Column sizeColumn = new Column("size", Integer.class, "Size", null);
+        Column addressColumn = new Column("address", Integer.class, "Address", null);
+        Column totalColumn = new Column("total", Integer.class, "Heap size", null);
+        Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
-    List<Column> columns = Arrays.asList(
-            timestampColumn,
-            timeColumn,
-            sizeColumn,
-            addressColumn,
-            totalColumn,
-            stackColumn);
+        List<Column> columns = Arrays.asList(
+                timestampColumn,
+                timeColumn,
+                sizeColumn,
+                addressColumn,
+                totalColumn,
+                stackColumn);
 
-    String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
+        String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
 
-    final DataTableMetadata dbTableMetadata = new DataTableMetadata("mem", columns);
-    DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(dbTableMetadata));
-    dataCollectorConfiguration.setStackSupportEnabled(true);
-    dataCollectorConfiguration.setIndicatorFiringFactor(1);
-   // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-    MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
-    toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-    toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
+        final DataTableMetadata dbTableMetadata = new DataTableMetadata("mem", columns);
+        DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(dbTableMetadata));
+        dataCollectorConfiguration.setStackSupportEnabled(true);
+        dataCollectorConfiguration.setIndicatorFiringFactor(1);
+        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
+        MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
+        toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
+        toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 
-    List<Column> indicatorColumns = Arrays.asList(
-            totalColumn);
-    IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
+        List<Column> indicatorColumns = Arrays.asList(
+                totalColumn);
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
 //        HashMap<String, Object> configuration = new HashMap<String, Object>();
 //        configuration.put("aggregation", "avrg");
 //        BarIndicator indicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
-    MemoryIndicator indicator = new MemoryIndicator(indicatorMetadata, "total");
+        MemoryIndicator indicator = new MemoryIndicator(indicatorMetadata, "total");
 
-    toolConfiguration.addIndicator(indicator);
-    indicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dbTableMetadata));
-   
-    return toolConfiguration;
-  }
+        toolConfiguration.addIndicator(indicator);
+        indicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dbTableMetadata));
+
+        return toolConfiguration;
+    }
 }
