@@ -67,8 +67,8 @@ import org.openide.util.Exceptions;
 /**
  * D-Light Tool is a set of registered collector used to collect data,
  * set of indicators to display in Indicators Panel when tool is running
- * You should implement interface {@link org.netbeans.dlight.core.model.DLightToolConfigurationProvider}
- * which should create new instance of {@link org.netbeans.dlight.core.model.DLightTool.Configuration}
+ * You should implement interface {@link org.netbeans.modules.dlight.core.model.DLightToolConfigurationProvider}
+ * which should create new instance of {@link org.netbeans.modules.dlight.core.model.DLightTool.Configuration}
  * object each time create() method is invoked and register it in D-Light filesystem
  */
 public final class DLightTool implements Validateable<DLightTarget> {

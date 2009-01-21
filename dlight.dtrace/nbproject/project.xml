@@ -54,7 +54,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.dlight.dtrace.collector</package>
+                <package>org.netbeans.modules.dlight.dtrace.collector</package>
             </public-packages>
         </data>
     </configuration>

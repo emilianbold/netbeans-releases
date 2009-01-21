@@ -49,11 +49,11 @@ import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
- * Provided information for {@link org.netbeans.dlight.core.indicator.model.Indicator}.
+ * Provided information for {@link org.netbeans.modules.dlight.core.indicator.model.Indicator}.
  * As indicators are supposed to be small and really fast real time UI,
  * data provider for indicators doesn't have to place any data to storage it
  * can use {@link #notifyIndicators(java.util.List)} method with newly real-time data
- * to notify all indicators subscribed to it using {@link #subscribe(org.netbeans.dlight.core.indicator.model.Indicator) }
+ * to notify all indicators subscribed to it using {@link #subscribe(org.netbeans.modules.dlight.core.indicator.model.Indicator) }
  */
 public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener {
 
@@ -131,9 +131,9 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
   }
 
   /**
-   * Returns the list of {@link org.netbeans.dlight.core.storage.model.DataTableMetadata}
+   * Returns the list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
    * this data provider can return information about
-   * @return list of {@link org.netbeans.dlight.core.storage.model.DataTableMetadata}
+   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
    * this data provider can return information about
    */
   public abstract List<? extends DataTableMetadata> getDataTablesMetadata();
