@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.openide.util.Exceptions;
 
 /**

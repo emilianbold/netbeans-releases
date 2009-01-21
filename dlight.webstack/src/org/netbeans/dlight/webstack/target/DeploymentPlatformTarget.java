@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Runs script in background which will look for apache installation and

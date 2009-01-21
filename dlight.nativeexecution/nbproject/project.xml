@@ -70,7 +70,8 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.nativeexecution</package>
+                <package>org.netbeans.modules.nativeexecution.api</package>
+                <package>org.netbeans.modules.nativeexecution.util</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-20081111.jar</runtime-relative-path>

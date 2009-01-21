@@ -71,12 +71,12 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.nativeexecution.ConnectionManager;
-import org.netbeans.modules.nativeexecution.HostInfo;
-import org.netbeans.modules.nativeexecution.HostNotConnectedException;
-import org.netbeans.modules.nativeexecution.NativeTask;
-import org.netbeans.modules.nativeexecution.ObservableAction;
-import org.netbeans.modules.nativeexecution.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.openide.util.NbBundle;
 
 /**
