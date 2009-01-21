@@ -151,7 +151,7 @@ abstract class Lookup implements ContextProvider {
             if (l2 instanceof Compound) ((Compound) l2).setContext (context);
             if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
         }
-        
+
         private class CompoundLookupList<T> extends LookupList<T> implements Customizer,
                                                                        PropertyChangeListener {
             
@@ -271,11 +271,15 @@ abstract class Lookup implements ContextProvider {
             }
         }
     
-        private Result<?> listLookup(String folder, Class<?> service) {
+        private org.openide.util.Lookup lookupForPath(String folder) {
             String pathResourceName = "Debugger/" +
                 ((rootFolder == null) ? "" : rootFolder + "/") +
                 ((folder == null) ? "" : folder + "/");
-            return Lookups.forPath(pathResourceName).lookupResult(service);
+            return Lookups.forPath(pathResourceName);
+        }
+
+        private <T> Result<T> listLookup(String folder, Class<T> service) {
+            return lookupForPath(folder).lookupResult(service);
         }
 
         private static Set<String> getHiddenClassNames(List l) {
@@ -460,7 +464,7 @@ abstract class Lookup implements ContextProvider {
             }
             pcs.firePropertyChange("PROP_CACHE", null, null); // NOI18N
         }
-        
+
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
@@ -597,11 +601,11 @@ abstract class Lookup implements ContextProvider {
                 this.folder = folder;
             }
             
-            private MetaInfLookupList(List<String> l, Result<?> lr, Class<T> service) {
+            private MetaInfLookupList(List<String> l, Result<T> lr, Class<T> service) {
                 this(l, lr, getHiddenClassNames(l), service);
             }
             
-            private MetaInfLookupList(List<String> l, Result<?> lr, Set<String> s, Class<T> service) {
+            private MetaInfLookupList(List<String> l, Result<T> lr, Set<String> s, Class<T> service) {
                 super(s);
                 assert service != null;
                 this.service = service;
@@ -609,13 +613,13 @@ abstract class Lookup implements ContextProvider {
                 listenOnDisabledModules();
             }
             
-            private void fillInstances(List<String> l, Result<?> lr, Set<String> s) {
+            private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
                 for (String className : l) {
                     if (className.endsWith(HIDDEN)) continue;
                     if (s != null && s.contains (className)) continue;
                     fillClassInstance(className);
                 }
-                for (Item<? extends Object> li : lr.allItems()) {
+                for (Item<T> li : lr.allItems()) {
                     add(new LazyInstance<T>(service, li));
                 }
                 /*
@@ -737,14 +741,14 @@ abstract class Lookup implements ContextProvider {
 
                 private String className;
                 private Class<T> service;
-                Item<? extends Object> lookupItem;
+                Item<T> lookupItem;
 
                 public LazyInstance(Class<T> service, String className) {
                     this.service = service;
                     this.className = className;
                 }
 
-                public LazyInstance(Class<T> service, Item<? extends Object> lookupItem) {
+                public LazyInstance(Class<T> service, Item<T> lookupItem) {
                     this.service = service;
                     this.lookupItem = lookupItem;
                 }
@@ -890,5 +894,5 @@ abstract class Lookup implements ContextProvider {
         }
         
     }
-    
+
 }
