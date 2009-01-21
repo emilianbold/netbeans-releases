@@ -249,13 +249,18 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                try {
-                    dataDisplayer.setPage(getLoadingPageURL(url));
-                    LOG.fine("Loading: " + url);        //NOI18N
-                    URL localData = uploadURL(url);
-                    dataDisplayer.setPage(localData);
-                } catch (IOException ex) {
-                    handleIOException(url, ex);
+                if (EventQueue.isDispatchThread()){
+                    ReporterResultTopComponent.this.requestVisible();
+                }else{
+                    try {
+                        dataDisplayer.setPage(getLoadingPageURL(url));
+                        LOG.fine("Loading: " + url);        //NOI18N
+                        URL localData = uploadURL(url);
+                        dataDisplayer.setPage(localData);
+                        EventQueue.invokeLater(this);
+                    } catch (IOException ex) {
+                        handleIOException(url, ex);
+                    }
                 }
             }
         });
