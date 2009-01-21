@@ -295,30 +295,30 @@ public class AstUtilities {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
+                    Parser.Result result = resultIterator.getParserResult();
                     if (foreignInfoHolder != null) {
                         assert foreignInfoHolder.length == 1;
-                        foreignInfoHolder[0] = resultIterator.getParserResult();
+                        foreignInfoHolder[0] = result;
+                    }
 
-                        Node root = AstUtilities.getRoot(foreignInfoHolder[0]);
+                    Node root = AstUtilities.getRoot(result);
+                    if (root != null) {
+                        String signature = elem.getSignature();
 
-                        if (root != null) {
-                            String signature = elem.getSignature();
+                        if (signature != null) {
+                            Node node = AstUtilities.findBySignature(root, signature);
 
-                            if (signature != null) {
-                                Node node = AstUtilities.findBySignature(root, signature);
-
-                                // Special handling for "new" - these are synthesized from "initialize" methods
-                                if ((node == null) && "new".equals(elem.getName())) { // NOI18N
-                                    if (signature.indexOf("#new") != -1) {
-                                        signature = signature.replaceFirst("#new", "#initialize"); //NOI18N
+                            // Special handling for "new" - these are synthesized from "initialize" methods
+                            if ((node == null) && "new".equals(elem.getName())) { // NOI18N
+                                if (signature.indexOf("#new") != -1) {
+                                    signature = signature.replaceFirst("#new", "#initialize"); //NOI18N
                                     } else {
-                                        signature = signature.replaceFirst("new", "initialize"); //NOI18N
+                                    signature = signature.replaceFirst("new", "initialize"); //NOI18N
                                     }
-                                    node = AstUtilities.findBySignature(root, signature);
-                                }
-
-                                nodeHolder[0] = node;
+                                node = AstUtilities.findBySignature(root, signature);
                             }
+
+                            nodeHolder[0] = node;
                         }
                     }
                 }

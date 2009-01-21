@@ -290,7 +290,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "ruby"; // NOI18N
-        public static final int VERSION = 8;
+        public static final int VERSION = 9;
         
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
@@ -1549,7 +1549,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
 
             // Index for require-completion
-            String relative = FileUtil.toFile(file).getParent();
+            String relative = indexable.getRelativePath();
 
             if (relative != null) {
                 if (relative.endsWith(".rb")) { // NOI18N
