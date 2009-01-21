@@ -49,21 +49,22 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreator;
-import org.openide.awt.DynamicMenuContent;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -72,77 +73,37 @@ import org.w3c.dom.Element;
 /**
  * Submenu action to create a job on this server from one of the open projects.
  */
-public class CreateJob extends AbstractAction implements Presenter.Popup {
+public class CreateJob extends AbstractAction {
 
     private final HudsonInstanceImpl instance;
 
     public CreateJob(HudsonInstanceImpl instance) {
+        super("Create Job..."); // XXX I18N
         this.instance = instance;
     }
 
     public void actionPerformed(ActionEvent e) {
-        assert false;
-    }
-
-    public JMenuItem getPopupPresenter() {
-        return new PopupMenu();
-    }
-
-    private class PopupMenu extends JMenu implements DynamicMenuContent {
-
-        public JComponent[] getMenuPresenters() {
-            removeAll();
-            boolean found = false;
-            PROJECT: for (final Project p : OpenProjects.getDefault().getOpenProjects()) {
-                // XXX skip projects which already have corresponding projects
-                JMenuItem item = new JMenuItem(ProjectUtils.getInformation(p).getDisplayName());
-                add(item);
-                for (final ProjectHudsonJobCreator creator : Lookup.getDefault().lookupAll(ProjectHudsonJobCreator.class)) {
-                    if (creator.canHandle(p)) {
-                        item.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                    public void run() {
-                                        createJob(creator, p);
-                                    }
-                                });
-                            }
-                        });
-                        found = true;
-                        continue PROJECT;
-                    }
-                }
-                item.setEnabled(false);
-            }
-            setEnabled(found);
-            setText(found ? "Create Job from" : "Create Job");
-            return new JComponent[] {this};
-        }
-
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return getMenuPresenters();
-        }
-
-    }
-
-    private void createJob(ProjectHudsonJobCreator creator, Project p) {
-        String name = creator.jobName(p);
         Set<String> takenNames = new HashSet<String>();
         for (HudsonJob job : instance.getJobs()) {
             takenNames.add(job.getName());
         }
-        if (takenNames.contains(name)) {
-            for (int i = 2; ; i++) {
-                String _name = name + "_" + i; // NOI18N
-                if (!takenNames.contains(_name)) {
-                    name = _name;
-                    break;
+        final CreateJobPanel panel = new CreateJobPanel();
+        DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
+        panel.init(takenNames, dd);
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result == NotifyDescriptor.OK_OPTION) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    finalizeJob(panel.creator, panel.name());
                 }
-            }
+            });
         }
+    }
+
+    private void finalizeJob(ProjectHudsonJobCreator creator, String name) {
         Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         try {
-            creator.configure(p, doc);
+            creator.configure(doc);
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
             HttpURLConnection conn = (HttpURLConnection) new URL(createItemURL).openConnection();
             conn.setDoOutput(true);
@@ -159,8 +120,7 @@ public class CreateJob extends AbstractAction implements Presenter.Popup {
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new IOException("Server rejected creation of job " + name + " with response code " + responseCode); // NOI18N
             }
-            URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" +
-                    URLEncoder.encode(name, "UTF-8") + "/configure")); // NOI18N
+            URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + URLEncoder.encode(name, "UTF-8") + "/")); // NOI18N
             instance.synchronize();
             // XXX remember that the new job corresponds to this project (see ProjectHudsonProvider)
         } catch (IOException x) {
@@ -168,27 +128,50 @@ public class CreateJob extends AbstractAction implements Presenter.Popup {
         }
     }
 
-    @ServiceProvider(service=ProjectHudsonJobCreator.class)
-    public static class DummyJobCreator implements ProjectHudsonJobCreator {
-        public boolean canHandle(Project project) {
-            return true;
-        }
-        public String jobName(Project project) {
-            return ProjectUtils.getInformation(project).getName();
-        }
-        public void configure(Project project, Document configXml) throws IOException {
-            configXml.getDocumentElement().
-                    appendChild(configXml.createElement("builders")).
-                    appendChild(configXml.createElement("hudson.tasks.Shell")).
-                    appendChild(configXml.createElement("command")).
-                    appendChild(configXml.createTextNode("echo 'XXX not yet implemented! Just for testing.'"));
-            for (String dummy : new String[] {"actions", "publishers", "buildWrappers"}) {
-                configXml.getDocumentElement().
-                        appendChild(configXml.createElement(dummy));
-            }
-            ((Element) configXml.getDocumentElement().
-                    appendChild(configXml.createElement("scm"))).
-                    setAttribute("class", "hudson.scm.NullSCM");
+    @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class)
+    public static class DummyJobCreator implements ProjectHudsonJobCreatorFactory {
+        public ProjectHudsonJobCreator forProject(final Project project) {
+            return new ProjectHudsonJobCreator() {
+                public String jobName() {
+                    return ProjectUtils.getInformation(project).getName();
+                }
+                private boolean valid = false;
+                private final ChangeSupport cs = new ChangeSupport(this);
+                public JComponent customizer() {
+                    final JCheckBox checkbox = new JCheckBox("<XXX just for testing>");
+                    checkbox.setSelected(false);
+                    checkbox.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            valid = checkbox.isSelected();
+                            cs.fireChange();
+                        }
+                    });
+                    return checkbox;
+                }
+                public String error() {
+                    return valid ? null : "Check the checkbox!";
+                }
+                public void addChangeListener(ChangeListener listener) {
+                    cs.addChangeListener(listener);
+                }
+                public void removeChangeListener(ChangeListener listener) {
+                    cs.removeChangeListener(listener);
+                }
+                public void configure(Document configXml) throws IOException {
+                    configXml.getDocumentElement().
+                            appendChild(configXml.createElement("builders")).
+                            appendChild(configXml.createElement("hudson.tasks.Shell")).
+                            appendChild(configXml.createElement("command")).
+                            appendChild(configXml.createTextNode("echo 'XXX not yet implemented! Just for testing.'"));
+                    for (String dummy : new String[] {"actions", "publishers", "buildWrappers"}) {
+                        configXml.getDocumentElement().
+                                appendChild(configXml.createElement(dummy));
+                    }
+                    ((Element) configXml.getDocumentElement().
+                            appendChild(configXml.createElement("scm"))).
+                            setAttribute("class", "hudson.scm.NullSCM");
+                }
+            };
         }
     }
 
