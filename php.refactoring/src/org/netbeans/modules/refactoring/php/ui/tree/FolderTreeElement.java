@@ -42,14 +42,15 @@
 package org.netbeans.modules.refactoring.php.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.napi.gsfret.source.UiUtils;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,7 +93,7 @@ public class FolderTreeElement implements TreeElement {
     }
 
     public String getText(boolean isLogical) {
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath cp = ClassPath.getClassPath(fo, PhpSourcePath.SOURCE_CP);
         if (cp==null) {
             return fo.getPath();
         } else {

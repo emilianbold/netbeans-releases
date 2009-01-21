@@ -45,11 +45,11 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
