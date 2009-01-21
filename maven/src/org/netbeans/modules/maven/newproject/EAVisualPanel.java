@@ -214,8 +214,8 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
     private void fillTextFields(WizardDescriptor wiz) {
         String artifId = (String)wiz.getProperty("artifactId");
         tfEar.setText(artifId + "-ear");
-        tfWeb.setText(artifId + "-ejb");
-        tfEjb.setText(artifId + "-web");
+        tfWeb.setText(artifId + "-web");
+        tfEjb.setText(artifId + "-ejb");
     }
 
     /** This method is called from within the constructor to
