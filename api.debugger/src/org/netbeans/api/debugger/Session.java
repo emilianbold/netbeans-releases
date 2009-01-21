@@ -362,9 +362,11 @@ public final class Session implements ContextProvider {
             oldL = languages;
             languages = newLanguages;
             engines = newEngines;
-            Lookup newCompoundLookup = new Lookup.Compound(lookup, engine.getLookup());
-            lookup = newCompoundLookup;
-            enginesLookups.put(engine, engine.getLookup());
+            if (!enginesLookups.containsKey(engine)) {
+                Lookup newCompoundLookup = new Lookup.Compound(lookup, engine.getLookup());
+                lookup = newCompoundLookup;
+                enginesLookups.put(engine, engine.getLookup());
+            }
             if (currentLanguage == null) {
                 currentLanguage = language;
                 currentDebuggerEngine = engine;
@@ -396,15 +398,26 @@ public final class Session implements ContextProvider {
         synchronized (this) {
             if (engines.length == 0) return;
             int i, k = engines.length;
-            newL = new String[k - 1];
-            DebuggerEngine[] newE = new DebuggerEngine[k - 1];
+            // The engine can be in the array multiple times
+            int t = 0; // It's there 't' times.
+            for (i = 0; i < k; i++) {
+                if (engine.equals (engines [i])) {
+                    t++;
+                }
+            }
+            if (t == 0) {
+                // The engine is not there. Nothing to remove.
+                return ;
+            }
+            newL = new String[k - t];
+            DebuggerEngine[] newE = new DebuggerEngine[k - t];
             int j = 0;
             for (i = 0; i < k; i++) {
                 if (!engine.equals (engines [i])) {
-                    if (j == (k - 1)) {
+                    /*if (j == (k - t)) {
                         // The engine is not there. Nothing to remove.
                         return ;
-                    }
+                    }*/
                     newL[j] = languages [i];
                     newE[j] = engines [i];
                     j++;
