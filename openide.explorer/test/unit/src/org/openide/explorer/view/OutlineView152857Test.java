@@ -42,22 +42,14 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Children.Keys;
 import org.openide.nodes.Node;
-import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 
 /** Fixes fix of issue #152857: Sorting in TreeTableView should not be done on Visualizers
  *
