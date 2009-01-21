@@ -49,18 +49,18 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 
 public final class StartDLightAction implements ActionListener {
 
-  public void actionPerformed(ActionEvent e) {
-    DLightLogger.instance.info("StartDLightAction performed @ " + System.currentTimeMillis());
-     String application = System.getProperty("dlight.application", "/export/home/ak119685/welcome");
-    String[] arguments = System.getProperty("dlight.application.params", "1 2 3").split("[ \t]+");
-    String[] environment = new String[]{};
-    DLightLogger.instance.info("Set D-Light target! Application " + application);
-      NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(application, arguments, environment);
+    public void actionPerformed(ActionEvent e) {
+        DLightLogger.instance.info("StartDLightAction performed @ " + System.currentTimeMillis());
+        String application = System.getProperty("dlight.application", "/export/home/Welcome/welcome");
+        String[] arguments = System.getProperty("dlight.application.params", "1 2 3").split("[ \t]+");
+        String[] environment = new String[]{};
+        DLightLogger.instance.info("Set D-Light target! Application " + application);
+        NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(application, arguments, environment);
 //    conf.setHost("localhost");
-//    conf.setSSHPort(2222);
+//    conf.setSSHPort(22);
 //    conf.setUser("masha");
-    DLightTarget target = new NativeExecutableTarget(conf);
-    DLightSession session = DLightManager.getDefault().createSession(target, "Gizmo");
-    DLightManager.getDefault().startSession(session);
-  }
+        DLightTarget target = new NativeExecutableTarget(conf);
+        DLightSession session = DLightManager.getDefault().createSession(target, "Gizmo");
+        DLightManager.getDefault().startSession(session);
+    }
 }
