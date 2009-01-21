@@ -172,21 +172,24 @@ public class ShortcutTextField extends JTextField {
                     int index = selectedIndex == -1 || selectedIndex == list.getModel().getSize() - 1 ? 0 : selectedIndex + 1;
                     list.setSelectedIndex(index);
                     ensureSelectionVisible(index);
+                    e.consume();
                     break;
                 }
-
+                
                 case KeyEvent.VK_UP: {
                     int index = selectedIndex == -1 ? 0 : selectedIndex - 1;
                     if (selectedIndex == 0)
                         index = list.getModel().getSize() - 1;
                     list.setSelectedIndex(index);
                     ensureSelectionVisible(index);
+                    e.consume();
                     break;
                 }
 
                 case KeyEvent.VK_ESCAPE: {
                     popup.hide();
                     popup = null;
+                    e.consume();
                     break;
                 }
 
