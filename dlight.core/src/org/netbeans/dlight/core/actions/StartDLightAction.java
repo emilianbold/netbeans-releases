@@ -56,9 +56,9 @@ public final class StartDLightAction implements ActionListener {
     String[] environment = new String[]{};
     DLightLogger.instance.info("Set D-Light target! Application " + application);
       NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(application, arguments, environment);
-    conf.setHost("localhost");
-    conf.setSSHPort(2222);
-    conf.setUser("masha");
+//    conf.setHost("localhost");
+//    conf.setSSHPort(2222);
+//    conf.setUser("masha");
     DLightTarget target = new NativeExecutableTarget(conf);
     DLightSession session = DLightManager.getDefault().createSession(target, "Gizmo");
     DLightManager.getDefault().startSession(session);
