@@ -292,13 +292,20 @@ public class ConfigurationMakefileWriter {
         if (conf.isQmakeConfiguration()) {
             bw.write("Qt-${CONF}.mk: Qt-${CONF}.pro FORCE\n"); // NOI18N
             bw.write("\tqmake -o Qt-${CONF}.mk Qt-${CONF}.pro\n"); // NOI18N
+            if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                // qmake uses backslashes on Windows, this code corrects them to forward slashes
+                bw.write("\tsed -e 's:\\\\\\(.\\):/\\1:g' Qt-${CONF}.mk >Qt-${CONF}.tmp\n"); // NOI18N
+                bw.write("\tmv -f Qt-${CONF}.tmp Qt-${CONF}.mk\n"); // NOI18N
+            }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
         }
     }
 
     protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         String output = getOutput(conf);
+        output = cs.normalizeDriveLetter(output);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
@@ -327,6 +334,8 @@ public class ConfigurationMakefileWriter {
 
     protected void writeLinkTarget(MakeConfiguration conf, BufferedWriter bw, String output) throws IOException {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        output = cs.normalizeDriveLetter(output);
         String command = ""; // NOI18N
         if (linkerConfiguration.getTool().getModified()) {
             command += linkerConfiguration.getTool().getValue() + " "; // NOI18N
@@ -346,7 +355,6 @@ public class ConfigurationMakefileWriter {
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
         }
-        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
         for (LibraryItem lib : libs) {
             String libPath = lib.getPath();

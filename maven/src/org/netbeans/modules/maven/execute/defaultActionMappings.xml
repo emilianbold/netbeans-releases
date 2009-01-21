@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
         </goals>
     </action>
     <action>
+        <actionName>build-with-dependencies</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>reactor:make</goal>
+        </goals>
+        <basedir>../</basedir>
+        <properties>
+            <make.artifacts>${groupId}:${artifactId}</make.artifacts>
+        </properties>
+    </action>
+    <action>
         <actionName>clean</actionName>
         <packagings>
             <packaging>*</packaging>

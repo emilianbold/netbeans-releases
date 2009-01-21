@@ -54,7 +54,7 @@ import org.w3c.dom.Text;
  */
 public class Comment extends SyntaxNode implements org.w3c.dom.Comment {
 
-    public Comment(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    Comment(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
     }
 

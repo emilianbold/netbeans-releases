@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.MavenSourcesImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -63,7 +64,9 @@ import org.openide.util.Lookup;
  * @author mkleint
  */
 public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, ActionConvertor {
-    private static final String CLASSPATHSCOPE = "classPathScope";
+    private static final String ARTIFACTID = "artifactId";//NOI18N
+    private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
+    private static final String GROUPID = "groupId";//NOI18N
     private Project project;
     private static final String CLASSNAME = "className";//NOI18N
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
@@ -92,11 +95,15 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         SourceGroup group = null;
         FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        replaceMap.put(GROUPID, prj.getMavenProject().getGroupId());
+        replaceMap.put(ARTIFACTID, prj.getMavenProject().getArtifactId());
+
         if (fos.length > 0) {
             fo = fos[0];
             Sources srcs = project.getLookup().lookup(Sources.class);
             SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if ("text/x-java".equals(fo.getMIMEType())) {
+            if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
                 for (int i = 0; i < grp.length; i++) {
                     relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                     if (relPath != null) {
@@ -121,7 +128,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
         }
         if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName())) {
-            replaceMap.put(CLASSPATHSCOPE,"test");
+            replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"compile"); //"compile" seems to be the default, runtime doesn't work MEXEC-56
         }
@@ -129,10 +136,10 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
             String withExt = replaceMap.get(CLASSNAME_EXT);
-            if (withExt != null && withExt.endsWith(".java")) {
-                replaceMap.put(CLASSNAME_EXT, withExt.replace(".java", "Test.java"));
-                replaceMap.put(CLASSNAME, replaceMap.get(CLASSNAME) + "Test");
-                replaceMap.put(PACK_CLASSNAME, replaceMap.get(PACK_CLASSNAME) + "Test");
+            if (withExt != null && withExt.endsWith(".java")) {//NOI18N
+                replaceMap.put(CLASSNAME_EXT, withExt.replace(".java", "Test.java"));//NOI18N
+                replaceMap.put(CLASSNAME, replaceMap.get(CLASSNAME) + "Test");//NOI18N
+                replaceMap.put(PACK_CLASSNAME, replaceMap.get(PACK_CLASSNAME) + "Test");//NOI18N
             }
         }
         return replaceMap;
@@ -181,14 +188,14 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {
                 FileObject fo = fos[0];
-                if ("text/x-java".equals(fo.getMIMEType())) {
+                if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
                     Sources srcs = project.getLookup().lookup(Sources.class);
                     SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                     for (int i = 0; i < grp.length; i++) {
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
                             if (!SourceUtils.getMainClasses(fo).isEmpty()) {
-                                return action + ".main";
+                                return action + ".main";//NOI18N
                             }
                         }
                     }

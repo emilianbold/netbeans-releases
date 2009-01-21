@@ -58,7 +58,15 @@ public final class UIDProviderIml implements UIDProvider {
     private static final Logger LOG = Logger.getLogger(UIDs.class.getName());
     private static final boolean debugMode = CndUtils.isDebugMode();
 
+    public UIDProviderIml() {
+        // public constructor for service initialization
+    }
+    
     public <T> CsmUID<T> get(T obj) {
+        return get(obj, true);
+    }
+
+    public static <T> CsmUID<T> get(T obj, boolean checkNull) {
         CsmUID<T> out;
         if (UIDCsmConverter.isIdentifiable(obj)) {
             final CsmIdentifiable ident = (CsmIdentifiable) obj;
@@ -68,8 +76,9 @@ public final class UIDProviderIml implements UIDProvider {
             if (false && debugMode) {
                 Object object = uid.getObject();
                 if (object == null) {
-                    // is it ok that we are unable to get the object?
-                    LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                    if (checkNull) {
+                        LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                    }
                 } else {
                     final Class<? extends Object> derefClass = object.getClass();
                     if (!derefClass.isAssignableFrom(obj.getClass())) {
@@ -87,7 +96,7 @@ public final class UIDProviderIml implements UIDProvider {
         return out;
     }
 
-    private <T> CsmUID<T> createSelfUID(T obj) {
+    private static <T> CsmUID<T> createSelfUID(T obj) {
         return new SelfUID<T>(obj);
     }
 

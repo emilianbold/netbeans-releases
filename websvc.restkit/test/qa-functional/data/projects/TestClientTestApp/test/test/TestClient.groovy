@@ -53,7 +53,7 @@ class TestClient extends DslContext {
             UrlLink(uid: "customers", locator: "//a[text() = \"customers\"]")
             // expander for customers
             // //*[@id="I1/customers/_1"]
-            Image(uid: "customersExpander", locator: "//*[@id=\"I1/customers/_1\"]")
+            Image(uid: "customersExpander", locator: "//img[contains(@id, \"I1/customers/\") and contains(@src, \"cg.gif\")]")
             // {customerId}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[2]/span/div/a
             UrlLink(uid: "customerId", locator: "/span/span/span/div/a[text() = \"{customerId}\"]")
@@ -63,7 +63,7 @@ class TestClient extends DslContext {
             UrlLink(uid: "discountCodes", locator: "//a[text() = \"discountCodes\"]")
             // expander for discountCodes
             // //*[@id="I1/discountCodes/_4"]
-            Image(uid: "dcodesExpander", locator: "//*[@id=\"I1/discountCodes/_4\"]")
+            Image(uid: "dcodesExpander", locator: "//img[contains(@id, \"I1/discountCodes/\") and contains(@src, \"cg.gif\")]")
             // {discountCode}
             // /html/body/div/div[2]/table/tbody/tr/td/span[2]/span[4]/span/div/a
             UrlLink(uid: "discountCodeId", locator: "/span/span/span/div/a[text() = \"{discountCode}\"]")
@@ -89,7 +89,7 @@ class TestClient extends DslContext {
             InputBox(uid: "max", clocator: [name: "max"])
             InputBox(uid: "expandLevel", clocator: [name: "expandLevel"])
             InputBox(uid: "query", clocator: [name: "query"])
-            TextBox(uid: "content", clocator: [tag: "textarea", name: "params", id: "blobParam"])
+            InputBox(uid: "content", clocator: [tag: "textarea", name: "params", id: "blobParam"])
 
             InputBox(uid: "resourceId", clocator: [id: "tparams"])
         }
