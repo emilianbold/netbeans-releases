@@ -28,7 +28,7 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class DLightCPUToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-  private static final boolean USE_DTRACE = true;//Boolean.getBoolean("gizmo.cpu.dtrace");
+  private static final boolean USE_DTRACE = Boolean.getBoolean("gizmo.cpu.dtrace");
 
   public DLightToolConfiguration create() {
     final String toolName = "CPU Monitor";
