@@ -54,15 +54,14 @@ import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 
 /**
  * Indicator is a small, graphical, real-time monitor
- * which shows some piece of info provided by {@link IndicatorDataProvider}
+ * which shows some piece of info 
  */
 public abstract class Indicator {
 
   private IndicatorMetadata metadata;
   private String toolName;
   private final List<IndicatorActionListener> listeners;
-  private Collection<ActionListener> actionListeners;
-
+//  private Collection<ActionListener> actionListeners;
   
 
   static {
@@ -81,8 +80,8 @@ public abstract class Indicator {
     });
   }
 
-  protected final void notifyListeners(){
-    for (IndicatorActionListener l : listeners){
+  protected final void notifyListeners() {
+    for (IndicatorActionListener l : listeners) {
       l.mouseClickedOnIndicator(this);
     }
   }
@@ -92,27 +91,26 @@ public abstract class Indicator {
     this.metadata = metadata;
   }
 
-  VisualizerConfiguration getVisualizerConfiguration(){
+  VisualizerConfiguration getVisualizerConfiguration() {
     return visualizerConfiguraiton;
   }
 
-  void addIndicatorActionListener(IndicatorActionListener l){
-    if (!listeners.contains(l)){
+  void addIndicatorActionListener(IndicatorActionListener l) {
+    if (!listeners.contains(l)) {
       listeners.add(l);
     }
   }
 
-  void setToolName(String toolName){
+  void setToolName(String toolName) {
     this.toolName = toolName;
   }
 
-  void removeIndicatorActionListener(IndicatorActionListener l){
+  void removeIndicatorActionListener(IndicatorActionListener l) {
     listeners.remove(l);
   }
 
   /**
-   * Invoked when new data is occurred in {@link org.netbeans.dlight.core.indicator.model.IndicatorDataProvider}.
-   * @param dataProvider data provider new data is occurred
+   * Invoked when new data is occurred.
    * @param data data added
    */
   public abstract void updated(List<DataRow> data);
@@ -123,18 +121,22 @@ public abstract class Indicator {
   public abstract void reset();
 
   /**
-   * Returns
-   * @return
+   * Returns indicator metadata
+   * @return metada - list of columns 
    */
   public IndicatorMetadata getMetadata() {
     return metadata;
   }
 
-  public List<Column> getMetadataColumns() {
+  /**
+   * Returns list of columns
+   * @return
+   */
+  protected List<Column> getMetadataColumns() {
     return metadata.getColumns();
   }
 
-  public String getMetadataColumnName(int idx) {
+  protected String getMetadataColumnName(int idx) {
     Column col = metadata.getColumns().get(idx);
     return col.getColumnName();
   }

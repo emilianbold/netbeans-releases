@@ -56,16 +56,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Listener;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
+import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
@@ -78,8 +88,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,15 +95,11 @@ import org.openide.util.NbBundle;
  * @author mkuchtiak
  */
 public class WSUtils {
-    
-    private static String SUN_DOMAIN_12_DTD_SUFFIX =
-            "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_2.dtd";
-    private static String SUN_DOMAIN_13_DTD_SUFFIX =
-            "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
-    
-    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
-    private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
-    
+
+    private final static String SERVLET_CLASS_NAME =
+            "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
+    private final static String SERVLET_LISTENER =
+            "com.sun.xml.ws.transport.http.servlet.WSServletContextListener"; //NOI18N
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
      * that are recursively imported by this wsdl)
@@ -134,80 +138,9 @@ public class WSUtils {
         }
     }
     
-    public static String findProperServiceName(String name, JaxWsModel jaxWsModel) {
-        if (jaxWsModel.findServiceByName(name)==null) return name;
-        for (int i = 1;; i++) {
-            String destName = name + "_" + i; // NOI18N
-            if (jaxWsModel.findServiceByName(destName)==null)
-                return destName;
-        }
-    }
-    
-    public static void retrieveJaxWsFromResource(FileObject projectDir) throws IOException {
-        final String jaxWsContent =
-                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml")); //NOI18N
-        final FileObject nbprojFo = projectDir.getFileObject("nbproject"); //NOI18N
-        assert nbprojFo != null : "Cannot find nbproject directory"; //NOI18N
-        FileSystem fs = nbprojFo.getFileSystem();
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileObject jaxWsFo = FileUtil.createData(nbprojFo, "jax-ws.xml");//NOI18N
-                FileLock lock = jaxWsFo.lock();
-                try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsFo.getOutputStream(lock)));
-                    bw.write(jaxWsContent);
-                    bw.close();
-                } finally {
-                    lock.releaseLock();
-                }
-            }
-        });
-    }
-    
-    public static void retrieveHandlerConfigFromResource(final FileObject targetDir, final String handlerConfigName) throws IOException {
-        final String handlerContent =
-                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/handler.xml")); //NOI18N
-        FileSystem fs = targetDir.getFileSystem();
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileObject handlerFo = FileUtil.createData(targetDir, handlerConfigName);//NOI18N
-                FileLock lock = handlerFo.lock();
-                BufferedWriter bw = null;
-                OutputStream os = null;
-                try {
-                    os = handlerFo.getOutputStream(lock);
-                    bw = new BufferedWriter(new OutputStreamWriter(os));
-                    bw.write(handlerContent);
-                    bw.close();
-                } finally {
-                    if(bw != null)
-                        bw.close();
-                    if(os != null)
-                        os.close();
-                    if(lock != null)
-                        lock.releaseLock();
-                }
-            }
-        });
-    }
-    
-    public static String getJAXWSVersion(File appSvrRoot){
-        if(appSvrRoot == null) return JAXWSVersionProvider.JAXWS20;
-        
-        File dtdFile_12 = new File(appSvrRoot, SUN_DOMAIN_12_DTD_SUFFIX);        
-        File dtdFile_13 = new File(appSvrRoot, SUN_DOMAIN_13_DTD_SUFFIX);
-                        
-        //if there is a sun-domain_1_2.dtd AND there is no sun-domain_1_3.dtd in
-        //the lib/dtds directory, then it is AppServer 9.0 which uses JAXWS 2.0
-        if(dtdFile_12.exists() && !dtdFile_13.exists()){
-            return JAXWSVersionProvider.JAXWS20;
-        }
-        return JAXWSVersionProvider.JAXWS21;
-    }
-    
     public static void generateSunJaxwsFile(final FileObject targetDir) throws IOException {
         final String sunJaxwsContent =
-                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/sun-jaxws.xml")); //NOI18N
+                readResource(WsdlModel.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/sun-jaxws.xml")); //NOI18N
         FileSystem fs = targetDir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
@@ -310,70 +243,8 @@ public class WSUtils {
         }
     }
     
-    public static FileObject backupAndGenerateJaxWs(FileObject projectDir, FileObject oldJaxWs, RuntimeException reason) throws IOException {
-        DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(WSUtils.class,"ERR_corruptedJaxWs",oldJaxWs.getPath(),reason.getMessage()),NotifyDescriptor.ERROR_MESSAGE));
-        FileObject parent = oldJaxWs.getParent();
-        FileObject oldBackup = parent.getFileObject("jax-ws.xml.old"); //NOI18N
-        FileLock lock = null;
-        if (oldBackup!=null) {
-            // remove old backup
-            try {
-                lock = oldBackup.lock();
-                oldBackup.delete(lock);
-            } finally {
-                if (lock!=null) lock.releaseLock();
-            }
-        }
-        // renaming old jax-ws.xml;
-        try {
-            lock = oldJaxWs.lock();
-            oldJaxWs.rename(lock, "jax-ws.xml","old"); //NOI18N
-        } finally {
-            if (lock!=null) lock.releaseLock();
-        }
-        retrieveJaxWsFromResource(projectDir);
-        return projectDir.getFileObject(JAX_WS_XML_PATH);
-    }
-    
-//    private static String getJaxWsApiDir() {
-//        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-//        if (jaxwsApi!=null) {
-//            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
-//            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
-//        }
-//        return null;
-//    }
-    
     public static FileObject findJaxWsFileObject(Project project) {
         return project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml");
-    }
-    
-    /** copy jax-ws.xml from default filesystem to nbproject directory,
-     *  generate JaxWsModel,
-     *  add FileChangeListener to jax-ws.xml file object
-     */
-    public static FileObject createJaxWsFileObject(final Project project) throws IOException {
-        
-        try {
-            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
-                public FileObject run() throws IOException {
-                    retrieveJaxWsFromResource(project.getProjectDirectory());
-                    FileObject jaxWsFo = findJaxWsFileObject(project);
-                    assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
-                    if (jaxWsFo!=null) {
-                        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-                        if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
-                    }
-                    return jaxWsFo;
-                }
-
-        
-
-            });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
-        }
     }
     
     private static final String DEFAULT_PACKAGE_NAME="org.netbeans.ws"; //NOI18N
@@ -461,6 +332,214 @@ public class WSUtils {
             }
         }
         return false;
+    }
+
+    public static void addSunJaxWsEntries(FileObject ddFolder, JaxWsService service) 
+            throws IOException {
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if(sunjaxwsFile == null){
+            generateSunJaxwsFile(ddFolder);
+        }
+        sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+        String serviceName = service.getServiceName();
+        Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
+        if (oldEndpoint == null) {
+            Endpoint endpoint = endpoints.newEndpoint();
+            endpoint.setEndpointName(service.getServiceName());
+            endpoint.setImplementation(service.getImplementationClass());
+            endpoint.setUrlPattern("/" + service.getServiceName());
+            endpoints.addEnpoint(endpoint);
+            FileLock lock = null;
+            OutputStream os = null;
+            synchronized (sunjaxwsFile) {
+                try {
+                    lock = sunjaxwsFile.lock();
+                    os = sunjaxwsFile.getOutputStream(lock);
+                    endpoints.write(os);
+                } finally{
+                    if (lock != null)
+                        lock.releaseLock();
+
+                    if(os != null)
+                        os.close();
+                }
+            }
+        }
+    }
+
+    public static void removeSunJaxWsEntries(FileObject ddFolder, JaxWsService service)
+            throws IOException {
+
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+            String serviceName = service.getServiceName();
+            Endpoint endpoint = endpoints.findEndpointByName(service.getServiceName());
+            if (endpoint != null) {
+                endpoints.removeEndpoint(endpoint);
+                FileLock lock = null;
+                OutputStream os = null;
+                synchronized (sunjaxwsFile) {
+                    try {
+                        lock = sunjaxwsFile.lock();
+                        os = sunjaxwsFile.getOutputStream(lock);
+                        endpoints.write(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static boolean isJsr109Supported(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            // set to true by default
+            return true;
+        } else {
+            WSStackUtils stackUtils = new WSStackUtils(project);
+            return stackUtils.isJsr109Supported();
+        }
+    }
+
+    public static void addServiceEntriesToDD(Project prj, String serviceName)
+        throws IOException {
+        //add servlet entry to web.xml
+        String servletName = serviceName;
+
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            Servlet servlet = null;
+            Listener listener = null;
+            try{
+                servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
+                        new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
+                servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+                ServletMapping servletMapping = (ServletMapping)
+                webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
+                        new Object[]{servletName, "/" + serviceName}, "ServletName"); //NOI18N
+
+                if (!webAppHasListener(webApp, SERVLET_LISTENER)){
+                    listener = (Listener)webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
+                            new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
+                }
+                // This also saves server specific configuration, if necessary.
+                webApp.write(getDeploymentDescriptor(prj));
+            } catch (ClassNotFoundException exc) {
+                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            } catch (NameAlreadyUsedException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            }
+        }
+    }
+
+    /**
+     * Remove the web.xml entries for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    public static void removeServiceEntriesFromDD(Project prj, String serviceName)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = removeServiceFromDD(webApp, serviceName);
+
+            //determine if there are other web services in the project
+            //if none, remove the listener
+            boolean hasMoreWebServices = false;
+            Servlet[] remainingServlets = webApp.getServlet();
+            for(int i = 0; i < remainingServlets.length; i++){
+                if(remainingServlets[i].getServletClass().equals(SERVLET_CLASS_NAME)){
+                    hasMoreWebServices = true;
+                    break;
+                }
+            }
+            if(!hasMoreWebServices){
+                Listener[] listeners = webApp.getListener();
+                for(int i = 0; i < listeners.length; i++){
+                    Listener listener = listeners[i];
+                    if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                        webApp.removeListener(listener);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private static boolean removeServiceFromDD(WebApp webApp, String serviceName) {
+        boolean changed = false;
+        //first remove the servlet
+        Servlet[] servlets = webApp.getServlet();
+        for(int i = 0; i < servlets.length; i++){
+            Servlet servlet = servlets[i];
+            if(servlet.getServletName().equals(serviceName)){
+                webApp.removeServlet(servlet);
+                changed = true;
+                break;
+            }
+        }
+        //remove the servlet mapping
+        ServletMapping[] mappings = webApp.getServletMapping();
+        for(int i = 0; i < mappings.length; i++){
+            ServletMapping mapping = mappings[i];
+            if(mapping.getServletName().equals(serviceName)){
+                webApp.removeServletMapping(mapping);
+                changed = true;
+                break;
+            }
+        }
+        return changed;
+    }
+
+    private static boolean webAppHasListener(WebApp webApp, String listenerClass){
+        Listener[] listeners = webApp.getListener();
+        for(int i = 0; i < listeners.length; i++){
+            Listener listener = listeners[i];
+            if(listenerClass.equals(listener.getListenerClass())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static WebApp getWebApp(Project prj) {
+        try {
+            FileObject deploymentDescriptor = getDeploymentDescriptor(prj);
+            if(deploymentDescriptor != null) {
+                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
+            }
+        } catch (java.io.IOException e) {
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    public static FileObject getDeploymentDescriptor(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            if (dd != null && dd.exists()) {
+                return FileUtil.toFileObject(dd);
+            }
+        }
+        return null;
     }
 
     

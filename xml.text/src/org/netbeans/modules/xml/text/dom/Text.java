@@ -63,7 +63,7 @@ public class Text extends SyntaxNode implements org.w3c.dom.Text {
     /**
      * Create content text node.
      */
-    public Text(XMLSyntaxSupport support, Token from, int start, int end) {
+    Text(XMLSyntaxSupport support, Token from, int start, int end) {
         super( support, from, start, end);
     }
     
@@ -110,8 +110,7 @@ public class Text extends SyntaxNode implements org.w3c.dom.Text {
     }
  
     public String getData() {
-        //return first().getImage();
-        return null;
+        return first().text().toString();
     }
 
     public void setData(String data) {
@@ -142,7 +141,6 @@ public class Text extends SyntaxNode implements org.w3c.dom.Text {
     public void replaceData(int offset, int count, String arg) {
         throw new ROException();
     }
-
 
     /**
      * Dump content of the nod efor debug purposes.

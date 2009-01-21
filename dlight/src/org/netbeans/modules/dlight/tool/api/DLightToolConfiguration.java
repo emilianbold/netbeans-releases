@@ -13,7 +13,8 @@ import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
 
 /**
- * This class represents configuration object to create DLightTool instance on the base of
+ * This class represents configuration object to create DLightTool.
+ * 
  */
 public final class DLightToolConfiguration {
 
@@ -26,6 +27,10 @@ public final class DLightToolConfiguration {
     DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorIml());
   }
 
+  /**
+   * Creates new D-Light Tool configuration using the name <code>toolName</code>
+   * @param toolName tool name configuration will be created for
+   */
   public DLightToolConfiguration(String toolName) {
     this.toolName = toolName;
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollectorConfiguration>());

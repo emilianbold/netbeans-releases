@@ -39,22 +39,44 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import java.awt.Color;
+import java.io.CharConversionException;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
-public final class EAVisualPanel extends JPanel {
+public final class EAVisualPanel extends JPanel implements DocumentListener {
+
+    private static final String ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE;
+
+    private EAWizardPanel panel;
+
+    private Color origEarC, origWebC, origEjbC;
 
     /** Creates new form EAVisualPanel */
-    public EAVisualPanel() {
+    public EAVisualPanel(EAWizardPanel panel) {
+        this.panel = panel;
         initComponents();
+
+        origEarC = tfEar.getForeground();
+        origEjbC = tfEjb.getForeground();
+        origWebC = tfWeb.getForeground();
+
+        tfEar.getDocument().addDocumentListener(this);
+        tfEjb.getDocument().addDocumentListener(this);
+        tfWeb.getDocument().addDocumentListener(this);
     }
 
     @Override
     public String getName() {
-        return "Step #1";
+        return NbBundle.getMessage(EAWizardPanel.class, "LBL_EESettings");
     }
 
     void readSettings(WizardDescriptor wizardDescriptor) {
@@ -65,20 +87,21 @@ public final class EAVisualPanel extends JPanel {
         int eeLevelIdx = Math.max(cmbEEVersion.getSelectedIndex(), 0);
 
         File parent = (File) d.getProperty("projdir");
-        d.putProperty("ear_projdir", new File(parent, tfEar.getText().trim()));
+        String earText = tfEar.getText().trim();
+        d.putProperty("ear_projdir", new File(parent, earText));
         d.putProperty("ear_versionInfo", new NBVersionInfo(
-                null, (String)d.getProperty("groupId"),
-                (String)d.getProperty("artifactId")+"-ear", (String)d.getProperty("version"),
-                null, null, null, null, null)
+                null, (String)d.getProperty("groupId"), earText,
+                (String)d.getProperty("version"), null, null, null, null, null)
         );
         d.putProperty("ear_archetype", ArchetypeWizardUtils.EAR_ARCHS[eeLevelIdx]);
 
         if (chkEjb.isSelected()) {
-            d.putProperty("ejb_projdir", new File(parent, tfEjb.getText().trim()));
+            String ejbText = tfEjb.getText().trim();
+            d.putProperty("ejb_projdir", new File(parent, ejbText));
             d.putProperty("ejb_versionInfo", new NBVersionInfo(
-                    null, (String)d.getProperty("groupId"),
-                    (String)d.getProperty("artifactId")+"-ejb", (String)d.getProperty("version"),
-                    null, null, null, null, null)
+                    null, (String)d.getProperty("groupId"), ejbText,
+                    (String)d.getProperty("version"),
+                    "ejb", null, null, null, null)
             );
             d.putProperty("ejb_archetype", ArchetypeWizardUtils.EJB_ARCHS[eeLevelIdx]);
         } else {
@@ -88,11 +111,12 @@ public final class EAVisualPanel extends JPanel {
         }
 
         if (chkWeb.isSelected()) {
-            d.putProperty("web_projdir", new File(parent, tfWeb.getText().trim()));
+            String webText = tfWeb.getText().trim();
+            d.putProperty("web_projdir", new File(parent, webText));
             d.putProperty("web_versionInfo", new NBVersionInfo(
-                    null, (String)d.getProperty("groupId"),
-                    (String)d.getProperty("artifactId")+"-web", (String)d.getProperty("version"),
-                    null, null, null, null, null)
+                    null, (String)d.getProperty("groupId"), webText,
+                    (String)d.getProperty("version"),
+                    "war", null, null, null, null)
             );
             d.putProperty("web_archetype", ArchetypeWizardUtils.WEB_APP_ARCHS[eeLevelIdx]);
 
@@ -103,16 +127,95 @@ public final class EAVisualPanel extends JPanel {
         }
     }
 
-    boolean valid(WizardDescriptor wizardDescriptor) {
-        //TODO - copy from BasicVisualPanel
+    boolean valid(WizardDescriptor wizDesc) {
+        tfEar.setForeground(origEarC);
+        tfEjb.setForeground(origEjbC);
+        tfWeb.setForeground(origWebC);
+        if (!validateProjDir(tfEar.getText(), wizDesc)
+                || !validateCoordinate(tfEar.getText(), wizDesc)) {
+            tfEar.setForeground(Color.RED);
+            return false;
+        }
+        if (chkEjb.isSelected()) {
+            if (!validateProjDir(tfEjb.getText(), wizDesc) ||
+                !validateCoordinate(tfEjb.getText(), wizDesc)) {
+                tfEjb.setForeground(Color.RED);
+                return false;
+            }
+        }
+        if (chkWeb.isSelected()) {
+            if (!validateProjDir(tfWeb.getText(), wizDesc) ||
+                !validateCoordinate(tfWeb.getText(), wizDesc)) {
+                tfWeb.setForeground(Color.RED);
+                return false;
+            }
+        }
+        wizDesc.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
+    }
+
+    private static boolean validateProjDir (String dirName, WizardDescriptor wizDesc) {
+        if (dirName.length() == 0) {
+            wizDesc.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Name_is_not_valid"));
+            return false;
+        }
+
+        if(dirName.indexOf(File.separatorChar) != -1) {
+            wizDesc.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Name_has_slash"));
+            return false;
+        }
+
+        File parent = (File) wizDesc.getProperty("projdir");
+        File projLoc = FileUtil.normalizeFile(new File(parent, dirName));
+        File f = projLoc;
+        while (f != null && !f.exists()) {
+            f = f.getParentFile();
+        }
+        if (f == null || !f.canWrite()) {
+            wizDesc.putProperty(ERROR_MSG, //NOI18N
+                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_cannot_be_created"));
+            return false;
+        }
+
+        if (FileUtil.toFileObject(f) == null) {
+            String message = NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_is_not_valid_path");
+            wizDesc.putProperty(ERROR_MSG, message); //NOI18N
+            return false;
+        }
+
+        File[] kids = projLoc.listFiles();
+        if (projLoc.exists() && kids != null && kids.length > 0) {
+            // Folder exists and is not empty
+            wizDesc.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_exists"));
+            return false;
+        }
+
+        wizDesc.putProperty(ERROR_MSG, null);
+        return true;
+    }
+
+    static boolean validateCoordinate (String coord, WizardDescriptor wizDesc) {
+        boolean result = false;
+        try {
+            String escaped = XMLUtil.toAttributeValue(coord);
+            result = escaped.length() == coord.length() && coord.indexOf(">") == -1;
+        } catch (CharConversionException ex) {
+            // ignore this one
+        }
+        wizDesc.putProperty(ERROR_MSG, result ? null :
+            NbBundle.getMessage(EAVisualPanel.class, "ERR_Coord_breaks_pom"));
+
+        return result;
     }
 
     private void fillTextFields(WizardDescriptor wiz) {
         String artifId = (String)wiz.getProperty("artifactId");
         tfEar.setText(artifId + "-ear");
-        tfWeb.setText(artifId + "-ejb");
-        tfEjb.setText(artifId + "-web");
+        tfWeb.setText(artifId + "-web");
+        tfEjb.setText(artifId + "-ejb");
     }
 
     /** This method is called from within the constructor to
@@ -208,11 +311,13 @@ public final class EAVisualPanel extends JPanel {
     private void chkEjbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkEjbActionPerformed
         // TODO add your handling code here:
         tfEjb.setEnabled(chkEjb.isSelected());
+        panel.fireChangeEvent();
     }//GEN-LAST:event_chkEjbActionPerformed
 
     private void chkWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkWebActionPerformed
         // TODO add your handling code here:
         tfWeb.setEnabled(chkWeb.isSelected());
+        panel.fireChangeEvent();
     }//GEN-LAST:event_chkWebActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -225,5 +330,19 @@ public final class EAVisualPanel extends JPanel {
     private javax.swing.JTextField tfEjb;
     private javax.swing.JTextField tfWeb;
     // End of variables declaration//GEN-END:variables
+
+    /******** Document listener implementation, reacting on text field changes ***/
+
+    public void insertUpdate(DocumentEvent e) {
+        panel.fireChangeEvent();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        panel.fireChangeEvent();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        panel.fireChangeEvent();
+    }
 }
 

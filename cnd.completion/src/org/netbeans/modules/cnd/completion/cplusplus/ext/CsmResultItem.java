@@ -336,7 +336,8 @@ public abstract class CsmResultItem implements CompletionItem {
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
-                if (isIncludesEqual(include, ts.token().text().toString())) {
+                StringBuffer buf = new StringBuffer(ts.token().text());
+                if (isIncludesEqual(include, buf.toString())) {
                     return true;
                 }
             }

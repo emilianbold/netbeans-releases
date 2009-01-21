@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.dlight.execution.api;
 
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * D-Light Target. It can be anything: starting from shell script to
  *  the whole system.
  * You should implement this interface in case you have your own
  * target type.
- * Default implementation {@link org.netbeans.dlight.core.execution.NativeExecutableTarget} can
+ * Default implementation {@link org.netbeans.modules.dlight.execution.api.NativeExecutableTarget} can
  * be used.
  */
 public interface DLightTarget {
@@ -101,7 +101,7 @@ public interface DLightTarget {
   public void substitute(String cmd, String[] args);
 
   /**
-   * Returns current target state as {@link org.netbeans.dlight.core.execution.model.DLightTarget.State}
+   * Returns current target state as {@link org.netbeans.modules.dlight.execution.api.DLightTarget.State}
    * @return target current state
    */
   public DLightTarget.State getState();
