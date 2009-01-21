@@ -223,9 +223,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
             }
-            
-            if (!IpeUtils.isPathAbsolute(configureNameTextField.getText()) || !new File(configureNameTextField.getText()).exists() || new File(configureNameTextField.getText()).isDirectory()) {
+            File file = new File(configureNameTextField.getText());
+            if (!IpeUtils.isPathAbsolute(configureNameTextField.getText()) ||
+                !file.exists() || file.isDirectory()) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
+                descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                return false;
+            } else if (!SelectModeDescriptorPanel.isRunnable(file)) {
+                String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
             }

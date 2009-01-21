@@ -73,9 +73,9 @@ public abstract class SyntaxElement {
     protected int length;     // original lenght in document
     
     /** Creates new SyntaxElement */
-    public SyntaxElement(XMLSyntaxSupport support, Token<XMLTokenId> token, int start, int end)  {
+    SyntaxElement(XMLSyntaxSupport support, Token<XMLTokenId> token, int start, int end)  {
         this.support = support;
-        this.offset = start; //TODO token.getOffset();
+        this.offset = start;
         this.length = end-start;
         this.first = new WeakReference(token);
     }
@@ -93,18 +93,17 @@ public abstract class SyntaxElement {
      * allows to GC the TokenItem-s chains if necessary.
      */
     protected Token first() {
-//        TokenItem cached_first = first.get();
-//        if(cached_first == null) {
-//            try {
-//                TokenItem new_first = support.getTokenChain(offset, offset + 1); //it is a first token offset, so we shouldn't overlap the document length
-//                first = new WeakReference(new_first);
-//                return new_first;
-//            }catch(BadLocationException e) {
-//                return null;
-//            }
-//        } else {
-//            return cached_first;
-//        }
+        Token cached_first = first.get();
+        if(cached_first != null)
+            return cached_first;
+        try {
+            //it is a first token offset, so we shouldn't overlap the document length
+            Token new_first = support.getNextToken(offset);
+            first = new WeakReference(new_first);
+            return new_first;
+        } catch(BadLocationException e) {
+            //fall through null
+        }
         return null;
     }
     
@@ -113,9 +112,6 @@ public abstract class SyntaxElement {
     }
     
     public int getElementLength() {
-        
-
-
         return length;
     }
     
@@ -133,33 +129,27 @@ public abstract class SyntaxElement {
      * or illegal location.
      */
     public SyntaxElement getPrevious() {
-//        try {
-//            SyntaxElement cached_previous = previous == null ? null : previous.get();
-//            if( cached_previous == null ) {
-//                //we are on the beginning - no previous
-//                if (offset == 0) {
-//                    return null;
-//                }
-//                //data not inialized yet or GC'ed already - we need to parse again
-//                SyntaxElement new_previous = support.getElementChain( getElementOffset() - 1 );
-//                if( new_previous != null ) {
-//                    setPrevious(new_previous); //weakly cache the element
-//                    new_previous.setNext(this);
-//                    if (new_previous.offset == offset) {
-//                        Exception ex = new IllegalStateException("Previous cannot be the same as current element at offset " + offset);
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                        return null;
-//                    }
-//                }
-//                return new_previous;
-//            } else {
-//                //use cached data
-//                return cached_previous;
-//            }
-//        } catch (BadLocationException ex) {
-//            return null;
-//        }
-        return null;
+        SyntaxElement cached_previous = (previous == null) ? null : previous.get();
+        if( cached_previous != null )
+            return cached_previous;
+        try {
+            //we are on the beginning - no previous
+            if (offset == 0) {
+                return null;
+            }
+            //data not inialized yet or GC'ed already - we need to parse again
+            SyntaxElement new_previous = support.getElementChain( getElementOffset() - 1 );
+            if( new_previous != null ) {
+                setPrevious(new_previous); //weakly cache the element
+                new_previous.setNext(this);
+                if (new_previous.offset == offset) {
+                    return null;
+                }
+            }
+            return new_previous;
+        } catch (BadLocationException ex) {
+            return null;
+        }
     }
     
     /**
@@ -168,26 +158,20 @@ public abstract class SyntaxElement {
      * or illegal location.
      */
     public SyntaxElement getNext() {
+        SyntaxElement cached_next = next == null ? null : next.get();
+        if( cached_next != null )
+            return cached_next;
         try {
-            SyntaxElement cached_next = next == null ? null : next.get();
-            if( cached_next == null ) {
-                //data not inialized yet or GC'ed already - we need to parse again
-                SyntaxElement new_next = support.getElementChain( offset+length);
-                if( new_next != null ) {
-                    setNext(new_next); //weakly cache the element
-                    new_next.setPrevious(this);
-                    if (new_next.offset == offset) {
-                        // TODO see #43297 for causes and try to relax them
-                        //Exception ex = new IllegalStateException("Next cannot be the same as current element at offset " + offset);
-                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        return null;
-                    }
+            //data not inialized yet or GC'ed already - we need to parse again
+            SyntaxElement new_next = support.getElementChain( offset+length);
+            if( new_next != null ) {
+                setNext(new_next); //weakly cache the element
+                new_next.setPrevious(this);
+                if (new_next.offset == offset) {
+                    return null;
                 }
-                return new_next;
-            } else {
-                //use cached data
-                return cached_next;
             }
+            return new_next;
         } catch (BadLocationException ex) {
             return null;
         }
@@ -198,9 +182,6 @@ public abstract class SyntaxElement {
      */
     public String toString() {
         String content = "?";
-//        try {
-//            content = support.getDocument().getText(offset, length);
-//        }catch(BadLocationException e) {}
         return "SyntaxElement [offset=" + offset + "; length=" + length + " ;type = " + this.getClass().getName() + "; content:" + content +"]";
     }
     

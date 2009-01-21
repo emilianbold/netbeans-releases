@@ -47,8 +47,11 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.Popup;
 
 /**
  * Little keyboard offering special keys to add to shortcut input textfields
@@ -62,22 +65,25 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
     private JTextField target;
 
     /** Creates new form SpecialkeyPanel */
-    public SpecialkeyPanel(Popupable parent, JTextField target) {
+    public SpecialkeyPanel(final Popupable parent, JTextField target) {
         this.parent = parent;
         this.target = target;
         initComponents();
 
-        bsButton.addActionListener(this);
-        deleteButton.addActionListener(this);
+        target.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                final Popup popup = parent.getPopup();
+                if (popup != null)
+                    popup.hide();
+            }
+        });
+
         downButton.addActionListener(this);
-        endButton.addActionListener(this);
         enterButton.addActionListener(this);
         escButton.addActionListener(this);
-        homeButton.addActionListener(this);
-        insertButton.addActionListener(this);
         leftButton.addActionListener(this);
-        pagedownButton.addActionListener(this);
-        pageupButton.addActionListener(this);
         rightButton.addActionListener(this);
         tabButton.addActionListener(this);
         upButton.addActionListener(this);
@@ -92,123 +98,74 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bsButton = new javax.swing.JButton();
-        homeButton = new javax.swing.JButton();
-        endButton = new javax.swing.JButton();
-        deleteButton = new javax.swing.JButton();
-        insertButton = new javax.swing.JButton();
         tabButton = new javax.swing.JButton();
         escButton = new javax.swing.JButton();
         upButton = new javax.swing.JButton();
         enterButton = new javax.swing.JButton();
         leftButton = new javax.swing.JButton();
         downButton = new javax.swing.JButton();
-        pageupButton = new javax.swing.JButton();
         rightButton = new javax.swing.JButton();
-        pagedownButton = new javax.swing.JButton();
-
-        bsButton.setText("Backspace"); // NOI18N
-
-        homeButton.setText("Home"); // NOI18N
-
-        endButton.setText("End"); // NOI18N
-
-        deleteButton.setText("Delete"); // NOI18N
-
-        insertButton.setText("Insert"); // NOI18N
 
         tabButton.setText("Tab"); // NOI18N
 
-        escButton.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        escButton.setFont(new java.awt.Font("Lucida Grande", 0, 9)); // NOI18N
         escButton.setText("ESC"); // NOI18N
-        escButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        escButton.setAlignmentY(0.0F);
+        escButton.setIconTextGap(0);
 
         upButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/up.png"))); // NOI18N
         upButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.upButton.text")); // NOI18N
-        upButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         enterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/enter.png"))); // NOI18N
         enterButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.enterButton.text")); // NOI18N
-        enterButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         leftButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/left.png"))); // NOI18N
         leftButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.leftButton.text_1")); // NOI18N
-        leftButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         downButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/down.png"))); // NOI18N
-        downButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        pageupButton.setText("Page Up"); // NOI18N
 
         rightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/right.png"))); // NOI18N
         rightButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.rightButton.text")); // NOI18N
-        rightButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        pagedownButton.setText("Page Down"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(escButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(leftButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(escButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(leftButton, 0, 0, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(downButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(upButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rightButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(enterButton, 0, 0, Short.MAX_VALUE)))
-                    .add(endButton)
-                    .add(homeButton)
-                    .add(bsButton))
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(insertButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(deleteButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(pageupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(tabButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(pagedownButton)))
+                    .add(downButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(upButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(enterButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 53, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rightButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 53, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            .add(tabButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {downButton, enterButton, escButton, leftButton, rightButton, upButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
-        layout.linkSize(new java.awt.Component[] {bsButton, deleteButton, endButton, homeButton, insertButton, pagedownButton, pageupButton, tabButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(bsButton)
-                .add(0, 0, 0)
-                .add(homeButton)
-                .add(0, 0, 0)
-                .add(endButton)
+                .add(tabButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(escButton)
-                    .add(upButton)
-                    .add(enterButton))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                        .add(upButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(enterButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(escButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rightButton)
-                    .add(downButton)
-                    .add(leftButton)))
-            .add(layout.createSequentialGroup()
-                .add(deleteButton)
-                .add(0, 0, 0)
-                .add(insertButton)
-                .add(0, 0, 0)
-                .add(tabButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pageupButton)
-                .add(0, 0, 0)
-                .add(pagedownButton))
+                    .add(rightButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(downButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(leftButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {downButton, enterButton, escButton, leftButton, rightButton, upButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -217,17 +174,10 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton bsButton;
-    private javax.swing.JButton deleteButton;
     private javax.swing.JButton downButton;
-    private javax.swing.JButton endButton;
     private javax.swing.JButton enterButton;
     private javax.swing.JButton escButton;
-    private javax.swing.JButton homeButton;
-    private javax.swing.JButton insertButton;
     private javax.swing.JButton leftButton;
-    private javax.swing.JButton pagedownButton;
-    private javax.swing.JButton pageupButton;
     private javax.swing.JButton rightButton;
     private javax.swing.JButton tabButton;
     private javax.swing.JButton upButton;
@@ -248,8 +198,6 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
                 text = "LEFT"; // NOI18N
             } else if (source == rightButton) {
                 text = "RIGHT"; // NOI18N
-            } else if (source == bsButton) {
-                text = "BACK_SPACE"; // NOI18N
             } else if (source == enterButton) {
                 text = "ENTER"; // NOI18N
             } else if (source == escButton) {

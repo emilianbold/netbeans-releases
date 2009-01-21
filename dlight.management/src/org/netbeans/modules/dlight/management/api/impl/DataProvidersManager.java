@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 

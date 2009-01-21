@@ -43,7 +43,6 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * run configuration backed up by model
@@ -62,11 +61,14 @@ public final class ModelRunConfig extends BeanRunConfig {
         setTaskDisplayName(nbprj.getName());
         setProperties(model.getProperties());
         setGoals(model.getGoals());
-        setExecutionDirectory(FileUtil.toFile(proj.getProjectDirectory()));
+        setExecutionDirectory(ActionToGoalUtils.resolveProjectEecutionBasedir(mod, proj));
         setRecursive(mod.isRecursive());
         setActivatedProfiles(mod.getActivatedProfiles());
         setActionName(actionName);
         setFileObject(selectedFile);
+        if (mod.getPreAction() != null) {
+            setPreExecutionActionName(mod.getPreAction());
+        }
     }
 
 }
