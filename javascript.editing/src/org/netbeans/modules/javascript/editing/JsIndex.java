@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.SearchResult;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -94,6 +93,9 @@ public final class JsIndex {
 
     public static JsIndex get(Collection<FileObject> roots) {
         try {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("JsIndex for roots: " + roots); //NOI18N
+            }
             return new JsIndex(QuerySupport.forRoots(JsIndexer.Factory.NAME,
                     JsIndexer.Factory.VERSION,
                     roots.toArray(new FileObject[roots.size()])));
