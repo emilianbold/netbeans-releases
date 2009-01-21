@@ -72,16 +72,26 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         int n = s.length();
         byte[] b = new byte[n];
         char[] v = new char[n];
+        boolean bytes = true;
+        char c;
+        int o;
         for(int i = 0; i < n; i++){
-            int o = s.charAt(i);
-            if ( (o & 0xFF) != o){
-                value = v;
-                return;
+            c = s.charAt(i);
+            v[i]= c;
+            if (bytes) {
+                o = c;
+                if ( (o & 0xFF) == o){
+                    b[i]= (byte)o;
+                } else {
+                    bytes = false;
+                }
             }
-            v[i]= (char)o;
-            b[i]= (byte)o;
         }
-        value = b;
+        if (bytes) {
+            value = b;
+        } else {
+            value = v;
+        }
     }
 
     public int length() {
