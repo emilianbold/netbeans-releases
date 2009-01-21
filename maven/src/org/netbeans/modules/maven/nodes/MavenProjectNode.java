@@ -157,6 +157,7 @@ public class MavenProjectNode extends AbstractNode {
     
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean_Build"), null));
+        lst.add(ProjectSensitiveActions.projectCommandAction("build-with-dependencies", NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction("javadoc", NbBundle.getMessage(MavenProjectNode.class, "ACT_Javadoc"), null)); //NOI18N
         lst.add(null);

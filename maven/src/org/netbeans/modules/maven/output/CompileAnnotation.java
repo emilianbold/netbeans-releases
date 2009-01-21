@@ -108,7 +108,8 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
      * @param ev the event describing the line
      */
     public void outputLineAction(OutputEvent ev) {
-        FileObject file = FileUtilities.toFileObject(clazzfile);
+        FileUtil.refreshFor(clazzfile);
+        FileObject file = FileUtil.toFileObject(clazzfile);
         if (file == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
