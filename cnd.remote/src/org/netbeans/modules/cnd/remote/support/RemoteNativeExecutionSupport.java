@@ -106,7 +106,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
         String dircmd;
-        String path = RemotePathMap.getMapper(key).getRemotePath(dirf.getAbsolutePath());
+        String path = RemotePathMap.getPathMap(key).getRemotePath(dirf.getAbsolutePath());
 
         if (path != null) {
             dircmd = "cd \"" + path + "\"; "; // NOI18N
