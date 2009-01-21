@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>  
                     </file>
                     <file name="Separator1.instance">  
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>  
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="150"/>  
                     </file> 
                     <file name="org-netbeans-modules-db-explorer-action-EnableDebugAction.instance">  
@@ -96,14 +96,14 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>  
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">  
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-CustomizeDriverAction.instance">
@@ -127,21 +127,21 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="150"/>  
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
                         <attr name="position" intvalue="350"/>
                     </file>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="400"/>
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">  
@@ -161,6 +161,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-MakeDefaultCatalogAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
                         <attr name="position" intvalue="350"/>
                     </file>
@@ -185,6 +188,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-MakeDefaultSchemaAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
                         <attr name="position" intvalue="350"/>
                     </file>
@@ -206,14 +212,14 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="150"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
@@ -244,7 +250,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="150"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-AddColumnAction.instance">
@@ -257,7 +263,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="350"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-GrabTableAction.instance">
@@ -267,7 +273,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="450"/>
                     </file>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="500"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
@@ -288,14 +294,14 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
@@ -319,7 +325,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="Separator.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
@@ -343,7 +349,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
@@ -393,7 +399,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
@@ -414,21 +420,21 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
                         <attr name="position" intvalue="350"/>
                     </file>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="400"/>
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
@@ -466,7 +472,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
@@ -485,7 +491,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.api.db.explorer.node.ActionSeparator"/>
                         <attr name="position" intvalue="250"/>
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
