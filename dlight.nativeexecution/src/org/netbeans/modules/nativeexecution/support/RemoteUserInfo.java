@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.util.Encrypter;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.ui.PasswordDlg;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
@@ -64,7 +64,7 @@ import org.openide.windows.WindowManager;
  *
  * @author ak119685
  */
-class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
+public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private static final String KEY_PREFIX = "remote.user.info"; // NOI18N
 
     private static Map<String, RemoteUserInfo> hash;

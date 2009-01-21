@@ -51,7 +51,7 @@ public final class StartDLightAction implements ActionListener {
 
   public void actionPerformed(ActionEvent e) {
     DLightLogger.instance.info("StartDLightAction performed @ " + System.currentTimeMillis());
-     String application = System.getProperty("dlight.application", "/export/home/Welcome/welcome");
+     String application = System.getProperty("dlight.application", "/export/home/ak119685/welcome");
     String[] arguments = System.getProperty("dlight.application.params", "1 2 3").split("[ \t]+");
     String[] environment = new String[]{};
     DLightLogger.instance.info("Set D-Light target! Application " + application);

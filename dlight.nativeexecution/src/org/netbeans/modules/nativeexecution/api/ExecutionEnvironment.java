@@ -36,7 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api;
+
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
  * Configuration of environment for NativeTasks execution.
@@ -79,7 +82,6 @@ final public class ExecutionEnvironment {
      * @param host host identification string. Either hostname or IP address
      * @param sshPort port to be used to establish ssh connection.
      */
-    
     public ExecutionEnvironment(final String user, final String host, final int sshPort) {
         if (user == null) {
             this.user = System.getProperty("user.name"); // NOI18N
@@ -93,7 +95,7 @@ final public class ExecutionEnvironment {
             this.host = host;
         }
 
-        if (!HostInfo.isLocalhost(host) && sshPort == 0) {
+        if (!isLocalhost() && sshPort == 0) {
             this.sshPort = 22;
         } else {
             this.sshPort = sshPort;
@@ -172,19 +174,18 @@ final public class ExecutionEnvironment {
      * @return <tt>true</tt> if this <tt>ExecutionEnvironment</tt> equals to <tt>obj</tt>
      * or not.
      */
-
     @Override
     public boolean equals(Object obj) {
         ExecutionEnvironment ee = null;
 
         if (obj instanceof ExecutionEnvironment) {
-            ee = (ExecutionEnvironment)obj;
+            ee = (ExecutionEnvironment) obj;
         } else {
             return false;
         }
 
-        boolean result = (ee.host.equals(host) ||
-                (HostInfo.isLocalhost(ee.host) && HostInfo.isLocalhost(host)))&&
+        boolean result = ((ee.isLocalhost() && isLocalhost()) ||
+                ee.host.equals(host)) &&
                 ee.user.equals(user) &&
                 ee.sshPort == sshPort;
 
@@ -192,11 +193,28 @@ final public class ExecutionEnvironment {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         int hash = 7;
         hash = 97 * hash + (this.user != null ? this.user.hashCode() : 0);
         hash = 97 * hash + (this.host != null ? this.host.hashCode() : 0);
         hash = 97 * hash + this.sshPort;
         return hash;
     }
+
+    public final boolean isUnix() throws HostNotConnectedException {
+        return HostInfo.isUnix(this);
+}
+
+    public final boolean isLocalhost() {
+        return HostInfo.isLocalhost(host);
+    }
+
+    public String getOS() throws HostNotConnectedException {
+        return HostInfo.getOS(this);
+    }
+
+    public String getPlatformPath() {
+        return HostInfo.getPlatformPath(this);
+    }
+
 }

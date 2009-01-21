@@ -36,9 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.util.StreamRedirector;
+import org.netbeans.modules.nativeexecution.*;
+import org.netbeans.modules.nativeexecution.support.StreamRedirector;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,16 +52,16 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.nativeexecution.util.ActionsProvider;
-import org.netbeans.modules.nativeexecution.util.ImageLoader;
-import org.netbeans.modules.nativeexecution.util.Logger;
+import org.netbeans.modules.nativeexecution.support.ActionsProvider;
+import org.netbeans.modules.nativeexecution.support.ImageLoader;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Cancellable;
 
-abstract class NativeExecutor implements ActionsProvider, Cancellable {
+public abstract class NativeExecutor implements ActionsProvider, Cancellable {
 
     public final String CANCEL_ACTION = "Cancel"; // NOI18N
     public final String RESTART_ACTION = "Restart"; // NOI18N
-    final static java.util.logging.Logger log = Logger.getInstance();
+    protected final static java.util.logging.Logger log = Logger.getInstance();
     final Object stateMonitor = new Object();
     TaskExecutionState state = TaskExecutionState.INITIAL;
     final List<NativeTaskListener> taskListeners = Collections.synchronizedList(new ArrayList<NativeTaskListener>());
@@ -81,15 +82,15 @@ abstract class NativeExecutor implements ActionsProvider, Cancellable {
      * @return PID of the started process
      * @throws java.lang.Exception
      */
-    abstract int doInvoke() throws Exception;
+    abstract protected int doInvoke() throws Exception;
 
-    abstract Integer get();
+    abstract protected Integer get();
 
-    abstract InputStream getTaskInputStream() throws IOException;
+    abstract protected InputStream getTaskInputStream() throws IOException;
 
-    abstract InputStream getTaskErrorStream() throws IOException;
+    abstract protected InputStream getTaskErrorStream() throws IOException;
 
-    abstract OutputStream getTaskOutputStream() throws IOException;
+    abstract protected OutputStream getTaskOutputStream() throws IOException;
 
     public Action[] getActions() {
         if (actions == null) {
@@ -211,13 +212,13 @@ abstract class NativeExecutor implements ActionsProvider, Cancellable {
         }
     }
 
-    protected void setProgress(int workUnits) {
+    public void setProgress(int workUnits) {
         if (ph != null) {
             ph.progress(workUnits);
         }
     }
 
-    protected void setProgressLimit(int workUnitsLimit) {
+    public void setProgressLimit(int workUnitsLimit) {
         if (ph != null) {
             ph.switchToDeterminate(workUnitsLimit);
         }

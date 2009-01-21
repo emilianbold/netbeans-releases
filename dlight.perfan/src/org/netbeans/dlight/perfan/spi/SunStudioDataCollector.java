@@ -62,11 +62,11 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.HostInfo;
-import org.netbeans.modules.nativeexecution.HostNotConnectedException;
-import org.netbeans.modules.nativeexecution.NativeTask;
-import org.netbeans.modules.nativeexecution.RemoveTask;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.util.RemoveTask;
 import org.openide.modules.InstalledFileLocator;
 
 /**

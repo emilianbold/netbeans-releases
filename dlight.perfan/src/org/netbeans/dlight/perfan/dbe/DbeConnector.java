@@ -52,10 +52,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 import org.netbeans.dlight.perfan.ipc.IPCException;
 import org.netbeans.modules.dlight.util.ExecUtil;
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.HostInfo;
-import org.netbeans.modules.nativeexecution.NativeTask;
-import org.netbeans.modules.nativeexecution.NativeTaskListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
 import org.openide.util.Exceptions;
 
 public class DbeConnector implements NativeTaskListener {

@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;

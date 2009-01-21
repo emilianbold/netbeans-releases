@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.dlight.execution.api;
 
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * D-Light Target. It can be anything: starting from shell script to

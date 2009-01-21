@@ -46,7 +46,7 @@ import java.io.Writer;
  *
  * @author ak119685
  */
-class StringBufferWriter extends Writer {
+public class StringBufferWriter extends Writer {
   private StringBuffer outBuffer;
   
   public StringBufferWriter(StringBuffer outBuffer) {

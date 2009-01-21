@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.dlight.execution.api;
 
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This class is configuration class used as constructor 
