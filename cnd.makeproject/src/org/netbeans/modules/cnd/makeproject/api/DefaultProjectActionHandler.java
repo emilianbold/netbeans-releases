@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -337,12 +339,21 @@ public class DefaultProjectActionHandler implements ActionListener {
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
                 String key = conf.getDevelopmentHost().getName();
-                
+
+                String runDirectory = pae.getProfile().getRunDirectory();
+
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
-                    if (!mapper.isRemote(basedir, true)) {
+                    if (MakeActionProvider.useRsync) {
+//                        ProjectInformation info = pae.getProject().getLookup().lookup(ProjectInformation.class);
+//                        final String projectName = info.getDisplayName();
+//                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
+
+
+                    } else {
+                        PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
+                        if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
 //                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -350,8 +361,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                             progressHandle.finish();
                             return;
 //                        }
+                        }
                     }
-                    //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
+                //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
                 PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
@@ -475,7 +487,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
                 projectExecutor =  new NativeExecutor(
                         key,
-                        pae.getProfile().getRunDirectory(),
+                        runDirectory,
                         exe, args, env,
                         pae.getTabName(),
                         pae.getActionName(),
