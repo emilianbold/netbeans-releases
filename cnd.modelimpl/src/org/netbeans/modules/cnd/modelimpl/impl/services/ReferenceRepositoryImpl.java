@@ -316,9 +316,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 }
             }
         }
-        APTPreprocHandler preprocHandler = file.getPreprocHandler();
-        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();        
-        return ts == null ? null : file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
+        if (ts == null || !file.isValid()) {
+            return null;
+        }
+        APTPreprocHandler.State ppState = file.getProjectImpl(false).getPreprocState(file);
+        return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 
