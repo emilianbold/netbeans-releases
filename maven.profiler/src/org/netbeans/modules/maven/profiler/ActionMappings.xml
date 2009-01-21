@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>profile-single</actionName>
         <packagings>
-            <packaging>jar</packaging>
+            <packaging>*</packaging>
         </packagings>
         <goals>
             <goal>process-classes</goal>
@@ -88,6 +88,26 @@ made subject to such option by the copyright holder.
             <exec.executable>${profiler.java}</exec.executable>
             <exec.classpathScope>${classPathScope}</exec.classpathScope>
             <profiler.action>profile-single</profiler.action>
+        </properties>
+    </action>
+
+    <action>
+        <actionName>profile-tests</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test-compile</goal>
+            <goal>surefire:test</goal>
+        </goals>
+        <properties>
+            <test>${className}</test>
+            <forkMode>once</forkMode>
+            <maven.surefire.debug>${profiler.args} -classpath %classpath</maven.surefire.debug>
+            <!--<exec.executable>${profiler.java}</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+            -->
+            <profiler.action>profile-tests</profiler.action>
         </properties>
     </action>
 </actions>

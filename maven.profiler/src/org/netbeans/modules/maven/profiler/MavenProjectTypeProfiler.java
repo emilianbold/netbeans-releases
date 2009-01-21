@@ -137,7 +137,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         
         NetBeansProfiler.getDefaultNB().setProfiledProject(project, profiledClassFile);
         
-        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, "profile-single"); //NOI18N
+        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, isTest ? "profile-tests":"profile-single"); //NOI18N
         else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
     }
 
