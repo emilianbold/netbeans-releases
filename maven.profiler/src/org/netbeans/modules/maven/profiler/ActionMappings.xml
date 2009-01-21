@@ -60,6 +60,21 @@ made subject to such option by the copyright holder.
     </action>
 
     <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>war</packaging>
+            <packaging>ejb</packaging>
+        </packagings>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <properties>
+            <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
+        </properties>
+    </action>
+
+    <action>
         <actionName>profile-single</actionName>
         <packagings>
             <packaging>jar</packaging>

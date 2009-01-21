@@ -46,6 +46,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
@@ -68,6 +69,8 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     final private Set<String> supportedPTypes = new HashSet<String>() {
         {
             add(NbMavenProject.TYPE_JAR);
+            add(NbMavenProject.TYPE_WAR);
+            add(NbMavenProject.TYPE_EJB);
         }
     };
     
@@ -137,5 +140,24 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         if (profiledClassFile != null) ProjectUtilities.invokeAction(project, "profile-single"); //NOI18N
         else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
     }
+
+    @Override
+    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter, String[][] projectPackagesDescr) {
+//        FIX THIS
+        return super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
+    }
+
+    @Override
+    public void computeProjectPackages(Project project, boolean subprojects, String[][] storage) {
+//        FIX THIS
+        super.computeProjectPackages(project, subprojects, storage);
+    }
+
+//    @Override
+//    public SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile, boolean profileUnderlyingFramework, String[][] projectPackagesDescr) {
+//        return super.getDefaultRootMethods(project, profiledClassFile, profileUnderlyingFramework, projectPackagesDescr);
+//    }
+
+
 
 }

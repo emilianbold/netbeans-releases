@@ -40,6 +40,8 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.api.project.Project;
@@ -51,7 +53,13 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
 public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-
+    final private Set<String> supportedTypes = new HashSet<String>() {
+        {
+            add(NbMavenProject.TYPE_JAR);
+            add(NbMavenProject.TYPE_WAR);
+            add(NbMavenProject.TYPE_EJB);
+        }
+    };
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
@@ -60,10 +68,10 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
         }
         NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
         String type = mavenprj.getPackagingType();
-        if (NbMavenProject.TYPE_JAR.equals(type)) {
-            //TODO
+        if (supportedTypes.contains(type)) {
+            return super.isActionEnable(action, project, lookup);
         }
-        return super.isActionEnable(action, project, lookup);
+        return false;
     }
 
     @Override
