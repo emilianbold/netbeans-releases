@@ -292,6 +292,11 @@ public class ConfigurationMakefileWriter {
         if (conf.isQmakeConfiguration()) {
             bw.write("Qt-${CONF}.mk: Qt-${CONF}.pro FORCE\n"); // NOI18N
             bw.write("\tqmake -o Qt-${CONF}.mk Qt-${CONF}.pro\n"); // NOI18N
+            if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                // qmake uses backslashes on Windows, this code corrects them to forward slashes
+                bw.write("\tsed -e 's:\\\\\\(.\\):/\\1:g' Qt-${CONF}.mk >Qt-${CONF}.tmp\n"); // NOI18N
+                bw.write("\tmv -f Qt-${CONF}.tmp Qt-${CONF}.mk\n"); // NOI18N
+            }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
         }
