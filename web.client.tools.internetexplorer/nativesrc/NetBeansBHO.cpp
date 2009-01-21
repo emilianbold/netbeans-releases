@@ -50,6 +50,8 @@
 #include <AtlConv.h> 
 #include "HttpMonitoringApp.h"
 #include "base64.h"
+
+#include "wininet.h"
 // NetbeansBHO
 
 extern char* gPostText;
@@ -140,6 +142,8 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnNavigateComplete(IDispatch *pDisp, VARIAN
 }
 
 void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIANT *pvarURL) {
+    //USES_CONVERSION;
+
     if(debuggerStarted) {
         CComPtr<IDispatch> spDisp;
         m_spWebBrowser->get_Document(&spDisp);
@@ -149,7 +153,53 @@ void STDMETHODCALLTYPE CNetBeansBHO::OnDocumentComplete(IDispatch *pDisp, VARIAN
             spHtmlDocument->get_readyState(&bstrState);
             if(bstrState == "complete") {
                 m_pDbgpConnection->handleDocumentComplete(spHtmlDocument);
+			}
+
+			// begin changes - this section somewhat works, but is not 
+			// received well by Netbeans, because we're sending the 
+			// same http message split into two parts, so this (second)
+			// part wipes out the first part that was already received.
+			/*
+			//Get the source using WinInet APIs
+			USES_CONVERSION;
+			HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
+												NULL, INTERNET_INVALID_PORT_NUMBER);
+			if (hSession != NULL) {
+				CString URL_string;
+				if ((pvarURL != NULL) && (V_VT(pvarURL) == VT_BSTR)) {
+					URL_string = V_BSTR(pvarURL);
+				}
+
+				HINTERNET hUrlFile = InternetOpenUrl(hSession, URL_string.GetString(), NULL, 0, 0, 0);
+				DWORD bufSize;
+				if (hUrlFile != NULL && InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
+					char *pBytes = new char[bufSize+1];
+					DWORD dwBytesRead = 0;
+					BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
+					if(read) {
+						pBytes[dwBytesRead] = 0;
+
+						HttpDbgpResponse msg;
+						msg.addChildTagWithValue(_T("type"), _T("response"));
+						msg.addChildTagWithValue(_T("url"), URL_string.GetString());
+						msg.addChildTagWithValue(_T("timestamp"), getJavaTimestamp());
+						msg.addChildTagWithValue(_T("id"), 123);
+						msg.addChildTagWithValue(_T("name"),URL_string.GetString());
+						msg.addChildTagWithValue(_T("responseText"), encodeToBase64(A2CT(pBytes)));
+						if (DbgpConnection::lastInstance != NULL) {
+							ScriptDebugger* sdbg = DbgpConnection::lastInstance->getScriptDebugger();
+							//if (sdbg!= NULL && sdbg->isHttpMonitorEnabled()) {
+								DbgpConnection::lastInstance->sendResponse(msg.toString());
+							//} 
+						}
+					    delete []pBytes;
+						
+					}
+				}
+
             }
+			*/
+            // end new changes
         }
     }else {
         if(m_pDbgpConnection != NULL) {
