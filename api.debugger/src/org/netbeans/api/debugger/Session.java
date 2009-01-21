@@ -275,11 +275,11 @@ public final class Session implements ContextProvider {
      * registerred DebuggerEngines.
      */
     public void kill () {
-        HashSet dead = new HashSet (Arrays.asList (engines));
-        Iterator i = dead.iterator ();
-        while (i.hasNext ())
-            ((DebuggerEngine) i.next ()).getActionsManager ().
+        DebuggerEngine[] enginesToKill = engines;
+        for (DebuggerEngine e : enginesToKill) {
+            e.getActionsManager ().
                 doAction (ActionsManager.ACTION_KILL);
+        }
     }
 
     /**
