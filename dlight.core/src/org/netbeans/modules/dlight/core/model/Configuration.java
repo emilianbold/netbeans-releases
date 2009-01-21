@@ -1,4 +1,4 @@
-package org.netbeans.dlight.core.model;
+package org.netbeans.modules.dlight.core.model;
 
 import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
 import java.awt.Color;
