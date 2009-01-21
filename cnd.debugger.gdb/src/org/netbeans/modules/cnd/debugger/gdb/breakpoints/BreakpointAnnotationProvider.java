@@ -113,9 +113,11 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             annotatedFiles.add(fo);
         }
-        DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
+        if (attachManagerListener) {
+            DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
                  this, DebuggerManager.getDebuggerManager()));
             attachManagerListener = false;
+        }
     }
 
     public void breakpointAdded(Breakpoint breakpoint) {
