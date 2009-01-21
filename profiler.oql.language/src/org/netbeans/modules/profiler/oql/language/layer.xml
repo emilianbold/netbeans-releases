@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-oql">
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
+                </folder>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColors.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
+                </folder>
+                <file name="language.nbs" url="language.nbs"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-oql">
+                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="text-x-oql-mime-resolver.xml" url="text-x-oql-mime-resolver.xml"/>
+        </folder>
+    </folder>
+</filesystem>
