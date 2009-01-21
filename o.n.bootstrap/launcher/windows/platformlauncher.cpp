@@ -216,7 +216,7 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
             strncpy(tmp, argv[++i], MAX_PATH);
-            if (!normalizePath(tmp)) {
+            if (!normalizePath(tmp, MAX_PATH)) {
                 logErr(false, true, "User directory path \"%s\" is not valid.", argv[i]);
                 return false;
             }
@@ -258,10 +258,9 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
                     || strcmp(argv[i], "-help") == 0
                     || strcmp(argv[i], "--help") == 0
                     || strcmp(argv[i], "/?") == 0) {
-                FILE *console = fopen("CON", "a");
-                if (console) {
-                    fprintf(console, "%s", HELP_MSG);
-                    fclose(console);
+                printToConsole(HELP_MSG);
+                if (!appendHelp.empty()) {
+                    printToConsole(appendHelp.c_str());
                 }
             }
             progArgs.push_back(argv[i]);
@@ -616,6 +615,12 @@ void PlatformLauncher::addToClassPath(const char *path, bool onlyIfExists) {
         classPath += ';';
     }
     classPath += path;
+}
+
+void PlatformLauncher::appendToHelp(const char *msg) {
+    if (msg) {
+        appendHelp = msg;
+    }
 }
 
 void PlatformLauncher::onExit() {
