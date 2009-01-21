@@ -385,6 +385,7 @@ public class NetbeansBuildActionJDOMWriter {
         findAndReplaceSimpleElement(innerCount, root,  "actionName", value.getActionName(), null);
         findAndReplaceSimpleElement(innerCount, root,  "displayName", value.getDisplayName(), null);
         findAndReplaceSimpleElement(innerCount, root,  "basedir", value.getBasedir(), null);
+        findAndReplaceSimpleElement(innerCount, root,  "preAction", value.getPreAction(), null);
         findAndReplaceSimpleElement(innerCount, root,  "recursive", value.isRecursive() == true ? null : String.valueOf( value.isRecursive() ), "true");
         findAndReplaceSimpleLists(innerCount, root, value.getPackagings(), "packagings", "packaging");
         findAndReplaceSimpleLists(innerCount, root, value.getGoals(), "goals", "goal");

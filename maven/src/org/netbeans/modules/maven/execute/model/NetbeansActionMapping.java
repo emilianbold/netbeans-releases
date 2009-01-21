@@ -59,6 +59,9 @@ public class NetbeansActionMapping implements java.io.Serializable {
 
     private String basedir;
 
+    private String preAction;
+
+
 
       //-----------/
      //- Methods -/
@@ -72,6 +75,13 @@ public class NetbeansActionMapping implements java.io.Serializable {
         this.basedir = basedir;
     }
 
+    public String getPreAction() {
+        return preAction;
+    }
+
+    public void setPreAction(String preAction) {
+        this.preAction = preAction;
+    }
 
     /**
      * Method addActivatedProfile.

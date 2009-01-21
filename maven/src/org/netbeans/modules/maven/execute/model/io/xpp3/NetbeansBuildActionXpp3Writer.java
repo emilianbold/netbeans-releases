@@ -115,6 +115,10 @@ public class NetbeansBuildActionXpp3Writer {
             {
                 serializer.startTag( NAMESPACE, "basedir" ).text( netbeansActionMapping.getBasedir() ).endTag( NAMESPACE, "basedir" );
             }
+            if ( netbeansActionMapping.getPreAction() != null )
+            {
+                serializer.startTag( NAMESPACE, "preAction" ).text( netbeansActionMapping.getPreAction() ).endTag( NAMESPACE, "preAction" );
+            }
             if ( netbeansActionMapping.isRecursive() != true )
             {
                 serializer.startTag( NAMESPACE, "recursive" ).text( String.valueOf( netbeansActionMapping.isRecursive() ) ).endTag( NAMESPACE, "recursive" );
