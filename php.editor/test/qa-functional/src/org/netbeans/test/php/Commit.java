@@ -372,7 +372,7 @@ public class Commit extends GeneralPHP
       Sleep( 1500 );
       System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
       CheckResult( eoPHP, "function  __construct() {", -1 );
-      int i = eoPHP.getLineNumber( ) - 2;
+      int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );
       eoPHP.deleteLine( i );
       eoPHP.deleteLine( i );
