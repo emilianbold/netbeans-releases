@@ -42,8 +42,8 @@
 package org.netbeans.modules.php.editor;
 
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Tor Norbye
  */
-public abstract class PHPTestBase extends GsfTestBase {
+public abstract class PHPTestBase extends CslTestBase {
 
     public PHPTestBase(String testName) {
         super(testName);
@@ -81,7 +81,7 @@ public abstract class PHPTestBase extends GsfTestBase {
     // If anyone can figure this out, please let me know and simplify the
     // test infrastructure.
     public static BaseDocument getDocumentFor(FileObject fo) {
-        BaseDocument doc = GsfTestBase.createDocument(read(fo));
+        BaseDocument doc = super.getDocument(read(fo));
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
         doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
 
