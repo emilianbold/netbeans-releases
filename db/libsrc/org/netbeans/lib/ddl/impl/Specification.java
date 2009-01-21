@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.adaptors.DatabaseMetaDataAdaptor;
 
-import org.openide.*;
 
 public class Specification implements DatabaseSpecification {
     
@@ -93,6 +92,8 @@ public class Specification implements DatabaseSpecification {
     public static final String DROP_FUNCTION = "DropFunctionCommand";
     public static final String CREATE_TRIGGER = "CreateTriggerCommand";
     public static final String DROP_TRIGGER = "DropTriggerCommand";
+    public static final String DEFAULT_DATABASE = "SetDefaultDatabaseCommand";
+    public static final String DEFAULT_SCHEMA = "SetDefaultSchemaCommand";
 
     /** Constructor */
     public Specification(HashMap description)
@@ -456,6 +457,22 @@ public class Specification implements DatabaseSpecification {
     throws CommandNotSupportedException
     {
         return (AbstractCommand)createCommand(DROP_TRIGGER, name);
+    }
+
+    public SetDefaultDatabase createSetDefaultDatabase(String dbname)
+        throws CommandNotSupportedException {
+        SetDefaultDatabase dcmd = (SetDefaultDatabase)createCommand(DEFAULT_DATABASE);
+        dcmd.setDatabase(dbname);
+        dcmd.setObjectName(dbname);
+        return dcmd;
+    }
+
+    public SetDefaultSchema createSetDefaultSchema(String schemaName)
+        throws CommandNotSupportedException {
+        SetDefaultSchema dcmd = (SetDefaultSchema)createCommand(DEFAULT_SCHEMA);
+        dcmd.setSchema(schemaName);
+        dcmd.setObjectName(schemaName);
+        return dcmd;
     }
 
     /** Returns type map */
