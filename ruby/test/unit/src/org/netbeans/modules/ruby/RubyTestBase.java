@@ -44,11 +44,14 @@ package org.netbeans.modules.ruby;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.nb.ast.Node;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -62,7 +65,9 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -116,9 +121,9 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         CodeStylePreferences.get(doc).getPreferences().putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, size);
     }
 
-    // XXX Parsing API
-//    @Override
-//    protected void initializeClassPaths() {
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        // XXX - Parsing API - preindexing
 //        System.setProperty("netbeans.user", getWorkDirPath());
 //        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
 //        assertNotNull(jrubyHome);
@@ -129,9 +134,12 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 //        // Force classpath initialization
 //        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
 //        platform.getGemManager().getNonGemLoadPath();
-//
-//        super.initializeClassPaths();
-//    }
+        Map<String, ClassPath> loadPath = new HashMap<String, ClassPath>();
+        FileObject testFileFO = FileUtil.toFileObject(getDataFile("/testfiles"));
+        ClassPath testFilesLoadPath = ClassPathSupport.createClassPath(testFileFO);
+        loadPath.put(RubyLanguage.SOURCE, testFilesLoadPath);
+        return loadPath;
+    }
 
     protected Node getRootNode(String relFilePath) {
         return AstUtilities.getRoot(getTestFile(relFilePath));
