@@ -51,10 +51,22 @@ made subject to such option by the copyright holder.
         <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
+        <fail message="When using cluster.path property, remove netbeans.dest.dir, enabled.clusters and disabled.clusters properties from platform config, they would be ignored.">
+            <condition>
+                <and>
+                    <isset property="cluster.path.evaluated"/>
+                    <or>
+                        <isset property="netbeans.dest.dir"/>
+                        <isset property="enabled.clusters"/>
+                        <isset property="disabled.clusters"/>
+                    </or>
+                </and>
+            </condition>
+        </fail>
     </target>
 
     <target name="-convert-old-project" unless="cluster.path.evaluated">
-        <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
+        <fail unless="netbeans.dest.dir" message="Either cluster.path/cluster.path.evaluated properties or netbeans.dest.dir must be set."/>
 
         <pathconvert property="old.project.update.tracking">
             <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
@@ -104,7 +116,7 @@ made subject to such option by the copyright holder.
         <condition property="cluster.path.basedir" value="${suite.dir}" else="${basedir}">
             <isset property="suite.dir"/>
         </condition>
-        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id" basedir="${cluster.path.basedir}"/>
+        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id" basedir="${cluster.path.basedir}"/>
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">
