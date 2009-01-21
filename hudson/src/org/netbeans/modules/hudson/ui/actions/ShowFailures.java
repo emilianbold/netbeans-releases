@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.io.FileNotFoundException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -102,6 +104,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 }
             });
             parser.parse(job.getUrl() + buildNumber + "/testReport/api/xml"); // NOI18N
+        } catch (FileNotFoundException x) {
+            Toolkit.getDefaultToolkit().beep();
         } catch (Exception x) {
             Exceptions.printStackTrace(x);
         }

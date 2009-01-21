@@ -40,6 +40,8 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.w3c.dom.Document;
@@ -47,34 +49,62 @@ import org.w3c.dom.Document;
 /**
  * Service representing the ability to create Hudson jobs for local projects.
  */
-public interface ProjectHudsonJobCreator {
+public interface ProjectHudsonJobCreatorFactory {
 
     /**
      * Checks whether this creator can handle a given project.
      * Should return as quickly as possible, i.e. just check basic project type.
      * @param project a local project
-     * @return true if this project type is suitable
+     * @return a factory for further work, or null if the project type is not handled
      */
-    boolean canHandle(Project project);
+    ProjectHudsonJobCreator forProject(Project project);
 
     /**
-     * Produces a suggested Hudson job name for a project.
-     * This might for example use {@link ProjectInformation#getName}.
-     * The actual job which gets created might have a uniquified name.
-     * @param project a local project for which {@link #canHandle} is true
-     * @return a proposed code name for the project as a Hudson job
+     * Callback to manage creation of the job for a particular project.
      */
-    String jobName(Project project);
+    interface ProjectHudsonJobCreator {
 
-    /**
-     * Provides the desired initial configuration for a project.
-     * Should only be called in case {@link #canHandle} is true.
-     * @param project a local project for which {@link #canHandle} is true
-     * @param configXml a document initially consisting of just {@code <project/>}
-     *                  to be populated with subelements
-     *                  following the format of {@code ${workdir}/jobs/${projname}/config.xml}
-     * @throws IOException in case project metadata cannot be read or is malformed
-     */
-    void configure(Project project, Document configXml) throws IOException;
+        /**
+         * Produces a suggested Hudson job name for a project.
+         * This might for example use {@link ProjectInformation#getName}.
+         * The actual job which gets created might have a uniquified name.
+         * @return a proposed code name for the project as a Hudson job
+         */
+        String jobName();
+
+        /**
+         * Provides specialized GUI for configuring options (beyond the project name).
+         * @return a customization panel
+         */
+        JComponent customizer();
+
+        /**
+         * Checks whether current configuration seems valid.
+         * @return an error message if invalid, null if valid
+         */
+        String error();
+
+        /**
+         * Adds listener to change in validity.
+         * @param listener a listener
+         */
+        void addChangeListener(ChangeListener listener);
+
+        /**
+         * Removes listener to change in validity.
+         * @param listener a listener
+         */
+        void removeChangeListener(ChangeListener listener);
+
+        /**
+         * Provides the desired initial configuration for a project.
+         * @param configXml a document initially consisting of just {@code <project/>}
+         *                  to be populated with subelements
+         *                  following the format of {@code ${workdir}/jobs/${projname}/config.xml}
+         * @throws IOException in case project metadata cannot be read or is malformed
+         */
+        void configure(Document configXml) throws IOException;
+
+    }
 
 }
