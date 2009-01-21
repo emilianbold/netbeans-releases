@@ -132,8 +132,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         //listen on the HTML parser and recolor after changes
-        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
+//        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
+//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
 
     /** Called after the kit is installed into JEditorPane */

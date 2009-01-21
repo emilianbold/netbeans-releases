@@ -99,7 +99,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 state.remove(IN_STYLE);
 
                 if (state.get(IN_INLINED_STYLE) != null) {
-                    if (htmlId == HTMLTokenId.VALUE) {
+                    if (htmlId == HTMLTokenId.VALUE_CSS) {
                         //continuation of the html style attribute value after templating
                         int sourceStart = ts.offset();
                         CharSequence text = htmlToken.text();
@@ -137,18 +137,13 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
                     //TokenSequence<? extends HTMLTokenId> ts = ts.subSequence(ts.offset());
                     //ts.moveStart();
-                    boolean style = false;
                     while (ts.moveNext()) {
                         Token<? extends HTMLTokenId> t = ts.token();
                         TokenId id = t.id();
 
                         if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                             break;
-                        } else if (id == HTMLTokenId.ARGUMENT) {
-                            if ("style".equalsIgnoreCase(t.text().toString())) {
-                                style = true;
-                            }
-                        } else if (id == HTMLTokenId.VALUE && style) {
+                        } else if (id == HTMLTokenId.VALUE_CSS) {
                             //found inlined css
                             int sourceStart = ts.offset();
                             String text = t.text().toString();

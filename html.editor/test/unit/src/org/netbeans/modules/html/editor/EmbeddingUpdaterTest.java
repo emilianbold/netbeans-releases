@@ -58,75 +58,75 @@ public class EmbeddingUpdaterTest extends TestBase {
         super(name);
     }
 
-    public void testLazyEmbeddingCreation() throws IOException, BadLocationException, InterruptedException {
-        FileSystem memFS = FileUtil.createMemoryFileSystem();
-        FileObject fo = memFS.getRoot().createData("test", "html");
-        assertNotNull(fo);
-
-        DataObject dobj = DataObject.find(fo);
-        assertNotNull(dobj);
-
-        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-        assertNotNull(cookie);
-
-        Document document = cookie.openDocument();
-        assertEquals(0, document.getLength());
-
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        Language l = registry.getLanguageByMimeType("text/html");
-        assertNotNull(l);
-
-        final long start = System.currentTimeMillis();
-        
-        //wait for the parser to finish so we can shorten the delay during
-        //we wait for the embedding to be created.
-        SyntaxParser parser = SyntaxParser.get(document, LanguagePath.get(HTMLTokenId.language()));
-        final Object lock = new Object();
-        parser.addSyntaxParserListener(new SyntaxParserListener() {
-            public void parsingFinished(List<SyntaxElement> elements) {
-                synchronized (lock) {
-                    System.out.println("parsed in " + (System.currentTimeMillis() - start) + "ms.");
-                    //wait for a while so the probability that the embedding updater haven't run yet is smaller
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        //ignore
-                    }
-                    lock.notifyAll();
-                }
-            }
-        });
-        document.insertString(0, "<a href=\"javascript:alert('hello')\"/> <div style=\"color: red\"/>", null);
-        //                        0123456789012345678901234567890123456789012345678901234567890123456789
-        //                        0         1         2         3         4         5         6
-        
-        synchronized (lock) {
-            lock.wait(5000); //5 sec timeout
-        }
-        
-        //test the embeddings
-        TokenHierarchy th = TokenHierarchy.get(document);
-        List<TokenSequence> embedded = th.embeddedTokenSequences(22, false);
-        boolean found = false;
-        for (TokenSequence ts : embedded) {
-            if (ts.language().mimeType().equals("text/javascript")) {
-                found = true;
-                break;
-            }
-        }
-
-        assertTrue("No javascript embedding created", found);
-
-        embedded = th.embeddedTokenSequences(52, false);
-        found = false;
-        for (TokenSequence ts : embedded) {
-            if (ts.language().mimeType().equals("text/x-css")) {
-                found = true;
-                break;
-            }
-        }
-
-        assertTrue("No css embedding created", found);
-
-    }
+//    public void testLazyEmbeddingCreation() throws IOException, BadLocationException, InterruptedException {
+//        FileSystem memFS = FileUtil.createMemoryFileSystem();
+//        FileObject fo = memFS.getRoot().createData("test", "html");
+//        assertNotNull(fo);
+//
+//        DataObject dobj = DataObject.find(fo);
+//        assertNotNull(dobj);
+//
+//        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+//        assertNotNull(cookie);
+//
+//        Document document = cookie.openDocument();
+//        assertEquals(0, document.getLength());
+//
+//        LanguageRegistry registry = LanguageRegistry.getInstance();
+//        Language l = registry.getLanguageByMimeType("text/html");
+//        assertNotNull(l);
+//
+//        final long start = System.currentTimeMillis();
+//
+//        //wait for the parser to finish so we can shorten the delay during
+//        //we wait for the embedding to be created.
+//        SyntaxParser parser = SyntaxParser.get(document, LanguagePath.get(HTMLTokenId.language()));
+//        final Object lock = new Object();
+//        parser.addSyntaxParserListener(new SyntaxParserListener() {
+//            public void parsingFinished(List<SyntaxElement> elements) {
+//                synchronized (lock) {
+//                    System.out.println("parsed in " + (System.currentTimeMillis() - start) + "ms.");
+//                    //wait for a while so the probability that the embedding updater haven't run yet is smaller
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException ex) {
+//                        //ignore
+//                    }
+//                    lock.notifyAll();
+//                }
+//            }
+//        });
+//        document.insertString(0, "<a href=\"javascript:alert('hello')\"/> <div style=\"color: red\"/>", null);
+//        //                        0123456789012345678901234567890123456789012345678901234567890123456789
+//        //                        0         1         2         3         4         5         6
+//
+//        synchronized (lock) {
+//            lock.wait(5000); //5 sec timeout
+//        }
+//        
+//        //test the embeddings
+//        TokenHierarchy th = TokenHierarchy.get(document);
+//        List<TokenSequence> embedded = th.embeddedTokenSequences(22, false);
+//        boolean found = false;
+//        for (TokenSequence ts : embedded) {
+//            if (ts.language().mimeType().equals("text/javascript")) {
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        assertTrue("No javascript embedding created", found);
+//
+//        embedded = th.embeddedTokenSequences(52, false);
+//        found = false;
+//        for (TokenSequence ts : embedded) {
+//            if (ts.language().mimeType().equals("text/x-css")) {
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        assertTrue("No css embedding created", found);
+//
+//    }
 }

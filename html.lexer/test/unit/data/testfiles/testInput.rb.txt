@@ -14,3 +14,10 @@
 <input onclick = 'bar' />
 .e.o.f.
 
+.t.e.s.t. Inlined CSS
+<input style="color: red"/>
+<input style = "color: green"/>
+<input style='color: yellow'/>
+<input style = 'color: fuchsia' />
+.e.o.f.
+
