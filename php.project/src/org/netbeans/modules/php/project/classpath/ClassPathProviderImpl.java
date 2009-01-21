@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -275,9 +276,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     }
 
     public ClassPath findClassPath(FileObject file, String type) {
-        if (type.equals(PhpProject.BOOT_CP)) {
+        if (type.equals(PhpSourcePath.BOOT_CP)) {
             return getBootClassPath();
-        } else if (type.equals(PhpProject.SOURCE_CP)) {
+        } else if (type.equals(PhpSourcePath.SOURCE_CP)) {
             return getSourcePath(file);
         } else if (type.equals(ClassPath.COMPILE)) {
             // ???
@@ -294,9 +295,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
      * The result is used for example for GlobalPathRegistry registrations.
      */
     public ClassPath[] getProjectClassPaths(String type) {
-        if (PhpProject.BOOT_CP.equals(type)) {
+        if (PhpSourcePath.BOOT_CP.equals(type)) {
             return new ClassPath[] {getBootClassPath()};
-        } else if (PhpProject.SOURCE_CP.equals(type)) {
+        } else if (PhpSourcePath.SOURCE_CP.equals(type)) {
             return new ClassPath[] {getSourcePath(FileType.SOURCE)};
         }
         assert false : "Unknown classpath type requested: " + type;
