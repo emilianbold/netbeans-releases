@@ -965,7 +965,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public void startDebug(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            startTarget(null, ui, true);
+            startTarget(null, ui, Deployment.Mode.DEBUG);
             _retrieveDebugInfo(null);
         } finally {
             refresh();
@@ -997,7 +997,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             setServerState(STATE_WAITING);
             // target == null - admin server
-            startProfileImpl(null, settings, forceRestart, ui);
+            _startProfile(null, settings, forceRestart, ui);
         } finally {
             refresh();
         }
@@ -1021,7 +1021,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (stopped) {
                 // restart in the mode the server was running in before
                 if (inProfile) {
-                    startProfileImpl(null, profilerSettings, true, ui);
+                    _startProfile(null, profilerSettings, true, ui);
                 } else if (inDebug) {
                     startDebugTarget(null, ui);
                 } else {
@@ -1075,7 +1075,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * @throws ServerException if the target cannot be started.
      */
     public void startTarget(Target target, ProgressUI ui) throws ServerException {
-        startTarget(target, ui, false);
+        startTarget(target, ui, Deployment.Mode.RUN);
     }
     
     /**
@@ -1087,7 +1087,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * @throws ServerException if the server cannot be started.
      */
     public void startDebugTarget(Target target, ProgressUI ui) throws ServerException {
-        startTarget(target, ui, true);
+        startTarget(target, ui, Deployment.Mode.DEBUG);
         _retrieveDebugInfo(target);
     }
     
@@ -1203,7 +1203,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     /**
      * @throws ServerException if the server cannot be started.
      */
-    private void startTarget(Target target, ProgressUI ui, boolean debugMode) throws ServerException {
+    private void startTarget(Target target, ProgressUI ui, Deployment.Mode mode) throws ServerException {
         StartServer ss = getStartServer();
         
         // No StartServer, have to assume manually started
@@ -1221,50 +1221,58 @@ public class ServerInstance implements Node.Cookie, Comparable {
         boolean needsRestart = ss.needsRestart(target);
         
         if (ss.isAlsoTargetServer(target)) {
-            if (debugMode) {
-                if (ss.isDebuggable(target)) { // already running in debug mode
-                    if (! needsRestart) {
-                        return;
+            switch(mode) {
+                case PROFILE: {
+                    assert false; // should never come this far
+                }
+                case DEBUG: {
+                    if (ss.isDebuggable(target)) { // already running in debug mode
+                        if (! needsRestart) {
+                            return;
+                        }
+                        if (!canControlAdmin || !canDebug) {
+                            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
+                            throw new ServerException(msg);
+                        }
+                        _stop(ui);
+                    } else if (isReallyRunning()) { // running but not debuggable
+                        if (!canControlAdmin || !canDebug) {
+                            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_DebugginThisServerNotSupported", getDisplayName());
+                            throw new ServerException(msg);
+                        }
+                        _stop(ui);
                     }
-                    if (!canControlAdmin || !canDebug) {
-                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
-                        throw new ServerException(msg);
-                    }
-                    _stop(ui);
-                } else if (isReallyRunning()) { // running but not debuggable
-                    if (!canControlAdmin || !canDebug) {
+                    // the server is stopped now
+                    if (!canDebug) {
                         String msg = NbBundle.getMessage(ServerInstance.class, "MSG_DebugginThisServerNotSupported", getDisplayName());
                         throw new ServerException(msg);
                     }
-                    _stop(ui);
-                }                
-                // the server is stopped now
-                if (!canDebug) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_DebugginThisServerNotSupported", getDisplayName());
-                    throw new ServerException(msg);
+                    // resolve conflicts with other servers
+                    ConflictData cd = anotherServerDebuggable(target);
+                    if (cd != null) { // another server instance with the same parameters
+                        resolveServerConflict(target, ui, cd);
+                    }
+                    _startDebug(target, ui);
+                    break;
                 }
-                // resolve conflicts with other servers
-                ConflictData cd = anotherServerDebuggable(target);
-                if (cd != null) { // another server instance with the same parameters
-                    resolveServerConflict(target, ui, cd);
-                }
-                _startDebug(target, ui);
-            } else {
-                if (isReallyRunning()) { // already running 
-                    if (! needsRestart) {
-                        return;
+                case RUN: {
+                    if (isReallyRunning()) { // already running
+                        if (! needsRestart) {
+                            return;
+                        }
+                        if (!canControlAdmin) {
+                            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
+                            throw new ServerException(msg);
+                        }
+                        _stop(ui);
                     }
                     if (!canControlAdmin) {
-                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
+                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
                         throw new ServerException(msg);
                     }
-                    _stop(ui);
+                    _start(ui);
+                    break;
                 }
-                if (!canControlAdmin) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
-                    throw new ServerException(msg);
-                }
-                _start(ui);
             }
         } else { // not also target server
             // this block ensure a running admin server to control other targets
@@ -1275,28 +1283,33 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }
                 _start(ui);
             }
-            if (debugMode) {
-                if (ss.isDebuggable(target)) {
-                    if ( ! needsRestart) {
-                        return;
+            switch (mode) {
+                case DEBUG: {
+                    if (ss.isDebuggable(target)) {
+                        if ( ! needsRestart) {
+                            return;
+                        }
+                        _stop(target, ui);
+                    } else if (ss.isRunning(target)) {
+                        _stop(target, ui);
                     }
-                    _stop(target, ui);
-                } else if (ss.isRunning(target)) {
-                    _stop(target, ui);
-                }
-                ConflictData cd = anotherServerDebuggable(target);
-                if (cd != null) { //another server instance with the same parameters
-                    resolveServerConflict(target, ui, cd);
-                }
-                _startDebug(target, ui);
-            } else {
-                if (ss.isRunning(target)) {
-                    if (! needsRestart) {
-                        return;
+                    ConflictData cd = anotherServerDebuggable(target);
+                    if (cd != null) { //another server instance with the same parameters
+                        resolveServerConflict(target, ui, cd);
                     }
-                    _stop(target, ui);
+                    _startDebug(target, ui);
+                    break;
                 }
-                _start(target, ui);
+                case RUN: {
+                    if (ss.isRunning(target)) {
+                        if (! needsRestart) {
+                            return;
+                        }
+                        _stop(target, ui);
+                    }
+                    _start(target, ui);
+                    break;
+                }
             }
         }
     }
@@ -1345,7 +1358,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     /** start server in the profile mode */
-    private void startProfileImpl(
+    private void _startProfile(
                                     Target target, 
                                     ProfilerServerSettings settings,
                                     boolean forceRestart,
