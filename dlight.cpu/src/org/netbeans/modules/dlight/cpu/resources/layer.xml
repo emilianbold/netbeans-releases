@@ -4,7 +4,7 @@
   <folder name="DLight">
     <folder name="ToolConfigurationProviders">
       <file name="DLightCPUToolConfigurationProvider.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.dlight.cpu.DLightCPUToolConfigurationProvider"/>
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.dlight.cpu.DLightCPUToolConfigurationProvider"/>
       </file>
     </folder>
   </folder>

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.cnd.gizmo.actions;
+package org.netbeans.modules.cnd.gizmo.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

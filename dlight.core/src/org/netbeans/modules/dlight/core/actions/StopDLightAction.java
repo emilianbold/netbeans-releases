@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.dlight.core.actions;
+package org.netbeans.modules.dlight.core.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -58,8 +58,8 @@ public class StopDLightAction extends AbstractAction
 
     public StopDLightAction() {
         super("Stop D-Light");
-        putValue("iconBase", "org/netbeans/dlight/core/resources/stop24.png"); // NOI18N
-        putValue(Action.SMALL_ICON, "org/netbeans/dlight/core/resources/stop.png"); // NOI18N
+        putValue("iconBase", "org/netbeans/modules/dlight/core/resources/stop24.png"); // NOI18N
+        putValue(Action.SMALL_ICON, "org/netbeans/modules/dlight/core/resources/stop.png"); // NOI18N
         DLightManager.getDefault().addDLightSessionListener(this);
     }
 
