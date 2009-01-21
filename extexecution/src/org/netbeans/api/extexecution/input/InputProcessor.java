@@ -41,6 +41,7 @@ package org.netbeans.api.extexecution.input;
 
 import java.io.Closeable;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Processes chars read by {@link InputReader}.
@@ -59,7 +60,7 @@ public interface InputProcessor extends Closeable {
      * @param chars characters to process
      * @throws IOException if any processing error occurs
      */
-    void processInput(char[] chars) throws IOException;
+    void processInput(@NonNull char[] chars) throws IOException;
 
     /**
      * Notifies the processor that it should reset its state.
