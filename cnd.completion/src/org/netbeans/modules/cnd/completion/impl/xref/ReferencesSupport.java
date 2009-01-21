@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -505,14 +507,34 @@ public final class ReferencesSupport {
         return false;
     }
 
+    private static class FileToDoc {
+        BaseDocument doc;
+        CsmFile file;
+        FileToDoc(BaseDocument doc, CsmFile file){
+            this.doc = doc;
+            this.file = file;
+        }
+    }
+    private static Reference<FileToDoc> lastCsmFile = null;
+
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
+            Reference<FileToDoc> lcf = lastCsmFile;
+            if (lcf != null) {
+                FileToDoc pair = lcf.get();
+                if (pair != null && pair.file == file) {
+                    return pair.doc;
+                }
+            }
             doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath().toString());
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(System.err);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
+        }
+        if (doc != null) {
+            lastCsmFile = new WeakReference<FileToDoc>(new FileToDoc(doc,file));
         }
         return doc;
     }
