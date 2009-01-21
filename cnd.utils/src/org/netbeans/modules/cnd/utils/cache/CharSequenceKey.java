@@ -60,26 +60,25 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         //return s.toString();
         if (s instanceof CharSequenceKey) {
             return (CharSequenceKey) s;
-        } else if (s instanceof String) {
-            return new CharSequenceKey((String)s);
         }
-        return new CharSequenceKey(s.toString());
+        return new CharSequenceKey(s);
     }
 
     public static CharSequence empty(){
         return EMPTY;
     }
     
-    private CharSequenceKey(String s) {
-        char[] v = s.toCharArray();
-        int n = v.length;
+    private CharSequenceKey(CharSequence s) {
+        int n = s.length();
         byte[] b = new byte[n];
+        char[] v = new char[n];
         for(int i = 0; i < n; i++){
-            int o = v[i];
+            int o = s.charAt(i);
             if ( (o & 0xFF) != o){
                 value = v;
                 return;
             }
+            v[i]= (char)o;
             b[i]= (byte)o;
         }
         value = b;
