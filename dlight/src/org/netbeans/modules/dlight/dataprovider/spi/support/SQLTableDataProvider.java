@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
 
 
 /**
- * Implements default SQLTableDataProvider for {@link org.netbeans.dlight.core.storage.model.SQLDataStorage}
+ * Implements default SQLTableDataProvider for {@link org.netbeans.modules.dlight.core.storage.model.SQLDataStorage}
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
@@ -73,7 +73,7 @@ public class SQLTableDataProvider implements TableDataProvider {
   }
 
   /**
-   * Returns {@link org.netbeans.dlight.core.dataprovider.model.TableDataModel} as
+   * Returns {@link org.netbeans.modules.dlight.core.dataprovider.model.TableDataModel} as
    * provided data model scheme
    * @return
    */
@@ -91,10 +91,10 @@ public class SQLTableDataProvider implements TableDataProvider {
 
    /**
    * Attaches DataProvider to the <param>storage</param>.
-   * All data requested by {@link org.netbeans.dlight.core.visualizer.model.Visualizer} will
+   * All data requested by {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer} will
    * be extracted from this storage. This method is invoked at the time Visualizer
-   * need to be displayed. See {@link org.netbeans.dlight.core.model.DLightManager#openVisualizer(org.netbeans.dlight.core.model.DLightTool, java.lang.String, org.netbeans.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
-   * @param storage {@link org.netbeans.dlight.core.storage.model.DataStorage}
+   * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
+   * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}
    */
   public final void attachTo(DataStorage storage) {
     this.storage = (SQLDataStorage) storage;
@@ -111,7 +111,7 @@ public class SQLTableDataProvider implements TableDataProvider {
   /**
    * Returns table view to visualize
    * @param tableMetadata table description to get data from
-   * @return list of {@link org.netbeans.dlight.core.storage.model.DataRow}
+   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
    */
   public List<DataRow> queryData(DataTableMetadata tableMetadata) {
     List<Column> columns = tableMetadata.getColumns();

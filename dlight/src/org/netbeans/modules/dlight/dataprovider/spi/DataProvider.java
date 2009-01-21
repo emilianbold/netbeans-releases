@@ -46,7 +46,7 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 
 
 /**
- * Provides the data to the {@link org.netbeans.dlight.core.visualizer.model.Visualizer}.
+ * Provides the data to the {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer}.
  * Use Global Lookup to regitser your  own DataProvider.
  * DataProvider represents also a factory to create instances using
  * {@link  #newInstance()} method
@@ -59,7 +59,7 @@ public interface DataProvider {
    */
   public String getID();
   /**
-   * Returns the list of {@link org.netbeans.dlight.core.dataprovider.model.DataModelScheme}
+   * Returns the list of {@link org.netbeans.modules.dlight.core.dataprovider.model.DataModelScheme}
    * this data provider can serve.
    * @return the list of data model this DataProvider can serve
    */
@@ -75,19 +75,19 @@ public interface DataProvider {
   public boolean provides(DataModelScheme dataModel);
   
   /**
-   * The types of {@link org.netbeans.dlight.core.storage.model.DataStorage} this
+   * The types of {@link org.netbeans.modules.dlight.core.storage.model.DataStorage} this
    *  DataProvider can get data from
-   * @return the list of {@link org.netbeans.dlight.core.storage.model.DataStorageType}
+   * @return the list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
    *  supported by this DataProvider
    */
   public List<DataStorageType> getSupportedDataStorageTypes();
 
   /**
    * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.dlight.core.visualizer.model.Visualizer} will
+   * All data requested by {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer} will
    * be extracted from this storage. This method is invoked at the time Visualizer
-   * need to be displayed. See {@link org.netbeans.dlight.core.model.DLightManager#openVisualizer(org.netbeans.dlight.core.model.DLightTool, java.lang.String, org.netbeans.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
-   * @param storage {@link org.netbeans.dlight.core.storage.model.DataStorage}.
+   * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
+   * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}.
    * Please do not call this method directly.
    * It will be invoked automatically when needed.
    */

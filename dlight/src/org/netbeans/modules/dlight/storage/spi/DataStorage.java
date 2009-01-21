@@ -47,12 +47,12 @@ import java.util.List;
 /**
  * DataStorage stores information collected by DataCollectors.
  *
- * {@link org.netbeans.dlight.core.storage.model.DataStorageType} is
+ * {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType} is
  * used to identify the way of communication with DataStorage
- * thus {@link org.netbeans.dlight.core.collector.model.DataCollector}
+ * thus {@link org.netbeans.modules.dlight.core.collector.model.DataCollector}
  * that whant to store some information into the DataStorage
- * need to support the same {@link org.netbeans.dlight.core.storage.model.DataStorageType}.
- * The same is for {@link org.netbeans.dlight.core.dataprovider.model.DataProvider},
+ * need to support the same {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}.
+ * The same is for {@link org.netbeans.modules.dlight.core.dataprovider.model.DataProvider},
  * that wants to read data from the DataStorage.
  */
 public abstract class DataStorage {
@@ -66,7 +66,7 @@ public abstract class DataStorage {
   /**
    * Checks if storage contains data described by <param>data</param>
    * @param data data to check in storage. In case <param>data</param>
-   * describes some virtual table and its {@link org.netbeans.dlight.core.storage.model.DataTableMetadata#getSourceTables()} method
+   * describes some virtual table and its {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata#getSourceTables()} method
    * returns not empty list, this method will check if all source tables this virtual table(view)
    * is built from  exists in the storage.
    * @return <code>true</code> if storage contains <param>data</param>,

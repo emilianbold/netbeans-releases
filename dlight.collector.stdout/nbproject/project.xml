@@ -46,7 +46,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.dlight.collector.stdout.api</package>
+                <package>org.netbeans.modules.dlight.collector.stdout.api</package>
             </public-packages>
         </data>
     </configuration>

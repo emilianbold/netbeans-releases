@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
 import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.nativeexecution.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.openide.util.Exceptions;
 
 final class ExecutionContext {

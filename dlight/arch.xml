@@ -225,7 +225,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
     final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns);
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata));
+            "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata));
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner"));
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
     cpuIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
