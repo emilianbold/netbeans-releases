@@ -59,6 +59,8 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
+//XXX: DISABLED, WILL LIKELY BE DELETED
+
 /**
  * This class creates lexer embeddings of CSS or JAVASCRIPT language in HTML code.
  * The HTML code may be either the top level language (.html file) or
