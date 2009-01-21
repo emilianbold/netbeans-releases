@@ -68,9 +68,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -637,38 +634,16 @@ public final class GsfUtilities {
     public static Collection<FileObject> getRoots(FileObject f, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
         Collection<FileObject> roots = new HashSet<FileObject>();
 
-        if (sourcePathIds != null) {
-            collectClasspathRoots(f, sourcePathIds, false, roots);
+        if (sourcePathIds == null) {
+            sourcePathIds = getKnownPathIds(true, false);
         }
 
-        if (binaryPathIds != null) {
-            collectClasspathRoots(f, binaryPathIds, true, roots);
+        if (binaryPathIds == null) {
+            binaryPathIds = getKnownPathIds(false, true);
         }
 
-        Project p = FileOwnerQuery.getOwner(f);
-        if (p != null) {
-            Sources sources = ProjectUtils.getSources(p);
-            SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            for(SourceGroup group : sourceGroups) {
-                if (FileUtil.isParentOf(group.getRootFolder(), f)) {
-                    // Collect source path roots
-                    if (sourcePathIds == null) {
-                        roots.add(group.getRootFolder());
-                    } else {
-                        collectClasspathRoots(group.getRootFolder(), sourcePathIds, false, roots);
-                    }
-
-                    // Collect binary path roots
-                    collectClasspathRoots(
-                        group.getRootFolder(),
-                        binaryPathIds != null ? binaryPathIds : getKnownPathIds(false, true),
-                        true,
-                        roots);
-
-                    break;
-                }
-            }
-        }
+        collectClasspathRoots(f, sourcePathIds, false, roots);
+        collectClasspathRoots(f, binaryPathIds, true, roots);
 
         Language l = LanguageRegistry.getInstance().getLanguageByMimeType(f.getMIMEType());
         if (l != null) {
@@ -712,16 +687,17 @@ public final class GsfUtilities {
             binaryPathIds = getKnownPathIds(false, true);
         }
 
+        collectClasspathRoots(null, sourcePathIds, false, roots);
+        collectClasspathRoots(null, binaryPathIds, true, roots);
+
         if (project != null) {
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            for(SourceGroup group : sourceGroups) {
-                collectClasspathRoots(group.getRootFolder(), sourcePathIds, false, roots);
-                collectClasspathRoots(group.getRootFolder(), binaryPathIds, true, roots);
+            Set<FileObject> rootsInProject = new HashSet<FileObject>();
+            for(FileObject root : roots) {
+                if (FileOwnerQuery.getOwner(root) == project) {
+                    rootsInProject.add(root);
+                }
             }
-        } else {
-            collectClasspathRoots(null, sourcePathIds, false, roots);
-            collectClasspathRoots(null, binaryPathIds, true, roots);
+            roots = rootsInProject;
         }
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -791,6 +767,10 @@ public final class GsfUtilities {
             if (binary) {
                 ids.addAll(r.getBinaryPathIds());
             }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Known Path Ids (source=" + source + ", binary=" + binary + "): " + ids); //NOI18N
         }
 
         return ids;
