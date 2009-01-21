@@ -371,10 +371,8 @@ public class Commit extends GeneralPHP
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
       Sleep( 1500 );
       System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
-      CheckResult( eoPHP, "function  __construct()", -2 );
-      CheckResult( eoPHP, "{", -1 );
-      int i = eoPHP.getLineNumber( ) - 2;
-      eoPHP.deleteLine( i );
+      CheckResult( eoPHP, "function  __construct() {", -1 );
+      int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );
       eoPHP.deleteLine( i );
       eoPHP.deleteLine( i );
@@ -436,17 +434,15 @@ public class Commit extends GeneralPHP
     // Check result
     String[] asResult =
     {
-      "function __construct($a, $d, $e)",
-      "{",
+      "function __construct($a, $d, $e) {",
       "$this->a = $a;",
       "$this->d = $d;",
       "$this->e = $e;",
       "}"
     };
-    CheckResult( eoPHP, asResult, -4 );
+    CheckResult( eoPHP, asResult, -3 );
     // Remove added
-    int il = eoPHP.getLineNumber( ) - 4;
-    eoPHP.deleteLine( il );
+    int il = eoPHP.getLineNumber( ) - 3;
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
@@ -479,33 +475,27 @@ public class Commit extends GeneralPHP
     // Check result
     String[] asResult2 =
     {
-      "public function getB()",
-      "{",
+      "public function getB() {",
       "return $this->b;",
       "}",
       "",  
-      "public function setB($b)",
-      "{",
+      "public function setB($b) {",
       "$this->b = $b;",
       "}",
       "",  
-      "public function getC()",
-      "{",
+      "public function getC() {",
       "return $this->c;",
       "}",
       "",  
-      "public function setC($c)",
-      "{",
+      "public function setC($c) {",
       "$this->c = $c;",
       "}",
       "",  
-      "public function getF()",
-      "{",
+      "public function getF() {",
       "return $this->f;",
       "}",
       "",  
-      "public function setF($f)",
-      "{",
+      "public function setF($f) {",
       "$this->f = $f;",
       "}"
     };

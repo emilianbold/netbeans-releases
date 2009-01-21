@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.Image;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -109,8 +111,19 @@ final class TestMethodNode extends AbstractNode {
         this.testcase = testcase;
 
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/junit/output/res/method.gif");    //NOI18N
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        if (testcase.trouble != null) {
+            return ImageUtilities.loadImage("org/netbeans/modules/junit/output/res/warning_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/junit/output/res/ok_16.png"); //NOI18N
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
 
     /**
