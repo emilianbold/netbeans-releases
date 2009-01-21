@@ -60,6 +60,9 @@ made subject to such option by the copyright holder.
                         <isset property="enabled.clusters"/>
                         <isset property="disabled.clusters"/>
                     </or>
+                    <not>
+                        <isset property="suite.dir"/>
+                    </not>
                 </and>
             </condition>
         </fail>
