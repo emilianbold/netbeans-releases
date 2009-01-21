@@ -36,31 +36,72 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.dlight.core.actions;
+package org.netbeans.cnd.gizmo.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.execution.api.NativeExecutableTarget;
 import org.netbeans.modules.dlight.execution.api.NativeExecutableTargetConfiguration;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.management.api.DLightManager;
-import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.execution.api.DLightToolkitManagement;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.openide.util.Exceptions;
 
-public final class StartDLightAction implements ActionListener {
+public final class StartGizmoAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         DLightLogger.instance.info("StartDLightAction performed @ " + System.currentTimeMillis());
-        String application = System.getProperty("dlight.application", "/export/home/Welcome/welcome");
+        String application = System.getProperty("dlight.application", "/export/home/ak119685/welcome");
         String[] arguments = System.getProperty("dlight.application.params", "1 2 3").split("[ \t]+");
         String[] environment = new String[]{};
+
+        Project project = getCurrentProject();
+        if (project != null) {
+            Configuration activeConfiguration = getActiveConfiguration(project);
+            if (activeConfiguration instanceof MakeConfiguration) {
+                MakeConfiguration makeConfiguration = (MakeConfiguration) activeConfiguration;
+                application = makeConfiguration.getAbsoluteOutputValue();
+                RunProfile runProfile = activeConfiguration.getProfile();
+                arguments = runProfile.getArgsArray();
+            }
+        }
+
         DLightLogger.instance.info("Set D-Light target! Application " + application);
         NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(application, arguments, environment);
 //    conf.setHost("localhost");
-//    conf.setSSHPort(22);
+//    conf.setSSHPort(2222);
 //    conf.setUser("masha");
         DLightTarget target = new NativeExecutableTarget(conf);
-        DLightSession session = DLightManager.getDefault().createSession(target, "Gizmo");
-        DLightManager.getDefault().startSession(session);
+        DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); //NOI18N
+        DLightToolkitManagement.getInstance().startSession(session);
+    }
+
+    private Configuration getActiveConfiguration(Project project) {
+        return ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
+    }
+
+    private Project getCurrentProject() {
+        Project project = OpenProjects.getDefault().getMainProject();
+        if (project == null) {
+            try {
+                Project[] projects = OpenProjects.getDefault().openProjects().get();
+                if (projects != null && projects.length == 1) {
+                    project = projects[0];
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return project;
     }
 }

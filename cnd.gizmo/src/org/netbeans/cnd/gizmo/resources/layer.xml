@@ -18,10 +18,22 @@
       </folder>
     </folder>
   </folder>
+  <folder name="Actions">
+    <folder name="DLight">
+        <file name="org-netbeans-dlight-gizmo-actions-StartGizmoAction.instance">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.cnd.gizmo.actions.Bundle"/>
+            <attr name="delegate" newvalue="org.netbeans.cnd.gizmo.actions.StartGizmoAction"/>
+            <attr name="displayName" bundlevalue="org.netbeans.cnd.gizmo.actions.Bundle#CTL_StartGizmoAction"/>
+            <attr name="iconBase" stringvalue="org/netbeans/cnd/gizmo/resources/gimzo_start.png"/>
+            <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+            <attr name="noIconInMenu" stringvalue="false"/>
+        </file>
+    </folder>
+  </folder>
   <folder name="Toolbars">
     <folder name="Build">
-      <file name="org-netbeans-dlight-core-actions-StartDLightAction.shadow">
-        <attr name="originalFile" stringvalue="Actions/DLight/org-netbeans-dlight-core-actions-StartDLightAction.instance"/>
+      <file name="org-netbeans-dlight-gizmo-actions-StartGizmoAction.shadow">
+        <attr name="originalFile" stringvalue="Actions/DLight/org-netbeans-dlight-gizmo-actions-StartGizmoAction.instance"/>
         <attr name="position" intvalue="0"/>
       </file>
     </folder>
