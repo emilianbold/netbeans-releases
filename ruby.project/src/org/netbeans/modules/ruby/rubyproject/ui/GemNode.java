@@ -49,7 +49,7 @@ import org.openide.nodes.AbstractNode;
  *
  * @author Erno Mononen
  */
-public final class GemNode extends AbstractNode {
+final class GemNode extends AbstractNode {
 
     private final FileObject gemDir;
 

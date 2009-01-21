@@ -60,7 +60,7 @@ import org.openide.nodes.Node;
  * 
  * @author Erno Mononen
  */
-public class GemChildrenFactory extends ChildFactory<FileObject> {
+final class GemChildrenFactory extends ChildFactory<FileObject> {
 
     private final RubyPlatform platform;
     private static final String GEMS_DIR = "gems"; //NOI18N
