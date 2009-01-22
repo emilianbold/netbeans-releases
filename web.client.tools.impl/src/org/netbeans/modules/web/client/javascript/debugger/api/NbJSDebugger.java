@@ -444,13 +444,13 @@ public final class NbJSDebugger {
     }
 
     public boolean supportsHttpMonitor() {
-        // Previously only Firefox supported HTTP monitor. Currently both
-        // IE and Firefox support HTTP monitor, so no check needs to be done.
-        // However, if in the future another browser is added that does not
-        // have HTTP monitor suppport, a conditional such as below would need
-        // to be added.
-        return true;
-        //return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
+        // If all browsers (eg: IE & Firefox support HTTP monitor,
+        // simply return true, otherwise, a condition is needed here
+        // to enable HTTP monitor on a per browser basis. To use the
+        // Experimental HTTP monitoring for IE, uncomment the
+        // return true, and comment out the following line.
+        //return true;
+        return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
     }
 
     public String getID() {
