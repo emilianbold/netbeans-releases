@@ -34,8 +34,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDisplayer;
@@ -94,12 +92,11 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
             }
         }
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
-
-        if (csmFile == null) {
+        CsmContext editorContext = CsmContext.create(doc, span[0], span[1]);
+        if (editorContext == null) {
             return "ERR_Not_Supported"; //NOI18N
         }
-        perform(new CsmContext(csmFile, CsmUtilities.getFileObject(doc), doc, span[0], span[1]));
+        perform(editorContext);
 
         return null;
     }

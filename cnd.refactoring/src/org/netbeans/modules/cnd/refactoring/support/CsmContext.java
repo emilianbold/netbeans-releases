@@ -40,9 +40,11 @@
 package org.netbeans.modules.cnd.refactoring.support;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -50,9 +52,13 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -71,7 +77,7 @@ public final class CsmContext {
     private CsmFunction enclosingFun = null;
     private CsmOffsetable objectUnderOffset = null;
 
-    public CsmContext(CsmFile file, FileObject fo, Document doc, int startOffset, int endOffset) {
+    private CsmContext(CsmFile file, FileObject fo, Document doc, int startOffset, int endOffset) {
         this.file = file;
         this.fo = fo;
         this.doc = doc;
@@ -79,6 +85,35 @@ public final class CsmContext {
         this.endOffset = endOffset;
     }
 
+    public static CsmContext create(final Document doc, int start, int end) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        if (csmFile != null) {
+            return new CsmContext(csmFile, CsmUtilities.getFileObject(doc), doc, start, end);
+        }
+        return null;
+    }
+
+    public static CsmContext create(final Lookup context) {
+        JTextComponent component = context.lookup(JTextComponent.class);
+        if (component == null) {
+            EditorCookie ec = context.lookup(EditorCookie.class);
+            if (ec != null && ec.getOpenedPanes() != null) {
+                component = ec.getOpenedPanes()[0];
+            }
+        }
+        if (component != null) {
+            CsmFile csmFile = CsmUtilities.getCsmFile(component, true);
+            if (csmFile != null) {
+                final int start = component.getSelectionStart();
+                final int end = component.getSelectionEnd();
+                final Document compDoc = component.getDocument();
+                final FileObject compFO = CsmUtilities.getFileObject(compDoc);
+                return new CsmContext(csmFile, compFO, compDoc, start, end);
+            }
+        }
+        return null;
+    }
+    
     public FileObject getFileObject() {
         return fo;
     }
@@ -129,39 +164,65 @@ public final class CsmContext {
         return objectUnderOffset;
     }
 
+    private Iterator<? extends CsmObject> getInnerObjects(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
+        Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
+        if (CsmKindUtilities.isFile(scope)) {
+            out = select.getDeclarations((CsmFile)scope, offsetFilter);
+        } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+            out = select.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
+        } else if (CsmKindUtilities.isClass(scope)) {
+            out = select.getClassMembers(((CsmClass)scope), offsetFilter);
+        } else {
+            out = scope.getScopeElements().iterator();
+        }
+        return out;
+    }
+    
     private synchronized void initPath() {
         if (path != null) {
             return;
         }
         path = new ArrayList<CsmObject>(5);
         path.add(file);
-        Collection<? extends CsmScopeElement> scopeElements = file.getDeclarations();
-        boolean cont;
-        do {
-            cont = false;
-            for (CsmScopeElement csmScopeElement : scopeElements) {
-                if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
-                    CsmOffsetable elem = (CsmOffsetable) csmScopeElement;
-                    // stop if element starts after offset
-                    if (this.startOffset < elem.getStartOffset()) {
-                        break;
-                    } else if (this.startOffset < elem.getEndOffset()) {
-                        // offset is in element
-                        cont = true;
-                        path.add(elem);
-                        rememberObject(elem);
-                        if (CsmKindUtilities.isScope(elem)) {
-                            // deep diving
-                            scopeElements = ((CsmScope)elem).getScopeElements();
-                            break;
-                        } else {
-                            objectUnderOffset = elem;
-                            cont = false;
+        CsmSelect select = CsmSelect.getDefault();
+        CsmFilter offsetFilter = select.getFilterBuilder().createOffsetFilter(startOffset);
+        Iterator<? extends CsmObject> fileElements = getInnerObjects(select, offsetFilter, file);
+        CsmObject innerDecl = fileElements.hasNext() ? fileElements.next() : null;
+        if (innerDecl != null) {
+            path.add(innerDecl);
+            rememberObject(innerDecl);
+            if (CsmKindUtilities.isScope(innerDecl)) {
+                CsmScope curScope = (CsmScope)innerDecl;
+                boolean cont;
+                do {
+                    cont = false;
+                    final Iterator<? extends CsmObject> innerObjects = getInnerObjects(select, offsetFilter, curScope);
+                    while (innerObjects.hasNext()) {
+                        CsmObject csmScopeElement = innerObjects.next();
+                        if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
+                            CsmOffsetable elem = (CsmOffsetable) csmScopeElement;
+                            // stop if element starts after offset
+                            if (this.startOffset < elem.getStartOffset()) {
+                                break;
+                            } else if (this.startOffset < elem.getEndOffset()) {
+                                // offset is in element
+                                cont = true;
+                                path.add(elem);
+                                rememberObject(elem);
+                                if (CsmKindUtilities.isScope(elem)) {
+                                    // deep diving
+                                    curScope = (CsmScope)elem;
+                                    break;
+                                } else {
+                                    objectUnderOffset = elem;
+                                    cont = false;
+                                }
+                            }
                         }
                     }
-                }
+                } while (cont);
             }
-        } while (cont);
+        }
     }
 
     private void rememberObject(CsmObject obj) {

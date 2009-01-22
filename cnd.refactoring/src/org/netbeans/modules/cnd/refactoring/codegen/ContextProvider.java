@@ -41,12 +41,7 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -61,18 +56,11 @@ public final class ContextProvider implements CodeGeneratorContextProvider {
     }
 
     public void runTaskWithinContext(final Lookup context, final Task task) {
-        JTextComponent component = context.lookup(JTextComponent.class);
-        if (component != null) {
-                CsmFile csmFile = CsmUtilities.getCsmFile(component, true);
-                if (csmFile != null) {
-                    final int startOffset = component.getSelectionStart();
-                    final int endOffset = component.getSelectionEnd();
-                    final Document doc = component.getDocument();
-                    final FileObject fo = CsmUtilities.getFileObject(doc);
-                    Lookup newContext = new ProxyLookup(context, Lookups.fixed(csmFile, new CsmContext(csmFile, fo, doc, startOffset, endOffset)));
-                    task.run(newContext);
-                    return;
-                }
+        CsmContext editorContext = CsmContext.create(context);
+        if (editorContext != null) {
+            Lookup newContext = new ProxyLookup(context, Lookups.fixed(editorContext));
+            task.run(newContext);
+            return;
         }
         task.run(context);
     }

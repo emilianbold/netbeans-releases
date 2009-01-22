@@ -45,20 +45,15 @@ import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -151,30 +146,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     /*package*/ static abstract class TextComponentTask implements Runnable {
 
-        private final int caret;
         private RefactoringUI ui;
         private Lookup lookup;
         private final CsmContext editorContext;
         public TextComponentTask(Lookup lkp) {
-            JTextComponent textC = lkp.lookup(EditorCookie.class).getOpenedPanes()[0];
             this.lookup = lkp;
-            this.caret = textC.getCaretPosition();
-            CsmFile csmFile = CsmUtilities.getCsmFile(textC, false);
-            if (csmFile == null) {
-                this.editorContext = null;
-            } else {
-                int start = textC.getSelectionStart();
-                int end = textC.getSelectionEnd();
-                Document doc = textC.getDocument();
-                FileObject fo = CsmUtilities.getFileObject(doc);
-                this.editorContext = new CsmContext(csmFile, fo, doc, start, end);
-            }
-            assert caret != -1;
+            this.editorContext = CsmContext.create(lkp);
         }
 
         public final void run() {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
-            if (editorContext == null) {
+            if (ctx == null && editorContext == null) {
                 //inform user, that we were not able to start refactoring.
                 Toolkit.getDefaultToolkit().beep();
                 return;
