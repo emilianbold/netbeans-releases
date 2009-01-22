@@ -43,7 +43,6 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
@@ -167,15 +166,6 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return -2;
     }
 
-    private static void paintFocusRect( Graphics g, Rectangle rect ) {
-        Graphics2D g2d = (Graphics2D) g;
-        Shape s = new RoundRectangle2D.Float(rect.x, rect.y, rect.width, rect.height, 5, 5);
-        Paint p = g2d.getPaint();
-        g2d.setColor(UIManager.getColor("NbTabControl.focusedTabBackground"));
-        g2d.fill(s);
-        g2d.setPaint(p);
-    }
-
     private static class AquaPainter implements TabPainter {
 
         public Insets getBorderInsets(Component c) {
@@ -286,18 +276,20 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
             Polygon poly = getInteriorPolygon(ren);
             paintTabGradient( g, ren, poly );
 
-            if( ren.isActive() && ren.isSelected() ) {
-                Rectangle rect = ren.getTextRectangle(g);
-                rect.grow(1, 0);
-                rect.y += 4;
-                paintFocusRect(g, rect);
-            }
-
             //Get the close button bounds, more or less
             Rectangle r = new Rectangle();
             getCloseButtonRectangle(ren, r, new Rectangle(0, 0,
                                                           ren.getWidth(),
                                                           ren.getHeight()));
+
+            if( ren.isActive() && ren.isSelected() ) {
+                int x = 0;
+                int y = 0;
+                int width = ren.getWidth();
+                g.setColor(UIManager.getColor("NbTabControl.focusedTabBackground"));
+                g.drawLine(x, y+1, x+width-2, y+1);
+                g.drawLine(x, y+2, x+width-2, y+2);
+            }
 
             if (!g.hitClip(r.x, r.y, r.width, r.height)) {
                 return;
@@ -369,6 +361,11 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 g.setColor(UIManager.getColor("NbTabControl.editorBorderShadowColor"));
                 g.drawLine(x+width-2, y+1, x+width-2, y+height-(ren.isSelected() ? 1 : 2));
             }
+            if( ren.isActive() && ren.isSelected() ) {
+                g.setColor(UIManager.getColor("NbTabControl.focusedTabBackground"));
+                g.drawLine(x, y+1, x+width-1, y+1);
+                g.drawLine(x, y+2, x+width-1, y+2);
+            }
         }
 
         public void paintInterior(Graphics g, Component c) {
@@ -376,15 +373,6 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
 
             Polygon poly = getInteriorPolygon(ren);
             paintTabGradient( g, ren, poly );
-            if( ren.isActive() && ren.isSelected() ) {
-                Graphics2D g2d = (Graphics2D) g;
-                Rectangle rect = ren.getTextRectangle(g);
-                rect.grow(1, 0);
-                rect.y += 4;
-                rect.x -= 20;
-                rect.width += 20;
-                paintFocusRect(g, rect);
-            }
         }
 
         public boolean isBorderOpaque() {
@@ -464,13 +452,14 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
 
             Polygon poly = getInteriorPolygon(ren);
             paintTabGradient( g, ren, poly );
+
             if( ren.isActive() && ren.isSelected() ) {
-                Graphics2D g2d = (Graphics2D) g;
-                Rectangle rect = ren.getTextRectangle(g);
-                rect.grow(1, 0);
-                rect.y += 4;
-                rect.width += 20;
-                paintFocusRect(g, rect);
+                int x = 0;
+                int y = 0;
+                int width = ren.getWidth();
+                g.setColor(UIManager.getColor("NbTabControl.focusedTabBackground"));
+                g.drawLine(x, y+1, x+width, y+1);
+                g.drawLine(x, y+2, x+width, y+2);
             }
         }
 

@@ -448,16 +448,6 @@ public abstract class AbstractTabCellRenderer extends JLabel
      * @param g The graphics context
      */
     protected void paintIconAndText(Graphics g) {
-        paintIconAndText(g, true);
-    }
-
-    /**
-     * Paint tab text or just retrieve the binding rectangle for tab text.
-     * @param g
-     * @param paint True to actually paint the text, false to calculate the rectangle only.
-     * @return Rectangle for tab text.
-     */
-    private Rectangle paintIconAndText( Graphics g, boolean paint ) {
         g.setFont(getFont());
         FontMetrics fm = g.getFontMetrics(getFont());
         //Find out what height we need
@@ -514,7 +504,7 @@ public abstract class AbstractTabCellRenderer extends JLabel
             //fiddle with the string to get "...blah"
             String s = preTruncateString(getText(), g, txtW - 4); //subtract 4 so it's not flush w/ tab edge
             txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), HtmlRenderer.STYLE_CLIP, paint);
+                              getForeground(), HtmlRenderer.STYLE_CLIP, true);
         } else {
             String s;
             if (isClipRight()) {
@@ -525,18 +515,8 @@ public abstract class AbstractTabCellRenderer extends JLabel
                 s = getText();
             }
             txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
-                              getForeground(), HtmlRenderer.STYLE_TRUNCATE, paint);
+                              getForeground(), HtmlRenderer.STYLE_TRUNCATE, true);
         }
-        return new Rectangle(txtX, txtY-txtH, txtW, txtH);
-    }
-
-    /**
-     * Retrieve the binding rectangle which will contain the tab text.
-     * @param g
-     * @return Rectangle which the tab text will be painted into.
-     */
-    protected final Rectangle getTextRectangle(Graphics g) {
-        return paintIconAndText(g, false);
     }
 
     static String preTruncateString(String s, Graphics g, int availPixels) {

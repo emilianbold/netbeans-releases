@@ -51,13 +51,11 @@ import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.openide.awt.HtmlRenderer;
 
 import javax.swing.plaf.ComponentUI;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
@@ -165,17 +163,6 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         if( textW > realTextWidth )
             textX += (textW - realTextWidth) / 2;
 
-        if( isFocused(index) && isSelected(index) ) {
-            int highlightY = (height - textHeight)/2;
-            Shape s = new RoundRectangle2D.Float(textX, highlightY, realTextWidth, textHeight, 5, 5);
-
-            Graphics2D g2d = (Graphics2D) g;
-            Paint p = g2d.getPaint();
-
-            g2d.setColor(UIManager.getColor("NbTabControl.focusedTabBackground")); //NOOI18N
-            g2d.fill(s);
-            g2d.setPaint(p);
-        }
 
         HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),
                           UIManager.getColor("textText"),
@@ -211,30 +198,29 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.setColor(UIManager.getColor("NbTabControl.editorTabBackground"));
             g.drawLine(x, y+height-1, x+width, y+height-1);
         }
+        if( isSelected(index) && isFocused(index) ) {
+            g.setColor(UIManager.getColor("NbTabControl.focusedTabBackground"));
+            g.drawLine(x+(index == 0 ? 0 : 1), y+1, x+width-1, y+1);
+            g.drawLine(x+(index == 0 ? 0 : 1), y+2, x+width-1, y+2);
+        }
     }
 
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
+        Graphics2D g2d = (Graphics2D) g;
+        Paint p = g2d.getPaint();
         if( isSelected(index) ) {
-            Graphics2D g2d = (Graphics2D) g;
-            Paint p = g2d.getPaint();
             g2d.setPaint( ColorUtil.getGradientPaint(x, y, UIManager.getColor("NbTabControl.selectedTabBrighterBackground"),
                     x, y+height/2, UIManager.getColor("NbTabControl.selectedTabDarkerBackground")) );
-            g2d.fillRect(x, y, width, height);
-            g2d.setPaint(p);
-
+        } else if( isMouseOver(index) ) {
+            g2d.setPaint( ColorUtil.getGradientPaint(x, y, UIManager.getColor("NbTabControl.mouseoverTabBrighterBackground"),
+                    x, y+height/2, UIManager.getColor("NbTabControl.mouseoverTabDarkerBackground")) );
         } else {
-            Graphics2D g2d = (Graphics2D) g;
-            Paint p = g2d.getPaint();
-            if( isMouseOver(index) )
-                g2d.setPaint( ColorUtil.getGradientPaint(x, y, UIManager.getColor("NbTabControl.mouseoverTabBrighterBackground"),
-                        x, y+height/2, UIManager.getColor("NbTabControl.mouseoverTabDarkerBackground")) );
-            else
-                g2d.setPaint( ColorUtil.getGradientPaint(x, y, UIManager.getColor("NbTabControl.inactiveTabBrighterBackground"),
-                        x, y+height/2, UIManager.getColor("NbTabControl.inactiveTabDarkerBackground")) );
-            g2d.fillRect(x, y, width, height);
-            g2d.setPaint(p);
+            g2d.setPaint( ColorUtil.getGradientPaint(x, y, UIManager.getColor("NbTabControl.inactiveTabBrighterBackground"),
+                    x, y+height/2, UIManager.getColor("NbTabControl.inactiveTabDarkerBackground")) );
         }
+        g2d.fillRect(x, y, width, height);
+        g2d.setPaint(p);
     }
 
     private static void initIcons() {
