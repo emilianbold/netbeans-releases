@@ -50,10 +50,10 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Voskresensky
  */
-public final class EncapsulateFieldAction extends CsmRefactoringGlobalAction {
+public final class EncapsulateFieldsAction extends CsmRefactoringGlobalAction {
 
-    public EncapsulateFieldAction() {
-        super(NbBundle.getMessage(EncapsulateFieldAction.class, "LBL_EncapsulateFieldsAction"), null); // NOI18N
+    public EncapsulateFieldsAction() {
+        super(NbBundle.getMessage(EncapsulateFieldsAction.class, "LBL_EncapsulateFieldsAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     

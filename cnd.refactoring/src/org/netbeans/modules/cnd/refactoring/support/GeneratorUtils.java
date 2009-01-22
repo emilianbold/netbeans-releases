@@ -77,6 +77,9 @@ public class GeneratorUtils {
     }
 
     public static CsmClass extractEnclosingClass(CsmContext editorContext) {
+        if (editorContext == null) {
+            return null;
+        }
         CsmClass cls = editorContext.getEnclosingClass();
         if (cls == null) {
             CsmFunction fun = editorContext.getEnclosingFunction();

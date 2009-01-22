@@ -54,7 +54,9 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -164,18 +166,33 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 //        }
 //        return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNoFields", clazzElm.getQualifiedName()));
 //    }
+    private CsmObject getRefactoredCsmElement() {
+        CsmObject out = getStartReferenceObject();
+        if (out == null) {
+            CsmContext editorContext = getEditorContext();
+            if (editorContext != null) {
+                out = editorContext.getObjectUnderOffset();
+                if (!CsmKindUtilities.isField(out)) {
+                    out = GeneratorUtils.extractEnclosingClass(getEditorContext());
+                }
+            }
+        }
+        return out;
+    }
+    
     @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
         // check if resolved element
-        preCheckProblem = isResovledElement(getStartReferenceObject());
+        CsmObject refactoredElement = getRefactoredCsmElement();
+        preCheckProblem = isResovledElement(refactoredElement);
         fireProgressListenerStep();
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
         // check if valid element
-        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(refactoredElement);
         initReferencedObjects(directReferencedObject);
         fireProgressListenerStep();
         // support only fields and enclosing classes

@@ -74,7 +74,7 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     }
 
     private static Lookup createLookup(CsmObject selectedObject, CsmContext editorContext) {
-        assert selectedObject != null : "must be non null object to refactor";
+        assert selectedObject != null || editorContext != null: "must be non null object to refactor";
         if (editorContext == null) {
             return Lookups.fixed(selectedObject);
         } else if (selectedObject == null) {

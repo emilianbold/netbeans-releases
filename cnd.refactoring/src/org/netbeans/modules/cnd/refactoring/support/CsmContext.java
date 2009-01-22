@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -97,8 +98,9 @@ public final class CsmContext {
         JTextComponent component = context.lookup(JTextComponent.class);
         if (component == null) {
             EditorCookie ec = context.lookup(EditorCookie.class);
-            if (ec != null && ec.getOpenedPanes() != null) {
-                component = ec.getOpenedPanes()[0];
+            JEditorPane[] openedPanes = (ec == null) ? null : CsmUtilities.getOpenedPanesInEQ(ec);
+            if (openedPanes != null && openedPanes.length > 0) {
+                component = openedPanes[0];
             }
         }
         if (component != null) {
@@ -164,7 +166,7 @@ public final class CsmContext {
         return objectUnderOffset;
     }
 
-    private Iterator<? extends CsmObject> getInnerObjects(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
+    private Iterator<? extends CsmObject> getInnerObjectsIterator(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
         Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
         if (CsmKindUtilities.isFile(scope)) {
             out = select.getDeclarations((CsmFile)scope, offsetFilter);
@@ -186,7 +188,7 @@ public final class CsmContext {
         path.add(file);
         CsmSelect select = CsmSelect.getDefault();
         CsmFilter offsetFilter = select.getFilterBuilder().createOffsetFilter(startOffset);
-        Iterator<? extends CsmObject> fileElements = getInnerObjects(select, offsetFilter, file);
+        Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(select, offsetFilter, file);
         CsmObject innerDecl = fileElements.hasNext() ? fileElements.next() : null;
         if (innerDecl != null) {
             path.add(innerDecl);
@@ -196,7 +198,7 @@ public final class CsmContext {
                 boolean cont;
                 do {
                     cont = false;
-                    final Iterator<? extends CsmObject> innerObjects = getInnerObjects(select, offsetFilter, curScope);
+                    final Iterator<? extends CsmObject> innerObjects = getInnerObjectsIterator(select, offsetFilter, curScope);
                     while (innerObjects.hasNext()) {
                         CsmObject csmScopeElement = innerObjects.next();
                         if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
