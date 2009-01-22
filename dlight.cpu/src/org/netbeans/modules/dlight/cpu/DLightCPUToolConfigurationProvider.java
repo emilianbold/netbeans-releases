@@ -5,11 +5,15 @@
 package org.netbeans.modules.dlight.cpu;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
+import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
@@ -47,15 +51,11 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     indConfiguration.put("aggregation", "avrg");
     DataTableMetadata functionsListMetaData = null;
     if (USE_DTRACE) {
-      Column cpuId = new Column("cpu_id", Integer.class, "CPU", null);
-      Column threadId = new Column("thread_id", Integer.class, "Thread", null);
-      Column timestamp = new Column("time_stamp", Long.class, "Timestamp", null);
-      Column stackId = new Column("leaf_id", Integer.class, "Stack", null);
-      functionsListMetaData = new DataTableMetadata("CallStack", Arrays.asList(cpuId, threadId, timestamp, stackId));
       String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/calls.d");
-      DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(functionsListMetaData));
+      DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(createProfilerTableMetadata()));
       dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
       toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "cpu:"));
+      functionsListMetaData = createFunctionsListMetadata();
     } else {
       SunStudioDCConfiguration sunStudioConfiguration = new SunStudioDCConfiguration(Arrays.asList(SunStudioDCConfiguration.CollectedInfo.FUNCTIONS_LIST));
       toolConfiguration.addDataCollectorConfiguration(sunStudioConfiguration);
@@ -68,6 +68,25 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     cpu2.setVisualizerConfiguration(new CallersCalleesVisualizerConfiguration(data, SunStudioDCConfiguration.getFunctionNameColumnName(), true));
     return toolConfiguration;
 
+  }
+
+  private DataTableMetadata createProfilerTableMetadata() {
+    Column cpuId = new Column("cpu_id", Integer.class, "CPU", null);
+    Column threadId = new Column("thread_id", Integer.class, "Thread", null);
+    Column timestamp = new Column("time_stamp", Long.class, "Timestamp", null);
+    Column stackId = new Column("leaf_id", Integer.class, "Stack", null);
+    return new DataTableMetadata("CallStack", Arrays.asList(cpuId, threadId, timestamp, stackId));
+  }
+
+  private DataTableMetadata createFunctionsListMetadata() {
+    List<Column> columns = new ArrayList<Column>();
+    columns.add(new Column("name", String.class, "Function Name", null));
+    List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
+    for (FunctionMetric metric : metricsList) {
+      columns.add(new Column(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null));
+    }
+    DataTableMetadata result = new DataTableMetadata(StackDataStorage.STACK_METADATA_VIEW_NAME, columns);
+    return result;
   }
 
   class MyCLIOParser implements CLIOParser {
