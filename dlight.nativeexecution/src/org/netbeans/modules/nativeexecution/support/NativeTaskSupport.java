@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
 
-import java.util.concurrent.CancellationException;
+package org.netbeans.modules.nativeexecution.support;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.openide.util.Exceptions;
 
 /**
- * The listener interface for receiving task's execution state shanges events.
+ *
+ * @author ak119685
  */
-public interface NativeTaskListener {
+public class NativeTaskSupport {
+    private static final String CMD_KILL="/bin/kill"; // NOI18N
 
-    /**
-     * Invoked when <tt>NativeTask</tt> started.
-     * Task is considered to be started if and only if it has been submitted,
-     * native process has been crreated and PID of this process has been
-     * obtained.
-     *
-     * @param task task that started
-     */
-    public void taskStarted(NativeTask task);
+    public static boolean kill(ExecutionEnvironment env, int pid) {
+        return kill(env, 15, pid);
+    }
 
-    /**
-     * Invoked when <tt>NativeTask</tt> finished.
-     * Task is considered to be finished if underlaying system process exited
-     * normally.
-     *
-     * @param task task that finished
-     * @param result exit code of the underlaying system process
-     */
-    public void taskFinished(NativeTask task, Integer result);
+    public static boolean kill(ExecutionEnvironment env, int signal, int pid) {
+        NativeTask task = new NativeTask(env, CMD_KILL,
+                new String[]{"-" + Integer.toString(signal), Integer.toString(pid)});
 
-    /**
-     * Invoked when <tt>NativeTask</tt> cancelled.
-     *
-     * @param task task that was cancelled
-     * @param cex <tt>CancellationException</tt> that causes cancellation.
-     */
-    public void taskCancelled(NativeTask task, CancellationException cex);
+        Integer result = new Integer(-1);
+        
+        try {
+            result = task.invoke();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
-    /**
-     * Invoked when some exception occured during <tt>NativeTask</tt> execution.
-     * @param task task that failed due to error
-     * @param t causing <tt>Throwable</tt>
-     */
-    public void taskError(NativeTask task, Throwable t);
+        return result.intValue() == 0;
+    }
 }
