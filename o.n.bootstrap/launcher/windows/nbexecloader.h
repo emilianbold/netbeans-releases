@@ -10,8 +10,14 @@
 
 #include "utilsfuncs.h"
 
+#define HELP_MSG \
+"\
+  --console suppress    supppress console output\n\
+  --console new         open new console for output\n\
+\n"
+
 class NBExecLoader {
-    typedef int (*StartPlatform)(int argc, char *argv[]);
+    typedef int (*StartPlatform)(int argc, char *argv[], const char *help);
 
 public:
     NBExecLoader()
@@ -37,7 +43,7 @@ public:
             return -1;
         }
         logMsg("Starting platform...\n");
-        return startPlatform(argc, argv);
+        return startPlatform(argc, argv, HELP_MSG);
     }
 
 private:

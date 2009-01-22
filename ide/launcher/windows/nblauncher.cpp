@@ -58,6 +58,11 @@ const char *NbLauncher::HOME_TOKEN = "${HOME}";
 const char *NbLauncher::REG_SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
 const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
 
+const char *NbLauncher::CON_ATTACH_MSG = 
+"\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
+"Use 'netbeans.exe --console suppress' to suppress console output.\n"
+"Use 'netbeans.exe --console new' to create a separate console window.\n";
+
 const char *NbLauncher::staticOptions[] = {
     "-J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade",
     "-J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense",
@@ -83,7 +88,7 @@ int NbLauncher::start(char *cmdLine) {
 int NbLauncher::start(int argc, char *argv[]) {
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
-    if (!checkLoggingArg(argc, argv, true) || !setUpProcess(argc, argv) || !initBaseNames() || !readClusterFile()) {
+    if (!checkLoggingArg(argc, argv, true) || !setUpProcess(argc, argv, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
         return -1;
     }
 

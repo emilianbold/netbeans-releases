@@ -319,9 +319,9 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             list.add(action);
             list.add(RefactoringActionsFactory.whereUsedAction());
             CsmObject obj = this.getCsmObject();
-            if (CsmKindUtilities.isField(obj)) {
+            if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {
                 list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
-            } else if (CsmKindUtilities.isFunction(obj)) {
+            } else if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isDestructor(obj)) {
                 list.add(CsmRefactoringActionsFactory.changeParametersAction());
             }
             list.add(null);

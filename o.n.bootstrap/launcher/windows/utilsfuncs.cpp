@@ -281,7 +281,7 @@ bool checkLoggingArg(int argc, char *argv[], bool delFile) {
     return true;
 }
 
-bool setUpProcess(int &argc, char *argv[]) {
+bool setUpProcess(int &argc, char *argv[], const char *attachMsg) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(ARG_NAME_CONSOLE, argv[i]) == 0) {
             if (i + 1 == argc) {
@@ -314,10 +314,22 @@ bool setUpProcess(int &argc, char *argv[]) {
         if (attachConsole) {
             if (!attachConsole((DWORD)-1)) {
                 logErr(true, false, "AttachConsole failed.");
+            } else if (attachMsg) {
+                printToConsole(attachMsg);
             }
         } else {
             logErr(true, false, "GetProcAddress() for AttachConsole failed.");
         }
     }
     return true;
+}
+
+bool printToConsole(const char *msg) {
+    FILE *console = fopen("CON", "a");
+    if (!console) {
+        return false;
+    }
+    fprintf(console, "%s", msg);
+    fclose(console);
+    return false;
 }

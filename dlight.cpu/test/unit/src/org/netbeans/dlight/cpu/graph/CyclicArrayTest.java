@@ -40,6 +40,7 @@
 package org.netbeans.dlight.cpu.graph;
 
 import org.junit.Test;
+import org.netbeans.modules.dlight.cpu.graph.CyclicArray;
 import static org.junit.Assert.*;
 
 /**

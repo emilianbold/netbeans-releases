@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.util.CopyTask;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -79,7 +81,7 @@ public class CopyTaskTest {
     public void testCopyTo() throws InterruptedException {
         System.out.println("copyTo");
         String srcFileName = "/tmp/src";
-        String dstFileName = "/tmp/pp/trg";
+        String dstFileName = "/tmp/trg1";
         boolean showProgress = false;
         Integer result = -1;
         CopyTask task = null;

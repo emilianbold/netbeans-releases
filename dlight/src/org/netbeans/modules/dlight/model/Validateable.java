@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
 
 /**
  *

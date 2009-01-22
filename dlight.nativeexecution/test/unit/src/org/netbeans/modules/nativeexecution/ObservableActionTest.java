@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.junit.After;

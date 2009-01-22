@@ -49,6 +49,9 @@ import org.openide.util.*;
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.collab.core.Debug;
 import org.openide.awt.Mnemonics;
@@ -851,6 +854,11 @@ public class LoginAccountPanel extends JPanel {
                         passwordField.setText(""); // NOI18N
                     }
                 }
+
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.collab");   // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_COLLAB_LOGIN");   // NOI18N
+                rec.setLoggerName(logger.getName());
+                logger.log(rec);
 
                 // Show the collab explorer
                 CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);

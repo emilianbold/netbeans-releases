@@ -11,14 +11,6 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.spi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
@@ -30,14 +22,15 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.derby.support</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <package>org.netbeans.dlight.core.stack.dataprovider</package>
-                <package>org.netbeans.dlight.core.stack.model</package>
-                <package>org.netbeans.dlight.core.stack.storage</package>
+                <package>org.netbeans.modules.dlight.core.stack.dataprovider</package>
+                <package>org.netbeans.modules.dlight.core.stack.model</package>
+                <package>org.netbeans.modules.dlight.core.stack.storage</package>
             </friend-packages>
         </data>
     </configuration>

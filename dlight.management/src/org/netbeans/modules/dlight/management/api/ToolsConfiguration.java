@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -46,6 +45,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -76,7 +76,7 @@ final class ToolsConfiguration {
 
 
   /**
-   * Returns tools set which will be used to run {@link org.netbeans.dlight.core.execution.model.DLightTarget} with
+   * Returns tools set which will be used to run {@link org.netbeans.modules.dlight.core.execution.model.DLightTarget} with
    * @return tools set
    */
   final List<DLightTool> getToolsSet() {

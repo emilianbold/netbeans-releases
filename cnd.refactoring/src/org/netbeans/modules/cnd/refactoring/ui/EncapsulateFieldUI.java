@@ -44,6 +44,7 @@ import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -62,15 +63,17 @@ public final class EncapsulateFieldUI implements RefactoringUI {
     private EncapsulateFieldPanel panel;
     private final transient EncapsulateFieldsRefactoring refactoring;
     private final CsmObject selectedObj;
+    private final CsmContext editorContext;
 
     /** Creates new form EncapsulateField */
-    private EncapsulateFieldUI(CsmObject selectedObject) {
-        this.refactoring = new EncapsulateFieldsRefactoring(selectedObject);
+    private EncapsulateFieldUI(CsmObject selectedObject, CsmContext editorContext) {
+        this.refactoring = new EncapsulateFieldsRefactoring(selectedObject, editorContext);
         this.selectedObj = selectedObject;
+        this.editorContext = editorContext;
     }
 
-    public static EncapsulateFieldUI create(CsmObject refactoredObj) {
-        return new EncapsulateFieldUI(refactoredObj);
+    public static EncapsulateFieldUI create(CsmObject refactoredObj, CsmContext editorContext) {
+        return new EncapsulateFieldUI(refactoredObj, editorContext);
     }
 
     public boolean isQuery() {
@@ -79,7 +82,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new EncapsulateFieldPanel(selectedObj, parent);
+            panel = new EncapsulateFieldPanel(selectedObj, editorContext, parent);
         }
         return panel;
     }
