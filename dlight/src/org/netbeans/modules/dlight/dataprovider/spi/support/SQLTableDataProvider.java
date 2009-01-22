@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.dataprovider.spi.support;
 
+import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -68,26 +69,26 @@ public class SQLTableDataProvider implements TableDataProvider {
 
   
 
-  public String getID() {
-    return "TableDataProvider";
-  }
+//  public String getID() {
+//    return "TableDataProvider";
+//  }
 
-  /**
-   * Returns {@link org.netbeans.modules.dlight.core.dataprovider.model.TableDataModel} as
-   * provided data model scheme
-   * @return
-   */
-  public List<? extends DataModelScheme> getProvidedDataModelScheme() {
-    return Arrays.asList(TableDataModel.instance);
-  }
-
-  public final boolean provides(DataModelScheme dataModel) {
-    return getProvidedDataModelScheme().contains(dataModel);
-  }
-
-  public List<DataStorageType> getSupportedDataStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
-  }
+//  /**
+//   * Returns {@link org.netbeans.modules.dlight.core.dataprovider.model.TableDataModel} as
+//   * provided data model scheme
+//   * @return
+//   */
+//  public List<? extends DataModelScheme> getProvidedDataModelScheme() {
+//    return Arrays.asList(TableDataModel.instance);
+//  }
+//
+//  public final boolean provides(DataModelScheme dataModel) {
+//    return getProvidedDataModelScheme().contains(dataModel);
+//  }
+//
+//  public List<DataStorageType> getSupportedDataStorageTypes() {
+//    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+//  }
 
    /**
    * Attaches DataProvider to the <param>storage</param>.
@@ -100,13 +101,13 @@ public class SQLTableDataProvider implements TableDataProvider {
     this.storage = (SQLDataStorage) storage;
   }
 
-  /**
-   * Returns new instance of SQLTableDataProvider
-   * @return new instance of SQLTableDataProvider
-   */
-  public DataProvider newInstance() {
-    return new SQLTableDataProvider();
-  }
+//  /**
+//   * Returns new instance of SQLTableDataProvider
+//   * @return new instance of SQLTableDataProvider
+//   */
+//  public DataProvider newInstance() {
+//    return new SQLTableDataProvider();
+//  }
 
   /**
    * Returns table view to visualize

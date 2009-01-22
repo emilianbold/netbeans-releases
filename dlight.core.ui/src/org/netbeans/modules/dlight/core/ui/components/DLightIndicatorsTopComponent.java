@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.core.ui.components;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;

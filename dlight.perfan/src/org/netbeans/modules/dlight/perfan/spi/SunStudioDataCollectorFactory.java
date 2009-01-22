@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import java.util.List;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.collector.spi.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
+import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 
 /**
- * Use this class when you want to create DataCollectors which uses
- * SunStudio tools.
  *
- * The following algorithm should be used when creating with SunStudioDataCollector:
+ * @author mt154047
  */
-public final class SunStudioDataCollectorFactory {
+public final class SunStudioDataCollectorFactory implements DataCollectorFactory<SunStudioDCConfiguration> {
 
-  private static SunStudioDataCollectorFactory instance = null;
-  private SunStudioDataCollector ssDataCollector = null;
-
-
-
-  private SunStudioDataCollectorFactory() {
+  public DataCollector<SunStudioDCConfiguration> create(SunStudioDCConfiguration configuration) {
+    return SSDCProvider.getInstance().getSSDataCollector(SunStudioDCConfigurationAccessor.getDefault().getCollectedInfo(configuration));
   }
 
-  public static SunStudioDataCollectorFactory getInstance() {
-    if (instance == null) {
-      instance = new SunStudioDataCollectorFactory();
-    }
-    return instance;
-  }
-
-  public SunStudioDataCollector getSSDataCollector(List<CollectedInfo> collectedInfoList) {
-    if (ssDataCollector == null) {
-      ssDataCollector = new SunStudioDataCollector(collectedInfoList);
-      return ssDataCollector;
-    }
-    ssDataCollector.addCollectedInfo(collectedInfoList);
-    return ssDataCollector;
+  public String getID() {
+    return SunStudioIDsProvider.DATA_COLLECTOR_ID;
   }
 }

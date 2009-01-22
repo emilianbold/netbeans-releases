@@ -98,8 +98,6 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
 
 
-  public CLIODataCollector(){   
-  }
   
   /**
    *
@@ -116,10 +114,6 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
 
-  /** {@inheritDoc */
-  public String getID(){
-    return CLIODCConfigurationAccessor.getDefault().getCLIODCConfigurationID();
-  }
 
   
 
@@ -325,10 +319,6 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   public ValidationStatus getValidationStatus() {
     return validationStatus;
   }
-
-  public CLIODataCollector create(CLIODCConfiguration configuration) {
-    return new CLIODataCollector(configuration);
-  }
-
+  
   
 }

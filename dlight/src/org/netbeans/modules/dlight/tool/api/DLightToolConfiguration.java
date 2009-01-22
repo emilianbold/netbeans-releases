@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
 
@@ -21,7 +22,7 @@ public final class DLightToolConfiguration {
   private final String toolName;
   private final List<DataCollectorConfiguration> dataCollectors;
   private final List<IndicatorDataProviderConfiguration> indicatorDataProvidersConfiguration;
-  private final List<Indicator> indicators;
+  private final List<IndicatorConfiguration> indicators;
 
   static{
     DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorIml());
@@ -34,7 +35,7 @@ public final class DLightToolConfiguration {
   public DLightToolConfiguration(String toolName) {
     this.toolName = toolName;
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollectorConfiguration>());
-    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
+    indicators = Collections.synchronizedList(new ArrayList<IndicatorConfiguration>());
     indicatorDataProvidersConfiguration = Collections.synchronizedList(new ArrayList<IndicatorDataProviderConfiguration>());
   }
 
@@ -42,7 +43,7 @@ public final class DLightToolConfiguration {
     dataCollectors.add(collector);
   }
 
-  public void addIndicator(Indicator indicator) {
+  public void addIndicatorConfiguration(IndicatorConfiguration indicator) {
     indicators.add(indicator);
   }
 
@@ -58,7 +59,7 @@ public final class DLightToolConfiguration {
     return indicatorDataProvidersConfiguration;
   }
 
-  List<Indicator> getIndicators() {
+  List<IndicatorConfiguration> getIndicators() {
     return indicators;
   }
 
@@ -79,7 +80,7 @@ public final class DLightToolConfiguration {
     }
 
     @Override
-    public List<Indicator> getIndicators(DLightToolConfiguration conf) {
+    public List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf) {
       return conf.getIndicators();
     }
 

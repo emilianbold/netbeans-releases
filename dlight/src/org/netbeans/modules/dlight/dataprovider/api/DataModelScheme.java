@@ -40,8 +40,22 @@
 package org.netbeans.modules.dlight.dataprovider.api;
 
 /**
+ * <p>
  * This is marker class  which declares scheme which
- * will be used to find {@link org.netbeans.
+ * will be used by {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
+ * to find {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider} which
+ * supports scheme required.
+ * <p>
+ * As an example let's pretend you need to view data in Table View and
+ * creates your own TableVisualizer configuration which implements
+ * {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration} and
+ *  it will announce that <code>TableScheme</code> is supported and
+ *  When Table Visualizer (created along with TableVisuallizer configuration) needs
+ *  to be opened infrastructure should find the proper {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider}
+ *  which will be used by Visualizer and *the proper*  means that DataProvider should
+ *  provide </code>TableScheme</code> in the
+ * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider#getProvidedDataModelScheme()}
+ *
  */
 public class DataModelScheme {
   private String id;

@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.dlight.dataprovider.spi;
 
-import java.util.List;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
 import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 
 
 /**
@@ -53,34 +50,34 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
  */
 
 public interface DataProvider {
-  /**
-   * Unique provider id
-   * @return unique provider id
-   */
-  public String getID();
-  /**
-   * Returns the list of {@link org.netbeans.modules.dlight.core.dataprovider.model.DataModelScheme}
-   * this data provider can serve.
-   * @return the list of data model this DataProvider can serve
-   */
-  public List<? extends DataModelScheme> getProvidedDataModelScheme();
-
-  /**
-   * Checks if DataProvider can provider information according to
-   * te <param>dataModel</param>
-   * @param dataModel
-   * @return <code>true</code> if DataProvider provides information required
-   * by <param>dataModel</param>
-   */
-  public boolean provides(DataModelScheme dataModel);
-  
-  /**
-   * The types of {@link org.netbeans.modules.dlight.core.storage.model.DataStorage} this
-   *  DataProvider can get data from
-   * @return the list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
-   *  supported by this DataProvider
-   */
-  public List<DataStorageType> getSupportedDataStorageTypes();
+//  /**
+//   * Unique provider id
+//   * @return unique provider id
+//   */
+//  public String getID();
+//  /**
+//   * Returns the list of {@link org.netbeans.modules.dlight.core.dataprovider.model.DataModelScheme}
+//   * this data provider can serve.
+//   * @return the list of data model this DataProvider can serve
+//   */
+//  public List<? extends DataModelScheme> getProvidedDataModelScheme();
+//
+//  /**
+//   * Checks if DataProvider can provider information according to
+//   * te <param>dataModel</param>
+//   * @param dataModel
+//   * @return <code>true</code> if DataProvider provides information required
+//   * by <param>dataModel</param>
+//   */
+//  public boolean provides(DataModelScheme dataModel);
+//
+//  /**
+//   * The types of {@link org.netbeans.modules.dlight.core.storage.model.DataStorage} this
+//   *  DataProvider can get data from
+//   * @return the list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
+//   *  supported by this DataProvider
+//   */
+//  public List<DataStorageType> getSupportedDataStorageTypes();
 
   /**
    * Attaches DataProvider to the>storage.
@@ -93,10 +90,10 @@ public interface DataProvider {
    */
   public void attachTo(DataStorage storage);
 
-  /**
-   * Creates new instance of DataProvider, factory method
-   * @return new instance of DataProvider
-   */
-  public DataProvider newInstance();
+//  /**
+//   * Creates new instance of DataProvider, factory method
+//   * @return new instance of DataProvider
+//   */
+//  public DataProvider newInstance();
 
 }
