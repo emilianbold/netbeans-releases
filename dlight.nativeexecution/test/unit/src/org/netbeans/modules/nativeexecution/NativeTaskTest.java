@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTaskListener;

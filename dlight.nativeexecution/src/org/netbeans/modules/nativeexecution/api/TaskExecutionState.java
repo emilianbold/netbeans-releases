@@ -36,38 +36,41 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+package org.netbeans.modules.nativeexecution.api;
 
 /**
- * Default implementation of tasks executor service.
- * Currently it just uses Executors.newCachedThreadPool() as a thread
- * pool for tasks execution threads.
+ * Enum that represents phases of <tt>NativeTask</tt> execution.
+ * @author ak119685
  */
-public class NativeTaskExecutorService {
+public enum TaskExecutionState {
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
-
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                executorService.shutdown();
-            }
-        });
-    }
-
-    public static <T> Future<T> submit(Callable<T> task) {
-        return executorService.submit(task);
-    }
-
-    public static void submit(Runnable task) {
-        executorService.submit(task);
-    }
+    /**
+     * Task is in Initial state
+     */
+    INITIAL,
+    /**
+     * Task is starting. This means that it is submitted, but no PID is recieved
+     * yet
+     */
+    STARTING,
+    /**
+     * Task runs
+     */
+    RUNNING,
+    /**
+     * Task finished
+     */
+    FINISHED,
+    /**
+     * Task failed due to some exception
+     */
+    FAILED,
+    /**
+     * Task cancelled
+     */
+    CANCELED,
+    /**
+     *  Task failed due to some exception
+     */
+    ERROR
 }

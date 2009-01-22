@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.TaskExecutionState;
 import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -95,7 +96,9 @@ public class NativeExecutableTarget implements DLightTarget, AttachableTarget, N
 
     public State getState() {
         // Do mapping between DLightTarget.State and NativeTask state
-        switch (task.getState()) {
+        TaskExecutionState taskState = task.getState();
+        
+        switch (taskState) {
             case INITIAL:
                 return State.INIT;
             case STARTING:

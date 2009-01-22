@@ -302,7 +302,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 }
             };
 
-            ObservableAction connectAction = cm.getConnectAction(target.getExecEnv());
+            ObservableAction<Boolean> connectAction = cm.getConnectAction(target.getExecEnv());
             connectAction.addObservableActionListener(listener);
 
             result = new ValidationStatus(ValidationState.UNKNOWN,
