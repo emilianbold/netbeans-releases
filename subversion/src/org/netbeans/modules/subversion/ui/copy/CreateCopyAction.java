@@ -173,7 +173,7 @@ public class CreateCopyAction extends ContextAction {
 
                 if(info == null) {
                     client.mkdir(folderToCreate,
-                                 true, 
+                                 true,
                                  "[Netbeans SVN client generated message: create a new folder for the copy]: '\n" + createCopy.getMessage() + "\n'"); // NOI18N
                 } else {
                     if(createCopy.getLocalFile().isFile()) {
@@ -194,12 +194,12 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.isLocal()) {
                 if(roots.length == 1) {
-                    client.copy(createCopy.getLocalFile(), toRepositoryFile.getFileUrl(), createCopy.getMessage());
+                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, false);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(root, toUrl, createCopy.getMessage());
+                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
                     }
                 }
             } else {               
