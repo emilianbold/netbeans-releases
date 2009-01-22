@@ -46,8 +46,8 @@ import java.util.Comparator;
  *
  * @author Alexander Simon
  */
-public final class CharSequenceKey implements CharSequence, Comparable<CharSequenceKey> {
-    private static final CharSequence EMPTY = create("");
+public final class CharSequenceKey implements CharSequence, Comparable<CharSequence> {
+    private static final CharSequence EMPTY = new CharSequenceKey(new byte[]{});
     public static final Comparator<CharSequence> Comparator = new CharSequenceComparator();
     public static final Comparator<CharSequence> ComparatorIgnoreCase = new CharSequenceComparatorIgnoreCase();
     private final Object value;
@@ -58,40 +58,51 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
             return null;
         }
         //return s.toString();
-        if (s instanceof CharSequenceKey) {
-            return (CharSequenceKey) s;
+        if (s instanceof CharSequenceKey ||
+            s instanceof Fixed7CharSequenceKey ||
+            s instanceof Fixed15CharSequenceKey) {
+            return s;
         }
-        return new CharSequenceKey(s);
+        int n = s.length();
+        if (n == 0) {
+            return EMPTY;
+        }
+        byte[] b = new byte[n];
+        boolean bytes = true;
+        int o;
+        for(int i = 0; i < n; i++){
+            o = s.charAt(i);
+            if ( (o & 0xFF) != o){
+                bytes = false;
+                break;
+            }
+            b[i] = (byte)o;
+        }
+        if (bytes) {
+            if (n < 8) {
+                return new Fixed7CharSequenceKey(b,n);
+            } else if (n < 16) {
+                return new Fixed15CharSequenceKey(b,n);
+            }
+            return new CharSequenceKey(b);
+        }
+        char[] v = new char[n];
+        for(int i = 0; i < n; i++){
+            v[i] = s.charAt(i);
+        }
+        return new CharSequenceKey(v);
     }
 
     public static CharSequence empty(){
         return EMPTY;
     }
-    
-    private CharSequenceKey(CharSequence s) {
-        int n = s.length();
-        byte[] b = new byte[n];
-        char[] v = new char[n];
-        boolean bytes = true;
-        char c;
-        int o;
-        for(int i = 0; i < n; i++){
-            c = s.charAt(i);
-            v[i]= c;
-            if (bytes) {
-                o = c;
-                if ( (o & 0xFF) == o){
-                    b[i]= (byte)o;
-                } else {
-                    bytes = false;
-                }
-            }
-        }
-        if (bytes) {
-            value = b;
-        } else {
-            value = v;
-        }
+
+    private CharSequenceKey(byte[] b) {
+        value = b;
+    }
+
+    private CharSequenceKey(char[] v) {
+        value = v;
     }
 
     public int length() {
@@ -111,29 +122,29 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
 
     @Override
     public boolean equals(Object object) {
-	if (this == object) {
-	    return true;
-	}
-	if (object instanceof CharSequenceKey) {
-	    CharSequenceKey otherString = (CharSequenceKey)object;
-            if (hash != 0 && otherString.hash != 0) {
-                if (hash != otherString.hash) {
-                    return false;
+        if (this == object) {
+            return true;
+        }
+        if (object instanceof CharSequenceKey) {
+            CharSequenceKey otherString = (CharSequenceKey)object;
+                if (hash != 0 && otherString.hash != 0) {
+                    if (hash != otherString.hash) {
+                        return false;
+                    }
                 }
+                if ((value instanceof byte[]) && (otherString.value instanceof byte[])) {
+                    return Arrays.equals( (byte[])value, (byte[])otherString.value );
+                } else if ((value instanceof char[]) && (otherString.value instanceof char[])) {
+                    return Arrays.equals( (char[])value, (char[])otherString.value );
             }
-            if ((value instanceof byte[]) && (otherString.value instanceof byte[])) {
-                return Arrays.equals( (byte[])value, (byte[])otherString.value );
-            } else if ((value instanceof char[]) && (otherString.value instanceof char[])) {
-                return Arrays.equals( (char[])value, (char[])otherString.value );
-	    }
-	}
-	return false;
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-	int h = hash;
-	if (h == 0) {
+        int h = hash;
+        if (h == 0) {
             if (value instanceof byte[]) {
                 byte[] v = (byte[])value;
                 int n = v.length;
@@ -153,7 +164,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        return new CharSequenceKey(toString().substring(beginIndex, endIndex));
+        return create(toString().substring(beginIndex, endIndex));
     }
 
     @Override
@@ -174,21 +185,60 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
     
     private static class CharSequenceComparator implements Comparator<CharSequence> {
         public int compare(CharSequence o1, CharSequence o2) {
-            if ((o1 instanceof CharSequenceKey) &&
-                (o2 instanceof CharSequenceKey)){
-                CharSequenceKey csk1 = (CharSequenceKey) o1;
+            if ((o1 instanceof CharSequenceKey)){
+                if ((o2 instanceof CharSequenceKey)){
+                    CharSequenceKey csk1 = (CharSequenceKey) o1;
+                    CharSequenceKey csk2 = (CharSequenceKey) o2;
+                    if ((csk1.value instanceof byte[]) &&
+                        (csk2.value instanceof byte[])){
+                        byte[] b1 = (byte[]) csk1.value;
+                        byte[] b2 = (byte[]) csk2.value;
+                        int len1 = b1.length;
+                        int len2 = b2.length;
+                        int n = Math.min(len1, len2);
+                        int k = 0;
+                        while (k < n) {
+                            if (b1[k] != b2[k]) {
+                                return (b1[k] & 0xFF) - (b2[k] & 0xFF);
+                            }
+                            k++;
+                        }
+                        return len1 - len2;
+                    }
+                } else {
+                    CharSequenceKey csk1 = (CharSequenceKey) o1;
+                    if ((csk1.value instanceof byte[])){
+                        byte[] b1 = (byte[]) csk1.value;
+                        int len1 = b1.length;
+                        int len2 = o2.length();
+                        int n = Math.min(len1, len2);
+                        int k = 0;
+                        int c1,c2;
+                        while (k < n) {
+                            c1 = b1[k] & 0xFF;
+                            c2 = o2.charAt(k);
+                            if (c1 != c2) {
+                                return c1 - c2;
+                            }
+                            k++;
+                        }
+                        return len1 - len2;
+                    }
+                }
+            } else if ((o2 instanceof CharSequenceKey)){
                 CharSequenceKey csk2 = (CharSequenceKey) o2;
-                if ((csk1.value instanceof byte[]) &&
-                    (csk2.value instanceof byte[])){
-                    byte[] b1 = (byte[]) csk1.value; 
+                if ((csk2.value instanceof byte[])){
                     byte[] b2 = (byte[]) csk2.value;
-                    int len1 = b1.length;
+                    int len1 = o1.length();
                     int len2 = b2.length;
                     int n = Math.min(len1, len2);
                     int k = 0;
+                    int c1,c2;
                     while (k < n) {
-                        if (b1[k] != b2[k]) {
-                            return (b1[k] & 0xFF) - (b2[k] & 0xFF);
+                        c1 = o1.charAt(k);
+                        c2 = b2[k] & 0xFF;
+                        if (c1 != c2) {
+                            return c1 - c2;
                         }
                         k++;
                     }
@@ -211,7 +261,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         }
     }
 
-    public int compareTo(CharSequenceKey o) {
+    public int compareTo(CharSequence o) {
         return Comparator.compare(this, o);
     }
 
@@ -235,6 +285,200 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
                 }
             }
             return n1 - n2;
+        }
+    }
+
+    private static final class Fixed7CharSequenceKey implements CharSequence, Comparable<CharSequence> {
+        private final int i1;
+        private final int i2;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed7CharSequenceKey(byte[] b, int n){
+            int a1 = n;
+            int a2 = 0;
+            switch (n){
+                case 7:
+                    a2+=(b[6]&0xFF)<<24;
+                case 6:
+                    a2+=(b[5]&0xFF)<<16;
+                case 5:
+                    a2+=(b[4]&0xFF)<<8;
+                case 4:
+                    a2+=b[3]&0xFF;
+                case 3:
+                    a1+=(b[2]&0xFF)<<24;
+                case 2:
+                    a1+=(b[1]&0xFF)<<16;
+                case 1:
+                    a1+=(b[0]&0xFF)<<8;
+                case 0:
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i1 = a1;
+            i2 = a2;
+        }
+
+        public int length() {
+            return i1&0xFF;
+        }
+
+        public char charAt(int index) {
+            int r = 0;
+            switch(index) {
+                case 0:  r =(i1&0xFF00)>>8; break;
+                case 1:  r =(i1&0xFF0000)>>16; break;
+                case 2:  r =(i1>>24)&0xFF; break;
+                case 3:  r =i2&0xFF; break;
+                case 4:  r =(i2&0xFF00)>>8; break;
+                case 5:  r =(i2&0xFF0000)>>16; break;
+                case 6:  r =(i2>>24)&0xFF; break;
+            }
+            return (char)r;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder(this);
+            return buf.toString();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed7CharSequenceKey) {
+                Fixed7CharSequenceKey otherString = (Fixed7CharSequenceKey)object;
+                return i1 == otherString.i1 && i2 == otherString.i2;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return i1+31*i2;
+        }
+
+        public CharSequence subSequence(int start, int end) {
+            return CharSequenceKey.create(toString().substring(start, end));
+        }
+
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
+        }
+    }
+
+    private static final class Fixed15CharSequenceKey implements CharSequence, Comparable<CharSequence> {
+        private final int i1;
+        private final int i2;
+        private final int i3;
+        private final int i4;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed15CharSequenceKey(byte[] b, int n){
+            int a1 = n;
+            int a2 = 0;
+            int a3 = 0;
+            int a4 = 0;
+            switch (n){
+                case 15:
+                    a4+=(b[14]&0xFF)<<24;
+                case 14:
+                    a4+=(b[13]&0xFF)<<16;
+                case 13:
+                    a4+=(b[12]&0xFF)<<8;
+                case 12:
+                    a4+=b[11]&0xFF;
+                case 11:
+                    a3+=(b[10]&0xFF)<<24;
+                case 10:
+                    a3+=(b[9]&0xFF)<<16;
+                case 9:
+                    a3+=(b[8]&0xFF)<<8;
+                case 8:
+                    a3+=b[7]&0xFF;
+                case 7:
+                    a2+=(b[6]&0xFF)<<24;
+                case 6:
+                    a2+=(b[5]&0xFF)<<16;
+                case 5:
+                    a2+=(b[4]&0xFF)<<8;
+                case 4:
+                    a2+=b[3]&0xFF;
+                case 3:
+                    a1+=(b[2]&0xFF)<<24;
+                case 2:
+                    a1+=(b[1]&0xFF)<<16;
+                case 1:
+                    a1+=(b[0]&0xFF)<<8;
+                case 0:
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i1 = a1;
+            i2 = a2;
+            i3 = a3;
+            i4 = a4;
+        }
+
+        public int length() {
+            return i1&0xFF;
+        }
+
+        public char charAt(int index) {
+            int r = 0;
+            switch(index) {
+                case 0:  r =(i1&0xFF00)>>8; break;
+                case 1:  r =(i1&0xFF0000)>>16; break;
+                case 2:  r =(i1>>24)&0xFF; break;
+                case 3:  r =i2&0xFF; break;
+                case 4:  r =(i2&0xFF00)>>8; break;
+                case 5:  r =(i2&0xFF0000)>>16; break;
+                case 6:  r =(i2>>24)&0xFF; break;
+                case 7:  r =i3&0xFF; break;
+                case 8:  r =(i3&0xFF00)>>8; break;
+                case 9:  r =(i3&0xFF0000)>>16; break;
+                case 10:  r =(i3>>24)&0xFF; break;
+                case 11:  r =i4&0xFF; break;
+                case 12:  r =(i4&0xFF00)>>8; break;
+                case 13:  r =(i4&0xFF0000)>>16; break;
+                case 14:  r =(i4>>24)&0xFF; break;
+            }
+            return (char)r;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder(this);
+            return buf.toString();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed15CharSequenceKey) {
+                Fixed15CharSequenceKey otherString = (Fixed15CharSequenceKey)object;
+                return i1 == otherString.i1 && i2 == otherString.i2 && i3 == otherString.i3 && i4 == otherString.i4;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return i1+31*(i2+ 31*(i3+31*i4));
+        }
+
+        public CharSequence subSequence(int start, int end) {
+            return CharSequenceKey.create(toString().substring(start, end));
+        }
+
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
         }
     }
 }
