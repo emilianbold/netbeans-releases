@@ -75,15 +75,21 @@ public abstract class DataStorage {
     public final boolean hasData(DataTableMetadata data) {
         List<DataTableMetadata> sourceTables = data.getSourceTables();
         if (sourceTables != null) {
-            for (DataTableMetadata md : tablesMetadata) {
-                for (DataTableMetadata t : sourceTables) {
-                    if (!t.getName().equals(md.getName())) {
-                        return false;
+            for (DataTableMetadata tableWeSearch : sourceTables) {
+                boolean found = false;
+                for (DataTableMetadata tableWeHave : tablesMetadata) {
+                    if (tableWeSearch.getName().equals(tableWeHave.getName())) {
+                        found = true;
+                        break;
                     }
+                }
+                if (!found) {
+                    return false;
                 }
             }
             return true;
         }
+        // here sourceTables == null
         for (DataTableMetadata md : tablesMetadata) {
             if (md.getName().equals(data.getName())) {
                 return true;
