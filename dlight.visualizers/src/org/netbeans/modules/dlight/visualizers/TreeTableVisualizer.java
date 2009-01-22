@@ -40,7 +40,7 @@ package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableNode;
+import org.netbeans.modules.dlight.dataprovider.impl.TreeTableNode;
 import java.awt.BorderLayout;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -80,7 +80,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author mt154047
  */
-public class TreeTableVisualizer<T extends TreeTableNode> extends JTable implements Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask {
+class TreeTableVisualizer<T extends TreeTableNode> extends JTable implements Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask {
 
   //public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
   private JToolBar buttonsToolbar;
@@ -97,11 +97,8 @@ public class TreeTableVisualizer<T extends TreeTableNode> extends JTable impleme
   private OnTimerRefreshVisualizerHandler timerHandler;
 
 
-  public TreeTableVisualizer() {
-  }
-  
 
-  protected TreeTableVisualizer( TreeTableVisualizerConfiguration configuration, DataProvider dataProvider) {
+  TreeTableVisualizer( TreeTableVisualizerConfiguration configuration, DataProvider dataProvider) {
     timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
     this.configuration = configuration;
     this.dataProvider = (TreeTableDataProvider<T>)dataProvider;
@@ -385,13 +382,9 @@ public class TreeTableVisualizer<T extends TreeTableNode> extends JTable impleme
     return configuration;
   }
 
-  public Visualizer create(TreeTableVisualizerConfiguration configuration, DataProvider provider) {
-    return new TreeTableVisualizer(configuration, dataProvider);
-  }
+  
 
-  public String getID() {
-    return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
-  }
+  
 
   public JComponent getComponent() {
     return this;

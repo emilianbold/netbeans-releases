@@ -45,7 +45,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 
@@ -54,15 +54,15 @@ import org.netbeans.modules.dlight.storage.api.DataRow;
  * Mmory usage indicator
  * @author Vladimir Kvashin
  */
-public class MemoryIndicator extends Indicator {
+public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     private final MemoryIndicatorPanel panel;
     private final String colName;
 
-    public MemoryIndicator(IndicatorMetadata metadata, String colName) {
-        super(metadata);
+    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
+        super(configuration);
         this.panel = new MemoryIndicatorPanel();
-        this.colName = colName;
+        this.colName = configuration.getColName();
     }
 
     @Override

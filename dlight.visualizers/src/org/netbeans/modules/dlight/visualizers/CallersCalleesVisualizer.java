@@ -68,7 +68,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
-public class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
+class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
 
   private static final int TOP_FUNCTIONS_COUNT = 10;
   public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
@@ -81,12 +81,9 @@ public class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTr
   private DefaultMutableTreeNode focusedTreeNode = null;
   private CallersCalleesVisualizerConfiguration configuration;
 
-  public CallersCalleesVisualizer() {
-  }
-
   
 
-  protected CallersCalleesVisualizer(DataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
+  CallersCalleesVisualizer(DataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
     super(configuration, dataProvider);
     this.configuration = (CallersCalleesVisualizerConfiguration)configuration;
     this.dataProvider = (StackDataProvider)dataProvider;
@@ -169,22 +166,11 @@ public class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTr
     revalidate();
   }
 
-  @Override
-  public Visualizer create(TreeTableVisualizerConfiguration configuration, DataProvider provider) {
-    if (configuration instanceof CallersCalleesVisualizerConfiguration && 
-            provider instanceof StackDataProvider){
-      return new CallersCalleesVisualizer(provider, configuration);
-    }
-    throw new IllegalStateException("Trying to create CallersCallees Visualizer " +
-            "using incorrect VisualizerConfiguration and/or DataProvider object");
-  }
+  
 
  
 
-  @Override
-  public String getID() {
-   return VisualizerConfigurationIDsProvider.CALLERS_CALLEES_VISUALIZER;
-  }
+  
 
 
 

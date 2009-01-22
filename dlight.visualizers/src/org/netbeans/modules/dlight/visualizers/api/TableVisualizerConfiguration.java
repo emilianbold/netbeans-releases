@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.visualizers.api;
 
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataModel;
+import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 

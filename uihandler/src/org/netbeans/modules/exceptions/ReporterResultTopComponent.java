@@ -98,7 +98,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        dataDisplayer.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        dataDisplayer.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         dataDisplayer.setEditable(false);
         jScrollPane1.setViewportView(dataDisplayer);
 

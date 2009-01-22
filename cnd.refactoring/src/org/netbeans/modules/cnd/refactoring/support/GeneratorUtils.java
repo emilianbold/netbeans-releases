@@ -49,11 +49,13 @@ import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -74,6 +76,17 @@ public class GeneratorUtils {
     private GeneratorUtils() {
     }
 
+    public static CsmClass extractEnclosingClass(CsmContext editorContext) {
+        CsmClass cls = editorContext.getEnclosingClass();
+        if (cls == null) {
+            CsmFunction fun = editorContext.getEnclosingFunction();
+            if (fun != null && CsmKindUtilities.isMethod(fun)) {
+                cls = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
+            }
+        }
+        return cls;
+    }
+    
     public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
         // for now returns only current class elements, but in fact needs full hierarchy
         return typeElement.getMembers();

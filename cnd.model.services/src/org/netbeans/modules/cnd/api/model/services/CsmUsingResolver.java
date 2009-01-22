@@ -235,11 +235,11 @@ public abstract class CsmUsingResolver {
      */
     public static Collection<CsmDeclaration> extractDeclarations(Collection<CsmUsingDeclaration> decls) {
         // TODO check the correctness of order
-        LinkedHashMap<String, CsmDeclaration> out = new LinkedHashMap<String, CsmDeclaration>(decls.size());
+        LinkedHashMap<CharSequence, CsmDeclaration> out = new LinkedHashMap<CharSequence, CsmDeclaration>(decls.size());
         for (CsmUsingDeclaration decl : decls) {
             CsmDeclaration ref = decl.getReferencedDeclaration();
             if (ref != null) {
-                String name = decl.getName().toString();
+                CharSequence name = decl.getName();
                 // remove previous inclusion
                 out.remove(name);
                 out.put(name, ref);

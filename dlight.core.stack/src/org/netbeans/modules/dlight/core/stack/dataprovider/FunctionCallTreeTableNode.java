@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.core.stack.dataprovider;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TreeTableNode;
+import org.netbeans.modules.dlight.dataprovider.impl.TreeTableNode;
 
 /**
  *

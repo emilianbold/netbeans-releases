@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.webstack.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.dlight.webstack.target.DeploymentPlatformTarget;
-import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
 import org.netbeans.modules.dlight.execution.api.DLightToolkitManagement;
 
 /**
@@ -55,7 +54,7 @@ public class StartWebStackAction implements ActionListener {
   public void actionPerformed(ActionEvent e) {
     //throw new UnsupportedOperationException("Not supported yet.");
     final DeploymentPlatformTarget target = new DeploymentPlatformTarget();
-    DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, CONFIGURATION_NAME);
+    DLightToolkitManagement.DLightSessionHandler session = DLightToolkitManagement.getInstance().createSession(target, CONFIGURATION_NAME);
     DLightToolkitManagement.getInstance().startSession(session);
   }
 }

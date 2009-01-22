@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author ak119685
  */
-public class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfiguration>, OnTimerTask {
+class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfiguration>, OnTimerTask {
 
     private TableDataProvider provider;
     private TableVisualizerConfiguration configuration;
@@ -74,10 +74,7 @@ public class TableVisualizer extends JPanel implements Visualizer<TableVisualize
     private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
 
-    public TableVisualizer() {
-    }
-
-    private TableVisualizer(DataProvider provider, final TableVisualizerConfiguration configuration) {
+    TableVisualizer(DataProvider provider, final TableVisualizerConfiguration configuration) {
         timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
         this.provider = (TableDataProvider) provider;
         this.configuration = configuration;
@@ -198,10 +195,7 @@ public class TableVisualizer extends JPanel implements Visualizer<TableVisualize
         return new TableVisualizer(provider, configuration);
     }
 
-    public String getID() {
-        return VisualizerConfigurationIDsProvider.TABLE_VISUALIZER;
-    }
-
+    
     public TableVisualizerConfiguration getVisualizerConfiguration() {
         return configuration;
     }

@@ -45,10 +45,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.execution.api.impl.DLightSessionInternalReference;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.storage.spi.DataStorage;
@@ -63,7 +63,7 @@ import org.openide.util.Task;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionReference{
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference{
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();

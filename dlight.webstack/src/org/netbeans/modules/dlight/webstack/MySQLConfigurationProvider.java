@@ -41,10 +41,10 @@ package org.netbeans.modules.dlight.webstack;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.ClockIndicator;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicator.api.support.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.indicator.impl.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
 import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
@@ -77,9 +77,9 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
     toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
     IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
-    ClockIndicator clockIndicator = new ClockIndicator(indicatorMetadata1);
-    toolConfiguration.addIndicator(clockIndicator);
+    ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
     clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
+    toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
   }
 }

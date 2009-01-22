@@ -45,14 +45,14 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.indicator.api.support.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.indicator.impl.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 
-public class TimerTicker extends IndicatorDataProvider<TimerIDPConfiguration> implements Callable<Integer> {
+public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfiguration> implements Callable<Integer> {
   private static final Logger log = DLightLogger.getLogger(TimerTicker.class);
  
  
@@ -60,11 +60,7 @@ public class TimerTicker extends IndicatorDataProvider<TimerIDPConfiguration> im
   private  IndicatorDataProviderConfiguration configuration;
   private long startTime = 0;
 
-  public TimerTicker(){
-
-  }
-
-  private TimerTicker(TimerIDPConfiguration configuration){
+  TimerTicker(TimerIDPConfiguration configuration){
     this.configuration = configuration;
   }
 
@@ -91,14 +87,5 @@ public class TimerTicker extends IndicatorDataProvider<TimerIDPConfiguration> im
     return Arrays.asList(tableMetadata);
   }
 
-  @Override
-  public String getID() {
-    return TimerIDPConfiguration.ID;
-  }
-
-  @Override
-  public IndicatorDataProvider create(TimerIDPConfiguration configuration) {
-    return new TimerTicker(configuration);
-  }
 
 }

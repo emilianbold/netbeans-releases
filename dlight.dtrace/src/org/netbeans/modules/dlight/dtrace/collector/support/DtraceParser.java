@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.dtrace.collector.DtraceOutputProcessing;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;

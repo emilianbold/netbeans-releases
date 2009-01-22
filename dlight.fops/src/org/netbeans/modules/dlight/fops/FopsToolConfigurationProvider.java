@@ -44,10 +44,10 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.ClockIndicator;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicator.api.support.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.indicator.impl.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
@@ -104,10 +104,9 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
     toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
     IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
-    ClockIndicator clockIndicator = new ClockIndicator(indicatorMetadata1);
-    toolConfiguration.addIndicator(clockIndicator);
-    clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dtraceFopsMetadata));
-   
+    ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
+   clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dtraceFopsMetadata));
+    toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
   }
 

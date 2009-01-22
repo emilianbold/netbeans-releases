@@ -95,10 +95,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 //        HashMap<String, Object> configuration = new HashMap<String, Object>();
 //        configuration.put("aggregation", "avrg");
 //        BarIndicator indicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
-        MemoryIndicator indicator = new MemoryIndicator(indicatorMetadata, "total");
-
-        toolConfiguration.addIndicator(indicator);
+        MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
         indicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dbTableMetadata));
+        toolConfiguration.addIndicatorConfiguration(indicator);
+
 
         return toolConfiguration;
     }
