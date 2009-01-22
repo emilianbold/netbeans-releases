@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,70 +49,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.cnd.spi.model.services;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
- * Service that provides macro expansions
+ * Service that provides UI for macro expansion
  *
  * @author Nick Krasilnikov
  */
-public interface CsmMacroExpansionProvider {
+public interface CsmMacroExpansionViewProvider {
 
     /**
-     * Returns instantiation of template
+     * Expands document on specified position and shows Macro Expansion View panel.
      *
-     * @param template - template for instantiation
-     * @param params - template paramrters
-     * @return - instantiation
+     * @param doc - document
+     * @param offset - offset in document
      */
-    public abstract String getExpandedText(CsmFile file, int startOffset, int endOffset);
-
-    /**
-     * Macro expands content of one document to another
-     *
-     * @param inDoc - document for macro expansion
-     * @param startOffset - start offset for expansion
-     * @param endOffset - end offset for expansion
-     * @param outDoc - result
-     */
-    public abstract void expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
-
-    /**
-     * Transforms original offset to offset in expanded text
-     *
-     * @param expandedDoc - document
-     * @param originalOffset - original offset
-     * @return offset in expanded text
-     */
-    public abstract int getOffsetInExpandedText(Document expandedDoc, int originalOffset);
-
-    /**
-     * Transforms offset in expanded text to original offset
-     *
-     * @param expandedDoc - document
-     * @param expandedOffset - offset in expanded text
-     * @return original offset
-     */
-    public abstract int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
-
-    /**
-     * Returns offset of the next macro expansion
-     *
-     * @param expandedDoc - document
-     * @param expandedOffset - offset in expanded text
-     * @return offset of the next macro expansion
-     */
-    public abstract int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
-
-    /**
-     * Returns offset of the previous macro expansion
-     *
-     * @param expandedDoc - document
-     * @param expandedOffset - offset in expanded text
-     * @return offset of the next macro expansion
-     */
-    public abstract int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+    public abstract void showMacroExpansionView(Document doc, int offset);
 }
