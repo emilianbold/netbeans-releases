@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -52,23 +53,47 @@ public class QmakeConfiguration implements Cloneable {
     public static final String RELEASE_FLAG = "release"; // NOI18N
 
     private StringConfiguration config;
-    private StringConfiguration modules;
+    private BooleanConfiguration coreEnabled;
+    private BooleanConfiguration guiEnabled;
+    private BooleanConfiguration networkEnabled;
+    private BooleanConfiguration openglEnabled;
+    private BooleanConfiguration sqlEnabled;
+    private BooleanConfiguration svgEnabled;
+    private BooleanConfiguration xmlEnabled;
 
     public QmakeConfiguration() {
         config = new StringConfiguration(null, ""); // NOI18N
-        modules = new StringConfiguration(null, ""); // NOI18N
+        coreEnabled = new BooleanConfiguration(null, true);
+        guiEnabled = new BooleanConfiguration(null, true);
+        networkEnabled = new BooleanConfiguration(null, false);
+        openglEnabled = new BooleanConfiguration(null, false);
+        sqlEnabled = new BooleanConfiguration(null, false);
+        svgEnabled = new BooleanConfiguration(null, false);
+        xmlEnabled = new BooleanConfiguration(null, false);
     }
 
     public Sheet getGeneralSheet() {
         Sheet sheet = new Sheet();
 
         Sheet.Set basic = new Sheet.Set();
-        basic.setName("QmakeGeneral"); // NOI18N
-        basic.setDisplayName(getString("QmakeGeneralTxt")); // NOI18N
-        basic.setShortDescription(getString("QmakeGeneralHint")); // NOI18N
-        basic.put(new StringNodeProp(config, "CONFIG", getString("QmakeConfigTxt"), getString("QmakeConfigHint"))); // NOI18N
-        basic.put(new StringNodeProp(modules, "MODULES", getString("QmakeModulesTxt"), getString("QmakeModulesHint"))); // NOI18N
+        basic.setName("QtGeneral"); // NOI18N
+        basic.setDisplayName(getString("QtGeneralTxt")); // NOI18N
+        basic.setShortDescription(getString("QtGeneralHint")); // NOI18N
+        basic.put(new StringNodeProp(config, "QtConfig", getString("QtConfigTxt"), getString("QtConfigHint"))); // NOI18N
         sheet.put(basic);
+
+        Sheet.Set modules = new Sheet.Set();
+        modules.setName("QtModules"); // NOI18N
+        modules.setDisplayName(getString("QtModulesTxt")); // NOI18N
+        modules.setShortDescription(getString("QtModulesHint")); // NOI18N
+        modules.put(new BooleanNodeProp(coreEnabled, true, "QtCore", getString("QtCoreTxt"), getString("QtCoreHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(guiEnabled, true, "QtGui", getString("QtGuiTxt"), getString("QtGuiHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(networkEnabled, true, "QtNetwork", getString("QtNetworkTxt"), getString("QtNetworkHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(openglEnabled, true, "QtOpengl", getString("QtOpenglTxt"), getString("QtOpenglHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(sqlEnabled, true, "QtSql", getString("QtSqlTxt"), getString("QtSqlHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(svgEnabled, true, "QtSvg", getString("QtSvgTxt"), getString("QtSvgHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(xmlEnabled, true, "QtXml", getString("QtXmlTxt"), getString("QtXmlHint"))); // NOI18N
+        sheet.put(modules);
 
         return sheet;
     }
@@ -81,17 +106,71 @@ public class QmakeConfiguration implements Cloneable {
         this.config = config;
     }
 
-    public StringConfiguration getModules() {
-        return modules;
+    public BooleanConfiguration isCoreEnabled() {
+        return coreEnabled;
     }
 
-    public void setModules(StringConfiguration modules) {
-        this.modules = modules;
+    public void setCoreEnabled(BooleanConfiguration val) {
+        coreEnabled = val;
+    }
+
+    public BooleanConfiguration isGuiEnabled() {
+        return guiEnabled;
+    }
+
+    public void setGuiEnabled(BooleanConfiguration val) {
+        guiEnabled = val;
+    }
+
+    public BooleanConfiguration isNetworkEnabled() {
+        return networkEnabled;
+    }
+
+    public void setNetworkEnabled(BooleanConfiguration val) {
+        networkEnabled = val;
+    }
+
+    public BooleanConfiguration isOpenglEnabled() {
+        return openglEnabled;
+    }
+
+    public void setOpenglEnabled(BooleanConfiguration val) {
+        openglEnabled = val;
+    }
+
+    public BooleanConfiguration isSqlEnabled() {
+        return sqlEnabled;
+    }
+
+    public void setSqlEnabled(BooleanConfiguration val) {
+        sqlEnabled = val;
+    }
+
+    public BooleanConfiguration isSvgEnabled() {
+        return svgEnabled;
+    }
+
+    public void setSvgEnabled(BooleanConfiguration val) {
+        svgEnabled = val;
+    }
+
+    public BooleanConfiguration isXmlEnabled() {
+        return xmlEnabled;
+    }
+
+    public void setXmlEnabled(BooleanConfiguration val) {
+        xmlEnabled = val;
     }
 
     public void assign(QmakeConfiguration other) {
-        getConfig().setValue(other.getConfig().getValue());
-        getModules().setValue(other.getModules().getValue());
+        getConfig().assign(other.getConfig());
+        isCoreEnabled().assign(other.isCoreEnabled());
+        isGuiEnabled().assign(other.isGuiEnabled());
+        isNetworkEnabled().assign(other.isNetworkEnabled());
+        isOpenglEnabled().assign(other.isOpenglEnabled());
+        isSqlEnabled().assign(other.isSqlEnabled());
+        isSvgEnabled().assign(other.isSvgEnabled());
+        isXmlEnabled().assign(other.isXmlEnabled());
     }
 
     @Override
@@ -99,7 +178,13 @@ public class QmakeConfiguration implements Cloneable {
         try {
             QmakeConfiguration clone = (QmakeConfiguration) super.clone();
             clone.setConfig(getConfig().clone());
-            clone.setModules(getModules().clone());
+            clone.setCoreEnabled(isCoreEnabled().clone());
+            clone.setGuiEnabled(isGuiEnabled().clone());
+            clone.setNetworkEnabled(isNetworkEnabled().clone());
+            clone.setOpenglEnabled(isOpenglEnabled().clone());
+            clone.setSqlEnabled(isSqlEnabled().clone());
+            clone.setSvgEnabled(isSvgEnabled().clone());
+            clone.setXmlEnabled(isXmlEnabled().clone());
             return clone;
         } catch (CloneNotSupportedException ex) {
             // should not happen while this class implements Cloneable
