@@ -123,7 +123,7 @@ public class CategoryList extends JList implements Autoscroll {
             setOpaque(true);
         } else {
             if( "Aqua".equals(UIManager.getLookAndFeel().getID()) )
-                setBackground( new Color(226,226,226) );
+                setBackground(UIManager.getColor("NbExplorerView.background"));
             else
                 setBackground(UIManager.getColor ("Panel.background"));
         }
