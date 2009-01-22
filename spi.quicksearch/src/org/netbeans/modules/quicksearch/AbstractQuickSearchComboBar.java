@@ -355,6 +355,8 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
 
     static Color getCategoryTextColor () {
         Color shadow = UIManager.getColor("textInactiveText");
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) )
+            shadow = UIManager.getColor("Table.foreground");
         return shadow != null ? shadow : Color.DARK_GRAY;
     }
 
