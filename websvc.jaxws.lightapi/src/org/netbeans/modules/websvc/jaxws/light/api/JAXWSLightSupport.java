@@ -146,7 +146,7 @@ public final class JAXWSLightSupport {
      *
      *  @return the folder where xml configuration files are located
      */
-    public FileObject getDeploymentDescriptorFolder(boolean createFolder) {
+    public FileObject getDeploymentDescriptorFolder() {
         return impl.getDeploymentDescriptorFolder();
     }
 

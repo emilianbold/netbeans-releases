@@ -91,7 +91,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         if (!WSUtils.isJsr109Supported(prj)) {
             // modify web.xml file
             try {
-                WSUtils.addServiceEntriesToDD(prj, service.getServiceName());
+                WSUtils.addServiceEntriesToDD(prj, service);
             } catch (IOException ex) {
                 Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
                         "Cannot add service elements to web.xml file", ex); //NOI18N
@@ -143,7 +143,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
 
             // modify web.xml file
             try {
-                WSUtils.removeServiceEntriesFromDD(prj, service.getServiceName());
+                WSUtils.removeServiceEntriesFromDD(prj, service);
             } catch (IOException ex) {
                 Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
                         "Cannot remove services from web.xml", ex); //NOI18N
