@@ -464,32 +464,13 @@ class TabsComponent extends JPanel {
    
     
     private static final class TB extends JToolBar {
-        private boolean updating = false;
-        
+
         public TB() {
             //Aqua UI will look for this value to ensure the
             //toolbar is tall enough that the "glow" which paints
             //outside the combo box bounds doesn't make a mess painting
             //into other components
-            setName("editorToolbar"); //NOI18N
-        }
-        
-        @Override
-        public void setBorder (Border b) {
-            if (!updating) {
-                return;
-            }
-            super.setBorder(b);
-        }
-        
-        @Override
-        public void updateUI() {
-            updating = true;
-            try {
-                super.updateUI();
-            } finally {
-                updating = false;
-            }
+            super( "editorToolbar" );
         }
         
         @Override
