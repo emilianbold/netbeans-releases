@@ -58,8 +58,7 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
  */
 public interface DataCollector<G extends DataCollectorConfiguration> extends DLightTargetListener, Validateable<DLightTarget> {
 
-  DataCollector<G> create(G configuration) ;
-
+  
   /**
    * The types of storage this collector supports
    * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
@@ -103,8 +102,7 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
    * @return aguments for running this data collector
    */
   String[] getArgs();
-
-  String getID();
+  
   
   Future<ValidationStatus> validate(DLightTarget targe);
   

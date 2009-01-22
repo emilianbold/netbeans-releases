@@ -38,13 +38,12 @@
  */
 package org.netbeans.modules.dlight.indicator.spi;
 
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.indicator.api.impl.IndicatorAccessor;
-import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorDataProviderFactoryAccessor;
+import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
@@ -59,14 +58,6 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
 
   private final List<Indicator> listeners = new ArrayList<Indicator>();
 
-  public abstract String getID();
-
-  /**
-   * Factory method
-   * @param configuration
-   * @return
-   */
-  public abstract IndicatorDataProvider<T> create(T configuration);
   
   private void addIndicatorDataProviderListener(Indicator l) {
     if (!listeners.contains(l)) {
@@ -138,12 +129,4 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
    */
   public abstract List<? extends DataTableMetadata> getDataTablesMetadata();
 
-  private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderFactoryAccessor{
-
-    @Override
-    public IndicatorDataProvider create(IndicatorDataProviderConfiguration configuraiton) {
-      throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-  }
 }

@@ -40,7 +40,7 @@ package org.netbeans.modules.dlight.management.api;
 
 import org.netbeans.modules.dlight.management.api.DLightTool;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

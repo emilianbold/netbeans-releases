@@ -131,9 +131,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     }
   }
 
-  public DataCollector<MultipleDTDCConfiguration> create(MultipleDTDCConfiguration configuration) {
-    return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
-  }
+  
 
   public boolean isAttachable() {
     return collector.isAttachable();
@@ -147,9 +145,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     return collector.getArgs();
   }
 
-  public String getID() {
-    return MultipleDTDCConfigurationAccessor.getDefault().getID();
-  }
+  
 
   public Future<ValidationStatus> validate(DLightTarget target) {
     return collector.validate(target);

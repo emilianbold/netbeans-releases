@@ -68,7 +68,7 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 
 
-public class SSStackDataProvider implements StackDataProvider {
+class SSStackDataProvider implements StackDataProvider {
 
   private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
   int[] index = new int[]{1, 2, 3, 4};
@@ -91,24 +91,7 @@ public class SSStackDataProvider implements StackDataProvider {
 
   public SSStackDataProvider() {
   }
-
  
-
-  public DataProvider newInstance() {
-    return new SSStackDataProvider();
-  }
-
-  public List<DataStorageType> getSupportedDataStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(PerfanDataStorage.ID));
-  }
-
-  public List<? extends DataModelScheme> getProvidedDataModelScheme() {
-    return Arrays.asList(StackDataModel.instance);
-  }
-
-  public boolean provides(DataModelScheme schema) {
-    return getProvidedDataModelScheme().contains(schema);
-  }
 
   public synchronized List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
     return getCallersCallees(CC_MODE.CALLERS, path, aggregate);
@@ -229,9 +212,7 @@ public class SSStackDataProvider implements StackDataProvider {
     return metricsList;
   }
 
-  public String getID() {
-    return "Stack Data Provider";
-  }
+  
 
   public void attachTo(DataStorage storage) {
     if (storage instanceof PerfanDataStorage) {

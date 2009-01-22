@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.model.Validateable.ValidationState;
 import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.model.ValidationListener;
+import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.storage.spi.DataStorage;
@@ -103,9 +104,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
   }
 
-   public String getID() {
-    return SunStudioIDsProvider.DATA_COLLECTOR_ID;
-  }
+   
 
   public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
     return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
@@ -284,7 +283,5 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     return experimentDir;
   }
 
-  public SunStudioDataCollector create(SunStudioDCConfiguration configuration) {
-    return SunStudioDataCollectorFactory.getInstance().getSSDataCollector(collectedInfoList);
-  }
+  
 }

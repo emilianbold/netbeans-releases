@@ -119,10 +119,8 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
 
-    public DtraceDataCollector() {
-    }
-
-    protected DtraceDataCollector(DTDCConfiguration configuration) {
+    
+    DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
         this.dataTablesMetadata = DTDCConfigurationAccessor.getDefault().getDatatableMetadata(configuration);
@@ -218,10 +216,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return dataTablesMetadata;
     }
 
-    public String getID() {
-        return DTDCConfigurationAccessor.getDefault().getID();
-    }
-
+  
     NativeTask getCollectorTaskFor(DLightTarget target) {
         String taskCommand = scriptPath;//"pfexec " + scriptPath;
         if (target instanceof AttachableTarget) {
@@ -437,10 +432,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         }
     }
 
-    @Override
-    public DtraceDataCollector create(DTDCConfiguration configuration) {
-        return new DtraceDataCollector(configuration);
-    }
+    
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 

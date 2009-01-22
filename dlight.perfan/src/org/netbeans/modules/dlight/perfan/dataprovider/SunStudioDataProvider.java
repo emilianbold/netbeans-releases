@@ -47,7 +47,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
 import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataModel;
+import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
 import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataProvider;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
@@ -60,36 +60,13 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  *
  * @author mt154047
  */
-public class SunStudioDataProvider extends SSStackDataProvider implements TableDataProvider {
+final class SunStudioDataProvider extends SSStackDataProvider implements TableDataProvider {
 
   private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
 
-  public SunStudioDataProvider() {
+  SunStudioDataProvider() {
   }
 
- 
-
-  @Override
-  public List<? extends DataModelScheme> getProvidedDataModelScheme() {
-    return Arrays.asList(TableDataModel.instance, StackDataModel.instance);
-  }
-
-  @Override
-  public String getID() {
-    return "SunStudioTableAndStackDataProvider";
-  }
-
-
-
-  @Override
-  public boolean provides(DataModelScheme dataModel) {
-    return getProvidedDataModelScheme().contains(dataModel);
-  }
-
-  @Override
-  public DataProvider newInstance() {
-    return new SunStudioDataProvider();
-  }
 
   public List<DataRow> queryData(DataTableMetadata tableMetadata) {
 

@@ -14,6 +14,7 @@ import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
@@ -61,11 +62,10 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
       toolConfiguration.addDataCollectorConfiguration(sunStudioConfiguration);
       functionsListMetaData = SunStudioDCConfiguration.getDataTableMetaDataFor(Arrays.asList(SunStudioDCConfiguration.CollectedInfo.FUNCTIONS_LIST));
     }
-
-    CpuIndicator cpu2 = new CpuIndicator(indicatorMetadata);
-    toolConfiguration.addIndicator(cpu2);
     final DataTableMetadata data = functionsListMetaData;
-    cpu2.setVisualizerConfiguration(new CallersCalleesVisualizerConfiguration(data, SunStudioDCConfiguration.getFunctionNameColumnName(), true));
+    CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(indicatorMetadata);
+    indicatorConfiguration.setVisualizerConfiguration(new CallersCalleesVisualizerConfiguration(data, SunStudioDCConfiguration.getFunctionNameColumnName(), true));
+    toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
     return toolConfiguration;
 
   }

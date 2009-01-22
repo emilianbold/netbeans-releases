@@ -43,10 +43,10 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.BarIndicator;
-import org.netbeans.modules.dlight.indicators.BarIndicatorConfig;
+import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
+import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
@@ -102,9 +102,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     HashMap<String, Object> configuration = new HashMap<String, Object>();
     configuration.put("aggregation", "avrg");
 
-    BarIndicator indicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
-    toolConfiguration.addIndicator(indicator);
-    indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
+    BarIndicatorConfiguration indicatorConf =
+        new BarIndicatorConfiguration(indicatorMetadata);
+    indicatorConf.setConfigurationData(new ConfigurationData(configuration));
+    indicatorConf.setVisualizerConfiguration(getDetails(rawTableMetadata));
+    toolConfiguration.addIndicatorConfiguration(indicatorConf);
     return toolConfiguration;
   }
 

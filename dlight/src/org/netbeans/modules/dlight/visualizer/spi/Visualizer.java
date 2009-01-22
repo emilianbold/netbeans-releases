@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.visualizer.spi;
 
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import javax.swing.JComponent;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
 
 /**
  *
@@ -49,9 +48,8 @@ import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
  */
 
 public interface Visualizer<T extends VisualizerConfiguration> {
-  Visualizer create(T visualizer, DataProvider provider);
   T getVisualizerConfiguration();
   JComponent getComponent();
   VisualizerContainer getDefaultContainer();
-  String getID();
+
 }

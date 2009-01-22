@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
@@ -51,6 +52,9 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
  */
 public final class SunStudioDCConfiguration implements DataCollectorConfiguration {
 
+  static{
+    SunStudioDCConfigurationAccessor.setDefault(new SunStudioDCConfigurationAccessorImpl());
+  }
   /**
    * Types of information to be collected by SunStudio Performance Analyzer
    */
@@ -102,5 +106,14 @@ public final class SunStudioDCConfiguration implements DataCollectorConfiguratio
 
   List<CollectedInfo> getCollectedInfoList() {
     return collectedInfoList;
+  }
+
+  private static final class SunStudioDCConfigurationAccessorImpl extends SunStudioDCConfigurationAccessor{
+
+    @Override
+    public List<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
+      return configuration.getCollectedInfoList();
+    }
+
   }
 }

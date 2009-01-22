@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.dataprovider.spi.support;
 
+import org.netbeans.modules.dlight.dataprovider.impl.TreeTableNode;
 import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
 import java.util.List;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;

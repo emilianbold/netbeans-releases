@@ -40,7 +40,8 @@
 package org.netbeans.modules.dlight.execution.api;
 
 /**
- *
+ * Interface to be used with {@link org.netbeans.modules.dlight.execution.api.DLightTarget}
+ * to state that  it is possible to attach to the target.
  * 
  */
 public interface AttachableTarget {
