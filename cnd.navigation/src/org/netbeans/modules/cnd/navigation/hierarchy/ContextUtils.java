@@ -148,7 +148,7 @@ public class ContextUtils {
         return null;
     }
     
-    private static CsmDeclaration findInnerFileDeclaration(CsmFile file, int offset) {
+    public static CsmDeclaration findInnerFileDeclaration(CsmFile file, int offset) {
         CsmDeclaration innerDecl = null;
         for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
@@ -213,7 +213,7 @@ public class ContextUtils {
         return null;
     }
 
-    private static CsmScope findInnerFileScope(CsmFile file, int offset) {
+    public static CsmScope findInnerFileScope(CsmFile file, int offset) {
         CsmScope innerScope = null;
         for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();

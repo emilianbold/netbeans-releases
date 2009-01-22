@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider;
+import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -63,11 +64,17 @@ import org.openide.util.Lookup;
  */
 public final class CsmMacroExpansion {
 
-    /** A dummy provider that never returns any results.
-     */
-    private static final CsmMacroExpansionProvider EMPTY = new Empty();
-    /** default provider */
-    private static CsmMacroExpansionProvider defaultProvider;
+    /** Flag for document of macro expansion view panel.*/
+    public static final String MACRO_EXPANSION_VIEW_DOCUMENT = "macro-expansion-view-document"; // NOI18N
+
+    /** A dummy providers that never returns any results.*/
+    private static final CsmMacroExpansionProvider EMPTY_MACRO_EXPANSION_PROVIDER = new EmptyMacroExpansion();
+    /** A dummy providers that never returns any results.*/
+    private static final CsmMacroExpansionViewProvider EMPTY_MACRO_EXPANSION_VIEW_PROVIDER = new EmptyMacroExpansionView();
+    /** default macro expansion provider */
+    private static CsmMacroExpansionProvider defaultMacroExpansionProvider;
+    /** default macro expansion view provider */
+    private static CsmMacroExpansionViewProvider defaultMacroExpansionViewProvider;
 
     private CsmMacroExpansion() {
     }
@@ -75,14 +82,24 @@ public final class CsmMacroExpansion {
     /** Static method to obtain the provider.
      * @return the provider
      */
-    private static synchronized CsmMacroExpansionProvider getProvider() {
-        if (defaultProvider != null) {
-            return defaultProvider;
+    private static synchronized CsmMacroExpansionProvider getMacroExpansionProvider() {
+        if (defaultMacroExpansionProvider != null) {
+            return defaultMacroExpansionProvider;
         }
-        defaultProvider = Lookup.getDefault().lookup(CsmMacroExpansionProvider.class);
-        return defaultProvider == null ? EMPTY : defaultProvider;
+        defaultMacroExpansionProvider = Lookup.getDefault().lookup(CsmMacroExpansionProvider.class);
+        return defaultMacroExpansionProvider == null ? EMPTY_MACRO_EXPANSION_PROVIDER : defaultMacroExpansionProvider;
     }
 
+    /** Static method to obtain the provider.
+     * @return the provider
+     */
+    private static synchronized CsmMacroExpansionViewProvider getMacroExpansionViewProvider() {
+        if (defaultMacroExpansionViewProvider != null) {
+            return defaultMacroExpansionViewProvider;
+        }
+        defaultMacroExpansionViewProvider = Lookup.getDefault().lookup(CsmMacroExpansionViewProvider.class);
+        return defaultMacroExpansionViewProvider == null ? EMPTY_MACRO_EXPANSION_VIEW_PROVIDER : defaultMacroExpansionViewProvider;
+    }
     /**
      * Returns instantiation of template
      *
@@ -91,7 +108,7 @@ public final class CsmMacroExpansion {
      * @return - instantiation
      */
     public static String getExpandedText(CsmFile file, int startOffset, int endOffset) {
-        return getProvider().getExpandedText(file, startOffset, endOffset);
+        return getMacroExpansionProvider().getExpandedText(file, startOffset, endOffset);
     }
 
     /**
@@ -103,7 +120,7 @@ public final class CsmMacroExpansion {
      * @param outDoc - result
      */
     public static void expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
-        getProvider().expand(inDoc, startOffset, endOffset, outDoc);
+        getMacroExpansionProvider().expand(inDoc, startOffset, endOffset, outDoc);
     }
 
     /**
@@ -114,7 +131,7 @@ public final class CsmMacroExpansion {
      * @return offset in expanded text
      */
     public static int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
-        return getProvider().getOffsetInExpandedText(expandedDoc, originalOffset);
+        return getMacroExpansionProvider().getOffsetInExpandedText(expandedDoc, originalOffset);
     }
 
     /**
@@ -125,15 +142,48 @@ public final class CsmMacroExpansion {
      * @return original offset
      */
     public static int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
-        return getProvider().getOffsetInOriginalText(expandedDoc, expandedOffset);
+        return getMacroExpansionProvider().getOffsetInOriginalText(expandedDoc, expandedOffset);
     }
+
+    /**
+     * Returns offset of the next macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public static int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
+        return getMacroExpansionProvider().getNextMacroExpansionStartOffset(expandedDoc, expandedOffset);
+    }
+
+    /**
+     * Returns offset of the previous macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public static int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
+        return getMacroExpansionProvider().getPrevMacroExpansionStartOffset(expandedDoc, expandedOffset);
+    }
+
+    /**
+     * Expands document on specified position and shows Macro Expansion View panel.
+     *
+     * @param doc - document
+     * @param offset - offset in document
+     */
+    public static void showMacroExpansionView(Document doc, int offset) {
+        getMacroExpansionViewProvider().showMacroExpansionView(doc, offset);
+    }
+
 
     //
     // Implementation of the default provider
     //
-    private static final class Empty implements CsmMacroExpansionProvider {
+    private static final class EmptyMacroExpansion implements CsmMacroExpansionProvider {
 
-        Empty() {
+        EmptyMacroExpansion() {
         }
 
         public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
@@ -149,6 +199,26 @@ public final class CsmMacroExpansion {
 
         public int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
+        }
+
+        public int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
+            return expandedOffset;
+        }
+
+        public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
+            return expandedOffset;
+        }
+    }
+
+    //
+    // Implementation of the default provider
+    //
+    private static final class EmptyMacroExpansionView implements CsmMacroExpansionViewProvider {
+
+        EmptyMacroExpansionView() {
+        }
+
+        public void showMacroExpansionView(Document doc, int offset) {
         }
 
     }
