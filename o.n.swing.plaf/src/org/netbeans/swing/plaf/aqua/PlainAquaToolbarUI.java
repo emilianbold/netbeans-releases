@@ -48,14 +48,12 @@ package org.netbeans.swing.plaf.aqua;
 
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToolBarUI;
 import java.awt.*;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
-import javax.swing.plaf.basic.BasicToggleButtonUI;
 
 /** A ToolbarUI subclass that gets rid of all borders
  * on buttons and provides a finder-style toolbar look.
@@ -76,12 +74,10 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
     @Override
     public void installUI( JComponent c ) {
         super.installUI(c);
-        c.setBorder(BorderFactory.createEmptyBorder());
-        c.setOpaque(true);
         c.addContainerListener(this);
-        c.setBackground(UIManager.getColor("NbExplorerView.background"));
-        
         boolean isEditorToolbar = "editorToolbar".equals (c.getName());
+        c.setBackground(UIManager.getColor("NbExplorerView.background"));
+        c.setOpaque(true);
         installButtonUIs (c, isEditorToolbar);
     }
     
