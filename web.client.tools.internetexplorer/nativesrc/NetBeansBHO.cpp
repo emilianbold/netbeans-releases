@@ -78,11 +78,14 @@ STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
         CComPtr<IInternetSession> spSession;
         CoInternetGetSession(0, &spSession, 0);
 
-        MetaFactory::CreateInstance(CLSID_HttpProtocol, &m_spCFHTTP);
-        spSession->RegisterNameSpace(m_spCFHTTP, CLSID_NULL, L"http", 0, 0, 0);
-        // HTTPS Support --->
-        MetaFactory::CreateInstance(CLSID_HttpSProtocol, &m_spCFHTTPS);
-        spSession->RegisterNameSpace(m_spCFHTTPS, CLSID_NULL, L"https", 0, 0, 0);
+        // HTTP Support (for HTTP Client Monitor)
+        // Uncomment the following 4 lines to enable experimental
+        // HTTP Client Monitor support for IE.
+//        MetaFactory::CreateInstance(CLSID_HttpProtocol, &m_spCFHTTP);
+//        spSession->RegisterNameSpace(m_spCFHTTP, CLSID_NULL, L"http", 0, 0, 0);
+        // HTTPS Support ---> (for HTTP Client Monitor)
+//        MetaFactory::CreateInstance(CLSID_HttpSProtocol, &m_spCFHTTPS);
+//        spSession->RegisterNameSpace(m_spCFHTTPS, CLSID_NULL, L"https", 0, 0, 0);
         // HTTPS Support <---
         // end initialize HTTP Request Monitoring
 
@@ -100,11 +103,14 @@ STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
         // Uninitialize HTTP Monitoring code
         CComPtr<IInternetSession> spSession;
         CoInternetGetSession(0, &spSession, 0);
-        spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
-        m_spCFHTTP.Release();
+        // HTTP Support
+		// Uncomment the following 4 lines to enable experimental
+		// HTTP Client Monitor support for IE.
+//		spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+//        m_spCFHTTP.Release();
         // HTTPS Support --->
-        spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
-        m_spCFHTTPS.Release();
+//        spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
+//        m_spCFHTTPS.Release();
         // HTTPS Support <---
         // End Uninitialize HTTP Monitoring code
 
