@@ -90,10 +90,10 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         return startReferenceObject;
     }
 
-    protected abstract Collection<CsmObject> getRefactoredObjects();
+    protected abstract Collection<? extends CsmObject> getRefactoredObjects();
 
     public final Problem prepare(RefactoringElementsBag elements) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
+        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
         if (referencedObjects == null || referencedObjects.size() == 0) {
             return null;
         }
@@ -187,7 +187,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     }
     
     protected final void processFile(CsmFile csmFile, ModificationResult mr) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
+        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
         assert referencedObjects != null && referencedObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
