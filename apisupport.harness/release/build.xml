@@ -257,6 +257,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
         <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}" encoding="UTF-8">
             <classpath refid="cp"/>
+            <classpath path="${module.run.classpath}"/><!-- XXX #157320 -->
             <sourcepath location="${src.dir}"/>
             <doctitle>${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
