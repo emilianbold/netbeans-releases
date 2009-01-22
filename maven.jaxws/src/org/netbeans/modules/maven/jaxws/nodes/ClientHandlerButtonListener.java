@@ -212,7 +212,7 @@ public class ClientHandlerButtonListener implements ActionListener {
                 bindingsModel = BindingsModelFactory.getDefault().getModel(ms);
                 //get the relative path of the wsdl
                 FileObject localWsdlFile =
-                        support.getLocalWsdlFolder(false).getFileObject(client.getLocalWsdl());
+                        support.getWsdlFolder(false).getFileObject(client.getLocalWsdl());
                 File f = FileUtil.toFile(bindingHandlerFO);
                 String relativePath = Utilities.relativize(f.toURI(), new URI(localWsdlFile.getURL().toExternalForm()));
                 GlobalBindings gb = bindingsModel.getGlobalBindings();

@@ -55,10 +55,15 @@ import org.w3c.dom.Node;
  */
 public final class ProcessingInstruction extends SyntaxNode {
     
-    
+    private String target;
+    private String content;
+
     /** Creates a new instance of ProcessingInstructionImpl */
-    public ProcessingInstruction(XMLSyntaxSupport syntax, Token<XMLTokenId> from, int start, int end) {
-        super(syntax, from, start, end);
+    ProcessingInstruction(XMLSyntaxSupport syntax, Token<XMLTokenId> first,
+            int start, int end, String target, String content) {
+        super(syntax, first, start, end);
+        this.target = target;
+        this.content = content;
     }
     
     /**
@@ -68,49 +73,12 @@ public final class ProcessingInstruction extends SyntaxNode {
         return Node.PROCESSING_INSTRUCTION_NODE;
     }
     
-    /**
-     * The target of this processing instruction. XML defines this as being
-     * the first token following the markup that begins the processing
-     * instruction.
-     * @return implementation may return "xml" as it consider it a PI
-     */
-    public String getTarget() {
-//        TokenItem target = first().getNext();
-//        if (target != null) {
-//            return target.getImage();
-//        } else {
-//            return "";  //??? or null
-//        }
-        return null;
-    }
-    
     public String getNodeName() {
-        return getTarget();
+        return target;
     }
-    
-    /**
-     * The content of this processing instruction. This is from the first non
-     * white space character after the target to the character immediately
-     * preceding the <code>?&gt;</code>.
-     * @return may return ""
-     */
-    public String getData() {
-//        StringBuffer buf = new StringBuffer();
-//        TokenItem next = first().getNext();
-//        while (next != null && next.getTokenID() != XMLDefaultTokenContext.PI_CONTENT) {
-//            next = next.getNext();
-//        }
-//        if (next == null) return "";  //??? or null
-//        do {
-//            buf.append(next.getImage());
-//            next = next.getNext();
-//        } while (next != null && next.getTokenID() == XMLDefaultTokenContext.PI_CONTENT);
-//        return buf.toString();
-        return null;
-    }
-    
+        
     public String getNodeValue() {
-        return getData();
+        return content;
     }
     
     /**

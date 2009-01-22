@@ -7,7 +7,7 @@ package org.netbeans.modules.dlight.tool.api.impl;
 
 import java.util.List;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
 
@@ -47,7 +47,7 @@ public abstract class DLightToolConfigurationAccessor {
 
   public abstract List<IndicatorDataProviderConfiguration> getIndicatorDataProviders(DLightToolConfiguration conf);
 
-  public abstract List<Indicator> getIndicators(DLightToolConfiguration conf);
+  public abstract List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf);
 
   public abstract String getToolName(DLightToolConfiguration conf);
 

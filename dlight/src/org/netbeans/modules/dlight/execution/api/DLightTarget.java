@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.dlight.execution.api;
 
-import org.netbeans.modules.nativeexecution.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * D-Light Target. It can be anything: starting from shell script to
  *  the whole system.
  * You should implement this interface in case you have your own
  * target type.
- * Default implementation {@link org.netbeans.dlight.core.execution.NativeExecutableTarget} can
+ * Default implementation {@link org.netbeans.modules.dlight.execution.api.NativeExecutableTarget} can
  * be used.
  */
 public interface DLightTarget {
@@ -81,7 +81,7 @@ public interface DLightTarget {
   /**
    * Returns <code>true</code> if this target can be substituted.
    * There are collectors that cannot be attachable to
-   * target (method {@link org.netbeans.dlight.core.collector.model.DataCollector#isAttachable()}
+   * target (method {@link org.netbeans.modules.dlight.core.collector.model.DataCollector#isAttachable()}
    * returns false), for example to collect synchronization data using SunStudio
    * Performance Analyzer you should run your application as following:
    * <code>collect -s &lt;application&gt; &lt;args&gt; </code>.
@@ -101,7 +101,7 @@ public interface DLightTarget {
   public void substitute(String cmd, String[] args);
 
   /**
-   * Returns current target state as {@link org.netbeans.dlight.core.execution.model.DLightTarget.State}
+   * Returns current target state as {@link org.netbeans.modules.dlight.execution.api.DLightTarget.State}
    * @return target current state
    */
   public DLightTarget.State getState();

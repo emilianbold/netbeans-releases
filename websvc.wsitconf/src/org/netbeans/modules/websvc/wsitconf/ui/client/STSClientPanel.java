@@ -41,15 +41,18 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -62,13 +65,19 @@ public class STSClientPanel extends SectionInnerPanel {
     private Binding binding;
     private boolean inSync = false;
     private JaxWsModel jaxwsmodel;
+    private Project project;
 
     public STSClientPanel(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel) {
         super(view);
         this.node = node;
         this.binding = binding;
         this.jaxwsmodel = jaxWsModel;
-        
+
+        FileObject fo = node.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            project = FileOwnerQuery.getOwner(fo);
+        }
+
         initComponents();
 
         endpointLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -210,7 +219,9 @@ public class STSClientPanel extends SectionInnerPanel {
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (!inSync) {
-            
+
+            Util.checkMetroLibrary(project);
+
             if (source.equals(endpointTextField)) {
                 String endpoint = getEndpoint();
                 if ((endpoint != null) && (endpoint.length() == 0)) {

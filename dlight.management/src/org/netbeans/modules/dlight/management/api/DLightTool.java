@@ -44,35 +44,38 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.indicator.api.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+import org.netbeans.modules.dlight.indicator.spi.impl.IDPProvider;
+import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorProvider;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.model.Validateable;
 import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.spi.collector.impl.DataCollectorFactoryAccessor;
-import org.netbeans.modules.dlight.spi.indicator.impl.IndicatorDataProviderFactoryAccessor;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
 import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
-
 
 /**
  * D-Light Tool is a set of registered collector used to collect data,
  * set of indicators to display in Indicators Panel when tool is running
- * You should implement interface {@link org.netbeans.dlight.core.model.DLightToolConfigurationProvider}
- * which should create new instance of {@link org.netbeans.dlight.core.model.DLightTool.Configuration}
+ * You should implement interface {@link org.netbeans.modules.dlight.core.model.DLightToolConfigurationProvider}
+ * which should create new instance of {@link org.netbeans.modules.dlight.core.model.DLightTool.Configuration}
  * object each time create() method is invoked and register it in D-Light filesystem
  */
 public final class DLightTool implements Validateable<DLightTarget> {
 
+  private static final Logger log = DLightLogger.getLogger(DLightTool.class);
   private String toolName;
   private boolean enabled;
   private final List<DataCollector> dataCollectors;
@@ -80,45 +83,65 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private final List<Indicator> indicators;
   private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
   private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
-
-
   //register accessor which will be used ne friend packages of API/SPI accessor packages
   //to get access to tool creation, etc.
-  static{
+  
+
+  static {
     DLightToolAccessor.setDefault(new DLightToolAccessorImpl());
   }
-  
+
   private DLightTool(DLightToolConfiguration configuration) {
     this.toolName = DLightToolConfigurationAccessor.getDefault().getToolName(configuration);
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector>());
     List<DataCollectorConfiguration> configurations = DLightToolConfigurationAccessor.getDefault().getDataCollectors(configuration);
     List<IndicatorDataProviderConfiguration> idpConfigurations = DLightToolConfigurationAccessor.getDefault().getIndicatorDataProviders(configuration);
 
-    for (DataCollectorConfiguration conf : configurations){
-      DataCollector collector = DataCollectorFactoryAccessor.getDefault().create(conf);
+    for (DataCollectorConfiguration conf : configurations) {
+      DataCollector collector = DataCollectorProvider.getInstance().createDataCollector(conf);
+      if (collector == null) {
+        log.info("Could not find DataCollector for configuration with id:" + conf.getID() + " check if " +
+            "DataColelctorFactory is registered in Global Lookup with the same ID");
+        continue;
+      }
       registerCollector(collector);
-//      if (collector instanceof IndicatorDataProvider){
-//        registerIndicatorDataProvider((IndicatorDataProvider)collector);
-//      }
-    }
-    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
-    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());   
-    for (IndicatorDataProviderConfiguration idp : idpConfigurations){
-      //we could create already object
-      if (!configurations.contains(idp)){
-       registerIndicatorDataProvider(IndicatorDataProviderFactoryAccessor.getDefault().create(idp));
+      if (collector instanceof IndicatorDataProvider){
+        registerIndicatorDataProvider((IndicatorDataProvider)collector);
       }
     }
-    
-    List<Indicator> indicatorsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
-    for (Indicator indicator : indicatorsList){
+    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
+    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
+    for (IndicatorDataProviderConfiguration idp : idpConfigurations) {
+      //we could create already object
+      if (!configurations.contains(idp)) {
+        IndicatorDataProvider indDataProvider = IDPProvider.getInstance().create(idp);
+        if (indDataProvider == null) {
+          log.info("Could not find IndicatorDataProvider for configuration with id:" + idp.getID() + " check if " +
+              "IndicatorDataPeoviderFactory is registered in Global Lookup with the same ID");
+          continue;
+
+        }
+        registerIndicatorDataProvider(indDataProvider);
+      }
+    }
+
+    List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
+    for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
+      Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
+      if (indicator == null) {
+        log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " +
+            "IndicatorFactory is registered in Global Lookup with the same ID");
+        continue;
+
+      }
+
       addIndicator(indicator);
       IndicatorAccessor.getDefault().setToolName(indicator, toolName);
-  
+
     }
   }
 
-  static DLightTool newDLightTool(DLightToolConfiguration configuration){
+  static DLightTool newDLightTool(DLightToolConfiguration configuration) {
     return new DLightTool(configuration);
   }
 
@@ -184,6 +207,9 @@ public final class DLightTool implements Validateable<DLightTarget> {
   }
 
   void registerCollector(DataCollector collector) {
+    if (collector == null) {
+      log.info("Cannot register collector");
+    }
     if (!dataCollectors.contains(collector)) {
       dataCollectors.add(collector);
     }
@@ -208,7 +234,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         ValidationStatus newStatus = doValidation(target);
 
         if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                newStatus.getReason().equals(oldStatus.getReason()))) {
+            newStatus.getReason().equals(oldStatus.getReason()))) {
           notifyStatusChanged(newStatus);
         }
 
@@ -228,7 +254,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     for (DataCollector dc : dataCollectors) {
       try {
-        result = result.merge(((Future<ValidationStatus>)dc.validate(target)).get());
+        result = result.merge(((Future<ValidationStatus>) dc.validate(target)).get());
       } catch (InterruptedException ex) {
         Exceptions.printStackTrace(ex);
       } catch (ExecutionException ex) {
@@ -259,7 +285,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
   }
 
-  private static final class DLightToolAccessorImpl extends DLightToolAccessor{
+  private static final class DLightToolAccessorImpl extends DLightToolAccessor {
 
     @Override
     public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
@@ -280,7 +306,6 @@ public final class DLightTool implements Validateable<DLightTarget> {
     public List<DataCollector> getCollectors(DLightTool tool) {
       return tool.getCollectors();
     }
-
   }
 
 }
