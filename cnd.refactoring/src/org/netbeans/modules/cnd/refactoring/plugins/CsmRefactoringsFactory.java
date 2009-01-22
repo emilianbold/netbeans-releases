@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;
@@ -57,8 +58,9 @@ import org.netbeans.modules.refactoring.spi.*;
 public class CsmRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        CsmContext editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
         CsmObject ref = CsmRefactoringUtils.findContextObject(refactoring.getRefactoringSource());
-        if (CsmRefactoringUtils.isSupportedReference(ref)) {
+        if (ref != null || editorContext != null) {
             if (refactoring instanceof WhereUsedQuery) {
                 return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             } else if (refactoring instanceof RenameRefactoring) {

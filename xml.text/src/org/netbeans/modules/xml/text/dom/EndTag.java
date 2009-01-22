@@ -54,9 +54,9 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 public class EndTag extends Tag {
 
-    public EndTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    EndTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
-        //this.name = name;
+        this.name = from.text().toString();
     }
 
     /**

@@ -40,21 +40,20 @@ package org.netbeans.modules.dlight.management.api;
 
 
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
-import org.netbeans.modules.dlight.management.api.DLightTool;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
-import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.execution.api.impl.DLightSessionInternalReference;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -64,7 +63,7 @@ import org.openide.util.Task;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionReference{
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference{
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.dlight.execution.api.support;
 
-import org.netbeans.modules.nativeexecution.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.openide.windows.InputOutput;
 
 /**

@@ -572,4 +572,74 @@ public class GeneralPHP extends JellyTestCase {
       eoPHP.pressKey( KeyEvent.VK_BACK_SPACE );
   }
 
+  private String Suppress( String sFrom )
+  {
+    String sResult = sFrom.replaceAll( "[\t\r\n]+", " " );
+    sResult = sResult.replaceAll( " +", " " );
+    sResult = sResult.replaceAll( "^ *", "" );
+    sResult = sResult.replaceAll( " *$", "" );
+    sResult = sResult.replaceAll( " *[{] *", "{" );
+    sResult = sResult.replaceAll( " *[(] *", "(" );
+    sResult = sResult.replaceAll( " *[}] *", "}" );
+    sResult = sResult.replaceAll( " *[)] *", ")" );
+    sResult = sResult.replaceAll( " *= *", "=" );
+    sResult = sResult.replaceAll( " *, *", "," );
+    sResult = sResult.replaceAll( " *; *", ";" );
+
+    return sResult;
+  }
+
+  protected void CheckFlex(
+      EditorOperator eoCode,
+      String sIdealCode,
+      boolean bDeleteAfter
+    )
+  {
+    //System.out.println( "===sIdealCode===" + sIdealCode + "===" );
+    // Move up line by line till ideal code starts with
+    int iWalkUpLine = eoCode.getLineNumber( );
+    String sLine;
+    while( true )
+    {
+      sLine = Suppress( eoCode.getText( iWalkUpLine ) );
+      if( !sLine.equals( "" ) )
+      {
+        //System.out.println( "===startwith===" + sLine + "===" );
+        if( sIdealCode.startsWith( sLine ) )
+          break;
+      }
+      iWalkUpLine--;
+      /*
+      if( !--iWalkUpLine )
+      {
+        fail( "Unable to find start of flex result." );
+      }
+      */
+    }
+
+    // Move down line by line till whole ideal code found
+    int iWalkDownLine = iWalkUpLine + 1;
+    while( true )
+    {
+      String sNext = eoCode.getText( iWalkDownLine );
+      sLine = Suppress( sLine + sNext );
+      //System.out.println( "===" + sLine + "===" );
+      if( sIdealCode.equals( sLine ) )
+        break;
+
+      iWalkDownLine++;
+      /*
+      if( == ++iWalkDownLine )
+      {
+        fail( "End of file reached before ideal code found." );
+      }
+      */
+    }
+
+    if( bDeleteAfter )
+    {
+      for( int i = 0; i < iWalkDownLine - iWalkUpLine + 1; i++ )
+        eoCode.deleteLine( iWalkUpLine );
+    }
+  }
 }
