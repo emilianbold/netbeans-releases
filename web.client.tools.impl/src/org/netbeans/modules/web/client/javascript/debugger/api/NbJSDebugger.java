@@ -449,6 +449,7 @@ public final class NbJSDebugger {
         // to enable HTTP monitor on a per browser basis. To use the
         // Experimental HTTP monitoring for IE, uncomment the
         // return true, and comment out the following line.
+        // (must also uncomment a few things in the native code as well)
         //return true;
         return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
     }
