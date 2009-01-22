@@ -43,8 +43,6 @@ import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
  * Configuration of environment for NativeTasks execution.
- * 
- * @author ak119685
  */
 final public class ExecutionEnvironment {
     
@@ -178,7 +176,7 @@ final public class ExecutionEnvironment {
     public boolean equals(Object obj) {
         ExecutionEnvironment ee = null;
 
-        if (obj instanceof ExecutionEnvironment) {
+        if (obj != null && obj instanceof ExecutionEnvironment) {
             ee = (ExecutionEnvironment) obj;
         } else {
             return false;

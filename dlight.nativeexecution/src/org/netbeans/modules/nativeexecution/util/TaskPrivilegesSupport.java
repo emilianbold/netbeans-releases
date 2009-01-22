@@ -398,7 +398,7 @@ public class TaskPrivilegesSupport {
 
         }
 
-        private static void doRequestRemote(final ExecutionEnvironment execEnv,
+        private static synchronized void doRequestRemote(final ExecutionEnvironment execEnv,
                 String requestedPrivs, String user, String passwd) {
 
             Session session = ConnectionManager.getInstance().getConnectionSession(execEnv);
