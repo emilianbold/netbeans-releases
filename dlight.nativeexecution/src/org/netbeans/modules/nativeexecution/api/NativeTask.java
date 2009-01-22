@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.support.NativeExecutor;
 import org.netbeans.modules.nativeexecution.support.LocalNativeExecutor;
 import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 import org.netbeans.modules.nativeexecution.support.RemoteNativeExecutor;
@@ -63,9 +63,8 @@ import org.openide.windows.InputOutput;
 
 /**
  * A cancellable asynchronous native task.
- * @author ak119685
  */
-public class NativeTask implements Future<Integer>, Runnable {
+public class NativeTask implements Future<Integer> {
 
     private String command;
     private final ExecutionEnvironment execEnv;
@@ -158,31 +157,17 @@ public class NativeTask implements Future<Integer>, Runnable {
         submit(true);
     }
 
+    final public Integer invoke() throws Exception {
+        return executor.invokeAndWait();
+    }
+
     /**
      * Submit task and maybe wait for it's start.
      * @param waitStart if set to <tt>true</tt> method will return only after
      *        the task has been started.
      */
     final public void submit(boolean waitStart) {
-        synchronized (executor.stateMonitor) {
-            if (executor.state == TaskExecutionState.RUNNING ||
-                    executor.state == TaskExecutionState.STARTING) {
-                return;
-            }
-
-            NativeTaskExecutorService.submit(this);
-
-            if (waitStart) {
-                try {
-                    while (executor.state == TaskExecutionState.INITIAL ||
-                            executor.state == TaskExecutionState.STARTING) {
-                        executor.stateMonitor.wait();
-                    }
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
+        executor.invoke(waitStart);
     }
 
     /**
@@ -202,11 +187,11 @@ public class NativeTask implements Future<Integer>, Runnable {
         showProgress = b;
     }
 
-    final protected NativeExecutor getExecutor() {
+    protected final NativeExecutor getExecutor() {
         return executor;
     }
 
-    final ProgressHandle getProgressHandler() {
+    public final ProgressHandle getProgressHandler() {
         return (showProgress ? ProgressHandleFactory.createHandle(this.toString(), executor, redirectionIO == null ? null : new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -250,7 +235,7 @@ public class NativeTask implements Future<Integer>, Runnable {
         this.redirectionInputReader = inReader;
     }
 
-    final Reader getRedirectionInputReader() {
+    final public Reader getRedirectionInputReader() {
         return redirectionInputReader;
     }
 
@@ -273,7 +258,7 @@ public class NativeTask implements Future<Integer>, Runnable {
         this.redirectionErrorWriter = errWriter;
     }
 
-    final Writer getRedirectionErrorWriter() {
+    final public Writer getRedirectionErrorWriter() {
         return redirectionErrorWriter;
     }
 
@@ -296,7 +281,7 @@ public class NativeTask implements Future<Integer>, Runnable {
         this.redirectionOutputWriter = outWriter;
     }
 
-    final Writer getRedirectionOutputWriter() {
+    final public Writer getRedirectionOutputWriter() {
         return redirectionOutputWriter;
     }
 
@@ -367,7 +352,7 @@ public class NativeTask implements Future<Integer>, Runnable {
      * @return task's current <tt>TaskExecutionState</tt>
      */
     final public TaskExecutionState getState() {
-        return executor.state;
+        return executor.getState();
     }
 
     /**
@@ -386,7 +371,7 @@ public class NativeTask implements Future<Integer>, Runnable {
         return executor.getActions();
     }
 
-    void reset() {
+    public void reset() {
         if (redirectionIO != null) {
             try {
                 redirectionIO.getOut().reset();
@@ -473,17 +458,6 @@ public class NativeTask implements Future<Integer>, Runnable {
      */
     public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Starts execution and waits for it's completion.
-     */
-    public void run() {
-        try {
-            executor.invokeAndWait();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     private static class ErrorWriter extends PrintWriter {
