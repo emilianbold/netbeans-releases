@@ -191,11 +191,6 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
         });
     }
 
-    public Visualizer create(TableVisualizerConfiguration configuration, DataProvider provider) {
-        return new TableVisualizer(provider, configuration);
-    }
-
-    
     public TableVisualizerConfiguration getVisualizerConfiguration() {
         return configuration;
     }

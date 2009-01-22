@@ -47,7 +47,7 @@ import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
  */
 public abstract class IndicatorConfiguration {
    private IndicatorMetadata metadata;
-   private VisualizerConfiguration configuration;
+   private VisualizerConfiguration visualizerConfiguration;
    private ConfigurationData configurationData;
 
    static{
@@ -65,7 +65,7 @@ public abstract class IndicatorConfiguration {
   }  
 
   public final void setVisualizerConfiguration(VisualizerConfiguration configuration){
-    this.configuration = configuration;
+    this.visualizerConfiguration = configuration;
   }
 
   protected  ConfigurationData getConfigurationData(){
@@ -77,7 +77,7 @@ public abstract class IndicatorConfiguration {
   }
 
   protected  VisualizerConfiguration getVisualizerConfiguration(){
-    return configuration;
+    return visualizerConfiguration;
   }
 
   private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor{

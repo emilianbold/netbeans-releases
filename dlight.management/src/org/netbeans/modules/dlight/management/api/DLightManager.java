@@ -157,20 +157,22 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     return sessions;
   }
 
-  public DLightSession setActiveSession(DLightSession session) {
+  public DLightSession setActiveSession(DLightSession newActiveSession) {
     DLightSession oldActiveSession = activeSession;
-    DLightSession newActiveSession = session;
-    activeSession = newActiveSession;
+    if (newActiveSession != oldActiveSession) {
 
-    if (oldActiveSession != null) {
-      oldActiveSession.setActive(false);
+        activeSession = newActiveSession;
+        
+        if (oldActiveSession != null) {
+          oldActiveSession.setActive(false);
+        }
+
+        if (newActiveSession != null) {
+          newActiveSession.setActive(true);
+        }
+
+        notifySessionActivated(oldActiveSession, newActiveSession);
     }
-
-    if (newActiveSession != null) {
-      newActiveSession.setActive(true);
-    }
-
-    notifySessionActivated(oldActiveSession, newActiveSession);
 
     return activeSession;
   }
