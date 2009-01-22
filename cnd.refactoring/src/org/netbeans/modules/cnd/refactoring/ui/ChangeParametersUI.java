@@ -94,7 +94,7 @@ public class ChangeParametersUI implements RefactoringUI {
     
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new ChangeParametersPanel(selectedElement, parent);
+            panel = new ChangeParametersPanel(selectedElement, editorContext, parent);
         }
         return panel;
     }

@@ -41,6 +41,8 @@ package org.netbeans.modules.xml.text.dom;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.text.AbstractTestCase;
 
 /**
@@ -55,19 +57,47 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new XMLSyntaxSupportTest("testParse1"));
+        suite.addTest(new XMLSyntaxSupportTest("testParseForeward"));
+        suite.addTest(new XMLSyntaxSupportTest("testParseBackward"));
+        suite.addTest(new XMLSyntaxSupportTest("testTokens"));
         return suite;
     }
 
     /**
      * Parses a valid xml documents and reads one node at a time.
      */
-    public void testParse1() throws Exception {
+    public void testParseForeward() throws Exception {
         XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(getDocument("syntax/test.xml"));
         SyntaxElement se = support.getElementChain(1);
+        StringBuilder actualResult = new StringBuilder();
         while( se != null) {
-            System.out.println("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
+            actualResult.append("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
             se = se.getNext();
         }
+        assert(getExpectedResultAsString("dom/result1.txt").equals(actualResult.toString()));
     }
+    
+    public void testParseBackward() throws Exception {
+        BaseDocument doc = getDocument("syntax/test.xml");
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
+        SyntaxElement se = support.getElementChain(doc.getLength()-1);
+        StringBuilder actualResult = new StringBuilder();
+        while( se != null) {
+            actualResult.append("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
+            se = se.getPrevious();
+        }
+        assert(getExpectedResultAsString("dom/result2.txt").equals(actualResult.toString()));
+    }
+
+    public void testTokens() throws Exception {
+        BaseDocument doc = getDocument("syntax/test.xml");
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
+        Token token = support.getPreviousToken(30);
+        System.out.println("Token: " + token.id() + " Text: " + token.text());
+        token = support.getPreviousToken(31);
+        System.out.println("Token: " + token.id() + " Text: " + token.text());
+        token = support.getPreviousToken(32);
+        System.out.println("Token: " + token.id() + " Text: " + token.text());
+    }
+
 }

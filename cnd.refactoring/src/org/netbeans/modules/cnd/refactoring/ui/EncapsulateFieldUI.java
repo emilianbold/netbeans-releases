@@ -82,7 +82,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new EncapsulateFieldPanel(selectedObj, parent);
+            panel = new EncapsulateFieldPanel(selectedObj, editorContext, parent);
         }
         return panel;
     }

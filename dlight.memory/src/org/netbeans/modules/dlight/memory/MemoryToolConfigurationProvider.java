@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
 import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 
 /**
  * 
@@ -79,8 +80,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
 
-        final DataTableMetadata dbTableMetadata = new DataTableMetadata("mem", columns);
-        DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(dbTableMetadata));
+        final DataTableMetadata rawTableMetadata = new DataTableMetadata("mem", columns);
+        DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
         dataCollectorConfiguration.setStackSupportEnabled(true);
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
@@ -96,10 +97,29 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 //        configuration.put("aggregation", "avrg");
 //        BarIndicator indicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
         MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
-        indicator.setVisualizerConfiguration(new TableVisualizerConfiguration(dbTableMetadata));
+        indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
         toolConfiguration.addIndicatorConfiguration(indicator);
 
-
         return toolConfiguration;
+    }
+
+    private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
+
+        List<Column> viewColumns = Arrays.asList(
+                new Column("func_name", String.class, "Function", null),
+                new Column("leak", Long.class, "Leak", null));
+
+        String sql =
+            "SELECT func.func_name as func_name, SUM(size) as leak " +
+            "FROM mem, node AS node, func, ( " +
+            "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
+            "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
+            "   ) WHERE address = leak_address GROUP BY address " +
+            ") WHERE timestamp = leak_timestamp " +
+            "AND stackid = node.node_id and node.func_id = func.func_id " +
+            "GROUP BY node.func_id";
+
+        DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
+        return new TableVisualizerConfiguration(viewTableMetadata);
     }
 }
