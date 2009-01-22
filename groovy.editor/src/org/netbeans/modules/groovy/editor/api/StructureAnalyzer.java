@@ -156,11 +156,13 @@ public class StructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
-                    for (PropertyNode node : properties.get(clz)) {
-                        if (fieldName.equals(node.getName())) {
-                            found = true;
-
-                            break;
+                    Set<PropertyNode> nodes = properties.get(clz);
+                    if (nodes != null) {
+                        for (PropertyNode node : nodes) {
+                            if (fieldName.equals(node.getName())) {
+                                found = true;
+                                break;
+                            }
                         }
                     }
 
