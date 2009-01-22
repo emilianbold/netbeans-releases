@@ -48,7 +48,7 @@
                             <attr name="position" intvalue="1200"/>
                         </file>
                         <!--
-                        <file name="org-netbeans-modules-cnd-refactoring-actions-EncapsulateFieldAction.instance">
+                        <file name="EncapsulateFieldsAction.instance">
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
                             <attr name="position" intvalue="1300"/>
                         </file>
@@ -145,11 +145,11 @@
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="1100"/>
                         </file>
-                        <file name="org-netbeans-modules-cnd-refactoring-actions-ChangeParametersAction.instance">
+                        <file name="ChangeParametersAction.instance">
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
-                        <file name="org-netbeans-modules-cnd-refactoring-actions-EncapsulateFieldAction.instance">
+                        <file name="EncapsulateFieldsAction.instance">
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
                             <attr name="position" intvalue="1300"/>
                         </file>
@@ -241,7 +241,7 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
-                        <file name="EncapsulateFieldAction.instance">
+                        <file name="EncapsulateFieldsAction.instance">
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
                             <attr name="position" intvalue="1300"/>
                         </file>
