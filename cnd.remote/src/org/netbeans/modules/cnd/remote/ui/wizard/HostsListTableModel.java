@@ -48,17 +48,34 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  *
- * @author sg155630
+ * @author Sergey Grinev
  */
-public class HostsListTableModel extends AbstractTableModel {
+class HostsListTableModel extends AbstractTableModel {
 
     private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
+    private final ProgressHandle phandle;
+
     public HostsListTableModel() {
+        this.phandle = ProgressHandleFactory.createHandle("Gathering hosts information"); //NOI18N
+    }
+
+    public ProgressHandle getProgressHandle() {
+        return phandle;
+    }
+
+    private Runnable runOnFinish;
+
+    public void start(Runnable runOnFinish) {
+        this.runOnFinish = runOnFinish;
+        phandle.start(255);
         new Thread(new HostsLoader()).start();
     }
 
@@ -138,6 +155,7 @@ public class HostsListTableModel extends AbstractTableModel {
                 long n = System.currentTimeMillis();
                 int count = 0;
                 for (short i = 0; i <= 255; i++) {
+                    phandle.progress(i);
                     if (i == localLastOne) {
                         // localhost will never be offline again
                         continue;
@@ -145,7 +163,7 @@ public class HostsListTableModel extends AbstractTableModel {
                     ip[idxLast] = (byte) i;
                     InetAddress host = InetAddress.getByAddress(ip);
                     try {
-                        if (host.isReachable(2000)) {
+                        if (host.isReachable(1000)) {
                             count++;
                             HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), new Boolean(doPing(host, 22)));
                         }
@@ -157,6 +175,11 @@ public class HostsListTableModel extends AbstractTableModel {
 
             } catch (UnknownHostException ex) {
                 LOG.log(Level.SEVERE, null, ex);
+            } finally {
+                phandle.finish();
+                if (runOnFinish != null) {
+                    SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
+                }
             }
 
         }

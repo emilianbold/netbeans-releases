@@ -47,6 +47,10 @@ public class NameRuleTest extends PythonTestBase {
         findHints(this, createRule(), "testfiles/test_scope.py", null, null);
     }
 
+    public void testHint7() throws Exception {
+        findHints(this, createRule(), "testfiles/staticmethods.py", null, null);
+    }
+
     public void testFix1() throws Exception {
         applyHint(this, createRule(), "testfiles/names2.py",
                 "^def noargs()",

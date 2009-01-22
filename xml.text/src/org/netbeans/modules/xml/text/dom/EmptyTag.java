@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.spi.dom.*;
 
 public class EmptyTag extends Tag {
 
-    public EmptyTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    EmptyTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
     }
 

@@ -155,7 +155,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         });
         
         
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        ListSelectionListener listSelectionListener = new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent evt) {
                 final boolean correctCellSelection = !selectionUpdateDisabled;
                 SwingUtilities.invokeLater(new Runnable() {
@@ -164,7 +165,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     }
                 });
             }
-        });
+        };
+
+        table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
         
     } // End of constructor.
     

@@ -154,8 +154,10 @@ public class JavaI18nSupport extends I18nSupport {
                 FileObject bundleFile = lastResource.getPrimaryFile();
                 ClassPath execClassPath = ClassPath.getClassPath(sourceFile,
                                                                  ClassPath.EXECUTE);
-                if (execClassPath.getResourceName(bundleFile) != null) {
-                    resourceHolder.setResource(lastResource);
+                if (execClassPath != null) {
+                    if (execClassPath.getResourceName(bundleFile) != null) {
+                        resourceHolder.setResource(lastResource);
+                    }
                 }
             }
         }

@@ -131,6 +131,10 @@ public class ConnectionNode extends BaseNode {
             connection.setDriver(val.toString());
         } else if (nps.getName().equals(SCHEMA)) {
             connection.setSchema(val.toString());
+        } else if (nps.getName().equals(PROP_DEFSCHEMA)) {
+            connection.setSchema(val.toString());
+        } else if (nps.getName().equals(SCHEMA)) {
+            connection.setSchema(val.toString());
         }
 
         if (refreshNode) {
@@ -138,14 +142,14 @@ public class ConnectionNode extends BaseNode {
         }
     }
 
-    private void updateProperties() {
+    private void updateLocalProperties() {
         try {
             clearProperties();
             boolean connected = !connection.getConnector().isDisconnected();
 
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
             addProperty(DRIVER, DRIVERDESC, String.class, !connected, connection.getDriver());
-            addProperty(SCHEMA, SCHEMADESC, String.class, !connected, connection.getSchema());
+            addProperty(SCHEMA, SCHEMADESC, String.class, false, connection.getSchema());
             addProperty(USER, USERDESC, String.class, !connected, connection.getUser());
             addProperty(REMEMBERPW, REMEMBERPWDESC,
                     Boolean.class, !connected, connection.rememberPassword());
@@ -292,7 +296,7 @@ public class ConnectionNode extends BaseNode {
                         refresh();
                     }
 
-                    updateProperties();
+                    updateLocalProperties();
 
                 }
             }

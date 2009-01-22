@@ -38,6 +38,7 @@
  */
 package test
 
+import groovy.sql.Sql
 import org.xml.sax.SAXParseException
 
 /**
@@ -47,8 +48,26 @@ import org.xml.sax.SAXParseException
 class Utils {
     private Utils(){}
 
+    private static Sql db
+
+    static {
+        db = Sql.newInstance("jdbc:derby://localhost:1527/sample", "app", "app", "org.apache.derby.jdbc.ClientDriver")
+    }
+
     static void readXml(String text) throws SAXParseException {
         new XmlParser().parseText(text)
+    }
+
+    static String readFile(String relPath) {
+        Utils.class.getResource(relPath).getText()
+    }
+
+    static int getCreditLimit(int customerID) {
+        def r = db.firstRow("select CREDIT_LIMIT from customer where CUSTOMER_ID=${customerID}")
+        if (r) {
+            return r['CREDIT_LIMIT']
+        }
+        return -1
     }
 }
 

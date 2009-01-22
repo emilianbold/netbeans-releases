@@ -100,8 +100,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
-                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean").gui(true).enableModules(".*").clusters(".*"));
-        //"testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean"
+                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean")
+                .gui(true).enableModules(".*").clusters(".*"));
+
     }
 
     /** Called before every test case. */
