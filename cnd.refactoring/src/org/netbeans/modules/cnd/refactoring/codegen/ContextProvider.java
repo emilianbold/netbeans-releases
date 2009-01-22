@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmFile;

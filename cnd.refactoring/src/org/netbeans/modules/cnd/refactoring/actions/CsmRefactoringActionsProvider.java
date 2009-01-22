@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
@@ -83,8 +84,8 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         Runnable task;
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
-                    return ChangeParametersUI.create(selectedElement);
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    return ChangeParametersUI.create(selectedElement, editorContext);
                 }
             };
         } else {
@@ -92,7 +93,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return ChangeParametersUI.create(selectedElement);
+                    return ChangeParametersUI.create(selectedElement, null);
                 }
             };
         }
@@ -119,15 +120,15 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
-                    return EncapsulateFieldUI.create(selectedElement);
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    return EncapsulateFieldUI.create(selectedElement, editorContext);
                 }
             };
         } else {
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return EncapsulateFieldUI.create(selectedElement);
+                    return EncapsulateFieldUI.create(selectedElement, null);
                 }
             };
         }

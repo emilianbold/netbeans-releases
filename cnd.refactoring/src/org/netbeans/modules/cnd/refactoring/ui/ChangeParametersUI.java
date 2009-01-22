@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -64,17 +65,19 @@ import org.openide.util.NbBundle;
 public class ChangeParametersUI implements RefactoringUI {
     
     private final CsmObject selectedElement;
+    private final CsmContext editorContext;
     private ChangeParametersPanel panel;
     private final ChangeParametersRefactoring refactoring;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    private ChangeParametersUI(CsmObject selectedElement) {
-        this.refactoring = new ChangeParametersRefactoring(selectedElement);
+    private ChangeParametersUI(CsmObject selectedElement, CsmContext editorContext) {
+        this.refactoring = new ChangeParametersRefactoring(selectedElement, editorContext);
         this.selectedElement = selectedElement;
+        this.editorContext = editorContext;
     }
     
-    public static ChangeParametersUI create(CsmObject selectedElement) {
-        return new ChangeParametersUI(selectedElement);
+    public static ChangeParametersUI create(CsmObject selectedElement, CsmContext editorContext) {
+        return new ChangeParametersUI(selectedElement, editorContext);
     }
     
     public String getDescription() {

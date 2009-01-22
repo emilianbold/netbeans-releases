@@ -40,19 +40,25 @@
  */
 package org.netbeans.modules.cnd.refactoring.actions;
 
+import java.awt.Toolkit;
 import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -86,7 +92,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             task = new TextComponentTask(lookup) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
@@ -127,7 +133,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             task = new TextComponentTask(lookup) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset) {
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
                     return new RenameRefactoringUI(selectedElement);
                 }
             };
@@ -145,40 +151,45 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     /*package*/ static abstract class TextComponentTask implements Runnable {
 
-        private JTextComponent textC;
-        private int caret;
-        private int start;
-        private int end;
+        private final int caret;
         private RefactoringUI ui;
         private Lookup lookup;
-
+        private final CsmContext editorContext;
         public TextComponentTask(Lookup lkp) {
-            this.textC = lkp.lookup(EditorCookie.class).getOpenedPanes()[0];
-            this.caret = textC.getCaretPosition();
-            this.start = textC.getSelectionStart();
-            this.end = textC.getSelectionEnd();
+            JTextComponent textC = lkp.lookup(EditorCookie.class).getOpenedPanes()[0];
             this.lookup = lkp;
+            this.caret = textC.getCaretPosition();
+            CsmFile csmFile = CsmUtilities.getCsmFile(textC, false);
+            if (csmFile == null) {
+                this.editorContext = null;
+            } else {
+                int start = textC.getSelectionStart();
+                int end = textC.getSelectionEnd();
+                Document doc = textC.getDocument();
+                FileObject fo = CsmUtilities.getFileObject(doc);
+                this.editorContext = new CsmContext(csmFile, fo, doc, start, end);
+            }
             assert caret != -1;
-            assert start != -1;
-            assert end != -1;
         }
 
         public final void run() {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
-            if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
+            if (editorContext == null) {
+                //inform user, that we were not able to start refactoring.
+                Toolkit.getDefaultToolkit().beep();
                 return;
             }
-            ui = createRefactoringUI(ctx, start, end);
+            ui = createRefactoringUI(ctx, editorContext);
             TopComponent activetc = TopComponent.getRegistry().getActivated();
 
             if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRefactorLoc"));
             }
         }
 
-        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement, int startOffset, int endOffset);
+        protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext);
     }
 
     /*package*/ static abstract class NodeToElementTask implements Runnable {
@@ -204,7 +215,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRefactorLoc"));
             }
         }
 

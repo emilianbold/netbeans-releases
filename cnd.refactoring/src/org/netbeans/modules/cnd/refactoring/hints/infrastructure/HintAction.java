@@ -36,7 +36,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.refactoring.codegen.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
