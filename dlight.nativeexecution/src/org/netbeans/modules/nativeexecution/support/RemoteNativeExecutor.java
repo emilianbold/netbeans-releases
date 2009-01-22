@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.support;
 
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

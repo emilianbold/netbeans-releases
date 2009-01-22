@@ -38,8 +38,11 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.support.LocalNativeExecutor;
+import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
+import org.netbeans.modules.nativeexecution.support.RemoteNativeExecutor;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
