@@ -112,7 +112,6 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     public final void actionPerformed(final ActionEvent e) {
         // Will not start the task if it is already started.
         if (task != null) {
-            System.out.println("Ignore...");
             return;
         }
         
