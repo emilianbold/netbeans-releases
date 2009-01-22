@@ -37,8 +37,9 @@
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="text-x-oql-mime-resolver.xml" url="text-x-oql-mime-resolver.xml"/>
-            <attr name="position" intvalue="440"/>
+            <file name="text-x-oql-mime-resolver.xml" url="text-x-oql-mime-resolver.xml">
+                <attr name="position" intvalue="1000"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
