@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.support;
 
 import java.io.IOException;
 import java.io.Writer;

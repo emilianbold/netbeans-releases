@@ -48,7 +48,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import org.netbeans.modules.nativeexecution.StringBufferWriter;
+import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 
 /**
  * Implementation of files copying routines

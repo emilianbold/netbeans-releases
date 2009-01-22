@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.management.api;
 
 
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
-import org.netbeans.modules.dlight.management.api.DLightTool;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

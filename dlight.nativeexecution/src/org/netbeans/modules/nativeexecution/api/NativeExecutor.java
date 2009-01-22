@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.*;
 import org.netbeans.modules.nativeexecution.support.StreamRedirector;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -52,12 +51,11 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.nativeexecution.support.ActionsProvider;
 import org.netbeans.modules.nativeexecution.support.ImageLoader;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Cancellable;
 
-public abstract class NativeExecutor implements ActionsProvider, Cancellable {
+public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable {
 
     public final String CANCEL_ACTION = "Cancel"; // NOI18N
     public final String RESTART_ACTION = "Restart"; // NOI18N
@@ -92,14 +90,14 @@ public abstract class NativeExecutor implements ActionsProvider, Cancellable {
 
     abstract protected OutputStream getTaskOutputStream() throws IOException;
 
-    public Action[] getActions() {
+    public final Action[] getActions() {
         if (actions == null) {
             actions = new Action[]{getAction(CANCEL_ACTION), getAction(RESTART_ACTION)};
         }
         return actions;
     }
 
-    public Action getAction(String id) {
+    public final Action getAction(String id) {
         if (CANCEL_ACTION.equals(id)) {
             if (cancelAction == null) {
                 cancelAction = new SimpleCancelAction();
