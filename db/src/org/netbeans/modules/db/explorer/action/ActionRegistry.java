@@ -110,7 +110,7 @@ public class ActionRegistry implements ChangeListener {
         for (Object action : actionList) {
             if (action instanceof Action) {
                 actions.add((Action)action);
-            } else if (action instanceof org.netbeans.api.db.explorer.node.ActionSeparator) {
+            } else if (action instanceof javax.swing.JSeparator) {
                 actions.add(null);
             } else {
                 LOGGER.log(Level.INFO, "Cannot use " + action.getClass() + " instance as DB Explorer Action"); // NOI18N
