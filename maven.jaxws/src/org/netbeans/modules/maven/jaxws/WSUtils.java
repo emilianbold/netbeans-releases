@@ -398,6 +398,36 @@ public class WSUtils {
         }
     }
 
+    public static void replaceSunJaxWsEntries(FileObject ddFolder, String oldServiceName, String newServiceName)
+            throws IOException {
+
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+            Endpoint endpoint = endpoints.findEndpointByName(oldServiceName);
+            if (endpoint != null) {
+                endpoint.setEndpointName(newServiceName);
+                endpoint.setUrlPattern("/" + newServiceName);
+                FileLock lock = null;
+                OutputStream os = null;
+                synchronized (sunjaxwsFile) {
+                    try {
+                        lock = sunjaxwsFile.lock();
+                        os = sunjaxwsFile.getOutputStream(lock);
+                        endpoints.write(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public static boolean isJsr109Supported(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null) {
@@ -409,10 +439,10 @@ public class WSUtils {
         }
     }
 
-    public static void addServiceEntriesToDD(Project prj, String serviceName)
+    public static void addServiceEntriesToDD(Project prj, JaxWsService service)
         throws IOException {
         //add servlet entry to web.xml
-        String servletName = serviceName;
+        String servletName = service.getServiceName();
 
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
@@ -424,7 +454,7 @@ public class WSUtils {
                 servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
                 ServletMapping servletMapping = (ServletMapping)
                 webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
-                        new Object[]{servletName, "/" + serviceName}, "ServletName"); //NOI18N
+                        new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
 
                 if (!webAppHasListener(webApp, SERVLET_LISTENER)){
                     listener = (Listener)webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
@@ -445,11 +475,11 @@ public class WSUtils {
      *
      * @param serviceName Name of the web service to be removed
      */
-    public static void removeServiceEntriesFromDD(Project prj, String serviceName)
+    public static void removeServiceEntriesFromDD(Project prj, JaxWsService service)
         throws IOException {
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
-            boolean changed = removeServiceFromDD(webApp, serviceName);
+            boolean changed = removeServiceFromDD(webApp, service.getServiceName());
 
             //determine if there are other web services in the project
             //if none, remove the listener
@@ -502,6 +532,52 @@ public class WSUtils {
             if(mapping.getServletName().equals(serviceName)){
                 webApp.removeServletMapping(mapping);
                 changed = true;
+                break;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Remove the web.xml entries for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    public static void replaceServiceEntriesFromDD(Project prj, String oldServiceName, String newServiceName)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = replaceServiceInDD(webApp, oldServiceName, newServiceName);
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private static boolean replaceServiceInDD(WebApp webApp, String oldServiceName, String newServiceName) {
+        boolean changed = false;
+        //first remove the servlet
+        Servlet[] servlets = webApp.getServlet();
+        for(int i = 0; i < servlets.length; i++){
+            Servlet servlet = servlets[i];
+            if(servlet.getServletName().equals(oldServiceName)){
+                servlet.setServletName(newServiceName);
+                changed = true;
+                break;
+            }
+        }
+        //remove the servlet mapping
+        ServletMapping[] mappings = webApp.getServletMapping();
+        for(int i = 0; i < mappings.length; i++){
+            ServletMapping mapping = mappings[i];
+            if(mapping.getServletName().equals(oldServiceName)){
+                mapping.setServletName(newServiceName);
+                mapping.setUrlPattern("/"+newServiceName);
                 break;
             }
         }
