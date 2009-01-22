@@ -142,7 +142,7 @@ public final class AquaLFCustoms extends LFCustoms {
             EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.AquaEditorTabDisplayerUI",
             VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.AquaViewTabDisplayerUI",
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI$Aqua",
-            "NbTabControl.focusedTabBackground", new Color(166,214,255),
+            "NbTabControl.focusedTabBackground", new Color(135,189,255),
             "NbTabControl.selectedTabBrighterBackground", new Color(252,252,252),
             "NbTabControl.selectedTabDarkerBackground", new Color(226,226,226),
             "NbTabControl.mouseoverTabBrighterBackground", new Color(194,194,194),
@@ -172,6 +172,12 @@ public final class AquaLFCustoms extends LFCustoms {
 
             "NbBrushedMetal.darkShadow", new Color(49,49,49),
             "NbBrushedMetal.lightShadow", new Color(178,178,178),
+
+            "PropSheet.selectedSetBackground", new Color(181,213,255),
+            "PropSheet.selectionBackground", new Color(181,213,255),
+            "PropSheet.setBackground", new Color(226,226,226),
+            "PropSheet.selectionForeground", UIManager.getColor("Table.foreground"),
+//            "netbeans.ps.background", new Color(226,226,226),
 
             "Tree.paintLines", Boolean.FALSE,
                     
