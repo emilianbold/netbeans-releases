@@ -63,7 +63,7 @@ public interface DLightToolConfigurationProvider {
   /**
    * Please be aware that instance returned by this method should be
    * new every time this method is invoked
-   * @return new instance of {@link org.netbeans.dlight.modules.tool.api.DLightToolConfiguration}
+   * @return new instance of {@link org.netbeans.modules.dlight.modules.tool.api.DLightToolConfiguration}
    */
   public DLightToolConfiguration create();
 }

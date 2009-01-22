@@ -76,7 +76,7 @@ final class ToolsConfiguration {
 
 
   /**
-   * Returns tools set which will be used to run {@link org.netbeans.dlight.core.execution.model.DLightTarget} with
+   * Returns tools set which will be used to run {@link org.netbeans.modules.dlight.core.execution.model.DLightTarget} with
    * @return tools set
    */
   final List<DLightTool> getToolsSet() {

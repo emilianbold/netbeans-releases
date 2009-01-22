@@ -46,7 +46,7 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
  * This data provider should provide information
- * to the {@link org.netbeans.dlight.core.visualizer.model.Visualizer}
+ * to the {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer}
  * in table. In almost all cases data to visualize can
  * be presented in the table view. 
  * 
@@ -55,7 +55,7 @@ public interface TableDataProvider extends DataProvider{
   /**
    * Returns table view to visualize
    * @param tableMetadata table description to get data from
-   * @return list of {@link org.netbeans.dlight.core.storage.model.DataRow}
+   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
    */
   public List<DataRow> queryData(DataTableMetadata tableMetadata);
 }

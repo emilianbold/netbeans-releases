@@ -309,8 +309,8 @@ public class RemotePathMap implements PathMap {
         }
 
         public String getRemotePath(String lpath) {
-            String name = lpath.substring(lpath.lastIndexOf("\\")+1);
-            return REMOTE_BASE_PATH + "/" + name;
+            String name = lpath.substring(lpath.lastIndexOf("\\")+1); //NOI18N
+            return REMOTE_BASE_PATH + "/" + name; //NOI18N
         }
 
     }

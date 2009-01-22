@@ -78,7 +78,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.dlight.visualizers.api</package>
+                <package>org.netbeans.modules.dlight.visualizers.api</package>
             </public-packages>
         </data>
     </configuration>

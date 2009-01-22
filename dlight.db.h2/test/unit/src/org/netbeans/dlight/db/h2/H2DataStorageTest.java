@@ -37,16 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.dlight.db.h2;
+package org.netbeans.modules.dlight.db.h2;
 
+import org.netbeans.modules.dlight.db.h2.H2DataStorage;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import org.netbeans.dlight.core.stack.model.FunctionCall;
-import org.netbeans.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import static org.junit.Assert.*;
 
 /**

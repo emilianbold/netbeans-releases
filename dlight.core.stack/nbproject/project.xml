@@ -27,9 +27,9 @@
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <package>org.netbeans.dlight.core.stack.dataprovider</package>
-                <package>org.netbeans.dlight.core.stack.model</package>
-                <package>org.netbeans.dlight.core.stack.storage</package>
+                <package>org.netbeans.modules.dlight.core.stack.dataprovider</package>
+                <package>org.netbeans.modules.dlight.core.stack.model</package>
+                <package>org.netbeans.modules.dlight.core.stack.storage</package>
             </friend-packages>
         </data>
     </configuration>

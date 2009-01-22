@@ -1,2 +1,2 @@
-org.netbeans.dlight.perfan.dataprovider.SSStackDataProvider
-org.netbeans.dlight.perfan.dataprovider.SunStudioDataProvider
+org.netbeans.modules.dlight.perfan.dataprovider.SSStackDataProvider
+org.netbeans.modules.dlight.perfan.dataprovider.SunStudioDataProvider
