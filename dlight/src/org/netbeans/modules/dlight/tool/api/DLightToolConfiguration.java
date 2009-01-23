@@ -9,12 +9,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
 
 /**
- * This class represents configuration object to create DLightTool.
+ * This class represents configuration object to create D-Light Tool on the base of.
  * 
  */
 public final class DLightToolConfiguration {
@@ -39,14 +38,26 @@ public final class DLightToolConfiguration {
     indicatorDataProvidersConfiguration = Collections.synchronizedList(new ArrayList<IndicatorDataProviderConfiguration>());
   }
 
+  /**
+   * Adds {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration}
+   * @param collector collector configuration
+   */
   public void addDataCollectorConfiguration(DataCollectorConfiguration collector) {
     dataCollectors.add(collector);
   }
 
+  /**
+   * Adds indicator configration
+   * @param indicator indicator configuration
+   */
   public void addIndicatorConfiguration(IndicatorConfiguration indicator) {
     indicators.add(indicator);
   }
 
+  /**
+   * Adds indicator data provider configuration
+   * @param indDataProvider indicator data provider configuration
+   */
   public void addIndicatorDataProviderConfiguration(IndicatorDataProviderConfiguration indDataProvider) {
     indicatorDataProvidersConfiguration.add(indDataProvider);
   }
