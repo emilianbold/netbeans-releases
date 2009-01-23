@@ -144,6 +144,8 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
                         return;
                     } catch (IOException e) {
                         return;
+                    } catch (IllegalArgumentException e) { // JRE #6797318
+                        return;
                     } finally {
                         // Set checking progress to stopped
                         checkingFlag = false;

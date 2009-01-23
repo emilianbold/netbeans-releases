@@ -101,7 +101,7 @@ public class InstancePropertiesVisual extends javax.swing.JPanel {
     
     public String getUrl() {
         String url = urlTxt.getText().trim();
-        if (!url.endsWith("/")) { // NOI18N
+        if (/* #157034 */url.length() > 0 && !url.endsWith("/")) { // NOI18N
             url += "/"; // NOI18N
         }
         return url;
