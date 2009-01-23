@@ -57,7 +57,6 @@ import javax.swing.text.NumberFormatter;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
@@ -70,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.DynamicCredsPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.KerberosConfigPanel;
@@ -78,14 +78,13 @@ import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.ValidatorsPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TruststorePanel;
+import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.X509Token;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.multiview.ui.NodeSectionPanel;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -113,6 +112,9 @@ public class CallbackPanel extends SectionInnerPanel {
     private JaxWsModel jaxwsmodel;
     private WSDLModel serviceModel;
 
+    private WsitProvider wsitProvider;
+    private boolean jsr109 = false;
+    
     private String profile;
 
     private DefaultFormatterFactory tstampff = null;
@@ -132,6 +134,11 @@ public class CallbackPanel extends SectionInnerPanel {
         FileObject fo = node.getLookup().lookup(FileObject.class);
         if (fo != null) {
             project = FileOwnerQuery.getOwner(fo);
+        }
+
+        this.wsitProvider = project.getLookup().lookup(WsitProvider.class);
+        if (wsitProvider != null) {
+            jsr109 = wsitProvider.isJsr109Project();
         }
 
         tstampff = new DefaultFormatterFactory();
@@ -245,6 +252,9 @@ public class CallbackPanel extends SectionInnerPanel {
         if (inSync) {
             return;
         }
+
+        Util.checkMetroLibrary(project);
+
         if (source.equals(credTypeCombo)) {
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.USERNAME_CBHANDLER, null, null, true);
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.PASSWORD_CBHANDLER, null, null, true);
@@ -271,7 +281,7 @@ public class CallbackPanel extends SectionInnerPanel {
         
         if (source.equals(devDefaultsChBox)) {
             if (devDefaultsChBox.isSelected()) {
-                Util.fillDefaults(project, true,true);
+                DefaultSettings.fillDefaults(project, true,true);
                 Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
                 ProfilesModelHelper.setClientDefaults(profile, binding, serviceBinding, project);
                 sync();
@@ -731,7 +741,6 @@ public class CallbackPanel extends SectionInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustStoreButtonActionPerformed
-    boolean jsr109 = isJsr109Supported();
     TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, true, cfgVersion);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
             NbBundle.getMessage(BindingPanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
@@ -744,7 +753,6 @@ private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 }//GEN-LAST:event_trustStoreButtonActionPerformed
 
 private void keyStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStoreButtonActionPerformed
-    boolean jsr109 = isJsr109Supported();
     KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, true, cfgVersion);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
             NbBundle.getMessage(BindingPanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
@@ -764,20 +772,6 @@ private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_f
 private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
     enableDisable();
 }//GEN-LAST:event_formAncestorAdded
-
-    private boolean isJsr109Supported(){
-        J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
-        if (j2eePlatform != null){
-            Collection<WSStack> wsStacks = (Collection<WSStack>)
-                    j2eePlatform.getLookup().lookupAll(WSStack.class);
-            for (WSStack stack : wsStacks) {
-                if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
     
     private void samlBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_samlBrowseButtonActionPerformed
         if (project != null) {

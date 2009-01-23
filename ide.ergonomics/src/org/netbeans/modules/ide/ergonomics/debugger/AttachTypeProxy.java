@@ -58,7 +58,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 public abstract class AttachTypeProxy extends AttachType implements Controller, Callable<JComponent> {
     private AttachType delegate;
     private boolean isVisible;
-    private static Iterator<? extends FeatureInfo> it = FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
+    private static Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
     private String attachTypeName;
     PropertyChangeSupport propertyChangeSupport;
 
@@ -95,7 +95,7 @@ public abstract class AttachTypeProxy extends AttachType implements Controller, 
     public JComponent getCustomizer() {
         if (delegate == null) {
             FeatureInfo featureInfo = null;
-            for (FeatureInfo info : FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+            for (FeatureInfo info : FeatureManager.features()) {
                 if (attachTypeName.equals(info.getAttachTypeName())) {
                     featureInfo = info;
                     break;

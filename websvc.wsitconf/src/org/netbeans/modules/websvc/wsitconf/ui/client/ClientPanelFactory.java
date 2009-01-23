@@ -90,7 +90,7 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
             }
             if (id.startsWith(ClientView.ADVANCEDCONFIG_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.ADVANCEDCONFIG_NODE_ID.length()));
-                return new AdvancedConfigPanelClient((SectionView) editor.getContentView(), b, serviceModel);
+                return new AdvancedConfigPanelClient((SectionView) editor.getContentView(), node, b, serviceModel);
             }
         }
         return null;

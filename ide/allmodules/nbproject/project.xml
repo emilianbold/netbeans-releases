@@ -672,6 +672,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.jaxwsmodelapi</project>
                 <project>../../websvc.kit</project>
                 <project>../../websvc.manager</project>
+                <project>../../websvc.metro.lib</project>
                 <project>../../websvc.metro.samples</project>
                 <project>../../websvc.projectapi</project>
                 <project>../../websvc.rest</project>

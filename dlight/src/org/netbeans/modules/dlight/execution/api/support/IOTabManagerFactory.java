@@ -43,7 +43,7 @@ import java.util.Collection;
 import org.openide.util.Lookup;
 
 /**
- * This is factory class to get {@link org.netbeans.dlight.core.execution.IOTabManager}
+ * This is factory class to get {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
  * instance.
  */
 public final class IOTabManagerFactory {
@@ -51,7 +51,7 @@ public final class IOTabManagerFactory {
 
   /**
    * Returns IOTabManager to work with input/,
-   * use global Lookup to look for {@link org.netbeans.dlight.core.execution.IOTabManager}
+   * use global Lookup to look for {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
    * implementation, if no implementation is registered use own default implementation
    * @return
    */

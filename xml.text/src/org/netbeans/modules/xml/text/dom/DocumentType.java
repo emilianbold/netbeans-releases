@@ -52,7 +52,7 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 public class DocumentType extends SyntaxNode implements org.w3c.dom.DocumentType {
 
-    public DocumentType(XMLSyntaxSupport syntax, Token<XMLTokenId> first, int start, int end) {
+    DocumentType(XMLSyntaxSupport syntax, Token<XMLTokenId> first, int start, int end) {
         super (syntax, first, start, end);
     }
 

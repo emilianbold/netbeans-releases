@@ -59,48 +59,53 @@ rcovpath = ARGV.shift
 
 # Register END block -before- running RCov to ensure that we run last
 END {
-  format, prev_state = File.open(state_file){|f| Marshal.load(f) }
-
-  if (format.at(0) == 0 && format.at(1) == 1 && format.at(2) == 0)
+  if !File.exist?(state_file)
     my_file = File.new(output_file, "w")
-    prev_state.each_key do |filename|
-      my_file.puts filename
-
-      old_cov, old_counts = prev_state[filename].values_at(:coverage, :counts)
-
-      def dump_line(my_file, first, last, count)
-          if count == -999
-            return
-          end
-          if first < last
-            my_file.print "#{first}>"
-          end
-          my_file.print "#{last}:#{count}, "
-
-      end
-      first = -1
-      prevcount = -999
-      max = old_counts.length-1
-      for i in 0..max
-        type = old_cov.at(i)
-        count = old_counts.at(i)
-        if (type == :inferred)
-          count = -1
-        elsif !type
-          count = -2
-        end
-        if (count != prevcount)
-          dump_line(my_file, first, i-1, prevcount)
-          first = i
-          prevcount = count
-        end
-      end
-      dump_line(my_file, first, max, prevcount)
-      my_file.print "\n"
-    end
     my_file.close
   else
-    puts "Unsupported data format - " + format.to_s
+    format, prev_state = File.open(state_file){|f| Marshal.load(f) }
+
+    if (format.at(0) == 0 && format.at(1) == 1 && format.at(2) == 0)
+      my_file = File.new(output_file, "w")
+      prev_state.each_key do |filename|
+        my_file.puts filename
+
+        old_cov, old_counts = prev_state[filename].values_at(:coverage, :counts)
+
+        def dump_line(my_file, first, last, count)
+            if count == -999
+              return
+            end
+            if first < last
+              my_file.print "#{first}>"
+            end
+            my_file.print "#{last}:#{count}, "
+
+        end
+        first = -1
+        prevcount = -999
+        max = old_counts.length-1
+        for i in 0..max
+          type = old_cov.at(i)
+          count = old_counts.at(i)
+          if (type == :inferred)
+            count = -1
+          elsif !type
+            count = -2
+          end
+          if (count != prevcount)
+            dump_line(my_file, first, i-1, prevcount)
+            first = i
+            prevcount = count
+          end
+        end
+        dump_line(my_file, first, max, prevcount)
+        my_file.print "\n"
+      end
+      my_file.close
+    else
+      puts "Unsupported data format - " + format.to_s
+    end
   end
 }
 

@@ -860,6 +860,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(project));
         }
+        if (includeQtDescription) {
+            descriptions.add(createQtDescription());
+        }
         if (includeCompilerDescription) {
             descriptions.addAll(createCompilerNodes(project, compilerSet, -1, null, null, isCompileConfiguration, null));
         }
@@ -868,9 +871,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (includeArchiveDescription) {
             descriptions.add(createArchiverDescription());
-        }
-        if (includeQtDescription) {
-            descriptions.add(createQtDescription());
         }
 
         descriptions.add(createPackagingDescription());
@@ -1110,7 +1110,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private CustomizerNode createQtDescription() {
-        CustomizerNode node = new QtCustomizerNode("Qmake", getString("LBL_QMAKE_NODE"), null); // NOI18N
+        CustomizerNode node = new QtCustomizerNode("Qt", getString("LBL_QT_NODE"), null); // NOI18N
         return node;
     }
 

@@ -141,7 +141,7 @@ made subject to such option by the copyright holder.
             <dirset dir="${netbeans.dest.dir}" includesfile="${nb_all}/ide/launcher/netbeans.clusters"/>
         </path>
     </pathconvert>
-    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
+    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
   </target>
   
 </project>

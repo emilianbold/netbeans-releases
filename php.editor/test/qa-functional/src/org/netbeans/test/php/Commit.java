@@ -370,14 +370,8 @@ public class Commit extends GeneralPHP
       Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
       Sleep( 1500 );
-      System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
-      CheckResult( eoPHP, "function  __construct()", -2 );
-      CheckResult( eoPHP, "{", -1 );
-      int i = eoPHP.getLineNumber( ) - 2;
-      eoPHP.deleteLine( i );
-      eoPHP.deleteLine( i );
-      eoPHP.deleteLine( i );
-      eoPHP.deleteLine( i );
+
+      CheckFlex( eoPHP, "function __construct(){;}", true );
     }
     else
     {
@@ -434,24 +428,11 @@ public class Commit extends GeneralPHP
     jdGenerator.waitClosed( );
 
     // Check result
-    String[] asResult =
-    {
-      "function __construct($a, $d, $e)",
-      "{",
-      "$this->a = $a;",
-      "$this->d = $d;",
-      "$this->e = $e;",
-      "}"
-    };
-    CheckResult( eoPHP, asResult, -4 );
-    // Remove added
-    int il = eoPHP.getLineNumber( ) - 4;
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
+    CheckFlex(
+        eoPHP,
+        "function __construct($a,$d,$e){$this->a=$a;$this->d=$d;$this->e=$e;}",
+        true
+      );
     Sleep( 1500 );
 
     boolean b = true;
@@ -477,46 +458,11 @@ public class Commit extends GeneralPHP
     jdGenerator.waitClosed( );
 
     // Check result
-    String[] asResult2 =
-    {
-      "public function getB()",
-      "{",
-      "return $this->b;",
-      "}",
-      "",  
-      "public function setB($b)",
-      "{",
-      "$this->b = $b;",
-      "}",
-      "",  
-      "public function getC()",
-      "{",
-      "return $this->c;",
-      "}",
-      "",  
-      "public function setC($c)",
-      "{",
-      "$this->c = $c;",
-      "}",
-      "",  
-      "public function getF()",
-      "{",
-      "return $this->f;",
-      "}",
-      "",  
-      "public function setF($f)",
-      "{",
-      "$this->f = $f;",
-      "}"
-    };
-    CheckResult( eoPHP, asResult2, - ( asResult2.length + 1 ) );
-    // Remove added
-    il = eoPHP.getLineNumber( ) - ( asResult2.length + 1 );
-    for( int i = 0; i < asResult2.length + 1; i++ )
-    {
-      eoPHP.deleteLine( il );
-      Sleep( 100 );
-    }
+    CheckFlex(
+        eoPHP,
+        "public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getC(){return $this->c;}public function setC($c){$this->c=$c;}public function getF(){return $this->f;}public function setF($f){$this->f=$f;}",
+        true
+      );
 
     Sleep( 2000 );
     // Close to prevent affect on next tests

@@ -43,8 +43,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
+import org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -62,13 +63,13 @@ import org.openide.util.Lookup;
 public final class DataProvidersManager {
   private static DataProvidersManager instance = null;
   
-  private Collection<? extends DataProvider> allDataProviders;
+  private Collection<? extends DataProviderFactory> allDataProviders;
   private Collection<DataProvider> activeDataProviders;
 
   private static final Logger log = DLightLogger.getLogger(DataProvidersManager.class);
   
   private DataProvidersManager() {
-    allDataProviders = Lookup.getDefault().lookupAll(DataProvider.class);
+    allDataProviders = Lookup.getDefault().lookupAll(DataProviderFactory.class);
     activeDataProviders = new ArrayList<DataProvider>();
     log.info(allDataProviders.size() + " data provider(s) found!"); // NOI18N
   }
@@ -82,9 +83,9 @@ public final class DataProvidersManager {
   }
 
   public DataProvider getDataProviderFor(DataStorageType dst, DataModelScheme dataModel) {
-    for (DataProvider provider : allDataProviders) {
-      if (provider.provides(dataModel) && provider.getSupportedDataStorageTypes().contains(dst)) {
-        DataProvider newProvider = provider.newInstance();
+    for (DataProviderFactory providerFactory : allDataProviders) {
+      if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dst)) {
+        DataProvider newProvider = providerFactory.create();
         activeDataProviders.add(newProvider);
         return newProvider;
       }

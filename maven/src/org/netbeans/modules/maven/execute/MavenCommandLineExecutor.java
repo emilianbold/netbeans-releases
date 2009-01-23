@@ -76,6 +76,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private ProgressHandle handle;
     private CommandLineOutputHandler out;
     private Process process;
+    private Process preProcess;
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
@@ -99,7 +100,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        final RunConfig clonedConfig = new BeanRunConfig(this.config);
+        final BeanRunConfig clonedConfig = new BeanRunConfig(this.config);
+        if (clonedConfig.getPreExecution() != null) {
+            clonedConfig.setPreExecution(new BeanRunConfig(clonedConfig.getPreExecution()));
+        }
         int executionresult = -10;
         InputOutput ioput = getInputOutput();
         ExecutionContext exCon = ActionToGoalUtils.ACCESSOR.createContext(ioput, handle);
@@ -110,10 +114,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 if (!elem.checkRunConfig(clonedConfig, exCon)) {
                     return;
                 }
+                if (clonedConfig.getPreExecution() != null) {
+                    if (!elem.checkRunConfig(clonedConfig.getPreExecution(), exCon)) {
+                        return;
+                    }
+                }
             }
         }
         
-        final Properties origanalProperties = clonedConfig.getProperties();
+//        final Properties originalProperties = clonedConfig.getProperties();
+
         actionStatesAtStart();
         handle.start();
         processInitialMessage();
@@ -121,60 +131,25 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             BuildExecutionSupport.registerRunningItem(item);
 
             out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
-            
-            File workingDir = clonedConfig.getExecutionDirectory();
-            List<String> cmdLine = createMavenExecutionCommand(clonedConfig);
-            ProcessBuilder builder = new ProcessBuilder(cmdLine);
-            builder.redirectErrorStream(true);
-            builder.directory(workingDir);
-            
-            ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'");//NOI18N - to be shown in log.
-            boolean hasJavaSet = false;
-            for (Object key : clonedConfig.getProperties().keySet()) {
-                String keyStr = (String)key;
-                if (keyStr.startsWith(ENV_PREFIX)) {
-                    String env = keyStr.substring(ENV_PREFIX.length());
-                    String val = clonedConfig.getProperties().getProperty(keyStr);
-                    builder.environment().put(env, val);
-                    ioput.getOut().println("NetBeans:      " + env + "=" + val);
-                    if (keyStr.equals(ENV_JAVAHOME)) {
-                        hasJavaSet = true;
-                    }
+
+            if (clonedConfig.getPreExecution() != null) {
+                ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
+                preProcess = builder.start();
+                out.setStdOut(preProcess.getInputStream());
+                out.setStdIn(preProcess.getOutputStream());
+                executionresult = preProcess.waitFor();
+                out.waitFor();
+                if (executionresult != 0) {
+                    return;
                 }
             }
-            if (!hasJavaSet) {
-                if (config.getProject() != null) {
-                    //TODO somehow use the config.getMavenProject() call rather than looking up the
-                    // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
-                    ActiveJ2SEPlatformProvider javaprov = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
-                    File path = null;
-                    FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N
-                    if (java != null) {
-                        Collection<FileObject> objs = javaprov.getJavaPlatform().getInstallFolders();
-                        for (FileObject fo : objs) {
-                            if (FileUtil.isParentOf(fo, java)) {
-                                path = FileUtil.toFile(fo);
-                                break;
-                            }
-                        }
-                    }
-                    if (path != null) {
-                        builder.environment().put(ENV_JAVAHOME.substring(ENV_PREFIX.length()), path.getAbsolutePath());
-                        ioput.getOut().println("NetBeans:      JAVA_HOME =" + path.getAbsolutePath());
-                        hasJavaSet = true;
-                    }
-                }
-                //#151559
-                if (!hasJavaSet && System.getenv("JAVA_HOME") == null) { //NOI18N
-                    builder.environment().put("JAVA_HOME", System.getProperty("java.home")); //NOI18N
-                    ioput.getOut().println("NetBeans:      JAVA_HOME =" + System.getProperty("java.home"));
-                }
-            }
+
 //debugging..            
 //            Map<String, String> env = builder.environment();
 //            for (String key : env.keySet()) {
 //                ioput.getOut().println(key + ":" + env.get(key));
 //            }
+            ProcessBuilder builder = constructBuilder(clonedConfig, ioput);
             process = builder.start();
             out.setStdOut(process.getInputStream());
             out.setStdIn(process.getOutputStream());
@@ -187,6 +162,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             //TODO
             LOGGER.log(Level.WARNING , x.getMessage(), x);
         } catch (ThreadDeath death) {
+            if (preProcess != null) {
+                preProcess.destroy();
+            }
             if (process != null) {
                 process.destroy();
             }
@@ -205,7 +183,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             finally {
                 //MEVENIDE-623 re add original Properties
-                clonedConfig.setProperties(origanalProperties);
+//                clonedConfig.setProperties(originalProperties);
 
                 handle.finish();
                 ioput.getOut().close();
@@ -226,6 +204,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
     
     public boolean cancel() {
+        if (preProcess != null) {
+            preProcess.destroy();
+            preProcess = null;
+        }
         if (process != null) {
             process.destroy();
             process = null;
@@ -309,6 +291,57 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         return toRet;
+    }
+
+    private ProcessBuilder constructBuilder(final RunConfig clonedConfig, InputOutput ioput) {
+        List<String> cmdLine = createMavenExecutionCommand(clonedConfig);
+        ProcessBuilder builder = new ProcessBuilder(cmdLine);
+        builder.redirectErrorStream(true);
+        builder.directory(clonedConfig.getExecutionDirectory());
+        ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        boolean hasJavaSet = false;
+        for (Object key : clonedConfig.getProperties().keySet()) {
+            String keyStr = (String) key;
+            if (keyStr.startsWith(ENV_PREFIX)) {
+                String env = keyStr.substring(ENV_PREFIX.length());
+                String val = clonedConfig.getProperties().getProperty(keyStr);
+                builder.environment().put(env, val);
+                ioput.getOut().println("NetBeans:      " + env + "=" + val);
+                if (keyStr.equals(ENV_JAVAHOME)) {
+                    hasJavaSet = true;
+                }
+            }
+        }
+        if (!hasJavaSet) {
+            if (clonedConfig.getProject() != null) {
+                //TODO somehow use the config.getMavenProject() call rather than looking up the
+                // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
+                ActiveJ2SEPlatformProvider javaprov = clonedConfig.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+                File path = null;
+                FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N
+                if (java != null) {
+                    Collection<FileObject> objs = javaprov.getJavaPlatform().getInstallFolders();
+                    for (FileObject fo : objs) {
+                        if (FileUtil.isParentOf(fo, java)) {
+                            path = FileUtil.toFile(fo);
+                            break;
+                        }
+                    }
+                }
+                if (path != null) {
+                    builder.environment().put(ENV_JAVAHOME.substring(ENV_PREFIX.length()), path.getAbsolutePath());
+                    ioput.getOut().println("NetBeans:      JAVA_HOME =" + path.getAbsolutePath());
+                    hasJavaSet = true;
+                }
+            }
+            //#151559
+            if (!hasJavaSet && System.getenv("JAVA_HOME") == null) {
+                //NOI18N
+                builder.environment().put("JAVA_HOME", System.getProperty("java.home")); //NOI18N
+                ioput.getOut().println("NetBeans:      JAVA_HOME =" + System.getProperty("java.home"));
+            }
+        }
+        return builder;
     }
     
 }

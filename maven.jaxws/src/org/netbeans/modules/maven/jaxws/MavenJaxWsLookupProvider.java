@@ -115,7 +115,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                     }
                 }
 
-                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
 
                 if (wsdlFolder != null) {
                     detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
@@ -167,7 +167,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                         oldNames.add(s.getLocalWsdl());
                     }
                 }
-                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
                 if (wsdlFolder != null) {
                     List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
                     Set<String> commonNames = new HashSet<String>();
@@ -377,9 +377,9 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
-        FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
-        if (localWsdlocalFolder!=null) {
-            return localWsdlocalFolder.getFileObject(localWsdlPath);
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder!=null) {
+            return wsdlFolder.getFileObject(localWsdlPath);
         }
         return null;
     }

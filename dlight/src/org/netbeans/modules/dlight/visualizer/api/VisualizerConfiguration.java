@@ -44,7 +44,21 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 
 public interface VisualizerConfiguration {
+  /**
+   * Returns @link org.netbeans.modules.dlight.dataprovider.api.DataModelScheme} the
+   * VisualizerConfiguration supports
+   * @return scheme supported by VisualizerConfiguration
+   */
   DataModelScheme getSupportedDataScheme();
+  /**
+   * Returns {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/storage/api/DataTableMetadata.html}
+   * which will be used as
+   * @return table description
+   */
   DataTableMetadata getMetadata();
+  /**
+   * Unqiue id
+   * @return unque id
+   */
   String getID();
 }

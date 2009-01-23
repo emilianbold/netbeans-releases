@@ -11,11 +11,13 @@
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
     <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
-    <property name="nbClusterDir" value="nb6.5"/>      
+    <property name="nbClusterDir" value="nb7.0"/>      
 
     <property name="appversion" value="Development Version"/>
     <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
     <property name="nb.display.version.short" value="Dev"/>
+
+    <property name="servicetag.source" value="NetBeans ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.18"/>

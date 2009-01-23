@@ -67,7 +67,7 @@ import org.w3c.dom.UserDataHandler;
 public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.Node {
 
     /** Creates new SyntaxNode */
-    public SyntaxNode(XMLSyntaxSupport support, Token first, int start, int end)  {
+    SyntaxNode(XMLSyntaxSupport support, Token first, int start, int end)  {
         super( support, first, start, end);
     }
 
@@ -110,17 +110,14 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
      * or <code>null</code>. It is <code>EndTag</code> aware.
      */    
     public Node getNextSibling() {        
-        SyntaxNode next = findNext(this);
-        
+        SyntaxNode next = findNext(this);        
         // stop at end tag (it forms hiearchy)
         if (next instanceof EndTag) {
             return null;
         } else {
             return next;
         }
-
     }
-
     
     /**
      * Find previous SyntaxNode instance or <code>null</code>.
@@ -150,7 +147,6 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
         SyntaxNode prev = findPrevious();
         
         do {
-
             while ( prev != null )  {
                 if (prev instanceof StartTag) {
                     return (Element) prev;
@@ -178,8 +174,7 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
         return new Document(this);
     }
 
-    // default DOM Node implementation ~~~~~~~~~~~~~~~~~~~~~~~~``
-    
+    // default DOM Node implementation ~~~~~~~~~~~~~~~~~~~~~~~~``    
     public String getNodeName() {
         return null;
     }
