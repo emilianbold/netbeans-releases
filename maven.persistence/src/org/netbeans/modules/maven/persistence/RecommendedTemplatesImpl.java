@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.groovy.support;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
-/**
  *
- * @author Martin Adamek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public class GroovyLookupProvider implements LookupProvider {
-    @LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
-    public static GroovyLookupProvider createJavaSE() {
-        return new GroovyLookupProvider();
+
+package org.netbeans.modules.maven.persistence;
+
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
+
+@ProjectServiceProvider(service=RecommendedTemplates.class, projectType="org-netbeans-modules-maven")
+public class RecommendedTemplatesImpl implements RecommendedTemplates {
+    public String[] getRecommendedTypes() {
+        return new String[] {"persistence"};
     }
-
-    private GroovyLookupProvider() {}
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
-        }
-        List<Object> instances = new ArrayList<Object>(3);
-        instances.add(new GroovyProjectExtender(project));
-        instances.add(LookupMergerSupport.createActionProviderLookupMerger());
-        instances.add(new GroovyActionProvider(project));
-        instances.add(new GsfClasspathHook(project, baseContext));
-        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
-    }
-
 }

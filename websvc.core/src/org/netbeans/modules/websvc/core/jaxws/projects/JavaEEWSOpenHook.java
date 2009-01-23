@@ -59,33 +59,25 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 /**
- * Lookup Provider for WS Support in JavaEE project types
- *
  * @author mkuchtiak
  */
-    @LookupProvider.Registration(projectType={
-        "org-netbeans-modules-web-project",
-        "org-netbeans-modules-j2ee-ejbjarproject",
-        "org-netbeans-modules-j2ee-clientproject"
-    })
-public class JavaEEWSSupportLookupProvider implements LookupProvider {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
+public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
-    /** Creates a new instance of JavaEEWSSupportLookupProvider */
-    public JavaEEWSSupportLookupProvider() {
+    private final Project prj;
+    public JavaEEWSOpenHook(Project prj) {
+        this.prj = prj;
     }
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        final Project prj = baseContext.lookup(Project.class);
-
-        ProjectOpenedHook openhook = new ProjectOpenedHook() {
 
             PropertyChangeListener pcl;
 
@@ -127,16 +119,6 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
                     }
                 }
             }
-        };
-
-        ProjectWebServiceNotifier servicesNotifier = new ProjectWebServiceNotifier(prj);
-        return Lookups.fixed(
-                openhook,
-                servicesNotifier,
-                new JaxWsArtifactsClassPathProvider(prj),
-                new JavaEEJAXWSVersionProvider(prj),
-                new JaxWsSourceForBinaryQueryImpl(prj, true));
-    }
 
     private class WebservicesChangeListener implements PropertyChangeListener {
 

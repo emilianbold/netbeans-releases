@@ -47,6 +47,7 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -54,6 +55,7 @@ import org.openide.util.RequestProcessor;
  * @author mkleint
  * @author Jiri Sedlacek
  */
+@ProjectServiceProvider(service=LateBoundPrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
 public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     
     private static final String ACTION_PROFILE = "profile"; // NOI18N

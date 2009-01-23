@@ -70,7 +70,10 @@ public interface LookupProvider {
     Lookup createAdditionalLookup(Lookup baseContext);
 
     /**
-     * Annotation to register LookupProvider instances.
+     * Annotation to register {@link LookupProvider} instances.
+     * <p>If you wish to unconditionally register one or more objects,
+     * it will be more efficient and may be easier to use
+     * {@link ProjectServiceProvider} (and/or {@link LookupMerger.Registration}).
      * @since org.netbeans.modules.projectapi 1.21
      */
     @Retention(RetentionPolicy.SOURCE)
@@ -83,12 +86,14 @@ public interface LookupProvider {
         /**
          * Alternate registration of project types with positions.
          * You must specify either this or {@link #projectType} (or both).
+         * @since org.netbeans.modules.projectapi/1 1.22
          */
         ProjectType[] projectTypes() default {};
         @Retention(RetentionPolicy.SOURCE)
         @Target({})
         /**
          * Alternate individual registration for one project type.
+         * @since org.netbeans.modules.projectapi/1 1.22
          */
         @interface ProjectType {
             /**
