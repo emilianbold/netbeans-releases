@@ -53,15 +53,20 @@ Microsystems, Inc. All Rights Reserved.
      The overall architecture is decsribed here
       <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a>.
       
-     This module provides SPI to be implemented by Service Providers.
+     This module provides <api name="ClientAPI" group="java" type="export" category="devel"/>,
+      <api name="VisualizerSPI" group="java" type="export" category="devel"/>,
+      <api name="IndicatorSPI" group="java" type="export" category="devel"/>,
+      <api name="DataStorageSPI" group="java" type="export" category="devel"/>,
+      <api name="DataCollectorSPI" group="java" type="export" category="devel"/>
+      and <api name="DataProviderSPI" group="java" type="export" category="devel"/>.
 
      See use case section for more details.
      Clients which wants to add new
       <api name="VisualizerSPI" group="java" type="export" category="devel"/>
      to D-Light Toolkit infrastructure and pusblish it to other clients
      should implement Visualizer interface and provide
-     <api name="VisualizerAPI" group="java" type="export" category="devel"/> implementation
-     which is actually D-Light Toolkit API part. VisualizerConfiguration.getID() and
+     VisualizerConfiguration implementation
+     which is actually a part of D-Light Toolkit  <api name="ClientAPI" group="java" type="export" category="devel"/> . VisualizerConfiguration.getID() and
      Visualizer.getID() should return the same value to be able to find Visualizer instance
      using VisualizerConfiguration. Visualizer should be registered in Global Lookup.
 
@@ -197,13 +202,15 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
   public DLightToolConfiguration create() {
     final String toolName = "Php D-Light Tool";
+    //Create New Configuration
     final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
     List&lt;Column&gt; indicatorColumns = Arrays.asList(
             new Column("utime", Double.class, "User Time", null),
             new Column("stime", Double.class, "System Time", null),
             new Column("wtime", Double.class, "Wait Time", null));
-
+    //Create table will be created while data collecting process
     final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns);
+    //Create 
     CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata));
     toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
 
@@ -389,7 +396,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE is enough
   </p>
  </answer>
 
@@ -497,7 +504,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   nothing
   </p>
  </answer>
 
@@ -562,8 +569,8 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="deploy-packages">
   <p>
-  There are public packages as this is API and SPI to be used by 2 clients:
-  Gizmo and Photon as it is desctibed in use cases section.
+  There are freind packages as this is API and SPI to be used by 2 clients:
+  Gizmo and Photon as it is desctibed in use cases section and Use Case section describe usage.
   </p>
  </answer>
 
@@ -581,7 +588,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   can be installed anywhere
   </p>
  </answer>
 
@@ -601,7 +608,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   no
   </p>
  </answer>
 
@@ -617,7 +624,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   no
   </p>
  </answer>
 
@@ -640,7 +647,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   not really
   </p>
  </answer>
 
@@ -660,7 +667,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   no
   </p>
  </answer>
 
@@ -696,7 +703,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   no, another closed module is executing process
   </p>
  </answer>
 
@@ -724,7 +731,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   no
   </p>
  </answer>
 
@@ -742,7 +749,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   no
   </p>
  </answer>
 
@@ -793,7 +800,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   none
   </p>
  </answer>
 
@@ -811,7 +818,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   none, no UI
   </p>
  </answer>
 
@@ -874,7 +881,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="lookup-lookup">
   <p>
-  no. Inftruscture module which is not opened uses Lookup
+  Yes, Lookup is used but it is closed for API users
   </p>
  </answer>
 
@@ -891,7 +898,8 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="lookup-register">
   <p>
-   2 services are registered, D-Light Toolkit Management module which is closed is supposed to
+   2 services are registered usinf META-INF/service, 
+   D-Light Toolkit Management module which is closed module(infrastructure) is supposed to
    use the services registered
   </p>
  </answer>
@@ -922,7 +930,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   not really
   </p>
  </answer>
 
@@ -963,7 +971,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   none
   </p>
  </answer>
 
@@ -977,7 +985,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+  I do not know, I think the most memory can be consumed by SPI implementators
   </p>
  </answer>
 
@@ -999,7 +1007,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   no
   </p>
  </answer>
 
@@ -1023,7 +1031,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   Execution is provided by another module
   </p>
  </answer>
 
@@ -1042,7 +1050,9 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+     The performance of D-Light Toolkit in common  will be defenitely influenced
+     by SPI implementator modules, but I think this question should be
+     answered by D-Light Toolkit users (Gizmo and Photon)
   </p>
  </answer>
 
@@ -1060,7 +1070,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   SPI will be well documented
   </p>
  </answer>
 
@@ -1073,7 +1083,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   no
   </p>
  </answer>
 

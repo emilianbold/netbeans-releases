@@ -39,8 +39,15 @@
 package org.netbeans.modules.dlight.storage.spi;
 
 /**
- * 
- * @author masha
+ * This object is marker object to define the following:
+ * {@link  org.netbeans.modules.dlight.collector.spi.DataCollector} should
+ * find the {@link  org.netbeans.modules.dlight.storage.spi.DataStorage}
+ * it can put data into (it support),
+ * {@link  org.netbeans.modules.dlight.dataprovider.spi.DataProvider} should
+ * find the {@link  org.netbeans.modules.dlight.storage.spi.DataStorage} which
+ * it can get data from and which contains data required.
+ * Two objects of this typea are equals if they have the same  id returned by {@link  org.netbeans.modules.dlight.storage.spi.DataStorageType#getID() }
+ *
  */
 public final class DataStorageType {
 
@@ -53,6 +60,10 @@ public final class DataStorageType {
     this.id = id;
   }
 
+  /**
+   * Unique type id
+   * @return unique id
+   */
   public String getID() {
     return id;
   }
