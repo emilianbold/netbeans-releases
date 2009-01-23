@@ -63,12 +63,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=JAXWSVersionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
 public class J2SEJAXWSVersionProvider implements JAXWSVersionProvider{
     
     private Project project;

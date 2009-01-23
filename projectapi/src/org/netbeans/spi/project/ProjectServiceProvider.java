@@ -37,29 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.profiler;
+package org.netbeans.spi.project;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author mkleint
+ * Like {@link LookupProvider} but registers a single object into a project's lookup.
+ * An annotated class must have one public constructor, which may take {@link Project} and/or {@link Lookup} parameters.
+ * An annotated factory method must have similar parameters.
+ * @since org.netbeans.modules.projectapi/1 1.23
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-public class LookupProviderImpl implements LookupProvider {
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface ProjectServiceProvider {
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        
-        NbMavenProject nbprj = baseContext.lookup(NbMavenProject.class);
-        Project prj = baseContext.lookup(Project.class);
-        assert prj != null;
-        assert nbprj != null;
-        
-        return Lookups.fixed(new RunCheckerImpl(prj));
-    }
+    /**
+     * Service class(es) to be registered.
+     * The annotated class must be assignable to the service class(es).
+     */
+    Class<?>[] service();
+
+    /**
+     * Token(s) denoting one or more project types, e.g. {@code "org-netbeans-modules-java-j2seproject"}
+     */
+    String[] projectType() default {};
+
+    /**
+     * Alternate registration of project types with positions.
+     * You must specify either this or {@link #projectType} (or both).
+     */
+    ProjectType[] projectTypes() default {};
 
 }

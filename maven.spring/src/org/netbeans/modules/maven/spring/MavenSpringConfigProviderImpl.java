@@ -50,6 +50,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
@@ -58,10 +59,11 @@ import org.openide.util.NbCollections;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service={SpringConfigFileProvider.class, SpringConfigFileLocationProvider.class}, projectType="org-netbeans-modules-maven")
 public class MavenSpringConfigProviderImpl implements SpringConfigFileLocationProvider, SpringConfigFileProvider {
     private Project prj;
     
-    MavenSpringConfigProviderImpl(Project project) {
+    public MavenSpringConfigProviderImpl(Project project) {
         prj = project;
     }
 
