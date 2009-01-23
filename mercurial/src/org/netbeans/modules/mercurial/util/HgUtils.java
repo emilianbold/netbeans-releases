@@ -791,13 +791,16 @@ itor tabs #66700).
         for (File file : files) {
             /* We may be committing a LocallyDeleted file */
             if (!file.exists()) file = file.getParentFile();
-
-            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(file));
-            if (p != null) {
-                return p;
+            FileObject fo = FileUtil.toFileObject(file);
+            if(fo == null) {
+                Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No FileObject for {0}", file); // NOI18N
             } else {
-                Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}",  // NOI18N
-                    file);
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    return p;
+                } else {
+                    Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}", file); // NOI18N
+                }
             }
         }
         return null;
