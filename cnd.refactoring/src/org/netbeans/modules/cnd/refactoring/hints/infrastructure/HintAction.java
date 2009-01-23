@@ -60,7 +60,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     }
 
     private void updateEnabled() {
-        setEnabled(getCurrentDocument(new int[] {0,0}) != null);
+        setEnabled(getCurrentDocument(new int[] {0,0,0}) != null);
     }
 
     @Override
