@@ -90,7 +90,7 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     return result;
   }
 
-  class MyCLIOParser implements CLIOParser {
+  private static class MyCLIOParser implements CLIOParser {
 
     private final List<String> colnames = Arrays.asList(new String[]{
               "utime",
