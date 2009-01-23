@@ -36,64 +36,49 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.sync;
 
-package org.netbeans.modules.dlight.indicators.support;
-
-import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
+import org.netbeans.modules.dlight.storage.api.DataRow;
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
-public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
-  private static final int SECOND_IN_MILLISECONDS = 1000;
-  private ClockPanel panel;
-  private long currentTime;
+/**
+ * Mmory usage indicator
+ * @author Vladimir Kvashin
+ */
+public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
-  public ClockIndicator(ClockIndicatorConfiguration configuration) {
-    super(configuration);
-    panel = new ClockPanel();
-  }
-  
-  @Override
-  public JComponent getComponent() {
-    return panel;
-  }
+    private SyncIndicatorPanel panel;
 
-  public void updated(List<DataRow> data) {
-    if (data.isEmpty()) {
-      return;
+    public SyncIndicator(SyncIndicatorConfiguration configuration) {
+        super(configuration);
     }
 
-    DataRow lastRow = data.get(data.size() - 1);
-    currentTime = lastRow.getLongValue(getMetadataColumnName(0));
-    panel.update();
-  }
-
-  public void reset() {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
-  
-  private class ClockPanel extends JPanel {
-    private JLabel timeLabel = new JLabel("00:00:00");
-
-    public ClockPanel() {
-      setLayout(new BorderLayout(10, 10));
-      add(timeLabel, BorderLayout.CENTER);
+    @Override
+    public synchronized JComponent getComponent() {
+        if (panel == null) {
+            panel = new SyncIndicatorPanel();
+        }
+        return panel;
     }
-    
-    private void update() {
-      int seconds = (int) currentTime / SECOND_IN_MILLISECONDS;
-      int hours = seconds / (60 * 60);
-      int minutes = (seconds - hours * 60 * 60) / 60;
-      int real_seconds = (seconds - hours * 60 * 60 - minutes * 60);
-      String timerStr = (hours < 10 ? "0" : "") + hours +
-          ":" + (minutes < 10 ? "0" : "") + minutes +
-          ":" + (real_seconds < 10 ? "0" : "") + real_seconds;
-      timeLabel.setText(timerStr);
+
+    public void reset() {
     }
-  }
+
+    public void updated(List<DataRow> data) {
+        List<Column> indicatorColumns = getMetadataColumns();
+        int[][] values = new int[data.size()][indicatorColumns.size()];
+        int rowIdx = 0;
+        for (DataRow row : data) {
+            int colIdx = 0;
+            for (Column column : indicatorColumns) {
+                String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
+                values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
+            }
+            panel.updated(values);
+            rowIdx++;
+        }
+    }
 }

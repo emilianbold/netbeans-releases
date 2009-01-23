@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
+package org.netbeans.modules.dlight.sync;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
+import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 
 /**
- * Mmory usage indicator
+ *
  * @author Vladimir Kvashin
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public class SyncIndicatorConfiguration extends IndicatorConfiguration {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
+    static final String ID = "SyncIndicatorConfigurationID";
+//  private final String colName;
 
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
-        super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
+    public SyncIndicatorConfiguration(IndicatorMetadata metadata) {
+        super(metadata);
     }
 
     @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        DataRow lastRow = data.get(data.size() - 1);
-        String value = lastRow.getStringValue(colName); //TODO: change to Long
-        panel.setValue(Long.parseLong(value));
+    public String getID() {
+        return ID;
     }
 }
