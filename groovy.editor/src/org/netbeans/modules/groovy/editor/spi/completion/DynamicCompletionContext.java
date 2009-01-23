@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,26 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.editor.spi.completion;
 
-import java.util.Map;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import java.util.Collections;
+import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class DynamicCompletionProvider {
+public final class DynamicCompletionContext {
 
-    // FIXME access levels, context
-    public abstract Map<MethodSignature, String> getMethods(DynamicCompletionContext context);
+    private final FileObject sourceFile;
 
-    // FIXME access levels, context
-    public abstract Map<FieldSignature, String> getFields(DynamicCompletionContext context);
+    private final String sourceClassName;
 
-    // FIXME type analyzer method
+    private final String className;
+
+    private final boolean staticContext;
+
+    private final List<String> properties;
+
+    // FIXME - accessor
+    public DynamicCompletionContext(FileObject sourceFile, String sourceClassName, String className,
+            boolean staticContext, List<String> properties) {
+
+        this.sourceFile = sourceFile;
+        this.sourceClassName = sourceClassName;
+        this.className = className;
+        this.staticContext = staticContext;
+        this.properties = properties;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public FileObject getSourceFile() {
+        return sourceFile;
+    }
+
+    public List<String> getProperties() {
+        return Collections.unmodifiableList(properties);
+    }
+
+    public String getSourceClassName() {
+        return sourceClassName;
+    }
+
+    public boolean isStaticContext() {
+        return staticContext;
+    }
+
 }
