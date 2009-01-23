@@ -39,16 +39,16 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
-final class JavaDebuggerPanel extends javax.swing.JPanel {
+final class JavaDebuggerPanel extends StorablePanel {
 
     private final JavaDebuggerOptionsPanelController controller;
 
-    private javax.swing.JPanel[] categoryPanels = new javax.swing.JPanel[3];
+    private StorablePanel[] categoryPanels;
 
     JavaDebuggerPanel(JavaDebuggerOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
-        categoryPanels = new javax.swing.JPanel[] {
+        categoryPanels = new StorablePanel[] {
             new CategoryPanelGeneral(),
             new CategoryPanelStepFilters(),
             new CategoryPanelFormatters(),
@@ -156,6 +156,9 @@ final class JavaDebuggerPanel extends javax.swing.JPanel {
     }
 
     void load() {
+        for (StorablePanel p : categoryPanels) {
+            p.load();
+        }
         // TODO read settings and initialize GUI
         // Example:        
         // someCheckBox.setSelected(Preferences.userNodeForPackage(JavaDebuggerPanel.class).getBoolean("someFlag", false));
@@ -166,6 +169,9 @@ final class JavaDebuggerPanel extends javax.swing.JPanel {
     }
 
     void store() {
+        for (StorablePanel p : categoryPanels) {
+            p.store();
+        }
         // TODO store modified settings
         // Example:
         // Preferences.userNodeForPackage(JavaDebuggerPanel.class).putBoolean("someFlag", someCheckBox.isSelected());

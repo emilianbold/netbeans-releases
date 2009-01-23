@@ -49,7 +49,7 @@ package org.netbeans.modules.debugger.jpda.ui.options;
  *
  * @author Martin Entlicher
  */
-public class CategoryPanelGeneral extends javax.swing.JPanel {
+class CategoryPanelGeneral extends StorablePanel {
 
     /** Creates new form CategoryPanelGeneral */
     public CategoryPanelGeneral() {
@@ -120,6 +120,16 @@ public class CategoryPanelGeneral extends javax.swing.JPanel {
                 .addContainerGap(184, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    @Override
+    void load() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    void store() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
