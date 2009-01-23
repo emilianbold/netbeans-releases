@@ -140,7 +140,7 @@ is the proper place.
                 as a result improves search performance.
             </p>
         </description>
-        <class package="org.openidex.search" name="SearchInfo.Files"/>
+        <class package="org.openidex.search" name="SearchInfo"/>
         <issue number="134558"/>
     </change>
  
