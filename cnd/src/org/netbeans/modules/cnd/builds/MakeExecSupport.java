@@ -318,7 +318,7 @@ public class MakeExecSupport extends ExecutionSupport {
      *  @return the options
      */
     public String getMakeOptions(boolean useCustomizer) {
-        StringBuffer options = new StringBuffer(256);
+        StringBuilder options = new StringBuilder(256);
         String savedOptions = (String) getEntry().getFile().getAttribute(PROP_MAKE_OPTIONS);
 
         if (savedOptions == null) {

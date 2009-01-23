@@ -570,7 +570,7 @@ public class MakeActionProvider implements ActionProvider {
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
                     } else if (platform == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
-                        StringBuffer path = new StringBuffer();
+                        StringBuilder path = new StringBuilder();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
@@ -606,7 +606,7 @@ public class MakeActionProvider implements ActionProvider {
                             platform == Platform.PLATFORM_SOLARIS_SPARC ||
                             platform == Platform.PLATFORM_LINUX) {
                         // Add paths from -L option
-                        StringBuffer path = new StringBuffer();
+                        StringBuilder path = new StringBuilder();
                         List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                         Iterator iter = list.iterator();
                         while (iter.hasNext()) {
