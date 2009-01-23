@@ -81,7 +81,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     }
 
     private String doPerform() {
-        int[] span = new int[2];
+        int[] span = new int[3];
         Document doc = getCurrentDocument(span);
 
         if (doc == null) {
@@ -92,7 +92,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
             }
         }
 
-        CsmContext editorContext = CsmContext.create(doc, span[0], span[1]);
+        CsmContext editorContext = CsmContext.create(doc, span[0], span[1], span[2]);
         if (editorContext == null) {
             return "ERR_Not_Supported"; //NOI18N
         }
@@ -118,7 +118,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         if (span != null) {
             span[0] = pane.getSelectionStart();
             span[1] = pane.getSelectionEnd();
-
+            span[2] = pane.getCaretPosition();
             if (span[0] == span[1] && requiresSelection()) {
                 return null;
             }
