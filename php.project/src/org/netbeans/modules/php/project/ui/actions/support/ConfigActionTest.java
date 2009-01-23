@@ -48,6 +48,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
+import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
@@ -116,6 +117,7 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         new RunScript(new ScriptProvider(project, pair, context)).run();
+        UnitTestRunner.run(project);
     }
 
     private void debug(PhpProject project, Lookup context) {
