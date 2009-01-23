@@ -104,7 +104,45 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+       <change id="SearchUtils">
+        <api name="search"/>
+        <summary>Added utility class <code>Utils</code></summary>
+        <version major="3" minor="20"/>
+        <date day="13" month="1" year="2009"/>
+        <author login="kaktus"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Class <code>Utils</code> made public with one public static method
+                <code>getFileObjectsIterator(SearchInfo si)</code>. This utility
+                method returns <code>Iterator</code> of <code>FileObject</code>s
+                for the provided <code>SearchInfo</code>. This change simplifies
+                the work with <code>SearchInfo</code> implementations.
+            </p>
+        </description>
+        <class package="org.openidex.search" name="Utils"/>
+    </change>
 
+      <change id="SearchInfo.Files">
+        <api name="search"/>
+        <summary>Added interface <code>SearchInfo.Files</code></summary>
+        <version major="3" minor="20"/>
+        <date day="13" month="1" year="2009"/>
+        <author login="kaktus"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added <code>SearchInfo.Files</code> interface which extends
+                <code>SearchInfo</code> interface. It adds method
+                <code>filesToSearch()</code> to provide <code>FileObject</code>s
+                which should be searched. This change allows to operate <code>FileObject</code>s
+                in the search mechanism instead of <code>DataObject</code>s and
+                as a result improves search performance.
+            </p>
+        </description>
+        <class package="org.openidex.search" name="SearchInfo.Files"/>
+        <issue number="134558"/>
+    </change>
  
      <change id="SearchInfoFactory.createCompoundSearchInfo">
         <api name="search"/>
