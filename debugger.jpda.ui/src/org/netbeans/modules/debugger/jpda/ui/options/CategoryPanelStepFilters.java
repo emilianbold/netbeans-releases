@@ -49,7 +49,7 @@ package org.netbeans.modules.debugger.jpda.ui.options;
  *
  * @author martin
  */
-public class CategoryPanelStepFilters extends javax.swing.JPanel {
+class CategoryPanelStepFilters extends StorablePanel {
 
     /** Creates new form CategoryPanelStepFilters */
     public CategoryPanelStepFilters() {
@@ -168,6 +168,16 @@ public class CategoryPanelStepFilters extends javax.swing.JPanel {
     private void useStepFiltersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useStepFiltersCheckBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_useStepFiltersCheckBoxActionPerformed
+
+    @Override
+    void load() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    void store() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

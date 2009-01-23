@@ -49,7 +49,7 @@ package org.netbeans.modules.debugger.jpda.ui.options;
  *
  * @author martin
  */
-public class CategoryPanelFormatters extends javax.swing.JPanel {
+class CategoryPanelFormatters extends StorablePanel {
 
     /** Creates new form CategoryPanelFormatters */
     public CategoryPanelFormatters() {
@@ -275,6 +275,16 @@ public class CategoryPanelFormatters extends javax.swing.JPanel {
                 .add(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    @Override
+    void load() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    void store() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
