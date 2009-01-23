@@ -36,9 +36,8 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.support.StreamRedirector;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,14 +45,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.nativeexecution.support.ImageLoader;
-import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
+import org.netbeans.modules.nativeexecution.api.TaskExecutionState;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable {
 
@@ -61,7 +64,7 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     public final String RESTART_ACTION = "Restart"; // NOI18N
     protected final static java.util.logging.Logger log = Logger.getInstance();
     final Object stateMonitor = new Object();
-    TaskExecutionState state = TaskExecutionState.INITIAL;
+    private TaskExecutionState state = TaskExecutionState.INITIAL;
     final List<NativeTaskListener> taskListeners = Collections.synchronizedList(new ArrayList<NativeTaskListener>());
     protected final NativeTask task;
     private int pid;
@@ -70,6 +73,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     private AbstractAction cancelAction,  restartAction;
     private Action[] actions;
     private ProgressHandle ph = null;
+    volatile boolean submitted = false;
+    final Object submisionLock = new Object();
 
     public NativeExecutor(NativeTask task) {
         this.task = task;
@@ -82,13 +87,13 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
      */
     abstract protected int doInvoke() throws Exception;
 
-    abstract protected Integer get();
+    abstract public Integer get();
 
-    abstract protected InputStream getTaskInputStream() throws IOException;
+    abstract public InputStream getTaskInputStream() throws IOException;
 
-    abstract protected InputStream getTaskErrorStream() throws IOException;
+    abstract public InputStream getTaskErrorStream() throws IOException;
 
-    abstract protected OutputStream getTaskOutputStream() throws IOException;
+    abstract public OutputStream getTaskOutputStream() throws IOException;
 
     public final Action[] getActions() {
         if (actions == null) {
@@ -114,21 +119,30 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
 
         return null;
     }
+    static int step = 1;
 
     public final Integer invokeAndWait() throws Exception {
-        if (state == TaskExecutionState.RUNNING ||
-                state == TaskExecutionState.STARTING) {
-            return -1;
+        synchronized (stateMonitor) {
+            // if we are in progress, just wait for this task completion...
+
+            if (state == TaskExecutionState.RUNNING) {
+                while (state == TaskExecutionState.RUNNING) {
+                    stateMonitor.wait();
+                }
+                return exitValue;
+            }
+
+        // else do start...
+        }
+
+        if (state != TaskExecutionState.INITIAL) {
+            reset();
         }
 
         ph = task.getProgressHandler();
 
         if (ph != null) {
             ph.start();
-        }
-
-        if (!(state == TaskExecutionState.INITIAL)) {
-            reset();
         }
 
         setState(TaskExecutionState.STARTING);
@@ -191,14 +205,89 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
             if (ph != null) {
                 ph.finish();
             }
+
         }
 
         return exitValue;
     }
 
-    int getPID() {
-        if (state == TaskExecutionState.INITIAL) {
-            throw new IllegalStateException("Task is not started yet"); // NOI18N
+    public Future<Integer> invoke(boolean waitStart) {
+        synchronized (submisionLock) {
+            if (submitted) {
+                return task;
+            }
+        }
+
+        NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+            public Integer call() {
+                submitted = true;
+
+                if (state != TaskExecutionState.INITIAL) {
+                    reset();
+                }
+
+                synchronized (submisionLock) {
+                    submisionLock.notifyAll();
+                }
+
+                Integer result = -1;
+                try {
+                    result = invokeAndWait();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    // No matter what was the reason for task competion,
+                    // notify on submisionLock.
+                    submitted = false;
+
+                    synchronized (submisionLock) {
+                        submisionLock.notifyAll();
+                    }
+                }
+
+                return result;
+            }
+        });
+
+        // Be sure that newly created thread started
+
+        synchronized (submisionLock) {
+            while (!submitted) {
+                try {
+                    submisionLock.wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        if (waitStart) {
+            // Waiting for PID ...
+            synchronized (stateMonitor) {
+                if (state == TaskExecutionState.INITIAL ||
+                        state == TaskExecutionState.STARTING) {
+                    while (state == TaskExecutionState.INITIAL ||
+                            state == TaskExecutionState.STARTING) {
+                        try {
+                            stateMonitor.wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        }
+
+        return task;
+    }
+
+    public int getPID() {
+        synchronized (stateMonitor) {
+            if (state == TaskExecutionState.INITIAL ||
+                    state == TaskExecutionState.STARTING) {
+                throw new IllegalStateException("Task is not started yet"); // NOI18N
+            }
         }
 
         return pid;
@@ -240,32 +329,34 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
         taskListeners.remove(listener);
     }
 
-    private synchronized void notifyListeners() {
-        log.fine("Task " + task + " changed state to " + state); // NOI18N
+    private void notifyListeners() {
+        synchronized (stateMonitor) {
+            log.fine("Task " + task + " changed state to " + state); // NOI18N
 
-        for (NativeTaskListener l : taskListeners.toArray(new NativeTaskListener[0])) {
-            try {
-                switch (state) {
-                    case RUNNING:
-                        l.taskStarted(task);
-                        break;
-                    case FINISHED:
-                        l.taskFinished(task, exitValue);
-                        break;
-                    case FAILED:
-                        l.taskError(task, exception);
-                        break;
-                    case CANCELED:
-                        l.taskCancelled(task, (CancellationException) exception);
-                        break;
+            for (NativeTaskListener l : taskListeners.toArray(new NativeTaskListener[0])) {
+                try {
+                    switch (state) {
+                        case RUNNING:
+                            l.taskStarted(task);
+                            break;
+                        case FINISHED:
+                            l.taskFinished(task, exitValue);
+                            break;
+                        case FAILED:
+                            l.taskError(task, exception);
+                            break;
+                        case CANCELED:
+                            l.taskCancelled(task, (CancellationException) exception);
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.severe("Exception during ExecutorTaskListener " + l + " notification. " + e.toString()); // NOI18N
                 }
-            } catch (Exception e) {
-                log.severe("Exception during ExecutorTaskListener " + l + " notification. " + e.toString()); // NOI18N
             }
         }
     }
 
-    protected void setResult(Integer exitValue) {
+    protected final synchronized void setResult(Integer exitValue) {
         this.exitValue = exitValue;
 
         if (isCancelled()) {
@@ -275,13 +366,17 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
         setState(exitValue == 0 ? TaskExecutionState.FINISHED : TaskExecutionState.FAILED);
     }
 
-    boolean isCancelled() {
+    public final boolean isCancelled() {
         return state.equals(TaskExecutionState.CANCELED);
     }
 
-    boolean isDone() {
+    public final boolean isDone() {
         return !(state == TaskExecutionState.RUNNING ||
                 state == TaskExecutionState.STARTING);
+    }
+
+    public final TaskExecutionState getState() {
+        return state;
     }
 
     private void reset() {
@@ -292,11 +387,11 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     }
 
     private void setState(TaskExecutionState newState) {
-        if (newState == state) {
-            return;
-        }
-
         synchronized (stateMonitor) {
+            if (newState == state) {
+                return;
+            }
+
             state = newState;
             notifyListeners();
             stateMonitor.notifyAll();
@@ -304,15 +399,17 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     }
 
     private void updateActions() {
-        if (state == TaskExecutionState.RUNNING || state == TaskExecutionState.STARTING) {
-            getAction(CANCEL_ACTION).setEnabled(true);
-            getAction(RESTART_ACTION).setEnabled(false);
-        } else if (state == TaskExecutionState.INITIAL) {
-            getAction(CANCEL_ACTION).setEnabled(false);
-            getAction(RESTART_ACTION).setEnabled(false);
-        } else {
-            getAction(CANCEL_ACTION).setEnabled(false);
-            getAction(RESTART_ACTION).setEnabled(true);
+        synchronized (stateMonitor) {
+            if (state == TaskExecutionState.RUNNING || state == TaskExecutionState.STARTING) {
+                getAction(CANCEL_ACTION).setEnabled(true);
+                getAction(RESTART_ACTION).setEnabled(false);
+            } else if (state == TaskExecutionState.INITIAL) {
+                getAction(CANCEL_ACTION).setEnabled(false);
+                getAction(RESTART_ACTION).setEnabled(false);
+            } else {
+                getAction(CANCEL_ACTION).setEnabled(false);
+                getAction(RESTART_ACTION).setEnabled(true);
+            }
         }
     }
 
@@ -324,8 +421,10 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
         }
 
         public void actionPerformed(ActionEvent e) {
-            cancel();
-            setEnabled(false);
+            if (task.isRunning()) {
+                cancel();
+                setEnabled(false);
+            }
         }
     }
 
