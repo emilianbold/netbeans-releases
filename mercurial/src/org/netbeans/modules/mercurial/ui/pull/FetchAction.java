@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.ui.pull;
 
-import org.netbeans.modules.mercurial.ui.view.*;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -57,7 +56,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 
