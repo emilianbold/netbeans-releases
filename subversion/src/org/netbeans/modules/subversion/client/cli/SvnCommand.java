@@ -362,10 +362,13 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add("--username");                               		
             add(user);
             if(psswd == null) {
-                psswd = "\"\"";
+                psswd = "";
+            }
+            if (psswd.trim().equals("")) {
+                psswd = "\"" + psswd + "\"";
             }
             add("--password");                               		
-            add(psswd);                               		
+            add(psswd);                      		
         }
     
         public Iterator<String> iterator() {

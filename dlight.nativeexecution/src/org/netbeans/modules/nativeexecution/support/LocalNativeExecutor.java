@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.support;
 
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.NativeExecutor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -238,20 +237,20 @@ public final class LocalNativeExecutor extends NativeExecutor {
         return pid;
     }
 
-    protected InputStream getTaskInputStream() throws IOException {
+    public final InputStream getTaskInputStream() throws IOException {
         return processOutput;
     }
 
-    protected InputStream getTaskErrorStream() throws IOException {
+    public final InputStream getTaskErrorStream() throws IOException {
         return processError;
     }
 
-    protected OutputStream getTaskOutputStream() throws IOException {
+    public final OutputStream getTaskOutputStream() throws IOException {
         return processInput;
     }
 
     @Override
-    protected synchronized Integer get() {
+    public synchronized Integer get() {
         try {
             process.waitFor();
         } catch (InterruptedException ex) {

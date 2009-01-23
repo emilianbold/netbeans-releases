@@ -145,6 +145,7 @@ public final class RepositoryUtils {
     public static <T> CsmUID<T> put(T csmObj) {
         CsmUID<T> uid = null;
         if (csmObj != null) {
+            // during put we suppress check for null
             uid = UIDProviderIml.get(csmObj, false);
             assert uid != null;
             Key key = UIDtoKey(uid);

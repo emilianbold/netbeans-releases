@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -52,7 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author  Marian Petras
  */
-final class SubnodesSearchInfo implements SearchInfo {
+final class SubnodesSearchInfo implements SearchInfo.Files {
 
     /** */
     private final Node node;
@@ -80,9 +81,15 @@ final class SubnodesSearchInfo implements SearchInfo {
     /**
      */
     public Iterator<DataObject> objectsToSearch() {
+        return Utils.toDataObjectIterator(filesToSearch());
+    }
+
+    /**
+     */
+    public Iterator<FileObject> filesToSearch() {
         final Node[] nodes = node.getChildren().getNodes(true);
         if (nodes.length == 0) {
-            return SimpleSearchInfo.EMPTY_SEARCH_INFO.objectsToSearch();
+            return SimpleSearchInfo.EMPTY_SEARCH_INFO.filesToSearch();
         }
         
         List<SearchInfo> searchInfoElements = new ArrayList<SearchInfo>(nodes.length);
@@ -96,9 +103,9 @@ final class SubnodesSearchInfo implements SearchInfo {
         final int size = searchInfoElements.size();
         switch (size) {
             case 0:
-                return Collections.<DataObject>emptyList().iterator();
+                return Collections.<FileObject>emptyList().iterator();
             case 1:
-                return searchInfoElements.get(0).objectsToSearch();
+                return Utils.getFileObjectsIterator(searchInfoElements.get(0));
             default:
                 return new CompoundSearchIterator(
                         searchInfoElements.toArray(new SearchInfo[size]));
