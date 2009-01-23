@@ -40,10 +40,13 @@ package org.netbeans.modules.dlight.memory;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
+import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
@@ -83,15 +86,19 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         final DataTableMetadata rawTableMetadata = new DataTableMetadata("mem", columns);
         DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
         dataCollectorConfiguration.setStackSupportEnabled(true);
-        dataCollectorConfiguration.setIndicatorFiringFactor(1);
+        //dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
         MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
         toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-        toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 
         List<Column> indicatorColumns = Arrays.asList(
                 totalColumn);
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
+        DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
+
+        CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/usr/bin/truss", "-d -t '!all' -u 'libc:*alloc,free' -p @PID", 
+                new MyCLIOParser(totalColumn), Arrays.asList(indicatorTableMetadata));
+        toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
 
 //        HashMap<String, Object> configuration = new HashMap<String, Object>();
 //        configuration.put("aggregation", "avrg");
@@ -122,4 +129,51 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
         return new TableVisualizerConfiguration(viewTableMetadata);
     }
+
+    private class MyCLIOParser implements CLIOParser {
+
+        private List<String> colNames;
+        private int allocated;
+
+        public MyCLIOParser(Column totalColumn) {
+            colNames = Arrays.asList(totalColumn.getColumnName());
+            allocated = 0;
+        }
+
+        public DataRow process(String line) {
+
+            if (line == null) {
+                return null;
+            }
+            String l = line.trim();
+
+            // The example of line is:
+            //      /1@1:   14.9686 -> libc:malloc(0x1388, 0x2710, 0x88, 0x1)
+            //      /1@1:   14.9700 <- libc:malloc() = 0x8064c08
+            //      /1@1:   14.9720 -> libc:free(0x8064c08, 0x2710, 0x88, 0x1)
+            //      /1@1:   14.9728 <- libc:free() = 0
+
+            String[] tokens = l.split("[ \t()]+"); //NOI18N
+
+            if (tokens.length < 4) {
+                return null;
+            }
+            try {
+                if ( "libc:malloc".equals(tokens[4])) { //NOI18N
+                    int delta = Integer.parseInt(tokens[6], 16);
+                    allocated += delta;
+                    return new DataRow(colNames, Arrays.asList(new Integer[] { allocated }));
+                }
+                else if ( "libc:free".equals(tokens[4])) { //NOI18N
+                    int delta = Integer.parseInt(tokens[6], 16);
+                    allocated -= delta;
+                    return new DataRow(colNames, Arrays.asList(new Integer[] { allocated }));
+                }
+            } catch (NumberFormatException nfe) {
+                nfe.printStackTrace();
+            }
+            return null;
+        }
+    }
+
 }
