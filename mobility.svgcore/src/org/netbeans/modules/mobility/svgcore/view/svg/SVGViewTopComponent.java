@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import com.sun.perseus.util.SVGConstants;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -75,6 +76,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -124,6 +126,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
 import org.netbeans.modules.mobility.svgcore.export.ScreenSizeHelper;
@@ -142,7 +145,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
+import org.w3c.dom.svg.SVGSVGElement;
 import org.xml.sax.SAXException;
 
 /**
@@ -173,6 +179,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     private transient AbstractButton          pauseAnimationButton;
     private transient AbstractButton          scaleToggleButton;
     private transient AbstractButton          showViewBoxToggleButton;
+    private transient AbstractButton          landscapeModeToggleButton;
     private transient ChangeListener          changeListener;
     private transient boolean                 doScale = false;
     //decoration
@@ -184,6 +191,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     private transient ZoomInAction            zoomInAction;
     private transient ZoomOutAction           zoomOutAction;
     private transient ToggleShowViewBoxAction showViewBoxAction;
+    private transient ToggleLandscapeModeAction landscapeModeAction;
 
     private final class UpdateThread extends Thread {
 
@@ -747,7 +755,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         initButton(toolbar, zoomOutAction = new ZoomOutAction(), false);
         toolbar.add(createToolBarSeparator(), constrains);
 
-        addButtonsForActions(toolbar, smgr.getToolbarActions("svg_toggle_tooltip", "svg_toggle_highlight"), constrains); //NOI18N
+        addButtonsForActions(toolbar, smgr.getToolbarActions(
+                "svg_toggle_tooltip",
+                "svg_toggle_highlight"), constrains); //NOI18N
         //hoverToggleButton = initButton(toolbar, highlightAction = new ToggleHighlightAction(), true);
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;
@@ -768,7 +778,16 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         toolbar.add(createToolBarSeparator(), constrains);
         initButton(toolbar, insertGraphicsAction, false);
 
-        addButtonsForActions(toolbar, smgr.getToolbarActions("svg_delete", null, "svg_move_to_top", "svg_move_to_bottom", "svg_move_forward", "svg_move_backward"), constrains); //NOI18N
+        landscapeModeToggleButton = initButton(toolbar, landscapeModeAction = new ToggleLandscapeModeAction(), true);
+        toolbar.add(createToolBarSeparator(), constrains);
+
+        addButtonsForActions(toolbar, smgr.getToolbarActions(
+                "svg_delete",
+                null,
+                "svg_move_to_top",
+                "svg_move_to_bottom",
+                "svg_move_forward",
+                "svg_move_backward"), constrains); //NOI18N
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;
         constrains.fill = GridBagConstraints.HORIZONTAL;
@@ -1019,6 +1038,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             zoomOutAction,
             scaleAction,
             showViewBoxAction,
+            landscapeModeAction,
             startAnimationAction,
             pauseAnimationAction,
             allowEditAction}, this, lookup);
@@ -1036,8 +1056,14 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         } else {
             showViewBoxAction.setEnabled(true);
         }
+        landscapeModeAction.setEnabled(true);
         showViewBoxToggleButton.setSelected(scrMgr.getShowAllArea());
 
+        // TODO save info about orientation to refresh it correctly
+        scrMgr.setLandscapeMode(getPerseusController().isImgHorizontallyOriented());
+        landscapeModeToggleButton.setSelected(scrMgr.isLandscapeMode());
+
+                
         topComponent.requestFocus();
         //updateSelection(actualSelection);
         repaintAll();
@@ -1354,6 +1380,82 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             showViewBoxToggleButton.setSelected(b);
             repaint();
         }
+    }
+
+    private class ToggleLandscapeModeAction extends AbstractSVGAction implements Presenter.Popup {
+        private static final long serialVersionUID = 5862679852552354L;
+
+     private final Logger LOG = Logger.getLogger(ToggleLandscapeModeAction.class.getName());
+        ToggleLandscapeModeAction() {
+            super("svg_landscape_mode"); //NOI18N
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ScreenManager smgr = getScreenManager();
+            boolean b = !smgr.isLandscapeMode();
+            rotateElements(b);
+            changeViewBox(b);
+            smgr.setLandscapeMode(b);
+            landscapeModeToggleButton.setSelected(b);
+            //repaint();
+            updateImage();
+        }
+
+        private void changeViewBox(boolean isLandscape) {
+            SVGSVGElement svg = getSceneManager().getPerseusController().getSVGRootElement();
+            SVGRect viewBoxRect = svg.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
+            if (getScreenManager().isLandscapeMode() != isLandscape){
+                float w = viewBoxRect.getWidth();
+                float h = viewBoxRect.getHeight();
+                viewBoxRect.setHeight(w);
+                viewBoxRect.setWidth(h);
+
+                getModel().setViewBox(viewBoxRect);
+            }
+
+        }
+
+
+        // rotate correctly
+        private void rotateElements(boolean isLandscape) {
+            SceneManager m_sceneMgr = getSceneManager();
+            int angle = isLandscape ? 90 : -90;
+            SVGSVGElement svgRoot = m_sceneMgr.getPerseusController().getSVGRootElement();
+
+            SVGRect viewBoxRect = svgRoot.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
+            float translateH = viewBoxRect != null ? viewBoxRect.getHeight() : 0f;
+            float translateW = viewBoxRect != null ? viewBoxRect.getWidth() : 0f;
+            float[] translate = isLandscape 
+                    ? new float[]{ translateH, 0f}
+                    : new float[]{ 0f, translateW};
+
+            SVGElement elem = (SVGElement) svgRoot.getFirstElementChild();
+            Rectangle bBox = new Rectangle();
+
+            while (elem != null) {
+                //  process
+                rotateElement(elem, angle, translate, bBox);
+                // get next
+                elem = (SVGElement) elem.getNextElementSibling();
+            }
+            m_sceneMgr.getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
+            m_sceneMgr.getScreenManager().refresh();
+        }
+    }
+
+    private void rotateElement(SVGElement elem, int angle, float[] translate, Rectangle bBox){
+        SVGObject obj = getSceneManager().getPerseusController().getObjectForSVGElement(elem);
+        if (obj == null) {
+            return;
+        }
+        bBox.add(obj.getScreenBBox());
+        obj.setLandscape(angle, translate);
+        bBox.add(obj.getScreenBBox());
+
+        if (!PerseusController.ID_VIEWBOX_MARKER.equals(obj.getElementId())) {
+            obj.applyTextChanges();
+        }
+        obj.commitChanges();
     }
 
     private class ZoomToFitAction extends AbstractSVGAction {

@@ -83,6 +83,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.w3c.dom.svg.SVGRect;
 
 /**
  *
@@ -899,93 +900,131 @@ public final class SVGFileModel {
         return sb;
     }
 
+    public void setViewBox(final SVGRect rect){
+        if (rect == null){
+            return;
+        }
+
+        final DocumentElement svgRoot = getSVGRoot(m_model);
+        final String [] attributes = new String[]{
+            SVGConstants.SVG_VIEW_BOX_ATTRIBUTE,
+            rect.getX() + " " + rect.getY() + " " + rect.getWidth() + " " +rect.getHeight(),
+            SVGConstants.SVG_WIDTH_ATTRIBUTE, String.valueOf(rect.getWidth()),
+            SVGConstants.SVG_HEIGHT_ATTRIBUTE, String.valueOf(rect.getHeight())
+        };
+
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                doSetAttributes(svgRoot, attributes, null, false);
+            }
+        });
+    }
+
     public void setAttributes(final String id, final String [] attributes) {
         runTransaction(new FileModelTransaction() {
             protected void transaction() throws BadLocationException {
                 DocumentElement elem = checkIntegrity(id);
-                assert isTagElement(elem) : "Attribute change allowed only for tag elements"; //NOI18N
 
-                int startOff = elem.getStartOffset() + 1 + elem.getName().length();
-                int endOff;
-
-                List<DocumentElement> children = elem.getChildren();
-
-                if (children.size() > 0) {
-                    endOff = children.get(0).getStartOffset() - 1;
-                } else {
-                    endOff = elem.getEndOffset() - 1;
-                }
-                boolean injectId = !elem.getAttributes().isDefined(SVGConstants.SVG_ID_ATTRIBUTE);
-
-                assert attributes.length % 2 == 0;
-                BaseDocument doc     = getDoc();
-                
-                loop: for ( int i = 0; i < attributes.length; i+=2) {
-                    String fragment  = doc.getText(startOff, endOff - startOff + 1);
-                    String attrName  = attributes[i];
-                    String attrValue = attributes[i+1];
-                    
-                    int p;
-                    if ((p = indexOfAttr(fragment, attrName)) != -1) {
-                        int start = p;
-                        p += attrName.length();
-                        while (++p < fragment.length()) {
-                            if (fragment.charAt(p) == '"') {
-                                int q = p;
-
-                                while (++q < fragment.length()) {
-                                    if (fragment.charAt(q) == '"') {
-                                        p++;
-                                        
-                                        if ( attrValue != null) {
-                                            int l;
-                                            String txt;
-                                            if (injectId) {
-                                                StringBuilder sb = new StringBuilder(attrValue);
-                                                sb.append("\" "); //NOI18N
-                                                injectId(sb, id);
-                                                injectId = false;
-                                                l = q - p + 1;
-                                                txt = sb.toString();
-                                                doc.replace(startOff + p, l, txt, null);
-                                            } else {
-                                                l = q - p;
-                                                txt = attrValue;
-                                                doc.replace(startOff + p, l, txt, null);
-                                            }
-                                            endOff = endOff - l + txt.length();
-                                        } else {
-                                            int l = q - start + 1;
-                                            doc.remove(startOff + start, l);
-                                            endOff -= l;
-                                        }
-                                        continue loop;
-                                    }
-                                }
-                            }
-                        }
-                        SceneManager.log(Level.SEVERE, "Attribute " + attrName + " not changed: \"" + fragment + "\""); //NOI18N
-                    } else {
-                        if (attrValue != null) {
-                            StringBuilder sb = new StringBuilder(" "); //NOI18N
-                            if (injectId) {
-                                injectId(sb, id);
-                                injectId = false;
-                            }
-                            sb.append(attrName);
-                            sb.append("=\""); //NOI18N
-                            sb.append(attrValue);
-                            sb.append("\" "); //NOI18N
-                            String txt = sb.toString();
-                            doc.insertString(startOff, txt, null);
-                            endOff += txt.length();
-                        }
-                    }
-                }
+                doSetAttributes(elem, attributes, id, true);
             }
         });
     }
     
+    /**
+     * should be called inside FileModelTransaction#transaction()
+     * @param elem tag to set attribute to.
+     * @param attributes array of attributes names and values.
+     * names and values go after each other: {name1, val1, name2, val2,... }
+     * @param id element's id attribute value. It will be added to element attributes
+     * in case this attribute is not specified yet and addIdAttribute == true.
+     * @param injectId
+     */
+    private void doSetAttributes(final DocumentElement elem, final String[] attributes,
+            final String id, final boolean addIdAttribute) throws BadLocationException {
+
+        assert isTagElement(elem) : "Attribute change allowed only for tag elements"; //NOI18N
+        int startOff = elem.getStartOffset() + 1 + elem.getName().length();
+        int endOff;
+
+        boolean injectId = addIdAttribute && id != null &&
+                !elem.getAttributes().isDefined(SVGConstants.SVG_ID_ATTRIBUTE);
+
+        List<DocumentElement> children = elem.getChildren();
+
+        if (children.size() > 0) {
+            endOff = children.get(0).getStartOffset() - 1;
+        } else {
+            endOff = elem.getEndOffset() - 1;
+        }
+
+        assert attributes.length % 2 == 0;
+        BaseDocument doc = getDoc();
+
+        loop:
+        for (int i = 0; i < attributes.length; i += 2) {
+            String fragment = doc.getText(startOff, endOff - startOff + 1);
+            String attrName = attributes[i];
+            String attrValue = attributes[i + 1];
+
+            int p;
+            if ((p = indexOfAttr(fragment, attrName)) != -1) {
+                int start = p;
+                p += attrName.length();
+                while (++p < fragment.length()) {
+                    if (fragment.charAt(p) == '"') {
+                        int q = p;
+
+                        while (++q < fragment.length()) {
+                            if (fragment.charAt(q) == '"') {
+                                p++;
+
+                                if (attrValue != null) {
+                                    int l;
+                                    String txt;
+                                    if (injectId) {
+                                        StringBuilder sb = new StringBuilder(attrValue);
+                                        sb.append("\" "); //NOI18N
+                                        injectId(sb, id);
+                                        injectId = false;
+                                        l = q - p + 1;
+                                        txt = sb.toString();
+                                        doc.replace(startOff + p, l, txt, null);
+                                    } else {
+                                        l = q - p;
+                                        txt = attrValue;
+                                        doc.replace(startOff + p, l, txt, null);
+                                    }
+                                    endOff = endOff - l + txt.length();
+                                } else {
+                                    int l = q - start + 1;
+                                    doc.remove(startOff + start, l);
+                                    endOff -= l;
+                                }
+                                continue loop;
+                            }
+                        }
+                    }
+                }
+                SceneManager.log(Level.SEVERE, "Attribute " + attrName + " not changed: \"" + fragment + "\""); //NOI18N
+            } else {
+                if (attrValue != null) {
+                    StringBuilder sb = new StringBuilder(" "); //NOI18N
+                    if (injectId) {
+                        injectId(sb, id);
+                        injectId = false;
+                    }
+                    sb.append(attrName);
+                    sb.append("=\""); //NOI18N
+                    sb.append(attrValue);
+                    sb.append("\" "); //NOI18N
+                    String txt = sb.toString();
+                    doc.insertString(startOff, txt, null);
+                    endOff += txt.length();
+                }
+            }
+        }
+    }
+
     private static int skipWhite(String fragment, int index) {
         while(index < fragment.length()) {
             if ( fragment.charAt(index) > ' ') {
