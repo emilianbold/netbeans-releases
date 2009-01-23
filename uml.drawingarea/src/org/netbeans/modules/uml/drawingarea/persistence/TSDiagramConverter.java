@@ -283,7 +283,6 @@ public class TSDiagramConverter
         }
 
         scene = topComponent.getScene();
-        scene.getDiagram().setDocumentation(diagramDetails.getDocumentation());
         DiagramEngine engine = scene.getEngine();
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
