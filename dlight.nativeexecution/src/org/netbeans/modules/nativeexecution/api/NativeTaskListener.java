@@ -42,7 +42,6 @@ import java.util.concurrent.CancellationException;
 
 /**
  * The listener interface for receiving task's execution state shanges events.
- * @author ak119685
  */
 public interface NativeTaskListener {
 

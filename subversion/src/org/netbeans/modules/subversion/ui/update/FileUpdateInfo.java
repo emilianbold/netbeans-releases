@@ -63,7 +63,7 @@ public class FileUpdateInfo {
     private final File file;    
     private final int action;
     
-    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])(.+)$");
+    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])( *)(.+)$");
 
     FileUpdateInfo(File file, int action) {
         this.file   = file;
@@ -87,7 +87,7 @@ public class FileUpdateInfo {
         String fileActionValue       = m.group(1);
         String propertyActionValue   = m.group(2);
         String broken                = m.group(3);
-        String filePath              = m.group(4);   
+        String filePath              = m.group(5);
         if( KNOWN_ACTIONS.indexOf(fileActionValue)     < 0 || 
             KNOWN_ACTIONS.indexOf(propertyActionValue) < 0 ) 
         {

@@ -41,15 +41,29 @@ package org.netbeans.modules.dlight.storage.api;
 
 import java.util.List;
 
+/**
+ * Represents one table ro along with table description
+ */
 public final class DataRow {
   private List<String> colnames;
   private List data;
 
+  /**
+   * Created new DataRow instance with the <code>colnames</code> column names
+   * and <code>data</code>
+   * @param colnames column names
+   * @param data data 
+   */
   public DataRow(List<String> colnames, List data) {
     this.colnames = colnames;
     this.data = data;
   }
 
+  /**
+   * Returns value of the row as Long for column with the name <code>columnName</code>
+   * @param columnName column name to get Long value for
+   * @return value of row for the column as Long
+   */
   public Long getLongValue(String columnName) {
     Long result = null;
     int idx = colnames.indexOf(columnName);
@@ -59,6 +73,11 @@ public final class DataRow {
     return result;
   }
 
+ /**
+   * Returns value of the row as String for column with the name <code>columnName</code>
+   * @param columnName column name to get String value for
+   * @return value of row for the column as String
+   */
   public String getStringValue(String columnName) {
     String result = null;
     int idx = colnames.indexOf(columnName);
@@ -68,14 +87,27 @@ public final class DataRow {
     return result;
   }
 
+  /**
+   * Return this row column names
+   * @return column names
+   */
   public List<String> getColumnNames() {
     return colnames;
   }
 
+  /**
+   * Returns data this row contains as Object
+   * @return data
+   */
   public List<Object> getData() {
     return data;
   }
 
+  /**
+   * Returns data for column with the name <code>columnName</code>
+   * @param columnName column name
+   * @return
+   */
   public Object getData(String columnName){
     int idx = colnames.indexOf(columnName);
     if (idx >= 0) {

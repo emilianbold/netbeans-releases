@@ -36,51 +36,74 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicator.api;
 
 import org.netbeans.modules.dlight.indicator.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 
 /**
- *
+ * Configuration to create {@link org.netbeans.modules.dlight.indicator.spi.Indicator}
+ * on the base of. Use it to register in
+ * {@link org.netbeans.modules.dlight.tool.api.DLightToolConfiguration#addIndicatorConfiguration(org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration) 
+ *  
  */
 public abstract class IndicatorConfiguration {
-   private IndicatorMetadata metadata;
-   private VisualizerConfiguration visualizerConfiguration;
-   private ConfigurationData configurationData;
 
-   static{
-     IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
-   }
+  private IndicatorMetadata metadata;
+  private VisualizerConfiguration visualizerConfiguration;
+  private ConfigurationData configurationData;
 
+
+  static {
+    IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
+  }
+
+  /**
+   * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.indicator.api.IndicatorMetadata}
+   * @param metadata metadata to create Indicator configuration for
+   */
   public IndicatorConfiguration(IndicatorMetadata metadata) {
     this.metadata = metadata;
   }
 
+  /**
+   * Unique id which will be used to find the proper factory
+   * @return id
+   */
   public abstract String getID();
 
-  public final void setConfigurationData(ConfigurationData configurationData){
+  /**
+   * Sets configuration data if needed
+   * @param configurationData
+   */
+  public final void setConfigurationData(ConfigurationData configurationData) {
     this.configurationData = configurationData;
-  }  
+  }
 
-  public final void setVisualizerConfiguration(VisualizerConfiguration configuration){
+  /**
+   * Sets {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration}
+   * which means Detailed View which will be opened when double or single mouse click on 
+   * {@link org.netbeans.modules.dlight.indicator.spiIndicator}
+   * @param configuration configuration to create {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
+   * which will represent Detailed View
+   */
+  public final void setVisualizerConfiguration(VisualizerConfiguration configuration) {
     this.visualizerConfiguration = configuration;
   }
 
-  protected  ConfigurationData getConfigurationData(){
+  protected ConfigurationData getConfigurationData() {
     return configurationData;
   }
 
-  protected  IndicatorMetadata getIndicatorMetadata(){
+  protected IndicatorMetadata getIndicatorMetadata() {
     return metadata;
   }
 
-  protected  VisualizerConfiguration getVisualizerConfiguration(){
+  protected VisualizerConfiguration getVisualizerConfiguration() {
     return visualizerConfiguration;
   }
 
-  private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor{
+  private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
 
     @Override
     public ConfigurationData getConfigurationData(IndicatorConfiguration configuration) {
@@ -96,6 +119,6 @@ public abstract class IndicatorConfiguration {
     public VisualizerConfiguration getVisualizerConfiguration(IndicatorConfiguration configuration) {
       return configuration.getVisualizerConfiguration();
     }
-    
   }
+
 }

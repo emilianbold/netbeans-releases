@@ -623,7 +623,7 @@ final public class MakefileData {
         for (int i = 0; i < targetList.size(); i++) {
             println("    targetList[" + i + "]    = {");		// NOI18N
             (targetList.get(i)).dump(
-                    new StringBuffer(indent).append("    ").toString());// NOI18N
+                    new StringBuilder(indent).append("    ").toString());// NOI18N
             println("    }");						// NOI18N
         }
     }

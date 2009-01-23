@@ -62,9 +62,9 @@ public interface DLightTarget {
    */
   public void removeTargetListener(DLightTargetListener listener);
   /**
-   * Returns {@link org.netbeans.modules.nativeexecution.ExecutionEnvironment} this
+   * Returns {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} this
    * target will be run at
-   * @return {@link org.netbeans.modules.nativeexecution.ExecutionEnvironment} to run this target at
+   * @return {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} to run this target at
    */
   public ExecutionEnvironment getExecEnv();
 

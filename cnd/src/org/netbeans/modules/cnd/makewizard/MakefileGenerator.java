@@ -642,7 +642,7 @@ public class MakefileGenerator {
             String cwd = md.getBaseDirectory(MakefileData.EXPAND);
             Set<TargetData> mkhash = new HashSet<TargetData>(tlist.size(), 1.0F);
             String dir;
-            StringBuffer cb = new StringBuffer(1024);
+            StringBuilder cb = new StringBuilder(1024);
             boolean wasClean = false;
 
             for (int i = 0; i < tlist.size(); i++) {
@@ -786,7 +786,7 @@ public class MakefileGenerator {
              * Now emit the OBJS_<target-name> variable. Ignore .xd files (they
              * will be handled later).
              */
-            StringBuffer lbuf = new StringBuffer(80);
+            StringBuilder lbuf = new StringBuilder(80);
             lbuf.append(" \\\n\t");					// NOI18N
             lbuf.append(var.makeRef("TARGETDIR_"));			// NOI18N
             lbuf.append('/');
@@ -1042,7 +1042,7 @@ public class MakefileGenerator {
         String l3 = MessageFormat.format(
                 "\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-objects > $(XD_OBJS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-link > $(XD_LINK_ARGS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) all-objects\ntest::\n\n", // NOI18N
                 new Object[]{t.getName(), vname, file});
-        return new StringBuffer(1024).append(l1).append(l2).append(l3).toString();
+        return new StringBuilder(1024).append(l1).append(l2).append(l3).toString();
     }
 
     /** Generate the code for COMPLEX_MAKE_TARGETS and COMPLEX_CUSTOM_TARGETS */
@@ -1401,7 +1401,7 @@ public class MakefileGenerator {
      *  @return The object file name
      */
     private String objectOf(String file) {
-        StringBuffer obj = new StringBuffer(80);
+        StringBuilder obj = new StringBuilder(80);
         int start = file.lastIndexOf('/') + 1;
         int dot = file.substring(start).lastIndexOf('.');
 
@@ -1427,7 +1427,7 @@ public class MakefileGenerator {
      *  @param type The type (Executable or SharedLib)
      */
     private String linkLine(TargetData t, int type) throws IOException {
-        StringBuffer lbuf = new StringBuffer(256);
+        StringBuilder lbuf = new StringBuilder(256);
         String linker;
         String flags;
 
@@ -1475,7 +1475,7 @@ public class MakefileGenerator {
      *  during the compile.
      */
     private String xdLinkMagic(TargetData t) {
-        StringBuffer lbuf = new StringBuffer(256);
+        StringBuilder lbuf = new StringBuilder(256);
 
         String[] srcs = t.getSourcesList();
         for (int i = 0; i < srcs.length; i++) {
@@ -1499,7 +1499,7 @@ public class MakefileGenerator {
      *  Gather special Xd link depenencies
      */
     private String xdLinkDependencies(TargetData t) {
-        StringBuffer lbuf = new StringBuffer(256);
+        StringBuilder lbuf = new StringBuilder(256);
 
         String[] srcs = t.getSourcesList();
         for (int i = 0; i < srcs.length; i++) {
@@ -1681,12 +1681,12 @@ public class MakefileGenerator {
      *  @param list	An array of Strings, where each String is a list item
      */
     private String doList(String var, String prefix, String[] list) {
-        StringBuffer lbuf = new StringBuffer(256);
+        StringBuilder lbuf = new StringBuilder(256);
 
         if (prefix == null) {
             prefix = " \\\n\t";						// NOI18N
         } else {
-            prefix = new StringBuffer(" \\\n\t").append(prefix).toString();	// NOI18N
+            prefix = new StringBuilder(" \\\n\t").append(prefix).toString();	// NOI18N
         }
 
         lbuf.append(var);
@@ -1701,7 +1701,7 @@ public class MakefileGenerator {
 
     /** Generate target-specific flag variables for each language needing one */
     private String generateTargetFlags(TargetData t) {
-        StringBuffer flagsSun = new StringBuffer(80);
+        StringBuilder flagsSun = new StringBuilder(80);
 
         /*
          * See if we have shared per-target flags (these are flags which are
@@ -1748,8 +1748,8 @@ public class MakefileGenerator {
         for (int i = 0; i < srcs.length; i++) {
             int dot = srcs[i].lastIndexOf('.');
             if (dot >= 0) {
-                StringBuffer obj =
-                        new StringBuffer(srcs[i].substring(0, dot + 1));
+                StringBuilder obj =
+                        new StringBuilder(srcs[i].substring(0, dot + 1));
                 obj.append('o');
                 objs[i] = new String(obj);
             }
@@ -1896,7 +1896,7 @@ public class MakefileGenerator {
     /** Get a timestamp in the current locale */
     private String getTimestamp() {
         Date date = new Date();
-        StringBuffer timestamp = new StringBuffer(80);
+        StringBuilder timestamp = new StringBuilder(80);
 
         timestamp.append(DateFormat.getDateInstance().format(date));
         timestamp.append(" ");						// NOI18N
