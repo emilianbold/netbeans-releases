@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -96,10 +97,12 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
      * For {@link HudsonInstanceImpl} to refresh after the workspace has been synchronized.
      */
     void refreshAll() {
-        lastModified.clear();
-        size.clear();
-        isDir.clear();
-        headers.clear();
+        synchronized (nonDirs) {
+            nonDirs.clear();
+            lastModified.clear();
+            size.clear();
+            headers.clear();
+        }
         for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
             LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {job, f.getPath()});
             f.refresh();
@@ -114,9 +117,13 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         return true;
     }
 
+    /**
+     * List of paths known to be data files.
+     * Also used as a general lock for metadata accesses.
+     */
+    private final Set<String> nonDirs = new HashSet<String>();
     private final Map<String,Long> lastModified = new HashMap<String,Long>();
     private final Map<String,Integer> size = new HashMap<String,Integer>();
-    private final Map<String,Boolean> isDir = new HashMap<String,Boolean>();
     private final Map<String,byte[]> headers = new HashMap<String,byte[]>();
 
     public String[] children(String f) {
@@ -138,10 +145,11 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
                 if (line.endsWith("/")) {
                     String n = line.substring(0, line.length() - 1);
                     kids.add(n);
-                    isDir.put(fSlash + n, true);
                 } else {
                     kids.add(line);
-                    isDir.put(fSlash + line, false);
+                    synchronized (nonDirs) {
+                        nonDirs.add(fSlash + line);
+                    }
                 }
             }
             LOG.log(Level.FINE, "children: {0} -> {1}", new Object[] {url, kids});
@@ -153,11 +161,16 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
     }
 
     public boolean folder(String name) {
-        assert isDir.containsKey(name) : name + " not in " + isDir;
-        return isDir.get(name);
+        // #157062: if it was not encountered before, assume it was a folder,
+        // as this is safest (children(name) will later return {}).
+        // May happen for files which are deleted on the server.
+        synchronized (nonDirs) {
+            return !nonDirs.contains(name);
+        }
     }
 
     private URLConnection connection(String name) throws IOException {
+        assert Thread.holdsLock(nonDirs);
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {job, name});
         URLConnection conn = new URL(baseURL, name).openConnection();
         lastModified.put(name, conn.getLastModified());
@@ -181,54 +194,52 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
     }
 
     public Date lastModified(String name) {
-        if (name.equals("")) {
-            return new Date(0);
-        }
-        assert isDir.containsKey(name) : name + " not in " + isDir;
-        if (isDir.get(name)) {
-            return new Date(0);
-        }
-        if (!lastModified.containsKey(name)) {
-            try {
-                connection(name);
-            } catch (IOException x) {
-                LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+        synchronized (nonDirs) {
+            if (folder(name)) {
                 return new Date(0);
             }
+            if (!lastModified.containsKey(name)) {
+                try {
+                    connection(name);
+                } catch (IOException x) {
+                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+                    return new Date(0);
+                }
+            }
+            return new Date(lastModified.get(name));
         }
-        return new Date(lastModified.get(name));
     }
 
     public long size(String name) {
-        if (name.equals("")) {
-            return 0;
-        }
-        assert isDir.containsKey(name) : name + " not in " + isDir;
-        if (isDir.get(name)) {
-            return 0;
-        }
-        if (!size.containsKey(name)) {
-            try {
-                connection(name);
-            } catch (IOException x) {
-                LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+        synchronized (nonDirs) {
+            if (folder(name)) {
                 return 0;
             }
+            if (!size.containsKey(name)) {
+                try {
+                    connection(name);
+                } catch (IOException x) {
+                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+                    return 0;
+                }
+            }
+            return size.get(name);
         }
-        return size.get(name);
     }
 
     public InputStream inputStream(String name) throws FileNotFoundException {
-        byte[] header = headers.get(name);
-        if (header != null) {
-            LOG.log(Level.FINE, "cached inputStream: {0}", name);
-            return new ByteArrayInputStream(header);
-        }
-        LOG.log(Level.FINE, "inputStream: {0}", name);
-        try {
-            return connection(name).getInputStream();
-        } catch (IOException x) {
-            throw (FileNotFoundException) new FileNotFoundException(x.getMessage()).initCause(x);
+        synchronized (nonDirs) {
+            byte[] header = headers.get(name);
+            if (header != null) {
+                LOG.log(Level.FINE, "cached inputStream: {0}", name);
+                return new ByteArrayInputStream(header);
+            }
+            LOG.log(Level.FINE, "inputStream: {0}", name);
+            try {
+                return connection(name).getInputStream();
+            } catch (IOException x) {
+                throw (FileNotFoundException) new FileNotFoundException(x.getMessage()).initCause(x);
+            }
         }
     }
 
