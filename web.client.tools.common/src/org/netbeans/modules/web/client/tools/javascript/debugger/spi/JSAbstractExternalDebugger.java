@@ -132,7 +132,8 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
         //Start the suspension point handler thread
         startSuspensionThread();
-        
+        startHttpMonitorThread();
+
         return true;
     }
     

@@ -73,15 +73,6 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
             Exceptions.printStackTrace(ex);
         }        
     }
-    
-    @Override
-    protected boolean startDebuggingImpl() {
-        boolean result = super.startDebuggingImpl();
-        if (result) {
-            startHttpMonitorThread();
-        }
-        return result;
-    }
 
     public String getID() {
         if (ID == null) {
