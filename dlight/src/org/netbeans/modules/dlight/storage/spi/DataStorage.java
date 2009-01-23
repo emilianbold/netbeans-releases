@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.storage.spi;
 
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import java.util.ArrayList;
@@ -47,12 +46,12 @@ import java.util.List;
 /**
  * DataStorage stores information collected by DataCollectors.
  *
- * {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType} is
+ * {@link org.netbeans.modules.dlight.storage.spi.DataStorageType} is
  * used to identify the way of communication with DataStorage
- * thus {@link org.netbeans.modules.dlight.core.collector.model.DataCollector}
- * that whant to store some information into the DataStorage
- * need to support the same {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}.
- * The same is for {@link org.netbeans.modules.dlight.core.dataprovider.model.DataProvider},
+ * thus {@link org.netbeans.modules.dlight.collector.spi.DataCollector}
+ * that want to store some information into the DataStorage
+ * need to support the same {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}.
+ * The same is for {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider},
  * that wants to read data from the DataStorage.
  */
 public abstract class DataStorage {
@@ -66,7 +65,7 @@ public abstract class DataStorage {
     /**
      * Checks if storage contains data described by <param>data</param>
      * @param data data to check in storage. In case <param>data</param>
-     * describes some virtual table and its {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata#getSourceTables()} method
+     * describes some virtual table and its {@link org.netbeans.modules.dlight.storage.api.DataTableMetadata#getSourceTables()} method
      * returns not empty list, this method will check if all source tables this virtual table(view)
      * is built from  exists in the storage.
      * @return <code>true</code> if storage contains <param>data</param>,
@@ -102,8 +101,12 @@ public abstract class DataStorage {
      * Factory method
      * @return
      */
-    public abstract DataStorage newInstance();
+    public abstract DataStorage newInstance();//TODO : remove from obeject: create Factory!!
 
+    /**
+     * Unique ID
+     * @return unique
+     */
     public abstract String getID();
 
     /**
@@ -116,13 +119,28 @@ public abstract class DataStorage {
 
     protected abstract boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas);
 
+    /**
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
+     * soprage.
+     * @param tableName table name to add data into
+     * @param data data to add
+     */
     public abstract void addData(String tableName, List<DataRow> data);
 
-    public boolean supportsType(DataStorageType storageType) {
+    /**
+     * Checks if DataStorage supports {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}
+     * @param storageType storage type to check
+     * @return <code>true</code> if storage supports storageType, <code>false</code> otherwise
+     */
+    public final boolean supportsType(DataStorageType storageType) {
         return getStorageTypes() != null && getStorageTypes().contains(storageType);
     }
 
-    public void createTables(List<? extends DataTableMetadata> tableMetadatas) {
+    /**
+     * Creates tables: invoked to create {@link org.netbeans.modules.dlight.storage.api.DataTableMetadata} needed
+     * @param tableMetadatas tables decsription to create in the storage
+     */
+    public final void createTables(List<? extends DataTableMetadata> tableMetadatas) {
         if (createTablesImpl(tableMetadatas)) {
             tablesMetadata.addAll(tableMetadatas);
         }

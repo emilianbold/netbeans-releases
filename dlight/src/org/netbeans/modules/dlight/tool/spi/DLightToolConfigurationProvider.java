@@ -45,7 +45,7 @@ import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
  * Implement this interface whenever you want to create new {@link @org-netbeans-modules-dlight
  * DLightTool instance will be created for
  * To register your D-Light tool configuration provider add the following to the D-Light filesystem
- * (layer.xml file)
+ * (layer.xml file).
  * <pre>
  * &lt;filesystem&gt;
     &lt;folder name="DLight"&gt;

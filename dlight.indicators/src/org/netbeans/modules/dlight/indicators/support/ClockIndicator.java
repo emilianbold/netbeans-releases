@@ -87,9 +87,9 @@ public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
     
     private void update() {
       int seconds = (int) currentTime / SECOND_IN_MILLISECONDS;
-      int hours = (int) seconds / (60 * 60);
-      int minutes = (int) (seconds - hours * 60 * 60) / 60;
-      int real_seconds = (int) (seconds - hours * 60 * 60 - minutes * 60);
+      int hours = seconds / (60 * 60);
+      int minutes = (seconds - hours * 60 * 60) / 60;
+      int real_seconds = (seconds - hours * 60 * 60 - minutes * 60);
       String timerStr = (hours < 10 ? "0" : "") + hours +
           ":" + (minutes < 10 ? "0" : "") + minutes +
           ":" + (real_seconds < 10 ? "0" : "") + real_seconds;

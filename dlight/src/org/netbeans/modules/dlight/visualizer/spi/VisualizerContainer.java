@@ -40,9 +40,23 @@
 package org.netbeans.modules.dlight.visualizer.spi;
 
 
-
+/**
+ * Container to put Visualizer in
+ */
 public interface VisualizerContainer {
+  /**
+   * Adds new visualizer to container for tool with the name <code>toolName</code>
+   * @param toolName toolname
+   * @param v visualizer
+   */
   public void addVisualizer(String toolName, Visualizer v);
+  /**
+   * Removed visualizer from the container
+   * @param v visualizer to remove
+   */
   public void removeVisualizer(Visualizer v);
+  /**
+   * Show container
+   */
   public void showup();
 }

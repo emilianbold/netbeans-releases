@@ -191,7 +191,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                     case CPPTokenTypes.CSM_FIELD:
                         child = token.getFirstChild();
-                        if (child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                        if (hasFriendPrefix(child)) {
                             addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(), ClassImpl.this));
                         } else {
                             if (renderVariable(token, null, null, false)) {
@@ -233,7 +233,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
                         child = token.getFirstChild();
                         if (child != null) {
-                            if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                            if (hasFriendPrefix(child)) {
                                 try {
                                     CsmScope scope = ClassImpl.this.getScope();
                                     CsmFriendFunction friend;
@@ -271,7 +271,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
                         child = token.getFirstChild();
-                        if (child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                        if (hasFriendPrefix(child)) {
                             try {
                                 CsmScope scope = ClassImpl.this.getScope();
                                 CsmFriendFunction friend;
@@ -313,6 +313,22 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
+        }
+
+        private boolean hasFriendPrefix(AST child) {
+            if (child == null) {
+                return false;
+            }
+            if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                return true;
+            } else if (child.getType() == CPPTokenTypes.LITERAL_template) {
+                final AST nextSibling = child.getNextSibling();
+                if (nextSibling != null && nextSibling.getType() == CPPTokenTypes.LITERAL_friend) {
+                    // friend template declaration
+                    return true;
+                }
+            }
+            return false;
         }
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token) {

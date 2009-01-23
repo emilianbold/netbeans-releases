@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.indicator.spi;
 
-import org.netbeans.modules.dlight.indicator.api.*;
 import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -46,6 +45,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
+import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicator.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.storage.api.DataRow;
@@ -54,7 +56,16 @@ import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 
 /**
  * Indicator is a small, graphical, real-time monitor
- * which shows some piece of info 
+ * which shows some piece of info.
+ *
+ * To provide own Indicator you should do the following:
+ * <ul>
+ *  <li> Create own org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration
+ *  <li> Extend Indicator with the specialization for your configuration
+ *  <li> Create and register in Global Lookup factory to create
+ *   your Indicator instance: {@link org.netbeans.modules.dlight.indicator.spi.IndicatorFactory}
+ * </ul>
+ *
  */
 public abstract class Indicator<T extends IndicatorConfiguration> {
   

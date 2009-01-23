@@ -349,6 +349,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.spring</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
+                <friend>org.netbeans.modules.selenium.maven</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>

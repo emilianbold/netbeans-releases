@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.dlight.storage.spi;
 
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import java.util.HashMap;
 
 /**
- *
- * @author masha
+ *This is factory to get instance of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType} object
  */
 public final class DataStorageTypeFactory {
   private static DataStorageTypeFactory instance = null;
