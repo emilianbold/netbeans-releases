@@ -38,15 +38,9 @@
  */
 package org.netbeans.modules.dlight.memory;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.text.NumberFormat;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 
 
@@ -77,43 +71,5 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
         DataRow lastRow = data.get(data.size() - 1);
         String value = lastRow.getStringValue(colName); //TODO: change to Long
         panel.setValue(Long.parseLong(value));
-    }
-
-    private static class MemoryIndicatorPanel extends JPanel {
-
-        private final JLabel label;
-        private final JLabel data;
-        private final NumberFormat nf;
-
-        MemoryIndicatorPanel() {
-            nf = NumberFormat.getNumberInstance();
-            nf.setMinimumFractionDigits(0);
-            nf.setMaximumFractionDigits(0);
-
-            label = new JLabel("Heap size: ");
-            data = new JLabel(""); //NOI18N
-
-            setLayout(new GridBagLayout());
-            GridBagConstraints gridBagConstraints;
-
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-            add(label, gridBagConstraints);
-
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-            add(data, gridBagConstraints);
-
-        }
-
-        void setValue(long value) {
-            value = value / 1000 + (value % 1000 >= 500 ? 1 : 0);
-            String text = nf.format(value) + " Kb";
-            data.setText(text);
-        }
     }
 }

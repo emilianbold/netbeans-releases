@@ -554,6 +554,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
 /////////////////////////////////////////////////////////////////////////////
         try {
+            if(SystemUtils.isWindows()) {
+                progress.setDetail(getString("CL.uninstall.stop.derby")); // NOI18N
+
+                GlassFishUtils.stopDerby(directory);
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.stop.derby"), // NOI18N
+                    e);
+        }
+
+
+/////////////////////////////////////////////////////////////////////////////
+        try {
             progress.setDetail(getString("CL.uninstall.extra.files")); // NOI18N
 
             if (SystemUtils.isWindows()) {
