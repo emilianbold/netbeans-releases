@@ -106,7 +106,8 @@ public class JavadocOutputProcessor implements OutputProcessor {
         
         public void outputLineAction(OutputEvent arg0) {
             File javadoc = FileUtil.normalizeFile(new File(root));
-            FileObject fo = FileUtilities.toFileObject(javadoc);
+            FileUtil.refreshFor(javadoc);
+            FileObject fo = FileUtil.toFileObject(javadoc);
             if (fo != null) {
                 FileObject index = fo.getFileObject("index.html"); //NOI18N
                 if (index != null) {

@@ -7,7 +7,7 @@
             <suite-component/>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -15,7 +15,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.nativeexecution</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -62,12 +62,17 @@
             <public-packages>
                 <package>org.netbeans.modules.dlight.collector.api</package>
                 <package>org.netbeans.modules.dlight.dataprovider.api</package>
+                <package>org.netbeans.modules.dlight.dataprovider.spi</package>
                 <package>org.netbeans.modules.dlight.execution.api</package>
                 <package>org.netbeans.modules.dlight.indicator.api</package>
+                <package>org.netbeans.modules.dlight.indicator.impl</package>
+                <package>org.netbeans.modules.dlight.indicator.spi</package>
                 <package>org.netbeans.modules.dlight.model</package>
                 <package>org.netbeans.modules.dlight.storage.api</package>
                 <package>org.netbeans.modules.dlight.tool.api</package>
+                <package>org.netbeans.modules.dlight.tool.spi</package>
                 <package>org.netbeans.modules.dlight.visualizer.api</package>
+                <package>org.netbeans.modules.dlight.visualizer.spi</package>
             </public-packages>
         </data>
     </configuration>

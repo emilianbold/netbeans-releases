@@ -39,6 +39,9 @@
 
 package org.netbeans.api.extexecution.print;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Parameters;
 import org.openide.windows.OutputListener;
 
@@ -69,7 +72,8 @@ public final class ConvertedLine {
      * @param listener line listener to register, may be <code>null</code>
      * @return converted line
      */
-    public static ConvertedLine forText(String text, OutputListener listener) {
+    @NonNull
+    public static ConvertedLine forText(@NonNull String text, @NullAllowed OutputListener listener) {
         Parameters.notNull("text", text);
         return new ConvertedLine(text, listener);
     }
@@ -79,6 +83,7 @@ public final class ConvertedLine {
      *
      * @return the text to display
      */
+    @NonNull
     public String getText() {
         return text;
     }
@@ -90,6 +95,7 @@ public final class ConvertedLine {
      * @return the corresponding listener for actions taken on the line
      *             or <code>null</code>
      */
+    @CheckForNull
     public OutputListener getListener() {
         return listener;
     }

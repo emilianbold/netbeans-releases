@@ -47,7 +47,9 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring}
@@ -67,10 +69,20 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      * @param selectedObject field to encapsulate, whatever tree of class
      *          containing trees to encapsulate
      */
-    public EncapsulateFieldsRefactoring(CsmObject selectedObject) {
-        super(Lookups.fixed(selectedObject));
+    public EncapsulateFieldsRefactoring(CsmObject selectedObject, CsmContext editorContext) {
+        super(createLookup(selectedObject, editorContext));
     }
-    
+
+    private static Lookup createLookup(CsmObject selectedObject, CsmContext editorContext) {
+        assert selectedObject != null || editorContext != null: "must be non null object to refactor";
+        if (editorContext == null) {
+            return Lookups.fixed(selectedObject);
+        } else if (selectedObject == null) {
+            return Lookups.fixed(editorContext);
+        } else {
+            return Lookups.fixed(selectedObject, editorContext);
+        }
+    }
     /**
      * Getter for property refactorFields
      * @return Value of refactorFields

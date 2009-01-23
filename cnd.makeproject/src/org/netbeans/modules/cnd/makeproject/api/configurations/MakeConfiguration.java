@@ -406,6 +406,10 @@ public class MakeConfiguration extends Configuration {
         return (Configuration) clone();
     }
 
+    /**
+     * Make a copy of configuration requested from Project Properties
+     * @return Copy of configuration
+     */
     public Configuration copy() {
         MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
         copy.assign(this);
@@ -430,7 +434,9 @@ public class MakeConfiguration extends Configuration {
         return copy;
     }
 
-    // Cloning
+    /**
+     * Clone object
+     */
     @Override
     public Object clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());

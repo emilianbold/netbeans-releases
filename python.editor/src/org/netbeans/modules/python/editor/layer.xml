@@ -447,6 +447,7 @@
             </file>
 
             <file name="_setup.py" url="templates/setup.py.ftl">
+                <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="false"></attr>
             </file>

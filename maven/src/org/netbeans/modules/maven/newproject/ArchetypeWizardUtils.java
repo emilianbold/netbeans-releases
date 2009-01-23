@@ -69,8 +69,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -99,69 +103,54 @@ public class ArchetypeWizardUtils {
 
     public static final String[] EE_LEVELS = new String[] {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE13") //NOI18N
+        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
     };
 
     static {
-        WEB_APP_ARCHS = new Archetype[3];
+        WEB_APP_ARCHS = new Archetype[2];
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("webapp-jee5"); //NOI18N
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("webapp-j2ee14"); //NOI18N
         WEB_APP_ARCHS[1] = arch;
 
+        EJB_ARCHS = new Archetype[2];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-        arch.setArtifactId("webapp-j2ee13"); //NOI18N
-        WEB_APP_ARCHS[2] = arch;
-
-        EJB_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ejb-jee5"); //NOI18N
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
         EJB_ARCHS[1] = arch;
 
+        EAR_ARCHS = new Archetype[2];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-        arch.setArtifactId("ejb-j2ee13"); //NOI18N
-        EJB_ARCHS[2] = arch;
-
-        EAR_ARCHS = new Archetype[1];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("file:///home/dafe/.m2/repository"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
         EAR_ARCHS[0] = arch;
 
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
+        arch.setArtifactId("ear-j2ee14"); //NOI18N
+        EAR_ARCHS[1] = arch;
+
         EA_ARCH = new Archetype();
         EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        EA_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
-        EA_ARCH.setRepository("file:///home/dafe/.m2/repository"); //NOI18N
-        EA_ARCH.setArtifactId("ea-root"); //NOI18N
+        EA_ARCH.setVersion("1.0"); //NOI18N
+        EA_ARCH.setArtifactId("pom-root"); //NOI18N
     }
 
 
@@ -277,7 +266,7 @@ public class ArchetypeWizardUtils {
                 NBVersionInfo web_vi = (NBVersionInfo)wiz.getProperty("web_versionInfo");
                 NBVersionInfo ejb_vi = (NBVersionInfo)wiz.getProperty("ejb_versionInfo");
 
-                handle.start(7 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
+                handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
                 File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi,
                         (Archetype)wiz.getProperty("archetype"), additional, 0);
                 createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi,
@@ -293,6 +282,9 @@ public class ArchetypeWizardUtils {
                             (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter);
                     progressCounter += 3;
                 }
+                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
+                updateProjectName(rootFile,
+                        NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.getArtifactId()));
                 return openProjects(handle, rootFile, progressCounter);
             } else {
                 // other wizards, just one archetype
@@ -380,6 +372,36 @@ public class ArchetypeWizardUtils {
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void addEARDeps (File earDir, NBVersionInfo ejbVi, NBVersionInfo webVi, int progressCounter) {
+        FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
+        if (earDirFO == null) {
+            return;
+        }
+        if (ejbVi != null) {
+            // EAR ---> ejb
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.getGroupId(),
+                    ejbVi.getArtifactId(), ejbVi.getVersion(), ejbVi.getType(), null, null, true);
+        }
+        if (webVi != null) {
+            // EAR ---> war
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.getGroupId(),
+                    webVi.getArtifactId(), webVi.getVersion(), webVi.getType(), null, null, false);
+        }
+        progressCounter++;
+    }
+
+    private static void updateProjectName (final File projDir, final String newName) {
+        FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml"));
+        if (pomFO != null) {
+            ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
+                public void performOperation(POMModel model) {
+                    model.getProject().setName(newName);
+                }
+            };
+            Utilities.performPOMModelOperations(pomFO, Collections.singletonList(op));
         }
     }
 

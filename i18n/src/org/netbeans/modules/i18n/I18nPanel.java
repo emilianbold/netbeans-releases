@@ -277,28 +277,30 @@ public class I18nPanel extends JPanel {
             // look for peer Bundle.properties
             FileObject fo = dataObject.getPrimaryFile();
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            
-            FileObject folder = cp.findResource(cp.getResourceName(fo.getParent()));
-            
-            while (folder != null && cp.contains(folder)) {
+
+            if (cp != null) {
+                FileObject folder = cp.findResource(cp.getResourceName(fo.getParent()));
+
+                while (folder != null && cp.contains(folder)) {
                 
-                String rn = cp.getResourceName(folder) + "/Bundle.properties"; // NOI18N
+                    String rn = cp.getResourceName(folder) + "/Bundle.properties"; // NOI18N
                 
-                FileObject peer = cp.findResource(rn);
-                if (peer != null) {
-                    try {
-                        DataObject peerDataObject = DataObject.find(peer);
-//                        ((ResourcePanel)resourcePanel).setResource(peerDataObject);
-                        propertyPanel.setResource(peerDataObject);
-                        return;
-                    } catch (IOException ex) {
-                        // no default resource
+                    FileObject peer = cp.findResource(rn);
+                    if (peer != null) {
+                        try {
+                            DataObject peerDataObject = DataObject.find(peer);
+//                          ((ResourcePanel)resourcePanel).setResource(peerDataObject);
+                            propertyPanel.setResource(peerDataObject);
+                            return;
+                        } catch (IOException ex) {
+                            // no default resource
+                        }
                     }
+                    folder = folder.getParent();
                 }
-                folder = folder.getParent();
-            }            
-        }        
-    }
+            }
+        }
+    }        
     
     /** Creates <code>ResourcePanel</code>. */
 //    private JPanel createResourcePanel() {

@@ -1195,13 +1195,13 @@ abstract public class CsmCompletionQuery {
                                             cont = false;
                                         } else {
                                             List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, skipConstructors, sort);
-                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
+                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
                                             if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
-                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, false, sort);
+                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
                                                 res.addAll(baseClasses);
                                             }
                                             result = new CsmCompletionResult(

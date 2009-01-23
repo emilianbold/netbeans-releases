@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.refactoring.codegen.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 
 /**
  * based on org.netbeans.modules.java.hints.errors.Utilities

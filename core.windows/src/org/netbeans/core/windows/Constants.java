@@ -75,9 +75,11 @@ public abstract class Constants {
     public static final String BOTTOM = JSplitPane.BOTTOM;
     public static final String LEFT   = JSplitPane.LEFT;
     public static final String RIGHT  = JSplitPane.RIGHT;
-    
+
+    /** Default value when value is not provided by UIManager */
     public static final int DIVIDER_SIZE_VERTICAL   = 4;
-    public static final int DIVIDER_SIZE_HORIZONTAL = 5;
+    /** Default value when value is not provided by UIManager */
+    public static final int DIVIDER_SIZE_HORIZONTAL = 4;
 
     /** Sets size of drop area (when splitting mode and around area). */
     public static final int DROP_AREA_SIZE = 20;
