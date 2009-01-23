@@ -39,6 +39,12 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.util.Exceptions;
+
 /**
  * @author Jan Becicka
  * @author maros
@@ -132,7 +138,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblNoAccount)
                     .add(register))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -148,5 +154,14 @@ public class LoginPanel extends javax.swing.JPanel {
     javax.swing.JLabel register;
     javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
+
+    public char[] getPassword() {
+        return password.getPassword();
+    }
+
+    public String getUsername() {
+        return username.getText();
+    }
+
 
 }

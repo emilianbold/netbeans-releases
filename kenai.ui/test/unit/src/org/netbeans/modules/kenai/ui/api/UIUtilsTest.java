@@ -39,31 +39,38 @@
 
 package org.netbeans.modules.kenai.ui.api;
 
-import java.awt.Font;
-import javax.swing.JTextPane;
-import javax.swing.UIManager;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.StyleSheet;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
- * not final
+ *
  * @author Jan Becicka
  */
-public final class UIUtils {
-    public static final JTextPane createHTMLPane() {
-        JTextPane textPane = new JTextPane();
-        textPane.setContentType("text/html");
-        Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+public class UIUtilsTest {
 
-        final StyleSheet styleSheet = ((HTMLDocument) textPane.getDocument()).getStyleSheet();
-
-        styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".green {color: green;}");
-        styleSheet.addRule(".red {color: red;");
-        textPane.setEditable(false);
-        textPane.setBackground(UIManager.getColor("TextPane.background"));
-        return textPane;
+    public UIUtilsTest() {
     }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    /**
+     * Test of createHTMLPane method, of class UIUtils.
+     */
+    @Test
+    public void testCreateHTMLPane() {
+//        System.out.println("createHTMLPane");
+//        JTextPane expResult = null;
+//        JTextPane result = UIUtils.createHTMLPane();
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+    }
+
 }

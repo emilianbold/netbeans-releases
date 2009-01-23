@@ -36,34 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.kenai.ui.api;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 
-import java.awt.Font;
-import javax.swing.JTextPane;
-import javax.swing.UIManager;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.StyleSheet;
 
 /**
- * not final
  * @author Jan Becicka
  */
-public final class UIUtils {
-    public static final JTextPane createHTMLPane() {
-        JTextPane textPane = new JTextPane();
-        textPane.setContentType("text/html");
-        Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+public final class LoginAction implements ActionListener {
 
-        final StyleSheet styleSheet = ((HTMLDocument) textPane.getDocument()).getStyleSheet();
-
-        styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".green {color: green;}");
-        styleSheet.addRule(".red {color: red;");
-        textPane.setEditable(false);
-        textPane.setBackground(UIManager.getColor("TextPane.background"));
-        return textPane;
+    public void actionPerformed(ActionEvent e) {
+        final LoginPanel loginPanel = new LoginPanel();
+        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"},"Login", DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(login);
+        d.setVisible(true);
+        if (login.getValue().equals("Login")) {
+            try {
+                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+                return;
+            }
+        }
+        final KenaiTopComponent kenaiTC = KenaiTopComponent.getDefault();
+        kenaiTC.open();
+        kenaiTC.requestActive();
     }
 }
