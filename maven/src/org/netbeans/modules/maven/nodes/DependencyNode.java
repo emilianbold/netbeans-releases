@@ -74,11 +74,15 @@ import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import hidden.org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
+import java.util.Set;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
+import org.netbeans.modules.maven.dependencies.DependencyTreeFactory;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
@@ -611,55 +615,62 @@ public class DependencyNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            List trail = art.getDependencyTrail();
-            String str = (String) trail.get(1);
-            final StringTokenizer tok = new StringTokenizer(str, ":"); //NOI18N
-            final String groupId = tok.nextToken();
-            final String artifactId = tok.nextToken();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    runModifyExclusions();
+                }
+            });
+        }
+
+        private void runModifyExclusions() {
+            org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), "test");
+            DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
+            rootnode.accept(nv);
+            final Set<org.apache.maven.shared.dependency.tree.DependencyNode> nds = nv.getDirectDependencies();
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 public void performOperation(POMModel model) {
-                    org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(groupId, artifactId, null);
-                    if (dep == null) {
-                        // now check the active profiles for the dependency..
-                        List<String> profileNames = new ArrayList<String>();
-                        Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
-                        while (it.hasNext()) {
-                            Profile prof = (Profile) it.next();
-                            profileNames.add(prof.getId());
-                        }
-                        for (String profileId : profileNames) {
-                            org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
-                            if (modProf != null) {
-                                dep = modProf.findDependencyById(groupId, artifactId, null);
-                                if (dep != null) {
-                                    break;
+                    for (org.apache.maven.shared.dependency.tree.DependencyNode nd : nds) {
+                        Artifact directArt = nd.getArtifact();
+                        org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
+                        if (dep == null) {
+                            // now check the active profiles for the dependency..
+                            List<String> profileNames = new ArrayList<String>();
+                            Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                            while (it.hasNext()) {
+                                Profile prof = (Profile) it.next();
+                                profileNames.add(prof.getId());
+                            }
+                            for (String profileId : profileNames) {
+                                org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
+                                if (modProf != null) {
+                                    dep = modProf.findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
+                                    if (dep != null) {
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (dep == null) {
-                        dep = model.getFactory().createDependency();
-                        dep.setArtifactId(artifactId);
-                        dep.setGroupId(groupId);
-                        dep.setType(tok.nextToken());
-                        dep.setVersion(tok.nextToken());
-                        model.getProject().addDependency(dep);
-                        //mkleint: TODO why is the dependency being added? i forgot already..
-                    }
-                    Exclusion ex = dep.findExclusionById(art.getGroupId(), art.getArtifactId());
-                    if (ex == null) {
-                        Exclusion exclude = model.getFactory().createExclusion();
-                        exclude.setArtifactId(art.getArtifactId());
-                        exclude.setGroupId(art.getGroupId());
-                        dep.addExclusion(exclude);
+                        if (dep == null) {
+                            dep = model.getFactory().createDependency();
+                            dep.setArtifactId(directArt.getArtifactId());
+                            dep.setGroupId(directArt.getGroupId());
+                            dep.setType(directArt.getType());
+                            dep.setVersion(directArt.getVersion());
+                            model.getProject().addDependency(dep);
+                            //mkleint: TODO why is the dependency being added? i forgot already..
+                        }
+                        Exclusion ex = dep.findExclusionById(art.getGroupId(), art.getArtifactId());
+                        if (ex == null) {
+                            Exclusion exclude = model.getFactory().createExclusion();
+                            exclude.setArtifactId(art.getArtifactId());
+                            exclude.setGroupId(art.getGroupId());
+                            dep.addExclusion(exclude);
+                        }
                     }
                 }
             };
-
             FileObject fo = FileUtil.toFileObject(project.getPOMFile());
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-            //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
         }
     }
 
