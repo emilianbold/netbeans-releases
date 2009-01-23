@@ -36,40 +36,21 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-
+package org.netbeans.modules.dlight.indicators.graph;
 
 /**
- * Mmory usage indicator
+ * Displays a percentage graph
  * @author Vladimir Kvashin
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public class PercentageGraph extends Graph {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
-
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
-        super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
+    public PercentageGraph(GraphDescriptor... descriptors) {
+        super(100, descriptors);
     }
 
     @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        DataRow lastRow = data.get(data.size() - 1);
-        String value = lastRow.getStringValue(colName); //TODO: change to Long
-        panel.setValue(Long.parseLong(value));
+    protected String formatValue(int value) {
+        return String.format("%3d%%", value);
     }
 }

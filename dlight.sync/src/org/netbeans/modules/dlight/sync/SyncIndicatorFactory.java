@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
 
-import java.util.List;
-import javax.swing.JComponent;
+package org.netbeans.modules.dlight.sync;
+
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-
+import org.netbeans.modules.dlight.indicator.spi.IndicatorFactory;
 
 /**
- * Mmory usage indicator
+ *
  * @author Vladimir Kvashin
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public class SyncIndicatorFactory implements IndicatorFactory<SyncIndicatorConfiguration> {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
+  @Override
+  public Indicator<SyncIndicatorConfiguration> create(SyncIndicatorConfiguration configuration) {
+    return new SyncIndicator(configuration);
+  }
 
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
-        super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
-    }
+  @Override
+  public String getID() {
+    return SyncIndicatorConfiguration.ID;
+  }
 
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        DataRow lastRow = data.get(data.size() - 1);
-        String value = lastRow.getStringValue(colName); //TODO: change to Long
-        panel.setValue(Long.parseLong(value));
-    }
 }

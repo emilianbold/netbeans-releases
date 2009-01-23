@@ -36,31 +36,31 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
+package org.netbeans.modules.dlight.sync;
 
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.storage.api.DataRow;
-
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
  * Mmory usage indicator
  * @author Vladimir Kvashin
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
+    private SyncIndicatorPanel panel;
 
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
+    public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
     }
 
     @Override
-    public JComponent getComponent() {
+    public synchronized JComponent getComponent() {
+        if (panel == null) {
+            panel = new SyncIndicatorPanel();
+        }
         return panel;
     }
 
@@ -68,8 +68,17 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> data) {
-        DataRow lastRow = data.get(data.size() - 1);
-        String value = lastRow.getStringValue(colName); //TODO: change to Long
-        panel.setValue(Long.parseLong(value));
+        List<Column> indicatorColumns = getMetadataColumns();
+        int[][] values = new int[data.size()][indicatorColumns.size()];
+        int rowIdx = 0;
+        for (DataRow row : data) {
+            int colIdx = 0;
+            for (Column column : indicatorColumns) {
+                String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
+                values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
+            }
+            panel.updated(values);
+            rowIdx++;
+        }
     }
 }
