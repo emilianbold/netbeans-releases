@@ -146,7 +146,7 @@ public final class HostInfo {
         } catch (ExecutionException ex) {
             error = ex.getMessage();
         }
-        
+
         return result == 0 ? taskOutput.toString().trim() : "Error: " + error; // NOI18N
     }
 
