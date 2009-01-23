@@ -43,57 +43,25 @@ import org.netbeans.modules.dlight.storage.spi.DataStorage;
 
 
 /**
- * Provides the data to the {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer}.
- * Use Global Lookup to regitser your  own DataProvider.
- * DataProvider represents also a factory to create instances using
- * {@link  #newInstance()} method
+ * Provides the data to the {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}.
+ * Along with DataProvider SPI impplementator should implement
+ * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory} which
+ * will be used to create the data provider instance
+ *
  */
 
 public interface DataProvider {
-//  /**
-//   * Unique provider id
-//   * @return unique provider id
-//   */
-//  public String getID();
-//  /**
-//   * Returns the list of {@link org.netbeans.modules.dlight.core.dataprovider.model.DataModelScheme}
-//   * this data provider can serve.
-//   * @return the list of data model this DataProvider can serve
-//   */
-//  public List<? extends DataModelScheme> getProvidedDataModelScheme();
-//
-//  /**
-//   * Checks if DataProvider can provider information according to
-//   * te <param>dataModel</param>
-//   * @param dataModel
-//   * @return <code>true</code> if DataProvider provides information required
-//   * by <param>dataModel</param>
-//   */
-//  public boolean provides(DataModelScheme dataModel);
-//
-//  /**
-//   * The types of {@link org.netbeans.modules.dlight.core.storage.model.DataStorage} this
-//   *  DataProvider can get data from
-//   * @return the list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
-//   *  supported by this DataProvider
-//   */
-//  public List<DataStorageType> getSupportedDataStorageTypes();
 
   /**
    * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer} will
+   * All data requested by {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer} will
    * be extracted from this storage. This method is invoked at the time Visualizer
-   * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
-   * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}.
-   * Please do not call this method directly.
-   * It will be invoked automatically when needed.
+   * need to be displayed.
+   * <p>
+   * <b><i>AttentionPlease do not call this method directly.
+   * It will be invoked automatically when needed.</i></b>
+   * @param storage {@link org.netbeans.modules.dlight..storage.model.DataStorage}.
    */
   public void attachTo(DataStorage storage);
-
-//  /**
-//   * Creates new instance of DataProvider, factory method
-//   * @return new instance of DataProvider
-//   */
-//  public DataProvider newInstance();
 
 }

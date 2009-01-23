@@ -563,7 +563,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             throw new UninstallationException(
                     getString("CL.uninstall.error.stop.derby"), // NOI18N
                     e);
+        } catch (NoSuchMethodError e) {
+            //TODO
         }
+
 
 
 /////////////////////////////////////////////////////////////////////////////

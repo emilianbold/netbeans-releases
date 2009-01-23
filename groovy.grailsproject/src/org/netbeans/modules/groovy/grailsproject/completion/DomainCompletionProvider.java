@@ -41,11 +41,13 @@ package org.netbeans.modules.groovy.grailsproject.completion;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
 
@@ -58,6 +60,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
     private static final Map<MethodSignature, String> BASIC_METHODS = new HashMap<MethodSignature, String>();
 
+    private static final String FIND_BY_METHOD = "findBy"; // NOI18N
+    
     // FIXME move it to some resource file, check the grails version
     // 1.0.4
     static {
@@ -94,18 +98,24 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<FieldSignature, String> getFields(FileObject source, String sourceClassName, String className) {
+    public Map<FieldSignature, String> getFields(DynamicCompletionContext context) {
         return Collections.emptyMap();
     }
 
     @Override
-    public Map<MethodSignature, String> getMethods(FileObject source, String sourceClassName, String className) {
-        Project project = FileOwnerQuery.getOwner(source);
-        if (className.equals(sourceClassName) && project != null
+    public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+        Project project = FileOwnerQuery.getOwner(context.getSourceFile());
+        if (context.getClassName().equals(context.getSourceClassName()) && project != null
                 && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
-            if (isDomain(source, project)) {
-                return Collections.unmodifiableMap(BASIC_METHODS);
+            if (isDomain(context.getSourceFile(), project)) {
+                Map<MethodSignature, String> result = new HashMap<MethodSignature, String>();
+                for (String property : context.getProperties()) {
+                    result.put(new MethodSignature("findBy" + capitalise(property),
+                            new String[] {"java.lang.Object"}), "java.util.List");
+                }
+                result.putAll(BASIC_METHODS);
+                return result;
             }
         }
         return Collections.emptyMap();
@@ -116,5 +126,15 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return source.getParent().getName().equals("domain") // NOI18N
                     && source.getParent().getParent().getName().equals("grails-app") // NOI18N
                     && source.getParent().getParent().getParent().equals(project.getProjectDirectory());
+    }
+
+    private String capitalise(String property) {
+        StringBuilder builder = new StringBuilder();
+        String[] parts = property.split("[^\\w\\d]");
+        for (String part : parts) {
+            builder.append(part.substring(0, 1).toUpperCase(Locale.ENGLISH)).append(part.substring(1));
+        }
+
+        return builder.toString();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,48 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.dataprovider.spi;
+package org.netbeans.modules.groovy.editor.spi.completion;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.openide.filesystems.FileObject;
 
 /**
- * Factory to create {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider} instances.
- * Register your factory instance in Global Lookup.
+ *
+ * @author Petr Hejl
  */
-public interface DataProviderFactory {
+public final class DynamicCompletionContext {
 
-  /**
-   * Creates new DataProvider instance
-   * @return newly created instance of DataProvider
-   */
-  DataProvider create();
+    private final FileObject sourceFile;
 
-  /**
-   * Returns the list of {@link org.netbeans.modules.dlight.dataprovider.api.DataModelScheme}
-   * this data provider can serve.
-   * @return the list of data model this DataProvider can serve
-   */
-  List<? extends DataModelScheme> getProvidedDataModelScheme();
+    private final String sourceClassName;
 
-  /**
-   * Checks if DataProvider can provider information according to
-   * te <param>dataModel</param>
-   * @param dataModel
-   * @return <code>true</code> if DataProvider provides information required
-   * by <param>dataModel</param>
-   */
-  boolean provides(DataModelScheme dataModel);
+    private final String className;
 
-  /**
-   * The types of {@link org.netbeans.modules.dlight.storage.spi.DataStorage} this
-   *  DataProvider can get data from
-   * @return the list of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}
-   *  supported by this DataProvider
-   */
-  List<DataStorageType> getSupportedDataStorageTypes();
+    private final boolean staticContext;
+
+    private final List<String> properties;
+
+    // FIXME - accessor
+    public DynamicCompletionContext(FileObject sourceFile, String sourceClassName, String className,
+            boolean staticContext, List<String> properties) {
+
+        this.sourceFile = sourceFile;
+        this.sourceClassName = sourceClassName;
+        this.className = className;
+        this.staticContext = staticContext;
+        this.properties = properties;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public FileObject getSourceFile() {
+        return sourceFile;
+    }
+
+    public List<String> getProperties() {
+        return Collections.unmodifiableList(properties);
+    }
+
+    public String getSourceClassName() {
+        return sourceClassName;
+    }
+
+    public boolean isStaticContext() {
+        return staticContext;
+    }
+
 }
