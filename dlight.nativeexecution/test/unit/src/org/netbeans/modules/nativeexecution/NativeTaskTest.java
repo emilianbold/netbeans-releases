@@ -39,18 +39,12 @@
 
 package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openide.util.Exceptions;
 
 /**
@@ -86,83 +80,110 @@ public class NativeTaskTest {
     @Test
     public void testRun() {
         System.out.println("run");
+//
+//        final NativeTaskListener l = new NativeTaskListener() {
+//
+//            public void taskStarted(NativeTask task) {
+//                System.out.println(task.getPID() + " - started");
+//            }
+//
+//            public void taskFinished(NativeTask task, Integer result) {
+//                System.out.println(task.getPID() + " - finished");
+//            }
+//
+//            public void taskCancelled(NativeTask task, CancellationException cex) {
+//                System.out.println(task.getPID() + " - cancelled");
+//            }
+//
+//            public void taskError(NativeTask task, Throwable t) {
+//                System.out.println(task.getPID() + " - error");
+//            }
+//        };
+//
+//        StringBuffer outBuffer = new StringBuffer();
+//        final ExecutionEnvironment ee = new ExecutionEnvironment(null, null);
+//
+//        NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
+//        nt.redirectOutTo(new StringBufferWriter(outBuffer));
+//        nt.addListener(l);
+//        nt.submit();
+//        try {
+//            nt.get();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (ExecutionException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        System.out.println(outBuffer.toString());
+//
+//
+//        Thread[] ts = new Thread[10];
+//        for (int i = 0; i < 10; i++) {
+//            ts[i] = new Thread(new Runnable() {
+//                public void run() {
+//                    StringBuffer outBuffer = new StringBuffer();
+////                    NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
+//                    NativeTask nt = new NativeTask("/tmp/qq");
+//                    nt.redirectOutTo(new StringBufferWriter(outBuffer));
+//                    nt.addListener(l);
+//                    nt.submit();
+//                    try {
+//                        nt.get();
+//                    } catch (InterruptedException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    } catch (ExecutionException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//
+//                    System.out.println("" + (++count) + ") " + nt.getPID() + " - " + outBuffer.toString());
+//                }
+//            });
+//        }
+//
+//        for (int i = 0; i < 10; i++) {
+//            ts[i].start();
+//        }
+//
+//        for (int i = 0; i < 10; i++) {
+//            try {
+//                ts[i].join();
+//            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
 
-        final NativeTaskListener l = new NativeTaskListener() {
+//        NativeTask instance = new NativeTask("");
+//        instance.run();
+        // TODO review the generated test code and remove the default call to fail.
 
-            public void taskStarted(NativeTask task) {
-                System.out.println(task.getPID() + " - started");
-            }
-
-            public void taskFinished(NativeTask task, Integer result) {
-                System.out.println(task.getPID() + " - finished");
-            }
-
-            public void taskCancelled(NativeTask task, CancellationException cex) {
-                System.out.println(task.getPID() + " - cancelled");
-            }
-
-            public void taskError(NativeTask task, Throwable t) {
-                System.out.println(task.getPID() + " - error");
-            }
-        };
-
-        StringBuffer outBuffer = new StringBuffer();
-        final ExecutionEnvironment ee = new ExecutionEnvironment(null, null);
         
-        NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
-        nt.redirectOutTo(new StringBufferWriter(outBuffer));
-        nt.addListener(l);
-        nt.submit();
-        try {
-            nt.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        System.out.println(outBuffer.toString());
-
-
-        Thread[] ts = new Thread[10];
-        for (int i = 0; i < 10; i++) {
-            ts[i] = new Thread(new Runnable() {
+        int tcount = 10;
+        Thread[] threads = new Thread[tcount];
+        for (int i = 0; i < tcount; i++) {
+            threads[i] = new Thread(new Runnable() {
                 public void run() {
-                    StringBuffer outBuffer = new StringBuffer();
-//                    NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
-                    NativeTask nt = new NativeTask("/tmp/qq");
-                    nt.redirectOutTo(new StringBufferWriter(outBuffer));
-                    nt.addListener(l);
-                    nt.submit();
-                    try {
-                        nt.get();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-
-                    System.out.println("" + (++count) + ") " + nt.getPID() + " - " + outBuffer.toString());
+        final NativeTask task = new NativeTask("/bin/ls");
+                    task.submit();
+                    System.out.println("PID is " + task.getPID());
                 }
             });
         }
 
-        for (int i = 0; i < 10; i++) {
-            ts[i].start();
+        for (int i = 0; i < tcount; i++) {
+            threads[i].start();
         }
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < tcount; i++) {
             try {
-                ts[i].join();
+                threads[i].join();
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
-//        NativeTask instance = new NativeTask("");
-//        instance.run();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+//        fail("The test case is a prototype.");
     }
 
 }

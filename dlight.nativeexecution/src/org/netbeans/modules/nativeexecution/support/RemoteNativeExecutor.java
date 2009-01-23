@@ -41,7 +41,6 @@ package org.netbeans.modules.nativeexecution.support;
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.NativeExecutor;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
@@ -49,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -68,15 +66,17 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
     @Override
     protected int doInvoke() throws Exception {
-        final Session session = ConnectionManager.getInstance().getConnectionSession(execEnv);
+        final ConnectionManager mgr = ConnectionManager.getInstance();
+        
+        synchronized (mgr) {
+            final Session session = mgr.getConnectionSession(execEnv);
 
-        if (session == null) {
-            return -1;
-        }
+            if (session == null) {
+                return -1;
+            }
 
-        setProgress(loc("NativeExecutor_Progress_ExecutingTask", task.toString())); // NOI18N
+            setProgress(loc("NativeExecutor_Progress_ExecutingTask", task.toString())); // NOI18N
 
-        synchronized (session) {
             channel = (ChannelExec) session.openChannel("exec"); // NOI18N
             channel.setCommand("/bin/echo $$; exec " + task.getCommand()); // NOI18N
             channel.connect();
@@ -109,31 +109,43 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         return pid;
     }
 
-    public boolean cancel() {
-        if (channel != null) {
-            channel.disconnect();
+    public synchronized boolean cancel() {
+        if (channel == null || !channel.isConnected()) {
+            return true;
         }
+        
+        channel.disconnect();
+        NativeTaskSupport.kill(execEnv, 9, getPID());
+//            System.out.println("Will kill " + getPID());
+//            result = NativeTaskSupport.kill(execEnv, 9, getPID());
+
+//            try {
+//                channel.sendSignal("KILL"); // NOI18N
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+
+        //TODO: Processes are still not killed ;(
+        return !channel.isConnected();
 
         // TODO: When to cancel session?
 //    if (session != null) {
 //      session.disconnect();
 //    }
-
-        return true;
     }
 
     @Override
-    protected InputStream getTaskInputStream() throws IOException {
+    public final InputStream getTaskInputStream() throws IOException {
         return out;
     }
 
     @Override
-    protected InputStream getTaskErrorStream() throws IOException {
+    public final InputStream getTaskErrorStream() throws IOException {
         return err;
     }
 
     @Override
-    protected OutputStream getTaskOutputStream() throws IOException {
+    public final OutputStream getTaskOutputStream() throws IOException {
         return in;
     }
 
@@ -142,8 +154,8 @@ public final class RemoteNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    protected synchronized Integer get() {
-        while (!channel.isClosed()) {
+    public final Integer get() {
+        while (channel.isConnected()) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {

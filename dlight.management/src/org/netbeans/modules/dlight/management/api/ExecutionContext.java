@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.DLightTool;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.openide.util.Exceptions;
 
 final class ExecutionContext {
-
+    private static final Object lock = new Object();
     private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
     private volatile boolean validationInProgress = false;
     private final DLightTarget target;
@@ -88,11 +87,13 @@ final class ExecutionContext {
     }
 
     void validateTools(boolean performRequiredActions) {
-        if (validationInProgress) {
-            return;
+        synchronized (lock) {
+            if (validationInProgress) {
+                return;
+            }
+            validationInProgress = true;
         }
 
-        validationInProgress = true;
         Map<DLightTool, Future<ValidationStatus>> hash = new HashMap<DLightTool, Future<ValidationStatus>>();
         Map<DLightTool, ValidationStatus> shash = new HashMap<DLightTool, ValidationStatus>();
 

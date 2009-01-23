@@ -86,7 +86,7 @@ public class ConnectionManager {
      * Returns instance of <tt>ConnectionManager</tt>.
      * @return instance of <tt>ConnectionManager</tt>
      */
-    public static ConnectionManager getInstance() {
+    public static synchronized ConnectionManager getInstance() {
         if (instance == null) {
             instance = new ConnectionManager();
         }
@@ -108,7 +108,7 @@ public class ConnectionManager {
      *         New or already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
-    public Session getConnectionSession(final ExecutionEnvironment execEnv) {
+    public synchronized Session getConnectionSession(final ExecutionEnvironment execEnv) {
         final String sessionKey = execEnv.toString();
         Session session = null;
 
@@ -176,7 +176,7 @@ public class ConnectionManager {
      * @return action to be used to connect to the <tt>execEnv</tt>.
      * @see org.netbeans.modules.nativeexecution.ObservableAction
      */
-    public ObservableAction<Boolean> getConnectAction(final ExecutionEnvironment execEnv) {
+    public synchronized ObservableAction<Boolean> getConnectAction(final ExecutionEnvironment execEnv) {
         if (actionsProvider == null) {
             actionsProvider = new ActionsProvider();
         }
