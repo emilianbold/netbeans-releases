@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author  Jiri Rechtacek
  */
-public final class TreeTableView152857Test extends NbTestCase {
+public class TreeTableView152857Test extends NbTestCase {
 
     private TTV view;
 
@@ -74,9 +74,6 @@ public final class TreeTableView152857Test extends NbTestCase {
         return false;
     }
 
-    @Override
-    public void setUp () {
-    }
 
     @RandomlyFails // fails until fix issue #152857: Sorting in TreeTableView should not be done on Visualizers
     public void testRemoveNodeInTTV () throws InterruptedException {
@@ -89,16 +86,18 @@ public final class TreeTableView152857Test extends NbTestCase {
         DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);
-        Thread.sleep (1000);
 
+        Thread.sleep (1000);
         ((StringKeys) root.getChildren ()).doSetKeys (new String [] {"1", "2"});
+        Thread.sleep (1000);
+        
         assertEquals ("Node on 0nd position is '1'", "1", ta.getChildAt (0).toString ());
         assertEquals ("Node on 1st position is '2'", "2", ta.getChildAt (1).toString ());
 
         d.setVisible (false);
     }
 
-    private static class StringKeys extends Keys<String> {
+    static class StringKeys extends Keys<String> {
 
         public StringKeys (boolean lazy) {
             super (lazy);
@@ -140,7 +139,7 @@ public final class TreeTableView152857Test extends NbTestCase {
 
     }
 
-    private static class TestNode extends AbstractNode {
+    static class TestNode extends AbstractNode {
 
         public TestNode (String name) {
             super (Children.LEAF);
@@ -232,32 +231,6 @@ public final class TreeTableView152857Test extends NbTestCase {
                     IllegalArgumentException,
                     InvocationTargetException {
                 setValue ("unitTestPropName", val);
-            }
-        }
-        class DummyTreeProperty extends Property<Boolean> {
-            public DummyTreeProperty () {
-                super (Boolean.class);
-                setName ("TreeColumnTTV");
-            }
-
-            @Override
-            public boolean canRead () {
-                return true;
-            }
-
-            @Override
-            public Boolean getValue () throws IllegalAccessException, InvocationTargetException {
-                return Boolean.TRUE;
-            }
-
-            @Override
-            public boolean canWrite () {
-                return false;
-            }
-
-            @Override
-            public void setValue (Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                throw new UnsupportedOperationException ("Not supported yet.");
             }
         }
     }

@@ -52,7 +52,7 @@ public class CDATASection extends Text {
     /**
      * Create content text node.
      */
-    public CDATASection(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    CDATASection(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
     }
 

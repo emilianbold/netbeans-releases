@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.netbeans.modules.cnd.refactoring.plugins.EncapsulateFieldRefactoringPlugin;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
@@ -92,7 +93,8 @@ import org.openide.util.NbBundle;
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
     
     private DefaultTableModel model;
-    private CsmObject selectedObject;
+    private final CsmObject selectedObject;
+//    private final CsmContext editorContext;
     private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
@@ -130,10 +132,15 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
      *
      * @param selectedObjects  array of selected objects
      */
-    public EncapsulateFieldPanel(CsmObject selectedObject, ChangeListener parent) {
+    public EncapsulateFieldPanel(CsmObject selectedObject, CsmContext editorContext, ChangeListener parent) {
         String title = getString("LBL_TitleEncapsulateFields");
-        
-        this.selectedObject = selectedObject;
+
+        if (selectedObject == null) {
+            this.selectedObject = GeneratorUtils.extractEnclosingClass(editorContext);
+        } else {
+            this.selectedObject = selectedObject;
+        }
+//        this.editorContext = editorContext;
         this.parent = parent;
         model = new TabM(columnNames, 0);
         initComponents();
@@ -173,7 +180,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
         CsmObject selectedResolvedObject = CsmRefactoringUtils.getReferencedElement(selectedObject);
         int tableSelection = 0;
-        for (CsmField field : initFields(selectedObject)) {
+        for (CsmField field : initFields(selectedResolvedObject)) {
             boolean createGetter = field.equals(selectedResolvedObject);
             boolean createSetter = createGetter && !isConstant(field);
             String getName = GeneratorUtils.computeGetterName(field);
@@ -236,7 +243,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             }
         });
 
-        initInsertPoints(selectedObject);
+        initInsertPoints();
         
         initialized = true;
     }
@@ -559,7 +566,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return result;
     }
     
-    private void initInsertPoints(CsmObject selectedObject) {
+    private void initInsertPoints() {
         CsmClass encloser = csmClassContainer;
 
         List<InsertPoint> result = new ArrayList<InsertPoint>();

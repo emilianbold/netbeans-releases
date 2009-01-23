@@ -4,19 +4,19 @@
  */
 package org.netbeans.modules.dlight.execution.api.impl;
 
-import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
+import org.netbeans.modules.dlight.execution.api.DLightToolkitManagement.DLightSessionHandler;
 
 /**
  *
  * 
  */
 public interface DLightToolkitManager {
-  DLightSessionReference createSession(DLightTarget target, String configurationName);
+  DLightSessionHandler createSession(DLightTarget target, String configurationName);
 
-  DLightSessionReference createSession(DLightTarget target);
+  DLightSessionHandler createSession(DLightTarget target);
 
-  void startSession(DLightSessionReference reference);
+  void startSession(DLightSessionHandler reference);
 
-  void stopSession(DLightSessionReference reference);
+  void stopSession(DLightSessionHandler reference);
 }

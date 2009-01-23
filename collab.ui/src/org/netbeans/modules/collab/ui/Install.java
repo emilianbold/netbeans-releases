@@ -49,6 +49,9 @@ import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import com.sun.collablet.*;
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
@@ -251,8 +254,12 @@ public class Install extends ModuleInstall {
 
                 // Show the collab explorer
                 CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
-            }
-            else {
+                
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.collab");   // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_COLLAB_LOGIN");   // NOI18N
+                rec.setLoggerName(logger.getName());
+                logger.log(rec);
+            } else {
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginFailure")
                         ); // NOI18N

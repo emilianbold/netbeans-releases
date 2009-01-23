@@ -246,8 +246,12 @@ public class MethodChooser implements KeyListener, MouseListener,
         
         if (performAction) {
             performAction = false;
-            String name = operations[selectedIndex].getMethodName();
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
+            final String name = operations[selectedIndex].getMethodName();
+            debugger.getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
+                }
+            });
         }
         if (releaseListener != null) {
             releaseListener.actionPerformed(null);

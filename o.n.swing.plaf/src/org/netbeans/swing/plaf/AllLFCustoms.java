@@ -95,6 +95,9 @@ final class AllLFCustoms extends LFCustoms {
             SCROLLPANE_BORDER_COLOR, new Color(127, 157, 185),
                         
             EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(0, 0, 0, 0),
+
+            SPLIT_PANE_DIVIDER_SIZE_VERTICAL, new Integer(4),
+            SPLIT_PANE_DIVIDER_SIZE_HORIZONTAL, new Integer(4)
         }; //NOI18N
         return uiDefaults;
     }

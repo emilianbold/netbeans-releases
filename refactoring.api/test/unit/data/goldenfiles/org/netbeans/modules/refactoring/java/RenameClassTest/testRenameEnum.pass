@@ -27,7 +27,7 @@ Update reference to RenameEnum
  10   }
 
 
-defaultpkg.NewEnumName
+defaultpkg.NewEnumName.java
 --------------------
 package defaultpkg;
 

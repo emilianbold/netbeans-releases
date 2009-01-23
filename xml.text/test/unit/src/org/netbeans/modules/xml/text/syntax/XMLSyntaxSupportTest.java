@@ -41,6 +41,7 @@ package org.netbeans.modules.xml.text.syntax;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.AbstractTestCase;
 
 /**
@@ -56,13 +57,11 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new XMLSyntaxSupportTest("testParse1"));
-        //suite.addTest(new XMLSyntaxSupportTest("testParse2"));
+        suite.addTest(new XMLSyntaxSupportTest("testParse2"));
+        suite.addTest(new XMLSyntaxSupportTest("testTokens"));
         return suite;
     }
 
-    /**
-     * Parses a valid xml documents and reads one node at a time.
-     */
     public void testParse1() throws Exception {
         XMLSyntaxSupport support = getSyntaxSupport("syntax/test.xml");
         SyntaxElement se = support.getElementChain(1);
@@ -72,9 +71,6 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
         }
     }
 
-    /**
-     * Parses an invalid xml documents and reads one node at a time.
-     */
     public void testParse2() throws Exception {
         XMLSyntaxSupport support = getSyntaxSupport("syntax/invalid.xml");
         SyntaxElement se = support.getElementChain(1);
@@ -82,5 +78,15 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
             System.out.println("Class: " + se.getClass().getSimpleName() + " Offset: " + se.getElementOffset() + " Length: "+ se.getElementLength());
             se = se.getNext();
         }
+    }
+
+    public void testTokens() throws Exception {
+        XMLSyntaxSupport support = getSyntaxSupport("syntax/test.xml");
+        TokenItem token = support.getPreviousToken(30);
+        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
+        token = support.getPreviousToken(31);
+        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
+        token = support.getPreviousToken(32);
+        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
     }
 }
