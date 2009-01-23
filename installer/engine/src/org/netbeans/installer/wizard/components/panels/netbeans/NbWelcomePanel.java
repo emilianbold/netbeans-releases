@@ -721,16 +721,20 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             final String bottomLeftImage = SystemUtils.resolveString(
                     System.getProperty(
                     WELCOME_PAGE_LEFT_BOTTOM_IMAGE_PROPERTY));
-            
+
+            int bottomAnchor = NbiPanel.ANCHOR_BOTTOM_LEFT;
+            if(type.isJDKBundle() || type.equals(BundleType.JAVA_TOOLS)) {
+                bottomAnchor = NbiPanel.ANCHOR_FULL;
+            }
             if(topLeftImage!=null) {
                 leftImagePanel.setBackgroundImage(topLeftImage,ANCHOR_TOP_LEFT);
                 width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
                 height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight();
             }
             if(bottomLeftImage!=null) {
-                leftImagePanel.setBackgroundImage(bottomLeftImage,ANCHOR_BOTTOM_LEFT);
-                width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
-                height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
+                leftImagePanel.setBackgroundImage(bottomLeftImage, bottomAnchor);
+                width   = leftImagePanel.getBackgroundImage(bottomAnchor).getIconWidth();
+                height += leftImagePanel.getBackgroundImage(bottomAnchor).getIconHeight();
             }
              
             leftImagePanel.setPreferredSize(new Dimension(width,height));
