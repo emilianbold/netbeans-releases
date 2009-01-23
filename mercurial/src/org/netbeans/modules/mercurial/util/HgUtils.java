@@ -892,6 +892,7 @@ itor tabs #66700).
      * @return void
      */
     public static void forceStatusRefreshProject(VCSContext context) {
+        // XXX and what if there is more then one project in the ctx?!
         Project project = getProject(context);
         if (project == null) return;
         File[] files = getProjectRootFiles(project);
