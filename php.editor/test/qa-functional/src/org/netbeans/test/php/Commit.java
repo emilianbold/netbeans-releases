@@ -112,19 +112,19 @@ public class Commit extends GeneralPHP
   {
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( Commit.class ).addTest(
-//          "CreatePHPApplication",
-//          "ManipulateIndexPHP",
-//          "CreateEmptyPHP",
-//          "ManipulateEmptyPHP",
-//          "CreateTemplatePHP",
-//          "ManipulateTemplatePHP",
+          "CreatePHPApplication",
+          "ManipulateIndexPHP",
+          "CreateEmptyPHP",
+          "ManipulateEmptyPHP",
+          "CreateTemplatePHP",
+          "ManipulateTemplatePHP",
 
           //"OpenStandalonePHP",
           //"ManipulateStandalonePHP",
           //"CreateCustomPHPApplication",
 
-//          "CreatePHPWithExistingSources",
-//          "ManipulatePHPWithExistingSources"
+          "CreatePHPWithExistingSources",
+          "ManipulatePHPWithExistingSources"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -187,12 +187,6 @@ public class Commit extends GeneralPHP
     CreatePHPApplicationInternal( TEST_PHP_NAME_1 );
 
     endTest( );
-  }
-
-  protected void Backit( EditorOperator eoPHP, int iCount )
-  {
-    for( int i = 0; i < iCount; i++ )
-      eoPHP.pressKey( KeyEvent.VK_BACK_SPACE );
   }
 
   protected void EnsureEmptyLine( EditorOperator eoPHP )
@@ -376,12 +370,8 @@ public class Commit extends GeneralPHP
       Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
       Sleep( 1500 );
-      System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
-      CheckResult( eoPHP, "function  __construct() {", -1 );
-      int i = eoPHP.getLineNumber( ) - 1;
-      eoPHP.deleteLine( i );
-      eoPHP.deleteLine( i );
-      eoPHP.deleteLine( i );
+
+      CheckFlex( eoPHP, "function __construct(){;}", true );
     }
     else
     {
@@ -438,22 +428,11 @@ public class Commit extends GeneralPHP
     jdGenerator.waitClosed( );
 
     // Check result
-    String[] asResult =
-    {
-      "function __construct($a, $d, $e) {",
-      "$this->a = $a;",
-      "$this->d = $d;",
-      "$this->e = $e;",
-      "}"
-    };
-    CheckResult( eoPHP, asResult, -3 );
-    // Remove added
-    int il = eoPHP.getLineNumber( ) - 3;
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
-    eoPHP.deleteLine( il );
+    CheckFlex(
+        eoPHP,
+        "function __construct($a,$d,$e){$this->a=$a;$this->d=$d;$this->e=$e;}",
+        true
+      );
     Sleep( 1500 );
 
     boolean b = true;
@@ -479,40 +458,11 @@ public class Commit extends GeneralPHP
     jdGenerator.waitClosed( );
 
     // Check result
-    String[] asResult2 =
-    {
-      "public function getB() {",
-      "return $this->b;",
-      "}",
-      "",  
-      "public function setB($b) {",
-      "$this->b = $b;",
-      "}",
-      "",  
-      "public function getC() {",
-      "return $this->c;",
-      "}",
-      "",  
-      "public function setC($c) {",
-      "$this->c = $c;",
-      "}",
-      "",  
-      "public function getF() {",
-      "return $this->f;",
-      "}",
-      "",  
-      "public function setF($f) {",
-      "$this->f = $f;",
-      "}"
-    };
-    CheckResult( eoPHP, asResult2, - ( asResult2.length + 1 ) );
-    // Remove added
-    il = eoPHP.getLineNumber( ) - ( asResult2.length + 1 );
-    for( int i = 0; i < asResult2.length + 1; i++ )
-    {
-      eoPHP.deleteLine( il );
-      Sleep( 100 );
-    }
+    CheckFlex(
+        eoPHP,
+        "public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getC(){return $this->c;}public function setC($c){$this->c=$c;}public function getF(){return $this->f;}public function setF($f){$this->f=$f;}",
+        true
+      );
 
     Sleep( 2000 );
     // Close to prevent affect on next tests

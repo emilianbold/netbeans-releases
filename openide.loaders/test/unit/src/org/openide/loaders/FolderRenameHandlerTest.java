@@ -66,7 +66,7 @@ public class FolderRenameHandlerTest extends TestCase {
     
     public void setUp() throws Exception {
         super.setUp();
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject root = FileUtil.getConfigRoot();
         fo = FileUtil.createFolder (root, "test");// NOI18N
         
         DataObject obj = DataObject.find (fo);

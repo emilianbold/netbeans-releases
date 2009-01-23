@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -78,27 +79,32 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     // the context object where refactoring starts
 
     private final CsmObject startReferenceObject;
+    private final CsmContext editorContext;
     private final AbstractRefactoring refactoring;
 
     protected CsmModificationRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
-        assert startReferenceObject != null : "no start reference";
+        this.editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
+        assert startReferenceObject != null || editorContext != null: "no start reference or editor context";
     }
 
     protected final CsmObject getStartReferenceObject() {
         return startReferenceObject;
     }
-
-    protected abstract Collection<CsmObject> getRefactoredObjects();
+    
+    protected final CsmContext getEditorContext() {
+        return editorContext;
+    }
+    protected abstract Collection<? extends CsmObject> getRefactoredObjects();
 
     public final Problem prepare(RefactoringElementsBag elements) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
+        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
         if (referencedObjects == null || referencedObjects.size() == 0) {
             return null;
         }
         Collection<CsmFile> files = new HashSet<CsmFile>();
-        CsmFile startFile = getCsmFile(getStartReferenceObject());
+        CsmFile startFile = getStartCsmFile();
         for (CsmObject obj : referencedObjects) {
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
@@ -109,6 +115,16 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         createAndAddElements(files, elements, refactoring);
         fireProgressListenerStop();
         return null;
+    }
+
+    private CsmFile getStartCsmFile() {
+        CsmFile startFile = getCsmFile(getStartReferenceObject());
+        if (startFile == null) {
+            if (getEditorContext() != null) {
+                startFile = getEditorContext().getFile();
+            }
+        }
+        return startFile;
     }
 
     protected final Problem checkIfModificationPossible(Problem problem, CsmObject referencedObject,
@@ -187,7 +203,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     }
     
     protected final void processFile(CsmFile csmFile, ModificationResult mr) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
+        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
         assert referencedObjects != null && referencedObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();

@@ -161,7 +161,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         }
         return result.values();
     }          
-    
+
     protected final CsmFile getCsmFile(CsmObject csmObject) {
         if (CsmKindUtilities.isFile(csmObject)) {
             return ((CsmFile)csmObject);

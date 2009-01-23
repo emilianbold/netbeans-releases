@@ -57,8 +57,8 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 
@@ -127,7 +127,7 @@ public class VerifyFullIDETest extends NbTestCase {
         }
 
         MultiFileSystem mfs = new MultiFileSystem(all.toArray(new FileSystem[0]));
-        FileObject orig = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
+        FileObject orig = FileUtil.getConfigFile("Templates/Project");
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();
@@ -198,7 +198,7 @@ public class VerifyFullIDETest extends NbTestCase {
 
     public void testGetAllDebuggers() {
        List<String> lazyDebuggers = new ArrayList<String>();
-       Iterator<? extends FeatureInfo> it = FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
+       Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
        for (; it.hasNext(); ) {
            FeatureInfo featureInfo = it.next();
            if (featureInfo.getAttachTypeName() != null) {

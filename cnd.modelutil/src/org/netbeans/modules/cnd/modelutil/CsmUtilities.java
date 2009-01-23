@@ -437,16 +437,18 @@ public class CsmUtilities {
     }
 
     public static Document getDocument(FileObject fo) {
-        try {
-            DataObject dob = DataObject.find(fo);
-            if (dob != null && dob.isValid()) {
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    return ec.getDocument();
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dob = DataObject.find(fo);
+                if (dob != null && dob.isValid()) {
+                    EditorCookie ec = dob.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        return ec.getDocument();
+                    }
                 }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -501,6 +503,10 @@ public class CsmUtilities {
         }
     }
 
+    private static interface Offsetable {
+        int getOffset();
+    }
+
     private static class PointOrOffsetable {
 
         private final Object content;
@@ -509,16 +515,38 @@ public class CsmUtilities {
             content = point;
         }
 
-        public PointOrOffsetable(CsmOffsetable offsetable) {
-            content = offsetable;
+        public PointOrOffsetable(final CsmOffsetable offsetable) {
+            content = new Offsetable() {
+                public int getOffset() {
+                    return offsetable.getStartOffset();
+                }
+            };
+        }
+
+        public PointOrOffsetable(final int offset) {
+            content = new Offsetable() {
+                public int getOffset() {
+                    return offset;
+                }
+            };
         }
 
         public Point getPoint() {
             return (content instanceof Point) ? (Point) content : null;
         }
 
-        public CsmOffsetable getOffsetable() {
-            return (content instanceof CsmOffsetable) ? (CsmOffsetable) content : null;
+        public Offsetable getOffsetable() {
+            return (content instanceof Offsetable) ? (Offsetable) content : null;
+        }
+
+        @Override
+        public String toString() {
+            if (content instanceof Point) {
+                Point point = (Point) content;
+                return String.format("[%d:%d]", point.line, point.column); // NOI18N
+            } else {
+                return String.format("[%d]", ((Offsetable) content).getOffset()); // NOI18N
+            }
         }
     }
 
@@ -528,27 +556,34 @@ public class CsmUtilities {
      */
     public static boolean openSource(CsmObject element) {
         if (CsmKindUtilities.isOffsetable(element)) {
-            return openAtElement((CsmOffsetable) element, false);
+            return openAtElement((CsmOffsetable) element);
         } else if (CsmKindUtilities.isFile(element)) {
             final CsmFile file = (CsmFile) element;
             CsmOffsetable fileTarget = new FileTarget(file);
-            return openAtElement(fileTarget, false);
+            return openAtElement(fileTarget);
         }
         return false;
     }
 
     public static boolean openSource(CsmFile file, int line, int column) {
-        return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)), false);
-    }
-//    //    public static boolean openSource(DataObject dob, int line, int column) {
-//        return false;
-//    }
-
-    private static boolean openAtElement(final CsmOffsetable element, final boolean jumpLineStart) {
-        return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element), jumpLineStart);
+        return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)));
     }
 
-    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element, final boolean jumpLineStart) {
+    public static boolean openSource(FileObject fo, int offset) {
+        DataObject dob;
+        try {
+            dob = DataObject.find(fo);
+            return openAtElement(dob, new PointOrOffsetable(offset));
+        } catch (DataObjectNotFoundException ex) {
+            return false;
+        }
+    }
+
+    private static boolean openAtElement(final CsmOffsetable element) {
+        return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
+    }
+
+    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element) {
         if (dob != null) {
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -582,7 +617,7 @@ public class CsmUtilities {
                             panes = ec.getOpenedPanes();
                         }
                         if (panes != null && panes.length > 0) {
-                            selectElementInPane(panes[0], element, !opened, jumpLineStart);
+                            selectElementInPane(panes[0], element, !opened);
                         }
                     }
                 });
@@ -595,8 +630,7 @@ public class CsmUtilities {
     /** Jumps to element in given editor pane. When delayProcessing is
      * specified, waits for real visible open before jump
      */
-    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element,
-            boolean delayProcessing, final boolean jumpLineStart) {
+    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element, boolean delayProcessing) {
         //final Cursor editCursor = pane.getCursor();
         //pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (false && delayProcessing) {
@@ -612,7 +646,7 @@ public class CsmUtilities {
                     RequestProcessor.getDefault().post(new Runnable() {
 
                         public void run() {
-                            jumpToElement(pane, element, jumpLineStart);
+                            jumpToElement(pane, element);
                         }
                     });
                     pane.removeFocusListener(this);
@@ -623,7 +657,7 @@ public class CsmUtilities {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    jumpToElement(pane, element, jumpLineStart);
+                    jumpToElement(pane, element);
                 }
             });
             // try to activate outer TopComponent
@@ -640,26 +674,22 @@ public class CsmUtilities {
 //        jumpToElement(pane, element, false);
 //    }
 
-    private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable, boolean jumpLineStart) {
+    private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable) {
         //start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()-1) : element.getStartOffset();
         int start;
-        CsmOffsetable element = pointOrOffsetable.getOffsetable();
+        Offsetable element = pointOrOffsetable.getOffsetable();
         Point point = pointOrOffsetable.getPoint();
-        if (jumpLineStart) {
-            int line = (element == null) ? point.line : element.getStartPosition().getLine();
-            start = lineToPosition(pane, line - 1);
+        if (element == null) {
+            start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
+            start += point.column;
         } else {
-            if (element == null) {
-                start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
-                start += point.column;
-            } else {
-                start = element.getStartOffset();
-            }
+            start = element.getOffset();
         }
         if (pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition(start);
             if (DEBUG) {
-                System.err.println("I'm going to " + start + " for element" + getElementJumpName(pointOrOffsetable));
+                String traceName;
+                System.err.println("I'm going to " + start + " for element " + pointOrOffsetable);
             }
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
@@ -696,15 +726,6 @@ public class CsmUtilities {
             }
         }
         return lineSt;
-    }
-
-    private static String getElementJumpName(PointOrOffsetable pointOrOffsetable) {
-        if (pointOrOffsetable.getOffsetable() != null) {
-            return getElementJumpName(pointOrOffsetable.getOffsetable());
-        } else {
-            return String.format("[%d:%d]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column); // NOI18N
-
-        }
     }
 
     public static String getElementJumpName(CsmObject element) {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.text.AttributeSet;
@@ -387,5 +388,60 @@ public class CsmDisplayUtilities {
             }
         }
         return "";
-    }    
+    }
+
+    public static String shrinkPath(CharSequence path, int maxDisplayedDirLen, int nrDisplayedFrontDirs, int nrDisplayedTrailingDirs) {
+        return shrinkPath(path, true, File.separator, maxDisplayedDirLen, nrDisplayedFrontDirs, nrDisplayedTrailingDirs);
+    }
+
+    public static String shrinkPath(CharSequence path, boolean shrink, String separator, int maxDisplayedDirLen, int nrDisplayedFrontDirs, int nrDisplayedTrailingDirs) {
+        final String SLASH = "/"; //NOI18N
+        StringBuilder builder = new StringBuilder(path);
+        String toReplace = null;
+        if (SLASH.equals(separator)) {
+            if (builder.indexOf("\\") >= 0) { // NOI18N
+                toReplace = "\\"; // NOI18N
+            }
+        } else {
+            if (builder.indexOf(SLASH) >= 0) {
+                toReplace = SLASH;
+            }
+        }
+        if (toReplace != null) {
+            // replace all "/" or "\" to system separator
+            builder = new StringBuilder(builder.toString().replace(toReplace, separator));
+        }
+        int len = builder.length();
+        if (shrink && len > maxDisplayedDirLen) {
+
+            StringBuilder reverse = new StringBuilder(builder).reverse();
+            int st = builder.indexOf(separator);
+            if (st < 0) {
+                st = 0;
+            } else {
+                st++;
+            }
+            int end = 0;
+            while (reverse.charAt(end) == separator.charAt(0)) {
+                end++;
+            }
+            int firstSlash = nrDisplayedFrontDirs > 0 ? Integer.MAX_VALUE : -1;
+            for (int i = nrDisplayedFrontDirs; i > 0 && firstSlash > 0; i--) {
+                firstSlash = builder.indexOf(separator, st);
+                st = firstSlash + 1;
+            }
+            int lastSlash = nrDisplayedTrailingDirs > 0 ? Integer.MAX_VALUE : -1;
+            for (int i = nrDisplayedTrailingDirs; i > 0 && lastSlash > 0; i--) {
+                lastSlash = reverse.indexOf(separator, end);
+                end = lastSlash + 1;
+            }
+            if (lastSlash > 0 && firstSlash > 0) {
+                lastSlash = len - lastSlash;
+                if (firstSlash < lastSlash - 1) {
+                    builder.replace(firstSlash, lastSlash - 1, "..."); // NOI18N
+                }
+            }
+        }
+        return builder.toString(); // NOI18N
+    }
 }

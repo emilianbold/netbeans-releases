@@ -45,5 +45,5 @@ package org.netbeans.modules.cnd.api.model;
  * Represents constructor
  * @author Vladimir Kvashin
  */
-public interface CsmConstructor extends CsmMethod<CsmConstructor>, CsmInitializerListContainer {
+public interface CsmConstructor extends CsmMethod, CsmInitializerListContainer {
 }

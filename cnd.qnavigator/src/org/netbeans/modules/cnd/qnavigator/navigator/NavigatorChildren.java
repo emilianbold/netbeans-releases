@@ -68,7 +68,6 @@ public class NavigatorChildren extends Children.SortedArray {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected Collection<Node> initCollection() {
         List<CppDeclarationNode> retValue = new ArrayList<CppDeclarationNode>();
         if (container != null) {
@@ -90,8 +89,11 @@ public class NavigatorChildren extends Children.SortedArray {
                 }
             }
         }
-        Collections.<CppDeclarationNode>sort(retValue);
-        return (Collection)retValue;
+        Collections.sort(retValue);
+        // CppDeclarationNode is Node
+        @SuppressWarnings("unchecked")
+        List<Node> ret = ((List)retValue);
+        return ret;
     }
 
     private void initClassifier(CsmClass cls, List<CppDeclarationNode> retValue) {

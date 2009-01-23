@@ -60,7 +60,6 @@ import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -223,16 +222,14 @@ final class Favorites extends FilterNode implements Index {
     public static DataFolder getFolder () {
         try {
             FileObject fo = FileUtil.createFolder (
-                Repository.getDefault().getDefaultFileSystem().getRoot(), 
+                FileUtil.getConfigRoot(),
                 "Favorites" // NOI18N
             );
             DataFolder folder = DataFolder.findFolder(fo);
             return folder;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return DataFolder.findFolder (
-                Repository.getDefault().getDefaultFileSystem().getRoot()
-            );
+            return DataFolder.findFolder (FileUtil.getConfigRoot());
         }
         
     }

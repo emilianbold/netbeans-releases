@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.io.FileNotFoundException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -96,13 +98,14 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     if (qName.equals("errorStackTrace")) { // NOI18N
                         char[] cs = new char[buf.length()];
                         buf.getChars(0, cs.length, cs, 0);
-                        // XXX would like to hyperlink the stack traces, but how? would need to know where source roots were
                         w.write(cs);
                         buf = null;
                     }
                 }
             });
             parser.parse(job.getUrl() + buildNumber + "/testReport/api/xml"); // NOI18N
+        } catch (FileNotFoundException x) {
+            Toolkit.getDefaultToolkit().beep();
         } catch (Exception x) {
             Exceptions.printStackTrace(x);
         }

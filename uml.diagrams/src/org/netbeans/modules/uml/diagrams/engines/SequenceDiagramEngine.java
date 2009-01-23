@@ -148,8 +148,7 @@ import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.MessagePin.PINKIND;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -816,16 +815,11 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         {
             RelationshipFactory retVal = null;
 
-            FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-            if (system != null)
+            String path = "modeling/relationships/" + type + ".context_palette_item";
+            FileObject fo = FileUtil.getConfigFile(path);
+            if(fo != null)
             {
-                String path = "modeling/relationships/" + type + ".context_palette_item";
-                FileObject fo = system.findResource(path);
-                if(fo != null)
-                {
-                    retVal = (RelationshipFactory)fo.getAttribute("factory");
-                }
+                retVal = (RelationshipFactory)fo.getAttribute("factory");
             }
 
             return retVal;
@@ -1010,16 +1004,11 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             
             RelationshipFactory retVal = null;
 
-            FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-            if (system != null)
+            String path = "modeling/relationships/" + type + ".context_palette_item";
+            FileObject fo = FileUtil.getConfigFile(path);
+            if(fo != null)
             {
-                String path = "modeling/relationships/" + type + ".context_palette_item";
-                FileObject fo = system.findResource(path);
-                if(fo != null)
-                {
-                    retVal = (RelationshipFactory)fo.getAttribute("factory");
-                }
+                retVal = (RelationshipFactory)fo.getAttribute("factory");
             }
 
             return retVal;

@@ -123,11 +123,10 @@ public final class LocalFileSystemEx extends LocalFileSystem {
     private static Set<String> getInvalid (Set names) {
         LOGGER.finest("133616 - checking invalid");
         HashSet<String> invalid = new HashSet<String>();
-        FileSystem sfs = Repository.getDefault ().getDefaultFileSystem ();
         Iterator i = names.iterator ();
         while (i.hasNext ()) {
             String name = (String) i.next ();
-            FileObject fo = sfs.findResource (name);
+            FileObject fo = FileUtil.getConfigFile(name);
             if (null == fo || !fo.isLocked()) {
                 // file lock recorded in potentialLock has been used
                 // in operation which masked file as hidden and nothing

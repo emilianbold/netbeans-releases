@@ -34,9 +34,9 @@ import javax.help.HelpSet;
 
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileUtil;
 
 /*
  * HelpUtils.java
@@ -79,8 +79,7 @@ public class HelpUtils
 	{
 		try
 		{
-			FileObject helpFile = Repository.getDefault().
-				getDefaultFileSystem().findResource(xmlFileName);
+			FileObject helpFile = FileUtil.getConfigFile(xmlFileName);
 
 			// If we are in the IDE environment, the help set 
 			// has already been loaded, so we only access it here

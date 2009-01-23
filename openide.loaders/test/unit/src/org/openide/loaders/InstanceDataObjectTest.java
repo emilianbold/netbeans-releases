@@ -148,7 +148,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         // Init.
         Lookup.getDefault().lookup(ModuleInfo.class);
         
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject myFolder = FileUtil.createFolder(root, "My"); // NOI18N
         for (FileObject fo : myFolder.getChildren()) {
             fo.delete();
@@ -976,7 +976,7 @@ public class InstanceDataObjectTest extends NbTestCase {
 
     public void testSerFileChange () throws Exception {
         FileObject fo = FileUtil.createData (lfs.getRoot (), "HH/BBB/Y.ser");
-        FileObject services = FileUtil.createData (Repository.getDefault().getDefaultFileSystem().getRoot (), "Services");
+        FileObject services = FileUtil.createData (FileUtil.getConfigRoot (), "Services");
         assertNotNull (services);
         assertTrue (services.isFolder());
         SerEnvironmentProvider environmentProvider = new SerEnvironmentProvider();

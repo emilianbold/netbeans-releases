@@ -199,6 +199,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.webui.jsf.defaulttheme</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>2.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -261,7 +269,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -316,10 +324,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
-                <friend>org.netbeans.modules.visualweb.webui.jsf.defaulttheme</friend>
-                <friend>org.netbeans.modules.visualweb.webui.themes</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
-                <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.portalpack.visualweb</friend>
                 <friend>org.netbeans.modules.visualweb.removebindings</friend>
                 <package>org.netbeans.modules.visualweb.project.jsf.api</package>

@@ -67,7 +67,7 @@ import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -230,7 +230,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         while (fo == null && (iterator == null || iterator instanceof FeatureOnDemanWizardIterator)) {
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
-                   fo = Repository.getDefault ().getDefaultFileSystem ().findResource (templateResource);
+                   fo = FileUtil.getConfigFile(templateResource);
                }
             }, 100).waitFinished ();
             iterator = readWizard(fo);

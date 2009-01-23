@@ -340,7 +340,10 @@ made subject to such option by the copyright holder.
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>
-                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="modules/ext/updater.jar"/>
+                </pathfileset>
             </updaterjar>
         </makenbm>
     </target>
@@ -486,7 +489,7 @@ made subject to such option by the copyright holder.
                           extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/> <!-- for pre-7.0 and NB.org projects -->
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
                 <!-- XXX this will not be right on Macs: -->
                 <replacement dir="${nbjdk.home}/jre" name="java.home"/>

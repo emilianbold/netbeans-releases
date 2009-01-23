@@ -1,0 +1,73 @@
+Installing SIGTERM handler to abort on error
+Entering ipc_mainLoop
+ipc: openExperiment
+arg1 = /tmp/perfanDataStorage.er
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+returning = 0
+  processing IPC command openExperiment complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+EOF read in readResult
+NULL ipc command received, exiting
+er
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+ipc: getTopFunctions
+arg1 = name:e.user:i.user
+arg2 = i.user
+arg3 = 10
+Experiment is: /tmp/perfanDataStorage.er
+/tmp/perfanDataStorage.er: *** Error: experiment not found
+get_top_functions: Metric list has 3 elements
+History data has 1 elements
+  processing IPC command getTopFunctions complete
+EOF read in readResult
+NULL ipc command received, exiting

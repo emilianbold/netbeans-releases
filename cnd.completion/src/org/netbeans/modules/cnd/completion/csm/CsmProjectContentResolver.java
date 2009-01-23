@@ -64,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -728,14 +729,14 @@ public final class CsmProjectContentResolver {
     private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
             Collection<CsmScopeElement> out) {
         CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
-        CsmFilter filter = builder.createKindFilter(new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_DEFINITION});
+        CsmFilter filter = builder.createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDefault().getDeclarations(file, filter); itFile.hasNext();) {
             CsmOffsetableDeclaration decl = itFile.next();
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
                 if (nsd.getQualifiedName().equals(ns.getQualifiedName())) {
                     out.addAll(nsd.getScopeElements());
-                } else if (ns.getQualifiedName().toString().startsWith(nsd.getQualifiedName().toString())) {
+                } else if (CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
                     getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out);
                 }
             }

@@ -53,6 +53,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class representing connection to kenai
@@ -106,9 +107,13 @@ public class KenaiConnection {
         if (instance==null) {
             instance = new KenaiConnection();
         }
-        if (!instance.isConnected()) {
-            instance.tryConnect();
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (!instance.isConnected()) {
+                    instance.tryConnect();
+                }
+            }
+        });
         return instance;
     }
 

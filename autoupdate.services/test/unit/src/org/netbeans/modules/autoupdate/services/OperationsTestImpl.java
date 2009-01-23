@@ -60,7 +60,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -84,8 +83,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         getModuleInfos ();
-        Repository.getDefault ().getDefaultFileSystem ().refresh (false);
-        modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules"); // NOI18N
+        FileUtil.getConfigRoot().getFileSystem().refresh (false);
+        modulesRoot = FileUtil.getConfigFile("Modules"); // NOI18N
         fca = new FileChangeAdapter (){
             @Override
             public void fileDataCreated (FileEvent fe) {
@@ -166,7 +165,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
         int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
         assertFalse (fileChanges[0]);
-        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject foConfigModules = FileUtil.getConfigFile("Modules");
         assertNotNull (foConfigModules);
         int foConfigModulesSize = foConfigModules.getChildren ().length;
         assertNull (getModuleInfos ().get (toInstall.getCodeName ()));
@@ -301,7 +300,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         File configModules = new File (getWorkDir (), "config/Modules");
         File modules = new File (getWorkDir (), "modules");
         assertFalse (fileChanges[0]);
-        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject foConfigModules = FileUtil.getConfigFile("Modules");
         assertNotNull (foConfigModules);
         assertTrue (configModules.listFiles () != null && configModules.listFiles ().length != 0);
         assertTrue (modules.listFiles () != null && modules.listFiles ().length != 0);
@@ -383,7 +382,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     }
     
     void disableModule (UpdateUnit toDisable) throws Exception {
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject fo = FileUtil.getConfigFile("Modules");
         File f = new File (getWorkDir (), "config/Modules");
         File f2 = new File (getWorkDir (), "modules");
         assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
@@ -416,7 +415,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     }
     
     void enableModule (UpdateUnit toEnable) throws Exception {
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject fo = FileUtil.getConfigFile("Modules");
         File f = new File (getWorkDir (), "config/Modules");
         File f2 = new File (getWorkDir (), "modules");
         assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
@@ -455,12 +454,12 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         File modules = new File (getWorkDir (), "modules");
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
         int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
-        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject foConfigModules = FileUtil.getConfigFile("Modules");
         assertNotNull (foConfigModules);
         int foConfigModulesSize = foConfigModules.getChildren ().length;
         
         assertFalse (fileChanges[1]);
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        FileObject fo = FileUtil.getConfigFile("Modules");
         assertNotNull (fo);
         assertTrue (fo.getChildren ().length > 0);
         assertNotNull (getModuleInfos ().get (toUnInstall.getCodeName ()));

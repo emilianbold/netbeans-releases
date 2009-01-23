@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -101,7 +101,7 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
             return element;
         }
         
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(rootFolderNamePrefix + name);
+        FileObject fo = FileUtil.getConfigFile(rootFolderNamePrefix + name);
         if (fo != null) {
             DataFolder folder = DataFolder.findFolder(fo);
             if (folder != null && folder.getName().equals(name)) {

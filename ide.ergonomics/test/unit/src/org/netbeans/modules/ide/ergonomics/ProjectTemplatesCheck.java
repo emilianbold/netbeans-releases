@@ -42,10 +42,8 @@ package org.netbeans.modules.ide.ergonomics;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ide.ergonomics.newproject.EnableStep;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -57,7 +55,7 @@ public class ProjectTemplatesCheck extends NbTestCase {
     }
     
     public void testCanGetWizardIteratorsForAllProjects() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
+        FileObject root = FileUtil.getConfigFile("Templates/Project");
         assertNotNull("project is available (need to run in NbModuleTest mode)", root);
         Enumeration<? extends FileObject> en = root.getChildren(true);
         StringBuilder sb = new StringBuilder();

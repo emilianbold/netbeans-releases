@@ -41,16 +41,12 @@
 
 package org.netbeans.modules.dbapi;
 
-import java.net.URL;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.api.explorer.MetaDataListener;
 import org.netbeans.modules.db.explorer.DbMetaDataListener;
 import org.netbeans.modules.db.test.DBTestBase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -89,8 +85,7 @@ public class DbMetaDataListenerImplTest extends DBTestBase {
             }
         }
 
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject listenersFO = FileUtil.createFolder(sfs.getRoot(), DbMetaDataListenerImpl.REFRESH_LISTENERS_PATH);
+        FileObject listenersFO = FileUtil.createFolder(FileUtil.getConfigRoot(), DbMetaDataListenerImpl.REFRESH_LISTENERS_PATH);
         FileObject listenerFO = listenersFO.createData("TestListener", "instance");
         TestListener listener = new TestListener();
         listenerFO.setAttribute("instanceCreate", listener);

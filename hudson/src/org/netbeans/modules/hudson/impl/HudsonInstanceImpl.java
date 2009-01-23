@@ -247,7 +247,9 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public String getUrl() {
-        return getProperties().get(INSTANCE_URL);
+        String url = getProperties().get(INSTANCE_URL);
+        assert url.endsWith("/") : url;
+        return url;
     }
     
     public synchronized Collection<HudsonJob> getJobs() {

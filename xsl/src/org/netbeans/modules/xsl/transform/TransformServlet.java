@@ -65,8 +65,7 @@ import org.netbeans.api.xml.cookies.XMLProcessorDetail;
 import org.netbeans.modules.xsl.utils.TransformUtil;
 import org.netbeans.spi.xml.cookies.DefaultXMLProcessorDetail;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXParseException;
@@ -221,8 +220,7 @@ public class TransformServlet extends HttpServlet {
     }
 
     private static URL getSampleHTTPServerURL() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
+	    FileObject fo = FileUtil.getConfigFile("HTTPServer_DUMMY");
 	    if (fo == null) {
 	        return null;
 	    }

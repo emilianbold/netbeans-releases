@@ -46,6 +46,44 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileUtil.addFileChangeListener2">
+            <api name="filesystems"/>
+            <summary>Possibility to add FileChangeListeners on File (even not existing)</summary>
+            <version major="7" minor="20"/>
+            <date day="14" month="1" year="2009"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@/org/openide/filesystems/FileUtil.html#addFileChangeListener(org.openide.filesystems.FileChangeListener,%20java.io.File)">
+                    FileUtil.addFileChangeListener(FileChangeListener listener, File path)</a>
+                    and <a href="@TOP@/org/openide/filesystems/FileUtil.html#removeFileChangeListener(org.openide.filesystems.FileChangeListener,%20java.io.File)">
+                    FileUtil.addFileChangeListener(FileChangeListener listener, File path)</a>.
+                    It permits you to listen to a file which does not yet exist,
+                    or continue listening to it after it is deleted and recreated, etc.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="33162"/>
+        </change>
+        <change id="FileUtil.getConfigFile">
+            <api name="filesystems"/>
+            <summary>Added FileUtil.getConfigFile and getConfigRoot for simpler access to default filesystem</summary>
+            <version major="7" minor="19"/>
+            <date day="12" month="1" year="2009"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Rather than having to call
+                    <code>Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(&quot;foo/bar&quot;)</code>,
+                    you can simply call
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigFile(java.lang.String)">FileUtil.getConfigFile(&quot;foo/bar&quot;)</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="91534"/>
+        </change>
         <change id="FileUtil.setMIMEType">
             <api name="filesystems"/>
             <summary>Persisted registration of file extension to MIME type</summary>

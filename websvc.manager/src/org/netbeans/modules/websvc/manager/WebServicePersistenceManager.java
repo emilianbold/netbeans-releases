@@ -68,8 +68,7 @@ import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -306,16 +305,13 @@ public class WebServicePersistenceManager implements ExceptionListener {
      *        or identical to existing group name if overwriting an existing component's folder
      */
     public static void loadPartnerService(String serviceFolder, String partnerName) {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = sfs.findResource(serviceFolder);
+        FileObject folder = FileUtil.getConfigFile(serviceFolder);
 
         loadPartnerFromFolder(folder, partnerName, true);
     }
 
     public static void loadPartnerServices() {
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-
-        FileObject f = sfs.findResource("RestComponents"); // NOI18N
+        FileObject f = FileUtil.getConfigFile("RestComponents"); // NOI18N
 
         if (f != null && f.isFolder()) {
             Enumeration<? extends FileObject> en = f.getFolders(false);

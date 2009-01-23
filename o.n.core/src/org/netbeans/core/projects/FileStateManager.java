@@ -46,11 +46,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import org.netbeans.core.startup.layers.SessionManager;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -60,7 +60,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /** Scans positions of FileObject-delegates for FileObjects from SystemFileSystem. Each
  *
@@ -169,7 +168,7 @@ final class FileStateManager {
             // ignore, will be handled later
         }
 
-        if (fs == null || !Repository.getDefault ().getDefaultFileSystem ().equals (fs))
+        if (fs == null || !fs.isDefault())
             throw new IllegalArgumentException ("FileObject has to be from DefaultFileSystem - " + mfo);
         
         synchronized (info) {

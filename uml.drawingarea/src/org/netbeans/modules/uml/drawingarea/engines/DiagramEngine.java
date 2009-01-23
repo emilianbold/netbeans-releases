@@ -97,8 +97,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -498,41 +497,37 @@ abstract public class DiagramEngine {
     {
         Object retVal = null;
         
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
+        FileObject fo = FileUtil.getConfigFile(path);
+        DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+        if (df != null)
         {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
+            DataObject[] engineObjects = df.getChildren();
+            for (int i = 0; i < engineObjects.length; i++)
             {
-                DataObject[] engineObjects = df.getChildren();
-                for (int i = 0; i < engineObjects.length; i++)
+                InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
+                if(ic != null)
                 {
-                    InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
-                    if(ic != null)
+                    try
                     {
-                        try
+                        Object obj = ic.instanceCreate();
+                        if (obj instanceof NodeWidgetFactory)
                         {
-                            Object obj = ic.instanceCreate();
-                            if (obj instanceof NodeWidgetFactory)
-                            {
-                                NodeWidgetFactory factory = (NodeWidgetFactory) obj;
-                                retVal = factory.createNode(scene);
-                                break;
-                            }
-                            else if (obj instanceof ConnectionWidgetFactory)
-                            {
-                                ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
-                                retVal = factory.createConnection(scene);
-                                break;
-                            }
+                            NodeWidgetFactory factory = (NodeWidgetFactory) obj;
+                            retVal = factory.createNode(scene);
+                            break;
                         }
-                        catch(Exception ex)
+                        else if (obj instanceof ConnectionWidgetFactory)
                         {
-                            Exceptions.printStackTrace(ex);
+                            ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
+                            retVal = factory.createConnection(scene);
+                            break;
                         }
-                        
+                    }
+                    catch(Exception ex)
+                    {
+                        Exceptions.printStackTrace(ex);
+                    }
+
 //                        try
 //                        {
 //                            Class cl = ic.instanceClass();
@@ -550,11 +545,10 @@ abstract public class DiagramEngine {
 //                            Exceptions.printStackTrace(e);
 //                            continue;
 //                        }
-                    }
-                    else
-                    {
-                        
-                    }
+                }
+                else
+                {
+
                 }
             }
         }
@@ -583,18 +577,12 @@ abstract public class DiagramEngine {
 
         RelationshipFactory retVal = null;
 
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-
-        if (system != null)
+        String path = "modeling/relationships/" + type + ".context_palette_item";
+        FileObject fo = FileUtil.getConfigFile(path);
+        if(fo != null)
         {
-            String path = "modeling/relationships/" + type + ".context_palette_item";
-            FileObject fo = system.findResource(path);
-            if(fo != null)
-            {
-                retVal = (RelationshipFactory)fo.getAttribute("factory");
-            }
+            retVal = (RelationshipFactory)fo.getAttribute("factory");
         }
-
         return retVal;
     }
     

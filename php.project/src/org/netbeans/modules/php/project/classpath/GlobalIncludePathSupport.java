@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  * @author Petr Hrebejk, Tomas Mysik
@@ -65,7 +64,7 @@ public class GlobalIncludePathSupport extends BaseIncludePathSupport {
     }
 
     public List<Item> itemsList() {
-        String[] pe = PropertyUtils.tokenizePath(PhpOptions.getInstance().getPhpGlobalIncludePath());
+        String[] pe = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
         List<Item> items = new ArrayList<Item>(pe.length);
         for (String p : pe) {
             Item item = null;

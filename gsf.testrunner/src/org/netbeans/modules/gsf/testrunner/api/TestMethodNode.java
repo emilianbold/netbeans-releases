@@ -84,8 +84,6 @@ public class TestMethodNode extends AbstractNode {
         this.project = project;
 
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/gsf/testrunner/resources/method.gif");    //NOI18N
         setShortDescription(TestsuiteNode.toTooltipText(testcase.getOutput()));
     }
 
@@ -173,12 +171,13 @@ public class TestMethodNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        Image methodIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/method.gif"); //NOI18N
-        if (failed()) {
-            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"); //NOI18N
-            return ImageUtilities.mergeImages(methodIcon, errorBadgeIcon, 0, 8);
+        if (Status.PENDING == testcase.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
         }
-        return methodIcon;
+        if (failed()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
     }
 
     @Override

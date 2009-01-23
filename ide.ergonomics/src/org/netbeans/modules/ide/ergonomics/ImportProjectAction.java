@@ -48,7 +48,7 @@ import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -66,7 +66,7 @@ public class ImportProjectAction implements ActionListener {
 
             public void run() {
                 FeatureInfo featureInfo = null;
-                for (FeatureInfo info : FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                for (FeatureInfo info : FeatureManager.features()) {
                     if ("Eclipse".equals(info.getProjectImporter())) { // NOI18N
                         featureInfo = info;
                         break;
@@ -86,7 +86,7 @@ public class ImportProjectAction implements ActionListener {
     private void performRegular(final ActionEvent actionEvent) {
         try {
             FoDFileSystem.getInstance().waitFinished();
-            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource("Menu/File/Import/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance");
+            FileObject delegate = FileUtil.getConfigFile("Menu/File/Import/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance");
             InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
             final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {

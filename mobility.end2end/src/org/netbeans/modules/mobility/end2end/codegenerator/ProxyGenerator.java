@@ -52,12 +52,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -85,22 +82,14 @@ import org.netbeans.modules.mobility.end2end.output.OutputLogger.LogLevel;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.OutputFileFormatter;
-import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -229,8 +218,7 @@ public class ProxyGenerator {
             ScriptEngine eng = mgr.getEngineByName( "freemarker" ); // NOI18N
             Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
-            FileObject template = Repository.getDefault().getDefaultFileSystem().
-                    getRoot().getFileObject( "Templates/Server/Proxy.java" ); // NOI18N
+            FileObject template = FileUtil.getConfigFile( "Templates/Server/Proxy.java" ); // NOI18N
             
             // Set code generation for server part
             JavonMapping mapping = dataObject.getMapping();

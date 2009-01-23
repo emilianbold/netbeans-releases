@@ -62,6 +62,7 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
             return results;
         
         // Create a new hudson instance
+        assert wizard.url.endsWith("/");
         HudsonInstance instance = HudsonInstanceImpl.createHudsonInstance(wizard.name, wizard.url, wizard.sync);
         
         if (null != instance)

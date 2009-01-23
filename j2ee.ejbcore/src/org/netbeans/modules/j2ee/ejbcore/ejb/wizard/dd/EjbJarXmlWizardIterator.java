@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -112,7 +111,7 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
         J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
         if (confRoot != null) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-" + j2eeModule.getModuleVersion() + ".xml";
-            FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "ejb-jar"); //NOI18N
+            FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "ejb-jar"); //NOI18N
             return Collections.singleton(ddFile);
         }
         return Collections.EMPTY_SET;

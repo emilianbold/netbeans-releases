@@ -40,189 +40,48 @@
  */
 package org.netbeans.modules.cnd.navigation.macroview;
 
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.UserQuestionException;
 
+/**
+ * Context menu action that opens Macro Expansion View panel
+ *
+ * @author Nick Krasilnikov
+ */
 public final class ShowMacroExpansionAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
         Document mainDoc = getDocument(activatedNodes);
-        if (mainDoc == null) {
-            return;
-        }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
-        if (csmFile == null) {
-            return;
-        }
-
-        // Init expanded context field
-
-        FileObject expandedContextFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
-        if(expandedContextFile == null) {
-            return;
-        }
-        Document expandedContextDoc = openFileDocument(expandedContextFile);
-        if(expandedContextDoc == null) {
-            return;
-        }
-        expandedContextDoc.putProperty(Document.TitleProperty, mainDoc.getProperty(Document.TitleProperty));
-        expandedContextDoc.putProperty(CsmFile.class, csmFile);
-        expandedContextDoc.putProperty(FileObject.class, expandedContextFile);
-
-        mainDoc.putProperty(Document.class, expandedContextDoc);
-        expandedContextDoc.putProperty(Document.class, mainDoc);
-        setupMimeType(expandedContextDoc);
-
-        CsmScope scope = ContextUtils.findScope(activatedNodes[0]);
-        if (CsmKindUtilities.isOffsetable(scope)) {
-            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset());
-            try {
-                expandedContextDoc.insertString(0, expandedText, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            String expandedText = CsmMacroExpansion.getExpandedText(csmFile, 0, mainDoc.getLength());
-            try {
-                expandedContextDoc.insertString(0, expandedText, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-
-
-
-        reformat(expandedContextDoc);
-        saveFile(expandedContextFile);
-//        lockFile(expandedContextFile);
-
-        // Init expanded macro field
-        FileObject expandedMacroFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
-        if(expandedMacroFile == null) {
-            return;
-        }
-        Document expandedMacroDoc = openFileDocument(expandedMacroFile);
-        if(expandedMacroDoc == null) {
-            return;
-        }
-        setupMimeType(expandedMacroDoc);
-
-        CsmDeclaration decl = ContextUtils.findDeclaration(activatedNodes[0]);
-        if (decl != null) {
-            try {
-                expandedMacroDoc.insertString(0, decl.getName().toString(), null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        reformat(expandedMacroDoc);
-        saveFile(expandedMacroFile);
-        lockFile(expandedMacroFile);
-
-
-
-        MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-        if (!view.isOpened()) {
-            view.open();
-        }
-        view.setDocuments(expandedContextDoc, expandedMacroDoc);
-        view.requestActive();
+        int offset = getOffset(activatedNodes);
+        CsmMacroExpansion.showMacroExpansionView(mainDoc, offset);
     }
 
-    private void setupMimeType(Document doc){
-        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        if (mimeTypeObj != null) {
-            if ("text/plain".equals(mimeTypeObj)){ // NOI18N
-                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
-            }
-        }
-    }
-
-    private FileObject createMemoryFile (String name) {
-        FileObject fo = null;
-        try {
-//            File f = File.createTempFile("temp", name);
-//            fo = FileUtil.createData(f);
-
-            FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-//            FileObject folder = FileUtil.createFolder(root, "folder"); // NOI18N
-            fo = FileUtil.createData(root, name);
-//            FileObject file = FileUtil.copyFile(FileUtil.createData(CsmUtilities.getFile(doc)), root, CsmUtilities.getFile(doc).getName());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return fo;
-    }
-
-    private Document openFileDocument (FileObject fo) {
-        Document doc = null;
-        try {
-            DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
-            try {
-                doc = ec.openDocument();
-            } catch (UserQuestionException ex) {
-                ex.confirmed();
-                doc = ec.openDocument();
-            }
-            if(doc != null) {
-                doc.putProperty(Document.StreamDescriptionProperty, dob);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return doc;
-    }
-
-    private void saveFile (FileObject fo) {
-        try {
-            DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
-            ec.saveDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private void lockFile (FileObject fo) {
-        try {
-            fo.lock();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     private Document getDocument(Node[] activatedNodes) {
         EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
         if (c != null) {
             return c.getDocument();
         }
         return null;
+    }
+
+    private int getOffset(Node[] activatedNodes) {
+        EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
+        if (c != null) {
+            JEditorPane[] panes = c.getOpenedPanes();
+            if (panes != null && panes.length > 0) {
+                return panes[0].getCaret().getDot();
+            }
+        }
+        return 0;
     }
 
     @Override
@@ -237,20 +96,6 @@ public final class ShowMacroExpansionAction extends CookieAction {
             return ContextUtils.findFile(activatedNodes[0]) != null;
         }
         return false;
-    }
-
-    private void reformat(Document doc) {
-        Reformat reformat = Reformat.get(doc);
-        reformat.lock();
-        try {
-            try {
-                reformat.reformat(0, doc.getLength());
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } finally {
-            reformat.unlock();
-        }
     }
 
     protected int mode() {

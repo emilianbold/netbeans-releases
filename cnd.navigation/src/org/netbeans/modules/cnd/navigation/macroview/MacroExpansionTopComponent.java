@@ -38,13 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -58,52 +56,65 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Top component which displays c/c++ hierarchy.
+ * Top component which displays macro expansion view.
+ *
+ * @author Nick Krasilnikov
  */
-final class MacroExpansionTopComponent extends TopComponent implements CsmModelListener {
+public final class MacroExpansionTopComponent extends TopComponent implements CsmModelListener {
 
     private static final Logger LOGGER = Logger.getLogger(MacroExpansionTopComponent.class.getName());
-
     private static MacroExpansionTopComponent instance;
     /** path to the icon used by the component and its open action */
-    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.gif"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
-
-    private JComponent last = null;
+    private MacroExpansionPanel panel = null;
+    private int lastDividerLocation = -1;
+    private boolean lastLocalContext = true;
 
     private MacroExpansionTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(MacroExpansionTopComponent.class, "HINT_MacroExpansionTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-
-//        // Don't highlight caret row
-//        declarationEditorPane.putClientProperty(
-//            "HighlightsLayerExcludes", // NOI18N
-//            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
-//        );
-
-        // remove
-        // setDeclaration("");
     }
 
-    MacroExpansionPanel panel = null;
-
-    void setDocuments(Document expandedContextDoc, Document expandedMacroDoc) {
-        panel = new MacroExpansionPanel(true);
-        panel.setContextExpansionDocument(expandedContextDoc);
-        panel.setMacroExpansionDocument(expandedMacroDoc);
+    /**
+     * Initializes documents of the panel.
+     */
+    public void setDocuments(Document expandedContextDoc, Document expandedMacroDoc) {
+        if (panel != null) {
+            lastDividerLocation = panel.getDividerLocation();
+        }
+        MacroExpansionPanel mep = new MacroExpansionPanel(true);
+        mep.setContextExpansionDocument(expandedContextDoc);
+        mep.setMacroExpansionDocument(expandedMacroDoc);
+        if (lastDividerLocation != -1) {
+            mep.setDividerLocation(lastDividerLocation);            
+        }
+        mep.setLocalContext(lastLocalContext);        
         removeAll();
-        add(panel, BorderLayout.CENTER);
+        add(mep, BorderLayout.CENTER);
         validate();
-        last = panel;
+        panel = mep;
+    }
+
+    /**
+     * Indicates scope for macro expansion (local or whole file).
+     *
+     * @return is macro expansion local
+     */
+    public boolean isLocalContext() {
+        if(panel != null) {
+            lastLocalContext = panel.isLocalContext();
+        }
+        return lastLocalContext;
     }
 
     @Override
     public void requestActive() {
         super.requestActive();
-        if (last != null) {
-            last.requestFocusInWindow();
+        if (panel != null) {
+            panel.requestFocusInWindow();
         }
     }
 
@@ -124,8 +135,6 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
         jButton1.setEnabled(false);
         add(jButton1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
@@ -153,7 +162,7 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
             return getDefault();
         }
         if (win instanceof MacroExpansionTopComponent) {
-            return (MacroExpansionTopComponent)win;
+            return (MacroExpansionTopComponent) win;
         }
         Logger.getLogger(MacroExpansionTopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
@@ -161,32 +170,48 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
         return getDefault();
     }
 
-    public @Override int getPersistenceType() {
+    public 
+    @Override
+    int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
-    public @Override void componentOpened() {
+    public 
+    @Override
+    void componentOpened() {
         CsmListeners.getDefault().addModelListener(this);
     }
 
-    public @Override void componentClosed() {
+    public 
+    @Override
+    void componentClosed() {
         removeAll();
         initComponents();
-        last = null;
+        if (panel != null) {
+            lastDividerLocation = panel.getDividerLocation();
+            lastLocalContext = panel.isLocalContext();
+            panel = null;
+        }
         CsmListeners.getDefault().removeModelListener(this);
     }
 
     /** replaces this in object stream */
-    public @Override Object writeReplace() {
+    public 
+    @Override
+    Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected @Override String preferredID() {
+    protected 
+    @Override
+    String preferredID() {
         return PREFERRED_ID;
     }
 
     final static class ResolvableHelper implements Serializable {
+
         private static final long serialVersionUID = 1L;
+
         public Object readResolve() {
             return MacroExpansionTopComponent.getDefault();
         }
@@ -198,6 +223,7 @@ final class MacroExpansionTopComponent extends TopComponent implements CsmModelL
     public void projectClosed(CsmProject project) {
         if (CsmModelAccessor.getModel().projects().isEmpty()) {
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     MacroExpansionTopComponent tc = MacroExpansionTopComponent.findInstance();
                     if (tc.isOpened()) {

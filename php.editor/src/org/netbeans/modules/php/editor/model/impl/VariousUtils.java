@@ -46,6 +46,7 @@ import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -95,7 +96,7 @@ public class VariousUtils {
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
 
-    static String extractTypeFroVariableBase(VariableBase varBase, Map<String, VariableNameImpl> allAssignments) {
+    static String extractTypeFroVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
         Stack<VariableBase> stack = new Stack<VariableBase>();
         String typeName = null;
         createVariableBaseChain(varBase, stack);
@@ -150,7 +151,7 @@ public class VariousUtils {
 
 
     @CheckForNull
-    static String extractVariableTypeFromAssignment(Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
+    static String extractVariableTypeFromAssignment(Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         Expression expression = assignment.getRightHandSide();
         if (expression instanceof Assignment) {
             // handle nested assignments, e.g. $l = $m = new ObjectName;
@@ -296,8 +297,30 @@ public class VariousUtils {
                             }
                         }
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
-                        //TODO: not implemented yet
-                        return Collections.<TypeScope>emptyList();
+                        
+                        String clsName = stack.isEmpty() ? null : stack.pop();
+                        String fldName = frag;
+                        if (!fldName.startsWith("$")) {//NOI18N
+                            fldName = "$" + fldName;//NOI18N
+                        }
+
+                        ClassScope cls = ModelUtils.getFirst(CachedModelSupport.getClasses(clsName, topScope));
+                        if (cls == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        FieldElement fld = ModelUtils.getFirst(CachedModelSupport.getInheritedFields(cls, fldName, topScope, PHPIndex.ANY_ATTR));
+                        if (fld == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        type = ModelUtils.getFirst(fld.getTypes(offset));
+                        if (type == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        stack.push(type.getName());
+                        operation = null;
                     } else {
                         throw new UnsupportedOperationException(operation);
                     }
@@ -488,17 +511,14 @@ public class VariousUtils {
         }
     }
 
-    private static String extractVariableTypeFromVariableBase(VariableBase varBase, Map<String, VariableNameImpl> allAssignments) {
+    private static String extractVariableTypeFromVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
         if (varBase instanceof Variable) {
             String varName = CodeUtils.extractVariableName((Variable) varBase);
-            VariableNameImpl nameImpl = allAssignments.get(varName);
-            if (nameImpl != null) {
-                VarAssignmentImpl last = ModelUtils.getLast(nameImpl.getAssignments());
-                if (last != null) {
-                    String semiTypeName = last.typeNameFromUnion();
-                    if (semiTypeName != null) {
-                        return semiTypeName;
-                    }
+            AssignmentImpl assignmentImpl = allAssignments.get(varName);
+            if (assignmentImpl != null) {
+                String semiTypeName = assignmentImpl.typeNameFromUnion();
+                if (semiTypeName != null) {
+                    return semiTypeName;
                 }
             }
             return "@" + VAR_TYPE_PREFIX + varName;

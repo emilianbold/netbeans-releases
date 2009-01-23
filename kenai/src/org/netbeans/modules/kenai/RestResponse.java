@@ -51,6 +51,7 @@ import java.util.logging.Logger;
  * @author Maros Sandor
  */
 public class RestResponse {
+
     private ByteArrayOutputStream os;
     private String contentType = "text/plain";
     private String contentEncoding;
@@ -58,11 +59,21 @@ public class RestResponse {
     private String responseMsg;
     private long lastModified;
 
-    
     public RestResponse() {
         os = new ByteArrayOutputStream();
+
+        String testUrl = System.getProperty("netbeans.t9y.kenai.testUrl");
+        if (testUrl != null && testUrl.length() > 0) {
+            byte[] buff = testUrl.getBytes();
+            int r = 0;
+            ByteArrayInputStream bis = new ByteArrayInputStream(buff);
+            while ((r = bis.read()) != -1) {
+                os.write(r);
+            }
+        }
+
     }
-    
+
     public RestResponse(byte[] bytes) throws IOException {
         this();
 
@@ -77,7 +88,7 @@ public class RestResponse {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
-    
+
     public String getContentType() {
         return contentType;
     }
@@ -85,49 +96,55 @@ public class RestResponse {
     public void setContentEncoding(String contentEncoding) {
         this.contentEncoding = contentEncoding;
     }
-    
+
     public void setResponseMessage(String msg) {
         this.responseMsg = msg;
     }
-    
+
     public String getResponseMessage() {
         return responseMsg;
     }
-    
+
     public void setResponseCode(int code) {
         this.responseCode = code;
     }
-    
+
     public int getResponseCode() {
+        String testUrl = System.getProperty("netbeans.t9y.kenai.testUrl");
+        if (testUrl != null && testUrl.length() > 0) {
+            return 200;
+        }
+
         return responseCode;
+        
     }
-    
+
     public void setLastModified(long lastModified) {
         this.lastModified = lastModified;
     }
-    
+
     public long getLastModified() {
         return lastModified;
     }
-    
+
     public void write(byte[] bytes, int start, int length) {
         os.write(bytes, start, length);
     }
-    
+
     public byte[] getDataAsByteArray() {
         return os.toByteArray();
     }
-    
+
     public String getDataAsString() {
         try {
             return os.toString("UTF-8");
         } catch (Exception ex) {
             Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return null;
     }
-    
+
     public OutputStream getOutputStream() {
         return os;
     }
@@ -137,10 +154,6 @@ public class RestResponse {
 //    }
 //
 //    public <T> T getDataAsObject(Class<T> clazz, String packageName) throws JAXBException {
-
-
-
-
 //        JAXBContext jc = JAXBContext.newInstance(packageName);
 //        Unmarshaller u = jc.createUnmarshaller();
 //        Object obj = u.unmarshal(new StreamSource(new StringReader(getDataAsString())));
@@ -151,5 +164,4 @@ public class RestResponse {
 //            return (T) obj;
 //        }
 //    }
-
 }

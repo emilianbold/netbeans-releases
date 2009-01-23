@@ -50,7 +50,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -80,7 +80,7 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
         Logger.getLogger("org.netbeans.JarClassLoader").setLevel(Level.OFF);
         Logger.getLogger("org.netbeans.Archive").setLevel(Level.OFF);
         
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
+        FileObject root = FileUtil.getConfigFile("Menu");
         FileObject edit = root.getFileObject("Edit");
         if (edit != null) {
             StringBuilder sb = new StringBuilder();

@@ -50,7 +50,6 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -87,8 +86,7 @@ public class RssNode extends FilterNode {
     public static class RootRssNode extends RssNode {
         public RootRssNode() throws DataObjectNotFoundException {
             super(DataObject.find(
-                    Repository.getDefault().getDefaultFileSystem()
-                    .getRoot().getFileObject("RssFeeds")).getNodeDelegate());
+                    FileUtil.getConfigFile("RssFeeds")).getNodeDelegate());
         }
         
         @Override

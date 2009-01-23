@@ -50,15 +50,15 @@ public class HudsonProviderImpl implements ProjectHudsonProvider {
             String url = mag.getUrl();
             int index = url.indexOf("/job/");
             if (index > 0) {
-                url = url.substring(0, index);
+                url = url.substring(0, index + 1);
             }
             return url;
         }
-        return "http://localhost";
+        return "http://localhost/";
     }
 
     public String getName() {
-        return getServerUrl().replaceFirst("https?://", "");
+        return getServerUrl().replaceFirst("https?://", "").replaceFirst("/$", ""); // NOI18N
     }
 
     public String getJobName() {

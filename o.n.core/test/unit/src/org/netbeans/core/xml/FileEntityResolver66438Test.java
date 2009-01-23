@@ -13,7 +13,6 @@ import org.netbeans.core.LoggingTestCaseHid;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Lookup;
@@ -35,7 +34,7 @@ public class FileEntityResolver66438Test extends LoggingTestCaseHid {
         
         // register Env as a handler for PublicIDs "-//NetBeans//Test//EN" which
         // is will contain the settings file we create
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject root = FileUtil.getConfigRoot();
         FileObject register = FileUtil.createData (root, "/xml/lookups/NetBeans/Test.instance");
         register.setAttribute("instanceCreate", Env.INSTANCE);
         assertTrue (register.getAttribute("instanceCreate") instanceof Environment.Provider);

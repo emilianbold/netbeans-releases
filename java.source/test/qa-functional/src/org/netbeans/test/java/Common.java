@@ -79,7 +79,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.filesystems.Repository;
 //import org.openide.src.MethodParameter;
 //import org.openide.src.Type;
 
@@ -427,7 +426,7 @@ public class Common extends Object {
     
     /** Get a data object by name. */
     public static DataObject getSystemDO(String pkg, String name, String ext) throws Exception {
-        return DataObject.find(Repository.getDefault().getDefaultFileSystem().findResource(pkg+"/"+name+"."+ext));
+        return DataObject.find(FileUtil.getConfigFile(pkg+"/"+name+"."+ext));
     }
        
     /** Compares two Arrays

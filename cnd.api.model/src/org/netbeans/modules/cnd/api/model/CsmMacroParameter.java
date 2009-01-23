@@ -43,5 +43,5 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Voskresensky
  */
-public interface CsmMacroParameter extends CsmOffsetableName, CsmIdentifiable<CsmMacroParameter> {
+public interface CsmMacroParameter extends CsmOffsetableName {
 }

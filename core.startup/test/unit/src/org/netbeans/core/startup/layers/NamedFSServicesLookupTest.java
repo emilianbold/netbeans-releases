@@ -51,7 +51,6 @@ import org.netbeans.core.startup.MainLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -85,7 +84,7 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         Lookup.getDefault().lookup(ModuleInfo.class);
         assertEquals(MainLookup.class, Lookup.getDefault().getClass());
 
-        root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        root = FileUtil.getConfigRoot();
         for (FileObject fo : root.getChildren()) {
             fo.delete();
         }

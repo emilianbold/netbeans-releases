@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.visualweb.project.jsf.libraries;
 
-import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
+import org.netbeans.modules.visualweb.webui.jsf.defaulttheme.libraries.provider.ComponentLibraryTypeProvider;
 
 import java.io.IOException;
 import java.net.URL;

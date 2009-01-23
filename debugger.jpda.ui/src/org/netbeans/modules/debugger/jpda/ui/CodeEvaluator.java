@@ -130,6 +130,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         historyToggleButton.setMargin(new Insets(2,3,2,3));
         historyToggleButton.setFocusable(false);
+        rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {
@@ -238,14 +239,17 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         add(editorScrollPane, gridBagConstraints);
 
         separatorPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+        separatorPanel.setMaximumSize(new java.awt.Dimension(1, 32767));
+        separatorPanel.setMinimumSize(new java.awt.Dimension(1, 10));
         separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         add(separatorPanel, gridBagConstraints);
 
-        rightPanel.setPreferredSize(new java.awt.Dimension(94, 209));
+        rightPanel.setPreferredSize(new java.awt.Dimension(64, 209));
         rightPanel.setLayout(new java.awt.GridBagLayout());
 
+        evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.gif"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
@@ -257,11 +261,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
 
-        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/eval_history.png"))); // NOI18N
         historyToggleButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.historyToggleButton.text")); // NOI18N
         historyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Show_History")); // NOI18N
         historyToggleButton.addActionListener(new java.awt.event.ActionListener() {
@@ -272,14 +276,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         rightPanel.add(historyToggleButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         rightPanel.add(emptyPanel, gridBagConstraints);
 
@@ -360,6 +363,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (result == null && resultView == null) {
+                    return ; // Ignore when nothing to display and nothing is initialized.
+                }
                 if (resultView == null) {
                     resultView = getResultViewInstance();
                 }
@@ -374,15 +380,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private void addResultToHistory(String expr, Variable result) {
-        int index = expr.indexOf('\n');
-        if (index < 0) {
-            index = expr.length();
-        }
-        index = Math.min(index, 15); // [TODO] constant
-        String shortExpr = expr.substring(0, index);
         String type = result.getType();
         String value = result.getValue();
-        historyPanel.addItem(shortExpr, type, value);
+        historyPanel.addItem(expr, type, value);
     }
 
     // KeyListener implementation ..........................................
@@ -458,18 +458,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private void initResult(ResultView view) {
         javax.swing.JComponent tree = Models.createView (Models.EMPTY_MODEL);
-        Container hackedFCR = (Container) ((Container) ((Container) tree.getComponents()[0]).getComponents()[0]).getComponents()[0];
-        hackedFCR = (Container) tree.getComponents()[0];
-        try {
-            java.lang.reflect.Field treeTableField = hackedFCR.getClass().getSuperclass().getDeclaredField("treeTable");
-            treeTableField.setAccessible(true);
-            hackedFCR = (Container) treeTableField.get(hackedFCR);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        hackedFCR.setFocusCycleRoot(false);
-        hackedFCR.setFocusTraversalPolicy(null);
-        hackedFCR.setFocusTraversalPolicyProvider(false);
         view.add (tree, BorderLayout.CENTER);
         viewModelListener = new EvaluatorModelListener (
             tree

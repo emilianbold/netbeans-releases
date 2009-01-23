@@ -71,7 +71,6 @@ import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
@@ -80,7 +79,6 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 /**
  *
@@ -253,8 +251,6 @@ public class RegisterPointbase implements DatabaseRuntime {
             String installRoot = irf.getAbsolutePath();
             if (installRoot!=null) {
                 
-                final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                
                 File derbyInstall = new File(irf,"derby");//NOI18N
                 if (!derbyInstall.exists()){
                     derbyInstall = new File(irf,"javadb");//NOI18N for latest Glassfish
@@ -265,7 +261,7 @@ public class RegisterPointbase implements DatabaseRuntime {
                     registerDerbyLibrary(derbyInstall);
                 }
                 if (derbyInstall.exists()){
-                    final FileObject derb = fs.findResource("Databases/JDBCDrivers/org_apache_derby_jdbc_ClientDriver.xml"); //NOI18N
+                    final FileObject derb = FileUtil.getConfigFile("Databases/JDBCDrivers/org_apache_derby_jdbc_ClientDriver.xml"); //NOI18N
                     final File installDir = derbyInstall;
                     // create sample db if things are not initialized correctly
                     RequestProcessor.getDefault().post(new ConfigureJavaDBSamples(installDir,derb));
@@ -274,7 +270,7 @@ public class RegisterPointbase implements DatabaseRuntime {
                 File localInstall = new File(irf,"pointbase");  //NOI18N
                 
                 if (localInstall.exists()){
-                    configureForPointbaseSamples(installRoot, irf, localInstall, fs);
+                    configureForPointbaseSamples(installRoot, irf, localInstall);
                 } // stop here
             }
         }
@@ -325,11 +321,11 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
     }
 
-    private void configureForPointbaseSamples(final String installRoot, final File irf, final File localInstall, final FileSystem fs) {
+    private void configureForPointbaseSamples(final String installRoot, final File irf, final File localInstall) {
         appServerInstallationDirectory =irf;
         AddPointBaseMenus.execute();
         
-        FileObject props = fs.findResource("Databases/JDBCDrivers/com_pointbase_jdbc_jdbcUniversalDriver.xml");
+        FileObject props = FileUtil.getConfigFile("Databases/JDBCDrivers/com_pointbase_jdbc_jdbcUniversalDriver.xml");
         if (props==null) {
             // Go to the conf dir
             File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");  //NOI18N
@@ -568,8 +564,7 @@ public class RegisterPointbase implements DatabaseRuntime {
      *
      **/
     private void registerDerbyLibrary(final File location) { // , final String name){
-        final Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        final FileObject libsFolder = rep.getDefaultFileSystem().findResource("/org-netbeans-api-project-libraries/Libraries"); //NOI18N
+        final FileObject libsFolder = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries"); //NOI18N
         if (libsFolder!=null){
             try {
                 libsFolder.getFileSystem().runAtomicAction(

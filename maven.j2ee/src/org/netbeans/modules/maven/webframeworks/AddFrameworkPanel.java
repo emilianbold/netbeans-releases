@@ -74,7 +74,7 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
             } else {
                 boolean isUsed = false;
                 for (int j = 0; j < usedFrameworks.size(); j++) {
-                    if (((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+                    if (usedFrameworks.get(j).getName().equals(framework.getName())) {
                         isUsed = true;
                         break;
                     }

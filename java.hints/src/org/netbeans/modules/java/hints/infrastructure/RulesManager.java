@@ -67,8 +67,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 
@@ -190,8 +189,7 @@ public class RulesManager implements FileChangeListener {
     private void initErrors() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         errorsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + ERRORS );
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + ERRORS );
         List<Pair<Rule,FileObject>> rules = readRules( folder );
         categorizeErrorRules(rules, errors, folder, rootNode);
     }
@@ -199,8 +197,7 @@ public class RulesManager implements FileChangeListener {
     private void initHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         hintsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + HINTS );
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + HINTS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeTreeRules( rules, hints, folder, rootNode );
     }
@@ -209,8 +206,7 @@ public class RulesManager implements FileChangeListener {
     private void initSuggestions() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         suggestionsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + SUGGESTIONS );
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + SUGGESTIONS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeTreeRules(rules, suggestions, folder, rootNode);
     }

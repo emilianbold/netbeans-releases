@@ -98,7 +98,8 @@ public class SiteOutputProcessor implements OutputProcessor {
         
         public void outputLineAction(OutputEvent arg0) {
             File site = FileUtil.normalizeFile(root);
-            FileObject fo = FileUtilities.toFileObject(site);
+            FileUtil.refreshFor(site);
+            FileObject fo = FileUtil.toFileObject(site);
             if (fo != null) {
                 FileObject index = fo.getFileObject("index.html"); //NOI18N
                 if (index != null) {

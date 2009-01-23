@@ -58,6 +58,11 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public class Interface extends Classifier implements IInterface 
 {
+    public Interface()
+    {
+        super();
+    }
+
 	/**
 	 * method AddReception
 	*/
@@ -112,11 +117,13 @@ public class Interface extends Classifier implements IInterface
 	 * [in] The document where this element will reside
 	 * [in] The element's parent node.
 	 */	
+    @Override
 	public void establishNodePresence(Document doc, Node parent)
 	{
 		super.buildNodePresence("UML:Interface",doc,parent);
 	}
 	
+    @Override
 	public void establishNodeAttributes(Element node)
 	{
 		super.establishNodeAttributes(node);
@@ -128,6 +135,7 @@ public class Interface extends Classifier implements IInterface
 	 * correct stereotype is set on the interface after it has
 	 * been created and added to a project.
 	 */
+    @Override
 	public void setOwner(IElement owner)
 	{
 		super.setOwner(owner);
@@ -139,9 +147,9 @@ public class Interface extends Classifier implements IInterface
 	 * This routine is overloaded here so that certain stereotypes
 	 * are removed before a transform is done.
 	 */
+    @Override
 	public void preTransformNode(String typeName)
 	{
-		//super.deleteStereotype("PSK_INTERFACE");
             super.deleteStereotype("interface"); //Jyothi: Fix for Bug#6301700
 	}
 	
