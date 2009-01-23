@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <p>
    In case your module is using <code>projectized.xml</code> you can simply run
-   <code>ant findbugs</code> to check your module. In such case result is
+   <code>ant findbugs</code> to check your module. In such case the result is
    available in <code>nbbuild/build/findbugs/your-module-name.xml</code>.
   </p>
  </answer>
@@ -119,9 +119,56 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+  <usecase id="check-return-value" name="CheckReturnValue annotated method">
+   <p>
+    When the method return value is important value to check (or the only effect
+    the method has) the method can be annotated with
+    <a href="@TOP@org/netbeans/api/annotations/common/CheckReturnValue.html">CheckReturnValue</a>.
+    Annotation servers as documentation as well as a hint for static code analysis.
+   </p>
+  </usecase>
+  <usecase id="check-for-null" name="CheckForNull annotated method">
+   <p>
+    Method annotated with
+    <a href="@TOP@org/netbeans/api/annotations/common/CheckForNull.html">CheckForNull</a>
+    may return <code>null</code> value. Annotation servers as documentation
+    as well as a hint for static code analysis.
+   </p>
+  </usecase>
+  <usecase id="non-null" name="NonNull annotated element">
+   <p>
+    When the field, parameter, local variable or return value of the method
+    must not be <code>null</code> the
+    <a href="@TOP@org/netbeans/api/annotations/common/NonNull.html">NonNull</a>
+    annotation can be used to clearly express this. It servers as documentation
+    as well as a hint for static code analysis.
+   </p>
+  </usecase>
+  <usecase id="null-allowed" name="NullAllowed annotated element">
+   <p>
+    Field, parameter or local variable annotated with
+    <a href="@TOP@org/netbeans/api/annotations/common/NullAllowed.html">NullAllowed</a>
+    can contain <code>null</code> value so <code>null</code> check should
+    occur before any dereference. Annotation servers as documentation
+    as well as a hint for static code analysis.
+   </p>
+  </usecase>
+  <usecase id="null-unknown" name="NullUnknown annotated element">
+   <p>
+    Annotation
+    <a href="@TOP@org/netbeans/api/annotations/common/NullUnknown.html">NullUnknown</a>
+    complementing other nullness annotations servers for cases where
+    the element may or may not be <code>null</code> under certain
+    <i>defined</i> circumstances (usage).
+   </p>
+  </usecase>
+  <usecase id="suppress-warnings" name="SuppressWarnings annotated element">
+   <p>
+    When the analysis tool report false warning it is possible to use
+    <a href="@TOP@org/netbeans/api/annotations/common/SuppressWarnings.html">SuppressWarning</a>
+    annotation to suppress the warning.
+   </p>
+  </usecase>
  </answer>
 
 
@@ -138,7 +185,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+   Provides common annotations serving as a documentation element and for
+   static code analysis.
   </p>
  </answer>
 
@@ -173,7 +221,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   Modules gsf.api and asm should remove or deprecate their own annotations
+   in favor of this module.
   </p>
  </answer>
 
@@ -191,7 +240,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   Yes.
   </p>
  </answer>
 
@@ -205,7 +254,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No. Partially related to unfinished JSR-305.
   </p>
  </answer>
 
@@ -227,7 +276,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   Yes. No settings stored.
   </p>
  </answer>
 
@@ -245,7 +294,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   1.5
   </p>
  </answer>
 
@@ -258,7 +307,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE is enough.
   </p>
  </answer>
 
@@ -311,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   None. In future dependency on JSR-305 could be introduced.
   </p>
  </answer>
 
@@ -339,7 +388,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   No known platform dependencies.
   </p>
  </answer>
 
@@ -391,7 +440,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   Just the single JAR file.
   </p>
  </answer>
 
@@ -407,7 +456,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -428,7 +477,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Only API packages are exported. JDK bug workarounded in build harness (#152562).
   </p>
  </answer>
 
@@ -446,7 +495,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   Anywhere.
   </p>
  </answer>
 
@@ -466,7 +515,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   No.
   </p>
  </answer>
 
@@ -482,7 +531,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -505,7 +554,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   No.
   </p>
  </answer>
 
@@ -525,7 +574,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   No.
   </p>
  </answer>
 
@@ -543,7 +592,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   No.
   </p>
  </answer>
 
@@ -561,7 +610,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   No.
   </p>
  </answer>
 
@@ -589,7 +638,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -607,7 +656,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -639,7 +688,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   Annotations only. No threading model.
   </p>
  </answer>
 
@@ -658,7 +707,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   None.
   </p>
  </answer>
 
@@ -676,7 +725,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   None.
   </p>
  </answer>
 
@@ -707,7 +756,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   None.
   </p>
  </answer>
 
@@ -739,7 +788,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+   No.
   </p>
  </answer>
 
@@ -756,7 +805,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   No.
   </p>
  </answer>
 
@@ -773,7 +822,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -786,7 +835,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   No.
   </p>
  </answer>
 
@@ -800,7 +849,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   No.
   </p>
  </answer>
 
@@ -827,7 +876,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   No.
   </p>
  </answer>
 
@@ -841,7 +890,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   Except the fact that usage of annotations can increase class size there
+   is no memory used by this API.
   </p>
  </answer>
 
@@ -863,7 +913,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   No.
   </p>
  </answer>
 
@@ -887,7 +937,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   No.
   </p>
  </answer>
 
@@ -906,7 +956,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   No external criteria.
   </p>
  </answer>
 
@@ -924,7 +974,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   No SPI way to plug in foreign code.
   </p>
  </answer>
 
@@ -937,7 +987,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -951,7 +1001,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -972,7 +1022,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   No.
   </p>
  </answer>
 
@@ -995,7 +1045,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   No.
   </p>
  </answer>
 
@@ -1016,7 +1066,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -1041,7 +1091,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   No.
   </p>
  </answer>
 
@@ -1061,7 +1111,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   No.
   </p>
  </answer>
 
@@ -1079,7 +1129,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1096,7 +1146,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 
