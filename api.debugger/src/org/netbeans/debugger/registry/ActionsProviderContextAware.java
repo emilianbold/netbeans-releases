@@ -82,6 +82,11 @@ public class ActionsProviderContextAware extends ActionsProvider implements Cont
     }
 
     @Override
+    public void postAction(Object action, Runnable actionPerformedNotifier) {
+        getDelegate().postAction(action, actionPerformedNotifier);
+    }
+
+    @Override
     public boolean isEnabled(Object action) {
         return getDelegate().isEnabled(action);
     }

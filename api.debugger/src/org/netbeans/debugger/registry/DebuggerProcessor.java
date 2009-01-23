@@ -77,10 +77,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.netbeans.spi.debugger.ActionsProvider.Registration", //NOI18N
-                          "org.netbeans.spi.debugger.DebuggerEngineProvider.Registration", //NOI18N
-                          "org.netbeans.spi.debugger.SessionProvider.Registration", //NOI18N
-                          "org.netbeans.spi.debugger.InterfaceRegistration" //NOI18N
+@SupportedAnnotationTypes({"org.netbeans.spi.debugger.ActionsProvider.Registration",        //NOI18N
+                           "org.netbeans.spi.debugger.DebuggerEngineProvider.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.SessionProvider.Registration",        //NOI18N
+                           "org.netbeans.spi.debugger.DebuggerServiceRegistration"          //NOI18N
                           })
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
