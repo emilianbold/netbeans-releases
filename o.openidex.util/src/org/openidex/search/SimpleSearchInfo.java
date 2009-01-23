@@ -52,7 +52,7 @@ import org.openide.loaders.DataObject;
  *
  * @author  Marian Petras
  */
-class SimpleSearchInfo implements SearchInfo {
+class SimpleSearchInfo implements SearchInfo.Files {
 
     /**
      * Empty search info object.
@@ -61,13 +61,16 @@ class SimpleSearchInfo implements SearchInfo {
      * (returned by method
      * {@link SearchInfo#objectsToSearch objectsToSearch()}) has no elements.
      */
-    static final SearchInfo EMPTY_SEARCH_INFO
-        = new SearchInfo() {
+    static final SearchInfo.Files EMPTY_SEARCH_INFO
+        = new SearchInfo.Files() {
             public boolean canSearch() {
                 return true;
             }
             public Iterator<DataObject> objectsToSearch() {
                 return Collections.<DataObject>emptyList().iterator();
+            }
+            public Iterator<FileObject> filesToSearch() {
+                return Collections.<FileObject>emptyList().iterator();
             }
         };
         
@@ -112,6 +115,12 @@ class SimpleSearchInfo implements SearchInfo {
     /**
      */
     public Iterator<DataObject> objectsToSearch() {
+        return Utils.toDataObjectIterator(filesToSearch());
+    }
+
+    /**
+     */
+    public Iterator<FileObject> filesToSearch() {
         return new SimpleSearchIterator(rootFolder,
                                         recursive,
                                         filters != null ? Arrays.asList(filters)

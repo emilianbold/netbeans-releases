@@ -207,9 +207,9 @@ public abstract class CsmResultItem implements CompletionItem {
         ((CsmPaintComponent) renderComponent).paintComponent(g);
     }
 
-    protected static String getTypeName(CsmType typ) {
+    protected static CharSequence getTypeName(CsmType typ) {
 //        return typ.format(false);
-        return typ.getText().toString();
+        return typ.getText();
     }
 
     /**
@@ -336,7 +336,7 @@ public abstract class CsmResultItem implements CompletionItem {
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
-                StringBuffer buf = new StringBuffer(ts.token().text());
+                StringBuilder buf = new StringBuilder(ts.token().text());
                 if (isIncludesEqual(include, buf.toString())) {
                     return true;
                 }
@@ -560,18 +560,18 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class MacroResultItem extends CsmResultItem {
 
-        private String macName;
+        private CharSequence macName;
         private List params;
         private static CsmPaintComponent.MacroPaintComponent macroPaintComp = null;
 
         public MacroResultItem(CsmMacro mac, int priotity) {
             super(mac, priotity);
-            this.macName = mac.getName().toString();
+            this.macName = mac.getName();
             this.params = mac.getParameters();
         }
 
         private String getName() {
-            return macName;
+            return macName.toString();
         }
 
         private List getParams() {
@@ -590,7 +590,6 @@ public abstract class CsmResultItem implements CompletionItem {
             if (macroPaintComp == null) {
                 macroPaintComp = createPaintComponent();
             }
-            CsmMacro mac = (CsmMacro) getAssociatedObject();
             macroPaintComp.setName(getName());
             macroPaintComp.setParams(getParams());
             macroPaintComp.setSelected(isSelected);
@@ -600,16 +599,16 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class TemplateParameterResultItem extends CsmResultItem {
 
-        private String parName;
+        private CharSequence parName;
         private static CsmPaintComponent.TemplateParameterPaintComponent parPaintComp = null;
 
         public TemplateParameterResultItem(CsmTemplateParameter par, int priotity) {
             super(par, priotity);
-            this.parName = par.getName().toString();
+            this.parName = par.getName();
         }
 
         private String getName() {
-            return parName;
+            return parName.toString();
         }
 
         public String getItemText() {
@@ -632,16 +631,16 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class LabelResultItem extends CsmResultItem {
 
-        private String parName;
+        private CharSequence parName;
         private static CsmPaintComponent.LabelPaintComponent parPaintComp = null;
 
         public LabelResultItem(CsmLabel par, int priotity) {
             super(par, priotity);
-            this.parName = par.getLabel().toString();
+            this.parName = par.getLabel();
         }
 
         private String getName() {
-            return parName;
+            return parName.toString();
         }
 
         public String getItemText() {
@@ -664,9 +663,9 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public abstract static class VariableResultItem extends CsmResultItem {
 
-        private String typeName;
+        private CharSequence typeName;
         private Color typeColor;
-        private String fldName;
+        private CharSequence fldName;
         private int modifiers;
         private static CsmPaintComponent.FieldPaintComponent fieldComponent = null;
         private static CsmPaintComponent.FieldPaintComponent globVarComponent = null;
@@ -675,14 +674,14 @@ public abstract class CsmResultItem implements CompletionItem {
 
         public VariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
-            this.fldName = fld.getName().toString();
+            this.fldName = fld.getName();
             this.modifiers = convertCsmModifiers(fld);
             this.typeName = getTypeName(fld.getType());
             this.typeColor = getTypeColor(fld.getType());
         }
 
         public String getItemText() {
-            return fldName;
+            return fldName.toString();
         }
 
         abstract protected CsmPaintComponent.FieldPaintComponent createPaintComponent();
@@ -714,8 +713,8 @@ public abstract class CsmResultItem implements CompletionItem {
                 }
                 comp = localVarComponent;
             }
-            comp.setTypeName(typeName);
-            comp.setName(fldName);
+            comp.setTypeName(typeName.toString());
+            comp.setName(fldName.toString());
             comp.setTypeColor(typeColor);
             comp.setModifiers(modifiers);
             comp.setSelected(isSelected);
@@ -803,7 +802,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private static CsmPaintComponent.MethodPaintComponent mtdComponent = null;
         private static CsmPaintComponent.MethodPaintComponent globFunComponent = null;
-        private String typeName;
+        private CharSequence typeName;
         private Color typeColor;
 
         public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
@@ -813,7 +812,7 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         public String getTypeName() {
-            return typeName;
+            return typeName.toString();
         }
 
         public void setTypeName(String typeName) {
@@ -873,7 +872,7 @@ public abstract class CsmResultItem implements CompletionItem {
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
-        private final String mtdName;
+        private final CharSequence mtdName;
 
         public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
             super(ctr, priority);
@@ -882,9 +881,9 @@ public abstract class CsmResultItem implements CompletionItem {
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
             if (CsmKindUtilities.isTemplate(ctr)) {
-                mtdName = ((CsmTemplate) ctr).getDisplayName().toString();
+                mtdName = ((CsmTemplate) ctr).getDisplayName();
             } else {
-                mtdName = ctr.getName().toString();
+                mtdName = ctr.getName();
             }
             int i = 0;
             for (Object prm : ctr.getParameters()) {
@@ -938,7 +937,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         public String getName() {
             // TODO review the output
-            return mtdName;
+            return mtdName.toString();
         }
 
         public List getParams() {
@@ -963,7 +962,7 @@ public abstract class CsmResultItem implements CompletionItem {
         public List<String> createParamsList() {
             List<String> ret = new ArrayList<String>();
             for (Iterator it = getParams().iterator(); it.hasNext();) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 ParamStr ps = (ParamStr) it.next();
                 sb.append(ps.getSimpleTypeName());
                 if (ps.isVarArg()) {
@@ -1192,18 +1191,16 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class NamespaceAliasResultItem extends CsmResultItem {
 
-        private CsmNamespaceAlias alias;
-        private String aliasName;
+        private CharSequence aliasName;
         private static CsmPaintComponent.NamespaceAliasPaintComponent aliasComponent;
 
         public NamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath, int priotity) {
             super(alias, priotity);
-            this.alias = alias;
-            this.aliasName = alias.getAlias().toString();
+            this.aliasName = alias.getAlias();
         }
 
         public String getItemText() {
-            return alias.getAlias().toString();
+            return aliasName.toString();
         }
 
         protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent() {
@@ -1215,7 +1212,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 aliasComponent = createPaintComponent();
             }
             aliasComponent.setSelected(isSelected);
-            aliasComponent.setAliasName(aliasName);
+            aliasComponent.setAliasName(aliasName.toString());
             return aliasComponent;
         }
     }
@@ -1224,14 +1221,14 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private boolean displayFullNamespacePath;
         private CsmNamespace pkg;
-        private String pkgName;
+        private CharSequence pkgName;
         private static CsmPaintComponent.NamespacePaintComponent pkgComponent;
 
         public NamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath, int priotity) {
             super(pkg, priotity);
             this.pkg = pkg;
             this.displayFullNamespacePath = displayFullNamespacePath;
-            this.pkgName = pkg.getName().toString();
+            this.pkgName = pkg.getName();
         }
 
         public String getItemText() {
@@ -1247,7 +1244,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 pkgComponent = createPaintComponent();
             }
             pkgComponent.setSelected(isSelected);
-            pkgComponent.setNamespaceName(pkgName);
+            pkgComponent.setNamespaceName(pkgName.toString());
             pkgComponent.setDisplayFullNamespacePath(displayFullNamespacePath);
             return pkgComponent;
         }

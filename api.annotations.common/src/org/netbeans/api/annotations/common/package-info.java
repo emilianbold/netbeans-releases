@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,32 +37,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.api.annotations.common;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
- * Supress the warning reported by the code analyzing tool.
- *
- * @author Petr Hejl
+ * The API containg common annotations (namely for defect detection)
+ * to be used across the IDE sources.
+ * <p>
+ * Annotations are respected (and so annotated elements may be checked)
+ * by FindBugs tool.
  */
-@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.LOCAL_VARIABLE,
-        ElementType.METHOD, ElementType.PACKAGE, ElementType.PARAMETER, ElementType.TYPE})
-@Retention(RetentionPolicy.CLASS)
-public @interface SuppressWarnings {
+package org.netbeans.api.annotations.common;
 
-    /**
-     * The names of the warnings to suppress.
-     */
-    String[] value() default {};
-
-}

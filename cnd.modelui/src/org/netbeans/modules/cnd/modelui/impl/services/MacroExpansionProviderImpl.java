@@ -192,7 +192,7 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
             copyInterval(inDoc, outDoc, new Interval(inIntervalStart, docTokenStartOffset), shift, tt);
             inIntervalStart = docTokenStartOffset;
 
-            StringBuffer expandedToken = new StringBuffer(""); // NOI18N
+            StringBuilder expandedToken = new StringBuilder(""); // NOI18N
             try {
                 if (fileToken.getOffset() < docTokenEndOffset) {
                     expandedToken.append(fileToken.getText());

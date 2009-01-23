@@ -385,6 +385,8 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         jPanel2.add(jLabel5, gridBagConstraints);
 
         cbSourceExtension.setModel(getSourceExtensionsModel());
+        cbSourceExtension.setMinimumSize(new java.awt.Dimension(100, 25));
+        cbSourceExtension.setPreferredSize(new java.awt.Dimension(100, 25));
         cbSourceExtension.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbSourceExtensionActionPerformed(evt);
@@ -465,6 +467,8 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         jPanel3.add(jLabel7, gridBagConstraints);
 
         cbHeaderExtension.setModel(getHeaderExtensionsModel());
+        cbHeaderExtension.setMinimumSize(new java.awt.Dimension(100, 25));
+        cbHeaderExtension.setPreferredSize(new java.awt.Dimension(100, 25));
         cbHeaderExtension.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbHeaderExtensionActionPerformed(evt);
