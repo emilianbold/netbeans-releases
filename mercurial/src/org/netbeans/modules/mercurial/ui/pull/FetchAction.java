@@ -57,6 +57,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,7 +93,7 @@ public class FetchAction extends ContextAction {
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
     }
 
-    static void performFetch(File root, OutputLogger logger) {
+    static void performFetch(final File root, OutputLogger logger) {
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
@@ -110,9 +111,14 @@ public class FetchAction extends ContextAction {
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
-        }finally{
+        } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    FileUtil.refreshFor(root); // fetch just might have changed the file layout...
+                }
+            });
         }
     }
 
