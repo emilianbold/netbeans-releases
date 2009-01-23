@@ -48,6 +48,7 @@ import org.netbeans.debugger.registry.ContextAwareServiceHandler;
 import org.netbeans.debugger.registry.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  *
@@ -97,6 +98,11 @@ public class AttachTypeContextAware extends AttachType implements ContextAwareSe
     @Override
     public JComponent getCustomizer() {
         return getDelegate().getCustomizer();
+    }
+
+    @Override
+    public Controller getController() {
+        return getDelegate().getController();
     }
 
     /**
