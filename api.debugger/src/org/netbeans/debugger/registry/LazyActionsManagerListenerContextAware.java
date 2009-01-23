@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.debugger;
+package org.netbeans.debugger.registry;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.openide.util.lookup.Lookups;
+import java.util.Map;
 
+import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
- * This {@link ActionsManagerListener} modification is designed to be
- * registerred in "META-INF/debugger/".
- * LazyActionsManagerListener should be registerred for some concrete
- * {@link DebuggerEngine} (use
- * "META-INF/debugger/<DebuggerEngine-id>/LazyActionsManagerListener"), or
- * for global {@link ActionsManager} (use
- * "META-INF/debugger/LazyActionsManagerListener").
- * New instance of LazyActionsManagerListener implementation is loaded
- * when the new instance of {@link ActionsManager} is created, and its registerred
- * automatically to all properties returned by {@link #getProperties}. 
  *
- * @author   Jan Jancura
+ * @author Martin Entlicher
  */
-public abstract class LazyActionsManagerListener extends ActionsManagerAdapter {
+public class LazyActionsManagerListenerContextAware extends LazyActionsManagerListener implements ContextAwareService<LazyActionsManagerListener> {
 
-        
-    /**
-     * This method is called when engine dies.
-     */
-    protected abstract void destroy ();
+    private String serviceName;
+
+    private LazyActionsManagerListenerContextAware(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public LazyActionsManagerListener forContext(ContextProvider context) {
+        return (LazyActionsManagerListener) ContextAwareSupport.createInstance(serviceName, context);
+    }
+
+    @Override
+    protected void destroy() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public String[] getProperties() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 
     /**
-     * Returns list of properties this listener is listening on.
+     * Creates instance of <code>ContextAwareService</code> based on layer.xml
+     * attribute values
      *
-     * @return list of properties this listener is listening on
+     * @param attrs attributes loaded from layer.xml
+     * @return new <code>ContextAwareService</code> instance
      */
-    public abstract String[] getProperties ();
-    
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE})
-    public @interface Registration {
-        /**
-         * An optional path to register this implementation in.
-         */
-        String path() default "";
-
+    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+        return new LazyActionsManagerListenerContextAware(serviceName);
     }
 
 }

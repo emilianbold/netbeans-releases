@@ -39,32 +39,121 @@
 
 package org.netbeans.debugger.registry;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Lookup;
 
 /**
+ * Handler of context aware services that implement one or more interface.
+ * The services are registered through {@link DebuggerServiceRegistration} annotation.
+ *
+ * This handler guarantees that it creates only one service for given context and given set of interfaces.
+ * Method {@link ContextAwareService#forContext(org.netbeans.spi.debugger.ContextProvider)}
+ * returns the instance of the actual registered class. However, if necessary,
+ * this can be changed to return another proxy implementation, that will delegate
+ * to an instance of the actual registered class. This will allow to mask some
+ * methods with attributes and also can prevent from too early class loading.
  *
  * @author Martin Entlicher
  */
 public class ContextAwareServiceHandler implements InvocationHandler {
 
-    private static final String SERVICE_NAME = "serviceName"; // NOI18N
-    private static final String SERVICE_CLASS = "serviceClass"; // NOI18N
+    public static final String SERVICE_NAME = "serviceName"; // NOI18N
+    static final String SERVICE_CLASSES = "serviceClasses"; // NOI18N
 
     private String serviceName;
+    private Class[] serviceClasses;
+    private Map methodValues;
+    //private ContextProvider context;
+    private Object delegate;
 
-    private ContextAwareServiceHandler(String serviceName) {
-        this.serviceName = serviceName;
+    private Map<ContextProvider, Object> contextInstances = new WeakHashMap<ContextProvider, Object>();
+    private WeakReference<Object> noContextInstance = new WeakReference<Object>(null);
+
+    private ContextAwareServiceHandler(String serviceName, Class[] serviceClasses,
+                                       Map methodValues) {
+        this(serviceName, serviceClasses, methodValues, null);
     }
 
+    private ContextAwareServiceHandler(String serviceName, Class[] serviceClasses,
+                                       Map methodValues, ContextProvider context) {
+        this.serviceName = serviceName;
+        this.serviceClasses = serviceClasses;
+        this.methodValues = methodValues;
+        //this.context = context;
+    }
+    
+    /*
+    private synchronized Object getDelegate() {
+        if (delegate == null) {
+            delegate = ContextAwareSupport.createInstance(serviceName, context);
+        }
+        return delegate;
+    }
+    */
+
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.getName().equals("serviceName")) { // NOI18N
-            return serviceName;
+        String methodName = method.getName();
+        if (methodName.equals("forContext")) {
+            if (args.length != 1) {
+                throw new IllegalArgumentException("Have "+args.length+" arguments, expecting one argument.");
+            }
+            if (!(args[0] == null || args[0] instanceof ContextProvider)) {
+                throw new IllegalArgumentException("Argument "+args[0]+" is not an instance of ContextProvider.");
+            }
+            ContextProvider context = (ContextProvider) args[0];
+            /*if (context == this.context) {
+                return proxy;
+            }*/
+            synchronized (this) {
+                Object instance;
+                if (context == null) {
+                    instance = noContextInstance.get();
+                } else {
+                    instance = contextInstances.get(context);
+                }
+                if (instance == null) {
+                    instance = ContextAwareSupport.createInstance(serviceName, context);
+                    if (context == null) {
+                        noContextInstance = new WeakReference(instance);
+                    } else {
+                        contextInstances.put(context, instance);
+                    }
+                }
+                return instance;
+            }
+            /* If total laziness is necessary:
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            return Proxy.newProxyInstance(
+                    cl,
+                    serviceClasses,//new Class[] { serviceClass },
+                    new ContextAwareServiceHandler(serviceName, serviceClasses, methodValues, context));
+             */
+        //} else if (methodValues.containsKey(methodName) && args.length == 0) {
+        //    return methodValues.get(methodName);
         } else {
-            throw new UnsupportedOperationException("Method "+method.getName()+" can not be called on this virtual object!"); // NOI18N
+            /*
+            try {
+                return method.invoke(getDelegate(), args);
+            } catch (IllegalArgumentException exc) {
+                throw new UnsupportedOperationException(
+                        "Method "+method.getName()+                             // NOI18N
+                        " with arguments "+java.util.Arrays.asList(args)+       // NOI18N
+                        " can not be called on this virtual object!", exc);     // NOI18N
+            }
+             */
+            throw new UnsupportedOperationException(
+                    "Method "+method.getName()+                             // NOI18N
+                    " with arguments "+java.util.Arrays.asList(args)+       // NOI18N
+                    " can not be called on this virtual object!");     // NOI18N
         }
     }
 
@@ -77,15 +166,35 @@ public class ContextAwareServiceHandler implements InvocationHandler {
      */
     static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
         String serviceName = (String) attrs.get(SERVICE_NAME);
-        String serviceClass = (String) attrs.get(SERVICE_CLASS);
+        String[] serviceClassNames = splitClasses((String) attrs.get(SERVICE_CLASSES));
+
+        //Map methodValues = new HashMap(attrs); - MUST NOT DO THAT! Creates a loop initializing the entries from XML
+        //methodValues.remove(SERVICE_NAME);
+        //methodValues.remove(SERVICE_CLASS);
 
         ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+        Class[] classes = new Class[serviceClassNames.length + 1];
+        classes[0] = ContextAwareService.class;
+        for (int i = 0; i < serviceClassNames.length; i++) {
+            classes[i+1] = Class.forName(serviceClassNames[i], true, cl);
+        }
         return (ContextAwareService)
                 Proxy.newProxyInstance(
                     cl,
-                    new Class[] { ContextAwareService.class,
-                                  Class.forName(serviceClass, true, cl) },
-                    new ContextAwareServiceHandler(serviceName));
+                    classes,
+                    new ContextAwareServiceHandler(serviceName, classes, Collections.EMPTY_MAP));
+    }
+
+    private static String[] splitClasses(String classes) {
+        ArrayList<String> list = new ArrayList<String>();
+        int i1 = 0;
+        int i2;
+        while ((i2 = classes.indexOf(',', i1)) > 0) {
+            list.add(classes.substring(i1, i2).trim());
+            i1 = i2 + 1;
+        }
+        list.add(classes.substring(i1).trim());
+        return list.toArray(new String[] {});
     }
 
 }

@@ -41,6 +41,10 @@
 
 package org.netbeans.spi.debugger.ui;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.JComponent;
 
 
@@ -52,12 +56,13 @@ import javax.swing.JComponent;
 public abstract class AttachType {
 
     /**
-     * Provides display name of this Attach Type. Is used as one choice in
-     * ComboBox.
+     * TODO
      *
      * @return display name of this Attach Type
      */
-    public abstract String getTypeDisplayName ();
+    public String getTypeDisplayName () {
+        return null;
+    }
 
     /**
      * Returns visual customizer for this Attach Type. Customizer can
@@ -86,6 +91,12 @@ public abstract class AttachType {
      */
     public Controller getController() {
         return null;
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        String displayName();
     }
 
 }

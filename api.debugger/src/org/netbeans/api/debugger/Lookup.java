@@ -69,6 +69,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.debugger.registry.ContextAwareService;
+import org.netbeans.debugger.registry.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
@@ -336,97 +337,6 @@ abstract class Lookup implements ContextProvider {
             throw new InternalError ("Can not read from Meta-inf!");
         }
         
-        private Object createInstance (String service) {
-            try {
-                ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-                String method = null;
-                if (service.endsWith("()")) {
-                    int lastdot = service.lastIndexOf('.');
-                    if (lastdot < 0) {
-                        Exceptions.printStackTrace(
-                                new IllegalStateException("Bad service - dot before method name is missing: " +
-                                "'" + service + "'."));
-                        return null;
-                    }
-                    method = service.substring(lastdot + 1, service.length() - 2).trim();
-                    service = service.substring(0, lastdot);
-                }
-                Class cls = cl.loadClass (service);
-
-                Object o = null;
-                if (method != null) {
-                    Method m = null;
-                    if (context != null) {
-                        try {
-                            m = cls.getDeclaredMethod(method, new Class[] { Lookup.class });
-                        } catch (NoSuchMethodException nsmex) {}
-                    }
-                    if (m == null) {
-                        try {
-                            m = cls.getDeclaredMethod(method, new Class[] { });
-                        } catch (NoSuchMethodException nsmex) {}
-                    }
-                    if (m != null) {
-                        o = m.invoke(null, (m.getParameterTypes().length == 0)
-                                     ? new Object[] {} : new Object[] { context });
-                    }
-                }
-                if (o == null && context != null) {
-                    Constructor[] cs = cls.getConstructors ();
-                    int i, k = cs.length;
-                    for (i = 0; i < k; i++) {
-                        Constructor c = cs [i];
-                        if (c.getParameterTypes ().length != 1) continue;
-                        try {
-                            o = c.newInstance (new Object[] {context});
-                        } catch (IllegalAccessException e) {
-                            if (verbose) {
-                                System.out.println("\nservice: " + service);
-                                e.printStackTrace ();
-                            }
-                        } catch (IllegalArgumentException e) {
-                            if (verbose) {
-                                System.out.println("\nservice: " + service);
-                                e.printStackTrace ();
-                            }
-                        }
-                    }
-                }
-                if (o == null)
-                    o = cls.newInstance ();
-                if (verbose)
-                    System.out.println("\nR  instance " + o + 
-                        " created");
-                return o;
-            } catch (ClassNotFoundException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                            e,
-                            "The service "+service+" not found."));
-            } catch (InstantiationException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        e,
-                        "The service "+service+" can not be instantiated."));
-            } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        e,
-                        "The service "+service+" can not be accessed."));
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        ex,
-                        "The service "+service+" can not be created."));
-            } catch (ExceptionInInitializerError ex) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        ex,
-                        "The service "+service+" can not be initialized."));
-            }
-            return null;
-        }
-
         private void listenOn(ClassLoader cl) {
             synchronized(moduleChangeListeners) {
                 if (!moduleChangeListeners.containsKey(cl)) {
@@ -761,9 +671,8 @@ abstract class Lookup implements ContextProvider {
                         instance = lookupItem.getInstance();
                         if (instance instanceof ContextAwareService) {
                             ContextAwareService cas = (ContextAwareService) instance;
-                            className = cas.serviceName();
+                            instance = cas.forContext(Lookup.MetaInf.this.context);
                             lookupItem = null;
-                            instance = null;
                         }
                     }
                     if (instance == null) {
@@ -772,7 +681,7 @@ abstract class Lookup implements ContextProvider {
                                 instance = instanceCache.get (className);
                             }
                             if (instance == null) {
-                                instance = createInstance (className);
+                                instance = ContextAwareSupport.createInstance (className, Lookup.MetaInf.this.context);
                                 synchronized (instanceCache) {
                                     instanceCache.put (className, instance);
                                 }

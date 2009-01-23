@@ -41,6 +41,10 @@
 
 package org.netbeans.spi.debugger;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Set;
 import org.openide.util.RequestProcessor;
 
@@ -108,6 +112,16 @@ public abstract class ActionsProvider {
                 }
             }
         });
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+
     }
     
 }

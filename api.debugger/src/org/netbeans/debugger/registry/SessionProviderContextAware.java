@@ -39,29 +39,75 @@
 
 package org.netbeans.debugger.registry;
 
+import java.util.Map;
+
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.SessionProvider;
 
 /**
- * Instance of registry entry, that delegates to a debugger service, that can be
- * context-aware.
- * This instances should be registered in layers and created by <code>createService</code> factory
- * method as follows:
- *
- *   <pre style="background-color: rgb(255, 255, 153);">
- *   &lt;folder name="Debugger"&gt;
- *       &lt;file name="MyDebuggerService.instance"&gt;
- *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.debugger.registry.ContextAwareServiceHandler.createService"/&gt;
- *           &lt;attr name="serviceName" stringvalue="org.netbeans.my_debugger.MyServiceImpl"/&gt;
- *           &lt;attr name="serviceClass" stringvalue="org.netbeans.debugger.Service"/&gt;
- *       &lt;/file&gt;
- *   &lt;/folder&gt;</pre>
- *
- * <br/>
  *
  * @author Martin Entlicher
  */
-public interface ContextAwareService<T> {
+public class SessionProviderContextAware extends SessionProvider implements ContextAwareService<SessionProvider> {
 
-    T forContext(ContextProvider context);
-    
+    private String serviceName;
+    private ContextProvider context;
+    private SessionProvider delegate;
+
+    private SessionProviderContextAware(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    private SessionProviderContextAware(String serviceName, ContextProvider context) {
+        this.serviceName = serviceName;
+        this.context = context;
+    }
+
+    private synchronized SessionProvider getDelegate() {
+        if (delegate == null) {
+            delegate = (SessionProvider) ContextAwareSupport.createInstance(serviceName, context);
+        }
+        return delegate;
+    }
+
+    public SessionProvider forContext(ContextProvider context) {
+        if (context == this.context) {
+            return this;
+        } else {
+            return new SessionProviderContextAware(serviceName, context);
+        }
+    }
+
+    @Override
+    public String getSessionName() {
+        return getDelegate().getSessionName();
+    }
+
+    @Override
+    public String getLocationName() {
+        return getDelegate().getLocationName();
+    }
+
+    @Override
+    public String getTypeID() {
+        return getDelegate().getTypeID();
+    }
+
+    @Override
+    public Object[] getServices() {
+        return getDelegate().getServices();
+    }
+
+    /**
+     * Creates instance of <code>ContextAwareService</code> based on layer.xml
+     * attribute values
+     *
+     * @param attrs attributes loaded from layer.xml
+     * @return new <code>ContextAwareService</code> instance
+     */
+    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+        return new SessionProviderContextAware(serviceName);
+    }
+
 }

@@ -41,6 +41,13 @@
 
 package org.netbeans.spi.debugger;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.openide.util.lookup.Lookups;
+
 /**
  * Creates a new instance of {@link org.netbeans.api.debugger.Session}
  * for some {@link org.netbeans.api.debugger.DebuggerInfo}.
@@ -80,5 +87,16 @@ public abstract class SessionProvider {
      * @return array of services
      */
     public abstract Object[] getServices ();
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+
+    }
+
 }
 

@@ -41,6 +41,10 @@
 
 package org.netbeans.spi.debugger.ui;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.JComponent;
 
 /**
@@ -60,11 +64,13 @@ public abstract class BreakpointType {
     public abstract String getCategoryDisplayName ();
 
     /**
-     * Return display name of this breakpoint type (like "Line Breakppoint").
+     * TODO
      *
      * @return display name of this breakpoint type
      */
-    public abstract String getTypeDisplayName ();
+    public String getTypeDisplayName () {
+        return null;
+    }
 
     /**
      * Returns visual customizer for this breakpoint type. Customizer can 
@@ -103,4 +109,11 @@ public abstract class BreakpointType {
      * @return true of this breakpoint type should be default
      */
     public abstract boolean isDefault ();
+    
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        String displayName();
+    }
+
 }
