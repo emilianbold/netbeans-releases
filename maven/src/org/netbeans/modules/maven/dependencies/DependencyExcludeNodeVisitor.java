@@ -54,6 +54,7 @@ public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
     private DependencyNode root;
     private Set<DependencyNode> directs;
     private Stack<DependencyNode> path;
+    private Set<Stack<DependencyNode>> allPaths;
     private String key;
 
     public DependencyExcludeNodeVisitor(String groupId, String artifactId, String type) {
@@ -66,11 +67,16 @@ public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
         return directs;
     }
 
+    public Set<Stack<DependencyNode>> getAllPaths() {
+        return allPaths;
+    }
+
     public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
             directs = new HashSet<DependencyNode>();
             path = new Stack<DependencyNode>();
+            allPaths = new HashSet<Stack<DependencyNode>>();
             return true;
         }
         path.push(node);
@@ -78,6 +84,9 @@ public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
         if (key.equals(artifact.getDependencyConflictId())) {
             if (!path.isEmpty()) {
                 directs.add(path.firstElement());
+                Stack<DependencyNode> copy = new Stack<DependencyNode>();
+                copy.addAll(path);
+                allPaths.add(copy);
             }
             return false;
         }

@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -82,12 +83,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
 import org.netbeans.modules.maven.dependencies.DependencyTreeFactory;
+import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
@@ -615,18 +618,24 @@ public class DependencyNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    runModifyExclusions();
-                }
-            });
+//            org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), "test");
+//            DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
+//            rootnode.accept(nv);
+//            final Set<org.apache.maven.shared.dependency.tree.DependencyNode> nds = nv.getDirectDependencies();
+             final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(project.getOriginalMavenProject(), art);
+             DialogDescriptor dd = new DialogDescriptor(pnl, "Exclude Transitive Dependency");
+             Object ret = DialogDisplayer.getDefault().notify(dd);
+             if (ret == DialogDescriptor.OK_OPTION) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        Artifact art = pnl.getDependencyExcludes().keySet().iterator().next();
+                        runModifyExclusions(art, pnl.getDependencyExcludes().get(art));
+                    }
+                });
+            }
         }
 
-        private void runModifyExclusions() {
-            org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), "test");
-            DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
-            rootnode.accept(nv);
-            final Set<org.apache.maven.shared.dependency.tree.DependencyNode> nds = nv.getDirectDependencies();
+        private void runModifyExclusions(final Artifact art, final List<org.apache.maven.shared.dependency.tree.DependencyNode> nds) {
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 public void performOperation(POMModel model) {
                     for (org.apache.maven.shared.dependency.tree.DependencyNode nd : nds) {
