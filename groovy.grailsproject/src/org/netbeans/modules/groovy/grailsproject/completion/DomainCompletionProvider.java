@@ -61,7 +61,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     private static final Map<MethodSignature, String> BASIC_METHODS = new HashMap<MethodSignature, String>();
 
     private static final String FIND_BY_METHOD = "findBy"; // NOI18N
-    
+
     // FIXME move it to some resource file, check the grails version
     // 1.0.4
     static {
@@ -104,15 +104,23 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
     @Override
     public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+        if (context.getSourceFile() == null) {
+            return Collections.emptyMap();
+        }
+
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.getClassName().equals(context.getSourceClassName()) && project != null
-                && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
+                && */context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, String> result = new HashMap<MethodSignature, String>();
                 for (String property : context.getProperties()) {
                     result.put(new MethodSignature("findBy" + capitalise(property),
+                            new String[] {"java.lang.Object"}), "java.lang.Object");
+                    result.put(new MethodSignature("findAllBy" + capitalise(property),
                             new String[] {"java.lang.Object"}), "java.util.List");
+                    result.put(new MethodSignature("countBy" + capitalise(property),
+                            new String[] {"java.lang.Object"}), "int");
                 }
                 result.putAll(BASIC_METHODS);
                 return result;
@@ -123,7 +131,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
 
     private boolean isDomain(FileObject source, Project project) {
-        return source.getParent().getName().equals("domain") // NOI18N
+        return source != null
+                    && source.getParent().getName().equals("domain") // NOI18N
                     && source.getParent().getParent().getName().equals("grails-app") // NOI18N
                     && source.getParent().getParent().getParent().equals(project.getProjectDirectory());
     }

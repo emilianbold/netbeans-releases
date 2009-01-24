@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -59,6 +58,7 @@ import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvid
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -83,10 +83,10 @@ public final class DynamicElementHandler {
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
-            String className, String prefix, int anchor, boolean nameOnly) {
+            String className, String prefix, int anchor, boolean nameOnly, boolean leaf, FileObject classSource) {
 
-        DynamicCompletionContext context = new DynamicCompletionContext(info.getFileObject(),
-                sourceClassName, className, false, getProperties(className));
+        DynamicCompletionContext context = new DynamicCompletionContext(classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf);
 
         Map<MethodSignature, CompletionItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem>();
@@ -104,10 +104,10 @@ public final class DynamicElementHandler {
     }
 
     public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
-            String className, String prefix, int anchor) {
+            String className, String prefix, int anchor, boolean leaf, FileObject classSource) {
 
-        DynamicCompletionContext context = new DynamicCompletionContext(info.getFileObject(),
-                sourceClassName, className, false, getProperties(className));
+        DynamicCompletionContext context = new DynamicCompletionContext(classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf);
 
         Map<FieldSignature, CompletionItem.DynamicFieldItem> resultDynamic =
                 new HashMap<FieldSignature, CompletionItem.DynamicFieldItem>();
