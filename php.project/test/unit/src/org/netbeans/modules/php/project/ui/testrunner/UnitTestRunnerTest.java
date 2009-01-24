@@ -60,7 +60,7 @@ public class UnitTestRunnerTest extends NbTestCase {
         Reader reader = new BufferedReader(new FileReader(getLogForMoreSuites()));
         TestSessionVO testSession = new TestSessionVO();
 
-        UnitTestRunner.PhpUnitLogParser.parse(reader, testSession);
+        PhpUnitLogParser.parse(reader, testSession);
 
         assertEquals(104, testSession.getTime());
         assertEquals(10, testSession.getTests());
@@ -129,7 +129,7 @@ public class UnitTestRunnerTest extends NbTestCase {
         Reader reader = new BufferedReader(new FileReader(getLogForOneSuite()));
         TestSessionVO testSession = new TestSessionVO();
 
-        UnitTestRunner.PhpUnitLogParser.parse(reader, testSession);
+        PhpUnitLogParser.parse(reader, testSession);
 
         assertEquals(10, testSession.getTime());
         assertEquals(1, testSession.getTests());
