@@ -114,9 +114,13 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
 
     @Override
     public Map<FieldSignature, String> getFields(DynamicCompletionContext context) {
+        if (context.getSourceFile() == null) {
+            return Collections.emptyMap();
+        }
+
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.getClassName().equals(context.getSourceClassName()) && project != null
-                && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
+                &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(context.getSourceFile(), project)) {
                 return Collections.unmodifiableMap(FIELDS);
@@ -127,9 +131,13 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
 
     @Override
     public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+        if (context.getSourceFile() == null) {
+            return Collections.emptyMap();
+        }
+
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.getClassName().equals(context.getSourceClassName()) && project != null
-                && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
+                &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(context.getSourceFile(), project)) {
                 return Collections.unmodifiableMap(METHODS);
@@ -139,7 +147,8 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     private boolean isController(FileObject source, Project project) {
-        return source.getName().endsWith("Controller") // NOI18N
+        return source != null
+                    && source.getName().endsWith("Controller") // NOI18N
                     && source.getParent().getName().equals("controllers") // NOI18N
                     && source.getParent().getParent().getName().equals("grails-app") // NOI18N
                     && source.getParent().getParent().getParent().equals(project.getProjectDirectory());

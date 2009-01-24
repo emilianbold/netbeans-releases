@@ -59,15 +59,21 @@ public final class DynamicCompletionContext {
 
     private final List<String> properties;
 
+    private final String prefix;
+
+    private final boolean leaf;
+
     // FIXME - accessor
     public DynamicCompletionContext(FileObject sourceFile, String sourceClassName, String className,
-            boolean staticContext, List<String> properties) {
+            String prefix, boolean staticContext, List<String> properties, boolean leaf) {
 
         this.sourceFile = sourceFile;
         this.sourceClassName = sourceClassName;
         this.className = className;
+        this.prefix = prefix;
         this.staticContext = staticContext;
         this.properties = properties;
+        this.leaf = leaf;
     }
 
     public String getClassName() {
@@ -90,4 +96,11 @@ public final class DynamicCompletionContext {
         return staticContext;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public boolean isLeaf() {
+        return leaf;
+    }
 }
