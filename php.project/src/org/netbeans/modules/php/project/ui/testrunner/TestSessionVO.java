@@ -41,17 +41,18 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 
 /**
- * Value object for unit test session.
+ * Value objects for unit test session.
  * <p>
  * All times are in milliseconds.
  * @author Tomas Mysik
  */
 public final class TestSessionVO {
     private final List<TestSuiteVO> testSuites = new ArrayList<TestSuiteVO>();
-    private long time;
-    private int tests;
+    private long time = -1;
+    private int tests = -1;
     private TestSuiteVO activeTestSuite = null;
     
     public void addTestSuite(TestSuiteVO testSuite) {
@@ -159,8 +160,8 @@ public final class TestSessionVO {
             stacktrace.add(line);
         }
 
-        public List<String> getStacktrace() {
-            return stacktrace;
+        public String[] getStacktrace() {
+            return stacktrace.toArray(new String[stacktrace.size()]);
         }
 
         public long getTime() {
@@ -181,6 +182,28 @@ public final class TestSessionVO {
 
         public void setFailure(String failure) {
             this.failure = failure;
+        }
+
+        public Status getStatus() {
+            if (error != null) {
+                return Status.ERROR;
+            } else if (failure != null) {
+                return Status.FAILED;
+            }
+            return Status.PASSED;
+        }
+
+        public String getMessage() {
+            String message = null;
+            switch (getStatus()) {
+                case ERROR:
+                    message = error;
+                    break;
+                case FAILED:
+                    message = failure;
+                    break;
+            }
+            return message;
         }
     }
 }

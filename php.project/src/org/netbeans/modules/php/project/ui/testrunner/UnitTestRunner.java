@@ -39,20 +39,25 @@
 
 package org.netbeans.modules.php.project.ui.testrunner;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,41 +72,72 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Tomas Mysik
  */
 public final class UnitTestRunner {
+    private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());
 
     private UnitTestRunner() {
     }
 
     public static void run(Project project) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+        }
         Manager manager = Manager.getInstance();
-        final String suiteName = "my suite";
 
-        TestSession testSession = new TestSession("my test session", project, TestSession.SessionType.TEST);
+        Reader reader;
+        try {
+            reader = new BufferedReader(new FileReader(PhpUnitConstants.XML_LOG));
+        } catch (FileNotFoundException ex) {
+            LOGGER.warning(String.format("In order to show test results UI, file %s must exist."
+                    + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnitConstants.XML_LOG));
+            return;
+        }
+        TestSessionVO session = new TestSessionVO();
+        UnitTestRunner.PhpUnitLogParser.parse(reader, session);
+
+
+        TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
         manager.testStarted(testSession);
-        manager.displaySuiteRunning(testSession, suiteName);
 
-        TestSuite testSuite = new TestSuite(suiteName);
-        testSession.addSuite(testSuite);
+        boolean first = true;
+        for (TestSuiteVO suite : session.getTestSuites()) {
+            if (first) {
+                manager.displaySuiteRunning(testSession, suite.getName());
+                first = false;
+            }
 
-        Testcase testcase = new Testcase("PHPUnit", testSession);
-        testcase.setName("test 1");
-        testcase.setTimeMillis(1000);
-        testcase.setStatus(Status.PASSED);
-        testSession.addTestCase(testcase);
-        testcase = new Testcase("PHPUnit", testSession);
-        testcase.setName("test 2");
-        testcase.setTimeMillis(1500);
-        testcase.setStatus(Status.ERROR);
-        Trouble trouble = new Trouble(true);
-        trouble.setMessage("description of a trouble");
-        trouble.setStackTrace(new String[] {"string 1", "string 2"});
-        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
-        trouble.setComparisonFailure(failure);
-        testcase.setTrouble(trouble);
-        testSession.addTestCase(testcase);
+            TestSuite testSuite = new TestSuite(suite.getName());
+            testSession.addSuite(testSuite);
 
-        manager.displayReport(testSession, testSession.getReport(2500));
-        manager.displayOutput(testSession, "my error", true);
+            for (TestCaseVO kase : suite.getTestCases()) {
+                Testcase testcase = new Testcase("PHPUnit test case", testSession); // NOI18N
+                testcase.setName(kase.getName());
+                testcase.setTimeMillis(kase.getTime());
+                testcase.setStatus(kase.getStatus());
+                String message = kase.getMessage();
+                if (message != null) {
+                    message = message.replace("\n", "\\\n");
+                    boolean isError = kase.getError() != null;
+                    Trouble trouble = new Trouble(isError);
+                    trouble.setMessage(message);
+                    trouble.setStackTrace(kase.getStacktrace());
+                    // XXX will be used with php unit 3.4+
+//                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
+//                    trouble.setComparisonFailure(failure);
+                    testcase.setTrouble(trouble);
 
+                    manager.displayOutput(testSession, kase.getName() + ":", isError); // NOI18N
+                    manager.displayOutput(testSession, message, isError);
+                    for (String s : kase.getStacktrace()) {
+                        manager.displayOutput(testSession, s, isError);
+                    }
+                    manager.displayOutput(testSession, "", isError); // NOI18N
+                }
+                testSession.addTestCase(testcase);
+            }
+        }
+
+        manager.displayReport(testSession, testSession.getReport(session.getTime()));
         manager.sessionFinished(testSession);
     }
 
@@ -109,7 +145,6 @@ public final class UnitTestRunner {
         enum Content { NONE, ERROR, FAILURE };
         private final XMLReader xmlReader;
         private final TestSessionVO testSession;
-        private boolean firstTestSuite = true;
         private Content content = Content.NONE;
         private boolean firstContent = true; // for error/failure: the 1st line is ignored
         private boolean stacktraceStarted = false; // for error/failure: flag for description/stacktrace
@@ -121,10 +156,9 @@ public final class UnitTestRunner {
             xmlReader.setContentHandler(this);
         }
 
-        static PhpUnitLogParser parse(Reader reader, TestSessionVO testSession) {
-            PhpUnitLogParser parser = null;
+        static void parse(Reader reader, TestSessionVO testSession) {
             try {
-                parser = new PhpUnitLogParser(testSession);
+                PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
                 parser.xmlReader.parse(new InputSource(reader));
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
@@ -137,18 +171,12 @@ public final class UnitTestRunner {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            return parser;
         }
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
             if ("testsuite".equals(qName)) {
-                if (firstTestSuite) {
-                    processTestSession(attributes);
-                    firstTestSuite = false;
-                } else {
-                    processTestSuite(attributes);
-                }
+                processTestSuite(attributes);
             } else if ("testcase".equals(qName)) {
                 processTestCase(attributes);
             } else if ("failure".equals(qName)) {
@@ -180,7 +208,7 @@ public final class UnitTestRunner {
                         buffer.append(string);
                     } else {
                         activeTestCase = testSession.getActiveTestSuite().getActiveTestCase();
-                        activeTestCase.addStacktrace(string.trim());
+                        activeTestCase.addStacktrace(NbBundle.getMessage(UnitTestRunner.class, "LBL_At", string.trim()));
                     }
                     break;
                 case ERROR:
@@ -192,7 +220,7 @@ public final class UnitTestRunner {
                     if (!stacktraceStarted) {
                         activeTestCase.setError(string.trim());
                     } else {
-                        activeTestCase.addStacktrace(string.trim());
+                        activeTestCase.addStacktrace(NbBundle.getMessage(UnitTestRunner.class, "LBL_At", string.trim()));
                     }
                     break;
             }
@@ -226,17 +254,23 @@ public final class UnitTestRunner {
             }
         }
 
-        private void processTestSession(Attributes attributes) {
-            testSession.setTests(getTests(attributes));
-            testSession.setTime(getTime(attributes));
-        }
-
         private void processTestSuite(Attributes attributes) {
-            TestSuiteVO testSuite = new TestSuiteVO(
-                    getName(attributes),
-                    getFile(attributes),
-                    getTime(attributes));
-            testSession.addTestSuite(testSuite);
+            if (testSession.getTime() == -1
+                    && testSession.getTests() == -1) {
+                // no active suite yet => set total/session info
+                testSession.setTests(getTests(attributes));
+                testSession.setTime(getTime(attributes));
+            }
+
+            String file = getFile(attributes);
+            if (file != null) {
+                // 'real' suite found
+                TestSuiteVO testSuite = new TestSuiteVO(
+                        getName(attributes),
+                        file,
+                        getTime(attributes));
+                testSession.addTestSuite(testSuite);
+            }
         }
 
         private void processTestCase(Attributes attributes) {

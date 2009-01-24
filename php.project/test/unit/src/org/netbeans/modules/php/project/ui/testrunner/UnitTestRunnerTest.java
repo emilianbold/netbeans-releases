@@ -56,11 +56,11 @@ public class UnitTestRunnerTest extends NbTestCase {
         super(name);
     }
 
-    public void testParsePhpUnitXmlLog() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(getXmlLog()));
+    public void testParseLogWithMoreSuites() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(getLogForMoreSuites()));
         TestSessionVO testSession = new TestSessionVO();
 
-        UnitTestRunner.PhpUnitLogParser parser = UnitTestRunner.PhpUnitLogParser.parse(reader, testSession);
+        UnitTestRunner.PhpUnitLogParser.parse(reader, testSession);
 
         assertEquals(104, testSession.getTime());
         assertEquals(10, testSession.getTests());
@@ -95,38 +95,70 @@ public class UnitTestRunnerTest extends NbTestCase {
         assertEquals("testAdd2", testCase.getName());
         assertNotNull(testCase.getFailure());
         assertNull(testCase.getError());
-        assertEquals(1, testCase.getStacktrace().size());
+        assertEquals(1, testCase.getStacktrace().length);
         assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybí znak konce řádku na konci souboru", testCase.getFailure());
-        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace().get(0));
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace()[0]);
 
         testCase = testSuite.getTestCases().get(2);
         assertEquals("testAdd3", testCase.getName());
         assertNotNull(testCase.getFailure());
         assertNull(testCase.getError());
-        assertEquals(1, testCase.getStacktrace().size());
+        assertEquals(1, testCase.getStacktrace().length);
         assertEquals("my expected message\nFailed asserting that two strings are equal.\nexpected string <hello>\ndifference      < x???>\ngot string      <hi>", testCase.getFailure());
-        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:64", testCase.getStacktrace().get(0));
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:64", testCase.getStacktrace()[0]);
 
         testCase = testSuite.getTestCases().get(3);
         assertEquals("testAdd4", testCase.getName());
         assertNotNull(testCase.getFailure());
         assertNull(testCase.getError());
-        assertEquals(1, testCase.getStacktrace().size());
+        assertEquals(1, testCase.getStacktrace().length);
         assertEquals("Failed asserting that <integer:2> matches expected value <integer:3>.", testCase.getFailure());
-        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:75", testCase.getStacktrace().get(0));
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:75", testCase.getStacktrace()[0]);
 
         testCase = testSuite.getTestCases().get(4);
         assertEquals("testAdd5", testCase.getName());
         assertNotNull(testCase.getError());
         assertNull(testCase.getFailure());
-        assertEquals(2, testCase.getStacktrace().size());
+        assertEquals(2, testCase.getStacktrace().length);
         assertEquals("Exception: my exception", testCase.getError());
-        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php:13", testCase.getStacktrace().get(0));
-        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:82", testCase.getStacktrace().get(1));
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php:13", testCase.getStacktrace()[0]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:82", testCase.getStacktrace()[1]);
     }
 
-    private File getXmlLog() throws Exception {
-        File xmlLog = new File(getDataDir(), "phpunit-log.xml");
+    public void testParseLogWithOneSuite() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(getLogForOneSuite()));
+        TestSessionVO testSession = new TestSessionVO();
+
+        UnitTestRunner.PhpUnitLogParser.parse(reader, testSession);
+
+        assertEquals(10, testSession.getTime());
+        assertEquals(1, testSession.getTests());
+
+        // test suites & test cases
+        assertEquals(1, testSession.getTestSuites().size());
+
+        // 1st
+        TestSuiteVO testSuite = testSession.getTestSuites().get(0);
+        assertEquals("Calculator2Test", testSuite.getName());
+        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testSuite.getFile());
+        assertEquals(10, testSuite.getTime());
+        assertEquals(1, testSuite.getTestCases().size());
+
+        TestCaseVO testCase = testSuite.getTestCases().get(0);
+        assertEquals("testAdd", testCase.getName());
+        assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testCase.getFile());
+        assertEquals(43, testCase.getLine());
+        assertEquals(10, testCase.getTime());
+    }
+
+    private File getLogForMoreSuites() throws Exception {
+        File xmlLog = new File(getDataDir(), "phpunit-log-more-suites.xml");
+        assertTrue(xmlLog.isFile());
+        return xmlLog;
+    }
+
+    private File getLogForOneSuite() throws Exception {
+        File xmlLog = new File(getDataDir(), "phpunit-log-one-suite.xml");
         assertTrue(xmlLog.isFile());
         return xmlLog;
     }
