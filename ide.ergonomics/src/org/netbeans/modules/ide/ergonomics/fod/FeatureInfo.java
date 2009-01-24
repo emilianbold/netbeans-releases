@@ -93,6 +93,7 @@ public final class FeatureInfo {
         FeatureInfo info = new FeatureInfo(clusterName, s, delegateLayer, p);
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
+        final String prefXPath = "project.xpath.";
         for (Object k : p.keySet()) {
             String key = (String) k;
             if (key.startsWith(prefix)) {
@@ -103,8 +104,17 @@ public final class FeatureInfo {
             }
             if (key.startsWith(prefFile)) {
                 try {
-                    String xpath = p.getProperty("xpath." + key);
-                    info.projectFile(key.substring(prefFile.length()), xpath, p.getProperty(key));
+                    info.projectFile(key.substring(prefFile.length()), null, p.getProperty(key));
+                } catch (XPathExpressionException ex) {
+                    IOException e = new IOException(ex.getMessage());
+                    e.initCause(ex);
+                    throw e;
+                }
+            }
+            if (key.startsWith(prefXPath)) {
+                try {
+                    String xpath = p.getProperty(key);
+                    info.projectFile(key.substring(prefXPath.length()), xpath, "");
                 } catch (XPathExpressionException ex) {
                     IOException e = new IOException(ex.getMessage());
                     e.initCause(ex);
@@ -157,16 +167,20 @@ public final class FeatureInfo {
         return fs;
     }
 
-    boolean isProject(FeatureProjectFactory.Data data) {
+    /** @return 0 = no
+     *          1 = yes
+     *          2 = I am interested to be turned on when this project is opened
+     */
+    int isProject(FeatureProjectFactory.Data data) {
         FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", data);
-        boolean toRet;
+        int toRet;
         if (isNbProject(data)) {
-            toRet = true;
+            toRet = 1;
         } else {
             if (files.isEmpty()) {
-                toRet = false;
+                toRet = 0;
             } else {
-                toRet = false;
+                toRet = 0;
                 for (Object[] required : files.keySet()) {
                     String s = (String)required[0];
                     FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
@@ -185,13 +199,13 @@ public final class FeatureInfo {
                                     }
                                 );
                                 if (res != null && res.length() > 0) {
-                                    toRet = true;
+                                    toRet = 2;
                                 }
                             } catch (XPathExpressionException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         } else {
-                            toRet = true;
+                            toRet = 1;
                         }
                         break;
                     }
@@ -274,7 +288,9 @@ public final class FeatureInfo {
 
         for (FeatureInfo info : FeatureManager.features()) {
             for (Map.Entry<Object[], String> e : info.files.entrySet()) {
-                map.put((String)(e.getKey()[0]), e.getValue());
+                if (e.getValue().length() > 0) {
+                    map.put((String)(e.getKey()[0]), e.getValue());
+                }
             }
         }
         return map;
