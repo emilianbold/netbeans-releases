@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.dependencies;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
     private boolean isSingle = false;
 
     /** Creates new form ExcludeDependencyPanel */
-    public ExcludeDependencyPanel(MavenProject prj, final Artifact single) {
+    public ExcludeDependencyPanel(MavenProject prj, final Artifact single, final Set<DependencyNode> directs, final DependencyNode root) {
         project = prj;
         modelCache = new HashMap<Artifact, TreeModel>();
         change2Trans = new HashMap<ChangeListener, CheckNode>();
@@ -96,16 +97,22 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
 
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), "test");
                 if (!isSingle) {
+                    rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), "test");
                     trTrans.setModel(new DefaultTreeModel(createTransitiveDependenciesList()));
                 } else {
+                    rootnode = root;
                     CheckNode nd = new CheckNode(single, null, null);
+                    DefaultTreeModel dtm = new DefaultTreeModel(createReferenceModel(directs, nd));
+                    modelCache.put(single, dtm);
                     setReferenceTree(nd);
                 }
             }            
         });
+    }
 
+    public ExcludeDependencyPanel(MavenProject prj) {
+        this(prj, null, null, null);
     }
 
     public Map<Artifact, List<DependencyNode>> getDependencyExcludes() {
