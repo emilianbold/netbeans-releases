@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.*;
 import groovy.lang.MetaMethod;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +56,7 @@ import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
