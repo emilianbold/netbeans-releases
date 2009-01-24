@@ -68,11 +68,14 @@ public final class UnitTestRunner {
     }
 
     public static void run(Project project) {
+        Manager manager = Manager.getInstance();
+        TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
+        manager.testStarted(testSession);
+
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex) {
         }
-        Manager manager = Manager.getInstance();
 
         Reader reader;
         try {
@@ -85,16 +88,8 @@ public final class UnitTestRunner {
         TestSessionVO session = new TestSessionVO();
         PhpUnitLogParser.parse(reader, session);
 
-
-        TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
-        manager.testStarted(testSession);
-
-        boolean first = true;
         for (TestSuiteVO suite : session.getTestSuites()) {
-            if (first) {
-                manager.displaySuiteRunning(testSession, suite.getName());
-                first = false;
-            }
+            manager.displaySuiteRunning(testSession, suite.getName());
 
             TestSuite testSuite = new TestSuite(suite.getName());
             testSession.addSuite(testSuite);
@@ -106,7 +101,6 @@ public final class UnitTestRunner {
                 testcase.setStatus(kase.getStatus());
                 String message = kase.getMessage();
                 if (message != null) {
-                    message = message.replace("\n", "\\\n");
                     boolean isError = kase.getError() != null;
                     Trouble trouble = new Trouble(isError);
                     trouble.setMessage(message);
@@ -123,11 +117,11 @@ public final class UnitTestRunner {
                     }
                     manager.displayOutput(testSession, "", isError); // NOI18N
                 }
-                testSession.addTestCase(testcase);
+                testSuite.addTestcase(testcase);
             }
+            manager.displayReport(testSession, testSession.getReport(suite.getTime()));
         }
 
-        manager.displayReport(testSession, testSession.getReport(session.getTime()));
         manager.sessionFinished(testSession);
     }
 }
