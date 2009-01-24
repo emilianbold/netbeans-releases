@@ -616,7 +616,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             assert (endScanOffset > tokenOffset) : "end - " + endScanOffset + " start - " + tokenOffset;
             txt = txt.subSequence(0, endScanOffset - tokenOffset);
         }
-        StringBuffer buf = new StringBuffer(txt);
+        StringBuilder buf = new StringBuilder(txt);
         curTokenText = buf.toString();
         //curTokenText = txt.toString();
         lastValidTokenText = curTokenText;

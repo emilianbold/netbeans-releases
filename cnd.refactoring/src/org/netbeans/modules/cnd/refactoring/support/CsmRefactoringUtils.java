@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -335,7 +337,8 @@ public class CsmRefactoringUtils {
     public static CsmObject findInnerFileObject(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findInnerFileObject";
         // check file declarations
-        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), offset);
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
+        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDefault().getDeclarations(file, filter), offset);
 //        // check macros if needed
 //        lastObject = lastObject != null ? lastObject : findObject(file.getMacros(), context, offset);
         return lastObject;

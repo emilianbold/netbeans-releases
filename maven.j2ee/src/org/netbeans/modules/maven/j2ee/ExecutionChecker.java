@@ -103,11 +103,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
             boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
-            performDeploy(res, debugmode, moduleUri, clientUrl, redeploy);
+            boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
+
+            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy);
         }
     }
 
-    private void performDeploy(ExecutionContext res, boolean debugmode, String clientModuleUri, String clientUrlPart, boolean forceRedeploy) {
+    private void performDeploy(ExecutionContext res, boolean debugmode, boolean profilemode, String clientModuleUri, String clientUrlPart, boolean forceRedeploy) {
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
@@ -127,12 +129,21 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             out.println("NetBeans: Deploying on " + serverInstanceID); //NOI18N - no localization in maven build now.
         }
         try {
+            out.println("    profile mode: " + profilemode); //NOI18N - no localization in maven build now.
             out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
 //                log.info("    clientModuleUri: " + clientModuleUri);//NOI18N - no localization in maven build now.
 //                log.info("    clientUrlPart: " + clientUrlPart);//NOI18N - no localization in maven build now.
             out.println("    force redeploy: " + forceRedeploy);//NOI18N - no localization in maven build now.
 
-            String clientUrl = Deployment.getDefault().deploy(jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
+
+            Deployment.Mode mode = Deployment.Mode.RUN;
+            if (debugmode) {
+                mode = Deployment.Mode.DEBUG;
+            } else if (profilemode) {
+                mode = Deployment.Mode.PROFILE;
+            }
+
+            String clientUrl = Deployment.getDefault().deploy(jmp, mode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
             if (clientUrl != null) {
                 FileObject fo = project.getProjectDirectory();
                 boolean show = true;
@@ -268,7 +279,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     model.getProject().setProperties(props);
                 }
                 props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-                //TODO also tweak the private properties..
+            //TODO also tweak the private properties..
 //                privateProf = handle.getNetbeansPrivateProfile();
 //                org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
 //                if (privs == null) {
@@ -282,7 +293,6 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        
-    }
 
+    }
 }

@@ -50,10 +50,9 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 
 /**
  * DataCollector collects data from application/system.
- * Puts data into the {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}
+ * Puts data into the {@link org.netbeans.modules.dlight.storage.spi.DataStorage}
  * it supports (see {@link #getSupportedDataStorageTypes()}) using the description
  * of data collected: {@link #getDataTablesMetadata()}.
- * Register in globa Lookup
  *
  */
 public interface DataCollector<G extends DataCollectorConfiguration> extends DLightTargetListener, Validateable<DLightTarget> {
@@ -61,14 +60,14 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
   
   /**
    * The types of storage this collector supports
-   * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
+   * @return returns list of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}
    * data collector can put data into
    */
   List<DataStorageType> getSupportedDataStorageTypes();
 
   /**
    * The description of tables data collector will put information in.
-   * @return list of {@link  org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
+   * @return list of {@link  org.netbeans.modules.dlight.storage.api.DataTableMetadata}
    * this collector gather information at.
    */
   List<? extends DataTableMetadata> getDataTablesMetadata();

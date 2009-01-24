@@ -43,13 +43,27 @@ import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import javax.swing.JComponent;
 
 /**
- *
- * @author mt154047
+ * Visualizer represents Datailed View of data collected
+ * using {@link org.netbeans.modules.dlight.collector.spi.DataCollector}.
+ * Visualizer should get data from  {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider}.
+ * 
  */
 
 public interface Visualizer<T extends VisualizerConfiguration> {
+  /**
+   * Visualizer configuration this visualizer was created on the base of
+   * @return {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration}
+   */
   T getVisualizerConfiguration();
+  /**
+   * Components which is displaying Visualizer
+   * @return component
+   */
   JComponent getComponent();
+  /**
+   * Container visualizer should be placed in
+   * @return container visualizer should be placed in
+   */
   VisualizerContainer getDefaultContainer();
 
 }

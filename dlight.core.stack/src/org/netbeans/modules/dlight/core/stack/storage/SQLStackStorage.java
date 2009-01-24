@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.netbeans.modules.dlight.storage.api.Time;
 import org.netbeans.modules.dlight.core.stack.model.Function;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
@@ -134,8 +135,8 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, Long.valueOf(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, Long.valueOf(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
             result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
         }
         rs.close();
@@ -148,8 +149,8 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, Long.valueOf(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, Long.valueOf(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
             result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
         }
         rs.close();
@@ -165,8 +166,8 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, Long.valueOf(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, Long.valueOf(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
             result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
         }
         rs.close();
@@ -330,12 +331,7 @@ public class SQLStackStorage {
 
         @Override
         public Object getMetricValue(FunctionMetric metric) {
-            if (metric.getMetricID().startsWith("time_")) {
-                // TODO: do this when rendering value in the table
-                return Double.valueOf((Long) metrics.get(metric) / 1000000.0d);
-            } else {
-                return metrics.get(metric);
-            }
+            return metrics.get(metric);
         }
 
         @Override

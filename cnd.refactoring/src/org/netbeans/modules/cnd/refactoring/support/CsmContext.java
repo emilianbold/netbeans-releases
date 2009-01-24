@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -72,24 +74,29 @@ public final class CsmContext {
 
     private final int startOffset;
     private final int endOffset;
+    private final int caretOffset;
+    private final CsmReference csmReference;
     private List<CsmObject> path = null;
     private CsmClass enclosingClass = null;
     private CsmNamespaceDefinition enclosingNS = null;
     private CsmFunction enclosingFun = null;
     private CsmOffsetable objectUnderOffset = null;
 
-    private CsmContext(CsmFile file, FileObject fo, Document doc, int startOffset, int endOffset) {
+    private CsmContext(CsmFile file, CsmReference ref, FileObject fo, Document doc, int startOffset, int endOffset, int caretOffset) {
         this.file = file;
         this.fo = fo;
         this.doc = doc;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
+        this.caretOffset = caretOffset;
+        this.csmReference = ref;
     }
 
-    public static CsmContext create(final Document doc, int start, int end) {
+    public static CsmContext create(final Document doc, int start, int end, int offset) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
         if (csmFile != null) {
-            return new CsmContext(csmFile, CsmUtilities.getFileObject(doc), doc, start, end);
+            final CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, offset);
+            return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, start, end, offset);
         }
         return null;
     }
@@ -104,20 +111,34 @@ public final class CsmContext {
             }
         }
         if (component != null) {
-            CsmFile csmFile = CsmUtilities.getCsmFile(component, true);
+            CsmFile csmFile = CsmUtilities.getCsmFile(component, false);
             if (csmFile != null) {
                 final int start = component.getSelectionStart();
                 final int end = component.getSelectionEnd();
+                final int caret = component.getCaretPosition();
                 final Document compDoc = component.getDocument();
                 final FileObject compFO = CsmUtilities.getFileObject(compDoc);
-                return new CsmContext(csmFile, compFO, compDoc, start, end);
+                final CsmReference ref = CsmReferenceResolver.getDefault().findReference(compDoc, caret);
+                return new CsmContext(csmFile, ref, compFO, compDoc, start, end, caret);
             }
         }
         return null;
     }
+
+    public int getCaretOffset() {
+        return caretOffset;
+    }
     
     public FileObject getFileObject() {
         return fo;
+    }
+
+    /**
+     *
+     * @return reference if any, could be null if no caret offset or caret is not on reference object
+     */
+    public CsmReference getCsmReferenceUnderOffset() {
+        return csmReference;
     }
 
     public Document getDocument() {
