@@ -45,8 +45,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Map;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.debugger.registry.ContextAwareServiceHandler;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 
 /**
  * Creates a new instance of {@link org.netbeans.api.debugger.DebuggerEngine}
@@ -101,6 +104,70 @@ public abstract class DebuggerEngineProvider {
          * An optional path to register this implementation in.
          */
         String path() default "";
+
+    }
+
+    static class ContextAware extends DebuggerEngineProvider implements ContextAwareService<DebuggerEngineProvider> {
+
+        private String serviceName;
+        private ContextProvider context;
+        private DebuggerEngineProvider delegate;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        private ContextAware(String serviceName, ContextProvider context) {
+            this.serviceName = serviceName;
+            this.context = context;
+        }
+
+        private synchronized DebuggerEngineProvider getDelegate() {
+            if (delegate == null) {
+                delegate = (DebuggerEngineProvider) ContextAwareSupport.createInstance(serviceName, context);
+            }
+            return delegate;
+        }
+
+        public DebuggerEngineProvider forContext(ContextProvider context) {
+            if (context == this.context) {
+                return this;
+            } else {
+                return new DebuggerEngineProvider.ContextAware(serviceName, context);
+            }
+        }
+
+        @Override
+        public String[] getLanguages() {
+            return getDelegate().getLanguages();
+        }
+
+        @Override
+        public String getEngineTypeID() {
+            return getDelegate().getEngineTypeID();
+        }
+
+        @Override
+        public Object[] getServices() {
+            return getDelegate().getServices();
+        }
+
+        @Override
+        public void setDestructor(DebuggerEngine.Destructor desctuctor) {
+            getDelegate().setDestructor(desctuctor);
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+            return new DebuggerEngineProvider.ContextAware(serviceName);
+        }
 
     }
 

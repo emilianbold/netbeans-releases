@@ -41,8 +41,17 @@
 
 package org.netbeans.spi.debugger.jpda;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -263,4 +272,106 @@ public abstract class VariablesFilter {
         String columnID, 
         Object value
     ) throws UnknownTypeException;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+
+    }
+
+    static class ContextAware extends VariablesFilter implements ContextAwareService<VariablesFilter> {
+
+        private String serviceName;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public VariablesFilter forContext(ContextProvider context) {
+            return (VariablesFilter) ContextAwareSupport.createInstance(serviceName, context);
+        }
+
+        @Override
+        public String[] getSupportedTypes() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String[] getSupportedAncestors() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object[] getChildren(TreeModel original, Variable variable, int from, int to) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getChildrenCount(TreeModel original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isLeaf(TreeModel original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDisplayName(NodeModel original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getIconBase(NodeModel original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getShortDescription(NodeModel original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Action[] getActions(NodeActionsProvider original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void performDefaultAction(NodeActionsProvider original, Variable variable) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object getValueAt(TableModel original, Variable variable, String columnID) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isReadOnly(TableModel original, Variable variable, String columnID) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setValueAt(TableModel original, Variable variable, String columnID, Object value) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+            return new ContextAware(serviceName);
+        }
+
+    }
+    
 }

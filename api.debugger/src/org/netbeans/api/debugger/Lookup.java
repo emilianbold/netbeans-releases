@@ -68,13 +68,14 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.debugger.registry.ContextAwareService;
-import org.netbeans.debugger.registry.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Item;
 import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -232,6 +233,7 @@ abstract class Lookup implements ContextProvider {
 
         
         MetaInf (String rootFolder) {
+            if (rootFolder != null && rootFolder.length() == 0) rootFolder = null;
             this.rootFolder = rootFolder;
             moduleLookupResult = org.openide.util.Lookup.getDefault().lookupResult(ModuleInfo.class);
             //System.err.println("\nModules = "+moduleLookupResult.allInstances().size()+"\n");
@@ -276,7 +278,7 @@ abstract class Lookup implements ContextProvider {
             String pathResourceName = "Debugger/" +
                 ((rootFolder == null) ? "" : rootFolder + "/") +
                 ((folder == null) ? "" : folder + "/");
-            return Lookups.forPath(pathResourceName);
+            return new PathLookup(pathResourceName);
         }
 
         private <T> Result<T> listLookup(String folder, Class<T> service) {
@@ -530,6 +532,10 @@ abstract class Lookup implements ContextProvider {
                     fillClassInstance(className);
                 }
                 for (Item<T> li : lr.allItems()) {
+                    // TODO: We likely do not have the Item.getId() defined correctly.
+                    // We have to check the ContextAwareService.serviceID()
+                    String serviceName = getServiceName(li.getId());
+                    if (s != null && s.contains (serviceName)) continue;
                     add(new LazyInstance<T>(service, li));
                 }
                 /*
@@ -541,6 +547,21 @@ abstract class Lookup implements ContextProvider {
                     }
                 }
                  */
+            }
+
+            private String getServiceName(String itemId) {
+                int i = itemId.lastIndexOf('/');
+                if (i < 0) i = 0;
+                else i++; // Skip '/'
+                String serviceName = itemId.substring(i);
+                serviceName = serviceName.replace('-', '.');
+                try {
+                    org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass(serviceName);
+                } catch (ClassNotFoundException ex) {
+                    // Not a class, likely a method call
+                    serviceName = serviceName + "()";
+                }
+                return serviceName;
             }
 
             private void fillClassInstance(String className) {

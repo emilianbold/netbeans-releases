@@ -42,10 +42,8 @@ package org.netbeans.modules.debugger.ui.registry;
 import java.beans.PropertyEditor;
 import java.util.Map;
 
-import javax.swing.JComponent;
-import org.netbeans.debugger.registry.ContextAwareService;
-import org.netbeans.debugger.registry.ContextAwareServiceHandler;
-import org.netbeans.debugger.registry.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
@@ -188,7 +186,7 @@ public class ColumnModelContextAware extends ColumnModel implements ContextAware
      * @return new <code>ContextAwareService</code> instance
      */
     static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
-        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+        String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
         return new ColumnModelContextAware(serviceName);
     }
 

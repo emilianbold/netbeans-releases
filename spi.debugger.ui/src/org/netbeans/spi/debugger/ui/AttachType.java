@@ -45,7 +45,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Map;
 import javax.swing.JComponent;
+
+import org.netbeans.modules.debugger.ui.registry.DebuggerProcessor;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -97,6 +103,71 @@ public abstract class AttachType {
     @Target({ElementType.TYPE})
     public @interface Registration {
         String displayName();
+    }
+
+    static class ContextAware extends AttachType implements ContextAwareService<AttachType> {
+
+        private String serviceName;
+        private String displayName;
+        private ContextProvider context;
+        private AttachType delegate;
+
+        private ContextAware(String serviceName, String displayName) {
+            this.serviceName = serviceName;
+            this.displayName = displayName;
+        }
+
+        private ContextAware(String serviceName, String displayName, ContextProvider context) {
+            this.serviceName = serviceName;
+            this.displayName = displayName;
+            this.context = context;
+        }
+
+        private synchronized AttachType getDelegate() {
+            if (delegate == null) {
+                delegate = (AttachType) ContextAwareSupport.createInstance(serviceName, context);
+            }
+            return delegate;
+        }
+
+        public AttachType forContext(ContextProvider context) {
+            if (context == this.context) {
+                return this;
+            } else {
+                return new AttachType.ContextAware(serviceName, displayName, context);
+            }
+        }
+
+        @Override
+        public String getTypeDisplayName() {
+            if (displayName != null) {
+                return displayName;
+            }
+            return getDelegate().getTypeDisplayName();
+        }
+
+        @Override
+        public JComponent getCustomizer() {
+            return getDelegate().getCustomizer();
+        }
+
+        @Override
+        public Controller getController() {
+            return getDelegate().getController();
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+            String displayName = (String) attrs.get("displayName");
+            return new AttachType.ContextAware(serviceName, displayName);
+        }
     }
 
 }

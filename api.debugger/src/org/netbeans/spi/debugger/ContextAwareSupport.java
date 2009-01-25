@@ -37,15 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.debugger.registry;
+package org.netbeans.spi.debugger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.spi.debugger.ContextProvider;
+
+import org.netbeans.debugger.registry.ContextAwareServiceHandler;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -141,6 +147,46 @@ public final class ContextAwareSupport {
                     "The service "+service+" can not be initialized."));
         }
         return null;
+    }
+
+    /**
+     * Creates instance of <code>ContextAwareService</code> based on layer.xml
+     * attribute values
+     *
+     * @param attrs attributes loaded from layer.xml
+     * @return new <code>ContextAwareService</code> instance
+     */
+    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+        String[] serviceClassNames = splitClasses((String) attrs.get(ContextAwareServiceHandler.SERVICE_CLASSES));
+
+        //Map methodValues = new HashMap(attrs); - MUST NOT DO THAT! Creates a loop initializing the entries from XML
+        //methodValues.remove(SERVICE_NAME);
+        //methodValues.remove(SERVICE_CLASS);
+
+        ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+        Class[] classes = new Class[serviceClassNames.length + 1];
+        classes[0] = ContextAwareService.class;
+        for (int i = 0; i < serviceClassNames.length; i++) {
+            classes[i+1] = Class.forName(serviceClassNames[i], true, cl);
+        }
+        return (ContextAwareService)
+                Proxy.newProxyInstance(
+                    cl,
+                    classes,
+                    new ContextAwareServiceHandler(serviceName, classes, Collections.EMPTY_MAP));
+    }
+
+    private static String[] splitClasses(String classes) {
+        ArrayList<String> list = new ArrayList<String>();
+        int i1 = 0;
+        int i2;
+        while ((i2 = classes.indexOf(',', i1)) > 0) {
+            list.add(classes.substring(i1, i2).trim());
+            i1 = i2 + 1;
+        }
+        list.add(classes.substring(i1).trim());
+        return list.toArray(new String[] {});
     }
 
 }

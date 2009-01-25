@@ -41,27 +41,29 @@
 
 package org.netbeans.api.debugger.jpda;
 
-import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.connect.AttachingConnector;
 import com.sun.jdi.connect.Connector.Argument;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.request.EventRequest;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+
+import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.NbBundle;
 
 
@@ -532,5 +534,116 @@ public abstract class JPDADebugger {
         return new DeadlockDetector() {};
     }
      */
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+
+    }
+
+    static class ContextAware extends JPDADebugger implements ContextAwareService<JPDADebugger> {
+
+        private String serviceName;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public JPDADebugger forContext(ContextProvider context) {
+            return (JPDADebugger) ContextAwareSupport.createInstance(serviceName, context);
+        }
+
+        @Override
+        public int getState() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getSuspend() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setSuspend(int s) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public JPDAThread getCurrentThread() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public CallStackFrame getCurrentCallStackFrame() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Variable evaluate(String expression) throws InvalidExpressionException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void waitRunning() throws DebuggerStartException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean canFixClasses() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean canPopFrames() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void fixClasses(Map<String, byte[]> classes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public SmartSteppingFilter getSmartSteppingFilter() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(String propertyName, PropertyChangeListener l) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+            return new ContextAware(serviceName);
+        }
+
+    }
 
 }

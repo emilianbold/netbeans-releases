@@ -37,77 +37,55 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.debugger.registry;
+package org.netbeans.api.debugger.providers;
 
-import java.util.Map;
-
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.modules.debugger.ui.models.ColumnModels;
+import org.netbeans.spi.viewmodel.ColumnModel;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class SessionProviderContextAware extends SessionProvider implements ContextAwareService<SessionProvider> {
+public class TestColumnModelsProvider {
 
-    private String serviceName;
-    private ContextProvider context;
-    private SessionProvider delegate;
-
-    private SessionProviderContextAware(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    private SessionProviderContextAware(String serviceName, ContextProvider context) {
-        this.serviceName = serviceName;
-        this.context = context;
-    }
-
-    private synchronized SessionProvider getDelegate() {
-        if (delegate == null) {
-            delegate = (SessionProvider) ContextAwareSupport.createInstance(serviceName, context);
-        }
-        return delegate;
-    }
-
-    public SessionProvider forContext(ContextProvider context) {
-        if (context == this.context) {
-            return this;
-        } else {
-            return new SessionProviderContextAware(serviceName, context);
-        }
-    }
-
-    @Override
-    public String getSessionName() {
-        return getDelegate().getSessionName();
-    }
-
-    @Override
-    public String getLocationName() {
-        return getDelegate().getLocationName();
-    }
-
-    @Override
-    public String getTypeID() {
-        return getDelegate().getTypeID();
-    }
-
-    @Override
-    public Object[] getServices() {
-        return getDelegate().getServices();
+    /**
+     * Defines model for one table view column. Can be used together with
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
+     * view representation.
+     */
+    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=10)
+    public static ColumnModel createDefaultLocalsColumn() {
+        return ColumnModels.createDefaultLocalsColumn();
     }
 
     /**
-     * Creates instance of <code>ContextAwareService</code> based on layer.xml
-     * attribute values
-     *
-     * @param attrs attributes loaded from layer.xml
-     * @return new <code>ContextAwareService</code> instance
+     * Defines model for one table view column. Can be used together with
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
+     * view representation.
      */
-    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
-        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
-        return new SessionProviderContextAware(serviceName);
+    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=40)
+    public static ColumnModel createLocalsToStringColumn() {
+        return ColumnModels.createLocalsToStringColumn();
     }
+
+    /**
+     * Defines model for one table view column. Can be used together with
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree
+     * table view representation.
+     */
+    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=20)
+    public static ColumnModel createLocalsTypeColumn() {
+        return ColumnModels.createLocalsTypeColumn();
+    }
+    /**
+     * Defines model for one table view column. Can be used together with
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
+     * view representation.
+     */
+    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=30)
+    public static ColumnModel createLocalsValueColumn() {
+        return ColumnModels.createLocalsValueColumn();
+    }
+
 
 }

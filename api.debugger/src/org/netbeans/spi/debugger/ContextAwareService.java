@@ -37,49 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.debugger.registry;
-
-import java.util.Map;
-
-import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.spi.debugger.ContextProvider;
+package org.netbeans.spi.debugger;
 
 /**
+ * Instance of registry entry, that delegates to a debugger service, that can be
+ * context-aware.
+ * This instances should be registered in layers and created by <code>createService</code> factory
+ * method as follows:
+ *
+ *   <pre style="background-color: rgb(255, 255, 153);">
+ *   &lt;folder name="Debugger"&gt;
+ *       &lt;file name="MyDebuggerService.instance"&gt;
+ *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.debugger.registry.ContextAwareServiceHandler.createService"/&gt;
+ *           &lt;attr name="serviceName" stringvalue="org.netbeans.my_debugger.MyServiceImpl"/&gt;
+ *           &lt;attr name="serviceClass" stringvalue="org.netbeans.debugger.Service"/&gt;
+ *       &lt;/file&gt;
+ *   &lt;/folder&gt;</pre>
+ *
+ * <br/>
  *
  * @author Martin Entlicher
  */
-public class LazyActionsManagerListenerContextAware extends LazyActionsManagerListener implements ContextAwareService<LazyActionsManagerListener> {
-
-    private String serviceName;
-
-    private LazyActionsManagerListenerContextAware(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public LazyActionsManagerListener forContext(ContextProvider context) {
-        return (LazyActionsManagerListener) ContextAwareSupport.createInstance(serviceName, context);
-    }
-
-    @Override
-    protected void destroy() {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-
-    @Override
-    public String[] getProperties() {
-        throw new UnsupportedOperationException("Not supported.");
-    }
+public interface ContextAwareService<T> {
 
     /**
-     * Creates instance of <code>ContextAwareService</code> based on layer.xml
-     * attribute values
-     *
-     * @param attrs attributes loaded from layer.xml
-     * @return new <code>ContextAwareService</code> instance
+     * Create a debugger service in a context.
+     * 
+     * @param context the context to create the service with
+     * @return the debugger service of type <code>T</code>.
      */
-    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
-        String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
-        return new LazyActionsManagerListenerContextAware(serviceName);
-    }
+    T forContext(ContextProvider context);
 
+    /**
+     * The ID of the service, usually the implementation class name.
+     * Services can be made hidden by this ID.
+     *
+     * @return the session ID
+     */
+    // Lookup.Item.getId() is used instead.
+    //String serviceID();
+    
 }

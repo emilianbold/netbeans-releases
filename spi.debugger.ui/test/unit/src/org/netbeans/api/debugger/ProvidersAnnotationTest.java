@@ -48,8 +48,8 @@ import org.netbeans.api.debugger.providers.TestColumnModel;
 import org.netbeans.api.debugger.providers.TestLazyActionsManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestLazyDebuggerManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestThreeModels;
+import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
@@ -166,6 +166,19 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         assertInstanceOf("Wrong looked up object", list3.get(0), TableModel.class);
         assertEquals("One provider instance should be created!", 1, TestThreeModels.INSTANCES.size());
         
+        }
+    }
+
+    public void testColumnProviders() throws Exception {
+        Lookup.MetaInf l = new Lookup.MetaInf("unittest/annotated");
+        
+        {
+        List<? extends ColumnModel> list = l.lookup("LocalsView", ColumnModel.class);
+        assertEquals("Wrong looked up object", 3, list.size());
+        assertEquals(ColumnModels.createDefaultLocalsColumn().getDisplayName(), list.get(0).getDisplayName());
+        assertEquals(ColumnModels.createLocalsTypeColumn().getDisplayName(), list.get(1).getDisplayName());
+        assertEquals(ColumnModels.createLocalsValueColumn().getDisplayName(), list.get(2).getDisplayName());
+        //assertEquals(ColumnModels.createLocalsToStringColumn().getDisplayName(), list.get(3).getDisplayName()); - was made hidden!
         }
     }
 }

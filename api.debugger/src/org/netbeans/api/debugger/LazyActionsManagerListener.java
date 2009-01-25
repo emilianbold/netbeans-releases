@@ -45,7 +45,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.openide.util.lookup.Lookups;
+import java.util.Map;
+
+import org.netbeans.debugger.registry.ContextAwareServiceHandler;
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -87,4 +92,39 @@ public abstract class LazyActionsManagerListener extends ActionsManagerAdapter {
 
     }
 
+    static class ContextAware extends LazyActionsManagerListener implements ContextAwareService<LazyActionsManagerListener> {
+
+        private String serviceName;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public LazyActionsManagerListener forContext(ContextProvider context) {
+            return (LazyActionsManagerListener) ContextAwareSupport.createInstance(serviceName, context);
+        }
+
+        @Override
+        protected void destroy() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public String[] getProperties() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+            return new LazyActionsManagerListener.ContextAware(serviceName);
+        }
+
+    }
 }

@@ -265,9 +265,17 @@ public abstract class ColumnModel implements Model {
 //    }
     
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE})
+    @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
+
         String path();
+        
+        /**
+         * An optional position in which to register this service relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Services with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
     }
 
 }

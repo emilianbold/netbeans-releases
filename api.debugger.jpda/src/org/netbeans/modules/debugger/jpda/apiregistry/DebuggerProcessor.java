@@ -39,33 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.debugger.registry;
+package org.netbeans.modules.debugger.jpda.apiregistry;
 
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -77,13 +72,11 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.netbeans.spi.debugger.ActionsProvider.Registration",        //NOI18N
-                           "org.netbeans.spi.debugger.DebuggerEngineProvider.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.SessionProvider.Registration",        //NOI18N
-                           "org.netbeans.api.debugger.LazyActionsManagerListener.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.DebuggerServiceRegistration"          //NOI18N
-                          })
+@SupportedAnnotationTypes({"org.netbeans.api.debugger.jpda.JPDADebugger.Registration",  // NOI18N
+                           "org.netbeans.spi.debugger.ui.BreakpointType.Registration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
+
+    public static final String SERVICE_NAME = "serviceName"; // NOI18N
 
 
     @Override
@@ -96,79 +89,39 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         }
 
         int cnt = 0;
-        for (Element e : env.getElementsAnnotatedWith(ActionsProvider.Registration.class)) {
-            ActionsProvider.Registration reg = e.getAnnotation(ActionsProvider.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(JPDADebugger.Registration.class)) {
+            JPDADebugger.Registration reg = e.getAnnotation(JPDADebugger.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, ActionsProvider.class, path);
-            //layer(e).instanceFile("Debugger/"+path, null, ActionsProvider.class).
-            //        stringvalue("serviceName", instantiableClassOrMethod(e)).
-            //        stringvalue("serviceClass", ActionsProvider.class.getName()).
-            //        methodvalue("instanceCreate", "org.netbeans.debugger.registry.ActionsProviderContextAware", "createService").
-            //        write();
+            handleProviderRegistration(e, JPDADebugger.class, path);
             cnt++;
         }
-        for (Element e : env.getElementsAnnotatedWith(LazyActionsManagerListener.Registration.class)) {
-            LazyActionsManagerListener.Registration reg = e.getAnnotation(LazyActionsManagerListener.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(SmartSteppingCallback.Registration.class)) {
+            SmartSteppingCallback.Registration reg = e.getAnnotation(SmartSteppingCallback.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, LazyActionsManagerListener.class, path);
+            handleProviderRegistration(e, SmartSteppingCallback.class, path);
             cnt++;
         }
-        for (Element e : env.getElementsAnnotatedWith(DebuggerEngineProvider.Registration.class)) {
-            DebuggerEngineProvider.Registration reg = e.getAnnotation(DebuggerEngineProvider.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(SourcePathProvider.Registration.class)) {
+            SourcePathProvider.Registration reg = e.getAnnotation(SourcePathProvider.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, DebuggerEngineProvider.class, path);
+            handleProviderRegistration(e, SourcePathProvider.class, path);
             cnt++;
         }
-        for (Element e : env.getElementsAnnotatedWith(SessionProvider.Registration.class)) {
-            SessionProvider.Registration reg = e.getAnnotation(SessionProvider.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(EditorContext.Registration.class)) {
+            EditorContext.Registration reg = e.getAnnotation(EditorContext.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, SessionProvider.class, path);
+            handleProviderRegistration(e, EditorContext.class, path);
             cnt++;
         }
-        for (Element e : env.getElementsAnnotatedWith(DebuggerServiceRegistration.class)) {
-            DebuggerServiceRegistration reg = e.getAnnotation(DebuggerServiceRegistration.class);
+        for (Element e : env.getElementsAnnotatedWith(VariablesFilter.Registration.class)) {
+            VariablesFilter.Registration reg = e.getAnnotation(VariablesFilter.Registration.class);
 
             final String path = reg.path();
-            // Class[] classes = reg.types(); - Cant NOT do that, classes are not created at compile time.
-            // e.getAnnotationMirrors() - use this not to generate MirroredTypeException
-            String classNames = null;
-            for (AnnotationMirror am : e.getAnnotationMirrors()) {
-                if (am.getAnnotationType().toString().equals(DebuggerServiceRegistration.class.getName())) {
-                    Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
-                            am.getElementValues();
-                    //System.err.println("am:\n elementValues = "+elementValues);
-                    for (ExecutableElement ee : elementValues.keySet()) {
-                        if (ee.getSimpleName().contentEquals("types")) { // NOI18N
-                            classNames = elementValues.get(ee).toString();
-                        }
-                    }
-                }
-            }
-            //System.err.println("classNames before translation = "+classNames);
-            classNames = translateClassNames(classNames);
-            //System.err.println("classNames after  translation = "+classNames);
-            /*
-            Class[] classes;
-            String classNames;
-            try {
-                classes = reg.types();
-                //className = clazz.getName();
-                classNames = null;
-            } catch (MirroredTypeException mtex) {
-                TypeMirror tm = mtex.getTypeMirror();
-                classes = null;
-                classNames = tm.toString();
-            }
-            */
-            layer(e).instanceFile("Debugger/"+path, null, null).
-                    stringvalue(ContextAwareServiceHandler.SERVICE_NAME, instantiableClassOrMethod(e)).
-                    stringvalue(ContextAwareServiceHandler.SERVICE_CLASSES, classNames).
-                    methodvalue("instanceCreate", "org.netbeans.spi.debugger.ContextAwareSupport", "createService").
-                    write();
+            handleProviderRegistration(e, VariablesFilter.class, path);
             cnt++;
         }
         return cnt == annotations.size();
@@ -180,37 +133,48 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
         layer(e).instanceFile("Debugger/"+path, null, providerClass).
-                stringvalue("serviceName", className).
+                stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
-                methodvalue("instanceCreate", "org.netbeans.debugger.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
+                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+                //methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
                 write();
     }
 
-    private void handleProviderRegistrationInner(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
+    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
-        layer(e).instanceFile("Debugger/"+path, null, providerClass).
-                stringvalue("serviceName", className).
+        layer(e).instanceFile("Debugger", null, providerClass).
+                stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
+                stringvalue("displayName", displayName). // TODO bundleValue
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {
-        TypeElement te = (TypeElement) e;
-        TypeMirror superType = te.getSuperclass();
-        if (superType.getKind().equals(TypeKind.NONE)) {
-            return false;
-        } else {
-            e = ((DeclaredType) superType).asElement();
-            String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-            if (clazz.equals(providerClass.getName())) {
-                return true;
-            } else {
-                return isClassOf(e, providerClass);
+        switch (e.getKind()) {
+            case CLASS: {
+                TypeElement te = (TypeElement) e;
+                TypeMirror superType = te.getSuperclass();
+                if (superType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) superType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
             }
+            case METHOD: {
+                return true;
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
     }
 
@@ -261,39 +225,20 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                  * */
                 return clazz;
             }
+            case METHOD: {
+                ExecutableElement ee = (ExecutableElement) e;
+                String methodName = ee.getSimpleName().toString();
+                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) ee.getEnclosingElement()).toString();
+                if (!e.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException(ee + " must be static", e);
+                }
+                if (ee.getParameters().size() > 0) {
+                    throw new LayerGenerationException(ee + " must not have any parameters", e);
+                }
+                return clazz+"."+methodName+"()";
+            }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
-    }
-
-    /**
-     * Translates "{org.MyClass1.class, org.MyClass2.class, ... }" to
-     * "org.MyClass1, org.MyClass2, ..."
-     * @param classNames
-     * @return comma-separated class names
-     */
-    private String translateClassNames(String classNames) {
-        classNames = classNames.substring(1, classNames.length() - 1).trim();
-        StringBuilder builder = new StringBuilder();
-        int i1 = 0;
-        int i2;
-        while ((i2 = classNames.indexOf(',', i1)) > 0) {
-            if (i1 > 0) builder.append(',');
-            builder.append(translateClass(classNames.substring(i1, i2).trim()));
-            i1 = i2 + 1;
-        }
-        if (i1 > 0) builder.append(',');
-        builder.append(translateClass(classNames.substring(i1).trim()));
-
-        return builder.toString();
-    }
-
-    private String translateClass(String className) {
-        if (className.endsWith(".class")) {
-            className = className.substring(0, className.length() - ".class".length());
-        }
-        TypeElement type = processingEnv.getElementUtils().getTypeElement(className);
-        //System.err.println("translateClass("+className+") type = "+type);
-        return processingEnv.getElementUtils().getBinaryName(type).toString();
     }
 }

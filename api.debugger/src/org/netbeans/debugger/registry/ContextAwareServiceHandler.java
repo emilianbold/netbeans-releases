@@ -39,6 +39,8 @@
 
 package org.netbeans.debugger.registry;
 
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextAwareService;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -67,7 +69,7 @@ import org.openide.util.Lookup;
 public class ContextAwareServiceHandler implements InvocationHandler {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
-    static final String SERVICE_CLASSES = "serviceClasses"; // NOI18N
+    public static final String SERVICE_CLASSES = "serviceClasses"; // NOI18N
 
     private String serviceName;
     private Class[] serviceClasses;
@@ -78,7 +80,7 @@ public class ContextAwareServiceHandler implements InvocationHandler {
     private Map<ContextProvider, Object> contextInstances = new WeakHashMap<ContextProvider, Object>();
     private WeakReference<Object> noContextInstance = new WeakReference<Object>(null);
 
-    private ContextAwareServiceHandler(String serviceName, Class[] serviceClasses,
+    public ContextAwareServiceHandler(String serviceName, Class[] serviceClasses,
                                        Map methodValues) {
         this(serviceName, serviceClasses, methodValues, null);
     }
@@ -155,46 +157,6 @@ public class ContextAwareServiceHandler implements InvocationHandler {
                     " with arguments "+java.util.Arrays.asList(args)+       // NOI18N
                     " can not be called on this virtual object!");     // NOI18N
         }
-    }
-
-    /**
-     * Creates instance of <code>ContextAwareService</code> based on layer.xml
-     * attribute values
-     *
-     * @param attrs attributes loaded from layer.xml
-     * @return new <code>ContextAwareService</code> instance
-     */
-    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
-        String serviceName = (String) attrs.get(SERVICE_NAME);
-        String[] serviceClassNames = splitClasses((String) attrs.get(SERVICE_CLASSES));
-
-        //Map methodValues = new HashMap(attrs); - MUST NOT DO THAT! Creates a loop initializing the entries from XML
-        //methodValues.remove(SERVICE_NAME);
-        //methodValues.remove(SERVICE_CLASS);
-
-        ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-        Class[] classes = new Class[serviceClassNames.length + 1];
-        classes[0] = ContextAwareService.class;
-        for (int i = 0; i < serviceClassNames.length; i++) {
-            classes[i+1] = Class.forName(serviceClassNames[i], true, cl);
-        }
-        return (ContextAwareService)
-                Proxy.newProxyInstance(
-                    cl,
-                    classes,
-                    new ContextAwareServiceHandler(serviceName, classes, Collections.EMPTY_MAP));
-    }
-
-    private static String[] splitClasses(String classes) {
-        ArrayList<String> list = new ArrayList<String>();
-        int i1 = 0;
-        int i2;
-        while ((i2 = classes.indexOf(',', i1)) > 0) {
-            list.add(classes.substring(i1, i2).trim());
-            i1 = i2 + 1;
-        }
-        list.add(classes.substring(i1).trim());
-        return list.toArray(new String[] {});
     }
 
 }

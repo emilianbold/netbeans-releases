@@ -75,6 +75,8 @@ import org.openide.util.lookup.ServiceProvider;
                            "org.netbeans.spi.debugger.ui.BreakpointType.Registration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
+    public static final String SERVICE_NAME = "serviceName"; // NOI18N
+
 
     @Override
     protected boolean handleProcess(
@@ -104,21 +106,24 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             ColumnModel.Registration reg = e.getAnnotation(ColumnModel.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistration(e, ColumnModel.class, path);
+            final int position = reg.position();
+            handleProviderRegistration(e, ColumnModel.class, path, position);
             cnt++;
         }
         return cnt == annotations.size();
     }
 
-    private void handleProviderRegistration(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
+    private void handleProviderRegistration(Element e, Class providerClass, String path, int position) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
         layer(e).instanceFile("Debugger/"+path, null, providerClass).
-                stringvalue("serviceName", className).
+                stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
+                //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
+                intvalue("position", position).
                 write();
     }
 
@@ -128,26 +133,35 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
         layer(e).instanceFile("Debugger", null, providerClass).
-                stringvalue("serviceName", className).
+                stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
                 stringvalue("displayName", displayName). // TODO bundleValue
-                methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
+                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {
-        TypeElement te = (TypeElement) e;
-        TypeMirror superType = te.getSuperclass();
-        if (superType.getKind().equals(TypeKind.NONE)) {
-            return false;
-        } else {
-            e = ((DeclaredType) superType).asElement();
-            String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-            if (clazz.equals(providerClass.getName())) {
-                return true;
-            } else {
-                return isClassOf(e, providerClass);
+        switch (e.getKind()) {
+            case CLASS: {
+                TypeElement te = (TypeElement) e;
+                TypeMirror superType = te.getSuperclass();
+                if (superType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) superType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
             }
+            case METHOD: {
+                return true;
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
     }
 
@@ -197,6 +211,18 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
                  * */
                 return clazz;
+            }
+            case METHOD: {
+                ExecutableElement ee = (ExecutableElement) e;
+                String methodName = ee.getSimpleName().toString();
+                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) ee.getEnclosingElement()).toString();
+                if (!e.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException(ee + " must be static", e);
+                }
+                if (ee.getParameters().size() > 0) {
+                    throw new LayerGenerationException(ee + " must not have any parameters", e);
+                }
+                return clazz+"."+methodName+"()";
             }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
