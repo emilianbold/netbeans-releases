@@ -11,21 +11,36 @@ import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfigurat
 /**
  * This class is to configure
  */
-public final class MultipleDTDCConfiguration implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
+public final class MultipleDTDCConfiguration
+        implements DataCollectorConfiguration,
+        IndicatorDataProviderConfiguration {
 
-    private static final String ID = "MultipleDtraceDataCollectorConfiguration";
-
-    static {
-        MultipleDTDCConfigurationAccessor.setDefault(new MultipleDTDCConfigurationAccessorImpl());
-    }
+    private static final String ID =
+            "MultipleDtraceDataCollectorConfiguration"; // NOI18N
     private final DTDCConfiguration configuration;
     private final String prefix;
 
-    public MultipleDTDCConfiguration(DTDCConfiguration configuration, String prefix) {
+
+    static {
+        MultipleDTDCConfigurationAccessor.setDefault(
+                new MultipleDTDCConfigurationAccessorImpl());
+    }
+
+    /**
+     * Constructs new MultipleDTDCConfiguration object
+     * @param configuration dtrace data collector configuration
+     * @param prefix script output prefix
+     */
+    public MultipleDTDCConfiguration(
+            final DTDCConfiguration configuration, final String prefix) {
         this.configuration = configuration;
         this.prefix = prefix;
     }
 
+    /**
+     * Returns unique ID to be used to identify configuration
+     * @return unique id
+     */
     public String getID() {
         return ID;
     }
@@ -38,7 +53,8 @@ public final class MultipleDTDCConfiguration implements DataCollectorConfigurati
         return prefix;
     }
 
-    private static final class MultipleDTDCConfigurationAccessorImpl extends MultipleDTDCConfigurationAccessor {
+    private static final class MultipleDTDCConfigurationAccessorImpl
+            extends MultipleDTDCConfigurationAccessor {
 
         @Override
         public String getID() {
@@ -46,7 +62,8 @@ public final class MultipleDTDCConfiguration implements DataCollectorConfigurati
         }
 
         @Override
-        public DTDCConfiguration getDTDCConfiguration(MultipleDTDCConfiguration configuration) {
+        public DTDCConfiguration getDTDCConfiguration(
+                MultipleDTDCConfiguration configuration) {
             return configuration.getDTDCConfiguration();
         }
 
