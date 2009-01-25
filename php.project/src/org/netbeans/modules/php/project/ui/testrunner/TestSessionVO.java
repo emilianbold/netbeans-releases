@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.testrunner.api.Status;
+import org.openide.util.NbBundle;
 
 /**
  * Value objects for unit test session.
@@ -87,7 +88,7 @@ public final class TestSessionVO {
         public TestSuiteVO(String name, String file, long time) {
             assert name != null;
             assert file != null;
-            
+
             this.name = name;
             this.file = file;
             this.time = time;
@@ -106,11 +107,19 @@ public final class TestSessionVO {
         }
 
         public List<TestCaseVO> getTestCases() {
+            checkTestCases();
             return testCases;
         }
 
         public long getTime() {
             return time;
+        }
+
+        private void checkTestCases() {
+            if (!testCases.isEmpty()) {
+                return;
+            }
+            testCases.add(TestCaseVO.pendingTestCase());
         }
     }
 
@@ -122,15 +131,22 @@ public final class TestSessionVO {
         private final long time;
         private String error;
         private String failure;
+        private Status status = Status.PASSED;
 
         public TestCaseVO(String name, String file, int line, long time) {
             assert name != null;
-            assert file != null;
 
             this.name = name;
             this.file = file;
             this.line = line;
             this.time = time;
+        }
+
+        static TestCaseVO pendingTestCase() {
+            // suite with no testcases => create a fake with error message
+            TestCaseVO testCase = new TestCaseVO(NbBundle.getMessage(TestSuiteVO.class, "LBL_NoTestCasesFound"), null, -1, -1);
+            testCase.status = Status.PENDING;
+            return testCase;
         }
 
         public String getFile() {
@@ -162,6 +178,8 @@ public final class TestSessionVO {
 
         public void setError(String error) {
             this.error = error;
+            assert status == Status.PASSED;
+            status = Status.ERROR;
         }
 
         public String getFailure() {
@@ -170,15 +188,12 @@ public final class TestSessionVO {
 
         public void setFailure(String failure) {
             this.failure = failure;
+            assert status == Status.PASSED;
+            status = Status.FAILED;
         }
 
         public Status getStatus() {
-            if (error != null) {
-                return Status.ERROR;
-            } else if (failure != null) {
-                return Status.FAILED;
-            }
-            return Status.PASSED;
+            return status;
         }
 
         public String getMessage() {
