@@ -40,6 +40,7 @@
 package org.netbeans.api.debugger.providers;
 
 import org.netbeans.modules.debugger.ui.models.ColumnModels;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
 /**
@@ -53,7 +54,7 @@ public class TestColumnModelsProvider {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
      * view representation.
      */
-    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=10)
+    @ColumnModelRegistration(path="unittest/annotated/LocalsView", position=10)
     public static ColumnModel createDefaultLocalsColumn() {
         return ColumnModels.createDefaultLocalsColumn();
     }
@@ -63,7 +64,7 @@ public class TestColumnModelsProvider {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
      * view representation.
      */
-    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=40)
+    @ColumnModelRegistration(path="unittest/annotated/LocalsView", position=40)
     public static ColumnModel createLocalsToStringColumn() {
         return ColumnModels.createLocalsToStringColumn();
     }
@@ -73,7 +74,7 @@ public class TestColumnModelsProvider {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree
      * table view representation.
      */
-    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=20)
+    @ColumnModelRegistration(path="unittest/annotated/LocalsView", position=20)
     public static ColumnModel createLocalsTypeColumn() {
         return ColumnModels.createLocalsTypeColumn();
     }
@@ -82,7 +83,7 @@ public class TestColumnModelsProvider {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table
      * view representation.
      */
-    @ColumnModel.Registration(path="unittest/annotated/LocalsView", position=30)
+    @ColumnModelRegistration(path="unittest/annotated/LocalsView", position=30)
     public static ColumnModel createLocalsValueColumn() {
         return ColumnModels.createLocalsValueColumn();
     }

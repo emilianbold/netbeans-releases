@@ -41,13 +41,14 @@ package org.netbeans.api.debugger.providers;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
 /**
  *
  * @author Martin Entlicher
  */
-@ColumnModel.Registration(path="unittest/annotated")
+@ColumnModelRegistration(path="unittest/annotated")
 public class TestColumnModel extends ColumnModel{
 
     public static final String ID = "TestID";

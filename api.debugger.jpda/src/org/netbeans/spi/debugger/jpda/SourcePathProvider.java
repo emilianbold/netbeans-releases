@@ -142,6 +142,17 @@ public abstract class SourcePathProvider {
         PropertyChangeListener l
     );
 
+    
+    /**
+     * Declarative registration of a SourcePathProvider implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     *
+     * @author Martin Entlicher
+     * @since 2.19
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE})
     public @interface Registration {

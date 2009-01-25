@@ -42,13 +42,13 @@ package org.netbeans.spi.debugger;
 /**
  * Instance of registry entry, that delegates to a debugger service, that can be
  * context-aware.
- * This instances should be registered in layers and created by <code>createService</code> factory
+ * This instances should be registered in layers and created by <code>ContextAwareSupport.createService</code> factory
  * method as follows:
  *
  *   <pre style="background-color: rgb(255, 255, 153);">
  *   &lt;folder name="Debugger"&gt;
  *       &lt;file name="MyDebuggerService.instance"&gt;
- *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.debugger.registry.ContextAwareServiceHandler.createService"/&gt;
+ *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ContextAwareSupport.createService"/&gt;
  *           &lt;attr name="serviceName" stringvalue="org.netbeans.my_debugger.MyServiceImpl"/&gt;
  *           &lt;attr name="serviceClass" stringvalue="org.netbeans.debugger.Service"/&gt;
  *       &lt;/file&gt;
@@ -57,6 +57,7 @@ package org.netbeans.spi.debugger;
  * <br/>
  *
  * @author Martin Entlicher
+ * @since 1.16
  */
 public interface ContextAwareService<T> {
 

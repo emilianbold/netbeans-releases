@@ -54,13 +54,29 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
+ * Support class for context-aware debugger services.
  *
  * @author Martin Entlicher
+ * @since 1.16
  */
 public final class ContextAwareSupport {
 
     private ContextAwareSupport() {}
 
+    /**
+     * A helper method that creates a context-aware debugger service.
+     * The service must be a public class with public constructor or a public
+     * static method. The constructor or method takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     * <p>
+     * This method is typically called by the implementation of {@link ContextAwareService}
+     * to create an instance with the given context.
+     *
+     * @param service The full class name or static method that ends with '()'
+     * @param context The context with which is the service to be created
+     * @return The instance of the service with the given context.
+     * @since 1.16
+     */
     public static Object createInstance(String service, ContextProvider context) {
         try {
             ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);

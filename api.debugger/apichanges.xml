@@ -278,6 +278,41 @@ made subject to such option by the copyright holder.
         </description>
     </change>
 
+    <change id="PathLookup">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Lookup improvements and service annotation registration.</summary>
+        <version major="1" minor="16"/>
+        <date day="30" month="1" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             In order to be able to register debugger services on System FileSystem,
+             which brings more flexibility and better performance (see also
+             <a href="http://www.netbeans.org/issues/show_bug.cgi?id=153093#desc7"/>),
+             we add non-recursive content of <code>org.openide.util.Lookups.forPath()</code>
+             into debugger lookup.
+             Since debugger needs retrieve context-aware services from the lookup,
+             <code>ContextAwareService</code> interface is introduced.
+             </p>
+             <p>
+             Annotations are added for easy registration on module layers.
+             <code>DebuggerServiceRegistration</code> to register implementations
+             of interfaces, <code>*Provider.Registration</code> to register
+             implementations of appropriate providers.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="LazyActionsManagerListener$Registration" />
+        <class package="org.netbeans.spi.debugger" name="ActionsProvider$Registration" />
+        <class package="org.netbeans.spi.debugger" name="DebuggerEngineProvider$Registration" />
+        <class package="org.netbeans.spi.debugger" name="SessionProvider$Registration" />
+        <class package="org.netbeans.spi.debugger" name="DebuggerServiceRegistration" />
+        <class package="org.netbeans.spi.debugger" name="ContextAwareService" />
+        <class package="org.netbeans.spi.debugger" name="ContextAwareSupport" />
+        <issue number="153093"/>
+        <issue number="156687"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

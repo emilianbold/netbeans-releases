@@ -56,10 +56,11 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.ColumnModel;
+
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -72,7 +73,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes({"org.netbeans.spi.debugger.ui.AttachType.Registration",  // NOI18N
-                           "org.netbeans.spi.debugger.ui.BreakpointType.Registration"}) //NOI18N
+                           "org.netbeans.spi.debugger.ui.BreakpointType.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.ui.ColumnModelRegistration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
@@ -102,8 +104,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             handleProviderRegistrationDisplayName(e, BreakpointType.class, displayName);
             cnt++;
         }
-        for (Element e : env.getElementsAnnotatedWith(ColumnModel.Registration.class)) {
-            ColumnModel.Registration reg = e.getAnnotation(ColumnModel.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(ColumnModelRegistration.class)) {
+            ColumnModelRegistration reg = e.getAnnotation(ColumnModelRegistration.class);
 
             final String path = reg.path();
             final int position = reg.position();

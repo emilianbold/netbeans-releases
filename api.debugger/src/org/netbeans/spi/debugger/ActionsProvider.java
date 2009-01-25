@@ -117,6 +117,14 @@ public abstract class ActionsProvider {
         });
     }
 
+    /**
+     * Declarative registration of an ActionsProvider implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     * @since 1.16
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE})
     public @interface Registration {

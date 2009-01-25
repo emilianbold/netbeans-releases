@@ -140,19 +140,6 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 write();
     }
 
-    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName) throws IllegalArgumentException, LayerGenerationException {
-        String className = instantiableClassOrMethod(e);
-        if (!isClassOf(e, providerClass)) {
-            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
-        }
-        layer(e).instanceFile("Debugger", null, providerClass).
-                stringvalue(SERVICE_NAME, className).
-                stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("displayName", displayName). // TODO bundleValue
-                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                write();
-    }
-
     private boolean isClassOf(Element e, Class providerClass) {
         switch (e.getKind()) {
             case CLASS: {
