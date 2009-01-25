@@ -250,7 +250,7 @@ public final class LocalNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    public synchronized Integer get() {
+    protected final Integer doGet() {
         try {
             process.waitFor();
         } catch (InterruptedException ex) {

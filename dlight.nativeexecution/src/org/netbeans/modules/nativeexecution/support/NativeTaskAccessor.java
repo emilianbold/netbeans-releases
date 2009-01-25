@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,14 +34,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.support;
 
-import javax.swing.Action;
+import java.io.Reader;
+import java.io.Writer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
 
-public interface ActionsProvider {
-  Action[] getActions();
-  Action getAction(String id);
+public abstract class NativeTaskAccessor {
+
+    private static volatile NativeTaskAccessor DEFAULT;
+
+    public static void setDefault(NativeTaskAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "NativeTaskInfoAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public static synchronized NativeTaskAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(NativeTask.class.getName(), true,
+                    NativeTask.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract NativeExecutor getExecutor(NativeTask task);
+
+    public abstract ProgressHandle getProgressHandler(NativeTask task);
+
+    public abstract Writer getRedirectionErrorWriter(NativeTask task);
+
+    public abstract Reader getRedirectionInputReader(NativeTask task);
+
+    public abstract Writer getRedirectionOutputWriter(NativeTask task);
+
+    public abstract void resetTask(NativeTask task);
 }

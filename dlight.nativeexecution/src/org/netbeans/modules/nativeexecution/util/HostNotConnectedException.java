@@ -41,8 +41,6 @@ package org.netbeans.modules.nativeexecution.util;
 /**
  * This exception is thrown to indicate that no ssh connection with a host has
  * been established prior to an attempt to execute NativeTask on it.
- * 
- * @author ak119685
  */
 public final class HostNotConnectedException extends Throwable {
 }

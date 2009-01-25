@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import com.jcraft.jsch.ChannelExec;
@@ -154,7 +154,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
     }
 
     @Override
-    public final Integer get() {
+    protected final Integer doGet() {
         while (channel.isConnected()) {
             try {
                 Thread.sleep(200);

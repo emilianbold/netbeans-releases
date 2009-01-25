@@ -71,7 +71,7 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
@@ -195,7 +195,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
   public void targetFinished(DLightTarget target, int result) {
-    log.fine("Stopping CLIODataCollector: " + collectorTask.getCommand());
+    log.fine("Stopping CLIODataCollector: " + collectorTask.toString());
     collectorTask.cancel();
     outProcessingThread.interrupt();
   }

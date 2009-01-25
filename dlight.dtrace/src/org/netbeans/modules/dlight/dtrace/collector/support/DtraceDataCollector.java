@@ -73,7 +73,7 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.CopyTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
@@ -84,8 +84,6 @@ import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.util.TaskPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
-
 
 /**
  * Collector which collects data using DTrace sctiprs.
@@ -119,7 +117,6 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
 
-    
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
@@ -130,7 +127,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         } else {
             this.parser = DTDCConfigurationAccessor.getDefault().getParser(configuration) == null ? (tableMetaData != null ? new DtraceParser(tableMetaData) : (DtraceParser) null) : DTDCConfigurationAccessor.getDefault().getParser(configuration);
         }
-        // super(cmd_dtrace, null,
+// super(cmd_dtrace, null,
 //            configuration.getParser() == null ? (configuration.getDatatableMetadata() != null && configuration.getDatatableMetadata().size() > 0 ? new DtraceParser(configuration.getDatatableMetadata().get(0)) : (DtraceParser) null) : configuration.getParser(), configuration.getDatatableMetadata());
         this.localScriptPath = DTDCConfigurationAccessor.getDefault().getScriptPath(configuration);
         this.extraArgs = DTDCConfigurationAccessor.getDefault().getArgs(configuration);
@@ -178,7 +175,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return true;
     }
 
-//    @Override
+    @Override
     public void init(DataStorage storage, DLightTarget target) {
         this.storage = storage;
         if (isSlave) {
@@ -216,7 +213,6 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return dataTablesMetadata;
     }
 
-  
     NativeTask getCollectorTaskFor(DLightTarget target) {
         String taskCommand = scriptPath;//"pfexec " + scriptPath;
         if (target instanceof AttachableTarget) {
@@ -238,10 +234,10 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return extraArgs;
     }
 
-//    @Override
+    @Override
     public void targetFinished(DLightTarget target, int result) {
         if (!isSlave) {
-            log.fine("Stopping DtraceDataCollector: " + collectorTask.getCommand());
+            log.fine("Stopping DtraceDataCollector: " + collectorTask.toString()); // NOI18N
             collectorTask.cancel();
             outProcessingThread.interrupt();
         }
@@ -431,8 +427,6 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             validationListener.validationStateChanged(this, newStatus);
         }
     }
-
-    
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 
