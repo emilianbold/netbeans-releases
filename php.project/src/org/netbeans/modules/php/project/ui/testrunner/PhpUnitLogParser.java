@@ -61,10 +61,12 @@ public final class PhpUnitLogParser extends DefaultHandler {
     enum Content { NONE, ERROR, FAILURE };
     private final XMLReader xmlReader;
     private final TestSessionVO testSession;
+    private TestSuiteVO testSuite; // actual test suite
+    private TestCaseVO testCase; // actual test case
     private Content content = Content.NONE;
     private boolean firstContent = true; // for error/failure: the 1st line is ignored
     private boolean stacktraceStarted = false; // for error/failure: flag for description/stacktrace
-    private StringBuilder buffer = new StringBuilder(200); // for failure: buffer for message
+    private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for message
 
     private PhpUnitLogParser(TestSessionVO testSession) throws SAXException {
         this.testSession = testSession;
@@ -104,7 +106,11 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("failure".equals(qName)
+        if ("testsuite".equals(qName)) {
+            testSuite = null;
+        } else if ("testcase".equals(qName)) {
+            testCase = null;
+        } else if ("failure".equals(qName)
                 || "error".equals(qName)) {
             endTestContent();
         }
@@ -112,31 +118,18 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        TestCaseVO activeTestCase;
-        String string;
         switch (content) {
             case FAILURE:
-                string = getString(ch, start, length);
+            case ERROR:
+                String string = getString(ch, start, length);
                 if (string == null) {
                     break;
                 }
                 if (!stacktraceStarted) {
                     buffer.append(string);
                 } else {
-                    activeTestCase = testSession.getActiveTestSuite().getActiveTestCase();
-                    activeTestCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", string.trim()));
-                }
-                break;
-            case ERROR:
-                string = getString(ch, start, length);
-                if (string == null) {
-                    break;
-                }
-                activeTestCase = testSession.getActiveTestSuite().getActiveTestCase();
-                if (!stacktraceStarted) {
-                    activeTestCase.setError(string.trim());
-                } else {
-                    activeTestCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", string.trim()));
+                    assert testCase != null;
+                    testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", string.trim()));
                 }
                 break;
         }
@@ -181,7 +174,8 @@ public final class PhpUnitLogParser extends DefaultHandler {
         String file = getFile(attributes);
         if (file != null) {
             // 'real' suite found
-            TestSuiteVO testSuite = new TestSuiteVO(
+            assert testSuite == null;
+            testSuite = new TestSuiteVO(
                     getName(attributes),
                     file,
                     getTime(attributes));
@@ -190,12 +184,14 @@ public final class PhpUnitLogParser extends DefaultHandler {
     }
 
     private void processTestCase(Attributes attributes) {
-        TestCaseVO testCase = new TestCaseVO(
+        assert testSuite != null;
+        assert testCase == null;
+        testCase = new TestCaseVO(
                 getName(attributes),
                 getFile(attributes),
                 getLine(attributes),
                 getTime(attributes));
-        testSession.getActiveTestSuite().addTestCase(testCase);
+        testSuite.addTestCase(testCase);
     }
 
     private void startTestError(Attributes attributes) {
@@ -209,8 +205,17 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private void endTestContent() {
         switch (content) {
             case FAILURE:
-                TestCaseVO activeTestCase = testSession.getActiveTestSuite().getActiveTestCase();
-                activeTestCase.setFailure(buffer.toString().trim());
+            case ERROR:
+                assert testCase != null;
+                String message = buffer.toString().trim();
+                if (content.equals(Content.FAILURE)) {
+                    testCase.setFailure(message);
+                } else if (content.equals(Content.ERROR)) {
+                    testCase.setError(message);
+                } else {
+                    assert false : "Should not get here";
+                }
+
                 buffer = new StringBuilder(200);
                 break;
         }

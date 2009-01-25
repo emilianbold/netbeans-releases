@@ -53,15 +53,9 @@ public final class TestSessionVO {
     private final List<TestSuiteVO> testSuites = new ArrayList<TestSuiteVO>();
     private long time = -1;
     private int tests = -1;
-    private TestSuiteVO activeTestSuite = null;
     
     public void addTestSuite(TestSuiteVO testSuite) {
         testSuites.add(testSuite);
-        activeTestSuite = testSuite;
-    }
-
-    public TestSuiteVO getActiveTestSuite() {
-        return activeTestSuite;
     }
 
     public List<TestSuiteVO> getTestSuites() {
@@ -89,7 +83,6 @@ public final class TestSessionVO {
         private final String name;
         private final String file;
         private final long time;
-        private TestCaseVO activeTestCase = null;
 
         public TestSuiteVO(String name, String file, long time) {
             assert name != null;
@@ -102,11 +95,6 @@ public final class TestSessionVO {
 
         void addTestCase(TestCaseVO testCase) {
             testCases.add(testCase);
-            activeTestCase = testCase;
-        }
-
-        public TestCaseVO getActiveTestCase() {
-            return activeTestCase;
         }
 
         public String getFile() {
