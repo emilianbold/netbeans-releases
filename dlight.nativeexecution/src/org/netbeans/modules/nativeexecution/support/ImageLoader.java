@@ -42,7 +42,11 @@ import javax.swing.ImageIcon;
 
 public class ImageLoader {
 
-  public static final ImageIcon loadIcon(String resourceFileName) {
-    return new ImageIcon(ImageLoader.class.getResource("/org/netbeans/modules/nativeexecution/resources/" + resourceFileName));
-  }
+    private static final String prefix =
+            "/org/netbeans/modules/nativeexecution/resources/"; // NOI18N
+
+    public static final ImageIcon loadIcon(String resourceFileName) {
+        return new ImageIcon(
+                ImageLoader.class.getResource(prefix + resourceFileName));
+    }
 }

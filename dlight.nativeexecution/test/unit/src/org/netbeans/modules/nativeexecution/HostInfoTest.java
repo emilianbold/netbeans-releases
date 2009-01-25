@@ -136,9 +136,16 @@ public class HostInfoTest {
         boolean result;
         boolean expResult;
 
+        ExecutionEnvironment ee = new ExecutionEnvironment("ak119685", "129.159.127.252");
+        try {
+            System.out.println(new NativeTask(ee, "/bin/ls", null).invoke());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         try {
             fname = "/etc/passwd1";
-            result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "localhost"), fname);
+            result = HostInfo.fileExists(ee, fname);
             expResult = false;
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
@@ -148,7 +155,7 @@ public class HostInfoTest {
 
         try {
             fname = "/etc/passwd";
-            result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "localhost"), fname);
+            result = HostInfo.fileExists(ee, fname);
             expResult = true;
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
@@ -218,12 +225,10 @@ public class HostInfoTest {
     @Test
     public void testIsLocalhost() {
         System.out.println("isLocalhost");
-        String host = null;
+        String host = "localhost";
         boolean expResult = true;
         boolean result = HostInfo.isLocalhost(host);
         assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-//    fail("The test case is a prototype.");
     }
 
     @Test

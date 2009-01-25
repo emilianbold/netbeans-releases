@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.support;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
@@ -51,20 +51,18 @@ import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * Manager for open ssh connections.
+ * Manages connections that needed for remote <tt>NativeTask</tt>s execution.
  * It is a singleton and should be accessed via static <tt>getInstance()</tt>
  * method.
  *
- * @see org.netbeans.modules.nativeexecution.ExecutionEnvironment
- * @author ak119685
+ * @see ExecutionEnvironment
  */
-public class ConnectionManager {
+public final class ConnectionManager {
     // Instance of the ConnectionManager
 
     private static ConnectionManager instance;
@@ -108,12 +106,14 @@ public class ConnectionManager {
      *         New or already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
-    public synchronized Session getConnectionSession(final ExecutionEnvironment execEnv) {
+    public synchronized Session getConnectionSession(
+            final ExecutionEnvironment execEnv) {
         final String sessionKey = execEnv.toString();
         Session session = null;
 
         if (sessions == null) {
-            sessions = Collections.synchronizedMap(new HashMap<String, Session>());
+            sessions = Collections.synchronizedMap(
+                    new HashMap<String, Session>());
         }
 
         if (sessions.containsKey(sessionKey)) {
@@ -128,7 +128,8 @@ public class ConnectionManager {
         int sshPort = execEnv.getSSHPort();
 
         ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("ConnectionManager.Connecting", execEnv.toString())); // NOI18N
+                loc("ConnectionManager.Connecting", // NOI18N
+                execEnv.toString()));
 
         ph.start();
 
@@ -154,7 +155,7 @@ public class ConnectionManager {
         return session;
     }
 
-    boolean isConnectedTo(ExecutionEnvironment execEnv) {
+    public boolean isConnectedTo(ExecutionEnvironment execEnv) {
         if (sessions == null) {
             return false;
         }
@@ -174,9 +175,10 @@ public class ConnectionManager {
      *
      * @param execEnv - <tt>ExecutionEnvironment</tt> to connect to.
      * @return action to be used to connect to the <tt>execEnv</tt>.
-     * @see org.netbeans.modules.nativeexecution.ObservableAction
+     * @see ObservableAction
      */
-    public synchronized ObservableAction<Boolean> getConnectAction(final ExecutionEnvironment execEnv) {
+    public synchronized ObservableAction<Boolean> getConnectAction(
+            final ExecutionEnvironment execEnv) {
         if (actionsProvider == null) {
             actionsProvider = new ActionsProvider();
         }
@@ -184,15 +186,18 @@ public class ConnectionManager {
         return actionsProvider.getConnectAction(execEnv);
     }
 
-    private static class ActionsProvider implements ObservableActionListener<Boolean> {
+    private static class ActionsProvider
+            implements ObservableActionListener<Boolean> {
         // Map that contains currently running "ConnectTo" actions.
         // In case of subsequent requests for connection - the same task will
         // be returned.
 
         private final Map<ExecutionEnvironment, ConnectAction> hash =
-                Collections.synchronizedMap(new HashMap<ExecutionEnvironment, ConnectAction>());
+                Collections.synchronizedMap(
+                new HashMap<ExecutionEnvironment, ConnectAction>());
 
-        private ObservableAction<Boolean> getConnectAction(ExecutionEnvironment execEnv) {
+        private ObservableAction<Boolean> getConnectAction(
+                ExecutionEnvironment execEnv) {
             ConnectAction ca = null;
 
             synchronized (hash) {
@@ -221,7 +226,8 @@ public class ConnectionManager {
             private final ExecutionEnvironment execEnv;
 
             public ConnectAction(final ExecutionEnvironment execEnv) {
-                super(loc("ConnectionManager.ConnectToAction.text", execEnv.toString())); // NOI18N
+                super(loc("ConnectionManager.ConnectToAction.text", // NOI18N
+                        execEnv.toString()));
                 this.execEnv = execEnv;
             }
 
@@ -231,11 +237,13 @@ public class ConnectionManager {
 
             @Override
             protected Boolean performAction(ActionEvent e) {
-                if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                ConnectionManager cm = ConnectionManager.getInstance();
+
+                if (cm.isConnectedTo(execEnv)) {
                     return true;
                 }
 
-                return ConnectionManager.getInstance().getConnectionSession(execEnv) != null;
+                return cm.getConnectionSession(execEnv) != null;
             }
         }
     }

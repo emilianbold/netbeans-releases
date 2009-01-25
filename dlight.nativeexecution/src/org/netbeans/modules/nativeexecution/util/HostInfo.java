@@ -1,5 +1,6 @@
 package org.netbeans.modules.nativeexecution.util;
 
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import java.io.File;
@@ -18,7 +19,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Utility class that provides information about particual host.
- * @author ak119685
  */
 public final class HostInfo {
 
@@ -38,10 +38,13 @@ public final class HostInfo {
     static {
         NetworkInterface iface = null;
         try {
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces();
+                    ifaces.hasMoreElements();) {
                 iface = (NetworkInterface) ifaces.nextElement();
-                for (Enumeration ips = iface.getInetAddresses(); ips.hasMoreElements();) {
-                    myIPAdresses.add(((InetAddress) ips.nextElement()).getHostAddress());
+                for (Enumeration ips = iface.getInetAddresses();
+                        ips.hasMoreElements();) {
+                    myIPAdresses.add(
+                            ((InetAddress) ips.nextElement()).getHostAddress());
                 }
             }
         } catch (SocketException ex) {
@@ -50,7 +53,7 @@ public final class HostInfo {
     }
 
     /**
-     * Tests wheather file <tt>fname</tt> exists in <tt>execEnv</tt>.
+     * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
      * Calling this method equals to calling
      * <pre>
      * fileExists(execEnv, fname, true)
@@ -63,25 +66,32 @@ public final class HostInfo {
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
      *
-     * @throws org.netbeans.modules.nativeexecution.HostNotConnectedException
+     * @throws HostNotConnectedException if host, identified by this execution
+     * environment is not connected.
      */
-    public static final boolean fileExists(ExecutionEnvironment execEnv, String fname) throws HostNotConnectedException {
+    public static boolean fileExists(final ExecutionEnvironment execEnv,
+            final String fname) throws HostNotConnectedException {
         return fileExists(execEnv, fname, true);
     }
 
     /**
-     * Tests wheather file <tt>fname</tt> exists in <tt>execEnv</tt>.
+     * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
      * If execEnv referes to remote host that is not connected yet, a
      * <tt>HostNotConnectedException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
-     * @param useCache
+     * @param useCache if <tt>true</tt> then subsequent tests for same files
+     * in the same environment will not be actually performed, but result from
+     * hash will be returned.
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws org.netbeans.modules.nativeexecution.HostNotConnectedException
+     * @throws HostNotConnectedException if host, identified by this execution
+     * environment is not connected.
      */
-    public static final boolean fileExists(ExecutionEnvironment execEnv, String fname, boolean useCache) throws HostNotConnectedException {
+    public static boolean fileExists(final ExecutionEnvironment execEnv,
+            final String fname, final boolean useCache)
+            throws HostNotConnectedException {
         String key = execEnv.toString() + fname;
 
         if (useCache && filesExistenceHash.containsKey(key)) {
@@ -93,11 +103,12 @@ public final class HostInfo {
         if (execEnv.isLocal()) {
             fileExists = new File(fname).exists();
         } else {
-            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 throw new HostNotConnectedException();
             }
 
-            NativeTask task = new NativeTask(execEnv, "test", new String[]{"-f", fname}); // NOI18N
+            NativeTask task = new NativeTask(execEnv, "test", // NOI18N
+                    new String[]{"-f", fname}); // NOI18N
             task.submit();
 
             try {
@@ -121,9 +132,11 @@ public final class HostInfo {
      * @param execEnv <tt>ExecutionEnvironment</tt>
      * @return string that identifies OS installed on the host specified by the
      * <tt>execEnv</tt>
-     * @throws org.netbeans.modules.nativeexecution.HostNotConnectedException
+     * @throws HostNotConnectedException if host, identified by this execution
+     * environment is not connected.
      */
-    public static final String getOS(ExecutionEnvironment execEnv) throws HostNotConnectedException {
+    public static String getOS(final ExecutionEnvironment execEnv)
+            throws HostNotConnectedException {
         if (execEnv.isLocal()) {
             return System.getProperty("os.name"); // NOI18N
         }
@@ -133,7 +146,8 @@ public final class HostInfo {
         }
 
         StringBuffer taskOutput = new StringBuffer();
-        NativeTask task = new NativeTask(execEnv, cmd_uname, new String[]{"-s"}, taskOutput); // NOI18N
+        NativeTask task = new NativeTask(execEnv, cmd_uname,
+                new String[]{"-s"}, taskOutput); // NOI18N
         task.submit();
         int result = -1;
 
@@ -147,7 +161,8 @@ public final class HostInfo {
             error = ex.getMessage();
         }
 
-        return result == 0 ? taskOutput.toString().trim() : "Error: " + error; // NOI18N
+        return result == 0 ? taskOutput.toString().trim()
+                : "Error: " + error; // NOI18N
     }
 
     /**
@@ -156,11 +171,12 @@ public final class HostInfo {
      * @param host host identification string. Either hostname or IP address.
      * @return true if and only if <tt>host</tt> identifies a localhost.
      */
-    public static final boolean isLocalhost(String host) {
+    public static boolean isLocalhost(String host) {
         boolean result = false;
 
         try {
-            result = myIPAdresses.contains(InetAddress.getByName(host).getHostAddress());
+            result = myIPAdresses.contains(
+                    InetAddress.getByName(host).getHostAddress());
         } catch (UnknownHostException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -176,7 +192,8 @@ public final class HostInfo {
      * @return string, that represents a platform path <br>
      *         <tt>UNKNOWN</tt> if platform is unknown.
      */
-    public static final String getPlatformPath(final ExecutionEnvironment execEnv) {
+    public static String getPlatformPath(
+            final ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
 
         if (platformPathsHash.containsKey(key)) {
@@ -228,7 +245,16 @@ public final class HostInfo {
         return platformPath;
     }
 
-    public static final boolean isUnix(ExecutionEnvironment execEnv) throws HostNotConnectedException {
+    /**
+    /**
+     * Tests whether the OS, that is ran in this execution environment, is Unix
+     * or not.
+     * @param execEnv <tt>ExecutionEnvironment</tt> to test
+     * @return true if execEnv refers to a host that runs Solaris or Linux
+     * @throws HostNotConnectedException if host is not connected yet.
+     */
+    public static boolean isUnix(ExecutionEnvironment execEnv)
+            throws HostNotConnectedException {
         String os = getOS(execEnv);
         return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
     }

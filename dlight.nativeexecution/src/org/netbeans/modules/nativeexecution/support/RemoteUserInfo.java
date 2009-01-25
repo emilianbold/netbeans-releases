@@ -60,17 +60,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
-/**
- *
- * @author ak119685
- */
 public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
-    private static final String KEY_PREFIX = "remote.user.info"; // NOI18N
 
+    private static final String KEY_PREFIX = "remote.user.info"; // NOI18N
     private static Map<String, RemoteUserInfo> hash;
     private JTextField passwordField = (JTextField) new JPasswordField(20);
-    private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
-            GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
+    private final GridBagConstraints gbc =
+            new GridBagConstraints(0, 0, 1, 1, 1, 1,
+            GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+            new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
     private boolean cancelled = false;
     private final static Object DLGLOCK = new Object();
@@ -85,7 +83,8 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         String key = execEnv.toString();
         crypter = new Encrypter(key);
         passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-        encryptedPassword = NbPreferences.forModule(RemoteUserInfo.class).get(passwordProperyKey, null);
+        encryptedPassword = NbPreferences.forModule(RemoteUserInfo.class).get(
+                passwordProperyKey, null);
         setParentComponent(this);
     }
 
@@ -94,9 +93,12 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
      *
      * @return The RemoteHostInfo instance for this key
      */
-    public static synchronized RemoteUserInfo getUserInfo(ExecutionEnvironment execEnv, boolean retry) {
+    public static synchronized RemoteUserInfo getUserInfo(
+            final ExecutionEnvironment execEnv,
+            final boolean retry) {
         if (hash == null) {
-            hash = Collections.synchronizedMap(new HashMap<String, RemoteUserInfo>());
+            hash = Collections.synchronizedMap(
+                    new HashMap<String, RemoteUserInfo>());
         }
 
         String key = execEnv.toString();
@@ -125,24 +127,28 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return encryptedPassword == null ? null : crypter.decrypt(encryptedPassword);
     }
 
-    final public void setPassword(final String password, final boolean rememberPassword) {
+    final public void setPassword(final String password,
+            final boolean rememberPassword) {
         encryptedPassword = password == null ? null : crypter.encrypt(password);
 
         if (rememberPassword && encryptedPassword != null) {
-            NbPreferences.forModule(RemoteUserInfo.class).put(passwordProperyKey, encryptedPassword);
+            NbPreferences.forModule(RemoteUserInfo.class).put(
+                    passwordProperyKey, encryptedPassword);
         } else {
-            NbPreferences.forModule(RemoteUserInfo.class).remove(passwordProperyKey);
+            NbPreferences.forModule(RemoteUserInfo.class).remove(
+                    passwordProperyKey);
         }
     }
 
     public synchronized boolean promptYesNo(String str) {
-        Object[] options = { "yes", "no" }; // NOI18N
+        Object[] options = {"yes", "no"}; // NOI18N
         int foo;
 
         synchronized (DLGLOCK) {
             foo = JOptionPane.showOptionDialog(parent, str,
-                loc("TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, // NOI18N
-             JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+                    loc("TITLE_YN_Warning"), // NOI18N
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE, null, options, options[0]);
         }
 
         return foo == 0;
@@ -169,7 +175,8 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 }
 
                 if (result) {
-                    setPassword(pwdDlg.getPassword(), pwdDlg.isRememberPassword());
+                    setPassword(pwdDlg.getPassword(),
+                            pwdDlg.isRememberPassword());
                     return true;
                 } else {
                     setPassword(null, false);
@@ -201,7 +208,8 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
         if (prompt.length == 1 && !echo[0]) {
             // this is password request
-            if (!promptPassword(loc("MSG_PasswordInteractive", destination, prompt[0]))) { //NOI18N
+            if (!promptPassword(loc("MSG_PasswordInteractive", // NOI18N
+                    destination, prompt[0]))) {
                 return null;
             } else {
                 return new String[]{getPassword()};
@@ -240,7 +248,8 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             synchronized (DLGLOCK) {
                 if (!isCancelled() && JOptionPane.showConfirmDialog(parent, panel,
                         loc("TITLE_KeyboardInteractive", destination, name), // NOI18N
-                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                     String[] response = new String[prompt.length];
                     for (int i = 0; i < prompt.length; i++) {
                         response[i] = texts[i].getText();

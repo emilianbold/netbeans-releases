@@ -48,7 +48,7 @@ public interface NativeTaskListener {
     /**
      * Invoked when <tt>NativeTask</tt> started.
      * Task is considered to be started if and only if it has been submitted,
-     * native process has been crreated and PID of this process has been
+     * native process has been created and PID of this process has been
      * obtained.
      *
      * @param task task that started

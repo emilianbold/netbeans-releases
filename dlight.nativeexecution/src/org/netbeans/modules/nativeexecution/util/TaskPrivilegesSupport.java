@@ -38,8 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
@@ -75,15 +74,14 @@ import org.openide.util.NbBundle;
 
 /**
  * Supporting class to provide functionality of requesting additional
- * process privileges (mainly dtrace_XXX) to an execution session.
+ * process privileges (see privileges(5) to an execution session.
  *
- * Execution session is either ssh connect to remote host or Runtime.getRuntime()
- * for a localhost.
+ * Execution session is either ssh connect to remote host or
+ * Runtime.getRuntime() for a localhost.
  *
  * In case of localhost privileges will be granted to current JVM process;
  * In case of remote - to remote sshd process.
  *
- * @author ak119685
  */
 public class TaskPrivilegesSupport {
 
@@ -103,7 +101,7 @@ public class TaskPrivilegesSupport {
     }
 
     /**
-     * Tests whether the <tt>ExecutionEnvironment</tt> has all provided
+     * Tests whether the <tt>ExecutionEnvironment</tt> has all needed
      * execution privileges.
      * @param execEnv - <tt>ExecutionEnvironment</tt> to be tested
      * @param privs - list of priveleges to be tested

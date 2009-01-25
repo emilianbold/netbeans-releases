@@ -103,7 +103,7 @@ public class NativeExecutableTarget implements DLightTarget, AttachableTarget, N
                 return State.INIT;
             case STARTING:
                 return State.STARTING;
-            case FAILED:
+            case ERROR:
                 return State.FAILED;
             case RUNNING:
                 return State.RUNNING;

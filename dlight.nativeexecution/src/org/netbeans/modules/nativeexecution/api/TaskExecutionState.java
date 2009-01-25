@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.api;
 
 /**
  * Enum that represents phases of <tt>NativeTask</tt> execution.
- * @author ak119685
  */
 public enum TaskExecutionState {
 
@@ -64,13 +63,9 @@ public enum TaskExecutionState {
     /**
      * Task failed due to some exception
      */
-    FAILED,
+    ERROR,
     /**
      * Task cancelled
      */
-    CANCELED,
-    /**
-     *  Task failed due to some exception
-     */
-    ERROR
+    CANCELED
 }
