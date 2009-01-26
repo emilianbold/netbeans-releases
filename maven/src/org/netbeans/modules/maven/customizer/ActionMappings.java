@@ -85,6 +85,7 @@ import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.options.DontShowAgainSettings;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -991,6 +992,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     }
 
     private class DepsListener implements ActionListener {
+        private boolean shown = false;
         public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
             if (map != null) {
@@ -1006,7 +1008,16 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                     updateColor(map);
                 }
                 if (cbBuildWithDeps.isSelected()) {
-                    map.getMapping().setPreAction("build-with-dependencies");
+                    if (!shown && DontShowAgainSettings.getDefault().showWarningAboutBuildWithDependencies()) {
+                        WarnPanel panel = new WarnPanel("<html><h2>Please note:</h2>Build with dependencies delegates to the action of the same name and performs it before the current action is performed.<p> The Build with dependencies action relies on 'maven-reactor-plugin' to perform it's duties. ");
+                        NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
+                        DialogDisplayer.getDefault().notify(dd);
+                        if (panel.disabledWarning()) {
+                            DontShowAgainSettings.getDefault().dontShowWarningAboutBuildWithDependenciesAnymore();
+                        }
+                        shown = true;
+                    }
+                    map.getMapping().setPreAction("build-with-dependencies"); //NOI18N
                 } else {
                     map.getMapping().setPreAction(null);
                 }
