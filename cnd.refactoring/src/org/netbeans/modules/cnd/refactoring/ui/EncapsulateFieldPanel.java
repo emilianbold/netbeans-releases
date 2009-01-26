@@ -75,13 +75,16 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Panel used by Encapsulate Field refactoring. Contains components to
@@ -98,7 +101,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
-    private static boolean ALWAYS_USE_ACCESSORS = true;
+    private static boolean ALWAYS_USE_ACCESSORS = false;
     private static int FIELD_ACCESS_INDEX = 3;
     private static int METHOD_ACCESS_INDEX = 0;
     
@@ -136,7 +139,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         String title = getString("LBL_TitleEncapsulateFields");
 
         if (selectedObject == null) {
-            this.selectedObject = GeneratorUtils.extractEnclosingClass(editorContext);
+            this.selectedObject = Utilities.extractEnclosingClass(editorContext);
         } else {
             this.selectedObject = selectedObject;
         }
@@ -145,6 +148,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
+        jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
+        jCheckAccess.setEnabled(false);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
@@ -319,6 +324,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess = new javax.swing.JCheckBox();
         jScrollField = new javax.swing.JScrollPane();
         jTableFields = new javax.swing.JTable();
+        jInlineMethods = new javax.swing.JCheckBox();
 
         jLblTitle.setLabelFor(jTableFields);
         org.openide.awt.Mnemonics.setLocalizedText(jLblTitle, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldList")); // NOI18N
@@ -370,7 +376,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
 
         jComboAccess.setModel(new javax.swing.DefaultComboBoxModel(modifierNames));
 
-        jCheckAccess.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckAccess, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_AccessorsEven")); // NOI18N
 
         jTableFields.setModel(model);
@@ -380,20 +385,19 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField.setViewportView(jTableFields);
         jTableFields.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_jTableFields")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jInlineMethods, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jInlineMethods.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckAccess)
+                    .add(jInlineMethods)
+                    .add(jLblTitle)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jCheckAccess))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLblTitle))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLblAccessVis)
                             .add(jLblFieldVis)
@@ -401,15 +405,14 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                             .add(jLblSort)
                             .add(jLblJavadoc))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jComboInsertPoint, 0, 546, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(jComboInsertPoint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboSort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboJavadoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboAccess, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jButtonSelectSetters)
@@ -436,7 +439,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                         .add(jButtonSelectGetters)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButtonSelectSetters))
-                    .add(jScrollField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLblInsertPoint)
@@ -458,8 +461,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                     .add(jLblAccessVis)
                     .add(jComboAccess, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jInlineMethods)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckAccess)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(27, 27, 27))
         );
 
         jButtonSelectAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jButtonSelectAll.acsd")); // NOI18N
@@ -472,6 +477,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jComboField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_fieldModifiers")); // NOI18N
         jComboAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_methodAcc")); // NOI18N
         jCheckAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_useAccessors")); // NOI18N
+        jInlineMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_inlineMethods")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void jButtonSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSelectAllActionPerformed
@@ -502,6 +508,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JComboBox jComboInsertPoint;
     private javax.swing.JComboBox jComboJavadoc;
     private javax.swing.JComboBox jComboSort;
+    private javax.swing.JCheckBox jInlineMethods;
     private javax.swing.JLabel jLblAccessVis;
     private javax.swing.JLabel jLblFieldVis;
     private javax.swing.JLabel jLblInsertPoint;
@@ -617,6 +624,12 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         }
 
         return result;
+    }
+
+    public boolean isMethodInline() {
+        boolean inline = jInlineMethods.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inline);
+        return inline;
     }
     
     public boolean isCheckAccess() {

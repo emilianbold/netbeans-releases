@@ -273,14 +273,14 @@ public final class ModificationResult {
 
     public static final class Difference {
 
-        Kind kind;
-        PositionRef startPos;
-        PositionRef endPos;
-        String oldText;
-        String newText;
-        String description;
-        private boolean excluded;
+        final Kind kind;
+        final PositionRef startPos;
+        final PositionRef endPos;
+        final String oldText;
+        final String newText;
+        final String description;
         private final CsmUID<CsmObject> thisObject;
+        private boolean excluded;
 
         public Difference(Kind kind, CsmObject ref, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
             this.kind = kind;

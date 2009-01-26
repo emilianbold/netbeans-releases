@@ -54,13 +54,12 @@ import java.util.Map;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
+import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
@@ -80,27 +79,10 @@ public class GetterSetterGenerator implements CodeGenerator {
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
-//            CompilationController controller = context.lookup(CompilationController.class);
             CsmContext path = context.lookup(CsmContext.class);
-//            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
-            if (component == null || path == null) {
+            CsmClass typeElement = Utilities.extractEnclosingClass(path);
+            if (component == null || typeElement == null) {
                 return ret;
-            }
-//            try {
-//                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//            } catch (IOException ioe) {
-//                return ret;
-//            }
-//            Elements elements = controller.getElements();
-            CsmClass typeElement = path.getEnclosingClass();
-            if (typeElement == null) {
-                CsmFunction fun = path.getEnclosingFunction();
-                if (CsmKindUtilities.isMethod(fun)) {
-                    typeElement = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
-                }
-                if (typeElement == null) {
-                    return ret;
-                }
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
             Map<String, List<CsmMethod>> methods = new HashMap<String, List<CsmMethod>>();
@@ -153,7 +135,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 }
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_ONLY));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
@@ -161,7 +143,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 }
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.SETTERS_ONLY));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
@@ -169,28 +151,30 @@ public class GetterSetterGenerator implements CodeGenerator {
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 }
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), 0));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_SETTERS));
             }
             return ret;
         }
 
     }
-    private JTextComponent component;
-    private ElementNode.Description description;
-    private int type;
+    private final JTextComponent component;
+    private final ElementNode.Description description;
+    private final GeneratorUtils.Kind type;
+    private final CsmContext contextPath;
 
     /** Creates a new instance of GetterSetterGenerator */
-    private GetterSetterGenerator(JTextComponent component, ElementNode.Description description, int type) {
+    private GetterSetterGenerator(JTextComponent component, CsmContext path, ElementNode.Description description, GeneratorUtils.Kind type) {
         this.component = component;
+        this.contextPath = path;
         this.description = description;
         this.type = type;
     }
 
     public String getDisplayName() {
-        if (type == GeneratorUtils.GETTERS_ONLY) {
+        if (type == GeneratorUtils.Kind.GETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter"); //NOI18N
         }
-        if (type == GeneratorUtils.SETTERS_ONLY) {
+        if (type == GeneratorUtils.Kind.SETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_setter"); //NOI18N
         }
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
@@ -198,41 +182,12 @@ public class GetterSetterGenerator implements CodeGenerator {
 
     public void invoke() {
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
-        String title;
-        if (type == GeneratorUtils.GETTERS_ONLY) {
-            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter"); //NOI18N
-        } else if (type == GeneratorUtils.SETTERS_ONLY) {
-            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_setter"); //NOI18N
-        } else {
-            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
-        }
+        String title = GeneratorUtils.getGetterSetterDisplayName(type);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
-//            JavaSource js = JavaSource.forDocument(component.getDocument());
-//            if (js != null) {
-//                try {
-//                    final int caretOffset = component.getCaretPosition();
-//                    ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
-//
-//                        public void run(WorkingCopy copy) throws IOException {
-//                            copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-//                            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-//                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree) path.getLeaf(), caretOffset);
-//                            ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-//                            for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
-//                                variableElements.add((VariableElement) elementHandle.resolve(copy));
-//                            }
-//                            GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
-//                        }
-//                    });
-//                    GeneratorUtils.guardedCommit(component, mr);
-//                } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
+            GeneratorUtils.generateGettersAndSetters(contextPath, panel.getVariables(), panel.isMethodInline(), type);
         }
     }
 }
