@@ -86,7 +86,6 @@ public abstract class IndexedElement extends RubyElement {
     private Set<Modifier> modifiers;
     private final RubyIndex index;
     private Document document;
-    private FileObject fileObject;
     private final FileObject context;
     protected RubyType type;
 
@@ -152,14 +151,11 @@ public abstract class IndexedElement extends RubyElement {
     public Document getDocument() {
         if (document == null) {
             FileObject fo = getFileObject();
-
             if (fo == null) {
                 return null;
             }
-
-            document = GsfUtilities.getDocument(fileObject, true);
+            document = GsfUtilities.getDocument(fo, true);
         }
-
         return document;
     }
 
