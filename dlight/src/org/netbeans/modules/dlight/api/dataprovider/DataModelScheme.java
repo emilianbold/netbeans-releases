@@ -59,9 +59,10 @@ import org.netbeans.modules.dlight.api.impl.DataModelSchemeAccessor;
  * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory#getProvidedDataModelScheme() }
  *
  */
+
 /**
- * 
- * @author masha
+ * This class represents unique marker to get correspondence
+ *  between 
  */
 public final class DataModelScheme {
 

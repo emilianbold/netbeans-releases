@@ -127,7 +127,7 @@ public class PerfanDataStorage extends DataStorage implements ConnectorListener 
 
 
   @Override
-  protected boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas) {
+  protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
     return true;
   }
 

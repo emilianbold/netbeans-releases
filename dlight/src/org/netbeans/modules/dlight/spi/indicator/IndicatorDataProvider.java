@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -55,7 +56,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
  */
 public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener {
 
-  private final List<Indicator> listeners = new ArrayList<Indicator>();
+  private final Collection<Indicator> listeners = new ArrayList<Indicator>();
 
   
   private void addIndicatorDataProviderListener(Indicator l) {
@@ -121,11 +122,11 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
   }
 
   /**
-   * Returns the list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
+   * Returns the list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
    * this data provider can return information about
-   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
+   * @return list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
    * this data provider can return information about
    */
-  public abstract List<? extends DataTableMetadata> getDataTablesMetadata();
+  public abstract Collection<DataTableMetadata> getDataTablesMetadata();
 
 }

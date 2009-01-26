@@ -101,7 +101,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
   }
 
 //  @Override
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
+  public List<DataTableMetadata> getDataTablesMetadata() {
     List<DataTableMetadata> ret = new ArrayList<DataTableMetadata>(slaveCollectors.size());
     for (DtraceDataCollector ddc : slaveCollectors.values()) {
       ret.addAll(ddc.getDataTablesMetadata());

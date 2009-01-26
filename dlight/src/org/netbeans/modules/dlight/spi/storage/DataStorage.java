@@ -100,7 +100,7 @@ public abstract class DataStorage {
 
  
 
-    protected abstract boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas);
+    protected abstract boolean createTablesImpl(List<DataTableMetadata> tableMetadatas);
 
     /**
      * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
@@ -131,7 +131,7 @@ public abstract class DataStorage {
      * Creates tables: invoked to create {@link org.netbeans.modules.dlight.storage.api.DataTableMetadata} needed
      * @param tableMetadatas tables decsription to create in the storage
      */
-    public final void createTables(List<? extends DataTableMetadata> tableMetadatas) {
+    public final void createTables(List<DataTableMetadata> tableMetadatas) {
         if (createTablesImpl(tableMetadatas)) {
             tablesMetadata.addAll(tableMetadatas);
         }

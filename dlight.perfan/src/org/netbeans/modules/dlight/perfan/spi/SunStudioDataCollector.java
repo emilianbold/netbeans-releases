@@ -43,6 +43,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -242,11 +243,11 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 //    }
     }
 
-    public List<DataStorageType> getSupportedDataStorageTypes() {
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
         return supportedStorageTypes;
     }
 
-    public List<? extends DataTableMetadata> getDataTablesMetadata() {
+    public List<DataTableMetadata> getDataTablesMetadata() {
         return Arrays.asList(dataTableMetadata);
     }
 
@@ -280,12 +281,16 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         switch (newState) {
             case STARTING:
                 targetStarted(source);
+                return;
             case FAILED:
                 targetFinished(source);
+                return;
             case TERMINATED:
                 targetFinished(source);
+                return;
             case DONE:
                 targetFinished(source);
+                return;
         }
     }
 }

@@ -46,6 +46,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -84,7 +85,8 @@ import org.openide.util.NbBundle;
  * Implements both {@link org.netbeans.modules.dlight.spi.collectorDataCollector}
  * and {@link org.netbeans.modules.dlight.spi.collector.DataCollector} via invocation of a command-line tool and parsing its output.
  */
-public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements DataCollector<CLIODCConfiguration> {
+public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements 
+    DataCollector<CLIODCConfiguration> {
 
   private static final Logger log = DLightLogger.getLogger(CLIODataCollector.class);
   private String command;
@@ -122,7 +124,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
    * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
    * data collector can put data into
    */
-  public List<DataStorageType> getSupportedDataStorageTypes() {
+  public Collection<DataStorageType> getSupportedDataStorageTypes() {
     return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
   }
 
@@ -135,7 +137,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     DataRow dataRow = parser.process(line);
     if (dataRow != null) {
       if (dataTablesMetadata != null && !dataTablesMetadata.isEmpty() && storage != null) {
-        storage.addData(dataTablesMetadata.get(0).getName()/*"prstat"*/, Arrays.asList(dataRow));
+        storage.addData(dataTablesMetadata.iterator().next().getName()/*"prstat"*/, Arrays.asList(dataRow));
       }
       notifyIndicators(Arrays.asList(dataRow));
     }
@@ -201,7 +203,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
   /** {@inheritDoc */
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
+  public List<DataTableMetadata> getDataTablesMetadata() {
     return dataTablesMetadata;
   }
 

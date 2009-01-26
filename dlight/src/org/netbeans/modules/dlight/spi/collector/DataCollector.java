@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.spi.collector;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -50,7 +51,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**
  * DataCollector collects data from application/system.
- * Puts data into the {@link org.netbeans.modules.dlight.storage.spi.DataStorage}
+ * Puts data into the {@link org.netbeans.modules.dlight.spi.storage.DataStorage}
  * it supports (see {@link #getSupportedDataStorageTypes()}) using the description
  * of data collected: {@link #getDataTablesMetadata()}.
  *
@@ -60,17 +61,17 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
 
     /**
      * The types of storage this collector supports
-     * @return returns list of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}
+     * @return returns list of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
      * data collector can put data into
      */
-    List<DataStorageType> getSupportedDataStorageTypes();
+    Collection<DataStorageType> getSupportedDataStorageTypes();
 
     /**
      * The description of tables data collector will put information in.
-     * @return list of {@link  org.netbeans.modules.dlight.storage.api.DataTableMetadata}
+     * @return list of {@link  org.netbeans.modules.dlight.api.storage.DataTableMetadata}
      * this collector gather information at.
      */
-    List<? extends DataTableMetadata> getDataTablesMetadata();
+    List<DataTableMetadata> getDataTablesMetadata();
 
     /**
      * Method init() is called BEFORE target start
@@ -79,9 +80,8 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      * @param target target this collector serve for
      */
     void init(DataStorage storage, DLightTarget target);
-
-    /**
-     * DataCollector can attach to the {@link org.netbeans.modules.dlight.core.execution.model.DLightTarget}.
+ /**
+     * DataCollector can attach to the {@link org.netbeans.modules.dlight.apiexecution.DLightTarget}.
      * @return <code>true</code> if collector is attachable, <code>false</code> otherwise
      */
     boolean isAttachable();
@@ -101,5 +101,10 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      */
     String[] getArgs();
 
-    Future<ValidationStatus> validate(DLightTarget targe);
+    /**
+     * 
+     * @param target
+     * @return
+     */
+    Future<ValidationStatus> validate(DLightTarget target);
 }
