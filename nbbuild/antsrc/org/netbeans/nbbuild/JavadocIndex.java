@@ -134,10 +134,10 @@ public class JavadocIndex extends Task {
             
             // parse following string
             // <A HREF="org/openide/xml/XMLUtil.html" title="class in org.openide.xml">XMLUtil</A
-            String mask = ".*<A HREF=\"([^\"]*)\" title=\"(class|interface) in ([^\"]*)\"[><I]*>([\\p{Alnum}\\.]*)</.*A>.*";
+            String mask = ".*<A HREF=\"([^\"]*)\" title=\"(class|interface|annotation) in ([^\"]*)\"[><I]*>([\\p{Alnum}\\.]*)</.*A>.*";
             Pattern p = Pattern.compile (mask, Pattern.CASE_INSENSITIVE);
             // group 1: relative URL to a class or interface
-            // group 2: interface or class string
+            // group 2: interface, class or annotation string
             // group 3: name of package
             // group 4: name of class
             

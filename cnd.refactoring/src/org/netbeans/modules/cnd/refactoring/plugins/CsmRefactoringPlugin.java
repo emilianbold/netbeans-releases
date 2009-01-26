@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
     protected volatile boolean cancelRequest = false;
-    
+
     public Problem preCheck() {
         return null;
     }
@@ -87,7 +87,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     public Problem fastCheckParameters() {
         return null;
     }
-    
+
     public final void cancelRequest() {
         cancelRequest = true;
     }
@@ -95,9 +95,9 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     protected final boolean isCancelled() {
         return cancelRequest;
     }
-    
+
     protected abstract ModificationResult processFiles(Collection<CsmFile> files);
-    
+
     private Collection<ModificationResult> processFiles(Iterable<? extends List<CsmFile>> fileGroups) {
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         for (List<CsmFile> list : fileGroups) {
@@ -112,20 +112,20 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         }
         return results;
     }
-    
+
     protected final void createAndAddElements(Collection<CsmFile> files, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
         Iterable<? extends List<CsmFile>> fileGroups = groupByRoot(files);
         final Collection<ModificationResult> results = processFiles(fileGroups);
         elements.registerTransaction(new RefactoringCommit(results));
-        for (ModificationResult result:results) {
+        for (ModificationResult result : results) {
             for (FileObject fo : result.getModifiedFileObjects()) {
-                for (Difference dif: result.getDifferences(fo)) {
-                        elements.add(refactoring,DiffElement.create(dif, fo, result));
+                for (Difference dif : result.getDifferences(fo)) {
+                    elements.add(refactoring, DiffElement.create(dif, fo, result));
                 }
             }
         }
     }
-    
+
     protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
         if (result == null) {
@@ -136,18 +136,19 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         } else {
             //problem.setNext(result.getNext());
             //result.setNext(problem);
-            
+
             // [TODO] performance
             Problem p = result;
-            while (p.getNext() != null)
+            while (p.getNext() != null) {
                 p = p.getNext();
+            }
             p.setNext(problem);
             return result;
         }
     }
-    
-    private Iterable<? extends List<CsmFile>> groupByRoot (Iterable<? extends CsmFile> files) {
-        Map<CsmProject,List<CsmFile>> result = new HashMap<CsmProject,List<CsmFile>> ();
+
+    private Iterable<? extends List<CsmFile>> groupByRoot(Iterable<? extends CsmFile> files) {
+        Map<CsmProject, List<CsmFile>> result = new HashMap<CsmProject, List<CsmFile>>();
         for (CsmFile file : files) {
             CsmProject prj = file.getProject();
             if (prj != null) {
@@ -160,17 +161,17 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             }
         }
         return result.values();
-    }          
+    }
 
     protected final CsmFile getCsmFile(CsmObject csmObject) {
         if (CsmKindUtilities.isFile(csmObject)) {
-            return ((CsmFile)csmObject);
+            return ((CsmFile) csmObject);
         } else if (CsmKindUtilities.isOffsetable(csmObject)) {
-            return ((CsmOffsetable)csmObject).getContainingFile();
+            return ((CsmOffsetable) csmObject).getContainingFile();
         }
         return null;
-    }  
-    
+    }
+
     protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject, AbstractRefactoring refactoring) {
         CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
@@ -178,22 +179,22 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             return Collections.<CsmFile>emptyList();
         }
         if (CsmKindUtilities.isFunction(enclScope)) {
-            scopeFile = ((CsmOffsetable)enclScope).getContainingFile();
+            scopeFile = ((CsmOffsetable) enclScope).getContainingFile();
         } else if (CsmKindUtilities.isNamespaceDefinition(enclScope)) {
-            CsmNamespace ns = ((CsmNamespaceDefinition)enclScope).getNamespace();
+            CsmNamespace ns = ((CsmNamespaceDefinition) enclScope).getNamespace();
             if (ns != null && ns.getName().length() == 0) {
                 // this is unnamed namespace and has file local visibility
                 // if declared in source file which is not included anywhere
                 if (isDeclarationInLeafFile(enclScope)) {
-                    scopeFile = ((CsmNamespaceDefinition)enclScope).getContainingFile();
+                    scopeFile = ((CsmNamespaceDefinition) enclScope).getContainingFile();
                 }
             }
         } else if (CsmKindUtilities.isFunction(referencedObject)) {
             // this is possible file local function
             // if declared in source file which is not included anywhere
-            if (CsmBaseUtilities.isFileLocalFunction((CsmFunction)referencedObject)) {
+            if (CsmBaseUtilities.isFileLocalFunction((CsmFunction) referencedObject)) {
                 if (isDeclarationInLeafFile(referencedObject)) {
-                    scopeFile = ((CsmFunction)referencedObject).getContainingFile();
+                    scopeFile = ((CsmFunction) referencedObject).getContainingFile();
                 }
             }
         }
@@ -221,20 +222,20 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                 return relevantFiles;
             }
         }
-    }   
-    
+    }
+
     private boolean isDeclarationInLeafFile(CsmObject obj) {
         boolean out = false;
         if (CsmKindUtilities.isOffsetable(obj)) {
-            CsmFile file = ((CsmOffsetable)obj).getContainingFile();
+            CsmFile file = ((CsmOffsetable) obj).getContainingFile();
             // check that file is not included anywhere yet
             out = CsmIncludeHierarchyResolver.getDefault().getFiles(file).isEmpty();
         }
         return out;
     }
-    
+
     protected Problem isResovledElement(CsmObject ref) {
-        if (ref==null) {
+        if (ref == null) {
             //reference is null or is not valid.
             return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
         } else {
@@ -244,9 +245,9 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             }
             if (!CsmBaseUtilities.isValid(referencedObject)) {
                 return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_ElementNotResolved"));
-            }            
+            }
             // element is still available
             return null;
         }
-    }    
+    }
 }

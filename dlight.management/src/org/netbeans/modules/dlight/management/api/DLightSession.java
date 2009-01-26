@@ -39,21 +39,25 @@
 package org.netbeans.modules.dlight.management.api;
 
 
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
-import org.netbeans.modules.dlight.execution.api.impl.DLightSessionInternalReference;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
+import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
+import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -76,6 +80,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
+
+  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
     public enum SessionState {
 
@@ -177,7 +185,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         // TODO: review later....
         for (ExecutionContext c : contexts) {
             final DLightTarget target = c.getTarget();
-            target.terminate();
+            DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
         }
     }
 
@@ -213,7 +221,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         context.getTarget().addTargetListener(DLightSession.this);
                         f = true;
                     }
-                    context.getTarget().start();
+                    DLightTargetAccessor.getDefault().getDLightTargetExecution(context.getTarget()).start(context.getTarget());
                 }
             }
         };
@@ -292,8 +300,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget
         //or SystemTarget
-        if (notAttachableDataCollector != null && target.canBeSubstituted()) {
-            target.substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
+            ((SubstitutableTarget)target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
         }
 
         return true;
@@ -329,7 +337,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         setState(SessionState.RUNNING);
     }
 
-    public void targetFinished(DLightTarget target, int result) {
+    public void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
     }

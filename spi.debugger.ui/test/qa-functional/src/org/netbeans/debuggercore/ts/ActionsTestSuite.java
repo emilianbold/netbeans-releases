@@ -72,12 +72,7 @@ public class ActionsTestSuite extends JellyTestCase {
                     "testToggleBreakpoints",
                     "testStartDebugging",
                     "testRemoveBreakpoint",
-                    "testStepInto",
-                    "testStepOver",
-                    "testRunToCursor",
-                    "testStepOut",
                     "testContinue",
-                    "testStepOverExpression",
                     "testPause").enableModules(".*").clusters(".*"));
 //        }
     } 

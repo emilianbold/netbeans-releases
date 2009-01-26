@@ -41,11 +41,12 @@ package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
-import org.netbeans.modules.dlight.visualizer.spi.VisualizerFactory;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.openide.util.Lookup;
+
 
 
 public final class VisualizerProvider {
@@ -68,7 +69,7 @@ public final class VisualizerProvider {
    * @param configuraiton
    * @return new instance of data collector is returned each time this method is invoked;
    */
-   public Visualizer createVisualizer(VisualizerConfiguration configuraiton, DataProvider provider){
+   public Visualizer createVisualizer(VisualizerConfiguration configuraiton, VisualizerDataProvider provider){
     Collection<? extends VisualizerFactory> result = Lookup.getDefault().lookupAll(VisualizerFactory.class);
     if (result.isEmpty()){
       return null;

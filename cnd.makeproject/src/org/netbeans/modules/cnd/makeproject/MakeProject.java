@@ -851,19 +851,26 @@ public final class MakeProject implements Project, AntProjectListener {
     class RemoteProjectImpl implements RemoteProject {
 
         public String getDevelopmentHost() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-            return conf.getDevelopmentHost().getName();
+            if (projectDescriptorProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+                if (conf != null) {
+                    return conf.getDevelopmentHost().getName();
+                }
+            }
+            return null;
         }
     }
 
     class ToolchainProjectImpl implements ToolchainProject {
 
         public CompilerSet getCompilerSet() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-            if (conf != null) {
-                return conf.getCompilerSet().getCompilerSet();
+            if (projectDescriptorProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+                if (conf != null) {
+                    return conf.getCompilerSet().getCompilerSet();
+                }
             }
             return null;
         }

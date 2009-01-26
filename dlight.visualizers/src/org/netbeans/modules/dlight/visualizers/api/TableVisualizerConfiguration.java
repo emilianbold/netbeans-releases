@@ -39,11 +39,12 @@
 
 package org.netbeans.modules.dlight.visualizers.api;
 
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+
 
 
 /**
@@ -68,7 +69,7 @@ public final  class TableVisualizerConfiguration implements VisualizerConfigurat
 
 
   public final DataModelScheme getSupportedDataScheme() {
-    return TableDataModel.instance;
+    return DataModelSchemeProvider.getInstance().getScheme("model:table");
   }
 
   public final String getID() {

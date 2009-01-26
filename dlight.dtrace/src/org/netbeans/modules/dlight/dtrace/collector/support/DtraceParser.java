@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import java.util.ArrayList;
@@ -44,68 +43,77 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
  *
  */
-public class DtraceParser{
+public class DtraceParser {
 
-  private static final Logger log = DLightLogger.getLogger(DtraceParser.class);
-  private DataTableMetadata metadata;
-  private List<String> colnames;
+    private static final Logger log =
+            DLightLogger.getLogger(DtraceParser.class);
+    private DataTableMetadata metadata;
+    private List<String> colnames;
 
-  public DtraceParser(DataTableMetadata metadata) {
-    this.metadata = metadata;
-    colnames = new ArrayList<String>(metadata.getColumnsCount());
-    for (Column c : metadata.getColumns()) {
-      colnames.add(c.getColumnName());
+    public DtraceParser(DataTableMetadata metadata) {
+        this.metadata = metadata;
+        colnames = new ArrayList<String>(metadata.getColumnsCount());
+        for (Column c : metadata.getColumns()) {
+            colnames.add(c.getColumnName());
+        }
     }
-  }
 
-  protected List<String> parse(String line) {
-    return parse(line, metadata.getColumnsCount());
-  }
-
-  /** parses first colCount columns, leaves the rest */
-  protected List<String> parse(String line, int colCount) {
-    List<String> matchList = new ArrayList<String>();
-    Pattern regex = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'");
-    Matcher regexMatcher = regex.matcher(line);
-    while (regexMatcher.find()) {
-      matchList.add(regexMatcher.group());
+    protected List<String> parse(String line) {
+        return parse(line, metadata.getColumnsCount());
     }
+
+    /** parses first colCount columns, leaves the rest */
+    protected List<String> parse(String line, int colCount) {
+        List<String> matchList = new ArrayList<String>();
+        Pattern regex =
+                Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'"); // NOI18N
+        Matcher regexMatcher = regex.matcher(line);
+        while (regexMatcher.find()) {
+            matchList.add(regexMatcher.group());
+        }
 
 //    String[] lines = line.split("[ \t]+");
 //    if (lines.length != metadata.getColumnsCount()-reservedColCount) {
-    if (matchList.size() < colCount) {
-      log.info("^^^^^Line:" + line + " lines array size is less than medatadat.getCoulmnsCount() " +
-          " columnsCount=" + metadata.getColumnsCount() + " lines splited=" + matchList.size());
-      return null;
-    }
-
-    List<Column> columns = metadata.getColumns();
-    List<String> data = new ArrayList<String>();
-
-    for (int i = 0; i < colCount; i++) {
-
-      Class columnClass = columns.get(i).getColumnClass();
-      if (columnClass == String.class) {
-        String stringValue = matchList.get(i);
-        if (stringValue != null && stringValue.startsWith("\"")) {
-          stringValue = stringValue.substring(1);
+        if (matchList.size() < colCount) {
+            log.info("^^^^^Line:" + line + " lines array size is " + // NOI18N
+                    "less than medatadat.getCoulmnsCount() columnsCount=" +
+                    metadata.getColumnsCount() + " lines splited=" + // NOI18N
+                    matchList.size());
+            return null;
         }
-        if (stringValue != null && stringValue.endsWith("\"")) {
-          stringValue = stringValue.substring(0, stringValue.length() - 1);
-        }
-        stringValue = "'" + stringValue.replaceAll("'", "\"") + "'";
-        data.add(i, stringValue);
-      } else {
-        data.add(i, matchList.get(i));
-      }
+
+        List<Column> columns = metadata.getColumns();
+        List<String> data = new ArrayList<String>();
+
+        for (int i = 0; i < colCount; i++) {
+
+            Class columnClass = columns.get(i).getColumnClass();
+            final String dquote = "\""; // NOI18N
+            final String squote = "'"; // NOI18N
+
+            if (columnClass == String.class) {
+                String stringValue = matchList.get(i);
+                if (stringValue != null && stringValue.startsWith(dquote)) {
+                    stringValue = stringValue.substring(1);
+                }
+                if (stringValue != null && stringValue.endsWith(dquote)) {
+                    stringValue = stringValue.substring(0,
+                            stringValue.length() - 1);
+                }
+                stringValue = squote +
+                        stringValue.replaceAll(squote, dquote) + squote;
+                data.add(i, stringValue);
+            } else {
+                data.add(i, matchList.get(i));
+            }
 //      if (columnClass == Long.class){
 //        data.add(i, line);
 //      } else if (columnClass == Double.class){
@@ -115,13 +123,13 @@ public class DtraceParser{
 //      } else if (columnClass == String.class){
 //
 //      }
+        }
+        return data;
     }
-    return data;
-  }
 
-  public DataRow process(String line) {
-    List<String> data = parse(line);
-    DataRow result = new DataRow(colnames, data);
-    return result;
-  }
+    public DataRow process(String line) {
+        List<String> data = parse(line);
+        DataRow result = new DataRow(colnames, data);
+        return result;
+    }
 }
