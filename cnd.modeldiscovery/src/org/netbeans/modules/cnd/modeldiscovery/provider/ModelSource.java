@@ -195,7 +195,7 @@ public class ModelSource implements SourceFileProperties {
                                     }
                                 }
                                 for(String p : pc.getMacros()){
-                                    int i = p.indexOf("=");
+                                    int i = p.indexOf("="); // NOI18N
                                     String macro;
                                     String value = null;
                                     if (i > 0){
