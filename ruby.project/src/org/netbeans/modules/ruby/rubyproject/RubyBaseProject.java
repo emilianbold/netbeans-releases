@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -93,7 +93,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         RubyLoggingOption.initLoggers();
     }
 
-
     /**
      * Ruby package root sources type.
      * @see org.netbeans.api.project.Sources
@@ -108,6 +107,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     protected final UpdateHelper updateHelper;
     private final String projectConfigurationNamespace;
     private CopyOnWriteArrayList<PlatformChangeListener> platformCLs;
+    private ClassPath[] rubyStubsCP;
 
     protected RubyBaseProject(final RakeProjectHelper helper, final String projectConfigurationNamespace) {
         this.helper = helper;
@@ -281,15 +281,15 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         platformCLs.remove(platformChangeListener);
     }
 
-    private ClassPath[] getRubyStubsCP() {
-        ClassPath rubyStubsCP = ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs());
-        return new ClassPath[]{rubyStubsCP};
-    }
-
     /** Mainly for unit tests. */
     protected void open() {
         registerClassPath();
-        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, getRubyStubsCP());
+        assert rubyStubsCP == null : "opened twice?";
+        rubyStubsCP = new ClassPath[] {
+            ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs())
+        };
+
+        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, rubyStubsCP);
 
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
@@ -413,7 +413,8 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
                 ErrorManager.getDefault().notify(e);
             }
             
-            GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, getRubyStubsCP());
+            GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, rubyStubsCP);
+            rubyStubsCP = null;
             unregisterClassPath();
         }
     }
