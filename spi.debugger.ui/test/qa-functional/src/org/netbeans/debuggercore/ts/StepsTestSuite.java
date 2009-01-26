@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.text.completion;
 
-import java.awt.Color;
-
-import java.beans.BeanInfo;
-import org.netbeans.modules.xml.api.model.*;
-
+package org.netbeans.debuggercore.ts;
 
 /**
- * Represents value option (attribute one or element content one).
- * <p>
- * It takes advatage of replacent text vs. display name. Providers
- * should use shorted display name for list values. e.g. for
- * <code>&lt;example enums="one two three fo|"</code>
- * provider can return nodeValue <code>"one two three four"</code>
- * and display name <code>"four"</code> to denote that it actually
- * completed only the suffix.
- * 
- * @author  sands
- * @author  Petr Kuzel
+ *
+ * @author felipee
  */
-class ValueResultItem extends XMLResultItem {
 
-    private final String replacementText;
 
-    public ValueResultItem(GrammarResult res) {
-        super(res.getDisplayName(), res.getDisplayName());
-        foreground = Color.magenta;
-        selectionForeground = Color.magenta.darker();
-        replacementText = res.getNodeValue();
-        icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
+import junit.framework.Test;
+import org.netbeans.debuggercore.StepsTest;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbModuleSuite;
+
+/**
+ *
+ * @author Filip Zamboj
+ */
+public class StepsTestSuite extends JellyTestCase {
+
+    public StepsTestSuite(String name) {
+        super(name);
     }
 
     @Override
-    public String getReplacementText(int modifiers) {
-        return replacementText;
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
     }
-    
-    @Override
-    Color getPaintColor() { return Color.blue; }
 
+    public static Test suite() {
+//        String os = System.getProperty("os.name");
+//        String jdk = System.getProperty("java.version");
+//        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
+//            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+//        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(StepsTest.class,
+                    "testStepInto",
+                    "testStepOver",
+                    "testRunToCursor",
+                    "testStepOut",
+                    "testStepOverExpression"
+                    ).enableModules(".*").clusters(".*"));
+//        }
+    }
 }
+
