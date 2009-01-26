@@ -313,20 +313,30 @@ public final class SVGObject {
     }
     
     public void applyTextChanges() {
-        if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
-            PatchedTransformableElement pte   = (PatchedTransformableElement) m_elem;
-            SVGFileModel                model = m_sceneMgr.getDataObject().getModel();
-            
-            String [] changedAttrs = pte.optimizeTransform();
-            if ( changedAttrs != null) {
-                model.setAttributes(getElementId(), changedAttrs);
-            } else {
-                String transform = getTransformAsText(pte.getTransform());
-                model.setAttribute(getElementId(), SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform);
-            }
+        SVGFileModel model = m_sceneMgr.getDataObject().getModel();
+
+        String[] changedAttrs = prepareTextChanges();
+        if (changedAttrs != null) {
+            model.setAttributes(getElementId(), changedAttrs);
         }
     }
     
+    public String[] prepareTextChanges() {
+        String[] changedAttrs = null;
+        if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
+            PatchedTransformableElement pte = (PatchedTransformableElement) m_elem;
+
+            changedAttrs = pte.optimizeTransform();
+            if (changedAttrs == null) {
+                String transform = getTransformAsText(pte.getTransform());
+                changedAttrs = new String[]{
+                            SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform
+                        };
+            }
+        }
+        return changedAttrs;
+    }
+
     public void commitChanges() {
         applyUserTransform(true);
 

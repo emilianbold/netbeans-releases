@@ -75,6 +75,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -107,6 +109,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage;
@@ -1393,31 +1396,45 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         public void actionPerformed(ActionEvent e) {
             ScreenManager smgr = getScreenManager();
             boolean b = !smgr.isLandscapeMode();
-            rotateElements(b);
-            changeViewBox(b);
+            // collect attributes we should update to change orientation.
+            Map<DocumentElement, String[]> attrsByElement = changeViewBox(b);
+            Map<String, String[]> attrsById = rotateElements(b);
+            // update attributes in a single transaction
+            getModel().setAttributes(attrsById, attrsByElement);
             smgr.setLandscapeMode(b);
             landscapeModeToggleButton.setSelected(b);
             //repaint();
             updateImage();
         }
 
-        private void changeViewBox(boolean isLandscape) {
+        private Map<DocumentElement, String[]> changeViewBox(boolean isLandscape) {
             SVGSVGElement svg = getSceneManager().getPerseusController().getSVGRootElement();
-            SVGRect viewBoxRect = svg.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
+            SVGRect rect = svg.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
             if (getScreenManager().isLandscapeMode() != isLandscape){
-                float w = viewBoxRect.getWidth();
-                float h = viewBoxRect.getHeight();
-                viewBoxRect.setHeight(w);
-                viewBoxRect.setWidth(h);
+                // exchange width and height
+                float w = rect.getWidth();
+                float h = rect.getHeight();
+                rect.setHeight(w);
+                rect.setWidth(h);
 
-                getModel().setViewBox(viewBoxRect);
+                DocumentElement svgRoot = getModel().getSVGRoot(getModel().getModel());
+                String[] attributes = new String[]{
+                    SVGConstants.SVG_VIEW_BOX_ATTRIBUTE,
+                    rect.getX() + " " + rect.getY() + " " + rect.getWidth() + " " + rect.getHeight(),
+                    SVGConstants.SVG_WIDTH_ATTRIBUTE, String.valueOf(rect.getWidth()),
+                    SVGConstants.SVG_HEIGHT_ATTRIBUTE, String.valueOf(rect.getHeight())
+                };
+
+                Map<DocumentElement, String[]> textChanges
+                        = new HashMap<DocumentElement, String[]>();
+                textChanges.put(svgRoot, attributes);
+                return textChanges;
             }
+            return null;
 
         }
 
-
-        // rotate correctly
-        private void rotateElements(boolean isLandscape) {
+        private Map<String, String[]> rotateElements(boolean isLandscape) {
             SceneManager m_sceneMgr = getSceneManager();
             int angle = isLandscape ? 90 : -90;
             SVGSVGElement svgRoot = m_sceneMgr.getPerseusController().getSVGRootElement();
@@ -1431,19 +1448,25 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
             SVGElement elem = (SVGElement) svgRoot.getFirstElementChild();
             Rectangle bBox = new Rectangle();
+            Map<String, String[]> textChanges = new HashMap<String, String[]>();
 
             while (elem != null) {
                 //  process
-                rotateElement(elem, angle, translate, bBox);
+                rotateElement(elem, angle, translate, textChanges, bBox);
                 // get next
                 elem = (SVGElement) elem.getNextElementSibling();
             }
+            //getModel().setAttributes(textChanges);
             m_sceneMgr.getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
             m_sceneMgr.getScreenManager().refresh();
+
+            return textChanges;
         }
     }
 
-    private void rotateElement(SVGElement elem, int angle, float[] translate, Rectangle bBox){
+    private void rotateElement(SVGElement elem, int angle, float[] translate, 
+            Map<String, String[]> textChanges, Rectangle bBox)
+    {
         SVGObject obj = getSceneManager().getPerseusController().getObjectForSVGElement(elem);
         if (obj == null) {
             return;
@@ -1453,7 +1476,8 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         bBox.add(obj.getScreenBBox());
 
         if (!PerseusController.ID_VIEWBOX_MARKER.equals(obj.getElementId())) {
-            obj.applyTextChanges();
+            textChanges.put(obj.getElementId(), obj.prepareTextChanges());
+            //obj.applyTextChanges();
         }
         obj.commitChanges();
     }

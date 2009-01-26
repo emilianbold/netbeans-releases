@@ -51,7 +51,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
@@ -929,7 +931,45 @@ public final class SVGFileModel {
             }
         });
     }
-    
+
+    /**
+     * Updates attributes for elements specified by id (as key in attributesById)
+     * and by element itself (key in attributesByElement).
+     * Values in Maps are String arrays which contain attributes names and new values in the form:
+     * 
+     * @param attributesById Map with element id as key and attributes to set as value.
+     * @param attributesByElement Map with DocumentElement as key and attributes to set as value.
+     */
+    public void setAttributes(final Map<String, String[]> attributesById,
+            final Map<DocumentElement, String[]> attributesByElement) {
+        runTransaction(new FileModelTransaction() {
+
+            protected void transaction() throws BadLocationException {
+
+                if (attributesById != null) {
+                    Iterator<String> ids = attributesById.keySet().iterator();
+                    while (ids.hasNext()) {
+                        String id = ids.next();
+                        String[] attributes = attributesById.get(id);
+
+                        DocumentElement elem = checkIntegrity(id);
+                        doSetAttributes(elem, attributes, id, true);
+                    }
+                }
+
+                if (attributesByElement != null) {
+                    Iterator<DocumentElement> elements = attributesByElement.keySet().iterator();
+                    while (elements.hasNext()) {
+                        DocumentElement elem = elements.next();
+                        String[] attributes = attributesByElement.get(elem);
+
+                        doSetAttributes(elem, attributes, null, false);
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * should be called inside FileModelTransaction#transaction()
      * @param elem tag to set attribute to.
