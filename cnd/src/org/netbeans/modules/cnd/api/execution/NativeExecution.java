@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  * 
  * @author gordonp
  */
-public abstract class NativeExecution extends ExecutionSupport implements NativeExecutionProvider {
+public abstract class NativeExecution /*extends ExecutionSupport*/ implements NativeExecutionProvider {
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
     private static NativeExecution instance;
@@ -85,9 +85,9 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
         return new LocalNativeExecution();
     }
 
-    protected NativeExecution() {
-        super(null);
-    }
+//    protected NativeExecution() {
+//        super(null);
+//    }
 
     public void setHost(String host) {
         this.host = host;
