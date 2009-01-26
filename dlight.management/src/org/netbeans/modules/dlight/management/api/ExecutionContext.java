@@ -38,22 +38,24 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.openide.util.Exceptions;
+
 
 final class ExecutionContext {
     private static final Object lock = new Object();

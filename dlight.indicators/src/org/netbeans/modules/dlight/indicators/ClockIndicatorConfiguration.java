@@ -5,9 +5,10 @@
 
 package org.netbeans.modules.dlight.indicators;
 
-import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicators.support.IndicatorConfigurationIDs;
+
 
 /**
  *

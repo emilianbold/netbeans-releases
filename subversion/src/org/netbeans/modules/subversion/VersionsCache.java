@@ -70,6 +70,27 @@ public class VersionsCache {
     }
 
     /**
+     * Loads a content of the given file in the given revision. May communicate over network.
+     * @param repoUrl target repository URL
+     * @param url target file full url
+     * @param revision target revision
+     * @param fileName basename of the file which will be used as a temporary file's name
+     * @return a temporary file with given file's content
+     * @throws java.io.IOException
+     */
+    public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
+        try {
+            SvnClient client = Subversion.getInstance().getClient(repoUrl);
+            InputStream in = getInputStream(client, url, revision);
+            return createContent(fileName, in);
+        } catch (SVNClientException ex) {
+            IOException ioex = new IOException("Can not load: " + url + " in revision: " + revision); // NOI18N
+            ioex.initCause(ex);
+            throw ioex;
+        }
+    }
+
+    /**
      * Loads the file in specified revision.
      *
      * <p>It's may connect over network I/O do not
@@ -133,31 +154,20 @@ public class VersionsCache {
                     } else {
                         SVNUrl url = SvnUtils.getRepositoryUrl(base);
                         if (url != null) {
-                            if(SvnClientFactory.isCLI()) {
-                                // XXX why is the revision given twice ??? !!! CLI WORKAROUND?
-                                // doesn't work with javahl but we won't change for cli as there might be some reason                                
-                                url = url.appendPath("@" + revision);
-                                in = client.getContent(url, svnrevision);
-                            } else {
-                                in = client.getContent(url, svnrevision, svnrevision);
-                            }
+                            in = getInputStream(client, url, revision);
                         } else {
                             in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
                         }                
                     }
                 } catch (SVNClientException e) {
-                    if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {
+                    if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ||
+                            SvnClientExceptionHandler.isPathNotFound(e.getMessage())) {
                         in = new ByteArrayInputStream(new byte[] {});
                     } else {
                         throw e;
                     }
                 }
-                // keep original extension so MIME can be guessed by the extension
-                File tmp = File.createTempFile("nb-svn", base.getName());  // NOI18N
-                tmp = FileUtil.normalizeFile(tmp);
-                tmp.deleteOnExit();  // hard to track actual lifetime
-                FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);
-                return tmp;
+                return createContent(base.getName(), in);
             } catch (SVNClientException ex) {
                 IOException ioex = new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision); // NOI18N
                 ioex.initCause(ex);
@@ -165,7 +175,52 @@ public class VersionsCache {
             }
         }
     }
-    
+
+    /**
+     * Tries to acquire a content of the given file url in the given revision
+     * @param client
+     * @param url
+     * @param revision
+     * @return content of the file in the given revision
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
+     */
+    private InputStream getInputStream (SvnClient client, SVNUrl url, String revision) throws SVNClientException {
+        InputStream in = null;
+        try {
+            if (SvnClientFactory.isCLI()) {
+                // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
+                // doesn't work with javahl but we won't change for cli as there might be some reason
+                in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
+            } else {
+                in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(revision));
+            }
+        } catch (SVNClientException e) {
+            if (SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ||
+                    SvnClientExceptionHandler.isPathNotFound(e.getMessage())) {
+                in = new ByteArrayInputStream(new byte[]{});
+            } else {
+                throw e;
+            }
+        }
+        return in;
+    }
+
+    /**
+     * Creates a temporary file and prints the content of <code>in</code> to it.
+     * @param fileName temporary file name, will be prefixed by <code>"nb-svn"</code>
+     * @param in content to be printed
+     * @return created temporary file
+     * @throws java.io.IOException
+     */
+    private File createContent (String fileName, InputStream in) throws IOException {
+        // keep original extension so MIME can be guessed by the extension
+        File tmp = File.createTempFile("nb-svn", fileName);  // NOI18N
+        tmp = FileUtil.normalizeFile(tmp);
+        tmp.deleteOnExit();  // hard to track actual lifetime
+        FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);
+        return tmp;
+    }
+
     private File getMetadataDir(File dir) {
         File svnDir = new File(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
         if (!svnDir.isDirectory()) {
