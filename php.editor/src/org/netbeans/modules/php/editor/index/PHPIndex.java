@@ -129,7 +129,6 @@ public class PHPIndex {
     }
 
     public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
         final Collection<IndexedElement> elements = new ArrayList<IndexedElement>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
@@ -137,7 +136,7 @@ public class PHPIndex {
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
 
         // search through the top leve elements
-        search(PHPIndexer.FIELD_TOP_LEVEL, prefix.toLowerCase(), QuerySupport.Kind.PREFIX);
+        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, prefix.toLowerCase(), QuerySupport.Kind.PREFIX);
 
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
@@ -150,7 +149,7 @@ public class PHPIndex {
         return elements;
     }
 
-    protected void findClasses(final Set<IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedClass> classes) {
+    protected void findClasses(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedClass> classes) {
         for (IndexResult map : result) {
             String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
             if (signatures == null) {
@@ -180,7 +179,7 @@ public class PHPIndex {
         }
     }
 
-    protected void findConstants(final Set<IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedConstant> constants) {
+    protected void findConstants(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedConstant> constants) {
         for (IndexResult map : result) {
             String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
             if (signatures == null) {
@@ -240,7 +239,7 @@ public class PHPIndex {
         }
     }
 
-    protected void findTopVariables(final Set<IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedVariable> vars) {
+    protected void findTopVariables(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedVariable> vars) {
         for (IndexResult map : result) {
             String[] signatures = map.getValues(PHPIndexer.FIELD_VAR);
             if (signatures == null) {
@@ -643,10 +642,10 @@ public class PHPIndex {
             new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE};
 
         for (String indexField : fields) {
-            final Collection<? extends IndexResult> IndexResult = search(indexField, typeName.toLowerCase(), QuerySupport.Kind.PREFIX,
+            final Collection<? extends IndexResult> indexResult = search(indexField, typeName.toLowerCase(), QuerySupport.Kind.PREFIX,
                         forConstructor ? PHPIndexer.FIELD_CONSTRUCTOR : PHPIndexer.FIELD_BASE);
 
-            for (IndexResult typeMap : IndexResult) {
+            for (IndexResult typeMap : indexResult) {
                 String[] typeSignatures = typeMap.getValues(indexField);
                 String[] rawSignatures = typeMap.getValues(fieldName);
 

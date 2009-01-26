@@ -49,6 +49,7 @@ import java.util.TreeSet;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -79,10 +80,11 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
 
     public void cancel() {
+        //TODO: implement me 
     }
     
-    public void run(ParserResult parameter) throws Exception {
-        for (OffsetRange r : compute(parameter, offset)) {
+    public void run(Result result, SchedulerEvent event) {
+        for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
             range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
         }
     }
@@ -117,17 +119,12 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
 
     @Override
-    public void run(Result result, SchedulerEvent event) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public int getPriority() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return 0;
     }
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 }

@@ -78,7 +78,9 @@ public class PHPParseResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // comments copied from Groovy:
+        // FIXME parsing API
+        // remove from parser cache (?)
     }
 
 }

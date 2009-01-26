@@ -142,9 +142,6 @@ public class FSCompletion implements CompletionProvider {
                     } catch (ParseException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                    finally {
-                        resultSet.finish();
-                    }
                 } finally {
                     resultSet.finish();
                 }
