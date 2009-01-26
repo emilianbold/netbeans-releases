@@ -129,8 +129,6 @@ public final class TestSessionVO {
         private final String file;
         private final int line;
         private final long time;
-        private String error;
-        private String failure;
         private Status status = Status.PASSED;
 
         public TestCaseVO(String name, String file, int line, long time) {
@@ -152,6 +150,7 @@ public final class TestSessionVO {
         public String getFile() {
             return file;
         }
+
         public int getLine() {
             return line;
         }
@@ -172,22 +171,12 @@ public final class TestSessionVO {
             return time;
         }
 
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
+        public void setErrorStatus() {
             assert status == Status.PASSED;
             status = Status.ERROR;
         }
 
-        public String getFailure() {
-            return failure;
-        }
-
-        public void setFailure(String failure) {
-            this.failure = failure;
+        public void setFailureStatus() {
             assert status == Status.PASSED;
             status = Status.FAILED;
         }
@@ -196,17 +185,12 @@ public final class TestSessionVO {
             return status;
         }
 
-        public String getMessage() {
-            String message = null;
-            switch (getStatus()) {
-                case ERROR:
-                    message = error;
-                    break;
-                case FAILED:
-                    message = failure;
-                    break;
-            }
-            return message;
+        public boolean isError() {
+            return status.equals(Status.ERROR);
+        }
+
+        public boolean isFailure() {
+            return status.equals(Status.FAILED);
         }
     }
 }

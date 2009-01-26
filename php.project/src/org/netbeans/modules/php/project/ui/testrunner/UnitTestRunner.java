@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
+import org.openide.util.NbBundle;
 
 /**
  * Test runner UI for PHP unit tests.
@@ -99,25 +100,26 @@ public final class UnitTestRunner {
                 testcase.setName(kase.getName());
                 testcase.setTimeMillis(kase.getTime());
                 testcase.setStatus(kase.getStatus());
-                String message = kase.getMessage();
-                if (message != null) {
-                    boolean isError = kase.getError() != null;
+
+                String[] stacktrace = kase.getStacktrace();
+                if (stacktrace.length > 0) {
+                    boolean isError = kase.isError();
                     Trouble trouble = new Trouble(isError);
-                    trouble.setMessage(message);
                     trouble.setStackTrace(kase.getStacktrace());
                     // XXX will be used with php unit 3.4+
 //                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
 //                    trouble.setComparisonFailure(failure);
                     testcase.setTrouble(trouble);
-
                     manager.displayOutput(testSession, kase.getName() + ":", isError); // NOI18N
-                    manager.displayOutput(testSession, message, isError);
+                    testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : kase.getStacktrace()) {
                         manager.displayOutput(testSession, s, isError);
+                        testSession.addOutput(s);
                     }
-                    manager.displayOutput(testSession, "", isError); // NOI18N
+                    manager.displayOutput(testSession, "", false); // NOI18N
+                    testSession.addOutput(""); // NOI18N
                 }
-                testSuite.addTestcase(testcase);
+                testSession.addTestCase(testcase);
             }
             manager.displayReport(testSession, testSession.getReport(suite.getTime()));
         }

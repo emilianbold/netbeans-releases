@@ -89,8 +89,8 @@ public class UnitTestRunnerTest extends NbTestCase {
 
         testCase = testSuite.getTestCases().get(0);
         assertEquals(Status.PENDING, testCase.getStatus());
-        assertNull(testCase.getFailure());
-        assertNull(testCase.getError());
+        assertFalse(testCase.isFailure());
+        assertFalse(testCase.isError());
         assertEquals(0, testCase.getStacktrace().length);
 
         // 3rd
@@ -100,40 +100,34 @@ public class UnitTestRunnerTest extends NbTestCase {
 
         testCase = testSuite.getTestCases().get(1);
         assertEquals("testAdd2", testCase.getName());
-        assertNotNull(testCase.getFailure());
-        assertNull(testCase.getError());
+        assertTrue(testCase.isFailure());
+        assertFalse(testCase.isError());
         assertEquals(Status.FAILED, testCase.getStatus());
-        assertEquals(1, testCase.getStacktrace().length);
-        assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybí znak konce řádku na konci souboru", testCase.getFailure());
-        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace()[0]);
+        assertEquals(2, testCase.getStacktrace().length);
+        assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybí znak konce řádku na konci souboru", testCase.getStacktrace()[0]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace()[1]);
 
         testCase = testSuite.getTestCases().get(2);
         assertEquals("testAdd3", testCase.getName());
-        assertNotNull(testCase.getFailure());
-        assertNull(testCase.getError());
         assertEquals(Status.FAILED, testCase.getStatus());
-        assertEquals(1, testCase.getStacktrace().length);
-        assertEquals("my expected message\nFailed asserting that two strings are equal.\nexpected string <hello>\ndifference      < x???>\ngot string      <hi>", testCase.getFailure());
-        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:64", testCase.getStacktrace()[0]);
+        assertEquals(2, testCase.getStacktrace().length);
+        assertEquals("my expected message\nFailed asserting that two strings are equal.\nexpected string <hello>\ndifference      < x???>\ngot string      <hi>", testCase.getStacktrace()[0]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:64", testCase.getStacktrace()[1]);
 
         testCase = testSuite.getTestCases().get(3);
         assertEquals("testAdd4", testCase.getName());
-        assertNotNull(testCase.getFailure());
-        assertNull(testCase.getError());
         assertEquals(Status.FAILED, testCase.getStatus());
-        assertEquals(1, testCase.getStacktrace().length);
-        assertEquals("Failed asserting that <integer:2> matches expected value <integer:3>.", testCase.getFailure());
-        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:75", testCase.getStacktrace()[0]);
+        assertEquals(2, testCase.getStacktrace().length);
+        assertEquals("Failed asserting that <integer:2> matches expected value <integer:3>.", testCase.getStacktrace()[0]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:75", testCase.getStacktrace()[1]);
 
         testCase = testSuite.getTestCases().get(4);
         assertEquals("testAdd5", testCase.getName());
-        assertNotNull(testCase.getError());
-        assertNull(testCase.getFailure());
         assertEquals(Status.ERROR, testCase.getStatus());
-        assertEquals(2, testCase.getStacktrace().length);
-        assertEquals("Exception: my exception", testCase.getError());
-        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php:13", testCase.getStacktrace()[0]);
-        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:82", testCase.getStacktrace()[1]);
+        assertEquals(3, testCase.getStacktrace().length);
+        assertEquals("Exception: my exception", testCase.getStacktrace()[0]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php:13", testCase.getStacktrace()[1]);
+        assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:82", testCase.getStacktrace()[2]);
     }
 
     public void testParseLogWithOneSuite() throws Exception {

@@ -66,7 +66,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private Content content = Content.NONE;
     private boolean firstContent = true; // for error/failure: the 1st line is ignored
     private boolean stacktraceStarted = false; // for error/failure: flag for description/stacktrace
-    private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for message
+    private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the 1st stacktrace
 
     private PhpUnitLogParser(TestSessionVO testSession) throws SAXException {
         this.testSession = testSession;
@@ -129,6 +129,10 @@ public final class PhpUnitLogParser extends DefaultHandler {
                     buffer.append(string);
                 } else {
                     assert testCase != null;
+                    if (buffer.length() > 0) {
+                        testCase.addStacktrace(buffer.toString().trim());
+                        buffer = new StringBuilder(200);
+                    }
                     testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", string.trim()));
                 }
                 break;
@@ -205,18 +209,12 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private void endTestContent() {
         switch (content) {
             case FAILURE:
+                assert testCase != null;
+                testCase.setFailureStatus();
+                break;
             case ERROR:
                 assert testCase != null;
-                String message = buffer.toString().trim();
-                if (content.equals(Content.FAILURE)) {
-                    testCase.setFailure(message);
-                } else if (content.equals(Content.ERROR)) {
-                    testCase.setError(message);
-                } else {
-                    assert false : "Should not get here";
-                }
-
-                buffer = new StringBuilder(200);
+                testCase.setErrorStatus();
                 break;
         }
         firstContent = true;
