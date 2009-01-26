@@ -1009,7 +1009,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 }
                 if (cbBuildWithDeps.isSelected()) {
                     if (!shown && DontShowAgainSettings.getDefault().showWarningAboutBuildWithDependencies()) {
-                        WarnPanel panel = new WarnPanel("<html><h2>Please note:</h2>Build with dependencies delegates to the action of the same name and performs it before the current action is performed.<p> The Build with dependencies action relies on 'maven-reactor-plugin' to perform it's duties. ");
+                        WarnPanel panel = new WarnPanel(NbBundle.getMessage(ActionMappings.class, "HINT_Build_WithDependencies"));
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
                         DialogDisplayer.getDefault().notify(dd);
                         if (panel.disabledWarning()) {
