@@ -68,8 +68,8 @@ made subject to such option by the copyright holder.
     <property file="build.properties"/>
   </target>
 
-  <target name="bootstrap"
-          description="Bootstrap NetBeans-specific Ant extensions."
+  <target name="bootstrap" depends="-bootstrap,-download-all-extbins" description="Bootstrap NetBeans-specific Ant extensions."/>
+  <target name="-bootstrap"
           depends="-jdk-init,-load-build-properties">
     <fail message="You need JDK 1.5+ to build NetBeans">
         <condition>
@@ -97,8 +97,8 @@ made subject to such option by the copyright holder.
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
-            <include name="*/external/binaries-list"/>
-            <include name="contrib/*/external/binaries-list"/>
+            <include name="apisupport.harness/external/binaries-list"/>
+            <include name="javahelp/external/binaries-list"/>
         </manifest>
     </downloadbinaries>
 
@@ -145,6 +145,14 @@ made subject to such option by the copyright holder.
         <exclude name="package-list"/>
       </fileset>
     </jar>
+  </target>
+  <target name="-download-all-extbins">
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
   </target>
 
   <target name="init-module-list" depends="bootstrap">
@@ -1372,7 +1380,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="bootstrap" description="Clean everything possible.">
+  <target name="clean" depends="-bootstrap" description="Clean everything possible.">
       <taskdef name="try-else" classname="org.netbeans.nbbuild.TryElse" classpath="nbantext.jar"/>
       <try-else first="-hg-clean" second="-real-clean"/>
   </target>
