@@ -74,14 +74,14 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return false;
     }
 
-    protected RubyProject getRubyProject(String path) throws Exception {
-        Project p = getTestProject(path);
-        assertNotNull(p);
-        assertTrue(p instanceof RubyProject);
-        
-        return (RubyProject)p;
+    protected RubyProject getRubyProject(String relativePath) throws Exception {
+        FileObject projectDir = getTestFile(relativePath);
+        assertNotNull(projectDir);
+        Project project = ProjectManager.getDefault().findProject(projectDir);
+        assertNotNull(project);
+        return (RubyProject) project;
     }
-    
+
     protected RubyProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
         RubyPlatform plaf = RubyPlatformManager.getDefaultPlatform();
