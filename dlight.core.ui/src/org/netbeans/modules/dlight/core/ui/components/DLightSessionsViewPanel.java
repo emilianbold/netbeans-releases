@@ -57,14 +57,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
+import org.netbeans.modules.dlight.api.execution.Validateable;
+import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.DLightTool;
-import org.netbeans.modules.dlight.model.Validateable;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -185,7 +185,7 @@ public class DLightSessionsViewPanel extends JPanel
         }
     }
 
-    public void validationStateChanged(Validateable source, ValidationStatus newStatus) {
+    public void validationStateChanged(Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {
         updateContent(source);
     }
 

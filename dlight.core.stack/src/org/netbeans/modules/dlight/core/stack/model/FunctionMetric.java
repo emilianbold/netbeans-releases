@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.model;
 
-import org.netbeans.modules.dlight.storage.api.Time;
+import org.netbeans.modules.dlight.api.storage.Time;
 
 /**
  * 

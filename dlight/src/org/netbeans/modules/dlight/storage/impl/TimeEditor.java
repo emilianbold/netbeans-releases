@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.dlight.storage.impl;
 
-import org.netbeans.modules.dlight.storage.api.Time;
 import java.beans.PropertyEditorSupport;
 import java.text.NumberFormat;
+import org.netbeans.modules.dlight.api.storage.Time;
 
 /**
  * Property editor for {@link Time} value type. Does not actually support
