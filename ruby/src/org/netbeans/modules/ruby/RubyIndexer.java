@@ -272,10 +272,6 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    public boolean acceptQueryPath(String url) {
-        return url.indexOf("rubystubs") == -1; // NOI18N
-    }
-
     private static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {
