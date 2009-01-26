@@ -44,6 +44,7 @@ import java.io.IOException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
@@ -116,8 +117,8 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        new RunScript(new ScriptProvider(project, pair, context)).run();
-        UnitTestRunner.run(project);
+        final TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
+        new RunScript(new ScriptProvider(testSession, project, pair, context)).run();
     }
 
     private void debug(PhpProject project, Lookup context) {
@@ -126,7 +127,8 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        new DebugScript(new ScriptProvider(project, pair, context)).run();
+        final TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.DEBUG); // NOI18N
+        new DebugScript(new ScriptProvider(testSession, project, pair, context)).run();
     }
 
     private Pair<FileObject, String> getValidPair(PhpProject project, Lookup context) {
@@ -167,11 +169,14 @@ public class ConfigActionTest extends ConfigAction {
         private final Pair<FileObject, String> pair;
         private final PhpUnit program;
         private final File startFile;
+        private final TestSession testSession;
 
-        public ScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
+        public ScriptProvider(TestSession testSession, PhpProject project, Pair<FileObject, String> pair, Lookup context) {
+            assert testSession != null;
             assert project != null;
             assert pair != null;
 
+            this.testSession = testSession;
             this.project = project;
             this.pair = pair;
             this.context = context;
@@ -195,6 +200,16 @@ public class ConfigActionTest extends ConfigAction {
             return new ExecutionDescriptor()
                     .frontWindow(true)
                     .showProgress(true)
+                    .preExecution(new Runnable() {
+                        public void run() {
+                            UnitTestRunner.start(testSession);
+                        }
+                    })
+                    .postExecution(new Runnable() {
+                        public void run() {
+                            UnitTestRunner.display(testSession);
+                        }
+                    })
                     .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
         }
 

@@ -44,7 +44,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -53,7 +52,6 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
-import org.openide.util.NbBundle;
 
 /**
  * Test runner UI for PHP unit tests.
@@ -68,16 +66,12 @@ public final class UnitTestRunner {
     private UnitTestRunner() {
     }
 
-    public static void run(Project project) {
+    public static void start(TestSession testSession) {
         Manager manager = Manager.getInstance();
-        TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
         manager.testStarted(testSession);
+    }
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-        }
-
+    public static void display(TestSession testSession) {
         Reader reader;
         try {
             reader = new BufferedReader(new FileReader(PhpUnitConstants.XML_LOG));
@@ -89,6 +83,7 @@ public final class UnitTestRunner {
         TestSessionVO session = new TestSessionVO();
         PhpUnitLogParser.parse(reader, session);
 
+        Manager manager = Manager.getInstance();
         for (TestSuiteVO suite : session.getTestSuites()) {
             manager.displaySuiteRunning(testSession, suite.getName());
 
