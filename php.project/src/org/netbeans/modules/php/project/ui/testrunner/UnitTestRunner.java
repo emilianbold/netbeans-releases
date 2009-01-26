@@ -105,7 +105,7 @@ public final class UnitTestRunner {
 //                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
 //                    trouble.setComparisonFailure(failure);
                     testcase.setTrouble(trouble);
-                    manager.displayOutput(testSession, kase.getName() + ":", isError); // NOI18N
+                    manager.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : kase.getStacktrace()) {
                         manager.displayOutput(testSession, s, isError);
