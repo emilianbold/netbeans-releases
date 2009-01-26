@@ -318,6 +318,7 @@ public class DependencyNode extends AbstractNode {
             acts.add(new RemoveDependencyAction());
         }
         acts.add(null);
+        acts.add(CommonArtifactActions.createViewArtifactDetails(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createFindUsages(art));
         acts.add(null);
         acts.add(CommonArtifactActions.createViewJavadocAction(art));

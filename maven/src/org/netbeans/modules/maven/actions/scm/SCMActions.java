@@ -42,12 +42,16 @@ package org.netbeans.modules.maven.actions.scm;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.actions.ActionsUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -69,10 +73,14 @@ public class SCMActions extends AbstractAction  implements Presenter.Popup{
     }
 
     public JMenuItem getPopupPresenter() {
-         JMenu menu = new JMenu(NbBundle.getMessage(SCMActions.class, "LBL_SCM"));
-         menu.add(new OpenScmURLAction(artifact, repos));
-         menu.add(new CheckoutAction(artifact, repos));
-         return menu;
+        //TODO - start reading in some other thread and just wait for it to finish here..
+        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
+        JMenu menu = new JMenu(NbBundle.getMessage(SCMActions.class, "LBL_SCM"));
+        menu.add(new OpenScmURLAction(artifact, repos));
+        Action act = new CheckoutAction(Lookups.singleton(readMavenProject));
+        act.putValue(SMALL_ICON, null);
+        menu.add(act);
+        return menu;
     }
 
 }

@@ -36,29 +36,22 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer;
 
-import java.util.Collection;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
+package org.netbeans.modules.maven.indexer.spi.ui;
+
+import java.util.List;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.openide.windows.TopComponent;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author mkleint
  */
-public class Installer extends ModuleInstall {
+public interface ArtifactViewerFactory {
 
-    @Override
-    public void close() {
-        super.close();
-        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
-        for (RepositoryIndexerImplementation impl : res) {
-            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
-            }
-        }
-    }
+    TopComponent createTopComponent(NBVersionInfo info);
 
+    TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos);
 }

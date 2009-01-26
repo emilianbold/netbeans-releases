@@ -113,9 +113,18 @@ made subject to such option by the copyright holder.
                         <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.25</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
+                <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
@@ -123,10 +132,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
-                <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <package>org.netbeans.modules.maven.indexer.api</package>
+                <package>org.netbeans.modules.maven.indexer.api.ui</package>
                 <package>org.netbeans.modules.maven.indexer.spi</package>
+                <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nexus-indexer-1.0.0-shaded.jar</runtime-relative-path>

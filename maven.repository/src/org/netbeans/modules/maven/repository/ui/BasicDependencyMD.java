@@ -36,29 +36,54 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer;
 
-import java.util.Collection;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.maven.repository.ui;
+
+import java.awt.Image;
+import java.io.Serializable;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author mkleint
  */
-public class Installer extends ModuleInstall {
+public class BasicDependencyMD implements MultiViewDescription, Serializable {
 
-    @Override
-    public void close() {
-        super.close();
-        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
-        for (RepositoryIndexerImplementation impl : res) {
-            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
-            }
-        }
+    private Lookup lookup;
+
+    BasicDependencyMD(Lookup lkp) {
+        lookup = lkp;
+    }
+
+
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(BasicDependencyMD.class, "TAB_Dependencies");
+    }
+
+    public Image getIcon() {
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true); //NOI18N
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    public String preferredID() {
+        return "dep"; //NOI18N
+    }
+
+    public MultiViewElement createElement() {
+        return new DependencyPanel(lookup);
     }
 
 }

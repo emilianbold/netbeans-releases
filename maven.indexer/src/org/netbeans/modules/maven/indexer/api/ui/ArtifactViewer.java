@@ -36,29 +36,56 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer;
 
-import java.util.Collection;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.maven.indexer.api.ui;
+
+import java.util.List;
+import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ * a factory class for creation of artifact view components.
+ * @author mkleint
  */
-public class Installer extends ModuleInstall {
+public final class ArtifactViewer {
 
-    @Override
-    public void close() {
-        super.close();
-        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
-        for (RepositoryIndexerImplementation impl : res) {
-            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
-            }
+    private ArtifactViewer() {
+    }
+
+    /**
+     * Shows detailed view component with information about the given artifact.
+     * @param info
+     */
+    public static void showArtifactViewer(NBVersionInfo info) {
+        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        if (fact == null) {
+            Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
+            return;
         }
+        TopComponent tc = fact.createTopComponent(info);
+        tc.open();
+        tc.requestActive();
+    }
+
+    /**
+     * Shows detailed view component with information about the given artifact.
+     * @param info
+     */
+    public static void showArtifactViewer(Artifact artifact, List<ArtifactRepository> repos) {
+        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        if (fact == null) {
+            Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
+            return;
+        }
+        TopComponent tc = fact.createTopComponent(artifact, repos);
+        tc.open();
+        tc.requestActive();
     }
 
 }
+
