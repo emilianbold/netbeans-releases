@@ -92,12 +92,12 @@ public class GeneratorUtils {
 
     public static String getGetterSetterDisplayName(Kind type) {
         if (type == Kind.GETTERS_ONLY) {
-            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_getter"); //NOI18N
+            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_getter"); //NOI18N
         }
         if (type == Kind.SETTERS_ONLY) {
-            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_setter"); //NOI18N
+            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_setter"); //NOI18N
         }
-        return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_getter_and_setter"); //NOI18N
+        return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_getter_and_setter"); //NOI18N
     }
 
     public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
