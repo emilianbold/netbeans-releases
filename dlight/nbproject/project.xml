@@ -61,6 +61,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.dlight.collector.api</package>
+                <package>org.netbeans.modules.dlight.collector.spi</package>
                 <package>org.netbeans.modules.dlight.dataprovider.api</package>
                 <package>org.netbeans.modules.dlight.dataprovider.spi</package>
                 <package>org.netbeans.modules.dlight.execution.api</package>
@@ -69,6 +70,7 @@
                 <package>org.netbeans.modules.dlight.indicator.spi</package>
                 <package>org.netbeans.modules.dlight.model</package>
                 <package>org.netbeans.modules.dlight.storage.api</package>
+                <package>org.netbeans.modules.dlight.storage.spi</package>
                 <package>org.netbeans.modules.dlight.tool.api</package>
                 <package>org.netbeans.modules.dlight.tool.spi</package>
                 <package>org.netbeans.modules.dlight.visualizer.api</package>

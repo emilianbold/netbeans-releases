@@ -71,7 +71,7 @@ import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.storage.api.DataRow;
 import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
@@ -86,239 +86,232 @@ import org.openide.util.NbBundle;
  */
 public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements DataCollector<CLIODCConfiguration> {
 
-  private static final Logger log = DLightLogger.getLogger(CLIODataCollector.class);
-  private String command;
-  private  String argsTemplate;
-  private Thread outProcessingThread;
-  private DataStorage storage;
-  private NativeTask collectorTask;
-  private CLIOParser parser;
-  private List<DataTableMetadata> dataTablesMetadata;
-  private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
-  private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private static final Logger log = DLightLogger.getLogger(CLIODataCollector.class);
+    private String command;
+    private String argsTemplate;
+    private Thread outProcessingThread;
+    private DataStorage storage;
+    private NativeTask collectorTask;
+    private CLIOParser parser;
+    private List<DataTableMetadata> dataTablesMetadata;
+    private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+    private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
 
-
-  
-  /**
-   *
-   * @param command command to invoke (without arguments)
-   * @param arguments command arguments
-   * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.api.CLIOParser} to parse command output with
-   * @param dataTablesMetadata describes the tables to store parsed data in
-   */
-  CLIODataCollector(CLIODCConfiguration configuration) {
-    this.command = CLIODCConfigurationAccessor.getDefault().getCommand(configuration);
-    this.argsTemplate = CLIODCConfigurationAccessor.getDefault().getArguments(configuration);
-    this.parser = CLIODCConfigurationAccessor.getDefault().getParser(configuration);
-    this.dataTablesMetadata = CLIODCConfigurationAccessor.getDefault().getDataTablesMetadata(configuration);
-  }
-
-
-
-  
-
-  /**
-   * The types of storage this collector supports
-   * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
-   * data collector can put data into
-   */
-  public List<DataStorageType> getSupportedDataStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
-  }
-
-  public void init(DataStorage storage, DLightTarget target) {
-    this.storage = storage;
-    log.info("Do INIT for " + storage.toString());
-  }
-
-  protected void processLine(String line) {
-    DataRow dataRow = parser.process(line);
-    if (dataRow != null) {
-      if (dataTablesMetadata != null && !dataTablesMetadata.isEmpty() && storage != null) {
-        storage.addData(dataTablesMetadata.get(0).getName()/*"prstat"*/, Arrays.asList(dataRow));
-      }
-      notifyIndicators(Arrays.asList(dataRow));
+    /**
+     *
+     * @param command command to invoke (without arguments)
+     * @param arguments command arguments
+     * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.api.CLIOParser} to parse command output with
+     * @param dataTablesMetadata describes the tables to store parsed data in
+     */
+    CLIODataCollector(CLIODCConfiguration configuration) {
+        this.command = CLIODCConfigurationAccessor.getDefault().getCommand(configuration);
+        this.argsTemplate = CLIODCConfigurationAccessor.getDefault().getArguments(configuration);
+        this.parser = CLIODCConfigurationAccessor.getDefault().getParser(configuration);
+        this.dataTablesMetadata = CLIODCConfigurationAccessor.getDefault().getDataTablesMetadata(configuration);
     }
-  }
 
- 
-
-  protected NativeTask getCollectorTaskFor(DLightTarget target) {
-    String cmd = command;
-    if (target instanceof AttachableTarget) {
-      AttachableTarget at = (AttachableTarget) target;
-      cmd = cmd.concat(" ").concat(argsTemplate.replaceAll("@PID", "" + at.getPID()));
-    } else {
-      cmd = cmd.concat(" " + argsTemplate);
+    /**
+     * The types of storage this collector supports
+     * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
+     * data collector can put data into
+     */
+    public List<DataStorageType> getSupportedDataStorageTypes() {
+        return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
-    return new NativeTask(target.getExecEnv(), cmd, null);
-  }
 
-  public void targetStarted(DLightTarget target) {
-    resetIndicators();
-    collectorTask = getCollectorTaskFor(target);
+    public void init(DataStorage storage, DLightTarget target) {
+        this.storage = storage;
+        log.info("Do INIT for " + storage.toString());
+    }
 
-    outProcessingThread = new Thread(new Runnable() {
+    protected void processLine(String line) {
+        DataRow dataRow = parser.process(line);
+        if (dataRow != null) {
+            if (dataTablesMetadata != null && !dataTablesMetadata.isEmpty() && storage != null) {
+                storage.addData(dataTablesMetadata.get(0).getName()/*"prstat"*/, Arrays.asList(dataRow));
+            }
+            notifyIndicators(Arrays.asList(dataRow));
+        }
+    }
 
-      public void run() {
+    protected NativeTask getCollectorTaskFor(DLightTarget target) {
+        String cmd = command;
+        if (target instanceof AttachableTarget) {
+            AttachableTarget at = (AttachableTarget) target;
+            cmd = cmd.concat(" ").concat(argsTemplate.replaceAll("@PID", "" + at.getPID()));
+        } else {
+            cmd = cmd.concat(" " + argsTemplate);
+        }
+        return new NativeTask(target.getExecEnv(), cmd, null);
+    }
+
+    public void targetStarted(DLightTarget target) {
+        resetIndicators();
+        collectorTask = getCollectorTaskFor(target);
+
+        outProcessingThread = new Thread(new Runnable() {
+
+            public void run() {
+                try {
+                    String line;
+                    InputStream is = collectorTask.getInputStream();
+
+                    if (is == null) {
+                        return;
+                    }
+
+                    BufferedReader reader = new BufferedReader(Channels.newReader(Channels.newChannel(is), "UTF-8")); // NOI18N
+
+                    while ((line = reader.readLine()) != null) {
+                        processLine(line);
+                    }
+
+                    Thread.sleep(10);
+
+                } catch (InterruptedException ex) {
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                } catch (InterruptedIOException ex) {
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                } catch (ClosedByInterruptException ex) {
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                } catch (IOException ex) {
+                    log.fine(Thread.currentThread().getName() + " io. Stop it.");
+                //Logger.getLogger(CLIODataCollector.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }, "CLI Data Collector Output Redirector");
+
+        collectorTask.submit();
+        outProcessingThread.start();
+    }
+
+    public void targetFinished(DLightTarget target, int result) {
+        log.fine("Stopping CLIODataCollector: " + collectorTask.toString());
+        collectorTask.cancel();
+        outProcessingThread.interrupt();
+    }
+
+    /** {@inheritDoc */
+    public List<? extends DataTableMetadata> getDataTablesMetadata() {
+        return dataTablesMetadata;
+    }
+
+    /** {@inheritDoc */
+    public boolean isAttachable() {
+        return true;
+    }
+
+    /** {@inheritDoc */
+    public String getCmd() {
+        return command;
+    }
+
+    /** {@inheritDoc */
+    public String[] getArgs() {
+        return null;
+    }
+
+    /**
+     * Registers a validation listener
+     * @param listener a validation listener to add
+     */
+    public void addValidationListener(ValidationListener listener) {
+        if (!validationListeners.contains(listener)) {
+            validationListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a validation listener
+     * @param listener a listener to remove
+     */
+    public void removeValidationListener(ValidationListener listener) {
+        validationListeners.remove(listener);
+    }
+
+    protected void notifyStatusChanged(ValidationStatus newStatus) {
+        for (ValidationListener validationListener : validationListeners) {
+            validationListener.validationStateChanged(this, newStatus);
+        }
+    }
+
+    private static String loc(String key, Object... params) {
+        return NbBundle.getMessage(CLIODataCollector.class, key, params);
+    }
+
+    public Future<ValidationStatus> validate(final DLightTarget target) {
+        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+
+            public ValidationStatus call() throws Exception {
+                if (validationStatus.isOK()) {
+                    return validationStatus;
+                }
+
+                ValidationStatus oldStatus = validationStatus;
+                ValidationStatus newStatus = doValidation(target);
+
+                if (!(newStatus.getState().equals(oldStatus.getState()) &&
+                        newStatus.getReason().equals(oldStatus.getReason()))) {
+                    notifyStatusChanged(newStatus);
+                }
+
+                validationStatus = newStatus;
+                return newStatus;
+            }
+        });
+    }
+
+    public void invalidate() {
+        validationStatus = ValidationStatus.NOT_VALIDATED;
+    }
+
+    private ValidationStatus doValidation(final DLightTarget target) {
+        DLightLogger.assertNonUiThread();
+
+        ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+        boolean fileExists = false;
+        boolean connected = true;
+
         try {
-          String line;
-          InputStream is = collectorTask.getInputStream();
-
-          if (is == null) {
-            return;
-          }
-
-          BufferedReader reader = new BufferedReader(Channels.newReader(Channels.newChannel(is), "UTF-8")); // NOI18N
-
-          while ((line = reader.readLine()) != null) {
-            processLine(line);
-          }
-
-          Thread.sleep(10);
-
-        } catch (InterruptedException ex) {
-          log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
-        } catch (InterruptedIOException ex) {
-          log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
-        } catch (ClosedByInterruptException ex) {
-          log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
-        } catch (IOException ex) {
-          log.fine(Thread.currentThread().getName() + " io. Stop it.");
-        //Logger.getLogger(CLIODataCollector.class.getName()).log(Level.SEVERE, null, ex);
-        }
-      }
-    }, "CLI Data Collector Output Redirector");
-
-    collectorTask.submit();
-    outProcessingThread.start();
-  }
-
-  public void targetFinished(DLightTarget target, int result) {
-    log.fine("Stopping CLIODataCollector: " + collectorTask.getCommand());
-    collectorTask.cancel();
-    outProcessingThread.interrupt();
-  }
-
-  /** {@inheritDoc */
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
-    return dataTablesMetadata;
-  }
-
-  /** {@inheritDoc */
-  public boolean isAttachable() {
-    return true;
-  }
-
-  /** {@inheritDoc */
-  public String getCmd() {
-    return command;
-  }
-
-  /** {@inheritDoc */
-  public String[] getArgs() {
-    return null;
-  }
-
-  /**
-   * Registers a validation listener
-   * @param listener a validation listener to add
-   */
-  public void addValidationListener(ValidationListener listener) {
-    if (!validationListeners.contains(listener)) {
-      validationListeners.add(listener);
-    }
-  }
-
-  /**
-   * Removes a validation listener
-   * @param listener a listener to remove
-   */
-  public void removeValidationListener(ValidationListener listener) {
-    validationListeners.remove(listener);
-  }
-
-  protected void notifyStatusChanged(ValidationStatus newStatus) {
-    for (ValidationListener validationListener : validationListeners) {
-      validationListener.validationStateChanged(this, newStatus);
-    }
-  }
-
-  private static String loc(String key, Object ... params) {
-    return NbBundle.getMessage(CLIODataCollector.class, key, params);
-  }
-
-  public Future<ValidationStatus> validate(final DLightTarget target) {
-    return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
-
-      public ValidationStatus call() throws Exception {
-        if (validationStatus.isOK()) {
-          return validationStatus;
+            fileExists = HostInfo.fileExists(target.getExecEnv(), command);
+        } catch (HostNotConnectedException ex) {
+            connected = false;
         }
 
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(target);
+        if (connected) {
+            if (fileExists) {
+                result = ValidationStatus.VALID;
+            } else {
+                result = new ValidationStatus(
+                        ValidationState.NOT_VALID,
+                        loc("ValidationStatus.CommandNotFound", command)); // NOI18N
+            }
+        } else {
+            ExecutionEnvironment ee = target.getExecEnv();
 
-        if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(newStatus);
+            ObservableAction<Boolean> connectAction = ee.getConnectToAction();
+
+            connectAction.addObservableActionListener(new ObservableActionListener<Boolean>() {
+
+                public void actionCompleted(Action source, Boolean result) {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+
+                public void actionStarted(Action source) {
+                }
+            });
+
+
+            result = new ValidationStatus(ValidationState.UNKNOWN,
+                    loc("ValidationStatus.HostNotConnected"), // NOI18N
+                    connectAction);
         }
 
-        validationStatus = newStatus;
-        return newStatus;
-      }
-    });
-  }
-
-  public void invalidate() {
-    validationStatus = ValidationStatus.NOT_VALIDATED;
-  }
-
-  private ValidationStatus doValidation(final DLightTarget target) {
-    DLightLogger.assertNonUiThread();
-
-    ValidationStatus result = ValidationStatus.NOT_VALIDATED;
-    boolean fileExists = false;
-    boolean connected = true;
-
-    try {
-      fileExists = HostInfo.fileExists(target.getExecEnv(), command);
-    } catch (HostNotConnectedException ex) {
-      connected = false;
+        return result;
     }
 
-    if (connected) {
-      if (fileExists) {
-        result = ValidationStatus.VALID;
-      } else {
-        result = new ValidationStatus(
-                ValidationState.NOT_VALID,
-                loc("ValidationStatus.CommandNotFound", command)); // NOI18N
-      }
-    } else {
-      ConnectionManager cm = ConnectionManager.getInstance();
-      ObservableAction<Boolean> connectAction = cm.getConnectAction(target.getExecEnv());
-
-      connectAction.addObservableActionListener(new ObservableActionListener<Boolean>() {
-          public void actionCompleted(Action source, Boolean result) {
-              DLightManager.getDefault().revalidateSessions();
-          }
-          public void actionStarted(Action source) {
-          }
-      });
-
-
-      result = new ValidationStatus(ValidationState.UNKNOWN,
-              loc("ValidationStatus.HostNotConnected"), // NOI18N
-              connectAction);
+    public ValidationStatus getValidationStatus() {
+        return validationStatus;
     }
-
-    return result;
-  }
-
-  public ValidationStatus getValidationStatus() {
-    return validationStatus;
-  }
-  
-  
 }

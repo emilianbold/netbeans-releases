@@ -110,12 +110,15 @@ public class ObservableActionTest {
             action.actionPerformed(null);
             action.actionPerformed(null);
             action.actionPerformed(null);
+            try {
 //            Thread.sleep(100);
 //            action.actionPerformed(null);
 //            Thread.sleep(100);
-
 //            assertEquals(new Integer(10), action.getLastResult());
-            assertEquals(new Integer(10), action.invokeAndWait());
+                assertEquals(new Integer(10), action.call());
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }

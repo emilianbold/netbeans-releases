@@ -45,5 +45,9 @@ package org.netbeans.modules.dlight.execution.api;
  * 
  */
 public interface AttachableTarget {
+  /**
+   * Returns target's PID
+   * @return PID
+   */
   public int getPID();
 }

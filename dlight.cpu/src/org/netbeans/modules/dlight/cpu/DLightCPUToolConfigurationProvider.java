@@ -53,10 +53,11 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     DataTableMetadata functionsListMetaData = null;
     if (USE_DTRACE) {
       String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/calls.d");
-      DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(createProfilerTableMetadata()));
+      DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
+      DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(profilerTableMetadata));
       dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
       toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "cpu:"));
-      functionsListMetaData = createFunctionsListMetadata();
+      functionsListMetaData = createFunctionsListMetadata(profilerTableMetadata);
     } else {
       SunStudioDCConfiguration sunStudioConfiguration = new SunStudioDCConfiguration(Arrays.asList(SunStudioDCConfiguration.CollectedInfo.FUNCTIONS_LIST));
       toolConfiguration.addDataCollectorConfiguration(sunStudioConfiguration);
@@ -78,18 +79,18 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     return new DataTableMetadata("CallStack", Arrays.asList(cpuId, threadId, timestamp, stackId));
   }
 
-  private DataTableMetadata createFunctionsListMetadata() {
+  private DataTableMetadata createFunctionsListMetadata(DataTableMetadata profilerTableMetadata) {
     List<Column> columns = new ArrayList<Column>();
     columns.add(new Column("name", String.class, "Function Name", null));
     List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
     for (FunctionMetric metric : metricsList) {
       columns.add(new Column(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null));
     }
-    DataTableMetadata result = new DataTableMetadata(StackDataStorage.STACK_METADATA_VIEW_NAME, columns);
+    DataTableMetadata result = new DataTableMetadata(StackDataStorage.STACK_METADATA_VIEW_NAME, columns, null, Arrays.asList(profilerTableMetadata));
     return result;
   }
 
-  class MyCLIOParser implements CLIOParser {
+  private static class MyCLIOParser implements CLIOParser {
 
     private final List<String> colnames = Arrays.asList(new String[]{
               "utime",

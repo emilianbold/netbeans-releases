@@ -48,12 +48,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
 import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 
 /**
  * Implementation of files copying routines
- *
- * @author ak119685
  */
 public class CopyTask extends NativeTask {
 
@@ -66,8 +65,9 @@ public class CopyTask extends NativeTask {
     }
 
     /**
-     * CopyTask gets scp output by default. In case of error (permission denied,
-     * etc.) user can get this message using <tt>getError()</tt>
+     * Returns error message returned by scp. CopyTask gets scp output by
+     * default. In case of error (permission denied, etc.) user can get this
+     * message using <tt>getError()</tt> method.
      *
      * @return error message returned by scp
      */
@@ -104,7 +104,8 @@ public class CopyTask extends NativeTask {
      *
      * @throws FileNotFoundException if local file is not found or is not
      *         readable
-     * @see org.netbeans.modules.nativeexecution.NativeTask
+     * 
+     * @see NativeTask
      */
     public static CopyTask copyLocalFile(
             ExecutionEnvironment execEnv,
@@ -159,7 +160,9 @@ public class CopyTask extends NativeTask {
                     workUnitFactor = 1;
                 }
 
-                task.getExecutor().setProgressLimit(workUnitsLimit);
+                NativeTaskAccessor taskInfo = NativeTaskAccessor.getDefault();
+                taskInfo.getExecutor(task).setProgressLimit(workUnitsLimit);
+
                 String command = String.format("C0%03d %d %s\n", // NOI18N
                         mask, filesize, srcFile.getName());
                 buffer.put(command.getBytes(), 0, command.length());
@@ -184,7 +187,8 @@ public class CopyTask extends NativeTask {
                     buffer.clear();
                     sendBytes += len;
                     progress = (int) (sendBytes * workUnitFactor);
-                    task.getExecutor().setProgress(progress);
+
+                    taskInfo.getExecutor(task).setProgress(progress);
                 }
 
                 // Finally write 0 byte

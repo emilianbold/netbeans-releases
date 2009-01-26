@@ -40,12 +40,14 @@
 package org.netbeans.modules.dlight.cpu.impl;
 
 import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.cpu.graph.PercentageGraph;
-import org.netbeans.modules.dlight.cpu.graph.PercentageGraphComponent;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -57,7 +59,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.*;
-import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,40 +68,82 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  */
 class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
-    private final PercentageGraphComponent graph;
-    private final JPanel panel;
+    private PercentageGraph graph;
+    private JComponent panel;
+    private JLabel lblSysLabel;
+    private JLabel lblSysValue;
+    private JLabel lblUsrLabel;
+    private JLabel lblUsrValue;
     private Collection<ActionListener> listeners;
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
-        graph = new PercentageGraphComponent(
-                new PercentageGraph.Descriptor(Color.RED, "System"),
-                new PercentageGraph.Descriptor(Color.BLUE, "User"));
-        graph.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-        Dimension d = new Dimension(66, 32);
-        graph.setPreferredSize(d);
-        graph.setMaximumSize(d);
-        graph.setMinimumSize(d);
-        panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.add(Box.createHorizontalGlue());
-        panel.add(graph);
-        panel.add(Box.createHorizontalGlue());
-
-        MouseListener ml = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    fireActionPerformed();
-                }
-            }
-        };
-        graph.addMouseListener(ml);
-
     }
 
     @Override
-    public JComponent getComponent() {
+    public synchronized  JComponent getComponent() {
+        if (panel == null) {
+
+            Color colorSys = Color.RED;
+            Color colorUsr = Color.BLUE;
+
+            graph = new PercentageGraph(
+                    new GraphDescriptor(colorSys, "System"),
+                    new GraphDescriptor(colorUsr, "User"));
+            graph.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+            Dimension d = new Dimension(66, 32);
+            graph.setPreferredSize(d);
+            graph.setMaximumSize(d);
+            graph.setMinimumSize(d);
+
+            lblSysLabel = new JLabel(NbBundle.getMessage(getClass(), "label.sys"));
+            lblSysValue = new JLabel();
+            lblSysLabel.setForeground(colorSys);
+            lblSysValue.setForeground(colorSys);
+
+            lblUsrLabel = new JLabel(NbBundle.getMessage(getClass(), "label.usr"));
+            lblUsrValue = new JLabel();
+            lblUsrLabel.setForeground(colorUsr);
+            lblUsrValue.setForeground(colorUsr);
+
+            panel = new JPanel();
+            panel.setLayout(new GridBagLayout());
+
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = c.gridy = 0;
+            c.gridheight = 2;
+            panel.add(graph, c);
+
+            c = new GridBagConstraints();
+            c.insets = new Insets(0, 6, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            c.gridy = 0;
+
+            c.gridx = 1;
+            panel.add(lblSysLabel, c);
+            c.gridx = 2;
+            panel.add(lblSysValue, c);
+
+            c = new GridBagConstraints();
+            c.insets = new Insets(0, 6, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            c.gridy = 1;
+
+            c.gridx = 1;
+            panel.add(lblUsrLabel, c);
+            c.gridx = 2;
+            panel.add(lblUsrValue, c);
+
+            MouseListener ml = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() > 1) {
+                        fireActionPerformed();
+                    }
+                }
+            };
+            graph.addMouseListener(ml);
+        }
         return panel;
     }
 
@@ -106,13 +151,19 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
         //graph.reset();
     }
 
-    public void updated( List<DataRow> data) {
+    @Override
+    public void updated(List<DataRow> data) {
         for (DataRow row : data) {
             if (DLightLogger.instance.isLoggable(Level.FINE)) { DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1)); }
             Float usr = (Float) row.getData().get(0);
             Float sys = (Float) row.getData().get(1);
             graph.addData(sys.shortValue(), usr.shortValue());
         }
+        DataRow row = data.get(data.size()-1);
+        Float usr = (Float) row.getData().get(0);
+        Float sys = (Float) row.getData().get(1);
+        lblSysValue.setText(formatValue(sys.intValue()));
+        lblUsrValue.setText(formatValue(usr.intValue()));
     }
 
     private void fireActionPerformed() {
@@ -120,7 +171,6 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
         for (ActionListener al : getActionListeners()) {
             al.actionPerformed(ae);
         }
-        notifyListeners();
     }
 
     Collection<ActionListener> getActionListeners() {
@@ -137,12 +187,16 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
             listeners.add(listener);
         }
     }
-    
+
     void removeActionListener(ActionListener listener) {
         synchronized (this) {
             if (listeners != null) {
                 listeners.remove(listener);
             }
         }
+    }
+
+    private String formatValue(int value) {
+        return String.format("%02d%%", value);
     }
 }

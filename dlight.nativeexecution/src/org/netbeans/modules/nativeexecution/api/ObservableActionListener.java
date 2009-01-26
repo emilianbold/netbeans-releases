@@ -44,15 +44,12 @@ import javax.swing.Action;
 /**
  * The listener interface for receiving ObservableAction's start/completion
  * events. The class that is interested in processing an action event implements
- * this interface, and the object created with that class is registered with a
- * component, using the component's addActionListener method
- * <tt>addObservableActionListener</tt>. When the action starts, that object's
- * <tt>actionStarted</tt> method is invoked. On action completion
- * <tt>actionCompleted</tt> is invoked.
+ * this interface, and the object created with that class is registered with an
+ * <tt>ObservableAction</tt>, using it's <tt>addObservableActionListener</tt>
+ * method. When the action starts, that object's <tt>actionStarted</tt> method
+ * is invoked. On action completion <tt>actionCompleted</tt> is invoked.
  * 
  * @param <T> type of action's result.
- *
- * @author ak119685
  */
 
 public interface ObservableActionListener<T> {

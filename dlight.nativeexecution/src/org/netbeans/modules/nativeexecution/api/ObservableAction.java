@@ -43,18 +43,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
-import org.openide.util.Exceptions;
 
 /**
  * Extension of the <tt>AbstractAction</tt> implementation that allows to attach
- * listeners to get notifications on task start / finish events.
+ * listeners to get notifications on task start / finish events. 
  * 
- * @author ak119685
  * @param <T> result type of the action
  */
 public abstract class ObservableAction<T> extends AbstractAction implements Callable<T> {
@@ -109,6 +106,10 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
      */
     abstract protected T performAction(ActionEvent e);
 
+    /**
+     * Invoked when an action occurs.
+     */
+    @Override
     public final void actionPerformed(final ActionEvent e) {
         // Will not start the task if it is already started.
         if (task != null) {
@@ -120,6 +121,12 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
         task = executorService.submit(this);
     }
 
+    /**
+     * Performs an action, or throws an exception if unable to do so.
+     *
+     * @return result of performed action
+     * @throws Exception if unable to compute a result
+     */
     public T call() throws Exception {
         fireStarted();
         result = performAction(event);
@@ -144,32 +151,12 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
             l.actionCompleted(this, result);
         }
     }
-
+    
     /**
-     * Invokes action and waits for it's completion.
-     *
-     * @return result of action execution.
-     */
-    public T invokeAndWait() {
-        actionPerformed(null);
-        if (task != null) {
-            // i.e. it is still running - wait for it's completion
-            try {
-                task.get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return result;
-    }
-
-    /**
+     * Returns result of most recent finished invokation.
      * It is allowed to start action multiply times (though request to start
-     * action will be disregarded in case action is in progress). The object
-     * stores a value of result from the last finished invokation.
+     * action will be disregarded in case action execution is in progress). The
+     * object stores a value of the result from the last finished invokation.
      *
      * @return result of most recent finished invokation.
      */

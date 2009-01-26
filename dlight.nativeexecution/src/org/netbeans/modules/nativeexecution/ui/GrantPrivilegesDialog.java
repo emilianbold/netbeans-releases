@@ -51,10 +51,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author ak119685
- */
 public class GrantPrivilegesDialog extends javax.swing.JPanel {
 
     /** Creates new form GrantPrivilegesDialog */

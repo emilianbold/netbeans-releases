@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -71,7 +71,6 @@ public class NativeTaskTest {
     @After
     public void tearDown() {
     }
-
     static int count = 0;
 
     /**
@@ -157,15 +156,24 @@ public class NativeTaskTest {
 //        instance.run();
         // TODO review the generated test code and remove the default call to fail.
 
-        
-        int tcount = 10;
+
+        int tcount = 1;
         Thread[] threads = new Thread[tcount];
         for (int i = 0; i < tcount; i++) {
             threads[i] = new Thread(new Runnable() {
+
                 public void run() {
-        final NativeTask task = new NativeTask("/bin/ls");
+                    final NativeTask task = new NativeTask("/bin/ls");
                     task.submit();
                     System.out.println("PID is " + task.getPID());
+
+                    try {
+                        System.out.println("Result: " + task.get());
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             });
         }
@@ -185,5 +193,4 @@ public class NativeTaskTest {
 
 //        fail("The test case is a prototype.");
     }
-
 }

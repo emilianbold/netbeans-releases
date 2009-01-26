@@ -64,6 +64,7 @@ import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.model.ValidationListener;
 import org.netbeans.modules.dlight.collector.spi.DataCollector;
 import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.storage.spi.DataStorage;
 import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
@@ -73,7 +74,6 @@ import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.CopyTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
@@ -85,19 +85,23 @@ import org.netbeans.modules.nativeexecution.util.TaskPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-
-
 /**
  * Collector which collects data using DTrace sctiprs.
  * You should describe data collected using list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}.
  * You can define your own implementation of  {@link org.netbeans.modules.dlight.dtrace.collector.DtraceParser}
  */
-public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfiguration> implements DataCollector<DTDCConfiguration> {
+public final class DtraceDataCollector
+        extends IndicatorDataProvider<DTDCConfiguration>
+        implements DataCollector<DTDCConfiguration> {
 
     private static final List<String> ultimateDTracePrivilegesList =
-            Arrays.asList(new String[]{DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER});
+            Arrays.asList(new String[]{
+                DTDCConfiguration.DTRACE_KERNEL,
+                DTDCConfiguration.DTRACE_PROC,
+                DTDCConfiguration.DTRACE_USER});
     private static final String cmd_dtrace = "/usr/sbin/dtrace"; // NOI18N
-    private static final Logger log = DLightLogger.getLogger(DtraceDataCollector.class);
+    private static final Logger log =
+            DLightLogger.getLogger(DtraceDataCollector.class);
     private List<String> requiredPrivilegesList;
     private DataTableMetadata tableMetaData = null;
     private String localScriptPath;
@@ -106,7 +110,8 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private NativeTask collectorTask;
     private DTDCConfiguration configuration;
     private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
-    private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private List<ValidationListener> validationListeners =
+            Collections.synchronizedList(new ArrayList<ValidationListener>());
     private String command;
     private String argsTemplate;
     private Thread outProcessingThread;
@@ -115,30 +120,39 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private DtraceParser parser;
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private boolean isSlave;
-    private String prefix;
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
 
-    
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
-        this.dataTablesMetadata = DTDCConfigurationAccessor.getDefault().getDatatableMetadata(configuration);
-        this.tableMetaData = dataTablesMetadata != null && dataTablesMetadata.size() > 0 ? dataTablesMetadata.get(0) : null;
-        if (DTDCConfigurationAccessor.getDefault().isStackSupportEnabled(configuration)) {
+        DTDCConfigurationAccessor ca =
+                DTDCConfigurationAccessor.getDefault();
+
+        this.dataTablesMetadata = ca.getDatatableMetadata(configuration);
+        this.tableMetaData =
+                dataTablesMetadata != null && dataTablesMetadata.size() > 0
+                ? dataTablesMetadata.get(0) : null;
+
+        if (ca.isStackSupportEnabled(configuration)) {
             this.parser = new DtraceDataAndStackParser(tableMetaData);
         } else {
-            this.parser = DTDCConfigurationAccessor.getDefault().getParser(configuration) == null ? (tableMetaData != null ? new DtraceParser(tableMetaData) : (DtraceParser) null) : DTDCConfigurationAccessor.getDefault().getParser(configuration);
+            this.parser = ca.getParser(configuration) == null
+                    ? (tableMetaData != null ? new DtraceParser(tableMetaData)
+                    : (DtraceParser) null) : ca.getParser(configuration);
         }
-        // super(cmd_dtrace, null,
-//            configuration.getParser() == null ? (configuration.getDatatableMetadata() != null && configuration.getDatatableMetadata().size() > 0 ? new DtraceParser(configuration.getDatatableMetadata().get(0)) : (DtraceParser) null) : configuration.getParser(), configuration.getDatatableMetadata());
-        this.localScriptPath = DTDCConfigurationAccessor.getDefault().getScriptPath(configuration);
-        this.extraArgs = DTDCConfigurationAccessor.getDefault().getArgs(configuration);
+//      super(cmd_dtrace, null,
+//      configuration.getParser() == null ? (configuration.getDatatableMetadata() != null && configuration.getDatatableMetadata().size() > 0 ? new DtraceParser(configuration.getDatatableMetadata().get(0)) : (DtraceParser) null) : configuration.getParser(), configuration.getDatatableMetadata());
+        this.localScriptPath = ca.getScriptPath(configuration);
+        this.extraArgs = ca.getArgs(configuration);
 
         this.requiredPrivilegesList =
-                DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration) == null ? ultimateDTracePrivilegesList : DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration);
+                ca.getRequiredPrivileges(configuration) == null
+                ? ultimateDTracePrivilegesList
+                : ca.getRequiredPrivileges(configuration);
+
         this.configuration = configuration;
-        this.indicatorFiringFactor = DTDCConfigurationAccessor.getDefault().getIndicatorFiringFactor(configuration);
+        this.indicatorFiringFactor = ca.getIndicatorFiringFactor(configuration);
     }
 
     void setProcessLineCallback(ProcessLineCallback callback) {
@@ -171,14 +185,16 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
      * data collector can put data into
      */
     public List<DataStorageType> getSupportedDataStorageTypes() {
-        return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
+        return Arrays.asList(
+                dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
     public boolean isAttachable() {
         return true;
     }
 
-//    @Override
+    @Override
     public void init(DataStorage storage, DLightTarget target) {
         this.storage = storage;
         if (isSlave) {
@@ -187,14 +203,16 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         ExecutionEnvironment execEnv = target.getExecEnv();
 
         if (execEnv.isLocal()) {
-            // No need to copy file on localhost - just esnure execution permissions...
+            // No need to copy file on localhost -
+            // just esnure execution permissions...
             scriptPath = localScriptPath;
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
             scriptPath = "/tmp/" + script.getName(); // NOI18N
             try {
-                CopyTask.copyLocalFile(execEnv, localScriptPath, scriptPath, 777, false);
+                CopyTask.copyLocalFile(
+                        execEnv, localScriptPath, scriptPath, 777, false);
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -216,35 +234,39 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return dataTablesMetadata;
     }
 
-  
     NativeTask getCollectorTaskFor(DLightTarget target) {
         String taskCommand = scriptPath;//"pfexec " + scriptPath;
         if (target instanceof AttachableTarget) {
             AttachableTarget at = (AttachableTarget) target;
-            taskCommand = scriptPath.concat(" ").concat(String.valueOf(at.getPID())); // NOI18N
+            taskCommand = scriptPath.concat(" ").concat( // NOI18N
+                    String.valueOf(at.getPID()));
         }
 
         String extraParams = getCollectorTaskExtraParams();
         if (extraParams != null) {
-            taskCommand = taskCommand.concat(" " + extraParams);//NOI18N
+            taskCommand = taskCommand.concat(" " + extraParams); // NOI18N
         }
 
         collectorTask.setCommand(taskCommand);
         return collectorTask;
     }
 
-    /** override this if you need to add extra parameters to the DTrace script */
+    /**
+     * override this if you need to add extra parameters to the DTrace script
+     */
     protected String getCollectorTaskExtraParams() {
         return extraArgs;
     }
 
-//    @Override
+    @Override
     public void targetFinished(DLightTarget target, int result) {
         if (!isSlave) {
-            log.fine("Stopping DtraceDataCollector: " + collectorTask.getCommand());
+            log.fine("Stopping DtraceDataCollector: " + // NOI18N
+                    collectorTask.toString());
             collectorTask.cancel();
             outProcessingThread.interrupt();
         }
+
         synchronized (indicatorDataBuffer) {
             if (!indicatorDataBuffer.isEmpty()) {
                 notifyIndicators(indicatorDataBuffer);
@@ -253,11 +275,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         }
     }
 
-    private static String loc(String key) {
-        return NbBundle.getMessage(DtraceDataCollector.class, key);
-    }
-
-    private static String loc(String key, String param) {
+    private static String loc(String key, String... param) {
         return NbBundle.getMessage(DtraceDataCollector.class, key, param);
     }
 
@@ -280,24 +298,28 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             } else {
                 result = new ValidationStatus(
                         ValidationState.NOT_VALID,
-                        loc("ValidationStatus.CommandNotFound", command)); // NOI18N
+                        loc("ValidationStatus.CommandNotFound", // NOI18N
+                        command));
             }
         } else {
-            ConnectionManager cm = ConnectionManager.getInstance();
-            ObservableActionListener<Boolean> listener = new ObservableActionListener<Boolean>() {
+            ObservableActionListener<Boolean> listener =
+                    new ObservableActionListener<Boolean>() {
 
-                public void actionCompleted(Action source, Boolean result) {
-                    if (DLightManager.getDefault().getActiveSession() != null) {
-                        DLightManager.getDefault().getActiveSession().revalidate();
-                    }
-                }
+                        public void actionCompleted(
+                                Action source, Boolean result) {
+                            DLightManager dm = DLightManager.getDefault();
+                            DLightSession session = dm.getActiveSession();
+                            if (session != null) {
+                                session.revalidate();
+                            }
+                        }
 
-                public void actionStarted(Action source) {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+                        public void actionStarted(Action source) {
+                        }
+                    };
 
-            ObservableAction<Boolean> connectAction = cm.getConnectAction(target.getExecEnv());
+            ObservableAction<Boolean> connectAction =
+                    target.getExecEnv().getConnectToAction();
             connectAction.addObservableActionListener(listener);
 
             result = new ValidationStatus(ValidationState.UNKNOWN,
@@ -313,19 +335,24 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 
             // /usr/sbin/dtrace exists...
             // check for permissions ...
-            boolean status = TaskPrivilegesSupport.getInstance().hasPrivileges(execEnv, requiredPrivilegesList);
-            ObservableAction<Boolean> requestPrivilegesAction = TaskPrivilegesSupport.getRequestPrivilegesAction(
+            boolean status = TaskPrivilegesSupport.getInstance().hasPrivileges(
                     execEnv, requiredPrivilegesList);
 
-            requestPrivilegesAction.addObservableActionListener(new ObservableActionListener<Boolean>() {
+            ObservableAction<Boolean> requestPrivilegesAction =
+                    TaskPrivilegesSupport.getRequestPrivilegesAction(
+                    execEnv, requiredPrivilegesList);
 
-                public void actionCompleted(Action source, Boolean result) {
-                    DLightManager.getDefault().revalidateSessions();
-                }
+            requestPrivilegesAction.addObservableActionListener(
+                    new ObservableActionListener<Boolean>() {
 
-                public void actionStarted(Action source) {
-                }
-            });
+                        public void actionCompleted(
+                                Action source, Boolean result) {
+                            DLightManager.getDefault().revalidateSessions();
+                        }
+
+                        public void actionStarted(Action source) {
+                        }
+                    });
 
             if (!status) {
                 result = result.merge(
@@ -339,7 +366,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     }
 
     public Future<ValidationStatus> validate(final DLightTarget target) {
-        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+        Callable<ValidationStatus> test = new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
                 if (validationStatus.isOK()) {
@@ -357,7 +384,9 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 validationStatus = newStatus;
                 return newStatus;
             }
-        });
+        };
+
+        return DLightExecutorService.service.submit(test);
     }
 
 //    @Override
@@ -391,7 +420,9 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                         return;
                     }
 
-                    BufferedReader reader = new BufferedReader(Channels.newReader(Channels.newChannel(is), "UTF-8")); // NOI18N
+                    BufferedReader reader = new BufferedReader(
+                            Channels.newReader(
+                            Channels.newChannel(is), "UTF-8")); // NOI18N
 
                     while ((line = reader.readLine()) != null) {
                         callback.processLine(line);
@@ -400,17 +431,17 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                     Thread.sleep(10);
 
                 } catch (InterruptedException ex) {
-                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it."); // NOI18N
                 } catch (InterruptedIOException ex) {
-                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it."); // NOI18N
                 } catch (ClosedByInterruptException ex) {
-                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it."); // NOI18N
                 } catch (IOException ex) {
-                    log.fine(Thread.currentThread().getName() + " io. Stop it.");
+                    log.fine(Thread.currentThread().getName() + " io. Stop it."); // NOI18N
                 //Logger.getLogger(CLIODataCollector.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        }, "CLI Data Collector Output Redirector");
+        }, "CLI Data Collector Output Redirector"); // NOI18N
 
         collectorTask.submit();
         outProcessingThread.start();
@@ -432,15 +463,14 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         }
     }
 
-    
-
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 
         public void processLine(String line) {
             DataRow dataRow = parser.process(line);
             if (dataRow != null) {
                 if (storage != null && tableMetaData != null) {
-                    storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
+                    storage.addData(tableMetaData.getName(),
+                            Arrays.asList(dataRow));
                 }
                 synchronized (indicatorDataBuffer) {
                     if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
@@ -451,9 +481,5 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 }
             }
         }
-    }
-
-    private static String loc(String key, Object... params) {
-        return NbBundle.getMessage(DtraceDataCollector.class, key, params);
     }
 }

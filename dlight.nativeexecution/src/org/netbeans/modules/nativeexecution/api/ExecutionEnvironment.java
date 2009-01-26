@@ -38,11 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
- * Configuration of environment for NativeTasks execution.
+ * Configuration of environment for <tt>NativeTask</tt> execution.
  */
 final public class ExecutionEnvironment {
     
@@ -199,20 +200,51 @@ final public class ExecutionEnvironment {
         return hash;
     }
 
+    /**
+     * Tests whether the OS, that is ran in this execution environment, is Unix
+     * or not.
+     * @return true if and only if host, identified by this environment runs
+     * Linux or Solaris OS.
+     *
+     * @throws org.netbeans.modules.nativeexecution.util.HostNotConnectedException
+     */
     public final boolean isUnix() throws HostNotConnectedException {
         return HostInfo.isUnix(this);
 }
 
+    /**
+     * Returns true if and only if this environmrnt reffers to a localhost.
+     *
+     * @return true if and only if this environmrnt reffers to a localhost.
+     */
     public final boolean isLocalhost() {
         return HostInfo.isLocalhost(host);
     }
 
+    /**
+     * Returns OS name that is run on the host, reffered by this execution
+     * environment.
+     * @return String that represents OS name
+     * @throws org.netbeans.modules.nativeexecution.util.HostNotConnectedException
+     * @see HostInfo
+     */
     public String getOS() throws HostNotConnectedException {
         return HostInfo.getOS(this);
     }
 
+    /**
+     * Returns a platform path (i.e. intel-S2, sparc-S2, intel-Linux).
+     * This is to be used in paths construction to system-dependent executables
+     *
+     * @return string, that represents a platform path <br>
+     *         <tt>UNKNOWN</tt> if platform is unknown.
+     */
     public String getPlatformPath() {
         return HostInfo.getPlatformPath(this);
+    }
+
+    public ObservableAction<Boolean> getConnectToAction() {
+        return ConnectionManager.getInstance().getConnectAction(this);
     }
 
 }

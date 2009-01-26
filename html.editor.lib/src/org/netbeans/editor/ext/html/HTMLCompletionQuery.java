@@ -529,14 +529,14 @@ public class HTMLCompletionQuery  {
         
         private static final int HTML_ITEMS_SORT_PRIORITY = 20;
         
-        public HTMLResultItem( String baseText, int offset, int length ) {
+        HTMLResultItem( String baseText, int offset, int length ) {
             this.baseText = lowerCase ? baseText.toLowerCase(Locale.ENGLISH) : baseText.toUpperCase();
             this.offset = offset;
             this.length = length;
             this. helpID = null;
         }
         
-        public HTMLResultItem( String baseText, int offset, int length, String helpID ) {
+        HTMLResultItem( String baseText, int offset, int length, String helpID ) {
             this(baseText, offset, length);
             this.helpID = helpID;
         }

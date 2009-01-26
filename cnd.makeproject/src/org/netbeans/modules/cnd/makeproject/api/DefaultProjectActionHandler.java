@@ -408,7 +408,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                             String args2;
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
-                                StringBuffer b = new StringBuffer();
+                                StringBuilder b = new StringBuilder();
                                 for (int i = 0; i < args.length(); i++) {
                                     if (args.charAt(i) == '"') {
                                         b.append("\\\""); // NOI18N

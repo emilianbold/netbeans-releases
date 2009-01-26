@@ -57,7 +57,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
-import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizer.spi.VisualizerContainer;

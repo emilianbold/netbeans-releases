@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.model;
 
-import java.util.Comparator;
+import org.netbeans.modules.dlight.storage.api.Time;
 
 /**
  * 
@@ -49,8 +49,8 @@ public final class FunctionMetric {
   private final String metricID;
   private final String metricDisplayedName;
   private final Class metricValueClass;
-  public static final FunctionMetric CpuTimeInclusiveMetric = FunctionMetricsFactory.getInstance().create(new FunctionMetric.FunctionMetricConfiguration("time_incl", "CPU Time (Inclusive)", Double.class));
-  public static final FunctionMetric CpuTimeExclusiveMetric = FunctionMetricsFactory.getInstance().create(new FunctionMetric.FunctionMetricConfiguration("time_excl", "CPU Time (Exclusive)", Double.class));
+  public static final FunctionMetric CpuTimeInclusiveMetric = FunctionMetricsFactory.getInstance().create(new FunctionMetric.FunctionMetricConfiguration("time_incl", "CPU Time (Inclusive)", Time.class));
+  public static final FunctionMetric CpuTimeExclusiveMetric = FunctionMetricsFactory.getInstance().create(new FunctionMetric.FunctionMetricConfiguration("time_excl", "CPU Time (Exclusive)", Time.class));
 
   FunctionMetric(FunctionMetricConfiguration metricConfiguration) {
     this.metricID = metricConfiguration.getMetricID();
