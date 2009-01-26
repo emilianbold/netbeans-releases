@@ -90,7 +90,7 @@ public final class GroovyElementHandler {
 
         // FIXME parsing API
         GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null));
+                        Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
             return Collections.emptyMap();
@@ -153,7 +153,7 @@ public final class GroovyElementHandler {
 
         // FIXME parsing API
         GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null));
+                        Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
             return Collections.emptyMap();

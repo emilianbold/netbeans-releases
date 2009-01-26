@@ -101,8 +101,12 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
         return Collections.<String, String>emptyMap();
     }
 
-    public Set<String> getBinaryPathIds() {
-        return Collections.<String>emptySet();
+    public Set<String> getBinaryLibraryPathIds() {
+        return null;
+    }
+
+    public Set<String> getLibraryPathIds() {
+        return null;
     }
 
     public Set<String> getSourcePathIds() {

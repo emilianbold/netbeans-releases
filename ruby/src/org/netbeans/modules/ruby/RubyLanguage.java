@@ -40,11 +40,9 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
@@ -81,8 +79,6 @@ public class RubyLanguage extends DefaultLanguageConfig {
     public final static String EXECUTE = "ruby/classpath/execute";
     public final static String SOURCE = "ruby/classpath/source";
 
-    public final static Set<String> BOOT_AND_SOURCE = new HashSet<String>(Arrays.asList(BOOT, SOURCE));
-    
     public RubyLanguage() {
     }
 
@@ -199,7 +195,12 @@ public class RubyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getSourcePathIds() {
-        return BOOT_AND_SOURCE;
+        return Collections.singleton(SOURCE);
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(BOOT);
     }
 
 }

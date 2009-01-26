@@ -391,7 +391,9 @@ public class RetoucheUtils {
 //
     public static Set<FileObject> getRubyFilesInProject(FileObject fileInProject) {
         Set<FileObject> files = new HashSet<FileObject>(100);
-        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject, null, Collections.<String>emptySet());
+        // XXX: user ruby specific classpath IDs
+        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject, 
+                null, Collections.<String>emptySet(), Collections.<String>emptySet());
         for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming

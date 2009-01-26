@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -118,7 +117,7 @@ public class RubyTypeSearcher implements IndexSearcher {
         return kind;
     }
 
-    public Set<? extends Descriptor> getTypes(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -133,7 +132,10 @@ public class RubyTypeSearcher implements IndexSearcher {
             textForQuery = textForQuery.substring(0, textForQuery.length()-1);
         }
         
-        RubyIndex index = RubyIndex.get(roots);
+        RubyIndex index = RubyIndex.get(GsfUtilities.getRoots(project, 
+                Collections.singleton(RubyLanguage.SOURCE),
+                Collections.singleton(RubyLanguage.BOOT),
+                Collections.<String>emptySet()));
         if (index == null) {
             return Collections.emptySet();
         }
@@ -216,12 +218,15 @@ public class RubyTypeSearcher implements IndexSearcher {
     }
 
 
-    public Set<? extends Descriptor> getSymbols(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         if (textForQuery.indexOf("::") != -1 || textForQuery.indexOf("#") != -1) {
-            return getTypes(roots, textForQuery, kind, helper);
+            return getTypes(project, textForQuery, kind, helper);
         }
 
-        RubyIndex index = RubyIndex.get(roots);
+        RubyIndex index = RubyIndex.get(GsfUtilities.getRoots(project, 
+                Collections.singleton(RubyLanguage.SOURCE),
+                Collections.singleton(RubyLanguage.BOOT),
+                Collections.<String>emptySet()));
         if (index == null) {
             return Collections.emptySet();
         }

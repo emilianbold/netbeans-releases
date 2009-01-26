@@ -42,7 +42,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -82,15 +83,15 @@ public class GroovyTypeSearcher implements IndexSearcher {
 
     private static final Logger LOGGER = Logger.getLogger(GroovyTypeSearcher.class.getName());
 
-    public Set<? extends Descriptor> getSymbols(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // TODO - search for methods too!!
 
         // For now, just at a minimum do the types
-        return getTypes(roots, textForQuery, kind, helper);
+        return getTypes(project, textForQuery, kind, helper);
     }
 
-    public Set<? extends Descriptor> getTypes(Collection<FileObject> roots, String textForQuery, Kind kind, Helper helper) {
-        GroovyIndex index = GroovyIndex.get(roots);
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(project, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         

@@ -150,12 +150,26 @@ public interface GsfLanguage {
     Set<String> getSourcePathIds();
 
     /**
-     * Gets IDs uniquely identifying binary classpaths used by this language. This
+     * Gets IDs uniquely identifying classpaths with libraries used by this language. This
      * method is similar as {@link #getSourcePathIds()} except that it returns
-     * ids of classpath with binaries (eg. libraries, runtimes, etc).
+     * ids of classpath with libraries that contain source files (not binary libraries).
      *
-     * @return The set of binary classpath IDs, can be empty or even <code>null</code>.
+     * @return The set of library classpath IDs, can be empty or even <code>null</code>.
      *   Please see {@link #getSourcePathIds()} for the exact meaning of those values.
      */
-    Set<String> getBinaryPathIds();
+    Set<String> getLibraryPathIds();
+
+    /**
+     * Gets IDs uniquely identifying classpaths with binary libraries used by this language. This
+     * method is similar as {@link #getLibraryPathIds()} except that it returns
+     * ids of classpath with binary libraries, runtimes, etc.
+     *
+     * <p>When the infrastructure works with binary library classpath it uses
+     * <code>SourceForBinaryQuery</code> in order to find sources relevant for the
+     * libraries on the classpath.
+     *
+     * @return The set of binary library classpath IDs, can be empty or even <code>null</code>.
+     *   Please see {@link #getLibraryPathIds()} for the exact meaning of those values.
+     */
+    Set<String> getBinaryLibraryPathIds();
 }

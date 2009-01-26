@@ -39,12 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +48,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.navigation.Icons;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -84,10 +78,10 @@ public class TypeAndSymbolProvider {
     }
 
     public void cleanup() {
-        synchronized (this) {
-            cachedRoots = null;
-            cachedRootsProjectRef = null;
-        }
+//        synchronized (this) {
+//            cachedRoots = null;
+//            cachedRootsProjectRef = null;
+//        }
     }
 
     public static final class TypeProviderImpl extends TypeAndSymbolProvider implements TypeProvider {
@@ -150,8 +144,8 @@ public class TypeAndSymbolProvider {
     private final boolean typeProvider;
 
     private boolean cancelled;
-    private Map<Language, Collection<FileObject>> cachedRoots = null;
-    private Reference<Project> cachedRootsProjectRef = null;
+//    private Map<Language, Collection<FileObject>> cachedRoots = null;
+//    private Reference<Project> cachedRootsProjectRef = null;
 
     private TypeAndSymbolProvider(boolean typeProvider) {
         this.typeProvider = typeProvider;
@@ -182,19 +176,19 @@ public class TypeAndSymbolProvider {
             }
 
             Set<? extends IndexSearcher.Descriptor> languageResults;
-            Collection<FileObject> searchRoots = getRoots(project, language);
-            if (LOG.isLoggable(Level.FINE)) {
-                if (typeProvider) {
-                    LOG.fine("Querying " + searcher + " for types in " + searchRoots); //NOI18N
-                } else {
-                    LOG.fine("Querying " + searcher + " for symbols in " + searchRoots); //NOI18N
-                }
-            }
+//            Collection<FileObject> searchRoots = getRoots(project, language);
+//            if (LOG.isLoggable(Level.FINE)) {
+//                if (typeProvider) {
+//                    LOG.fine("Querying " + searcher + " for types in " + searchRoots); //NOI18N
+//                } else {
+//                    LOG.fine("Querying " + searcher + " for symbols in " + searchRoots); //NOI18N
+//                }
+//            }
 
             if (typeProvider) {
-                languageResults = searcher.getTypes(searchRoots, text, t2t(searchType), HELPER);
+                languageResults = searcher.getTypes(project, text, t2t(searchType), HELPER);
             } else {
-                languageResults = searcher.getSymbols(searchRoots, text, t2t(searchType), HELPER);
+                languageResults = searcher.getSymbols(project, text, t2t(searchType), HELPER);
             }
 
             if (LOG.isLoggable(Level.FINE)) {
@@ -221,38 +215,38 @@ public class TypeAndSymbolProvider {
         }
     }
 
-    private Collection<FileObject> getRoots(Project project, Language language) {
-        synchronized (this) {
-            if (cachedRoots != null) {
-                Project cachedRootsProject = cachedRootsProjectRef != null ? cachedRootsProjectRef.get() : null;
-                if (cachedRootsProject == project) {
-                    Collection<FileObject> roots = cachedRoots.get(language);
-                    if (roots != null) {
-                        return roots;
-                    }
-                } else {
-                    cachedRoots = null;
-                    cachedRootsProjectRef = null;
-                }
-            }
-        }
-
-        Collection<FileObject> roots = GsfUtilities.getRoots(project, language.getSourcePathIds(), language.getBinaryPathIds());
-        
-        synchronized (this) {
-            if (cancelled) {
-                return null;
-            }
-
-            if (cachedRoots == null) {
-                cachedRoots = new HashMap<Language, Collection<FileObject>>();
-                cachedRootsProjectRef = project == null ? null : new WeakReference<Project>(project);
-            }
-
-            cachedRoots.put(language, roots);
-            return roots;
-        }
-    }
+//    private Collection<FileObject> getRoots(Project project, Language language) {
+//        synchronized (this) {
+//            if (cachedRoots != null) {
+//                Project cachedRootsProject = cachedRootsProjectRef != null ? cachedRootsProjectRef.get() : null;
+//                if (cachedRootsProject == project) {
+//                    Collection<FileObject> roots = cachedRoots.get(language);
+//                    if (roots != null) {
+//                        return roots;
+//                    }
+//                } else {
+//                    cachedRoots = null;
+//                    cachedRootsProjectRef = null;
+//                }
+//            }
+//        }
+//
+//        Collection<FileObject> roots = GsfUtilities.getRoots(project, language.getSourcePathIds(), language.getBinaryPathIds());
+//
+//        synchronized (this) {
+//            if (cancelled) {
+//                return null;
+//            }
+//
+//            if (cachedRoots == null) {
+//                cachedRoots = new HashMap<Language, Collection<FileObject>>();
+//                cachedRootsProjectRef = project == null ? null : new WeakReference<Project>(project);
+//            }
+//
+//            cachedRoots.put(language, roots);
+//            return roots;
+//        }
+//    }
 
     private static QuerySupport.Kind t2t(SearchType searchType) {
         switch(searchType) {

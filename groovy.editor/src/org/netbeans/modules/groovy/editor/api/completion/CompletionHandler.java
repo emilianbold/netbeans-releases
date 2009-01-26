@@ -1873,7 +1873,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
                 index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null));
+                        Collections.singleton(ClassPath.SOURCE), null, null));
             }
 
             if (index != null) {

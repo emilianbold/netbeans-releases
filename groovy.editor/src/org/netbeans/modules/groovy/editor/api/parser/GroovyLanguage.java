@@ -188,14 +188,6 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Set<String> getBinaryPathIds() {
-        // We don't really have libraries in binary form. IDE bundled javascript
-        // libraries are simply extracted to a project among its original sources
-        // in a special folder.
-        return Collections.<String>emptySet();
-    }
-
-    @Override
     public Set<String> getSourcePathIds() {
         // We don't have our own source path id, because javascript files can be
         // anywhere in a project. So, for index search we will use all available
