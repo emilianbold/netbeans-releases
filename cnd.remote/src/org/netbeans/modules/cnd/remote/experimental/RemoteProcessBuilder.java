@@ -66,7 +66,7 @@ public class RemoteProcessBuilder implements Callable<Process> {
         private ExtProcessRemoteCommandSupport support;
 
         public RemoteProcess() {
-            support = new ExtProcessRemoteCommandSupport("tester@eaglet-sr", "ls", null);
+            support = new ExtProcessRemoteCommandSupport("tester@eaglet-sr", "ls", null); // NOI18N
             try {
                 is = support.getInputStream();
             } catch (IOException ex) {
