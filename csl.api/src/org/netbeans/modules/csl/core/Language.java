@@ -121,7 +121,8 @@ public final class Language {
     private FileObject indexSearcherFile;
 
     private Set<String> sourcePathIds;
-    private Set<String> binaryPathIds;
+    private Set<String> libraryPathIds;
+    private Set<String> binaryLibraryPathIds;
 
     /** Creates a new instance of DefaultLanguage */
     public Language(String mime) {
@@ -717,13 +718,23 @@ public final class Language {
         return sourcePathIds;
     }
 
-    public Set<String> getBinaryPathIds() {
-        if (binaryPathIds == null) {
+    public Set<String> getLibraryPathIds() {
+        if (libraryPathIds == null) {
             getGsfLanguage();
             if (languageConfig != null) {
-                binaryPathIds = languageConfig.getBinaryPathIds();
+                libraryPathIds = languageConfig.getLibraryPathIds();
             }
         }
-        return binaryPathIds;
+        return libraryPathIds;
+    }
+
+    public Set<String> getBinaryLibraryPathIds() {
+        if (binaryLibraryPathIds == null) {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                binaryLibraryPathIds = languageConfig.getLibraryPathIds();
+            }
+        }
+        return binaryLibraryPathIds;
     }
 }

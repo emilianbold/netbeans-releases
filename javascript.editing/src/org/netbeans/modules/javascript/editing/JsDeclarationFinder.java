@@ -117,7 +117,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     @CheckForNull
     IndexedFunction findMethodDeclaration(ParserResult info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
         JsParseResult jspr = AstUtilities.getParseResult(info);
-        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet(), Collections.<String>emptySet()));
         Set<IndexedElement> functions = null;
 
         String fqn = JsTypeAnalyzer.getCallFqn(jspr, call, true);
@@ -267,7 +267,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
+                JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet(), Collections.<String>emptySet()));
                 Set<IndexedElement> elements = index.getAllNames(prefix, QuerySupport.Kind.EXACT, parseResult);
 
                 String name = null; // unused!
@@ -290,7 +290,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     @NonNull
     DeclarationLocation findLinkedMethod(JsParseResult info, String url) {
-        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet(), Collections.<String>emptySet()));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url, QuerySupport.Kind.EXACT, parseResult);
         IndexedElement function = findBestElementMatch(info, elements, null, null);

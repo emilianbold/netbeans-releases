@@ -623,27 +623,52 @@ public final class GsfUtilities {
     /**
      * Gets classpath roots relevant for a file. This method tries to find
      * classpath roots for a given files. It looks at classpaths specified by
-     * <code>sourcePathIds</code> and <code>binaryPathIds</code> parameters.
+     * <code>sourcePathIds</code>, <code>libraryPathIds</code> and
+     * <code>binaryLibraryPathIds</code> parameters.
+     *
+     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
+     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
+     * The roots collected from <code>libraryPathIds</code> are expected to be
+     * libraries in their sources form (ie. no translation).
      *
      * @param f The file to find roots for.
      * @param sourcePathIds The IDs of source classpath to look at.
-     * @param binaryPathIds The IDs of binary classpath to look at.
+     * @param libraryPathIds The IDs of library classpath to look at.
+     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
      * 
      * @return The collection of roots for a given file. It may be empty, but never <code>null</code>.
      */
-    public static Collection<FileObject> getRoots(FileObject f, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
+    public static Collection<FileObject> getRoots(
+            FileObject f,
+            Collection<String> sourcePathIds,
+            Collection<String> libraryPathIds,
+            Collection<String> binaryLibraryPathIds)
+    {
         Collection<FileObject> roots = new HashSet<FileObject>();
+        Set<String> [] knownPathIds = null;
 
         if (sourcePathIds == null) {
-            sourcePathIds = getKnownPathIds(true, false);
+            knownPathIds = getKnownPathIds();
+            sourcePathIds = knownPathIds[0];
         }
 
-        if (binaryPathIds == null) {
-            binaryPathIds = getKnownPathIds(false, true);
+        if (libraryPathIds == null) {
+            if (knownPathIds == null) {
+                knownPathIds = getKnownPathIds();
+            }
+            libraryPathIds = knownPathIds[1];
+        }
+
+        if (binaryLibraryPathIds == null) {
+            if (knownPathIds == null) {
+                knownPathIds = getKnownPathIds();
+            }
+            binaryLibraryPathIds = knownPathIds[2];
         }
 
         collectClasspathRoots(f, sourcePathIds, false, roots);
-        collectClasspathRoots(f, binaryPathIds, true, roots);
+        collectClasspathRoots(f, libraryPathIds, false, roots);
+        collectClasspathRoots(f, binaryLibraryPathIds, true, roots);
 
         Language l = LanguageRegistry.getInstance().getLanguageByMimeType(f.getMIMEType());
         if (l != null) {
@@ -657,7 +682,8 @@ public final class GsfUtilities {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Roots for file " + f //NOI18N
                     + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", binaryPathIds=" + binaryPathIds //NOI18N
+                    + ", libraryPathIds=" + libraryPathIds //NOI18N
+                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
                     + ": " + roots); //NOI18N
         }
 
@@ -666,29 +692,53 @@ public final class GsfUtilities {
 
     /**
      * Gets classpath roots relevant for a project. This method tries to find
-     * classpath with <code>sourcePathIds</code> and <code>binaryPathIds</code> supplied
-     * by the <code>project</code>.
+     * classpath with <code>sourcePathIds</code>, <code>libraryPathIds</code> and
+     * <code>binaryPathIds</code> supplied by the <code>project</code>.
+     *
+     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
+     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
+     * The roots collected from <code>libraryPathIds</code> are expected to be
+     * libraries in their sources form (ie. no translation).
      *
      * @param project The project to find the roots for. Can be <code>null</code> in
      *   which case the method searches in all registered classpaths.
      * @param sourcePathIds The IDs of source classpath to look at.
-     * @param binaryPathIds The IDs of binary classpath to look at.
+     * @param libraryPathIds The IDs of library classpath to look at.
+     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
      *
      * @return The collection of roots for a given project. It may be empty, but never <code>null</code>.
      */
-    public static Collection<FileObject> getRoots(Project project, Collection<String> sourcePathIds, Collection<String> binaryPathIds) {
+    public static Collection<FileObject> getRoots(
+            Project project,
+            Collection<String> sourcePathIds,
+            Collection<String> libraryPathIds,
+            Collection<String> binaryLibraryPathIds)
+    {
         Set<FileObject> roots = new HashSet<FileObject>();
+        Set<String> [] knownPathIds = null;
 
         if (sourcePathIds == null) {
-            sourcePathIds = getKnownPathIds(true, false);
+            knownPathIds = getKnownPathIds();
+            sourcePathIds = knownPathIds[0];
         }
 
-        if (binaryPathIds == null) {
-            binaryPathIds = getKnownPathIds(false, true);
+        if (libraryPathIds == null) {
+            if (knownPathIds == null) {
+                knownPathIds = getKnownPathIds();
+            }
+            libraryPathIds = knownPathIds[1];
+        }
+
+        if (binaryLibraryPathIds == null) {
+            if (knownPathIds == null) {
+                knownPathIds = getKnownPathIds();
+            }
+            binaryLibraryPathIds = knownPathIds[2];
         }
 
         collectClasspathRoots(null, sourcePathIds, false, roots);
-        collectClasspathRoots(null, binaryPathIds, true, roots);
+        collectClasspathRoots(null, libraryPathIds, false, roots);
+        collectClasspathRoots(null, binaryLibraryPathIds, true, roots);
 
         if (project != null) {
             Set<FileObject> rootsInProject = new HashSet<FileObject>();
@@ -703,7 +753,8 @@ public final class GsfUtilities {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Roots for project " + project //NOI18N
                     + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", binaryPathIds=" + binaryPathIds //NOI18N
+                    + ", libraryPathIds=" + libraryPathIds //NOI18N
+                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
                     + ": " + roots); //NOI18N
         }
 
@@ -725,7 +776,7 @@ public final class GsfUtilities {
                         continue;
                     }
 
-                    if (result.preferSources() && result.getRoots().length == 0) {
+                    if (result.preferSources() && result.getRoots().length > 0) {
                         roots.addAll(Arrays.asList(result.getRoots()));
                     } else {
                         roots.add(f);
@@ -756,23 +807,33 @@ public final class GsfUtilities {
         return roots;
     }
 
-    private static Set<String> getKnownPathIds(boolean source, boolean binary) {
-        Set<String> ids = new HashSet<String>();
+    private static Set<String> [] getKnownPathIds() {
+        Set<String> sids = new HashSet<String>();
+        Set<String> lids = new HashSet<String>();
+        Set<String> blids = new HashSet<String>();
 
         Collection<? extends PathRecognizer> recognizers = Lookup.getDefault().lookupAll(PathRecognizer.class);
         for(PathRecognizer r : recognizers) {
-            if (source) {
-                ids.addAll(r.getSourcePathIds());
+            Set<String> ids = r.getSourcePathIds();
+            if (ids != null) {
+                sids.addAll(ids);
             }
-            if (binary) {
-                ids.addAll(r.getBinaryPathIds());
+
+            ids = r.getLibraryPathIds();
+            if (ids != null) {
+                lids.addAll(ids);
+            }
+
+            ids = r.getBinaryLibraryPathIds();
+            if (ids != null) {
+                blids.addAll(ids);
             }
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Known Path Ids (source=" + source + ", binary=" + binary + "): " + ids); //NOI18N
+            LOG.fine("Known Path Ids: source=" + sids + ", library=" + lids + ", binary-library=" + blids); //NOI18N
         }
 
-        return ids;
+        return new Set [] { sids, lids, blids };
     }
 }

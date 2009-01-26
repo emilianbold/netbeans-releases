@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
@@ -115,8 +114,7 @@ public class JsTypeSearcher implements IndexSearcher {
         return kind;
     }
     
-    public Set<? extends Descriptor> getTypes(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
-        @NonNull QuerySupport.Kind kind, @NonNull Helper helper) {
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, QuerySupport.Kind kind, Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -131,7 +129,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        JsIndex index = JsIndex.get(roots);
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
@@ -224,8 +222,7 @@ public class JsTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    public Set<? extends Descriptor> getSymbols(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
-        @NonNull QuerySupport.Kind kind, @NonNull Helper helper) {
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, QuerySupport.Kind kind, Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -240,7 +237,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        JsIndex index = JsIndex.get(roots);
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {

@@ -180,7 +180,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             // FIXME parsing API - source & binary IDs
             GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(),
-                    Collections.singleton(ClassPath.SOURCE), null));
+                    Collections.singleton(ClassPath.SOURCE), null, null));
 
             if (root == null) {
                 // No parse tree - try to just use the syntax info to do a simple index lookup
