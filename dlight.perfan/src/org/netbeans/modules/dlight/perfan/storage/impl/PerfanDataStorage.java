@@ -40,24 +40,24 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.perfan.spi.SunStudioDataCollector;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.perfan.dbe.ConnectorListener;
 import org.netbeans.modules.dlight.perfan.dbe.DbeConnector;
 import org.netbeans.modules.dlight.perfan.dbe.IDBEInterface;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.perfan.spi.SunStudioDataCollector;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
+
 
 // TODO: implement SessionListener - kill idbe on Session closure
 public class PerfanDataStorage extends DataStorage implements ConnectorListener {
-  public static final String ID = "PerfanDataStorage";
-
   private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
   private IDBEInterface idbe = null;
   private SunStudioDataCollector collector = null;
@@ -119,20 +119,12 @@ public class PerfanDataStorage extends DataStorage implements ConnectorListener 
     //}, "DBE connection thread").start();
   }
 
-  @Override
-  public String getID() {
-    return ID;
-  }
 
   @Override
-  public List<DataStorageType> getStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(getID()));
+  public Collection<DataStorageType> getStorageTypes() {
+    return PerfanDataStorageFactory.supportedTypes;
   }
 
-  @Override
-  public DataStorage newInstance() {
-    return new PerfanDataStorage();
-  }
 
   @Override
   protected boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas) {

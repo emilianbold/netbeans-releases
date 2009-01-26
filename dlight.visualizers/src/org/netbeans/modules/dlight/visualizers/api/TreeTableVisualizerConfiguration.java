@@ -38,16 +38,18 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.impl.TreeTableDataModel;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+
+
 
 public class TreeTableVisualizerConfiguration implements VisualizerConfiguration {
   private DataTableMetadata dataTableMetadata;
@@ -119,7 +121,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
   }
 
   public DataModelScheme getSupportedDataScheme() {
-    return TreeTableDataModel.instance;
+    return DataModelSchemeProvider.getInstance().getScheme("model:tree:table");
   }
 
   public String getID() {

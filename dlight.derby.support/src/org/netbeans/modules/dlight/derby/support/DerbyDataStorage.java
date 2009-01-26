@@ -13,21 +13,21 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-
 
 /**
  *
@@ -35,17 +35,25 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage {
 
-  private static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby";
+  
   private static final String SQL_QUERY_DELIMETER = "";
   static private int dbIndex = 1;
   private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
   private static boolean driverLoaded = false;
   private SQLStackStorage stackStorage;
-  private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();;
+  private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
 
   static {
     Util.deleteLocalDirectory(new File("/tmp/derby_dlight"));
+       try {
+        String systemDir = "/tmp/derby_dlight";
+        System.setProperty("derby.system.home", systemDir);
+        Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded ");
+      } catch (Exception ex) {
+        logger.log(Level.SEVERE, null, ex);
+      }
 
   }
 
@@ -53,12 +61,12 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
    * Empty constructor, used by Lookup
    */
   public DerbyDataStorage() {
-    initStorageTypes();
+    this("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd");
   
   }
 
   private void initStorageTypes(){
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DERBY_DATA_STORAGE_TYPE));
+    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DerbyDataStorageFactory.DERBY_DATA_STORAGE_TYPE));
     supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
     supportedStorageTypes.addAll(super.getStorageTypes());
 
@@ -113,10 +121,6 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     s.close();
   }
 
-  @Override
-  public String getID() {
-    return "DerbyDataStorage";
-  }
 
   @Override
   protected void connect(String dburl) {
@@ -129,32 +133,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
   }
 
   @Override
-  public DataStorage newInstance() {
-    if (!driverLoaded) {
-      try {
-//        Class driver = Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-        //Class driver =  Class.forName("org.apache.derby.jdbc.ClientDriver");
-        /// Decide on the db system directory: <userhome>/.addressbook/
-        String userHomeDir = System.getProperty("user.home", ".");
-        //  String systemDir = userHomeDir + "/.dlight";
-        String systemDir = "/tmp/derby_dlight";
-
-        // Set the db system directory.
-        System.setProperty("derby.system.home", systemDir);
-        Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-
-        driverLoaded = true;
-        logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded ");
-      } catch (Exception ex) {
-        logger.log(Level.SEVERE, null, ex);
-      }
-    }
-
-    return new DerbyDataStorage("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd");
-  }
-
-  @Override
-  public List<DataStorageType> getStorageTypes() {
+  public Collection<DataStorageType> getStorageTypes() {
     return supportedStorageTypes;
   }
 

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.dlight.cpu.impl;
 
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import java.awt.Color;
@@ -59,7 +57,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.*;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.util.NbBundle;
 
 /**
