@@ -83,6 +83,7 @@ public class ModelSource implements SourceFileProperties {
     private String itemPath;
     private List<String> userIncludePaths;
     private Set<String> includedFiles = new HashSet<String>();
+    private Map<String,String> userMacros;
     
     public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, PkgConfig pkgConfig){
         this.item = item;
@@ -193,6 +194,20 @@ public class ModelSource implements SourceFileProperties {
                                         res.add(p);
                                     }
                                 }
+                                for(String p : pc.getMacros()){
+                                    int i = p.indexOf("=");
+                                    String macro;
+                                    String value = null;
+                                    if (i > 0){
+                                        macro = p.substring(0, i);
+                                        value = p.substring(i+1);
+                                    } else {
+                                        macro = p;
+                                    }
+                                    if (!getUserMacros().containsKey(macro)){
+                                        getUserMacros().put(macro, value);
+                                    }
+                                }
                             }
                         }
                     }
@@ -274,18 +289,19 @@ public class ModelSource implements SourceFileProperties {
     }
     
     public Map<String, String> getUserMacros() {
-        List macros = item.getUserMacroDefinitions();
-        Map<String, String> res = new HashMap<String,String>();
-        for(Object o : macros){
-            String macro = (String)o;
-            int i = macro.indexOf('=');
-            if (i>0){
-                res.put(macro.substring(0,i).trim(),macro.substring(i+1).trim());
-            } else {
-                res.put(macro,null);
+        if (userMacros == null){
+            userMacros = new HashMap<String,String>();
+            List<String> macros = item.getUserMacroDefinitions();
+            for(String macro : macros){
+                int i = macro.indexOf('=');
+                if (i>0){
+                    userMacros.put(macro.substring(0,i).trim(),macro.substring(i+1).trim());
+                } else {
+                    userMacros.put(macro,null);
+                }
             }
         }
-        return res;
+        return userMacros;
     }
     
     public Map<String, String> getSystemMacros() {
