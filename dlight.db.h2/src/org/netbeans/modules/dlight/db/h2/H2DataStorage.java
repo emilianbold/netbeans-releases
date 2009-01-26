@@ -154,7 +154,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
   }
 
   @Override
-  public boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas) {
+  public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
     for (DataTableMetadata tdmd : tableMetadatas) {
       if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
         if (!createTable(tdmd)) {

@@ -36,15 +36,15 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.execution;
 
 /**
- * Interface to be used with {@link org.netbeans.modules.dlight.execution.api.DLightTarget}
+ * Interface to be used with {@link org.netbeans.modules.dlight.api.execution.DLightTarget}
  * to state that  it is possible to attach to the target.
  * 
  */
 public interface AttachableTarget {
+
   /**
    * Returns target's PID
    * @return PID

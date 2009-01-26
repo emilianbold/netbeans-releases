@@ -79,7 +79,7 @@ public final class DataStorageManager {
    *  for requested schema (if it can be found within all available DataStorages)
    */
   public DataStorage getDataStorageFor(DataCollector collector) {
-    List<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
+    Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
     for (DataStorageType type : supportedTypes) {
       DataStorage storage = getDataStorageFor(type, collector.getDataTablesMetadata());
 
@@ -103,7 +103,7 @@ public final class DataStorageManager {
 //    if (activeDataStorages.contains(log))
 //  }
 
-  private DataStorage getDataStorageFor(DataStorageType storageType, List<? extends DataTableMetadata> tableMetadatas) {
+  private DataStorage getDataStorageFor(DataStorageType storageType,List<DataTableMetadata> tableMetadatas) {
     for (DataStorage storage :activeDataStorages){
       if (storage.supportsType(storageType)) {
         storage.createTables(tableMetadatas);

@@ -40,7 +40,7 @@
 package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -65,14 +65,14 @@ public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfigurati
     this.configuration = configuration;
   }
 
-  public void targetStarted(DLightTarget target) {
+  private void targetStarted(DLightTarget target) {
     resetIndicators();
     TimerTaskExecutionService.getInstance().registerTimerTask(this, 5);
     log.fine("TimerTicker started !!!!!!!!");
     startTime = System.currentTimeMillis();
   }
 
-  public void targetFinished(DLightTarget target) {
+  private void targetFinished(DLightTarget target) {
     log.fine("Task finished!!!! Stopping timer!!");
     TimerTaskExecutionService.getInstance().unregisterTimerTask(this);
   }
@@ -84,13 +84,26 @@ public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfigurati
   }
 
   @Override
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
+  public Collection<DataTableMetadata> getDataTablesMetadata() {
     return Arrays.asList(tableMetadata);
   }
 
-  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+   public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case STARTING:
+                targetStarted(source);
+                return;
+            case FAILED:
+                targetFinished(source);
+                return;
+            case TERMINATED:
+                targetFinished(source);
+                return;
+            case DONE:
+                targetFinished(source);
+                return;
+        }
+    }
 
 
 }

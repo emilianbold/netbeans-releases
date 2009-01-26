@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *  the whole system.
  * You should implement this interface in case you have your own
  * target type.
- * Default implementation {@link org.netbeans.modules.dlight.execution.api.NativeExecutableTarget} can
+ * Default implementation {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget} can
  * be used.
  */
 public abstract class DLightTarget {
@@ -65,6 +65,11 @@ public abstract class DLightTarget {
     DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
   }
 
+  /**
+   * Create new target to be d-lighted, as a parameter service which
+   * can start and terminated target should be passed
+   * @param executionService service to start and terminate target
+   */
   protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
     this.executionService = executionService;
   }
@@ -94,6 +99,11 @@ public abstract class DLightTarget {
     }
   }
 
+  /**
+   * Notifyes listeners target state changed
+   * @param oldState state target was
+   * @param newState state  target is
+   */
   protected final void notifyListeners(DLightTarget.State oldState, DLightTarget.State newState) {
     DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
     for (DLightTargetListener l : ls) {
@@ -109,7 +119,7 @@ public abstract class DLightTarget {
   public abstract ExecutionEnvironment getExecEnv();
 
   /**
-   * Returns current target state as {@link org.netbeans.modules.dlight.execution.api.DLightTarget.State}
+   * Returns current target state as {@link org.netbeans.modules.dlight.api.execution.DLightTarget.State}
    * @return target current state
    */
   public abstract DLightTarget.State getState();
@@ -149,6 +159,10 @@ public abstract class DLightTarget {
     TERMINATED,
   }
 
+  /**
+   * This service should be implemented to run target
+   * @param <T> target to execute
+   */
   public interface DLightTargetExecutionService<T extends DLightTarget> {
 
     /**

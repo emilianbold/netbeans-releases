@@ -22,7 +22,6 @@ import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
@@ -138,7 +137,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
   }
 
   @Override
-  public boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas) {
+  public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
     for (DataTableMetadata tdmd : tableMetadatas) {
       if (tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
         if (!tables.containsKey(STACK_METADATA_VIEW_NAME)) {

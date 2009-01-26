@@ -48,6 +48,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -170,7 +171,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
      * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
-    public List<DataStorageType> getSupportedDataStorageTypes() {
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
@@ -212,7 +213,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return null;
     }
 
-    public List<? extends DataTableMetadata> getDataTablesMetadata() {
+    public List<DataTableMetadata> getDataTablesMetadata() {
         return dataTablesMetadata;
     }
 
