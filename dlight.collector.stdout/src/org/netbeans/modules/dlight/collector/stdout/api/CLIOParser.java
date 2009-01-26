@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.dlight.collector.stdout.api;
 
-import org.netbeans.modules.dlight.storage.api.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+
 
 /**
  * Command line tool output parser used by

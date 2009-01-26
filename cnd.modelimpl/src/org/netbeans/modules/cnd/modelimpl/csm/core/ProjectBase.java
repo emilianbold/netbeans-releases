@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -1441,9 +1442,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
 
+    public void onFileExternalCreate(FileImpl file) {
+        APTIncludeUtils.clearFileExistenceCache();
+        DeepReparsingUtils.reparseOnAdded(file, this);
+    }
+
     public void onFileExternalChange(FileImpl file) {
         DeepReparsingUtils.reparseOnEdit(file, this);
-   }
+    }
 
     public CsmFile findFile(Object absolutePathOrNativeFileItem) {
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
