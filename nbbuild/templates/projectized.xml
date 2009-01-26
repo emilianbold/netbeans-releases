@@ -477,6 +477,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="fix-cddl-gpl" depends="build-init">
         <property name="license.root.dir" location="${basedir}"/>
+        <tstamp>
+            <format property="YEAR" pattern="yyyy"/>
+        </tstamp>
         <checklicense>
             <fileset dir="${license.root.dir}"/>
             <fileset dir="${src.dir}"/>
@@ -487,7 +490,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             >
                 <line text='DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.'/>
                 <line text=''/>
-                <line text='Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.'/>
+                <line text='Copyright 1997-${YEAR} Sun Microsystems, Inc. All rights reserved.'/>
                 <line text=''/>
             </convert>
 
