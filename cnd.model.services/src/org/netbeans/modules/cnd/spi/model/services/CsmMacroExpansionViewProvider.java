@@ -68,4 +68,14 @@ public interface CsmMacroExpansionViewProvider {
      * @param offset - offset in document
      */
     public abstract void showMacroExpansionView(Document doc, int offset);
+
+    /**
+     * Updates position for Macro Expansion View panel.
+     *
+     * @param doc - document
+     * @param offset - offset in document
+     * @return - changes found
+     */
+    public abstract boolean updateMacroExpansionView(int newOffset);
+
 }

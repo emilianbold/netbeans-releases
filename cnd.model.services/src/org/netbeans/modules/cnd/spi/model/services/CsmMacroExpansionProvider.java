@@ -77,8 +77,20 @@ public interface CsmMacroExpansionProvider {
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
      * @param outDoc - result
+     * @return - number of expansions
      */
-    public abstract void expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
+    public abstract int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
+
+    /**
+     * Check for changes in content of document
+     *
+     * @param inDoc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @param outDoc - result
+     * @return - changes found
+     */
+    public abstract boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc);
 
     /**
      * Transforms original offset to offset in expanded text
