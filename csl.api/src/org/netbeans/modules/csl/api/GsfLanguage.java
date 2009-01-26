@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.csl.api;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -86,13 +83,6 @@ public interface GsfLanguage {
     Language getLexerLanguage();
     
     /**
-     * Return a set of file object folders for core libraries for this language that should be added
-     * to the indexing and querying paths.
-     */
-    @NonNull
-    Collection<FileObject> getCoreLibraries();
-
-    /**
      * Display name for this language. This name should be localized since it can be shown to
      * the user (currently, it shows up in the Tasklist filter for example).
      */
@@ -113,21 +103,6 @@ public interface GsfLanguage {
     @CheckForNull
     String getPreferredExtension();
     
-    /**
-     * Get source types for files corresponding to this language. This is used by for example
-     * the tasklist to locate source files in a project by using the 
-     *   ProjectUtils.getSources(p).getSourceGroups(x)
-     * mechanism.
-     * <p>
-     * The map corresponds to the project name mapped to the source group. If no mapping exists
-     * for a target project type the infrastructure will use the generic source type.
-     * <p>
-     * As with #acceptQueryPath, this is just a temporary measure (i.e. NetBeans 6.1) to deal with shortcomings
-     * in the path and project integration for GSF.
-     */
-    @NonNull
-    Map<String,String> getSourceGroupNames();
-
     /**
      * Gets IDs uniquely identifying source classpaths used by this language.
      *
@@ -150,12 +125,26 @@ public interface GsfLanguage {
     Set<String> getSourcePathIds();
 
     /**
-     * Gets IDs uniquely identifying binary classpaths used by this language. This
+     * Gets IDs uniquely identifying classpaths with libraries used by this language. This
      * method is similar as {@link #getSourcePathIds()} except that it returns
-     * ids of classpath with binaries (eg. libraries, runtimes, etc).
+     * ids of classpath with libraries that contain source files (not binary libraries).
      *
-     * @return The set of binary classpath IDs, can be empty or even <code>null</code>.
+     * @return The set of library classpath IDs, can be empty or even <code>null</code>.
      *   Please see {@link #getSourcePathIds()} for the exact meaning of those values.
      */
-    Set<String> getBinaryPathIds();
+    Set<String> getLibraryPathIds();
+
+    /**
+     * Gets IDs uniquely identifying classpaths with binary libraries used by this language. This
+     * method is similar as {@link #getLibraryPathIds()} except that it returns
+     * ids of classpath with binary libraries, runtimes, etc.
+     *
+     * <p>When the infrastructure works with binary library classpath it uses
+     * <code>SourceForBinaryQuery</code> in order to find sources relevant for the
+     * libraries on the classpath.
+     *
+     * @return The set of binary library classpath IDs, can be empty or even <code>null</code>.
+     *   Please see {@link #getLibraryPathIds()} for the exact meaning of those values.
+     */
+    Set<String> getBinaryLibraryPathIds();
 }

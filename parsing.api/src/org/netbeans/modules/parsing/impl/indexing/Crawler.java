@@ -42,10 +42,8 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -85,7 +83,7 @@ public abstract class Crawler {
 
     private void init () throws IOException {
         if (this.cache == null) {
-            this.cache = collectResources(new HashSet<String>(Arrays.asList(PathRecognizerRegistry.getDefault().getMimeTypes())));
+            this.cache = collectResources(PathRecognizerRegistry.getDefault().getMimeTypes());
             final Set<String> unseen = timeStamps.store();
             deleted = new ArrayList<Indexable>(unseen.size());
             for (String u : unseen) {

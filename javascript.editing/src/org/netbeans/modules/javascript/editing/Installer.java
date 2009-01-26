@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.editing;
 
-package org.netbeans.modules.parsing.spi.indexing;
-
-import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.openide.modules.ModuleInstall;
 
 /**
- * Enumeration of important path types for given language.
- * Instances of this class are registered in {@link org.openide.util.lookup.ServiceProvider}.
- * @author Tomas Zezula
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-public abstract class PathRecognizer {
+public class Installer extends ModuleInstall {
 
-    /**
-     * Returns names under which the source paths are registered in
-     * the {@link GlobalPathRegistry}
-     * @return set of source path names
-     */
-    public abstract Set<String> getSourcePathIds ();
+    @Override
+    public void restored() {
+        GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
+    }
 
-    /**
-     * Returns names under which the library paths are registered in
-     * the {@link GlobalPathRegistry}.
-     * @return set of library path names
-     */
-    public abstract Set<String> getLibraryPathIds ();
+    @Override
+    public void uninstalled() {
+        GlobalPathRegistry.getDefault().unregister(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
+    }
 
-    /**
-     * Returns names under which the binary library paths are registered in
-     * the {@link GlobalPathRegistry}.
-     * @return set of binary library path names
-     */
-    public abstract Set<String> getBinaryLibraryPathIds ();
-
-    /**
-     * Returns a mime types of handled files.
-     * @return mime type
-     */
-    public abstract Set<String> getMimeTypes();
 }

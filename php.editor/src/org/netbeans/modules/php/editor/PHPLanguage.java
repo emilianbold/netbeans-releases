@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.util.Collection;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -55,7 +54,6 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
-import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
 import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
@@ -65,8 +63,6 @@ import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -171,11 +167,6 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public HintsProvider getHintsProvider() {
         return new PHPHintsProvider();
-    }
-
-    @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return PhpSourcePath.getPreindexedFolders();
     }
 
     @Override

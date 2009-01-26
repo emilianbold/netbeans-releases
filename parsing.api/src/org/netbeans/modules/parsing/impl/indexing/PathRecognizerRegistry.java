@@ -39,100 +39,22 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class PathRecognizerRegistry implements LookupListener {
-
-    private static final Logger LOG = Logger.getLogger(PathRecognizerRegistry.class.getName());
-    
-    private static PathRecognizerRegistry instance;
-
-    private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
-
-    private String[] mimeTypes;
-    private Map<String,Set<String>> cachedIdMap;
-    private Set<String> cachedBinaryIds;
-
-    private PathRecognizerRegistry() {
-        pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
-        pathRecognizers.addLookupListener(this);
-        assert pathRecognizers != null;
-    }
-
-
-    public Set<String> getSourceIds () {
-        final Map<String,Set<String>> idMap = getIdMap();
-        return idMap.keySet();
-    }
-
-    public synchronized Set<String> getBinaryIds () {
-        if (cachedBinaryIds == null) {
-            final Map<String,Set<String>> idMap = getIdMap();
-            final Set<String> result = new HashSet<String>();
-            for (Set<String> val : idMap.values()) {
-                result.addAll(val);
-            }
-            cachedBinaryIds = Collections.unmodifiableSet(result);
-        }
-        return cachedBinaryIds;
-    }
-
-    public void collectIds (final Set<String> sourceIds, final Set<String> binaryIds) {
-        Map<String,Set<String>> idMap = getIdMap();
-        for (Map.Entry<String,Set<String>> e : idMap.entrySet()) {
-            sourceIds.add(e.getKey());
-            binaryIds.addAll(e.getValue());
-        }
-    }
-    //where
-    private synchronized Map<String,Set<String>> getIdMap () {
-        if (cachedIdMap == null) {
-            final Map<String,Set<String>> map = new HashMap<String, Set<String>>();
-            LOG.fine("Reading path ids from PathRecognizers:"); //NOI18N
-            for (PathRecognizer f : pathRecognizers.allInstances()) {
-                LOG.fine("PathRecognizer: " + f); //NOI18N
-                Set<String> sids = f.getSourcePathIds();
-                Set<String> bids = f.getBinaryPathIds();
-                for (String sid : sids) {
-                    map.put(sid, new HashSet<String>(bids));    //Defensive copy
-                }
-            }
-            LOG.fine("-- Finished reading path ids from PathRecognizers."); //NOI18N
-            cachedIdMap = Collections.unmodifiableMap(map);
-        }
-        return cachedIdMap;
-    }
-    
-
-    public synchronized String[] getMimeTypes() {
-        if (mimeTypes == null) {
-            final Set<String> data = new HashSet<String>();
-            for (PathRecognizer f : pathRecognizers.allInstances()) {
-                data.addAll(f.getMimeType());
-            }
-            mimeTypes = data.toArray(new String[data.size()]);
-        }
-        return mimeTypes;
-    }
-
-    public Set<String> getBinaryIdsForSourceId (final String sourceId) {
-        assert sourceId != null;
-        Map<String,Set<String>> idMap = getIdMap();
-        return idMap.get(sourceId);
-    }
+public final class PathRecognizerRegistry {
 
     public static synchronized PathRecognizerRegistry getDefault () {
         if (instance == null) {
@@ -141,13 +63,100 @@ public class PathRecognizerRegistry implements LookupListener {
         return instance;
     }
 
-    public void resultChanged(LookupEvent ev) {
-        synchronized (this) {
+    @SuppressWarnings("unchecked")
+    public Set<String> getSourceIds () {
+        final Object [] data = getData();
+        return (Set<String>) data[0];
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getLibraryIds () {
+        final Object [] data = getData();
+        return (Set<String>) data[1];
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getBinaryLibraryIds () {
+        final Object [] data = getData();
+        return (Set<String>) data[2];
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getMimeTypes() {
+        final Object [] data = getData();
+        return (Set<String>) data[3];
+    }
+
+    public String [] getMimeTypesAsArray() {
+        final Object [] data = getData();
+        return (String []) data[4];
+    }
+
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(PathRecognizerRegistry.class.getName());
+    
+    private static PathRecognizerRegistry instance;
+
+    private final Lookup.Result<? extends PathRecognizer> lookupResult;
+    private final LookupListener tracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
             LOG.fine("resultChanged: reseting cached PathRecognizers"); //NOI18N
-            mimeTypes = null;
-            cachedIdMap = null;
-            cachedBinaryIds = null;
+            synchronized (PathRecognizerRegistry.this) {
+                cachedData = null;
+            }
         }
+    };
+
+    private Object [] cachedData;
+
+    private PathRecognizerRegistry() {
+        lookupResult = Lookup.getDefault().lookupResult(PathRecognizer.class);
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, tracker, lookupResult));
+    }
+
+    private synchronized Object [] getData () {
+        if (cachedData == null) {
+            Set<String> sourceIds = new HashSet<String>();
+            Set<String> libraryIds = new HashSet<String>();
+            Set<String> binaryLibraryIds = new HashSet<String>();
+            Set<String> mimeTypes = new HashSet<String>();
+
+            Collection<? extends PathRecognizer> recognizers = lookupResult.allInstances();
+            for(PathRecognizer r : recognizers) {
+                Set<String> sids = r.getSourcePathIds();
+                if (sids != null) {
+                    sourceIds.addAll(sids);
+                }
+
+                Set<String> lids = r.getLibraryPathIds();
+                if (lids != null) {
+                    libraryIds.addAll(lids);
+                }
+
+                Set<String> blids = r.getBinaryLibraryPathIds();
+                if (blids != null) {
+                    binaryLibraryIds.addAll(blids);
+                }
+
+                Set<String> mts = r.getMimeTypes();
+                if (mts != null) {
+                    mimeTypes.addAll(mts);
+                }
+            }
+
+            cachedData = new Object [] {
+                Collections.unmodifiableSet(sourceIds),
+                Collections.unmodifiableSet(libraryIds),
+                Collections.unmodifiableSet(binaryLibraryIds),
+                Collections.unmodifiableSet(mimeTypes),
+                mimeTypes.toArray(new String [mimeTypes.size()])
+            };
+        }
+
+        return cachedData;
     }
 
 }

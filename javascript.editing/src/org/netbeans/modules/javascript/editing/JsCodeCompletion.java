@@ -356,7 +356,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             request.result = parseResult;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            request.index = JsIndex.get(GsfUtilities.getRoots(fileObject, null, Collections.<String>emptySet()));
+            request.index = JsIndex.get(GsfUtilities.getRoots(fileObject, null, Collections.singleton(JsClassPathProvider.BOOT_CP), Collections.<String>emptySet()));
             request.doc = doc;
             request.info = AstUtilities.getParseResult(info);
             request.prefix = prefix;
@@ -894,6 +894,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                                 elementId = elementId.substring(1, elementId.length()-1);
                             }
 
+                            System.out.println("~~~ elementId: '" + elementId + "'");
                             if (startsWith(elementId, prefix)) {
                                 GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
                                 proposals.add(item);

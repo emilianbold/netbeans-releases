@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.csl.api;
 
-import java.util.Collection;
 import java.util.Set;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -56,10 +57,10 @@ import org.openide.filesystems.FileObject;
  */
 public interface IndexSearcher {
 
-    @NonNull Set<? extends Descriptor> getTypes(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
+    @NonNull Set<? extends Descriptor> getTypes(@NullAllowed Project project, @NonNull String textForQuery,
         @NonNull QuerySupport.Kind searchType, @NonNull Helper helper);
 
-    @NonNull Set<? extends Descriptor> getSymbols(@NonNull Collection<FileObject> roots, @NonNull String textForQuery,
+    @NonNull Set<? extends Descriptor> getSymbols(@NullAllowed Project project, @NonNull String textForQuery,
         @NonNull QuerySupport.Kind searchType, @NonNull Helper helper);
 
     public abstract class Descriptor {

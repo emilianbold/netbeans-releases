@@ -203,7 +203,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     public void fileDataCreated(FileEvent fe) {
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot (fo);
-        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
+        if (root != null && VisibilityQuery.getDefault().isVisible(fo) && 
+            FileUtil.getMIMEType(fo, recognizers.getMimeTypesAsArray()) != null)
+        {
             final Work w = new FileListWork(WorkType.COMPILE,root,fo);
             submit(w);
         }
@@ -212,7 +214,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     public void fileChanged(FileEvent fe) {
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot (fo);
-        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
+        if (root != null && VisibilityQuery.getDefault().isVisible(fo) && 
+            FileUtil.getMIMEType(fo, recognizers.getMimeTypesAsArray()) != null)
+        {
             final Work w = new FileListWork(WorkType.COMPILE,root,fo);
             submit(w);
         }
@@ -390,9 +394,11 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             try {
                 final DependenciesContext ctx = new DependenciesContext(scannedRoots, scannedBinaries, true);
                 final List<URL> newRoots = new LinkedList<URL>();
-                newRoots.addAll (regs.getSources());
-                newRoots.addAll (regs.getUnknownRoots());                
-                ctx.newBinaries.addAll(regs.getBinaries());
+                newRoots.addAll(regs.getSources());
+                newRoots.addAll(regs.getLibraries());
+                newRoots.addAll(regs.getUnknownRoots());
+
+                ctx.newBinaries.addAll(regs.getBinaryLibraries());
                 for (Iterator<URL> it = ctx.newBinaries.iterator(); it.hasNext();) {
                     if (ctx.oldBinaries.remove(it.next())) {
                         it.remove();
@@ -402,7 +408,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                 
                 for (URL url : newRoots) {
-                    findDependencies (url, depGraph, ctx, recognizers.getBinaryIds());
+                    findDependencies (url, depGraph, ctx, recognizers.getLibraryIds(), recognizers.getBinaryLibraryIds());
                 }
                 ctx.newRoots.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
                 scanBinaries(ctx);
@@ -508,7 +514,14 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             }
         }
 
-        private void findDependencies(final URL rootURL, final Map<URL, List<URL>> depGraph, DependenciesContext ctx, final Set<String> binaryClassPathIds) {
+        private void findDependencies(
+                final URL rootURL,
+                final Map<URL,
+                List<URL>> depGraph,
+                DependenciesContext ctx,
+                final Set<String> libraryClassPathIds,
+                final Set<String> binaryLibraryClassPathIds)
+        {
             if (ctx.useInitialState && ctx.scannedRoots.contains(rootURL)) {
                 ctx.oldRoots.remove(rootURL);
                 return;
@@ -520,42 +533,69 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             if (rootFo == null) {
                 return;
             }
-            ctx.cycleDetector.push(rootURL);
-            final List<ClassPath> pathToResolve = new ArrayList<ClassPath>(binaryClassPathIds.size());
-            for (String binaryClassPathId : binaryClassPathIds) {
-                ClassPath cp = ClassPath.getClassPath(rootFo, binaryClassPathId);
-                if (cp != null) {
-                    pathToResolve.add(cp);
-                }
-            }
+
             final List<URL> deps = new LinkedList<URL>();
-            for (ClassPath cp : pathToResolve) {
-                for (ClassPath.Entry entry : cp.entries()) {
-                    final URL url = entry.getURL();
-                    final URL[] sourceRoots = regs.sourceForBinaryQuery(url, cp, false);
-                    if (sourceRoots != null) {
-                        for (URL sourceRoot : sourceRoots) {
+            ctx.cycleDetector.push(rootURL);
+            try {
+                { // libraries
+                    final List<ClassPath> libraryPathToResolve = new ArrayList<ClassPath>(libraryClassPathIds.size());
+                    for (String id : libraryClassPathIds) {
+                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
+                        if (cp != null) {
+                            libraryPathToResolve.add(cp);
+                        }
+                    }
+
+                    for (ClassPath cp : libraryPathToResolve) {
+                        for (ClassPath.Entry entry : cp.entries()) {
+                            final URL sourceRoot = entry.getURL();
                             if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
                                 deps.add(sourceRoot);
-                                findDependencies(sourceRoot, depGraph, ctx, binaryClassPathIds);
+                                findDependencies(sourceRoot, depGraph, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
                             }
-                        }
-                    }
-                    else {
-                        //What does it mean?
-                        if (ctx.useInitialState) {
-                            if (!ctx.scannedBinaries.contains(url)) {
-                                ctx.newBinaries.add (url);
-                            }
-                            ctx.oldBinaries.remove(url);
                         }
                     }
                 }
-            }
-            depGraph.put(rootURL, deps);
-            ctx.cycleDetector.pop();
-        }
 
+                { // binary libraries
+                    final List<ClassPath> binaryLibraryPathToResolve = new ArrayList<ClassPath>(binaryLibraryClassPathIds.size());
+                    for (String id : binaryLibraryClassPathIds) {
+                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
+                        if (cp != null) {
+                            binaryLibraryPathToResolve.add(cp);
+                        }
+                    }
+
+                    for (ClassPath cp : binaryLibraryPathToResolve) {
+                        for (ClassPath.Entry entry : cp.entries()) {
+                            final URL url = entry.getURL();
+                            final URL[] sourceRoots = regs.sourceForBinaryQuery(url, cp, false);
+                            if (sourceRoots != null) {
+                                for (URL sourceRoot : sourceRoots) {
+                                    if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                        deps.add(sourceRoot);
+                                        findDependencies(sourceRoot, depGraph, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
+                                    }
+                                }
+                            }
+                            else {
+                                //What does it mean?
+                                if (ctx.useInitialState) {
+                                    if (!ctx.scannedBinaries.contains(url)) {
+                                        ctx.newBinaries.add (url);
+                                    }
+                                    ctx.oldBinaries.remove(url);
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                ctx.cycleDetector.pop();
+            }
+            
+            depGraph.put(rootURL, deps);
+        }
     }
 
     private static class DependenciesContext {
