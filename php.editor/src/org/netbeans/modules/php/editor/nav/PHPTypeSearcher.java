@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.Icon;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -52,7 +51,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
@@ -70,8 +68,12 @@ import org.openide.filesystems.FileUtil;
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
-    public Set<? extends Descriptor> getSymbols(ParserResult info, String textForQuery, QuerySupport.Kind kind,  Helper helper) {
-        PHPIndex index = PHPIndex.get(info);
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
+        // XXX: use PHP specific path ids
+        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+                project, Collections.singleton(ClassPath.SOURCE), Collections.singleton(ClassPath.BOOT),
+                Collections.<String>emptySet()));
+
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string
         textForQuery = textForQuery.toLowerCase();
@@ -88,8 +90,13 @@ public class PHPTypeSearcher implements IndexSearcher {
 
         return result;
     }
-    public Set<? extends Descriptor> getTypes(ParserResult info, String textForQuery, QuerySupport.Kind kind,  Helper helper) {
-        PHPIndex index = PHPIndex.get(info);
+
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
+        // XXX: use PHP specific path ids
+        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+                project, Collections.singleton(ClassPath.SOURCE), Collections.singleton(ClassPath.BOOT),
+                Collections.<String>emptySet()));
+
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string        
         textForQuery = textForQuery.toLowerCase();
@@ -167,14 +174,6 @@ public class PHPTypeSearcher implements IndexSearcher {
             return "$"+textForQuery;
         }
         return textForQuery;
-    }
-
-    public Set<? extends Descriptor> getTypes(Collection<FileObject> roots, String textForQuery, Kind searchType, Helper helper) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Set<? extends Descriptor> getSymbols(Collection<FileObject> roots, String textForQuery, Kind searchType, Helper helper) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private static class PHPTypeDescriptor extends Descriptor {

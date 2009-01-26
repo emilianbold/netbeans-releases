@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.openide.filesystems.FileObject;
 
 /**
  * Configuration for JSON
@@ -53,11 +50,6 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class JsonLanguage extends JsLanguage {
-
-    @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
-    }
 
     @Override
     public String getDisplayName() {

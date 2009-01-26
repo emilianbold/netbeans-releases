@@ -68,12 +68,17 @@ public class JavaPathRecognizer extends PathRecognizer {
     }
 
     @Override
-    public Set<String> getBinaryPathIds() {
+    public Set<String> getBinaryLibraryPathIds() {
         return BINARIES;
     }
 
     @Override
-    public Set<String> getMimeType() {
+    public Set<String> getLibraryPathIds() {
+        return null;
+    }
+
+    @Override
+    public Set<String> getMimeTypes() {
         return MIME_TYPES;
     }
 

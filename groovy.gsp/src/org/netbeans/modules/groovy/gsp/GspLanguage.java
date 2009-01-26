@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.groovy.gsp;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -56,7 +53,6 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
@@ -85,11 +81,6 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.<FileObject>emptyList();
-    }
-
-    @Override
     public String getDisplayName() {
         return "GSP";
     }
@@ -99,11 +90,6 @@ public class GspLanguage extends DefaultLanguageConfig {
         return "gsp"; // NOI18N
     }
 
-    @Override
-    public Map<String,String> getSourceGroupNames() {
-        return Collections.emptyMap();
-    }
-    
     @Override
     public boolean isUsingCustomEditorKit() {
         return true;

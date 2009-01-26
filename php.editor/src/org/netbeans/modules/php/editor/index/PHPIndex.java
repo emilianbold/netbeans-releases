@@ -125,7 +125,7 @@ public class PHPIndex {
 
     public static PHPIndex get(ParserResult info){
         // TODO: specify the claspath ids to improve performance and avoid conflicts
-        return get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet()));
+        return get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.<String>emptySet(), Collections.<String>emptySet()));
     }
 
     public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {

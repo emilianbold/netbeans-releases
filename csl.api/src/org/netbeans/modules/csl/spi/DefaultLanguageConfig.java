@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.csl.spi;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Language;
@@ -58,7 +55,6 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.openide.filesystems.FileObject;
 
 /**
  * Default implementation of the LanguageConfig class. Descendants of this
@@ -87,22 +83,18 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
 
     public abstract Language getLexerLanguage();
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
-    }
-
     public abstract String getDisplayName();
 
     public String getPreferredExtension() {
         return null;
     }
 
-    public Map<String,String> getSourceGroupNames() {
-        return Collections.<String, String>emptyMap();
+    public Set<String> getBinaryLibraryPathIds() {
+        return null;
     }
 
-    public Set<String> getBinaryPathIds() {
-        return Collections.<String>emptySet();
+    public Set<String> getLibraryPathIds() {
+        return null;
     }
 
     public Set<String> getSourcePathIds() {

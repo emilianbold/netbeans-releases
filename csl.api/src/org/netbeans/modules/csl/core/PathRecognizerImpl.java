@@ -69,17 +69,27 @@ public final class PathRecognizerImpl extends PathRecognizer {
     }
 
     @Override
-    public Set<String> getBinaryPathIds() {
-        if (binaryPathIds == null) {
+    public Set<String> getBinaryLibraryPathIds() {
+        if (binaryLibraryPathIds == null) {
             collectInfo();
         }
-        Set<String> bpids = binaryPathIds;
+        Set<String> blpids = binaryLibraryPathIds;
+        assert blpids != null;
+        return blpids;
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        if (libraryPathIds == null) {
+            collectInfo();
+        }
+        Set<String> bpids = libraryPathIds;
         assert bpids != null;
         return bpids;
     }
 
     @Override
-    public Set<String> getMimeType() {
+    public Set<String> getMimeTypes() {
         if (mimeTypes == null) {
             collectInfo();
         }
@@ -103,7 +113,8 @@ public final class PathRecognizerImpl extends PathRecognizer {
     private static final Logger LOG = Logger.getLogger(PathRecognizerImpl.class.getName());
 
     private volatile Set<String> sourcePathIds = null;
-    private volatile Set<String> binaryPathIds = null;
+    private volatile Set<String> libraryPathIds = null;
+    private volatile Set<String> binaryLibraryPathIds = null;
     private volatile Set<String> mimeTypes = null;
 
     /**
@@ -116,7 +127,8 @@ public final class PathRecognizerImpl extends PathRecognizer {
 
     private void collectInfo() {
         Set<String> collectedSpids = new HashSet<String>();
-        Set<String> collectedBpids = new HashSet<String>();
+        Set<String> collectedLpids = new HashSet<String>();
+        Set<String> collectedBlpids = new HashSet<String>();
         Set<String> collectedMimetypes = new HashSet<String>();
 
         for(Language l : LanguageRegistry.getInstance()) {
@@ -126,10 +138,16 @@ public final class PathRecognizerImpl extends PathRecognizer {
                 collectedSpids.addAll(spids);
             }
 
-            Set<String> bpids = l.getBinaryPathIds();
-            if (bpids != null && !bpids.isEmpty()) {
-                LOG.fine("Language: " + l.getMimeType() + " adds bpids: " + bpids); //NOI18N
-                collectedBpids.addAll(bpids);
+            Set<String> lpids = l.getLibraryPathIds();
+            if (lpids != null && !lpids.isEmpty()) {
+                LOG.fine("Language: " + l.getMimeType() + " adds lpids: " + lpids); //NOI18N
+                collectedLpids.addAll(lpids);
+            }
+
+            Set<String> blpids = l.getLibraryPathIds();
+            if (blpids != null && !blpids.isEmpty()) {
+                LOG.fine("Language: " + l.getMimeType() + " adds blpids: " + blpids); //NOI18N
+                collectedBlpids.addAll(blpids);
             }
 
             collectedMimetypes.add(l.getMimeType());
@@ -137,11 +155,13 @@ public final class PathRecognizerImpl extends PathRecognizer {
 
         synchronized (this) {
             if (sourcePathIds == null) {
-                assert binaryPathIds == null;
+                assert libraryPathIds == null;
+                assert binaryLibraryPathIds == null;
                 assert mimeTypes == null;
 
                 sourcePathIds = Collections.unmodifiableSet(collectedSpids);
-                binaryPathIds = Collections.unmodifiableSet(collectedBpids);
+                libraryPathIds = Collections.unmodifiableSet(collectedLpids);
+                binaryLibraryPathIds = Collections.unmodifiableSet(collectedBlpids);
                 mimeTypes = Collections.unmodifiableSet(collectedMimetypes);
             }
         }

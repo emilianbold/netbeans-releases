@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
@@ -48,6 +50,7 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
@@ -99,9 +102,8 @@ public abstract class JsTestBase extends CslTestBase {
     
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
         JsIndexer.setClusterUrl("file:/bogus"); // No translation
-        getXTestJsCluster();
+        super.setUp();
     }
     
     @Override

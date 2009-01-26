@@ -749,7 +749,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getBinaryPathIds() {
+        public Set<String> getBinaryLibraryPathIds() {
             final Set<String> res = new HashSet<String>();
             res.add(PLATFORM);
             res.add(LIBS);
@@ -757,7 +757,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getMimeType() {
+        public Set<String> getLibraryPathIds() {
+            return null;
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
             return Collections.singleton(MIME);
         }        
 
@@ -771,7 +776,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getBinaryPathIds() {
+        public Set<String> getBinaryLibraryPathIds() {
             final Set<String> res = new HashSet<String>();
             res.add(PLATFORM);
             res.add(LIBS);
@@ -779,7 +784,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getMimeType() {
+        public Set<String> getLibraryPathIds() {
+            return null;
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
             return Collections.singleton(EMIME);
         }
 

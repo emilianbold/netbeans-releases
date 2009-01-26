@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.spi.ParserResult;
 
@@ -59,7 +62,12 @@ public class JsCodeCompletionTest extends JsTestBase {
         JsIndex.MAX_SEARCH_ITEMS = Integer.MAX_VALUE;
         JsCodeCompletion.MAX_COMPLETION_ITEMS = Integer.MAX_VALUE;
     }
-    
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(JsClassPathProvider.BOOT_CP, JsClassPathProvider.getBootClassPath());
+    }
+
     @Override
     protected void checkCall(ParserResult info, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedFunction[] methodHolder = new IndexedFunction[1];

@@ -66,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsClassPathProvider;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -374,7 +375,10 @@ public class RetoucheUtils {
 //
     public static Set<FileObject> getJsFilesInProject(FileObject fileInProject) {
         Set<FileObject> files = new HashSet<FileObject>(100);
-        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject, null, Collections.<String>emptySet());
+        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject,
+                null,
+                Collections.singleton(JsClassPathProvider.BOOT_CP),
+                Collections.<String>emptySet());
         for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming

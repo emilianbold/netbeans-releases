@@ -136,7 +136,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -276,14 +275,6 @@ public abstract class CslTestBase extends NbTestCase {
         }
     }
 
-    public static File getXTestJsCluster() {
-        String destDir = System.getProperty("xtest.js.home");
-        if (destDir == null) {
-            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-        }
-        return new File(destDir);
-    }
-    
     protected FileObject touch(final String dir, final String path) throws IOException {
         return touch(new File(dir), path);
     }
@@ -2323,9 +2314,6 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     public void checkCompletion(final String file, final String caretLine, final boolean includeModifiers) throws Exception {
-// XXX: remove
-//        initializeClassPaths();
-
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
@@ -2370,9 +2358,6 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 }
 
-                // XXX: parsingapi
-                //pr.getSource().testUpdateIndex();
-                
                 final int finalCaretOffset = caretOffset;
                 final String finalPrefix = prefix;
                 final ParserResult finalParserResult = pr;
@@ -2469,9 +2454,6 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     public void checkCompletionDocumentation(final String file, final String caretLine, final boolean includeModifiers, final String itemPrefix) throws Exception {
-// XXX: remove
-//        initializeClassPaths();
-
         // TODO call TestCompilationInfo.setCaretOffset!        
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
@@ -2748,20 +2730,7 @@ public abstract class CslTestBase extends NbTestCase {
     protected void checkCall(ParserResult info, int caretOffset, String param, boolean expectSuccess) {
     }
 
-// XXX: remove
-//    protected void initializeClassPaths() {
-//        initializeRegistry();
-//        // Force classpath initialization
-//        LanguageRegistry.getInstance().getLibraryUrls();
-//        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
-//// XXX: parsingapi
-////        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
-//    }
-    
     public void checkComputeMethodCall(String file, final String caretLine, final String param, final boolean expectSuccess) throws Exception {
-// XXX: remove
-//        initializeClassPaths();
-        
         final QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
 
@@ -2803,9 +2772,6 @@ public abstract class CslTestBase extends NbTestCase {
                         }
                     }
                 }
-
-                // XXX: parsingapi
-                //js.testUpdateIndex();
 
                 checkCall(pr, caretOffset, param, expectSuccess);
             }

@@ -41,8 +41,6 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.lexer.Language;
@@ -57,7 +55,6 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer;
-import org.openide.filesystems.FileObject;
 
 public class RhtmlLanguage extends RubyLanguage {
     
@@ -156,8 +153,4 @@ public class RhtmlLanguage extends RubyLanguage {
         }
     }
 
-    @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
-    }
 }
