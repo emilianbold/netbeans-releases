@@ -478,8 +478,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     <target name="fix-cddl-gpl" depends="build-init">
         <property name="license.root.dir" location="${basedir}"/>
         <checklicense>
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
+            <fileset dir="${license.root.dir}"/>
+            <fileset dir="${src.dir}"/>
             
             <convert 
                 token='^([ \t]*[^ \n]+[ \t]?)?[ \t]*The contents of this file are subject to the terms of the Common Development' 
@@ -531,8 +531,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </checklicense>
 
         <checklicense fragment="Common Development" fail="whenpresent">
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
+            <fileset dir="${license.root.dir}"/>
+            <fileset dir="${src.dir}"/>
         </checklicense>
     </target>
     
