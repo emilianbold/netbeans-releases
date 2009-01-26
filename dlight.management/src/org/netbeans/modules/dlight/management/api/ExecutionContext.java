@@ -38,9 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.DLightTool;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.spi.Indicator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,11 +52,11 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
 import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.nativeexecution.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.openide.util.Exceptions;
 
 final class ExecutionContext {
-
+    private static final Object lock = new Object();
     private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
     private volatile boolean validationInProgress = false;
     private final DLightTarget target;
@@ -88,11 +87,13 @@ final class ExecutionContext {
     }
 
     void validateTools(boolean performRequiredActions) {
-        if (validationInProgress) {
-            return;
+        synchronized (lock) {
+            if (validationInProgress) {
+                return;
+            }
+            validationInProgress = true;
         }
 
-        validationInProgress = true;
         Map<DLightTool, Future<ValidationStatus>> hash = new HashMap<DLightTool, Future<ValidationStatus>>();
         Map<DLightTool, ValidationStatus> shash = new HashMap<DLightTool, ValidationStatus>();
 
@@ -123,7 +124,11 @@ final class ExecutionContext {
                             ObservableAction[] actions = toolNewStatus.getRequiredActions();
                             if (actions != null) {
                                 for (ObservableAction a : actions) {
-                                    a.invokeAndWait();
+                                    try {
+                                        a.call();
+                                    } catch (Exception ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
                             }
 

@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
 
@@ -57,6 +58,8 @@ import org.openide.util.WeakListeners;
  *
  * @author Daniel Mohni
  */
+@ProjectServiceProvider(service={PersistenceLocationProvider.class, PersistenceScopeProvider.class, PersistenceScopesProvider.class},
+projectType="org-netbeans-modules-maven")
 public class MavenPersistenceProvider implements PersistenceLocationProvider, 
         PersistenceScopeProvider, PersistenceScopesProvider 
 {

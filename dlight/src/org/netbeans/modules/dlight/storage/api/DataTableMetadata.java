@@ -98,6 +98,19 @@ public class DataTableMetadata {
     return columns.size();
   }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(name);
+        sb.append(' ');
+        if (columns != null) {
+            for (Column column : columns) {
+                sb.append("\n\t");
+                sb.append(column);
+            }
+        }
+        return sb.toString();
+    }
+
   public static class Column {
 
     String name;

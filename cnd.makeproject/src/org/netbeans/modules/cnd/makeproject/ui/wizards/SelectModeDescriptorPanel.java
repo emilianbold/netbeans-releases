@@ -47,7 +47,13 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -172,11 +178,36 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
         for (String name : pattern) {
             file = new File(folder+"/"+name); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            if (isRunnable(file)){
                 return file.getAbsolutePath();
             }
         }
         return null;
+    }
+
+    public static boolean isRunnable(File file) {
+        if (file.exists() && file.isFile() && file.canRead()) {
+            FileObject configureFileObject = FileUtil.toFileObject(file);
+            if (configureFileObject == null || !configureFileObject.isValid()) {
+                return false;
+            }
+            DataObject dObj;
+            try {
+                dObj = DataObject.find(configureFileObject);
+            } catch (DataObjectNotFoundException ex) {
+                return false;
+            }
+            if (dObj == null) {
+                return false;
+            }
+            Node node = dObj.getNodeDelegate();
+            if (node == null) {
+                return false;
+            }
+            ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+            return ses != null;
+        }
+        return false;
     }
 
     public static String findMakefile(String folder){

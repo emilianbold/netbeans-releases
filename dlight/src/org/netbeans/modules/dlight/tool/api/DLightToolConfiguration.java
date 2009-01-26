@@ -8,39 +8,56 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
+import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
 import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
 
 /**
- * This class represents configuration object to create DLightTool instance on the base of
+ * This class represents configuration object to create D-Light Tool on the base of.
+ * 
  */
 public final class DLightToolConfiguration {
 
   private final String toolName;
   private final List<DataCollectorConfiguration> dataCollectors;
   private final List<IndicatorDataProviderConfiguration> indicatorDataProvidersConfiguration;
-  private final List<Indicator> indicators;
+  private final List<IndicatorConfiguration> indicators;
 
   static{
     DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorIml());
   }
 
+  /**
+   * Creates new D-Light Tool configuration using the name <code>toolName</code>
+   * @param toolName tool name configuration will be created for
+   */
   public DLightToolConfiguration(String toolName) {
     this.toolName = toolName;
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollectorConfiguration>());
-    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
+    indicators = Collections.synchronizedList(new ArrayList<IndicatorConfiguration>());
     indicatorDataProvidersConfiguration = Collections.synchronizedList(new ArrayList<IndicatorDataProviderConfiguration>());
   }
 
+  /**
+   * Adds {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration}
+   * @param collector collector configuration
+   */
   public void addDataCollectorConfiguration(DataCollectorConfiguration collector) {
     dataCollectors.add(collector);
   }
 
-  public void addIndicator(Indicator indicator) {
+  /**
+   * Adds indicator configration
+   * @param indicator indicator configuration
+   */
+  public void addIndicatorConfiguration(IndicatorConfiguration indicator) {
     indicators.add(indicator);
   }
 
+  /**
+   * Adds indicator data provider configuration
+   * @param indDataProvider indicator data provider configuration
+   */
   public void addIndicatorDataProviderConfiguration(IndicatorDataProviderConfiguration indDataProvider) {
     indicatorDataProvidersConfiguration.add(indDataProvider);
   }
@@ -53,7 +70,7 @@ public final class DLightToolConfiguration {
     return indicatorDataProvidersConfiguration;
   }
 
-  List<Indicator> getIndicators() {
+  List<IndicatorConfiguration> getIndicators() {
     return indicators;
   }
 
@@ -74,7 +91,7 @@ public final class DLightToolConfiguration {
     }
 
     @Override
-    public List<Indicator> getIndicators(DLightToolConfiguration conf) {
+    public List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf) {
       return conf.getIndicators();
     }
 

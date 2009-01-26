@@ -45,10 +45,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -83,6 +83,13 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             uid = createUID();
         }
         return uid;
+    }
+
+    protected final void setSelfUID() {
+        if (uid != null) {
+            System.err.println("replacing " + uid + " to self UID");
+        }
+        uid = UIDProviderIml.createSelfUID(this);
     }
 
     protected void cleanUID() {

@@ -56,11 +56,11 @@
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="netbeans.appname" value="NetBeans 6.1"/>
+  <property name="netbeans.appname" value="NetBeans 7.0"/>
   <property name="appname" value="${netbeans.appname}"/>
-  <property name="appversion" value="6.1 Development Version"/>
-  <property name="version" value="6.1 Development Version"/>
-  <property name="nbClusterDir" value="nb6.5"/>
+  <property name="appversion" value="7.0 Development Version"/>
+  <property name="version" value="7.0 Development Version"/>
+  <property name="nbClusterDir" value="nb7.0"/>
   
   <property name="appdir" value="build/app/${appname}.app"/>
   <property name="zipname" value="netbeans-6.1dev-macosx.zip"/>

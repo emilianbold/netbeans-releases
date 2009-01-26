@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.refactoring.api;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -72,10 +74,20 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      *
      * @param method  refactored object, i.e. method or constructor
      */
-    public ChangeParametersRefactoring(CsmObject method) {
-        super(Lookups.singleton(method));
+    public ChangeParametersRefactoring(CsmObject method, CsmContext editorContext) {
+        super(createLookup(method, editorContext));
     }
-    
+
+    private static Lookup createLookup(CsmObject method, CsmContext editorContext) {
+        assert method != null || editorContext != null: "must be non null object to refactor";
+        if (editorContext == null) {
+            return Lookups.fixed(method);
+        } else if (method == null) {
+            return Lookups.fixed(editorContext);
+        } else {
+            return Lookups.fixed(method, editorContext);
+        }
+    }
     /**
      * Getter for new parameters
      * @return array of new parameters

@@ -40,10 +40,23 @@
 package org.netbeans.modules.dlight.dataprovider.api;
 
 /**
- * This is marker class which is used to set correspondence
- * between {@link org.netbeans.dlight.core.visualizer.model.Visualizer} and
- * {@link  org.netbeans.dlight.core.dataprovider.model.DataProvider}
- * @author masha
+ * <p>
+ * This is marker class  which declares scheme which
+ * will be used by {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
+ * to find {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory} which
+ * will create  {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider} used by
+ *  {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer} to get data from.
+ * <p>
+ * As an example let's pretend you need to view data in Table View and
+ * creates your own TableVisualizer configuration which implements
+ * {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration} and
+ *  it will announce that <code>TableScheme</code> is supported and
+ *  When Table Visualizer (created along with TableVisuallizer configuration) needs
+ *  to be opened infrastructure should find the proper {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider}
+ *  which will be used by Visualizer and *the proper*  means that DataProvider should
+ *  provide </code>TableScheme</code> in the
+ * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory#getProvidedDataModelScheme() }
+ *
  */
 public class DataModelScheme {
   private String id;
@@ -55,7 +68,7 @@ public class DataModelScheme {
 
   /**
    * Id used to identify model
-   * @return
+   * @return unqiue id
    */
   public String getID() {
     return id;

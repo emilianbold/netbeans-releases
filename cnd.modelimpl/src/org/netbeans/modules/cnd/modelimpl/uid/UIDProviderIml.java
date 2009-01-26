@@ -41,9 +41,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -55,10 +53,17 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 public final class UIDProviderIml implements UIDProvider {
 
     private static final Set<Class> nonIdentifiable = new HashSet<Class>();
-    private static final Logger LOG = Logger.getLogger(UIDs.class.getName());
     private static final boolean debugMode = CndUtils.isDebugMode();
 
+    public UIDProviderIml() {
+        // public constructor for service initialization
+    }
+    
     public <T> CsmUID<T> get(T obj) {
+        return get(obj, true);
+    }
+
+    public static <T> CsmUID<T> get(T obj, boolean checkNull) {
         CsmUID<T> out;
         if (UIDCsmConverter.isIdentifiable(obj)) {
             final CsmIdentifiable ident = (CsmIdentifiable) obj;
@@ -68,26 +73,27 @@ public final class UIDProviderIml implements UIDProvider {
             if (false && debugMode) {
                 Object object = uid.getObject();
                 if (object == null) {
-                    // is it ok that we are unable to get the object?
-                    LOG.severe("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                    if (checkNull) {
+                        System.err.println("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                    }
                 } else {
                     final Class<? extends Object> derefClass = object.getClass();
                     if (!derefClass.isAssignableFrom(obj.getClass())) {
-                        LOG.severe("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
+                        System.err.println("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
                     }
                 }
             }
             out = uid;
         } else {
             if (debugMode && nonIdentifiable.add(obj.getClass())) {
-                LOG.severe("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
+                System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
             }
             out = createSelfUID(obj);
         }
         return out;
     }
 
-    private <T> CsmUID<T> createSelfUID(T obj) {
+    public static <T> CsmUID<T> createSelfUID(T obj) {
         return new SelfUID<T>(obj);
     }
 

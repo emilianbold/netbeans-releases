@@ -38,17 +38,19 @@
  */
 package org.netbeans.modules.dlight.management.api.impl;
 
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.collector.spi.DataCollector;
+import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.storage.spi.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.openide.util.Lookup;
+
+
 
 public final class DataStorageManager {
 

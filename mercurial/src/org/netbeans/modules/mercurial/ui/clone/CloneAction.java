@@ -41,6 +41,7 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
+import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -118,59 +119,33 @@ public class CloneAction extends ContextAction {
     }
 
     private static void performClone(final String source, final String target, 
-            boolean projIsRepos, File projFile, final boolean isLocalClone, final String pullPath, final String pushPath) {
-        final Mercurial hg = Mercurial.getInstance();
-        final ProjectManager projectManager = ProjectManager.getDefault();
-        final File prjFile = projFile;
-        final Boolean prjIsRepos = projIsRepos;
-        final File cloneFolder = new File (target);
-        final File normalizedCloneFolder = FileUtil.normalizeFile(cloneFolder);
-        String projName = null;
-        if (projFile != null) projName = HgProjectUtils.getProjectName(projFile);
-        final String prjName = projName;
-        File cloneProjFile;
-        if (!prjIsRepos) {
-            String name = null;
-            if(prjFile != null)
-                name = prjFile.getAbsolutePath().substring(source.length() + 1);
-            else
-                name = target;
-            cloneProjFile = new File (normalizedCloneFolder, name);
-        } else {
-            cloneProjFile = normalizedCloneFolder;
-        }
-        final File clonePrjFile = cloneProjFile;
-        
+            final boolean projIsRepos, final File projFile, final boolean isLocalClone, final String pullPath, final String pushPath) {
+
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         final HgProgressSupport support = new HgProgressSupport() {
-            Runnable doOpenProject = new Runnable () {
-                public void run()  {
-                    // Open and set focus on the cloned project if possible
-                    OutputLogger logger = getLogger();
-                    try {
-                        FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
-                        Project prj = null;
-                        if(clonePrjFile != null && cloneProj != null)
-                            prj = projectManager.findProject(cloneProj);
-                        if(prj != null){
-                            HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
-                            hg.versionedFilesChanged();
-                            hg.refreshAllAnnotations();
-                        }else{
-                            logger.outputInRed( NbBundle.getMessage(CloneAction.class,
-                                    "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
-                        }
-            
-                    } catch (java.lang.Exception ex) {
-                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
-                        DialogDisplayer.getDefault().notifyLater(e);
-                    } finally{
-                       logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                       logger.output(""); // NOI18N
-                    }
-                }
-            };
             public void perform() {
+                Mercurial hg = Mercurial.getInstance();
+                ProjectManager projectManager = ProjectManager.getDefault();
+                File prjFile = projFile;
+                Boolean prjIsRepos = projIsRepos;
+                File cloneFolder = new File (target);
+                File normalizedCloneFolder = FileUtil.normalizeFile(cloneFolder);
+                String projName = null;
+                if (projFile != null) projName = HgProjectUtils.getProjectName(projFile);
+                String prjName = projName;
+                File cloneProjFile;
+                if (!prjIsRepos) {
+                    String name = null;
+                    if(prjFile != null)
+                        name = prjFile.getAbsolutePath().substring(source.length() + 1);
+                    else
+                        name = target;
+                    cloneProjFile = new File (normalizedCloneFolder, name);
+                } else {
+                    cloneProjFile = normalizedCloneFolder;
+                }
+                final File clonePrjFile = cloneProjFile;
+
                 OutputLogger logger = getLogger();
                 try {
                     // TODO: We need to annotate the cloned project 
@@ -205,7 +180,7 @@ public class CloneAction extends ContextAction {
                         logger.output(""); // NOI18N
 
                         if (isLocalClone){
-                            SwingUtilities.invokeLater(doOpenProject);
+                            openProject(clonePrjFile, projectManager, hg);
                         } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
                             CloneCompleted cc = new CloneCompleted(cloneFolder);
                             if (isCanceled()) {
@@ -226,19 +201,48 @@ public class CloneAction extends ContextAction {
                     }
                     // #125835 - Push to default was not being set automatically by hg after Clone
                     // but was after you opened the Mercurial -> Properties, inconsistent
-                    HgConfigFiles hg = new HgConfigFiles(cloneFolder);
-                    String defaultPull = hg.getDefaultPull(false);
-                    String defaultPush = hg.getDefaultPush(false);
+                    HgConfigFiles hgConfigFiles = new HgConfigFiles(cloneFolder);
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    String defaultPush = hgConfigFiles.getDefaultPush(false);
                     if(pullPath != null && !pullPath.equals("")) defaultPull = pullPath;
                     if(pushPath != null && !pushPath.equals("")) defaultPush = pushPath;
-                    hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
                         
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                         logger.output(""); // NOI18N
                     }
                 }
+            }
+
+            private void openProject(final File clonePrjFile, final ProjectManager projectManager, final Mercurial hg) throws MissingResourceException {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // Open and set focus on the cloned project if possible
+                        OutputLogger logger = getLogger();
+                        try {
+                            FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
+                            Project prj = null;
+                            if (clonePrjFile != null && cloneProj != null) {
+                                prj = projectManager.findProject(cloneProj);
+                            }
+                            if (prj != null) {
+                                HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
+                                hg.versionedFilesChanged();
+                                hg.refreshAllAnnotations();
+                            } else {
+                                logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
+                            }
+                        } catch (java.lang.Exception ex) {
+                            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
+                            DialogDisplayer.getDefault().notifyLater(e);
+                        } finally {
+                            logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                            logger.output(""); // NOI18N
+                        }
+                    }
+                });
             }
         };
         support.setRepositoryRoot(source);

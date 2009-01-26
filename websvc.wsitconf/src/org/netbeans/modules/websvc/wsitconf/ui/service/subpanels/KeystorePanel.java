@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
@@ -178,7 +179,7 @@ public class KeystorePanel extends JPanel {
         if (keyStoreLocation != null) {
             setKeystorePath(keyStoreLocation);
         } else if (jsr109) {
-            setKeystorePath(Util.getStoreLocation(project, false, client));
+            setKeystorePath(ServerUtils.getStoreLocation(project, false, client));
         }
 
         ksType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);

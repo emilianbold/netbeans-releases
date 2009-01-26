@@ -53,6 +53,9 @@ struct Property;
 
 class DbgpConnection {
 public:
+    // pointer to the last debugger connection, used by the http monitor code
+    static DbgpConnection* lastInstance;
+
     DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrowserCookie);
     BOOL connectToIDE();
     void close();
@@ -73,6 +76,8 @@ public:
     void sendErrorMessage(tstring message);
     void sendReloadSourcesMessage(tstring docName);
 
+    // JRW TODO: verify sendResponse needs to stay public for HTTP Monitor Code
+    void sendResponse(tstring xmlString);
 private:
     SOCKET m_socket;
     tstring m_port, m_sessionId;
@@ -83,13 +88,10 @@ private:
     DWORD m_dwWebBrowserCookie;
     BOOL readCommand(char *cmdString);
     void processCommand(char *cmdString, DbgpConnection *pDbgpConnection);
-    void sendResponse(tstring xmlString);
+    
     void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
     void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
     set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly);
-    BOOL unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen);
-    BOOL UTF8toUnicode(char *str, TCHAR **ppChars);
-    tstring encodeToBase64(tstring value);
 };
 
 

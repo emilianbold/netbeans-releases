@@ -1070,9 +1070,9 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
         // FIXME just a dirty prototype
-        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
-                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor);
-        proposals.addAll(dynamic.values());
+//        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
+//                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor, true, request.info.getFileObject());
+//        proposals.addAll(dynamic.values());
 
         return true;
     }

@@ -43,7 +43,7 @@ import java.io.Reader;
 import java.util.Random;
 import org.netbeans.modules.dlight.util.Util;
 
-import org.netbeans.modules.nativeexecution.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;

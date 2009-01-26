@@ -45,9 +45,11 @@ import java.awt.BorderLayout;
 import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -251,12 +253,12 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         AnnotationView aView = new AnnotationView(editor);
         AnnotationViewDataImpl data = (AnnotationViewDataImpl) aView.getData();
         
-        List mergedMarks;
+        Collection mergedMarks;
         SortedMap map;
         
         mergedMarks = data.getMergedMarks();
         
-        assertEquals(marks, mergedMarks);
+        assertEquals(new LinkedHashSet(marks), mergedMarks);
         
         map = data.getMarkMap();
         
@@ -267,7 +269,7 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         
         mergedMarks = data.getMergedMarks();
         
-        assertEquals(marksOnlyFirst, mergedMarks);
+        assertEquals(new LinkedHashSet(marksOnlyFirst), mergedMarks);
         
         map = data.getMarkMap();
         
@@ -278,7 +280,7 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         
         mergedMarks = data.getMergedMarks();
         
-        assertEquals(marksFirstAndThird, mergedMarks);
+        assertEquals(new LinkedHashSet(marksFirstAndThird), mergedMarks);
         
         map = data.getMarkMap();
         
@@ -293,7 +295,7 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         
         mergedMarks = data.getMergedMarks();
         
-        assertEquals(Collections.EMPTY_LIST, mergedMarks);
+        assertEquals(Collections.emptySet(), mergedMarks);
         
         map = data.getMarkMap();
         
@@ -303,7 +305,7 @@ public class AnnotationViewDataImplTest extends NbTestCase {
         
         mergedMarks = data.getMergedMarks();
         
-        assertEquals(marksFirstAndThird, mergedMarks);
+        assertEquals(new LinkedHashSet(marksFirstAndThird), mergedMarks);
         
         map = data.getMarkMap();
         
