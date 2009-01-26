@@ -49,7 +49,7 @@ package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementsFactory;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 
@@ -77,9 +77,7 @@ public class WSDLExtensibilityElementsFactoryImpl extends WSDLExtensibilityEleme
 	
 	private DataFolder getRootFolder(String folderName) {
         try {
-            org.openide.filesystems.FileObject fo =
-                    Repository.getDefault().getDefaultFileSystem().findResource(folderName);
-
+            org.openide.filesystems.FileObject fo = FileUtil.getConfigFile(folderName);
             if (fo == null) {
                 throw new Exception(NbBundle.getMessage(WSDLExtensibilityElementsFactoryImpl.class, "ERR_MSG_FOLDERN_NOT_FOUND", folderName));
             }

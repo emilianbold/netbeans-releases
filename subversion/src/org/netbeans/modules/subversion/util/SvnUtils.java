@@ -73,6 +73,8 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
@@ -853,8 +855,7 @@ public class SvnUtils {
         exp = exp.replaceAll("\\^", "\\\\^");   // NOI18N
         exp = exp.replaceAll("\\<", "\\\\<");   // NOI18N
         exp = exp.replaceAll("\\>", "\\\\>");   // NOI18N
-        exp = exp.replaceAll("\\[", "\\\\[");   // NOI18N
-        exp = exp.replaceAll("\\]", "\\\\]");   // NOI18N
+        exp = patchRegExpClassCharacters(exp);
         exp = exp.replaceAll("\\{", "\\\\{");   // NOI18N
         exp = exp.replaceAll("\\}", "\\\\}");   // NOI18N
         exp = exp.replaceAll("\\(", "\\\\(");   // NOI18N
@@ -863,6 +864,53 @@ public class SvnUtils {
         exp = exp.replaceAll("\\|", "\\\\|");   // NOI18N
 
         return exp;
+    }
+
+
+    /*
+     * Returns a string having characters <code>[</code> and <code>]</code> escaped if they do not represent
+     * a character class definition.
+     *
+     * @param exp string to be escaped
+     * @return string with escaped characters
+     */
+    private static String patchRegExpClassCharacters (String exp) {
+        LinkedList<Integer> indexes = new LinkedList<Integer>();
+        StringBuilder builder = new StringBuilder(exp.length());
+
+        for (int index = 0, builderIndex = 0; index < exp.length(); ++index, ++builderIndex) {
+            char ch = exp.charAt(index);
+            if (ch == '\\') {       // NOI18N
+                // backslash is escaped and added
+                builder.append(ch);
+                if (++index < exp.length()) {
+                    ++builderIndex;
+                    builder.append(exp.charAt(index));
+                }
+            } else if (ch == '[') { // NOI18N
+                // openning parenthesis is added and its position is saved for possible later escaping
+                builder.append(ch);
+                indexes.add(builderIndex);
+            } else {
+                if (ch == ']') { // NOI18N
+                    // closing parenthesis consumes the last opening parenthesis (if that exists), otherwise escapes itself
+                    if (indexes.isEmpty()) {
+                        builder.append("\\");   // NOI18N
+                        ++builderIndex;
+                    } else {
+                        indexes.removeLast();
+                    }
+                }
+                builder.append(ch); // append the current character
+            }
+        }
+
+        for (Integer index : indexes) {
+            // escapes all opening parenthesis that have no closing
+            builder.insert(index, "\\");   // NOI18N
+        }
+
+        return builder.toString();
     }
 
     /**
@@ -1001,30 +1049,85 @@ public class SvnUtils {
         TY9_LOG.log(Level.FINEST, msg);
     }
 
-    public static File getActionRoot(Context ctx) {
+    /**
+     * Either returns all root files from a context if they belong to the same DataObject or 
+     * opens a dialog to pick a file from all managed roots in the given context.
+     *
+     * @param ctx the given context to choose the root from
+     * @return might be one of the following:<br>
+     *          <ul>
+     *              <li>all root files from a context
+     *              <li>the context root picked by the one picked by the user
+     *              <li>null if there are more than one root file not belonging
+     *                  to the same DataObject and none was chosen by the user
+     *          </ul>
+     */
+    public static File[] getActionRoots(Context ctx) {
         File[] roots = ctx.getRootFiles();
         List<File> l = new ArrayList<File>();
+
+        // filter managed roots
         for (File file : roots) {
             if(isManaged(file)) {
                 l.add(file);
             }
         }
+
         roots = l.toArray(new File[l.size()]);
+        if(Utils.shareCommonDataObject(roots)) {
+            return roots;
+        }
+
         if(roots.length > 1) {
+            // more than one managed root => need a dlg
             FileSelector fs = new FileSelector();
             if(fs.show(roots)) {
-                return fs.getSelectedFile();
+                return new File[ ]{ fs.getSelectedFile()};
             } else {
                 return null;
             }
         } else {
-            return roots[0];
+            return new File[] {roots[0]};
         }
     }
 
-    public static String getHash(String alg, byte[] encoded) throws NoSuchAlgorithmException {
+    /**
+     * Returns the primary file from a DataObject if there is some
+     * @param roots
+     * @return
+     */
+    public static File getPrimaryFile(File file) {
+        File primaryFile = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo != null) {
+            DataObject dao = null;
+            try {
+                dao = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                Subversion.LOG.log(Level.INFO, "No DataObject found for " + file, ex);
+            }
+            if(dao != null) {
+                primaryFile = FileUtil.toFile(dao.getPrimaryFile());
+            }
+        }
+        if(primaryFile == null) {
+            primaryFile = file; // consider it a fallback
+        }
+        return primaryFile;
+    }
+
+    /**
+     * Returns hash value for the given byte array and algoritmus in a hex string form.
+     * @param alg Algoritmus to compute the hash value (see also Appendix A in the
+     * Java Cryptography Architecture API Specification &amp; Reference </a>
+     * for information about standard algorithm names.)
+     * @param bytes byte array
+     * @return hash value as a string
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public static String getHash(String alg, byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md5 = MessageDigest.getInstance(alg);
-        md5.update(encoded);
+        md5.update(bytes);
         byte[] md5digest = md5.digest();
         String ret = ""; // NOI18N
         for (int i = 0; i < md5digest.length; i++) {
@@ -1035,6 +1138,21 @@ public class SvnUtils {
             ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
         }
         return ret;
+    }
+
+    /**
+     * @return <code>true</code> if currently running Java Platform is 64-bit, <code>false</code> othrewise
+     */
+    public static boolean isJava64 () {
+        String javaVMName = System.getProperty("java.vm.name"); // NOI18N
+        if (javaVMName == null) {
+            return false;
+        }
+
+        if (javaVMName.toLowerCase().contains("64-bit")) { // NOI18N
+            return true;
+        }
+        return false;
     }
 
  }

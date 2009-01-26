@@ -223,34 +223,25 @@ public class InstallerTest extends NbTestCase {
         assertEquals("3rd is default", def, buttons[0]);
         assertEquals("Ahoj", dd.getTitle());
     }
-    public void testLoggingIssue145167() throws Exception {
-        Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
-        final List<LogRecord> recs = new ArrayList<LogRecord>();
-        logger.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                recs.add(record);
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+    public void testParseEmptyAction() throws Exception {
         String page = "<html><head><title>Ahoj</title></head><body><form action='' method='POST'>" +
                 "\n" +
                 "</form></body></html>";
         InputStream is = new ByteArrayInputStream(page.getBytes());
         JButton def = new JButton("Default");
         DialogDescriptor dd = new DialogDescriptor(null, "MyTit");
-        Installer.parseButtons(is, def, dd);
-        is.close();
-        assertEquals(1, recs.size());
-        assertTrue(recs.get(0).getMessage().contains("invalid action from doc"));
+        boolean ok = false;
+        try{
+            Installer.parseButtons(is, def, dd);
+            assertTrue(false);
+        }catch(IllegalStateException e){
+            ok = true;
+            assertTrue (e.getMessage().contains("Action"));
+            assertTrue (e.getMessage().contains("empty"));
+        }finally{
+            is.close();
+        }
+        assertTrue(ok);
     }
     public void testNoTitle() throws Exception {
         String page = "<html><head></head><body><form action='http://xyz.cz' method='POST'>" +

@@ -1,0 +1,4 @@
+# @type ^|>MARK_OCCURRENCES:xy<| str
+|>MARK_OCCURRENCES:xy<|.s1
+# @type |>MARK_OCCURRENCES:xy<| int
+|>MARK_OCCURRENCES:xy<|.s2

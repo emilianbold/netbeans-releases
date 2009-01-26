@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -81,6 +82,7 @@ import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -242,9 +244,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     }
 
     private List<GrammarResult> collectPluginParams(ArtifactInfoHolder info, HintContext hintCtx) {
-        Set<String> params;
+        Set<PluginIndexManager.ParameterDetail> params;
         try {
-            params = PluginIndexManager.getPluginParameterNames(info.getGroupId(), info.getArtifactId(), info.getVersion(), null);
+            params = PluginIndexManager.getPluginParameters(info.getGroupId(), info.getArtifactId(), info.getVersion(), null);
             if (params == null) {
                 return null;
             }
@@ -254,9 +256,11 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         List<GrammarResult> toReturn = new ArrayList<GrammarResult>();
 
-        for (String name : params) {
-            if (name.startsWith(hintCtx.getCurrentPrefix())) {
-                toReturn.add(new MyElement(name));
+        for (PluginIndexManager.ParameterDetail plg : params) {
+            if (plg.getName().startsWith(hintCtx.getCurrentPrefix())) {
+                MyElement me = new MyElement(plg.getName());
+                me.setDescription(plg.getHtmlDetails(true));
+                toReturn.add(me);
             }
         }
         return toReturn;

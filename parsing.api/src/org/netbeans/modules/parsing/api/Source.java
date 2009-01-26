@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -158,7 +159,8 @@ public final class Source {
         
         String mimeType = NbEditorUtilities.getMimeType(document);
         if (mimeType == null) {
-            throw new NullPointerException("Netbeans documents must have 'mimeType' property"); //NOI18N
+            throw new NullPointerException("Netbeans documents must have 'mimeType' property: " //NOI18N
+                + document.getClass() + "@" + Integer.toHexString(System.identityHashCode(document))); //NOI18N
         }
 
         synchronized (Source.class) {
@@ -217,8 +219,8 @@ public final class Source {
      */
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
-    public Document getDocument () {
-        return _getDocument(false);
+    public Document getDocument (boolean forceOpen) {
+        return _getDocument (forceOpen);
     }
     
     /**
@@ -248,45 +250,55 @@ public final class Source {
      * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
-        final String [] text = new String [] { "" }; //NOI18N
-        Document doc = _getDocument(false);
+        final String [] text = new String [] {""}; //NOI18N
+        Document doc = _getDocument (false);
         if (doc == null) {
-            EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
-            Document customDoc = kit.createDefaultDocument();
+            EditorKit kit = CloneableEditorSupport.getEditorKit (mimeType);
+            Document customDoc = kit.createDefaultDocument ();
             try {
-                InputStream is = fileObject.getInputStream();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, FileEncodingQuery.getEncoding(fileObject)));
+                if (fileObject.isValid ()) {
+                    InputStream is = fileObject.getInputStream ();
                     try {
-                        kit.read(reader, customDoc, 0);
-                        doc = customDoc;
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        BufferedReader reader = new BufferedReader (
+                            new InputStreamReader (
+                                is,
+                                FileEncodingQuery.getEncoding (fileObject)
+                            )
+                        );
+                        try {
+                            kit.read (reader, customDoc, 0);
+                            doc = customDoc;
+                        } catch (BadLocationException ble) {
+                            LOG.log (Level.WARNING, null, ble);
+                        } finally {
+                            reader.close ();
+                        }
                     } finally {
-                        reader.close();
+                        is.close ();
                     }
-                    } finally {
-                    is.close();
                 }
             } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
+                LOG.log (Level.WARNING, null, ioe);
             }
         }
         if (doc != null) {
             final Document d = doc;
-            d.render(new Runnable() {
-                public void run() {
+            d.render (new Runnable () {
+                public void run () {
                     try {
-                        text[0] = d.getText(0, d.getLength());
+                        text[0] = d.getText (0, d.getLength());
                     } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        LOG.log (Level.WARNING, null, ble);
                     }
-                    }
+                }
             });
         }
 
-        return new Snapshot(
-            text[0], this, mimeType, new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
+        return new Snapshot (
+            text [0], this,
+            MimePath.get (mimeType),
+            new int[][] {new int[] {0, 0}},
+            new int[][] {new int[] {0, 0}}
         );
     }
     
@@ -509,6 +521,13 @@ public final class Source {
         }
 
         @Override
+        public void parsed (Source source) {
+            synchronized (source) {
+                source.sourceModificationEvent = null;
+            }
+        }
+
+        @Override
         public SourceModificationEvent getSourceModificationEvent (Source source) {
             assert source != null;
             SourceModificationEvent event = source.sourceModificationEvent;
@@ -594,7 +613,7 @@ public final class Source {
 
         @Override
         public String toString () {
-            return "ASourceModificationEvent " + startOffset + ":" + endOffset;
+            return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }
 }

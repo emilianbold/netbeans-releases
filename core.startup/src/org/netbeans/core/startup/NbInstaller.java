@@ -49,11 +49,13 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +78,7 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
@@ -543,20 +545,20 @@ final class NbInstaller extends ModuleInstaller {
         // #23609: dependent modules should be able to override:
         modules = new ArrayList<Module>(modules);
         Collections.reverse(modules);
-        Map<ModuleLayeredFileSystem,List<URL>> urls = new HashMap<ModuleLayeredFileSystem,List<URL>>(5);
+        Map<ModuleLayeredFileSystem,Collection<URL>> urls = new HashMap<ModuleLayeredFileSystem,Collection<URL>>(5);
         ModuleLayeredFileSystem userModuleLayer = ModuleLayeredFileSystem.getUserModuleLayer();
         ModuleLayeredFileSystem installationModuleLayer = ModuleLayeredFileSystem.getInstallationModuleLayer();
-        urls.put(userModuleLayer, new ArrayList<URL>(1000));
-        urls.put(installationModuleLayer, new ArrayList<URL>(1000));
+        urls.put(userModuleLayer, new LinkedHashSet<URL>(1000));
+        urls.put(installationModuleLayer, new LinkedHashSet<URL>(1000));
         for (Module m: modules) {
             // #19458: only put reloadables into the "session layer"
             // (where they will not have their layers cached). All others
             // should go into "installation layer" (so that they can mask
             // layers according to cross-dependencies).
             ModuleLayeredFileSystem host = m.isReloadable() ? userModuleLayer : installationModuleLayer;
-            List<URL> theseurls = urls.get(host);
+            Collection<URL> theseurls = urls.get(host);
             if (theseurls == null) {
-                theseurls = new ArrayList<URL>(1000);
+                theseurls = new LinkedHashSet<URL>(1000);
                 urls.put(host, theseurls);
             }
             ClassLoader cl = m.getClassLoader();
@@ -595,16 +597,17 @@ final class NbInstaller extends ModuleInstaller {
                 findResources.setAccessible(true);
                 Enumeration e = (Enumeration) findResources.invoke(cl, "META-INF/generated-layer.xml"); // NOI18N
                 while (e.hasMoreElements()) {
-                    theseurls.add((URL) e.nextElement());
+                    URL u = (URL)e.nextElement();
+                    theseurls.add(u);
                 }
             } catch (Exception x) {
                 Exceptions.printStackTrace(x);
             }
         }
         // Now actually do it.
-        for (Map.Entry<ModuleLayeredFileSystem,List<URL>> entry: urls.entrySet()) {
+        for (Map.Entry<ModuleLayeredFileSystem,Collection<URL>> entry: urls.entrySet()) {
             ModuleLayeredFileSystem host = entry.getKey();
-            List<URL> theseurls = entry.getValue();
+            Collection<URL> theseurls = entry.getValue();
             Util.err.fine("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
             try {
                 if (load) {
@@ -720,7 +723,7 @@ final class NbInstaller extends ModuleInstaller {
             return;
         }
         if (autoDepsHandler == null) {
-            FileObject depsFolder = Repository.getDefault().getDefaultFileSystem().findResource("ModuleAutoDeps");
+            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
             if (depsFolder != null) {
                 FileObject[] kids = depsFolder.getChildren();
                 List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
@@ -1141,13 +1144,9 @@ final class NbInstaller extends ModuleInstaller {
         }
         DateAndManifest entry = cache.get(jar);
         if (entry != null) {
-            if (entry.date == jar.lastModified()) {
-                // Cache hit.
-                MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
-                return entry.manifest;
-            } else {
-                MANIFEST_LOG.fine("Wrong timestamp for " + jar + " in manifest cache");
-            }
+            // Cache hit.
+            MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
+            return entry.manifest;
         } else {
             MANIFEST_LOG.fine("No entry for " + jar + " in manifest cache");
         }

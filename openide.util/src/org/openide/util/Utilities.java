@@ -1650,6 +1650,11 @@ widthcheck:  {
             sb.append('-');
         }
 
+        appendRest(sb, stroke);
+        return sb.toString();
+    }
+
+    private static void appendRest(StringBuilder sb, KeyStroke stroke) {
         String c = initNameAndValues().keyToString.get(Integer.valueOf(stroke.getKeyCode()));
 
         if (c == null) {
@@ -1657,8 +1662,28 @@ widthcheck:  {
         } else {
             sb.append(c);
         }
+    }
 
-        return sb.toString();
+    /**
+     * Converts a Swing key stroke descriptor to a familiar Emacs-like name,
+     * but in a portable way, ie. <code>Meta-C</code> on Mac => <code>D-C</code>
+     * @param stroke key description
+     * @return name of the key (e.g. <code>CS-F1</code> for control-shift-function key one)
+     * @see #stringToKey
+     */
+    public static String keyToString(KeyStroke stroke, boolean portable) {
+        if (portable) {
+            StringBuilder sb = new StringBuilder();
+
+            // add modifiers that must be pressed
+            if (addModifiersPortable(sb, stroke.getModifiers())) {
+                sb.append('-');
+            }
+
+            appendRest(sb, stroke);
+            return sb.toString();
+        }
+        return keyToString(stroke);
     }
 
     /** Construct a new key description from a given universal string
@@ -1862,6 +1887,32 @@ widthcheck:  {
 
         if ((modif & ALT_WILDCARD_MASK) != 0) {
             buf.append("O");
+            b = true;
+        }
+
+        return b;
+    }
+
+    private static boolean addModifiersPortable(StringBuilder buf, int modifiers) {
+        boolean b = false;
+
+        if ((modifiers & KeyEvent.SHIFT_MASK) != 0) {
+            buf.append('S');
+            b = true;
+        }
+
+        if (Utilities.isMac() && ((modifiers & KeyEvent.META_MASK) != 0) || !Utilities.isMac() && ((modifiers & KeyEvent.CTRL_MASK) != 0)) {
+            buf.append('D');
+            b = true;
+        }
+
+        if (Utilities.isMac() && ((modifiers & KeyEvent.CTRL_MASK) != 0) || !Utilities.isMac() && ((modifiers & KeyEvent.ALT_MASK) != 0)) {
+            buf.append('O');
+            b = true;
+        }
+        // mac alt fallback
+        if (Utilities.isMac() && ((modifiers & KeyEvent.ALT_MASK) != 0)) {
+            buf.append('A');
             b = true;
         }
 
@@ -2777,13 +2828,16 @@ widthcheck:  {
      */
     public static List<? extends Action> actionsForPath(String path) {
         List<Action> actions = new ArrayList<Action>();
-        for (Object item : Lookups.forPath(path).lookupAll(Object.class)) {
-            if (item instanceof Action) {
-                actions.add((Action) item);
-            } else if (item instanceof JSeparator) {
+        for (Lookup.Item<Object> item : Lookups.forPath(path).lookupResult(Object.class).allItems()) {
+            if (Action.class.isAssignableFrom(item.getType())) {
+                Object instance = item.getInstance();
+                if (instance != null) {
+                    actions.add((Action) instance);
+                }
+            } else if (JSeparator.class.isAssignableFrom(item.getType())) {
                 actions.add(null);
             } else {
-                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getClass() + " found in actions path " + path);
+                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getType() + " found in actions path " + path);
             }
         }
         return actions;

@@ -56,6 +56,9 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -63,7 +66,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class ViewNode extends BaseNode implements SchemaNameProvider {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif"; // NOI18N
     private static final String FOLDER = "View"; //NOI18N
 
     /**
@@ -98,13 +101,20 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                         public void run(Metadata metaData) {
                             View view = viewHandle.resolve(metaData);
                             name = view.getName();
+
+                            updateProperties(view);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    private void updateProperties(View view) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
     }
 
     public String getCatalogName() {
@@ -125,6 +135,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
             command.execute();
             remove();
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -171,6 +182,11 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
         return bundle().getString("ND_View"); //NOI18N
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewNode.class);
+    }
+
     public static String getSchemaName(DatabaseConnection connection, final MetadataElementHandle<View> handle) {
         MetadataModel metaDataModel = connection.getMetadataModel();
         final String[] array = new String[1];
@@ -187,7 +203,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -209,7 +225,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

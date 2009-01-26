@@ -181,12 +181,6 @@ made subject to such option by the copyright holder.
 		<implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponent</implements>
 	</meta-element>
 	<meta-element>
-		<dtd-name>xsdQNameType</dtd-name>
-		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
-		<bean-name>XsdQNameType</bean-name>
-		<wrapper-class>org.netbeans.modules.schema2beans.QName</wrapper-class>
-	</meta-element>
-	<meta-element>
 		<dtd-name>true-falseType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>TrueFalseType</bean-name>

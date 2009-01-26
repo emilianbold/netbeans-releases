@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -196,7 +197,9 @@ public final class JSPPaletteUtilities {
             return;
         }
         try {
-            JavaSource.forFileObject(fobj).runUserActionTask(aTask, false);
+            JavaSource src = JavaSource.create(ClasspathInfo.create(fobj));
+            if (src != null)
+                src.runUserActionTask(aTask, false);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

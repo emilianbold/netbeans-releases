@@ -126,14 +126,14 @@ public class FolderChildrenTest extends NbTestCase {
         assertEquals("The right pool initialized", Pool.class, DataLoaderPool.getDefault().getClass());
         setSystemProp("netbeans.security.nocheck","true");
 
-        FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
+        FileObject[] arr = FileUtil.getConfigRoot().getChildren();
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete();
         }
     }
 
     public void testCorrectLoggerName() throws Exception {
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem().getRoot();
+        FileObject fo = FileUtil.getConfigRoot();
         Node n = DataFolder.findFolder(fo).getNodeDelegate();
         Enumeration<String> en = java.util.logging.LogManager.getLogManager().getLoggerNames();
         while(en.hasMoreElements()) {
@@ -145,9 +145,8 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     public void testSimulateADeadlockThatWillBeFixedByIssue49459 () throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject a = FileUtil.createData (fs.getRoot (), "XYZ49459/org-openide-loaders-FolderChildrenTest$N1.instance");
-        FileObject bb = fs.findResource("/XYZ49459");
+        FileObject a = FileUtil.createData (FileUtil.getConfigRoot (), "XYZ49459/org-openide-loaders-FolderChildrenTest$N1.instance");
+        FileObject bb = FileUtil.getConfigFile("XYZ49459");
         assertNotNull (bb);
 
         class Run implements Runnable {
@@ -192,11 +191,10 @@ public class FolderChildrenTest extends NbTestCase {
 
     public void testAdditionOfNewFileDoesNotInfluenceAlreadyExistingLoaders ()
     throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
-        FileUtil.createData (fs.getRoot (), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
+        FileUtil.createData (FileUtil.getConfigRoot (), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
+        FileUtil.createData (FileUtil.getConfigRoot (), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
 
-        FileObject bb = fs.findResource("/AA");
+        FileObject bb = FileUtil.getConfigFile("AA");
 
         DataFolder folder = DataFolder.findFolder (bb);
         Node node = folder.getNodeDelegate();
@@ -221,15 +219,14 @@ public class FolderChildrenTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1058 (in FolderChildrenLazyTest)
     public void testChangeableDataFilter() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         String pref = getName() + "/";
-        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource(pref + "/BB");
+        FileObject bb = FileUtil.getConfigFile(pref + "/BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -245,15 +242,14 @@ public class FolderChildrenTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1049 (in FolderChildrenLazyTest), #1051 (in this)
     public void testChangeableDataFilterOnNodeDelegate() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         String pref = getName() + "/";
-        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource(pref + "BB");
+        FileObject bb = FileUtil.getConfigFile(pref + "BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -271,8 +267,7 @@ public class FolderChildrenTest extends NbTestCase {
 
 
     public void testOrderAttributesAreReflected() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject root = FileUtil.createFolder(fs.getRoot(), "order");
+        FileObject root = FileUtil.createFolder(FileUtil.getConfigRoot(), "order");
 
         for (int i = 0; i < 256; i++) {
             FileUtil.createData(root, "file" + i + ".txt");
@@ -304,8 +299,7 @@ public class FolderChildrenTest extends NbTestCase {
         holder = filter;
 
         String pref = getName() + '/';
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
+        FileObject bb = FileUtil.createFolder(FileUtil.getConfigRoot(), pref + "/BB");
         bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
         DataFolder folder = DataFolder.findFolder(bb);
@@ -326,9 +320,8 @@ public class FolderChildrenTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1043 (in FolderChildrenEagerTest)
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         String pref = getName() + '/';
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
+        FileObject bb = FileUtil.createFolder(FileUtil.getConfigRoot(), pref + "/BB");
 	bb.createData("Ahoj.txt");
 	bb.createData("Hi.txt");
 
@@ -351,9 +344,8 @@ public class FolderChildrenTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1868
     public void testReorderAfterRename() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         String pref = getName() + '/';
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
+        FileObject bb = FileUtil.createFolder(FileUtil.getConfigRoot(), pref + "/BB");
         FileObject ahoj = bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
 
@@ -486,8 +478,8 @@ public class FolderChildrenTest extends NbTestCase {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());
         Repository.getDefault().addFileSystem(fs);
-        final FileObject workDir = FileUtil.createFolder (fs.getRoot(), "workFolder");
-        final FileObject sibling = FileUtil.createFolder (fs.getRoot (), "unimportantSibling");
+        final FileObject workDir = FileUtil.createFolder (FileUtil.getConfigRoot(), "workFolder");
+        final FileObject sibling = FileUtil.createFolder (FileUtil.getConfigRoot(), "unimportantSibling");
 
         workDir.addFileChangeListener(fcl);
 
@@ -639,11 +631,10 @@ public class FolderChildrenTest extends NbTestCase {
             private Node[] nodes;
             private int changes;
             public void init() throws IOException {
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileUtil.createData(fs.getRoot(), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
-                FileUtil.createData(fs.getRoot(), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
+                FileUtil.createData(FileUtil.getConfigRoot(), "AA/org-openide-loaders-FolderChildrenTest$N1.instance");
+                FileUtil.createData(FileUtil.getConfigRoot(), "AA/org-openide-loaders-FolderChildrenTest$N2.instance");
 
-                folderAA = fs.findResource("/AA");
+                folderAA = FileUtil.getConfigFile("/AA");
 
                 folder = DataFolder.findFolder(folderAA);
                 node = folder.getNodeDelegate();
@@ -722,13 +713,12 @@ public class FolderChildrenTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #985
     public void testCountNumberOfNodesWhenUsingFormLikeLoader() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "FK/A.java");
-        FileUtil.createData (fs.getRoot (), "FK/A.formKit");
+        FileUtil.createData (FileUtil.getConfigRoot(), "FK/A.java");
+        FileUtil.createData (FileUtil.getConfigRoot(), "FK/A.formKit");
 
         Pool.setLoader(FormKitDataLoader.class);
 
-        FileObject bb = fs.findResource("/FK");
+        FileObject bb = FileUtil.getConfigFile("/FK");
 
         DataFolder folder = DataFolder.findFolder (bb);
 
@@ -738,8 +728,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     public void testALotOfHiddenEntries() throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject folder = FileUtil.createFolder(fs.getRoot(), "aLotOf");
+        FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "aLotOf");
         List<FileObject> arr = new ArrayList<FileObject>();
         final int FILES = 1000;
         for (int i = 0; i < FILES; i++) {

@@ -49,6 +49,9 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Ordering;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -100,13 +103,22 @@ public class IndexColumnNode extends BaseNode {
                             }
 
                             position = column.getPosition();
+
+                            updateProperties(column);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    private void updateProperties(IndexColumn column) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        addProperty(POSITION, POSITIONDESC, Integer.class, false, column.getPosition());
     }
 
     public int getPosition() {
@@ -126,5 +138,15 @@ public class IndexColumnNode extends BaseNode {
     @Override
     public String getIconBase() {
         return icon;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Column"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(IndexColumnNode.class);
     }
 }

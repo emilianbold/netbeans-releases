@@ -44,18 +44,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
 
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.refactoring.api.EncapsulateFieldRefactoring}
  * to encapsulate several fields at once.
@@ -69,7 +78,8 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     private List<EncapsulateFieldRefactoringPlugin> refactorings;
     private final EncapsulateFieldsRefactoring refactoring;
     // objects affected by refactoring
-    private Collection<CsmObject> referencedObjects;
+    private Collection<CsmField> referencedObjects = new ArrayList<CsmField>();
+    private CsmClass enclosingClass;
     
     private ProgressListener listener = new ProgressListener() {
         public void start(ProgressEvent event) {
@@ -156,7 +166,59 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 //        }
 //        return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNoFields", clazzElm.getQualifiedName()));
 //    }
+    private CsmObject getRefactoredCsmElement() {
+        CsmObject out = getStartReferenceObject();
+        if (out == null) {
+            CsmContext editorContext = getEditorContext();
+            if (editorContext != null) {
+                out = editorContext.getObjectUnderOffset();
+                if (!CsmKindUtilities.isField(out)) {
+                    out = GeneratorUtils.extractEnclosingClass(getEditorContext());
+                }
+            }
+        }
+        return out;
+    }
     
+    @Override
+    public Problem preCheck() {
+        Problem preCheckProblem = null;
+        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
+        // check if resolved element
+        CsmObject refactoredElement = getRefactoredCsmElement();
+        preCheckProblem = isResovledElement(refactoredElement);
+        fireProgressListenerStep();
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+        // check if valid element
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(refactoredElement);
+        initReferencedObjects(directReferencedObject);
+        fireProgressListenerStep();
+        // support only fields and enclosing classes
+        if (this.enclosingClass == null) {
+            preCheckProblem = createProblem(preCheckProblem, true, getString("ERR_EncapsulateWrongType")); // NOI18N
+            return preCheckProblem;
+        }
+        // check read-only elements
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden")); // NOI18N
+        fireProgressListenerStop();
+        // check that class has at least one field
+        for (CsmMember csmMember : this.enclosingClass.getMembers()) {
+            if (CsmKindUtilities.isField(csmMember)) {
+                return null;
+            }
+        }
+        return new Problem(true, getString("ERR_EncapsulateNoFields", enclosingClass.getQualifiedName().toString())); // NOI18N
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(EncapsulateFieldsPlugin.class, key);
+    }
+
+    private static String getString(String key, String param) {
+        return NbBundle.getMessage(EncapsulateFieldsPlugin.class, key, param);
+    }
 //    public Problem prepare(RefactoringElementsBag elements) {
 //        Problem problem = null;
 //        Set<FileObject> references = new HashSet<FileObject>();
@@ -249,13 +311,23 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     }
 
     @Override
-    protected Collection<CsmObject> getRefactoredObjects() {
+    protected Collection<? extends CsmObject> getRefactoredObjects() {
         return referencedObjects;
     }
 
     @Override
     protected void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
 
+    }
+
+    private void initReferencedObjects(CsmObject referencedObject) {
+        if (referencedObject != null) {
+            if (CsmKindUtilities.isClass(referencedObject)) {
+                this.enclosingClass = (CsmClass) referencedObject;
+            } else if (CsmKindUtilities.isField(referencedObject)) {
+                this.enclosingClass = ((CsmField)referencedObject).getContainingClass();
+            }
+        }
     }
 
 //    @Override

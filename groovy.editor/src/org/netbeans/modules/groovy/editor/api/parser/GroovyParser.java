@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
@@ -98,6 +99,8 @@ class GroovyParser implements Parser {
     private static final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
 
     private static final AtomicLong PARSING_TIME = new AtomicLong(0);
+
+    private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
     
     private final PositionManager positions = createPositionManager();
     
@@ -282,8 +285,10 @@ class GroovyParser implements Parser {
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
 
-                        if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
-                            removeChars = 1;
+                        if (line.endsWith("?.") || line.endsWith(".&")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
+                            removeChars = 1; 
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
                         } else if (line.endsWith(", ")) { // NOI18N
@@ -436,8 +441,12 @@ class GroovyParser implements Parser {
                 // but for now it is faster to use javac only for sources
 
                 // null happens in GSP
-                bootPath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : bootPath,
-                compilePath == null ? ClassPathSupport.createClassPath(new FileObject[] {}) : compilePath,
+                // FIXME real classpath is passed in NbCompilationUnit all classes
+                // are found by Java and field completion does not work
+                // this has to evaluated and fixed - due to need of super
+                // ClassNode for exceptions
+                /*bootPath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /* : bootPath*/,
+                /*compilePath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /*: compilePath*/,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
@@ -447,6 +456,7 @@ class GroovyParser implements Parser {
 
         long start = 0;
         if (LOG.isLoggable(Level.FINEST)) {
+            PARSING_COUNT.incrementAndGet();
             start = System.currentTimeMillis();
         }
         
@@ -455,14 +465,14 @@ class GroovyParser implements Parser {
 
             if (LOG.isLoggable(Level.FINEST)) {
                 long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation success in {0}; total time spent {1}",
-                        new Object[] {(System.currentTimeMillis() - start), full});
+                LOG.log(Level.FINEST, "Compilation success in {0}; total time spent {1}; total count {2}",
+                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
             }
         } catch (Throwable e) {
             if (LOG.isLoggable(Level.FINEST)) {
                 long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation failure in {0}; total time spent {1}",
-                        new Object[] {(System.currentTimeMillis() - start), full});
+                LOG.log(Level.FINEST, "Compilation failure in {0}; total time spent {1}; total count {2}",
+                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
             }
 
             int offset = -1;

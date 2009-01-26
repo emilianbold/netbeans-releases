@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -166,11 +166,16 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         }
         return new CompoundComparator();
     }
-    
-    /**
-     *
+
+     /** This method marks this column as sorted. Value 0 of the parameter rank
+     * means that this column is not sorted.
+      * @param etc column in ETable column model
+      * @param ascending true means ascending
+      * @param newRank value 1 means that this is the most important sorted
+     *        column, number 2 means second etc.
+     * @since 1.3
      */
-    void setColumnSorted(ETableColumn etc, boolean ascending, int newRank) {
+    public void setColumnSorted(ETableColumn etc, boolean ascending, int newRank) {
         if (! etc.isSortingAllowed()) {
             return;
         }
@@ -178,7 +183,6 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         // TODO: check the implementation!
         
          boolean wasSorted = sortedColumns.contains(etc);
-         boolean wasAscending = false;
          if (wasSorted) {
              etc.setAscending(ascending);
              etc.setSortRank(newRank);
@@ -286,6 +290,10 @@ public class ETableColumnModel extends DefaultTableColumnModel {
                 }
             }
         }
+    }
+
+    List<TableColumn> getSortedColumns () {
+        return sortedColumns;
     }
     
     /**

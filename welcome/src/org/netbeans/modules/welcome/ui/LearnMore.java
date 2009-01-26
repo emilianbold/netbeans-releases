@@ -58,7 +58,7 @@ import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -75,7 +75,7 @@ class LearnMore extends BackgroundPanel implements Constants {
     }
     
     private void buildContent() {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "WelcomePage/LearnMoreLinks" ); // NOI18N
+        FileObject root = FileUtil.getConfigFile( "WelcomePage/LearnMoreLinks" ); // NOI18N
         DataFolder folder = DataFolder.findFolder( root );
         DataObject[] children = folder.getChildren();
         JPanel panel = new JPanel( new GridLayout(0, 2, 15, 5) );

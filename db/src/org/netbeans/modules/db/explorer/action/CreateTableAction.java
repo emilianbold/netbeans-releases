@@ -44,15 +44,9 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -77,11 +71,16 @@ public class CreateTableAction extends BaseAction {
                     enabled = !conn.isClosed();
                 }
             } catch (SQLException e) {
-
+                Exceptions.printStackTrace(e);
             }
         }
 
         return enabled;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CreateTableAction.class);
     }
 
     public void performAction (Node[] activatedNodes) {
@@ -111,31 +110,4 @@ public class CreateTableAction extends BaseAction {
         return bundle().getString("CreateTable"); // NOI18N
     }
 
-    private static String findSchemaWorkingName(Lookup lookup) {
-        DatabaseConnection conn = lookup.lookup(DatabaseConnection.class);
-        MetadataModel model = conn.getMetadataModel();
-        final MetadataElementHandle handle = lookup.lookup(MetadataElementHandle.class);
-
-        final String[] array = { null };
-
-        try {
-            model.runReadAction(
-                new Action<Metadata>() {
-                    public void run(Metadata metaData) {
-                        Schema schema = (Schema)handle.resolve(metaData);
-                        Catalog catalog = schema.getParent();
-                        String schemaName = schema.getName();
-                        if (schemaName == null) {
-                            schemaName = catalog.getName();
-                        }
-                        array[0] = schemaName;
-                    }
-                }
-            );
-        } catch (MetadataModelException e) {
-            // TODO report exception
-        }
-
-        return array[0];
-    }
 }

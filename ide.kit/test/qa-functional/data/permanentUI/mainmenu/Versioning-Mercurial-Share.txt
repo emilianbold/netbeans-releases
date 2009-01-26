@@ -1,4 +1,4 @@
-                  Share              > Push to default   P
-                                       Push Other        O
-                                       Pull to default   t
-                                       Pull Other        l
+                  Share              > Push to Default     P
+                                       Push Other...       O
+                                       Pull from Default   f
+                                       Pull Other...       l

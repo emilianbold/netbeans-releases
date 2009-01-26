@@ -188,6 +188,9 @@ public class TreeEvaluator {
             Exceptions.printStackTrace(e); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
+        } catch (UnsupportedOperationException e) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_UnsupportedOperationException"));
         }
         //return (Value) rootNode.jjtAccept(this, null);
         //return null;

@@ -57,6 +57,7 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -96,6 +97,8 @@ public class GroovyTestBase extends GsfTestBase {
         testFO = workDir.createData("Test.groovy");
         FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
         setLookups(new DummyClassPathProvider());
+
+        RepositoryUpdater.getDefault();
     }
 
     @Override

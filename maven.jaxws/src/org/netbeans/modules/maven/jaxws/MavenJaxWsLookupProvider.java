@@ -41,13 +41,15 @@ package org.netbeans.modules.maven.jaxws;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
@@ -55,7 +57,6 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
@@ -114,7 +115,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                     }
                 }
 
-                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
 
                 if (wsdlFolder != null) {
                     detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
@@ -166,7 +167,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                         oldNames.add(s.getLocalWsdl());
                     }
                 }
-                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
                 if (wsdlFolder != null) {
                     List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
                     Set<String> commonNames = new HashSet<String>();
@@ -229,16 +230,23 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         private void updateJaxWs() {
 
             try {
-                Map<String, String> newServices = wsModel.runReadAction(
-                        new MetadataModelAction<WebservicesMetadata, Map<String, String>>() {
+                Map<String, ServiceInfo> newServices = wsModel.runReadAction(
+                        new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
 
-                    public Map<String, String> run(WebservicesMetadata metadata) {
-                        Map<String, String> result = new HashMap<String, String>();
+                    public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
+                        Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
-                                result.put(port.getDisplayName(), port.getPortComponentName());
+                                // key = imlpementation class package name
+                                // value = service name
+                                QName portName = port.getWsdlPort();
+                                result.put(port.getDisplayName(),
+                                           new ServiceInfo(wsDesc.getWebserviceDescriptionName(),
+                                                        (portName == null ? null : portName.getLocalPart()),
+                                                        port.getDisplayName(),
+                                                        wsDesc.getWsdlFile()));
 //                                if ("javax.xml.ws.WebServiceProvider".equals(wsDesc.getDisplayName())) { //NOI18N
 //                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
 //                                } else if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
@@ -283,7 +291,25 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                 }
                 // add new services
                 for (String key : newServices.keySet()) {
-                    jaxWsSupport.addService(new JaxWsService(newServices.get(key), key));
+                    ServiceInfo serviceInfo = newServices.get(key);
+                    if (serviceInfo.getWsdlLocation() == null) {
+                        jaxWsSupport.addService(new JaxWsService(serviceInfo.getServiceName(), key));
+                    } else {
+                        JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
+                        String wsdlLocation = serviceInfo.getWsdlLocation();
+                        service.setWsdlLocation(wsdlLocation);
+                        if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(13));
+                        } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(14));
+                        } else {
+                            service.setLocalWsdl(wsdlLocation);
+                        }
+                        if (serviceInfo.getPortName() != null) {
+                            service.setPortName(serviceInfo.getPortName());
+                        }
+                        jaxWsSupport.addService(service);
+                    }
                 }
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();
@@ -293,16 +319,17 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
-                "org.codehaus.mojo", //NOI18N
-                "jaxws-maven-plugin", //NOI18N
-                "wsdlFiles", //NOI18N
-                "wsdlFile", //NOI18N
-                "wsimport"); //NOI18N
-        if (filepaths != null) {
-            for (String filePath : filepaths) {
-                JaxWsService client = new JaxWsService(filePath, false);
-                jaxWsSupport.addService(client);
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            for (WsimportPomInfo candidate : candidates) {
+                String wsdlPath = candidate.getWsdlPath();
+                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                    JaxWsService client = new JaxWsService(wsdlPath, false);
+                    if (candidate.getHandlerFile() != null) {
+                        client.setHandlerBindingFile(candidate.getHandlerFile());
+                    }
+                    jaxWsSupport.addService(client);
+                }
             }
         } else {
             // look for wsdl in wsdl folder
@@ -317,22 +344,91 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
     }
 
     private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
-            "org.codehaus.mojo", //NOI18N
-            "jaxws-maven-plugin", //NOI18N
-            "wsdlFiles", //NOI18N
-            "wsdlFile", //NOI18N
-            "wsimport"); //NOI18N
-        if (filepaths != null) {
-            List<JaxWsService> clients = new ArrayList<JaxWsService>();
-            for (String filePath : filepaths) {
-                JaxWsService client = new JaxWsService(filePath, false);
+        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
+        List<JaxWsService> clients = new ArrayList<JaxWsService>();
+        for (WsimportPomInfo candidate : canditates) {
+            String wsdlPath = candidate.getWsdlPath();
+            if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                JaxWsService client = new JaxWsService(wsdlPath, false);
+                if (candidate.getHandlerFile() != null) {
+                    client.setHandlerBindingFile(candidate.getHandlerFile());
+                }
                 clients.add(client);
             }
-            return clients;
-        } else {
-            return Collections.<JaxWsService>emptyList();
         }
+        return clients;
+    }
+
+    private boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs != null) {
+            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
+            if (wsdlFo != null) {
+                // if client exists return true
+                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
+                    return true;
+                // if service doesn't exist return true
+                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder!=null) {
+            return wsdlFolder.getFileObject(localWsdlPath);
+        }
+        return null;
+    }
+
+    private class ServiceInfo {
+        private String serviceName;
+        private String portName;
+        private String implClass;
+        private String wsdlLocation;
+
+        public ServiceInfo(String serviceName, String portName, String implClass, String wsdlLocation) {
+            this.serviceName = serviceName;
+            this.portName = portName;
+            this.implClass = implClass;
+            this.wsdlLocation = wsdlLocation;
+        }
+        
+        public String getImplClass() {
+            return implClass;
+        }
+
+        public void setImplClass(String implClass) {
+            this.implClass = implClass;
+        }
+
+        public String getPortName() {
+            return portName;
+        }
+
+        public void setPortName(String portName) {
+            this.portName = portName;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getWsdlLocation() {
+            return wsdlLocation;
+        }
+
+        public void setWsdlLocation(String wsdlLocation) {
+            this.wsdlLocation = wsdlLocation;
+        }
+
     }
 
 }

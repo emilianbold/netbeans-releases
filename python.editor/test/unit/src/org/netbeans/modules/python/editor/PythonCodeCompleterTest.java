@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.python.editor;
 
 import java.net.URL;
@@ -16,7 +15,6 @@ public class PythonCodeCompleterTest extends PythonTestBase {
     public PythonCodeCompleterTest(String testName) {
         super(testName);
     }
-
     private boolean skipJython = false;
 
     @Override
@@ -65,6 +63,10 @@ public class PythonCodeCompleterTest extends PythonTestBase {
 
     public void testImports9() throws Exception {
         checkCompletion("testfiles/imports9.py", "from difflib import ^c", true);
+    }
+
+    public void testFromImports() throws Exception {
+        checkCompletion("testfiles/fromimports.py", "core.^g", true);
     }
 
     public void testDoc1() throws Exception {
@@ -179,6 +181,10 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/org.py", "from or^", true);
     }
 
+    public void testProperties() throws Exception {
+        checkCompletion("testfiles/properties.py", "x.ba^", true);
+    }
+
     public void testParameters1() throws Exception {
         checkCompletion("testfiles/complete-calls.py", "functionfoo(foo^, bar)", true);
     }
@@ -207,6 +213,22 @@ public class PythonCodeCompleterTest extends PythonTestBase {
         checkCompletion("testfiles/decorators.py", "@c^", true);
     }
 
+    public void testTypedVars1() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os2.^", true);
+    }
+
+    public void testTypedVars2() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os3.^", true);
+    }
+
+    public void testTypedVars3() throws Exception {
+        checkCompletion("testfiles/compl5.py", "os4.^", true);
+    }
+
+    public void testTypedVars4() throws Exception {
+        // No type specified
+        checkCompletion("testfiles/compl5.py", "os5.xhd^", true);
+    }
     // -------------------------
     // Unstable tests:
     // -------------------------

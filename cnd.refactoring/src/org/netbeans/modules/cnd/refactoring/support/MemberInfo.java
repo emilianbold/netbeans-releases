@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
  * Wrapper class for ElementHandles, TreePathHandles and TypeMirrorHandles.
  * It contains referemce to appropriste handle + name and icon
  * @author Jan Becicka
+ * @author Vladimir Voskresensky
  */
 public final class MemberInfo<H> {
 
@@ -174,7 +175,7 @@ public final class MemberInfo<H> {
             g=Group.METHOD;
         }
 
-        MemberInfo<T> mi = new MemberInfo<T>(elem, htmlText.toString(), (Icon)CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
+        MemberInfo<T> mi = new MemberInfo<T>(elem, htmlText.toString(), CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
         return mi;
     }
 

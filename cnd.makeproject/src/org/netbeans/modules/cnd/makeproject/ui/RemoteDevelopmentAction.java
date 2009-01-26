@@ -49,7 +49,13 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -59,7 +65,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     /** Key for remembering project in JMenuItem
      */
     private static final String HOST_KEY = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
-
+    private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
     private JMenu subMenu;
     private Project project;
 
@@ -91,14 +97,24 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
         subMenu.removeAll();
         ActionListener jmiActionListener = new MenuItemActionListener();
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp == null) {
+            return;
+        }
 
-        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        boolean temp = true;
-        for (String hkey : registry.getServerNames()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(hkey, temp);
-            temp = false;
+        ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
+        Configuration conf = projectDescriptor.getConfs().getActive();
+        if (!(conf instanceof MakeConfiguration)) {
+            return;
+        }
+        MakeConfiguration mconf = (MakeConfiguration) conf;
+        String currentHkey = mconf.getDevelopmentHost().getName();
+
+        for (String hkey : mconf.getDevelopmentHost().getServerNames()) {
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(hkey, currentHkey.equals(hkey));
             subMenu.add(jmi);
             jmi.putClientProperty(HOST_KEY, hkey);
+            jmi.putClientProperty(CONF, mconf);
             jmi.addActionListener(jmiActionListener);
         }
 
@@ -109,7 +125,10 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         managePlatformsItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                Lookup.getDefault().lookup(ServerList.class).show(null, true);
+                ToolsCacheManager cacheManager = new ToolsCacheManager();
+                if (Lookup.getDefault().lookup(ServerList.class).show(cacheManager)) {
+                    cacheManager.applyChanges();
+                }
             }
         });
     }
@@ -120,7 +139,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             if (e.getSource() instanceof JMenuItem) {
                 JMenuItem jmi = (JMenuItem) e.getSource();
                 String hkey = (String) jmi.getClientProperty(HOST_KEY);
-                System.err.println("switch to " + hkey); //NOI18N
+                MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
+                if (mconf != null && hkey != null) {
+                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(hkey);
+                    mconf.setDevelopmentHost(dhc);
+                    mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+                }
             }
 
         }

@@ -29,11 +29,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.jruby.nb.ast.FCallNode;
 import org.jruby.nb.ast.MethodDefNode;
@@ -81,6 +77,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public final class RubyIndexerHelper {
+    
     private RubyIndexerHelper() {
         // Private utility class, not instantiatable
     }

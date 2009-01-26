@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -65,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
@@ -224,7 +224,15 @@ public class CsmKindUtilities {
             return true;
         } else {
             return false;
-        }        
+        }
+    }
+
+    public static boolean isOffsetableDeclaration(Object obj) {
+        if (obj instanceof CsmOffsetableDeclaration) {
+            return true;
+        } else {
+            return false;
+        }
     }
       
     public static boolean isNamedElement(CsmObject obj) {
@@ -252,7 +260,7 @@ public class CsmKindUtilities {
         }
     }
     
-    public static boolean isEnumerator(CsmObject obj) {
+    public static boolean isEnumerator(Object obj) {
         if (obj instanceof CsmEnumerator) {
             return true;
         } else {
@@ -392,7 +400,7 @@ public class CsmKindUtilities {
         }
     } 
 
-    public static boolean isNamespace(CsmObject obj) {
+    public static boolean isNamespace(Object obj) {
         if (obj instanceof CsmNamespace) {
             return true;
         } else {
@@ -615,13 +623,5 @@ public class CsmKindUtilities {
             return ((CsmVariable)decl).isExtern();
         }
         return false;
-    }
-    
-    public static <T extends CsmObject> boolean isIdentifiable(T obj) {
-        if (obj instanceof CsmIdentifiable) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }

@@ -86,14 +86,32 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newStaticLibrary.html"/>
                 </file>
-                
-                <file name="newQmakeApplication.xml">
+
+                <file name="newQtApplication.xml">
                     <attr name="position" intvalue="500"/>
                     <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newQmakeApplication"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newQtApplication"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQmakeApplication.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQtApplication.html"/>
+                </file>
+
+                <file name="newQtDynamicLibrary.xml">
+                    <attr name="position" intvalue="600"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newQtDynamicLibrary"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQtDynamicLibrary.html"/>
+                </file>
+
+                <file name="newQtStaticLibrary.xml">
+                    <attr name="position" intvalue="700"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newQtStaticLibrary"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newQtStaticLibrary.html"/>
                 </file>
 
             </folder>

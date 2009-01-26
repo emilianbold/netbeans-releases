@@ -42,6 +42,8 @@
 package org.netbeans.modules.python.testrunner.ui;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -49,15 +51,27 @@ import org.openide.util.actions.SystemAction;
  * @author Marian Petras
  */
 public final class PythonCallstackFrameNode extends CallstackFrameNode {
+    private final String displayName;
 
     public PythonCallstackFrameNode(String frameInfo, String displayName) {
         super(frameInfo, displayName);
+        // Keep our own copy since the parent will assign frameInfo to displayName
+        // if none is provided
+        this.displayName = displayName;
     }
 
     /**
      */
     @Override
     public Action getPreferredAction() {
+        // If it's a diff failure line, the default action is to diff it!
+        if (displayName != null) {
+            ComparisonFailure failure = PyUnitHandlerFactory.getComparisonFailure(displayName);
+            if (failure != null) {
+                return new DiffViewAction(failure);
+            }
+        }
+        
         return new JumpToCallStackAction(this, frameInfo);
     }
     

@@ -65,7 +65,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -226,7 +226,7 @@ public final class ProjectCustomizer {
                                                  ActionListener okOptionListener,
                                                  ActionListener storeListener,
                                                  HelpCtx helpCtx) {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
+        FileObject root = FileUtil.getConfigFile(folderPath);
         if (root == null) {
             throw new IllegalArgumentException("The designated path " + folderPath + " doesn't exist. Cannot create customizer.");
         }

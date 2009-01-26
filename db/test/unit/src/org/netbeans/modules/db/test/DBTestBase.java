@@ -49,6 +49,8 @@ import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.netbeans.modules.db.explorer.node.SchemaNode;
 import org.netbeans.modules.db.explorer.node.TableListNode;
 import org.netbeans.modules.db.explorer.node.TableNode;
+import org.netbeans.modules.db.explorer.node.ViewListNode;
+import org.netbeans.modules.db.explorer.node.ViewNode;
 import org.openide.nodes.Node;
 //import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 //import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
@@ -193,6 +195,54 @@ public abstract class DBTestBase extends TestBase {
                         for (Node table : tables) {
                             if (tablename.toLowerCase().equals(table.getDisplayName().toLowerCase())) {
                                 return (TableNode)table;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected ViewNode getViewNode(String viewname) throws Exception {
+        ConnectionNode connectionNode = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNode(
+                getDatabaseConnection(true).getName());
+
+        assertNotNull(connectionNode);
+
+        //Since the node updates asynchronously, we need
+        //to give it some time to let that happen before trying to find the
+        // table node
+        Thread.sleep(2000);
+
+
+        Collection<? extends Node> children = connectionNode.getChildNodesSync();
+        // DatabaseNodeInfo.printChildren("connection children", children);
+
+
+        for (Node child : children) {
+            if (child instanceof ViewListNode) {
+                Collection<? extends Node> views = ((ViewListNode)child).getChildNodesSync();
+
+                // DatabaseNodeInfo.printChildren("tables", tables);
+
+                for (Node view : views) {
+                    if (viewname.toLowerCase().equals(view.getDisplayName().toLowerCase())) {
+                        return (ViewNode)view;
+                    }
+                }
+            } else if (child instanceof SchemaNode) {
+                Collection<? extends Node> list = ((SchemaNode)child).getChildNodesSync();
+                for (Node c : list) {
+                    if (c instanceof ViewListNode) {
+                        Collection<? extends Node> views = ((ViewListNode)c).getChildNodesSync();
+
+                        // DatabaseNodeInfo.printChildren("tables", tables);
+
+                        for (Node view : views) {
+                            if (viewname.toLowerCase().equals(view.getDisplayName().toLowerCase())) {
+                                return (ViewNode)view;
                             }
                         }
                     }
@@ -427,7 +477,7 @@ public abstract class DBTestBase extends TestBase {
         DatabaseMetaData md = getConnection().getMetaData();
         ResultSet rs = md.getPrimaryKeys(null, getSchema(), tablename);
         
-        // printResults(rs, "columnInPrimaryKey(" + tablename + ", " +
+        // printResults(rs, "columnInPrimaryKey(" + viewname + ", " +
         //        colname + ")");
                 
         while ( rs.next() ) {
@@ -461,7 +511,7 @@ public abstract class DBTestBase extends TestBase {
         DatabaseMetaData md = getConnection().getMetaData();
         ResultSet rs = md.getIndexInfo(null, getSchema(), tablename, false, false);
 
-        // printResults(rs, "columnInIndex(" + tablename + ", " + colname + 
+        // printResults(rs, "columnInIndex(" + viewname + ", " + colname +
         //    ", " + indexname + ")");
 
         while ( rs.next() ) {

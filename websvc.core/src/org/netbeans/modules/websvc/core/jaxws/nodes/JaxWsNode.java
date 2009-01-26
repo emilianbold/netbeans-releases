@@ -97,9 +97,9 @@ import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
-import org.netbeans.modules.websvc.core.ConfigureHandlerAction;
-import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
+import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
+import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
+import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
 import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
@@ -749,6 +749,14 @@ public class JaxWsNode extends AbstractNode implements
      */
     public void configureHandler() {
         FileObject implBeanFo = getImplBean();
+        if (implBeanFo == null) {
+            // unable to find implementation class
+            NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JaxWsNode.class, "ERR_missingImplementationClass"),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(dialogDesc);
+            return;
+        }
         List<String> handlerClasses = new ArrayList<String>();
         FileObject handlerFO = null;
         HandlerChains handlerChains = null;

@@ -119,6 +119,7 @@ import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToAST
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+    private static final String GLOBAL_VAR_MARKER = "!GLOBAL";
 
 
     final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
@@ -380,17 +381,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
-    private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
-            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
-            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
-            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
-            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
-            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
-            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
-            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
-            PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG
-            );
-
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
 
@@ -405,7 +395,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int rightExpressionBoundary = tokenSequence.offset();
 
         while (findLHSExpressionType_skipArgs(tokenSequence, true)
-                && !CTX_DELIMITERS.contains(tokenSequence.token().id())
+                && !CompletionContextFinder.CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()) {
                 break;
@@ -1166,6 +1156,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         private Map<String, IndexedConstant> localVars = null;
         private String namePrefix;
         private String localFileURL;
+        private boolean foundGlobals = false;
 
         VarFinder(Map<String, IndexedConstant> localVars, String namePrefix, String localFileURL) {
             this.localVars = localVars;
@@ -1181,8 +1172,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         @Override
         public void visit(GlobalStatement node) {
+            foundGlobals = true;
+
             for (Variable var : node.getVariables()) {
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, GLOBAL_VAR_MARKER);
             }
             super.visit(node);
         }
@@ -1293,6 +1286,28 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
         varScopeNode.accept(varFinder);
+
+        // resolve global variable types
+        if (varFinder.foundGlobals){
+            Map<String, IndexedConstant> globalVars = new HashMap<String, IndexedConstant>();
+            VarFinder topLevelVars = new VarFinder(globalVars, namePrefix, localFileURL);
+            context.getProgram().accept(topLevelVars);
+
+            for (IndexedConstant localVar : localVars.values()){
+                if (GLOBAL_VAR_MARKER.equals(localVar.getTypeName())){
+                    String typeName = null;
+
+                    IndexedConstant globalVar = globalVars.get(localVar.getName());
+
+                    if (globalVar != null){
+                        typeName = globalVar.getTypeName();
+                    }
+
+                    localVar.setTypeName(typeName);
+                }
+            }
+        }
+
         LocalVariables result = new LocalVariables();
         result.globalContext = globalContext;
         result.vars = localVars.values();

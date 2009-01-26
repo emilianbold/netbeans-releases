@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
@@ -135,8 +136,9 @@ public class OccurrencesMarkProvider extends MarkProvider {
             public void run() {
                 for (CsmReference ref : list) {
                     try {
-                        if (ref.getStartOffset() < doc.getLength()) {
-                            result.add(new MarkImpl(doc, doc.createPosition(ref.getStartOffset()), color, tooltip));
+                        int offset = getDocumentOffset(doc, ref.getStartOffset());
+                        if (offset >= 0 && offset < doc.getLength()) {
+                            result.add(new MarkImpl(doc, doc.createPosition(offset), color, tooltip));
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -146,6 +148,10 @@ public class OccurrencesMarkProvider extends MarkProvider {
         });
         
         return result;
+    }
+
+    private static int getDocumentOffset(Document doc, int fileOffset) {
+        return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
     }
     
     private static final class MarkImpl implements Mark {

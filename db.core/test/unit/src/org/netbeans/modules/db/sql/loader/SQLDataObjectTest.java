@@ -40,7 +40,7 @@ package org.netbeans.modules.db.sql.loader;
 
 import junit.framework.TestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 public class SQLDataObjectTest extends TestCase {
@@ -50,8 +50,7 @@ public class SQLDataObjectTest extends TestCase {
     }
 
     public void testDataObject() throws Exception {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject template = root.getFileObject("Templates/Other/SQLTemplate.sql");
+        FileObject template = FileUtil.getConfigFile("Templates/Other/SQLTemplate.sql");
         assertNotNull("Template file shall be found", template);
 
         DataObject obj = DataObject.find(template);

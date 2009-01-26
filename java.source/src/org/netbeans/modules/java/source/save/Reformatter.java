@@ -1542,6 +1542,11 @@ public class Reformatter implements ReformatTask {
                     alignIndent = col;
                 for (Iterator<? extends StatementTree> it = inits.iterator(); it.hasNext();) {
                     scan(it.next(), p);
+                    if (it.hasNext() && !fieldGroup) {
+                        spaces(cs.spaceBeforeComma() ? 1 : 0);
+                        accept(COMMA);
+                        spaces(cs.spaceAfterComma() ? 1 : 0);
+                    }
                 }
                 spaces(cs.spaceBeforeSemi() ? 1 : 0);
             }
@@ -2591,7 +2596,7 @@ public class Reformatter implements ReformatTask {
                                 count--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                if (idx >= lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }

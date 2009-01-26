@@ -40,24 +40,13 @@
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import org.netbeans.junit.Manager;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.gotodeclaration.element.providers.BaseProvider.ProviderDelegate;
-import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
-import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
  *
  * @author Nick Krasilnikov
  */
-public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
+public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
 
     public FuncVarElementProviderTestCase(String testName) {
         super(testName);
@@ -81,7 +70,7 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
     }
     
     public void testFuncVarCamelCase() throws Exception {
-        peformTest("GCL", SearchType.CAMEL_CASE);
+        peformTest("GC", SearchType.CAMEL_CASE);
     }
 
     public void testFuncVarPrefix() throws Exception {
@@ -99,73 +88,32 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
     public void testFuncVarCaseInsensitiveExactName() throws Exception {
         peformTest("Main", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    
-    protected final File getQuoteDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.gotodeclaration", "cnd.modelimpl"); // NOI18N
-        String filePath = "common/quote_nosyshdr"; // NOI18N
-        return Manager.normalizeFile(new File(dataPath, filePath));
+
+    public void testMacroDotRegexp() throws Exception {
+        peformTest("CPU.H", SearchType.REGEXP);
     }
 
-    protected void peformTest(String text, SearchType type) throws Exception {
-        FuncVarElementProvider fvp = new FuncVarElementProvider();
-        ProviderDelegate pd = fvp.createDelegate();
-
-        CsmProject project = getProject();
-        assertNotNull(project);
-
-        Collection elems = pd.getElements(project, text, type, true);
-        assertNotNull(elems);
-
-        List<ElementDescriptor> items = new ArrayList<ElementDescriptor>();
-        items.addAll(elems);
-
-        Collections.sort(items, new TypeComparator());
-
-        for (ElementDescriptor elementDescriptor : items) {
-            ref(elementDescriptor.getProjectName() + " " + elementDescriptor.getDisplayName()); // NOI18N
-        }
-
-        File output = new File(getWorkDir(), getName() + ".ref"); // NOI18N
-        File goldenDataFile = getGoldenFile(getName() + ".ref");
-
-
-        if (!goldenDataFile.exists()) {
-            fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath()); // NOI18N
-        }
-        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
-            // copy golden
-            File goldenCopyFile = new File(getWorkDir(), getName() + ".ref.golden"); // NOI18N
-            CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
-        }
+    public void testMacroCaseInsensitiveRegexp() throws Exception {
+        peformTest("_cUs.*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
     }
 
-    private class TypeComparator implements Comparator<ElementDescriptor> {
-
-        public int compare(ElementDescriptor t1, ElementDescriptor t2) {
-            int result = compareStrings(t1.getDisplayName(), t2.getDisplayName());
-            if (result == 0) {
-                result = compareStrings(t1.getContextName(), t2.getContextName());
-                if (result == 0) {
-                    result = compareStrings(t1.getProjectName(), t2.getProjectName());
-                    if (result == 0) {
-                        result = compareStrings(t1.getAbsoluteFileName(), t2.getAbsoluteFileName());
-                    }
-                }
-            }
-            return result;
-        }
+    public void testMacroCamelCase() throws Exception {
+        peformTest("GD", SearchType.CAMEL_CASE);
     }
 
-    private int compareStrings(String s1, String s2) {
-        if (s1 == null) {
-            s1 = ""; // NOI18N
-        }
-        if (s2 == null) {
-            s2 = ""; // NOI18N
-        }
-        return s1.compareTo(s2);
+    public void testMacroPrefix() throws Exception {
+        peformTest("M", SearchType.PREFIX);
+    }
+
+    public void testMacroCaseInsensitivePrefix() throws Exception {
+        peformTest("m", SearchType.CASE_INSENSITIVE_PREFIX);
+    }
+
+    public void testMacroExactName() throws Exception {
+        peformTest("DISK_H", SearchType.EXACT_NAME);
+    }
+
+    public void testMacroCaseInsensitiveExactName() throws Exception {
+        peformTest("disk_h", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
 }

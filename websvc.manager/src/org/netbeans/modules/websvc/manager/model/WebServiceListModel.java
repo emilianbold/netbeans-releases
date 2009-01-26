@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.manager.model;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,20 +50,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -371,8 +365,7 @@ public class WebServiceListModel {
 
             // TODO doesn't do anything useful yet
             partnerServiceListener = new RestFolderListener();
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject restFolder = sfs.findResource("RestComponents"); // NOI18N
+            FileObject restFolder = FileUtil.getConfigFile("RestComponents"); // NOI18N
 
             if (restFolder != null) {
                 restFolder.addFileChangeListener(WeakListeners.create(FileChangeListener.class, partnerServiceListener, restFolder));

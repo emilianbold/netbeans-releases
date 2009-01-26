@@ -396,9 +396,7 @@ public final class MainWindow extends JFrame {
              if (fileName == null) {
                  return null;
              }
-             FileObject fo =
-                 Repository.getDefault().getDefaultFileSystem().findResource(
-                     fileName);
+             FileObject fo = FileUtil.getConfigFile(fileName);
              if (fo != null) {
                  DataObject dobj = DataObject.find(fo);
                  InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
@@ -423,9 +421,7 @@ public final class MainWindow extends JFrame {
              if (fileName == null) {
                  return null;
              }
-             FileObject fo =
-                 Repository.getDefault().getDefaultFileSystem().findResource(
-                     fileName);
+             FileObject fo = FileUtil.getConfigFile(fileName);
              if (fo != null) {
                  DataObject dobj = DataObject.find(fo);
                  InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);

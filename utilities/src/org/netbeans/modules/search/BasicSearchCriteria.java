@@ -275,7 +275,7 @@ final class BasicSearchCriteria {
         assert !regexp;
         assert textPatternExpr != null;
         try {
-            int flags = 0;
+            int flags = Pattern.UNICODE_CASE;
             if (!caseSensitive) {
                 flags |= Pattern.CASE_INSENSITIVE;
             }
@@ -561,13 +561,16 @@ final class BasicSearchCriteria {
      *          criteria, {@code false} otherwise
      */
     boolean matches(DataObject dataObj) {
+        return matches(dataObj.getPrimaryFile());
+    }
+
+    boolean matches(FileObject fileObj) {
         lastCharset = null;
 
-        if (!dataObj.isValid()) {
+        if (!fileObj.isValid()) {
             return false;
         }
         
-        FileObject fileObj = dataObj.getPrimaryFile();
         if (fileObj.isFolder() || !fileObj.isValid() || (isFullText() && !isTextFile(fileObj))) {
             return false;
         }
@@ -580,7 +583,7 @@ final class BasicSearchCriteria {
         
         /* Check the file's content: */
         if (textPatternValid
-                && !checkFileContent(fileObj, dataObj)) {
+                && !checkFileContent(fileObj)) {
             return false;
         }
         
@@ -635,14 +638,15 @@ final class BasicSearchCriteria {
      * Checks whether the file's content matches the text pattern.
      * 
      * @param  fileObj  file whose content is to be checked
-     * @param  dataObj  {@code DataObject} corresponding to the file
      * @return  {@code true} if the file contains at least one substring
      *          matching the pattern, {@code false} otherwise
      */
-    private boolean checkFileContent(FileObject fileObj, DataObject dataObj) {
+    private boolean checkFileContent(FileObject fileObj) {
         boolean firstMatch = true;
         SearchPattern searchPattern = null;
         ArrayList<TextDetail> txtDetails = null;
+
+        DataObject dObj = null;
 
         LineNumberReader reader = null;
         try {
@@ -656,8 +660,9 @@ final class BasicSearchCriteria {
                         searchPattern = createSearchPattern();
                         txtDetails = new ArrayList<TextDetail>(5);
                         firstMatch = false;
+                        dObj = DataObject.find(fileObj);
                     }
-                    TextDetail det = new TextDetail(dataObj, searchPattern);
+                    TextDetail det = new TextDetail(dObj, searchPattern);
                     det.setLine(reader.getLineNumber());
                     det.setLineText(line);
                     int start = matcher.start();
@@ -669,7 +674,7 @@ final class BasicSearchCriteria {
             }
             if (txtDetails != null) {
                 txtDetails.trimToSize();
-                getDetailsMap().put(dataObj, txtDetails);
+                getDetailsMap().put(dObj, txtDetails);
                 return true;
             } else {
                 return false;

@@ -60,9 +60,11 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,7 +81,7 @@ public final class Utils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
-    public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
+    public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?(/[^?# ]*(\\?[^#]*)?(#\\w*)?)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
@@ -167,10 +169,10 @@ public final class Utils {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpInterpreter());
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
             File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
+            LastUsedFolders.setOptionsPhpInterpreter(phpInterpreter);
             textField.setText(phpInterpreter.getAbsolutePath());
         }
     }
@@ -183,17 +185,60 @@ public final class Utils {
         }
 
         PhpInterpreter phpInterpreter = new PhpInterpreter(command);
-        File file = new File(phpInterpreter.getInterpreter());
+        File file = new File(phpInterpreter.getProgram());
         if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpNotAbsolutePath");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotAbsolutePath");
         }
         if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpNotFile");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotFile");
         }
         if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpCannotRead");
+            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterCannotRead");
         }
         return null;
+    }
+
+    public static void browsePhpUnit(Component parent, JTextField textField) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsPhpUnit());
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
+            File phpUnit = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsPhpUnit(phpUnit);
+            textField.setText(phpUnit.getAbsolutePath());
+        }
+    }
+
+    // input can be with parameters e.g. "/usr/bin/phpunit  --repeat 3"
+    public static String validatePhpUnit(String command) {
+        if (command == null || command.trim().length() == 0) {
+            return NbBundle.getMessage(Utils.class, "MSG_NoPhpUnit");
+        }
+
+        PhpUnit phpUnit = new PhpUnit(command);
+        File file = new File(phpUnit.getProgram());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitCannotRead");
+        }
+        return null;
+    }
+
+    public static void browseTestSources(JTextField textField, PhpProject phpProject) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setCurrentDirectory(FileUtil.toFile(phpProject.getProjectDirectory()));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(textField.getParent())) {
+            File testsDirectory = FileUtil.normalizeFile(chooser.getSelectedFile());
+            textField.setText(testsDirectory.getAbsolutePath());
+        }
     }
 
     public static List getAllItems(final JComboBox comboBox) {
@@ -412,6 +457,11 @@ public final class Utils {
     }
 
     // #144928
+    /**
+     * Handles correctly 'feature' of Windows Vista.
+     * @param folder folder to check.
+     * @return <code>true</code> if folder is writable.
+     */
     public static boolean isFolderWritable(File folder) {
         assert folder.isDirectory() : "Not a directory: " + folder;
 
@@ -476,7 +526,7 @@ public final class Utils {
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
-    public static void browseSourceFile(Project project, JTextField textField) {
+    public static void browseSourceFile(PhpProject project, JTextField textField) {
         String selected = browseSource(project, textField.getText(), false);
         if (selected != null) {
             textField.setText(selected);
@@ -489,7 +539,7 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseSourceFile(Project project, String preselected) {
+    public static String browseSourceFile(PhpProject project, String preselected) {
         return browseSource(project, preselected, false);
     }
 
@@ -498,7 +548,7 @@ public final class Utils {
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
-    public static void browseSourceFolder(Project project, JTextField textField) {
+    public static void browseSourceFolder(PhpProject project, JTextField textField) {
         String selected = browseSource(project, textField.getText(), true);
         if (selected != null) {
             textField.setText(selected);
@@ -511,19 +561,16 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseSourceFolder(Project project, String preselected) {
+    public static String browseSourceFolder(PhpProject project, String preselected) {
         return browseSource(project, preselected, true);
     }
 
-    private static String browseSource(Project project, String preselected, boolean selectDirectory) {
-        SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
-        assert sourceGroups.length == 1;
-        assert sourceGroups[0] != null;
-        File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
-        FileObject selected = BrowseFolders.showDialog(sourceGroups,
+    private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
+        FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
-            return PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
+            return PropertyUtils.relativizeFile(FileUtil.toFile(rootFolder), FileUtil.toFile(selected));
         }
         return null;
     }

@@ -73,6 +73,7 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -395,8 +396,6 @@ class ResultViewPanel extends JPanel{
     }
 
     void componentOpened() {
-        setRootDisplayName(getInitialRootNodeText());
-        /*selectAndActivateNode(root);*/
         if (searchScopeType == null) {
             setBtnModifyEnabled(false);
         }
@@ -761,7 +760,7 @@ class ResultViewPanel extends JPanel{
      *                  {@code false} for the <em>previous</em> match
      * @see  #goToPrev()
      */
-    private void goToNext(final boolean forward) {
+    void goToNext(final boolean forward) {
         assert EventQueue.isDispatchThread();
         assert resultModel != null;
 
@@ -789,6 +788,16 @@ class ResultViewPanel extends JPanel{
             tree.scrollRectToVisible(tree.getPathBounds(nextPath));
 
             arrowUpdater.update();
+
+            goToDetail(nextPath);
+        }
+    }
+
+    private void goToDetail(TreePath treePath){
+        Object comp = treePath.getLastPathComponent();
+        if ((comp != null) && (comp instanceof DetailNode)){
+            DetailNode nodeDetail = (DetailNode)comp;
+            nodeDetail.gotoDetail();
         }
     }
 

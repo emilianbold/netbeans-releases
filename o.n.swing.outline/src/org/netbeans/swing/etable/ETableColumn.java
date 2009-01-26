@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,9 +44,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -109,6 +111,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     
     /** Header renderer created by createDefaultHeaderRenderer. */
     private TableCellRenderer myHeaderRenderer;
+    private Comparator nestedComparator;
     
     /** Creates a new instance of ETableColumn */
     public ETableColumn(ETable table) {
@@ -137,11 +140,12 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * This method marks this column as sorted. Value 0 of the parameter rank
      * means that this column is not sorted.
-     * @param int rank value 1 means that this is the most important sorted
+     * @param rank value 1 means that this is the most important sorted
      *        column, number 2 means second etc.
-     * @param comparator operates over ETable.RowMapping objects
+     * @param ascending true means ascending
+     * @since 1.3
      */
-    void setSorted(int rank, boolean ascending) {
+    public void setSorted(int rank, boolean ascending) {
         if (!isSortingAllowed() && (rank != 0 || comparator != null)) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }
@@ -164,8 +168,11 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Rank value 1 means that this is the most important column
      * (with respect to the table sort), value 2 means second etc.
+     * @param newRank value 1 means that this is the most important sorted
+     *        column, number 2 means second etc.
+     * @since 1.3
      */
-    void setSortRank(int newRank) {
+    public void setSortRank(int newRank) {
         if (!isSortingAllowed() && newRank != 0) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }
@@ -193,6 +200,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Checks whether the sort order is ascending (true means ascending,
      * false means descending).
+     * @return true for ascending order
      */
     public boolean isAscending() {
         return ascending;
@@ -202,8 +210,10 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      * Sets the sort order. Please note: the column has to be already
      * sorted when calling this method otherwise IllegalStateException
      * is thrown.
+     * @param ascending true means ascending
+     * @since 1.3
      */
-    void setAscending(boolean ascending) {
+    public void setAscending(boolean ascending) {
         if (!isSortingAllowed()) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
         }
@@ -446,6 +456,28 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             return new FlippingComparator(new RowComparator(column));
         }
     }
+
+    /** Method allowing to set custom comparator for sorting the rows belonging to
+     * same parent in tree-like part of table. The comparator operates on the types
+     * of the given column, e.g. the class of the given column in table-like part
+     * or node in tree-line part of table.
+     *
+     * @param c comparator or null for using the default comparator
+     * @since 1.3
+     */
+    public void setNestedComparator (Comparator c) {
+        nestedComparator = c;
+    }
+
+    /** Returns comparator for sorting the rows belonging to
+     * same parent in tree-like part of table.
+     *
+     * @return comparator or null if no nested comparator was set and the default comparator will be used
+     * @since 1.3
+     */
+    public Comparator getNestedComparator () {
+        return nestedComparator;
+    }
     
     /**
      * Overriden to return our special header renderer.
@@ -551,10 +583,18 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
                 valueString = et.getColumnDisplayName(valueString);
             }
             Icon sortIcon = null;
+
+            List<TableColumn> sortedColumns = ((ETableColumnModel) table.getColumnModel ()).getSortedColumns ();
+
             if (sortRank != 0) {
-                label.setText((value == null) ? 
-                    Integer.toString(sortRank) : 
-                    sortRank+" "+valueString);
+                if (sortedColumns.size () > 1) {
+                    label.setText((value == null) ?
+                        Integer.toString(sortRank) :
+                        sortRank+" "+valueString);
+                }
+                // don't use deriveFont() - see #49973 for details
+                label.setFont (new Font (getFont ().getName (), Font.BOLD, getFont ().getSize ()));
+
                 if (ascending) {
                     sortIcon = UIManager.getIcon("ETableHeader.ascendingIcon");
                     if (sortIcon == null) {
@@ -621,7 +661,11 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             if (obj2 == null) {
                 return 1;
             }
-            if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
+            
+            // check nested comparator
+            if (getNestedComparator () != null) {
+                return getNestedComparator ().compare (obj1, obj2);
+            } else if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
                 Comparable c1 = (Comparable) obj1;
                 return c1.compareTo(obj2);
             }

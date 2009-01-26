@@ -42,21 +42,17 @@
 package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -83,7 +79,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         initComponents ();
         initAccessibility();
 
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("UI/Runtime"); //NOI18N
         DataFolder df;
         try {
             df = (DataFolder) DataObject.find(fo);

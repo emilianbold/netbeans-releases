@@ -49,6 +49,8 @@ import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -94,7 +96,7 @@ public class ForeignKeyNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -112,5 +114,15 @@ public class ForeignKeyNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ForeignKey"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ForeignKeyNode.class);
     }
 }

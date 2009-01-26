@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.visualweb.webui/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/webui/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.5
+OpenIDE-Module-Layer: org/netbeans/modules/visualweb/webui/resources/layer.xml
+OpenIDE-Module-Specification-Version: 2.6
 AutoUpdate-Show-In-Client: false

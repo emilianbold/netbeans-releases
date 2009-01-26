@@ -43,7 +43,7 @@ package org.netbeans.modules.xml.xam.ui.customizer;
 
 import java.awt.Image;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -64,7 +64,7 @@ public class FolderNode extends AbstractNode {
     private static Node iconSource;
 
     static {
-        FileObject fobj = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fobj = FileUtil.getConfigRoot();
         try {
             DataObject dobj = DataObject.find(fobj);
             iconSource = dobj.getNodeDelegate();

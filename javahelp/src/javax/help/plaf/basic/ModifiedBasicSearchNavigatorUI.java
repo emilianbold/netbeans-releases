@@ -1,38 +1,51 @@
 /*
- * @(#)BasicSearchNavigatorUI.java	1.86 06/10/30
- * 
- * Copyright (c) 2006 Sun Microsystems, Inc.  All Rights Reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- * 
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Sun designates this
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the LICENSE file that accompanied this code.
- * 
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- * 
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
- * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
- * CA 95054 USA or visit www.sun.com if you need additional information or
- * have any questions.
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
-/*
- * @(#) BasicSearchNavigatorUI.java 1.86 - last change made 10/30/06
- */
+
 package javax.help.plaf.basic;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import javax.help.*;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.plaf.ComponentUI;
@@ -45,6 +58,35 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
 
     public static ComponentUI createUI(JComponent x) {
         return new ModifiedBasicSearchNavigatorUI((ModifiedJHelpSearchNavigator) x);
+    }
+
+    // The purpose is to find reasons of I127368
+    @Override
+    protected void addSubHelpSets(HelpSet hs) {
+        for( Enumeration e = hs.getHelpSets(); e.hasMoreElements(); ) {
+            HelpSet ehs = (HelpSet) e.nextElement();
+                NavigatorView[] views = ehs.getNavigatorViews();
+                for (int i = 0; i < views.length; i++) {
+                    if(searchnav.canMerge(views[i])) {
+                        try {
+                            searchnav.merge(views[i]);
+                        } catch (IllegalArgumentException ex) {
+                            Hashtable params = views[i].getParameters();
+                            Object data = null;
+                            if (params != null)
+                                data = params.get("data");
+                            throw new IllegalArgumentException("View is invalid:\n" +
+                                                               "   View Name: " +  views[i].getName() +
+                                                               "   View Class: " + views[i].getClass().getName() +
+                                                               "   View Params: " + params +
+                                                               "   View Data: " + data +
+                                                               "   HelpSet URL: " + views[i].getHelpSet().getHelpSetURL()
+                                                               );
+                        }
+                    }
+                }
+                addSubHelpSets( ehs );
+        }
     }
 
     @Override
@@ -67,20 +109,6 @@ public class ModifiedBasicSearchNavigatorUI extends BasicSearchNavigatorUI {
         return false;
     }
 
-    /** This is a version of C.A.R Hoare's Quick Sort
-     * algorithm.  This will handle arrays that are already
-     * sorted, and arrays with duplicate keys.<BR>
-     *
-     * If you think of a one dimensional array as going from
-     * the lowest index on the left to the highest index on the right
-     * then the parameters to this function are lowest index or
-     * left and highest index or right.  The first time you call
-     * this function it will be with the parameters 0, a.length - 1.
-     *
-     * @param a       a DefaultMutableTreeNode array
-     * @param lo0     left boundary of array partition
-     * @param hi0     right boundary of array partition
-     */
     @Override
     void quickSort(DefaultMutableTreeNode a[], int lo0, int hi0) {
         if (hi0 > lo0)

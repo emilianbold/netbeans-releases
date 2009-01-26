@@ -76,8 +76,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
+import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -117,8 +120,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         } else {
             p = null;
         }
-                
-        boolean wsitSupported = false;
+        
         if (client != null){ //its a client
             if (p != null) {
                 final JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
@@ -138,18 +140,12 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                         }
                     };
                     jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
-
-                    wsitSupported = Util.isWsitSupported(p);
-                    if (wsitSupported) {
-                        try {
-                            clientWsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
-                            wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
-                            return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
-                        } catch (Exception e) {
-                            logger.log(Level.SEVERE, null, e);
-                        }
-                    } else {
-                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", Util.getServerName(p)));
+                    try {
+                        clientWsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
+                        wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
+                        return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, null, e);
                     }
                 }
             }
@@ -189,18 +185,12 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             }
                         }
                     };
-                    jaxWsModel.addServiceListener(jaxWsServiceListener);
-                    
-                    wsitSupported = Util.isWsitSupported(p);
-                    if (wsitSupported) {
-                        try {
-                            wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
-                            return new ServiceTopComponent(service, jaxWsModel, wsdlModel, node, getUndoManager());
-                        } catch(Exception e){
-                            logger.log(Level.SEVERE, null, e);
-                        }
-                    } else {
-                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", Util.getServerName(p)));
+                    jaxWsModel.addServiceListener(jaxWsServiceListener);                    
+                    try {
+                        wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
+                        return new ServiceTopComponent(service, jaxWsModel, wsdlModel, node, getUndoManager());
+                    } catch(Exception e){
+                        logger.log(Level.SEVERE, null, e);
                     }
                 }
             }
@@ -321,45 +311,28 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     }
 
     public static FileObject getClientConfigFolder(Project p) {
+        WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
+        if (wsitProvider != null) {
+            return wsitProvider.getConfigFilesFolder(true);
+        }
+
+        // proceed with default folder (META-INF) if the provider is not found
         FileObject folder = null;
         Sources sources = ProjectUtils.getSources(p);
         if (sources == null) return null;
-        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        Util.ProjectType pt = Util.getProjectType(p);
-        switch(pt) {             
-            case UNKNOWN: 
-            case CLIENT:
-            case WEB: {
-                    if ((sourceGroups != null) && (sourceGroups.length > 0)) {
-                        folder = sourceGroups[0].getRootFolder();
-                        if (folder != null) {
-                            folder = folder.getFileObject("META-INF");
-                        }
-                        if ((folder == null) || (!folder.isValid())) {
-                            try {
-                                folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
-                            } catch (IOException ex) {
-                                logger.log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    }
-                } break;            
-            case EJB: {
-                    if ((sourceGroups != null) && (sourceGroups.length > 0)) {
-                        folder = sourceGroups[0].getRootFolder().getParent();
-                        if (folder != null) {
-                            folder = folder.getFileObject("conf");
-                        }
-                        if ((folder == null) || (!folder.isValid())) {
-                            try {
-                                folder = sourceGroups[0].getRootFolder().createFolder("conf");
-                            } catch (IOException ex) {
-                                logger.log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    }
-                } break;
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);        
+        if ((sourceGroups != null) && (sourceGroups.length > 0)) {
+            folder = sourceGroups[0].getRootFolder();
+            if (folder != null) {
+                folder = folder.getFileObject("META-INF");
+            }
+            if ((folder == null) || (!folder.isValid())) {
+                try {
+                    folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
         }
         return folder;
     }

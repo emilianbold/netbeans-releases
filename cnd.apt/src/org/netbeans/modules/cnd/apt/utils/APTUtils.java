@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
+import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -417,7 +418,27 @@ public class APTUtils {
         }
         return false;
     }
-    
+
+    public static boolean isMacro(Token token) {
+        if(token instanceof MacroExpandedToken) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean areAdjacent(APTToken left, APTToken right) {
+        while (left instanceof MacroExpandedToken && right instanceof MacroExpandedToken) {
+            left = ((MacroExpandedToken) left).getTo();
+            right = ((MacroExpandedToken) right).getTo();
+        }
+//        if (left instanceof APTToken && right instanceof APTToken) {
+        return (left).getEndOffset() == (right).getOffset();
+//        } else {
+//            return left.getLine() == right.getLine()
+//                    && left.getColumn() + left.getText().length() == right.getColumn();
+//        }
+    }
+
     public static List<APTToken> toList(TokenStream ts) {
         List<APTToken> tokens = new ArrayList<APTToken>();
         try {

@@ -45,12 +45,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 
 public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
@@ -141,7 +150,58 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
             if (file != null) {
                 setLastPosition(file, component.getCaretPosition());
                 rescheduleTask.schedule(rescheduleDelay());
+
+                // Update carret for related document
+                Document doc = CsmUtilities.getDocument(file);
+                if (doc != null) {
+                    Document doc2 = (Document) doc.getProperty(Document.class);
+                    if (doc2 != null) {
+                        FileObject file2 = CsmUtilities.getFileObject(doc2);
+                        if (file2 != null) {
+                            int doc2CarretPosition = getDocumentOffset(doc2, getFileOffset(doc, component.getCaretPosition()));
+                            if (doc2CarretPosition >= 0 && doc2CarretPosition < doc2.getLength()) {
+                                JEditorPane ep = getEditor(doc2);
+                                if (ep != null && ep.getCaretPosition() != doc2CarretPosition && !ep.hasFocus()) {
+                                    ep.setCaretPosition(doc2CarretPosition);
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        private int getFileOffset(Document doc, int documentOffset) {
+            return CsmMacroExpansion.getOffsetInOriginalText(doc, documentOffset);
+        }
+
+        private int getDocumentOffset(Document doc, int fileOffset) {
+            return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
+        }
+
+        private JEditorPane getEditor(Document doc) {
+            FileObject file = CsmUtilities.getFileObject(doc);
+            if (file != null) {
+                DataObject dobj = null;
+                try {
+                    dobj = DataObject.find(file);
+                } catch (DataObjectNotFoundException ex) {
+                    Logger.getLogger(CaretAwareCsmFileTaskFactory.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (dobj != null) {
+                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                    JEditorPane jEditorPanes[] = ec.getOpenedPanes();
+                    if (jEditorPanes != null && jEditorPanes.length > 0) {
+                        return jEditorPanes[0];
+                    }
+                }
+            }
+            Object jEditorPane = doc.getProperty(JEditorPane.class);
+            if (jEditorPane != null) {
+                return (JEditorPane) jEditorPane;
+            }
+            return null;
         }
     }
 }
+

@@ -42,9 +42,6 @@
 package org.openide.loaders;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Handler;
@@ -52,16 +49,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.netbeans.junit.NbTestCase;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 
 import org.openide.loaders.CanYouQueryFolderLookupFromHandleFindTest.ErrManager;
@@ -218,7 +210,7 @@ public class CanYouQueryFromRenameTest extends LoggingTestCaseHid {
     
     public void testTheDeadlock() throws Exception {
         MyLoader m = (MyLoader)MyLoader.getLoader(MyLoader.class);
-        m.button = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "FolderLookup");
+        m.button = FileUtil.createFolder(FileUtil.getConfigRoot(), "FolderLookup");
         DataObject instance = InstanceDataObject.create(DataFolder.findFolder(m.button), "SomeName", JPanel.class);
         m.initLookup(instance.getPrimaryFile());
         
@@ -226,7 +218,7 @@ public class CanYouQueryFromRenameTest extends LoggingTestCaseHid {
         
         DataLoaderPool.setPreferredLoader(m.instanceFile, m);
         
-        FileObject any = Repository.getDefault().getDefaultFileSystem().getRoot().createData("Ahoj.txt");
+        FileObject any = FileUtil.getConfigRoot().createData("Ahoj.txt");
         DataObject obj = DataObject.find(any);
         
         assertEquals("The right object found", m, obj.getLoader());

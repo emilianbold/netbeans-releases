@@ -62,7 +62,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceAct
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -311,8 +311,7 @@ public class Hk2ItemNode extends AbstractNode {
      * @return standard folder node
      */
     private static Node getIconDelegate() {
-        return DataFolder.findFolder(Repository.getDefault().
-                getDefaultFileSystem().getRoot()).getNodeDelegate();
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
     
     private static final String RESOURCES_ICON = 

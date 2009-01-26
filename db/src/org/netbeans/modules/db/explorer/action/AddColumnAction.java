@@ -46,6 +46,7 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -54,6 +55,7 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class AddColumnAction extends BaseAction {
+    private static final Logger LOGGER = Logger.getLogger(AddColumnAction.class.getName());
 
     @Override
     public String getName() {
@@ -82,12 +84,17 @@ public class AddColumnAction extends BaseAction {
                             SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
                         }
                     } catch(Exception exc) {
-                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                        LOGGER.log(Level.WARNING, null, exc);
                         DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
                     }
                 }
             }
         );
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddColumnAction.class);
     }
 
 }

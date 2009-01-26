@@ -59,8 +59,8 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         assertEquals("SomeOtherClass", instance.getType("x"));
         assertEquals("SomeOtherClass", instance.getType("y"));
         assertEquals("SomeOtherClass", instance.getType("z"));
-        assertEquals("String", instance.getType("yz"));
-        assertEquals("Number", instance.getType("w"));
+        assertEquals("str", instance.getType("yz"));
+        assertEquals("int", instance.getType("w"));
         assertEquals(null, instance.getType("unknown"));
     }
 
@@ -68,10 +68,10 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^SECOND_CARET_POS", true);
 
         assertEquals("Other", instance.getType("x"));
-        assertEquals("Number", instance.getType("y"));
-        assertEquals("String", instance.getType("z"));
-        assertEquals("String", instance.getType("yz"));
-        assertEquals("Number", instance.getType("w"));
+        assertEquals("int", instance.getType("y"));
+        assertEquals("str", instance.getType("z"));
+        assertEquals("str", instance.getType("yz"));
+        assertEquals("int", instance.getType("w"));
         assertEquals(null, instance.getType("unknown"));
     }
 
@@ -83,4 +83,33 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
         assertEquals(null, instance.getType("unknown"));
     }
 
+    public void testTypeAssertions1() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^FIRST_CARET_POS", true);
+
+        assertEquals("int", instance.getType("defined1"));
+    }
+
+    public void testTypeAssertions2() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^SECOND_CARET_POS", true);
+
+        assertEquals("str", instance.getType("defined1"));
+    }
+
+    public void testTypeAssertions3() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/types.py", "#^SECOND_CARET_POS", true);
+
+        assertEquals("str", instance.getType("s"));
+    }
+
+    public void testTypeExceptionVars1() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/exceptas.py", "% ex.^e", true);
+
+        assertEquals("MyError", instance.getType("ex"));
+    }
+
+    public void testTypeExceptionVars2() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/exceptas.py", "% ex2.^e", true);
+
+        assertEquals("MyError", instance.getType("ex2"));
+    }
 }

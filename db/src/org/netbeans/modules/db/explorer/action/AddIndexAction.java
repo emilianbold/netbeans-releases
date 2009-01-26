@@ -52,6 +52,7 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddIndexDialog;
 import org.netbeans.modules.db.explorer.node.IndexListNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -60,7 +61,7 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class AddIndexAction extends BaseAction {
-    private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class .getName());
+    private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class.getName());
 
     public String getName() {
         return bundle().getString("AddIndex"); // NOI18N
@@ -147,5 +148,10 @@ public class AddIndexAction extends BaseAction {
             LOGGER.log(Level.INFO, exc.getMessage(), exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(AddIndexAction.class);
     }
 }

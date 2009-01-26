@@ -272,7 +272,7 @@ public final class TestUtil extends ProxyLookup {
         System.setProperty("netbeans.user", new File(workDir, "ud").getAbsolutePath()); // NOI18N
         TestUtil.setLookup(new Object[] {new Repo(test), new TestPlatformProvider()});
         File asRoot = extractAppSrv(workDir, new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
-        FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
         String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
         FileObject instanceFO = dir.createData(name);
         String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N

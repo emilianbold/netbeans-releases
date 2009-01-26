@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -126,16 +126,16 @@ public class CompoundFolderChildrenTest extends NbTestCase {
 //        markerFile.createNewFile();
 //        
 //        // Check precondition
-//        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D/");
+//        FileObject f = FileUtil.getConfigFile("Tmp/A/B/C/D/");
 //        f.refresh();
 //        
-//        f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D/" + fileName2 + "_hidden");
+//        f = FileUtil.getConfigFile("Tmp/A/B/C/D/" + fileName2 + "_hidden");
 //        assertNotNull("The _hidden file does not exist", f);
 //
-//        f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/" + fileName2);
+//        f = FileUtil.getConfigFile("Tmp/A/B/" + fileName2);
 //        assertNotNull("The original file on the second layer that should be hidden does not exist", f);
 //
-//        f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/" + fileName2);
+//        f = FileUtil.getConfigFile("Tmp/A/" + fileName2);
 //        assertNotNull("The original file on the third layer that should be hidden does not exist", f);
 //        
 //        // Test compound children
@@ -154,14 +154,14 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName2);
 
         // Check precondition
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/" + fileName2);
+        FileObject f = FileUtil.getConfigFile("Tmp/A/B/" + fileName2);
         assertNotNull("The hidden file on the second layer does not exist", f);
 
         // Mark the file as hidden, which should hide both this file and
         // the same one on the third layer.
         f.setAttribute("hidden", Boolean.TRUE);
         
-        f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/" + fileName2);
+        f = FileUtil.getConfigFile("Tmp/A/" + fileName2);
         assertNotNull("The original file on the third layer that should be hidden does not exist", f);
         
         // Test compound children
@@ -184,9 +184,9 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
 
         // Set the sorting attributes
-        FileObject layer1 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
-        FileObject layer2 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B");
-        FileObject layer3 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A");
+        FileObject layer1 = FileUtil.getConfigFile("Tmp/A/B/C/D");
+        FileObject layer2 = FileUtil.getConfigFile("Tmp/A/B");
+        FileObject layer3 = FileUtil.getConfigFile("Tmp/A");
         
         layer1.setAttribute("file-3.instance/file-1.instance", Boolean.TRUE);
         layer2.setAttribute("file-2.instance/file-3.instance", Boolean.TRUE);
@@ -234,9 +234,9 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
 
         // Set the sorting attributes
-        FileObject layer1 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
-        FileObject layer2 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B");
-        FileObject layer3 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A");
+        FileObject layer1 = FileUtil.getConfigFile("Tmp/A/B/C/D");
+        FileObject layer2 = FileUtil.getConfigFile("Tmp/A/B");
+        FileObject layer3 = FileUtil.getConfigFile("Tmp/A");
         
         layer2.setAttribute("file-3.instance/file-2.instance", Boolean.TRUE);
         
@@ -260,9 +260,9 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
 
         // Set the sorting attributes
-        FileObject layer1 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
-        FileObject layer2 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B");
-        FileObject layer3 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A");
+        FileObject layer1 = FileUtil.getConfigFile("Tmp/A/B/C/D");
+        FileObject layer2 = FileUtil.getConfigFile("Tmp/A/B");
+        FileObject layer3 = FileUtil.getConfigFile("Tmp/A");
 
         layer1.getFileObject(fileName1).setAttribute("position", 300);
         layer2.getFileObject(fileName2).setAttribute("position", 100);
@@ -427,7 +427,7 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
         assertEquals("Wrong number of files", 0, files.size());
         
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
+        FileObject f = FileUtil.getConfigFile("Tmp/A/B/C/D");
         assertNotNull("Can't find the folder", f);
         
         f.setAttribute("attrName", "attrValue");

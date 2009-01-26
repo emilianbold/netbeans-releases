@@ -57,6 +57,8 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.python.api.PythonOptions;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.debugger.CompositeCallback;
@@ -72,6 +74,7 @@ import org.netbeans.modules.python.debugger.backend.PythonDebugException;
 import org.netbeans.modules.python.debugger.backend.PythonThreadInfos;
 
 import org.netbeans.modules.python.debugger.backend.StackInfo;
+import org.netbeans.modules.python.debugger.breakpoints.PythonBreakpoint;
 import org.netbeans.modules.python.debugger.spi.PythonSession;
 import org.netbeans.modules.python.debugger.utils.AnimatedCursor;
 import org.netbeans.modules.python.debugger.utils.CommandLineEvent;
@@ -104,13 +107,13 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _COMMAND_ = "CMD ";
   private final static String _BPSET_ = "BP+ ";
   private final static String _BPCLEAR_ = "BP- ";
-  private final static String _DBG_ = "DBG ";
-  private final static String _SETARGS_ = "SETARGS ";
-  private final static String _READSRC_ = "READSRC ";
+  private final static String _DBG_ = "GLBCMD DBG ";
+  private final static String _SETARGS_ = "GLBCMD SETARGS ";
+  private final static String _READSRC_ = "GLBCMD READSRC ";
   private final static String _NEXT_ = "NEXT ";
   private final static String _STEP_ = "STEP ";
   private final static String _RUN_ = "RUN ";
-  private final static String _STOP_ = "STOP ";
+  private final static String _STOP_ = "GLBCMD STOP ";
   private final static String _STACK_ = "STACK ";
   private final static String _THREAD_ = "THREAD ";
   private final static String _GLOBALS_ = "GLOBALS ";
@@ -119,6 +122,7 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _SILENT_ = "silent";
   private final static String _LOCALS_ = "LOCALS ";
   private final static String _COMPOSITE_ = "COMPOSITE ";
+  private final static String _LASTFRAME_ = "<LastFrame>";
   private final static String _SPACE_ = " ";
   private final static String _EMPTY_ = "";
   public final static PythonVariableTreeDataNode ROOTNODE =
@@ -286,10 +290,19 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
+  private String convertDosFiles(String candidate) {
+    // safelly convert dos \ in / to avoid later control character unwanted
+    // conversion
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      return candidate.replace('\\', '/');
+    }
+    return candidate;
+  }
+
   private void launchDebug(String candidate) {
     try {
       // send DBG fname
-      _pyClient.sendCommand(_DBG_ + candidate);
+      _pyClient.sendCommand(_DBG_ + convertDosFiles(candidate));
       _debugging = true;
     } catch (PythonDebugException ex) {
       _msgBar.setError("launchDebug failed : " + ex.getMessage());
@@ -390,7 +403,7 @@ public class PythonDebugContainer implements PythonContainer {
     actions.put(DebugEvent.STEPOVER, new _STEP_OVER_());
     actions.put(DebugEvent.STEPINTO, new _STEP_INTO_());
     actions.put(DebugEvent.RUN, new _RUN_());
-  // _dbgToolbar.setActions(actions);
+    // _dbgToolbar.setActions(actions);
   }
 
   public void dbgVariableChanged(String name, String value, boolean global) {
@@ -464,35 +477,6 @@ public class PythonDebugContainer implements PythonContainer {
     terminator.start();
   }
 
-  class _BREAKPOINTS_ {
-
-    private String _src = null;
-    private Hashtable _list = null;
-
-    public _BREAKPOINTS_(String src) {
-      _src = src;
-      _list = new Hashtable();
-    }
-
-    public _BREAKPOINTS_(String src, Hashtable list) {
-      _src = src;
-      _list = list;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void addBP(int line) {
-      _list.put(new Integer(line), new Integer(line));
-    }
-
-    public Hashtable get_list() {
-      return _list;
-    }
-
-    public String get_src() {
-      return _src;
-    }
-  }
-
   class _DEBUGEVENT_MANAGER_ implements PythonDebugEventListener {
 
     private PluginEventListener _plug;
@@ -505,8 +489,6 @@ public class PythonDebugContainer implements PythonContainer {
     /** remote local tmp source / remote source name location table */
     private Hashtable<String, String> _remoteHashSource = new Hashtable<String, String>();
     private int _currentLine = -1;
-    /** 0 => end of program */
-    private int _callLevel = 0;
 
     /* debug over FTP connection if not null */
     private String _ftpSource = null;
@@ -516,7 +498,6 @@ public class PythonDebugContainer implements PythonContainer {
     }
 
     private void dealWithCall(PythonDebugEvent e) {
-      _callLevel++;
       if (_plug == null) {
         _setoutPane.writeMessage(e.toString());
       }
@@ -533,10 +514,10 @@ public class PythonDebugContainer implements PythonContainer {
     }
 
     private void dealWithReturn(PythonDebugEvent e) {
-      _callLevel--;
+      //_callLevel--;
 
       // end of python Program Reached
-      if (_callLevel == 0) {
+      if ( e.get_retVal().equals(_LASTFRAME_) ) {
         _DEBUGGING_TERMINATOR_ terminator = new _DEBUGGING_TERMINATOR_();
         terminator.start();
       }
@@ -557,6 +538,21 @@ public class PythonDebugContainer implements PythonContainer {
       }
     }
 
+    private boolean isBreakPoint(String source, int lineNo) {
+      Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+      for (Breakpoint bp : breakpoints) {
+        if (bp instanceof PythonBreakpoint) {
+          PythonBreakpoint pyBp = (PythonBreakpoint) bp;
+          if ((pyBp.isEnabled()) &&
+                  (pyBp.getFilePath().equals(source)) &&
+                  (pyBp.getLineNumber() == lineNo)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     private void populateLocalSource(PythonDebugEvent e) {
       if (e.get_fName() != null) {
         if (_newSource) {
@@ -566,7 +562,12 @@ public class PythonDebugContainer implements PythonContainer {
           // prevent stopAtFirstLine if not requested in pyOptions
           PythonOptions pyOptions = PythonOptions.getInstance();
           if ((!pyOptions.getStopAtFirstLine()) && _state == STARTING) {
-            debugSubcommand(_RUN_);
+            // we must ckeck for BP set on that line before running
+            if (isBreakPoint(e.get_fName(), e.get_lineNo())) {
+              populateToPlugin(PluginEvent.NEWLINE, e.get_fName(), e.get_lineNo());
+            } else {
+              debugSubcommand(_RUN_);
+            }
           }
         } else if (_currentLine != e.get_lineNo()) {
           populateToPlugin(PluginEvent.NEWLINE, e.get_fName(), e.get_lineNo());
@@ -1322,7 +1323,7 @@ public class PythonDebugContainer implements PythonContainer {
       // Setup mouse cursor animation
       _cursor.startAnimation();
       new Thread(_cursor).start();
-    // _cursor.startWaitingCursor() ;
+      // _cursor.startWaitingCursor() ;
     }
 
     public void resetBusy() {
@@ -1332,7 +1333,7 @@ public class PythonDebugContainer implements PythonContainer {
 
         // stop mouse cursor animation
         _cursor.stopAnimation();
-      // _cursor.stopWaitingCursor() ;
+        // _cursor.stopWaitingCursor() ;
       }
     }
 
@@ -1352,7 +1353,7 @@ public class PythonDebugContainer implements PythonContainer {
       _threads.cleanup();
       // stop mouse cursor animation
       _cursor.stopAnimation();
-    // _cursor.stopWaitingCursor() ;
+      // _cursor.stopWaitingCursor() ;
     }
   }
 
@@ -1368,6 +1369,7 @@ public class PythonDebugContainer implements PythonContainer {
 
       add(BorderLayout.NORTH, _statusBar);
       add(BorderLayout.CENTER, _setoutPane);
+      add(BorderLayout.SOUTH, _msgBar ) ; 
       setActions();
 
       add(BorderLayout.CENTER, _setoutPane);

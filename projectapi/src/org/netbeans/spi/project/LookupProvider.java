@@ -41,6 +41,10 @@
 
 package org.netbeans.spi.project;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.openide.util.Lookup;
 
 /**
@@ -66,15 +70,41 @@ public interface LookupProvider {
     Lookup createAdditionalLookup(Lookup baseContext);
 
     /**
-     * annotation to register LookupProvider instances.
+     * Annotation to register {@link LookupProvider} instances.
+     * <p>If you wish to unconditionally register one or more objects,
+     * it will be more efficient and may be easier to use
+     * {@link ProjectServiceProvider} (and/or {@link LookupMerger.Registration}).
      * @since org.netbeans.modules.projectapi 1.21
      */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
         /**
-         * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
-         * @return
+         * Token(s) denoting one or more project types, e.g. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
          */
-        String[] projectType();
+        String[] projectType() default {};
+        /**
+         * Alternate registration of project types with positions.
+         * You must specify either this or {@link #projectType} (or both).
+         * @since org.netbeans.modules.projectapi/1 1.22
+         */
+        ProjectType[] projectTypes() default {};
+        @Retention(RetentionPolicy.SOURCE)
+        @Target({})
+        /**
+         * Alternate individual registration for one project type.
+         * @since org.netbeans.modules.projectapi/1 1.22
+         */
+        @interface ProjectType {
+            /**
+             * Token denoting project type.
+             */
+            String id();
+            /**
+             * Optional ordering.
+             */
+            int position() default Integer.MAX_VALUE;
+        }
     }
 
 }

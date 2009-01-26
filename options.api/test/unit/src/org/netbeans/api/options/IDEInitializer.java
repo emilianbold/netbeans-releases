@@ -123,7 +123,7 @@ public class IDEInitializer extends ProxyLookup {
             Lookups.metaInfServices (classLoader),
             Lookups.singleton (classLoader),
         });
-        Assert.assertEquals (myFileSystem, Repository.getDefault ().getDefaultFileSystem ());
+        Assert.assertTrue (myFileSystem.isDefault());
     }
     
     public static void cleanWorkDir () {

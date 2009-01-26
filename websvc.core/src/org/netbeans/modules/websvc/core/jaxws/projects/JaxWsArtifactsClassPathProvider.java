@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -73,6 +74,12 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=ClassPathProvider.class, projectType={
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject",
+    "org-netbeans-modules-java-j2seproject"
+})
 public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP, executeCP;
@@ -84,7 +91,7 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     };
     private static final Logger LOG = Logger.getLogger(JaxWsArtifactsClassPathProvider.class.getName());
     
-    JaxWsArtifactsClassPathProvider(Project project) {
+    public JaxWsArtifactsClassPathProvider(Project project) {
         this.project = project;
     }
     

@@ -49,8 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -70,8 +69,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     
     @Override
     protected void setUp() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        folder = fs.findResource("actions/support/test");
+        folder = FileUtil.getConfigFile("actions/support/test");
         assertNotNull("testing layer is loaded: ", folder);
 
         myIconResourceCounter = 0;

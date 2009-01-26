@@ -41,6 +41,7 @@
 package org.netbeans.test.j2ee.addmethod;
 
 import java.io.IOException;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -114,11 +115,14 @@ public class AddSelectMethodTest extends AddMethodTest {
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
         new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(methodName);
         if (returnType != null) {
-            new JTextFieldOperator(dialog, 1).setText(returnType);
+            lblOper = new JLabelOperator(dialog, "Return Type:");
+            new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(returnType);
         }
         fillParameters(dialog);
         if (ejbql != null) {
-            new JTextAreaOperator(dialog).setText(ejbql);
+            lblOper = new JLabelOperator(dialog, "EJB QL:");
+            new JTextAreaOperator((JTextArea)lblOper.getLabelFor()).setText(ejbql);
+            //new JTextAreaOperator(dialog).setText(ejbql);
         }
         dialog.ok();
         if (saveFile) {

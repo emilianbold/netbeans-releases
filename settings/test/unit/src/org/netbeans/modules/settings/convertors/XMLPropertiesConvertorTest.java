@@ -44,21 +44,16 @@ package org.netbeans.modules.settings.convertors;
 import java.io.*;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-import junit.textui.TestRunner;
 
-import org.netbeans.modules.settings.convertors.FooSetting;
 import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
@@ -70,7 +65,6 @@ import org.openide.util.Lookup;
  */
 public final class XMLPropertiesConvertorTest extends NbTestCase {
     private FileSystem fs;
-    private FileSystem sfs;
     private FileObject root;
     
     /** Creates a new instance of XMLPropertiesConvertorTest */
@@ -83,11 +77,10 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         Lookup.getDefault().lookup(ModuleInfo.class);
         java.net.URL layer = this.getClass().getResource("data/layer.xml");
         fs = new XMLFileSystem(layer);
-        sfs = Repository.getDefault().getDefaultFileSystem();
-        root = sfs.getRoot();
+        root = FileUtil.getConfigRoot();
         assertNotNull("SFS root not found", root);
         
-        FileObject serdata = sfs.findResource("xml/lookups/NetBeans/DTD_Session_settings_1_0.instance");
+        FileObject serdata = FileUtil.getConfigFile("xml/lookups/NetBeans/DTD_Session_settings_1_0.instance");
         assertNotNull("missing registration for serialdata format", serdata);
         Object attr = serdata.getAttribute("instanceCreate");
         assertNotNull("core's registration for serialdata format", attr);
@@ -95,8 +88,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     }
     
     public void testReadWrite() throws Exception {
-        FileObject dtdFO = Repository.getDefault().getDefaultFileSystem().
-            findResource("/xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance");
+        FileObject dtdFO = FileUtil.getConfigFile("/xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance");
         assertNotNull("Provider not found", dtdFO);
         Convertor c = XMLPropertiesConvertor.create(dtdFO);
         FooSetting foo = new FooSetting();
@@ -253,7 +245,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
      */
     public void testUpgradeSetting() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialData.settings";
-        FileObject fo = sfs.findResource(res);
+        FileObject fo = FileUtil.getConfigFile(res);
         assertNotNull(res, fo);
         long last = fo.lastModified().getTime();
         
@@ -276,7 +268,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
      */
     public void testUpgradeSetting2() throws Exception {
         String res = "Settings/testUpgradeSetting2/ObsoleteClass.settings";
-        FileObject fo = sfs.findResource(res);
+        FileObject fo = FileUtil.getConfigFile(res);
         assertNotNull(res, fo);
         long last = fo.lastModified().getTime();
         
@@ -296,7 +288,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     
     public void testUpgradeSettingWithUnknownClass() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataUnknownClass.settings";
-        FileObject fo = sfs.findResource(res);
+        FileObject fo = FileUtil.getConfigFile(res);
         assertNotNull(res, fo);
         long last = fo.lastModified().getTime();
         
@@ -325,7 +317,6 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     }
     
     public void testDeleteSettings() throws Exception {
-        FileObject root = sfs.getRoot();
         DataFolder folder = DataFolder.findFolder(root);
         
         String filename = "testDeleteSettings";
@@ -343,16 +334,16 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     }
     
     public void testModuleDisabling() throws Exception {
-        FileObject dtd = sfs.findResource("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling/DTD_XML_FooSetting_1_0.instance");
+        FileObject dtd = FileUtil.getConfigFile("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling/DTD_XML_FooSetting_1_0.instance");
         assertNotNull(dtd);
-        FileObject xml = sfs.findResource("Settings/org-netbeans-modules-settings-convertors-testModuleDisabling.settings");
+        FileObject xml = FileUtil.getConfigFile("Settings/org-netbeans-modules-settings-convertors-testModuleDisabling.settings");
         assertNotNull(xml);
         DataObject dobj = DataObject.find(xml);
         InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
         assertNotNull(cookie);
         cookie = null;
         
-        FileObject folder = sfs.findResource("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling");
+        FileObject folder = FileUtil.getConfigFile("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling");
         assertNotNull(folder);
         // this simulate the disabling of a module; the layer containing the dtd
         // registration is removed
@@ -362,7 +353,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     }
    
     public void testCorruptedSettingsFile() throws Exception {
-        final FileObject corrupted = sfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingXMLPropCorruptedTest.settings");
+        final FileObject corrupted = FileUtil.getConfigFile("/Settings/org-netbeans-modules-settings-convertors-FooSettingXMLPropCorruptedTest.settings");
         assertNotNull(corrupted);
         
         DataObject ido = DataObject.find(corrupted);
@@ -376,7 +367,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         }
         assertNull("corrupted .settings file cannot provide an object", obj);
         
-        final FileObject valid = sfs.findResource("/Services/org-netbeans-modules-settings-convertors-FooSetting.settings");
+        final FileObject valid = FileUtil.getConfigFile("/Services/org-netbeans-modules-settings-convertors-FooSetting.settings");
         assertNotNull(valid);
         
         // simulate revert to default of a corrupted setting object

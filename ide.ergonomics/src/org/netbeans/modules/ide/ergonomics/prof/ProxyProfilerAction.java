@@ -45,12 +45,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ide.ergonomics.Utilities;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -74,7 +74,7 @@ abstract class ProxyProfilerAction implements ActionListener {
 
             public void run() {
                 FeatureInfo featureInfo = null;
-                for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                for (FeatureInfo info : FeatureManager.features()) {
                     if ("Attach Profiler".equals(info.getProfilerAttachName())) { // NOI18N
                         featureInfo = info;
                         break;
@@ -95,7 +95,7 @@ abstract class ProxyProfilerAction implements ActionListener {
     private void performRegular(final ActionEvent e) {
         try {
             FoDFileSystem.getInstance().waitFinished();
-            FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource(actionInstance);
+            FileObject delegate = FileUtil.getConfigFile(actionInstance);
             InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
             final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {

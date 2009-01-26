@@ -62,7 +62,7 @@ import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -138,7 +138,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
         // honor 57874 contact
         
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Projects/Actions"); // NOI18N
             if (fo != null) {
                 DataObject dobj = DataObject.find(fo);
                 FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);

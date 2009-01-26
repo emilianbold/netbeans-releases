@@ -45,6 +45,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -53,7 +54,6 @@ import org.openide.util.Lookup;
  * @author  Jan Pokorsky
  */
 public class EnvTest extends NbTestCase {
-    FileSystem fs;
 
     /** Creates a new instance of EnvTest */
     public EnvTest(String name) {
@@ -64,12 +64,11 @@ public class EnvTest extends NbTestCase {
         super.setUp();
 
         Lookup.getDefault().lookup(ModuleInfo.class);
-        fs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     
     public void testFindEntityRegistration() throws Exception {
         String provider = "xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance";
-        FileObject fo = fs.findResource(provider);
+        FileObject fo = FileUtil.getConfigFile(provider);
         assertNotNull("provider registration not found: " + provider, fo);
         assertNotNull("entity registration not found for " + provider, Env.findEntityRegistration(fo));
     }

@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.awt.Image;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -53,15 +51,14 @@ import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 
@@ -88,12 +85,10 @@ public class VerifyFullIDETest extends NbTestCase {
 
     public void testGetAllProjectFactories() throws Exception {
         StringBuilder sb = new StringBuilder();
-        Map<String,String> all = Feature2LayerMapping.projectFiles();
+        Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
         all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
-        all.put("skip", "org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory");
-        all.put("test", "org.netbeans.modules.ide.ergonomics.fod.TestFactory");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 
@@ -103,7 +98,7 @@ public class VerifyFullIDETest extends NbTestCase {
     }
 
     public void testGetAllNbProjects() throws Exception {
-        Map<String,String> all = Feature2LayerMapping.nbprojectTypes();
+        Map<String,String> all = FeatureManager.nbprojectTypes();
         StringBuilder sb = new StringBuilder();
 
         Class<?> ant = Class.forName(
@@ -127,12 +122,12 @@ public class VerifyFullIDETest extends NbTestCase {
     public void testGetAllProjectTemplates() throws Exception {
         List<XMLFileSystem> all = new ArrayList<XMLFileSystem>();
 
-        for (FeatureInfo fi : Feature2LayerMapping.features()) {
-            all.add(FeatureInfoAccessor.DEFAULT.getInternal(fi).getXMLFileSystem());
+        for (FeatureInfo fi : FeatureManager.features()) {
+            all.add(fi.getXMLFileSystem());
         }
 
         MultiFileSystem mfs = new MultiFileSystem(all.toArray(new FileSystem[0]));
-        FileObject orig = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
+        FileObject orig = FileUtil.getConfigFile("Templates/Project");
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();
@@ -174,6 +169,9 @@ public class VerifyFullIDETest extends NbTestCase {
         StringBuilder sb, Class<?> what, Method info, Map<String,String> all
     ) throws Exception {
         for (Object f : Lookup.getDefault().lookupAll(what)) {
+            if (f.getClass().getPackage().getName().equals("org.netbeans.modules.ide.ergonomics.fod")) {
+                continue;
+            }
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);
@@ -200,7 +198,7 @@ public class VerifyFullIDETest extends NbTestCase {
 
     public void testGetAllDebuggers() {
        List<String> lazyDebuggers = new ArrayList<String>();
-       Iterator<? extends FeatureInfo> it = Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
+       Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
        for (; it.hasNext(); ) {
            FeatureInfo featureInfo = it.next();
            if (featureInfo.getAttachTypeName() != null) {

@@ -149,13 +149,27 @@ public class SplitView extends ViewElement {
         if(splitPane == null) {
             splitPane = new MultiSplitPane();
             updateSplitPane();
-
             
-            if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                splitPane.setDividerSize(orientation == JSplitPane.VERTICAL_SPLIT
-                    ? Constants.DIVIDER_SIZE_VERTICAL
-                    : Constants.DIVIDER_SIZE_HORIZONTAL);
+            int dividerSize;
+            //get default divider size from SplitPane's UI
+            if (orientation == JSplitPane.VERTICAL_SPLIT) {
+                dividerSize = UIManager.getInt("Nb.SplitPane.dividerSize.vertical"); //NOI18N
+                if (dividerSize == 0) {
+                    dividerSize = UIManager.getInt("SplitPane.dividerSize"); //NOI18N
+                    if (dividerSize == 0) {
+                        dividerSize = Constants.DIVIDER_SIZE_VERTICAL;
+                    }
+                }
+            } else {
+                dividerSize = UIManager.getInt("Nb.SplitPane.dividerSize.horizontal"); //NOI18N
+                if (dividerSize == 0) {
+                    dividerSize = UIManager.getInt("SplitPane.dividerSize"); //NOI18N
+                    if (dividerSize == 0) {
+                        dividerSize = Constants.DIVIDER_SIZE_HORIZONTAL;
+                    }
+                }
             }
+            splitPane.setDividerSize(dividerSize);
             
             splitPane.setBorder(BorderFactory.createEmptyBorder());
             

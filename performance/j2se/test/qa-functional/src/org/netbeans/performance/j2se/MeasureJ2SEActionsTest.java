@@ -62,6 +62,7 @@ public class MeasureJ2SEActionsTest {
         System.setProperty("suite", "UI Responsiveness J2SE Actions suite");
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
+        .addTest(SearchTest.class)
         .addTest(CloseAllEditorsTest.class)
         .addTest(CloseEditorTest.class)
         .addTest(CloseEditorModifiedTest.class)
@@ -85,9 +86,8 @@ public class MeasureJ2SEActionsTest {
         // needs to be fixed .addTest(SwitchToFileTest.class)
         .addTest(SwitchViewTest.class)
         .addTest(TypingInEditorTest.class)
-        .addTest(RefactorFindUsagesTest.class)
-        .addTest(SearchTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+        // needs tb moved to scenarios .addTest(RefactorFindUsagesTest.class)
+        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]").reuseUserDir(true)));
  
         return suite;
     }

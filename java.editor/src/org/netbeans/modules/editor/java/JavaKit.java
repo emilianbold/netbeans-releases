@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,23 +43,26 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import javax.swing.*;
+import java.util.Map;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.text.*;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.*;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.*;
-import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.editor.*;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
@@ -70,10 +73,12 @@ import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
 import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.awt.Mnemonics;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
 * Java editor kit with appropriate document
@@ -86,71 +91,6 @@ public class JavaKit extends NbEditorKit {
 
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
-    private static final String[] getSetIsPrefixes = new String[] {
-                "get", "set", "is" // NOI18N
-            };
-
-    /** Switch first letter of word to capital and insert 'get'
-    * at word begining.
-    */
-    public static final String makeGetterAction = "make-getter"; // NOI18N
-
-    /** Switch first letter of word to capital and insert 'set'
-    * at word begining.
-    */
-    public static final String makeSetterAction = "make-setter"; // NOI18N
-
-    /** Switch first letter of word to capital and insert 'is'
-    * at word begining.
-    */
-    public static final String makeIsAction = "make-is"; // NOI18N
-
-    /** Add the watch depending on the context under the caret */
-    public static final String addWatchAction = "add-watch"; // NOI18N
-
-    /** Toggle the breakpoint of the current line */
-    public static final String toggleBreakpointAction = "toggle-breakpoint"; // NOI18N
-
-    /** Debug source and line number */
-    public static final String abbrevDebugLineAction = "abbrev-debug-line"; // NOI18N
-
-    /** Menu item for adding all necessary imports in a file */
-    public static final String fixImportsAction = "fix-imports"; // NOI18N
-    
-    /** Open dialog for choosing the import statement to be added */
-    public static final String fastImportAction = "fast-import"; // NOI18N
-    
-    /** Opens Go To Class dialog */
-    //public static final String gotoClassAction = "goto-class"; //NOI18N
-
-    public static final String tryCatchAction = "try-catch"; // NOI18N
-
-    public static final String javaDocShowAction = "javadoc-show-action"; // NOI18N
-    
-    public static final String expandAllJavadocFolds = "expand-all-javadoc-folds"; //NOI18N
-    
-    public static final String collapseAllJavadocFolds = "collapse-all-javadoc-folds"; //NOI18N
-
-    public static final String expandAllCodeBlockFolds = "expand-all-code-block-folds"; //NOI18N
-    
-    public static final String collapseAllCodeBlockFolds = "collapse-all-code-block-folds"; //NOI18N
-    
-    public static final String selectNextElementAction = "select-element-next"; //NOI18N
-    
-    public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
-    
-    /* package */ static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
-    
-    /* package */ static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
-    
-    /* package */ static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
-    
-    /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
-    
-    /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
-    
-    /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
-    
     static final long serialVersionUID =-5445829962533684922L;
     
 
@@ -169,11 +109,6 @@ public class JavaKit extends NbEditorKit {
         return new JavaSyntax(getSourceLevel((BaseDocument)doc));
     }
 
-    @Override
-    public Document createDefaultDocument() {
-        return new JavaDocument(getContentType());
-    }
-    
     public String getSourceLevel(BaseDocument doc) {
         DataObject dob = NbEditorUtilities.getDataObject(doc);
         return dob != null ? SourceLevelQuery.getSourceLevel(dob.getPrimaryFile()) : null;
@@ -211,50 +146,138 @@ public class JavaKit extends NbEditorKit {
 	  //do not ask why, fire bug in the IZ:
 	  CodeTemplateManager.get(doc);
       }
+    
+    private static final String[] getSetIsPrefixes = new String[] {
+                "get", "set", "is" // NOI18N
+            };
 
-    protected Action[] createActions() {
-        Action[] superActions = super.createActions();
-        Action[] javaActions = new Action[] {
-                                   new JavaDefaultKeyTypedAction(),
-                                   new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
-                                   new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
-                                   new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
-                                   new AbbrevDebugLineAction(),
-                                   new ToggleCommentAction("//"), // NOI18N
-                                   new JavaGenerateGoToPopupAction(),
-				   new JavaInsertBreakAction(),
-				   new JavaDeleteCharAction(deletePrevCharAction, false),
-				   new JavaDeleteCharAction(deleteNextCharAction, true),
-                                   new ExpandAllJavadocFolds(),
-                                   new CollapseAllJavadocFolds(),
-                                   new ExpandAllCodeBlockFolds(),
-                                   new CollapseAllCodeBlockFolds(),
-                                   new JavaGenerateFoldPopupAction(),
-                                   new JavaGoToDeclarationAction(),
-                                   new JavaGoToSourceAction(),
-                                   new JavaGotoHelpAction(),
-				   new InstantRenameAction(),
-                                   new JavaFixImports(),
-                                   new InsertSemicolonAction(true),
-                                   new InsertSemicolonAction(false),
-                                   new SelectCodeElementAction(selectNextElementAction, true),
-                                   new SelectCodeElementAction(selectPreviousElementAction, false),
-                                   
-                                   new NextCamelCasePosition(findAction(superActions, nextWordAction)),
-                                   new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
-                                   new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
-                                   new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
-                                   new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
-                                   new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
-                                   
-                                   new FastImportAction(),
-                                   new GoToSuperTypeAction(),
-                                   
-                                   new GoToMarkOccurrencesAction(false),
-                                   new GoToMarkOccurrencesAction(true),
-                               };
-                               
-        return TextAction.augmentList(superActions, javaActions);
+    /** Switch first letter of word to capital and insert 'get'
+    * at word begining.
+    */
+    public static final String makeGetterAction = "make-getter"; // NOI18N
+
+    /** Switch first letter of word to capital and insert 'set'
+    * at word begining.
+    */
+    public static final String makeSetterAction = "make-setter"; // NOI18N
+
+    /** Switch first letter of word to capital and insert 'is'
+    * at word begining.
+    */
+    public static final String makeIsAction = "make-is"; // NOI18N
+
+    /** Add the watch depending on the context under the caret */
+    public static final String addWatchAction = "add-watch"; // NOI18N
+
+    /** Toggle the breakpoint of the current line */
+    public static final String toggleBreakpointAction = "toggle-breakpoint"; // NOI18N
+
+    /** Debug source and line number */
+    public static final String abbrevDebugLineAction = "abbrev-debug-line"; // NOI18N
+
+    /** Menu item for adding all necessary imports in a file */
+    public static final String fixImportsAction = "fix-imports"; // NOI18N
+
+    /** Open dialog for choosing the import statement to be added */
+    public static final String fastImportAction = "fast-import"; // NOI18N
+
+    /** Opens Go To Class dialog */
+    //public static final String gotoClassAction = "goto-class"; //NOI18N
+
+    public static final String tryCatchAction = "try-catch"; // NOI18N
+
+    public static final String javaDocShowAction = "javadoc-show-action"; // NOI18N
+
+    public static final String expandAllJavadocFolds = "expand-all-javadoc-folds"; //NOI18N
+
+    public static final String collapseAllJavadocFolds = "collapse-all-javadoc-folds"; //NOI18N
+
+    public static final String expandAllCodeBlockFolds = "expand-all-code-block-folds"; //NOI18N
+
+    public static final String collapseAllCodeBlockFolds = "collapse-all-code-block-folds"; //NOI18N
+
+    public static final String selectNextElementAction = "select-element-next"; //NOI18N
+
+    public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
+
+    /* package */ static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
+
+    /* package */ static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
+
+    /* package */ static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+
+    /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+
+    /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+
+    /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+
+    public static Action create(FileObject file) {
+        initialize();
+
+        return name2Action.get(file.getName());
+    }
+
+    private static Map<String, Action> name2Action;
+
+    private static synchronized void initialize() {
+        if (name2Action != null) {
+            return ;
+        }
+
+        name2Action = new HashMap<String, Action>();
+
+        for (BaseAction a : createActionsForLayer()) {
+            name2Action.put((String) a.getValue(Action.NAME), a);
+
+//            System.err.println("<file name=\"" + (String) a.getValue(Action.NAME) + ".instance\">");
+//            System.err.println("    <attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.editor.java.JavaKit.create\" />");
+//            System.err.println("</file>");
+        }
+    }
+
+    private static BaseAction[] createActionsForLayer() {
+        Action[] superActions = new NbEditorKit().getActions();
+
+        return new BaseAction[] {
+            new JavaDefaultKeyTypedAction(),
+            new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
+            new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
+            new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
+            new AbbrevDebugLineAction(),
+            new ToggleCommentAction("//"), // NOI18N
+            new JavaGenerateGoToPopupAction(),
+            new JavaInsertBreakAction(),
+            new JavaDeleteCharAction(deletePrevCharAction, false),
+            new JavaDeleteCharAction(deleteNextCharAction, true),
+            new ExpandAllJavadocFolds(),
+            new CollapseAllJavadocFolds(),
+            new ExpandAllCodeBlockFolds(),
+            new CollapseAllCodeBlockFolds(),
+            new JavaGenerateFoldPopupAction(),
+            new JavaGoToDeclarationAction(),
+            new JavaGoToSourceAction(),
+            new JavaGotoHelpAction(),
+            new InstantRenameAction(),
+            new JavaFixImports(),
+            new InsertSemicolonAction(true),
+            new InsertSemicolonAction(false),
+            new SelectCodeElementAction(selectNextElementAction, true),
+            new SelectCodeElementAction(selectPreviousElementAction, false),
+
+            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
+
+            new FastImportAction(),
+            new GoToSuperTypeAction(),
+
+            new GoToMarkOccurrencesAction(false),
+            new GoToMarkOccurrencesAction(true),
+        };
     }
 
     private static Action findAction(Action [] actions, String name) {
@@ -266,7 +289,7 @@ public class JavaKit extends NbEditorKit {
         }
         return null;
     }
-    
+
     public static class JavaDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         protected void insertString(BaseDocument doc, int dotPos,
@@ -279,14 +302,14 @@ public class JavaKit extends NbEditorKit {
                     caret.setDot(dotPos+1);
                 }else{
                     super.insertString(doc, dotPos, caret, str, overwrite);
-                    
+
                 }
             } else {
                 super.insertString(doc, dotPos, caret, str, overwrite);
                 BraceCompletion.charInserted(doc, dotPos, caret, insertedChar);
             }
         }
-        
+
         protected void replaceSelection(JTextComponent target,
                 int dotPos,
                 Caret caret,
@@ -341,7 +364,7 @@ public class JavaKit extends NbEditorKit {
             // Try to get the accelerator
             Keymap km = target.getKeymap();
             if (km != null) {
-                
+
                 KeyStroke[] keys = km.getKeyStrokesForAction(a);
                 if (keys != null && keys.length > 0) {
                     item.setAccelerator(keys[0]);
@@ -353,7 +376,7 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
-        
+
         private void addAction(JTextComponent target, JMenu menu, Action a){
             if (a != null) {
                 String actionName = (String) a.getValue(Action.NAME);
@@ -363,13 +386,13 @@ public class JavaKit extends NbEditorKit {
                 }
                 if (item == null) {
                     // gets trimmed text that doesn' contain "go to"
-                    String itemText = (String)a.getValue(ExtKit.TRIMMED_TEXT); 
+                    String itemText = (String)a.getValue(ExtKit.TRIMMED_TEXT);
                     if (itemText == null){
                         itemText = getItemText(target, actionName, a);
                     }
                     if (itemText != null) {
                         item = new JMenuItem(itemText);
-                        Mnemonics.setLocalizedText(item, itemText);                        
+                        Mnemonics.setLocalizedText(item, itemText);
                         item.addActionListener(a);
                         addAcceleretors(a, item, target);
                         item.setEnabled(a.isEnabled());
@@ -389,9 +412,9 @@ public class JavaKit extends NbEditorKit {
                     menu.add(item);
                 }
 
-            }            
+            }
         }
-        
+
         protected void addAction(JTextComponent target, JMenu menu,
         String actionName) {
             BaseKit kit = Utilities.getKit(target);
@@ -402,8 +425,8 @@ public class JavaKit extends NbEditorKit {
             } else { // action-name is null, add the separator
                 menu.addSeparator();
             }
-        }        
-        
+        }
+
         protected String getItemText(JTextComponent target, String actionName, Action a) {
             String itemText;
             if (a instanceof BaseAction) {
@@ -413,7 +436,7 @@ public class JavaKit extends NbEditorKit {
             }
             return itemText;
         }
-        
+
         public JMenuItem getPopupMenuItem(final JTextComponent target) {
             String menuText = NbBundle.getBundle(JavaKit.class).getString("generate-goto-popup"); //NOI18N
             JMenu jm = new JMenu(menuText);
@@ -423,10 +446,10 @@ public class JavaKit extends NbEditorKit {
             addAction(target, jm, ExtKit.gotoAction);
             return jm;
         }
-    
+
     }
-    
-    
+
+
     public static class AbbrevDebugLineAction extends BaseAction {
 
         public AbbrevDebugLineAction() {
@@ -466,19 +489,19 @@ public class JavaKit extends NbEditorKit {
         }
 
     }
-    
+
 
     public static class JavaInsertBreakAction extends InsertBreakAction {
-        
+
         static final long serialVersionUID = -1506173310438326380L;
-        
+
         private boolean isJavadocTouched = false;
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             try {
                 super.actionPerformed(evt, target);
-                
+
                 // XXX temporary solution until the editor will provide a SPI to plug. See issue #115739
                 // This must run outside the document lock
                 if (isJavadocTouched) {
@@ -492,7 +515,7 @@ public class JavaKit extends NbEditorKit {
                 isJavadocTouched = false;
             }
         }
-        
+
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
             if (BraceCompletion.posWithinString(doc, dotPos)) {
@@ -518,10 +541,10 @@ public class JavaKit extends NbEditorKit {
                 } catch (BadLocationException ex) {
                 }
             }
-            
+
             return javadocBlockCompletion(target, doc, dotPos);
         }
-        
+
         protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
             if (cookie != null) {
                 if (cookie instanceof Integer) {
@@ -531,7 +554,7 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
-        
+
         private Object javadocBlockCompletion(JTextComponent target, BaseDocument doc, final int dotPosition) {
             try {
                 TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
@@ -540,7 +563,7 @@ public class JavaKit extends NbEditorKit {
                 if (! ((ts.moveNext() || ts.movePrevious()) && ts.token().id() == JavaTokenId.JAVADOC_COMMENT)) {
                     return null;
                 }
-                
+
                 int jdoffset = dotPosition - 3;
                 if (jdoffset >= 0) {
                     CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
@@ -550,7 +573,7 @@ public class JavaKit extends NbEditorKit {
                         doc.insertString(dotPosition, "*/", null); // NOI18N
                         doc.getFormatter().indentNewLine(doc, dotPosition);
                         target.setCaretPosition(dotPosition);
-                        
+
                         isJavadocTouched = true;
                         return Boolean.TRUE;
                     }
@@ -561,7 +584,7 @@ public class JavaKit extends NbEditorKit {
             }
             return null;
         }
-        
+
         private static boolean isOpenJavadoc(CharSequence content, int pos) {
             for (int i = pos; i >= 0; i--) {
                 char c = content.charAt(i);
@@ -576,10 +599,10 @@ public class JavaKit extends NbEditorKit {
                     return false;
                 }
             }
-            
+
             return false;
         }
-        
+
         private static boolean isClosedJavadoc(CharSequence txt, int pos) {
             int length = txt.length();
             int quotation = 0;
@@ -621,7 +644,7 @@ public class JavaKit extends NbEditorKit {
 
 
     public static class JavaDeleteCharAction extends ExtDeleteCharAction {
-        
+
         public JavaDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
         }
@@ -634,19 +657,19 @@ public class JavaKit extends NbEditorKit {
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             target.putClientProperty(JavaDeleteCharAction.class, this);
-            
+
             try {
                 super.actionPerformed(evt, target);
             } finally {
                 target.putClientProperty(JavaDeleteCharAction.class, null);
             }
         }
-        
+
         public boolean getNextChar() {
             return nextChar;
         }
     }
-    
+
     public static class ExpandAllJavadocFolds extends BaseAction{
         public ExpandAllJavadocFolds(){
             super(expandAllJavadocFolds);
@@ -660,7 +683,7 @@ public class JavaKit extends NbEditorKit {
             FoldUtilities.expand(hierarchy, JavaFoldManager.JAVADOC_FOLD_TYPE);
         }
     }
-    
+
     public static class CollapseAllJavadocFolds extends BaseAction{
         public CollapseAllJavadocFolds(){
             super(collapseAllJavadocFolds);
@@ -674,7 +697,7 @@ public class JavaKit extends NbEditorKit {
             FoldUtilities.collapse(hierarchy, JavaFoldManager.JAVADOC_FOLD_TYPE);
         }
     }
-    
+
     public static class ExpandAllCodeBlockFolds extends BaseAction{
         public ExpandAllCodeBlockFolds(){
             super(expandAllCodeBlockFolds);
@@ -691,14 +714,14 @@ public class JavaKit extends NbEditorKit {
             FoldUtilities.expand(hierarchy, types);
         }
     }
-    
+
     public static class CollapseAllCodeBlockFolds extends BaseAction{
         public CollapseAllCodeBlockFolds(){
             super(collapseAllCodeBlockFolds);
             putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("collapse-all-code-block-folds"));
             putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-collapse-all-code-block-folds"));
         }
-        
+
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
@@ -708,9 +731,9 @@ public class JavaKit extends NbEditorKit {
             FoldUtilities.collapse(hierarchy, types);
         }
     }
-    
+
     public static class JavaGenerateFoldPopupAction extends GenerateFoldPopupAction{
-        
+
         protected void addAdditionalItems(JTextComponent target, JMenu menu){
             addAction(target, menu, collapseAllJavadocFolds);
             addAction(target, menu, expandAllJavadocFolds);
@@ -718,9 +741,9 @@ public class JavaKit extends NbEditorKit {
             addAction(target, menu, collapseAllCodeBlockFolds);
             addAction(target, menu, expandAllCodeBlockFolds);
         }
-        
+
     }
-    
+
     private static class JavaGoToDeclarationAction extends GotoDeclarationAction {
         public @Override boolean gotoDeclaration(JTextComponent target) {
             if (!(target.getDocument() instanceof BaseDocument)) // Fixed #113062
@@ -729,7 +752,7 @@ public class JavaKit extends NbEditorKit {
             return true;
         }
     }
-    
+
     private static class JavaGoToSourceAction extends BaseAction {
 
         static final long serialVersionUID =-6440495023918097760L;
@@ -739,7 +762,7 @@ public class JavaKit extends NbEditorKit {
                   ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
                   | SAVE_POSITION
                  );
-            putValue(TRIMMED_TEXT, LocaleSupport.getString("goto-source-trimmed"));  //NOI18N            
+            putValue(TRIMMED_TEXT, LocaleSupport.getString("goto-source-trimmed"));  //NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -747,16 +770,16 @@ public class JavaKit extends NbEditorKit {
                 GoToSupport.goTo((BaseDocument) target.getDocument(), target.getCaretPosition(), true);
             }
         }
-        
+
         public String getPopupMenuText(JTextComponent target) {
             return NbBundle.getBundle(JavaKit.class).getString("goto_source_open_source_not_formatted"); //NOI18N
         }
-        
+
         protected Class getShortDescriptionBundleClass() {
             return BaseKit.class;
         }
     }
-    
+
     private static class JavaFixImports extends BaseAction {
 
         public JavaFixImports() {
@@ -772,7 +795,7 @@ public class JavaKit extends NbEditorKit {
             if (target != null) {
                 Document doc = target.getDocument();
                 Object source = doc.getProperty(Document.StreamDescriptionProperty);
-                
+
                 if (source instanceof DataObject) {
                     FileObject fo = ((DataObject) source).getPrimaryFile();
 
@@ -780,7 +803,7 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
-        
+
         public static final class GlobalAction extends MainMenuAction {
             private final JMenuItem menuPresenter;
 
@@ -803,7 +826,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
     } // End of JavaFixImports action
-    
+
     private static class JavaGotoHelpAction extends BaseAction {
 
         public JavaGotoHelpAction() {

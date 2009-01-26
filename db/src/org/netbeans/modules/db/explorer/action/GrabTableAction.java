@@ -53,7 +53,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
@@ -71,6 +70,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -87,6 +88,11 @@ public class GrabTableAction extends BaseAction {
         return bundle().getString("GrabStructure"); // NOI18N
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(GrabTableAction.class);
+    }
+
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -95,16 +101,6 @@ public class GrabTableAction extends BaseAction {
         }
 
         return enabled;
-    }
-
-    public void performActionXXX (Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    //perform(node);
-                }
-            }
-        );
     }
 
     public void performAction(Node[] activatedNodes) {
@@ -122,13 +118,14 @@ public class GrabTableAction extends BaseAction {
             chooser.setDialogTitle(bundle().getString("GrabTableFileSaveDialogTitle")); //NOI18N
             chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
             chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                                      public boolean accept(File f) {
-                                          return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
-                                      }
-                                      public String getDescription() {
-                                          return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
-                                      }
-                                  });
+                public boolean accept(File f) {
+                  return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
+                }
+
+                public String getDescription() {
+                  return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
+                }
+            });
 
             java.awt.Component par = WindowManager.getDefault().getMainWindow();
             boolean noResult = true;
@@ -227,7 +224,7 @@ public class GrabTableAction extends BaseAction {
                             }
                         );
                     } catch (MetadataModelException e) {
-                        // TODO report exception
+                        Exceptions.printStackTrace(e);
                     }
                 }
             });

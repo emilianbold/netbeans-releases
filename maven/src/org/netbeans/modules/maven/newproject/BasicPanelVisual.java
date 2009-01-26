@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -76,7 +77,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -96,15 +96,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
     
     private ArchetypeWizardUtils ngprovider;
 
-    private boolean webAppWizard;
-
-    private Archetype[] j2EEArchetypes;
-    
     /** Creates new form PanelProjectLocationVisual */
-    public BasicPanelVisual(BasicWizardPanel panel, boolean webAppWizard) {
-        initComponents();
+    public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
-        this.webAppWizard = webAppWizard;
+
+        initComponents();
+
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
@@ -115,9 +112,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         tblAdditionalProps.setVisible(false);
         lblAdditionalProps.setVisible(false);
         jScrollPane1.setVisible(false);
-        if (!webAppWizard) {
+
+        if (panel.getArchetypes() == null) {
             lblEEVersion.setVisible(false);
             comboEEVersion.setVisible(false);
+        } else {
+
         }
     }
     
@@ -209,8 +209,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(419, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                .addContainerGap(423, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -223,7 +223,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         lblEEVersion.setLabelFor(comboEEVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, "&Java EE Version:");
 
-        comboEEVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Java EE 5", "J2EE 1.4", "J2EE 1.3" }));
+        comboEEVersion.setModel(new DefaultComboBoxModel(panel.getEELevels()));
         comboEEVersion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboEEVersionActionPerformed(evt);
@@ -245,13 +245,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     .add(projectNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(browseButton)
@@ -368,12 +368,20 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        
-        if (projectNameTextField.getText().length() == 0) {
+
+        String projName = projectNameTextField.getText();
+        if (projName.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG,
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_is_not_valid"));
             return false; // Display name not specified
         }
+
+        if(projName.indexOf(File.separatorChar) != -1) {
+            wizardDescriptor.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_has_slash"));
+            return false;
+        }
+
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path");
@@ -405,21 +413,37 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
             return false;
         }
-        if (txtArtifactId.getText().trim().length() == 0) {
+
+        String coord = txtArtifactId.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Require_artifactId"));
             return false;
         }
-        if (txtGroupId.getText().trim().length() == 0) {
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
+        coord = txtGroupId.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_groupId"));
             return false;
         }
-        if (txtVersion.getText().trim().length() == 0) {
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
+        coord = txtVersion.getText().trim();
+        if (coord.length() == 0) {
             wizardDescriptor.putProperty(ERROR_MSG, 
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_version"));
             return false;
         }
+        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
     }
@@ -442,7 +466,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             }
             d.putProperty("additionalProps", map); //NOI18N
         }
-        if (webAppWizard) {
+        if (panel.getArchetypes() != null) {
             d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
         }
     }
@@ -469,16 +493,19 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
         ngprovider = (ArchetypeWizardUtils)settings.getProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR);
-        final Archetype arch = getArchetype(settings);
-        lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
-        lblAdditionalProps.setVisible(true);
-        tblAdditionalProps.setVisible(false);
-        jScrollPane1.setVisible(false);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                prepareAdditionalProperties(arch);
-            }
-        });
+        // skip additional properties if direct known archetypes without additional props used
+        if (panel.areAdditional()) {
+            final Archetype arch = getArchetype(settings);
+            lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
+            lblAdditionalProps.setVisible(true);
+            tblAdditionalProps.setVisible(false);
+            jScrollPane1.setVisible(false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    prepareAdditionalProperties(arch);
+                }
+            });
+        }
     }
     
     private void prepareAdditionalProperties(Archetype arch) {
@@ -489,7 +516,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             Artifact art = downloadArchetype(arch);
             File fil = art.getFile();
             if (fil.exists()) {
-                Map<String, String> props = ngprovider.getAdditionalProperties(art);
+                Map<String, String> props = ArchetypeWizardUtils.getAdditionalProperties(art);
                 for (String key : props.keySet()) {
                     String defVal = props.get(key);
                     dtm.addRow(new Object[] {key, defVal == null ? "" : defVal });
@@ -520,32 +547,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
     }
 
     private Archetype getArchetype (WizardDescriptor settings) {
-        if (!webAppWizard) {
+        Archetype[] archs = panel.getArchetypes();
+        if (archs == null) {
             return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
         } else {
-            if (j2EEArchetypes == null) {
-                j2EEArchetypes = new Archetype[3];
-
-                j2EEArchetypes[0] = new Archetype();
-                j2EEArchetypes[0].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-                j2EEArchetypes[0].setArtifactId("webapp-jee5"); //NOI18N
-                j2EEArchetypes[0].setVersion("1.0-SNAPSHOT"); //NOI18N
-                j2EEArchetypes[0].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-
-                j2EEArchetypes[1] = new Archetype();
-                j2EEArchetypes[1].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-                j2EEArchetypes[1].setArtifactId("webapp-j2ee14"); //NOI18N
-                j2EEArchetypes[1].setVersion("1.0-SNAPSHOT"); //NOI18N
-                j2EEArchetypes[1].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-
-                j2EEArchetypes[2] = new Archetype();
-                j2EEArchetypes[2].setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-                j2EEArchetypes[2].setArtifactId("webapp-j2ee13"); //NOI18N
-                j2EEArchetypes[2].setVersion("1.0-SNAPSHOT"); //NOI18N
-                j2EEArchetypes[2].setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-            }
-
-            return j2EEArchetypes[Math.max(0, comboEEVersion.getSelectedIndex())];
+            return archs[Math.max(0, comboEEVersion.getSelectedIndex())];
         }
     }
 

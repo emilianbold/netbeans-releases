@@ -113,11 +113,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Context context, CompilationInfo info) {
-
-        if (!FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle())){
-            prettyPrint(context);
-        }
-
+        prettyPrint(context);
         reindent(context, info, false);
     }
     
@@ -128,11 +124,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     public int hangingIndentSize() {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
-
-    public String openingBraceStyle(){
-        return CodeStyle.get((Document) null).getOpeningBraceStyle();
-    }
-
+    
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
@@ -435,44 +427,52 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private void prettyPrint(Context context) {
         final BaseDocument doc = (BaseDocument) context.document();
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
-        final LinkedHashMap<Integer, Integer> breaks = new LinkedHashMap<Integer, Integer>();
-        ts.move(context.endOffset());
-        boolean wasOpeningBracket = false;
-        while (ts.movePrevious() && ts.offset() >= context.startOffset()) {
-            if (wasOpeningBracket) {
-                int insertPos = ts.offset();
-                int cutLength = 0;
-                if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                    cutLength = ts.token().length();
-                } else {
-                    insertPos += ts.token().length();
-                }
-                breaks.put(insertPos, cutLength);
-            }
-            wasOpeningBracket = ts.token().id() == PHPTokenId.PHP_CURLY_OPEN;
+        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
+
+        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
+            return;
         }
-        doc.runAtomic(new Runnable() {
 
-            public void run() {
-                try {
-                    String replacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle())
-                            ? "\n" : " "; //NOI18N
-
-                    for (Integer offset : breaks.keySet()) {
-                        int len = breaks.get(offset);
-                        
-                        if (len > 0) {
-                            doc.remove(offset, len);
-                        }
-
-                        doc.insertString(offset, replacement, null);
+        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
+        
+        if (ts != null) {
+            final LinkedHashMap<Integer, Integer> breaks = new LinkedHashMap<Integer, Integer>();
+            ts.move(context.endOffset());
+            boolean wasOpeningBracket = false;
+            while (ts.movePrevious() && ts.offset() >= context.startOffset()) {
+                if (wasOpeningBracket) {
+                    int insertPos = ts.offset();
+                    int cutLength = 0;
+                    if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                        cutLength = ts.token().length();
+                    } else {
+                        insertPos += ts.token().length();
                     }
-                } catch (BadLocationException badLocationException) {
-                    badLocationException.printStackTrace();
+                    breaks.put(insertPos, cutLength);
                 }
+                wasOpeningBracket = ts.token().id() == PHPTokenId.PHP_CURLY_OPEN;
             }
-        });
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    try {
+                        String replacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)
+                                ? "\n" : " "; //NOI18N
+
+                        for (Integer offset : breaks.keySet()) {
+                            int len = breaks.get(offset);
+                            doc.insertString(offset + len, replacement, null);
+
+                            if (len > 0) {
+                                doc.remove(offset, len);
+                            }
+                        }
+                    } catch (BadLocationException badLocationException) {
+                        badLocationException.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 
     private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {

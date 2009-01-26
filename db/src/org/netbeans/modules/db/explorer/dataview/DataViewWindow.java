@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.dataview;
@@ -85,10 +83,8 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.node.ColumnNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -105,43 +101,48 @@ import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
 
 public class DataViewWindow extends TopComponent {
-    
+
     // TODO: remove this class, replace by the SQL editor
-    
+
     private JTextArea queryarea;
     private JTable jtable;
     private DataModel dbadaptor;
     private JComboBox rcmdscombo;
     private JLabel status;
     private ResourceBundle bundle;
-    private DatabaseNodeInfo info;
+    //private DatabaseNodeInfo info;
     private JPopupMenu tablePopupMenu;
+
+    private DatabaseConnection connection;
+
     static final long serialVersionUID = 6855188441469780252L;
 
-    public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
-        this.info = info;
+    public DataViewWindow(DatabaseConnection connection, String query) throws SQLException {
+        //this.info = info;
+        this.connection = connection;
 
         bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc")); //NOI18N
 
-        DatabaseNodeInfo tempInfo = info;
-        while(!(tempInfo instanceof ConnectionNodeInfo))
-            tempInfo = tempInfo.getParent();
+        //DatabaseNodeInfo tempInfo = info;
+        //while(!(tempInfo instanceof ConnectionNodeInfo))
+        //    tempInfo = tempInfo.getParent();
 
-        String title = tempInfo.getDisplayName();
+        String title = connection.getName(); //tempInfo.getDisplayName();
         int idx = title.indexOf(" ["); //NOI18N
         title = title.substring(0, idx);
         setName(title);
-        setToolTipText(bundle.getString("CommandEditorTitle") + " " + 
-                tempInfo.getDisplayName()); //NOI18N
+        setToolTipText(bundle.getString("CommandEditorTitle") + " " +
+                //tempInfo.getDisplayName()); //NOI18N
+                title); //NOI18N
 
         GridBagLayout layout = new GridBagLayout();
         GridBagConstraints con = new GridBagConstraints ();
         setLayout (layout);
 
         // Data model
-        dbadaptor = new DataModel(info);
+        dbadaptor = new DataModel(connection);
 
         // Query area and button
         JPanel subpane = new JPanel();
@@ -400,7 +401,7 @@ public class DataViewWindow extends TopComponent {
         layout.setConstraints(split, con);
         add(split);
     }
-    
+
     /**Overriden to provide preferred value
      * for unique TopComponent Id returned by getID. Returned value is used as starting
      * value for creating unique TopComponent ID.
@@ -410,13 +411,13 @@ public class DataViewWindow extends TopComponent {
     protected String preferredID() {
         return getName();
     }
-    
+
     /** Overriden to explicitely set persistence type of DataViewWindow
      * to PERSISTENCE_NEVER */
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
-    
+
     /** Returns query used by panel.
     */
     public String getCommand() {
@@ -610,14 +611,14 @@ public class DataViewWindow extends TopComponent {
         public void dragExit (DropTargetEvent dte) {
         }
 
-        private ColumnNodeInfo getNodeInfo(Transferable t) {
+        private ColumnNode getNode(Transferable t) {
             Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
             if (n != null)
-                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+                return (ColumnNode)n;
 
             n = NodeTransfer.node(t, NodeTransfer.COPY);
             if (n != null)
-                return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
+                return (ColumnNode)n;
 
             return null;
         }
@@ -640,9 +641,9 @@ public class DataViewWindow extends TopComponent {
                     int tabidx = 0;
                     HashMap tabidxmap = new HashMap();
                     for (int i = 0; i < count; i++) {
-                        ColumnNodeInfo nfo = getNodeInfo(mobj.getTransferableAt(i));
+                        ColumnNode nfo = getNode(mobj.getTransferableAt(i));
                         if (nfo != null) {
-                            String tablename = nfo.getTable();
+                            String tablename = nfo.getParentName();
                             Integer tableidx = (Integer)tabidxmap.get(tablename);
                             if (tableidx == null) tabidxmap.put(tablename, tableidx = new Integer(tabidx++));
                             if (buff.length()>0) buff.append(", "); //NOI18N
@@ -661,8 +662,8 @@ public class DataViewWindow extends TopComponent {
                     query = "select "+buff.toString()+" from "+frombuff.toString(); //NOI18N
 
                 } else {
-                    ColumnNodeInfo nfo = getNodeInfo(t);
-                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getTable(); //NOI18N
+                    ColumnNode nfo = getNode(t);
+                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getParentName(); //NOI18N
                 }
 
                 if (query != null)
@@ -674,7 +675,7 @@ public class DataViewWindow extends TopComponent {
     }
 
     class DataModel extends AbstractTableModel {
-        DatabaseNodeInfo node_info;
+        DatabaseConnection connection;
         Vector coldef = new Vector();
         Vector data = new Vector();
         boolean editable = false;
@@ -682,8 +683,8 @@ public class DataViewWindow extends TopComponent {
         static final long serialVersionUID =7729426847826999963L;
 
         /** Constructor */
-        public DataModel(DatabaseNodeInfo node_info) throws SQLException {
-            this.node_info = node_info;
+        public DataModel(DatabaseConnection conn) throws SQLException {
+            connection = conn;
         }
 
         /** Executes command
@@ -700,7 +701,7 @@ public class DataViewWindow extends TopComponent {
             Connection con;
             Statement stat;
             try {
-                con = node_info.getConnection();
+                con = connection.getConnection();
                 stat = con.createStatement();
             } catch ( Exception exc ) {
                 String message = MessageFormat.format(bundle.getString("EXC_ConnectionError"), new String[] {exc.getMessage()}); // NOI18N
@@ -716,8 +717,8 @@ public class DataViewWindow extends TopComponent {
 
                 int cols = mdata.getColumnCount();
                 // Bug : 5083676
-                // Data is getting cleared and modified in a independent thread , while the swing 
-                // thread tries to render the table. Hence this sometimes results in a 
+                // Data is getting cleared and modified in a independent thread , while the swing
+                // thread tries to render the table. Hence this sometimes results in a
                 // ArrayIndexOutOfBoundsException
                 // Creating two 'work' vectors here and populating required changes in these
                 // Then replacing the model vectors with these.
@@ -743,11 +744,11 @@ public class DataViewWindow extends TopComponent {
 //                int step = RootNode.getOption().getFetchStep();
                 int limit = 100;
                 int step = 200;
-                
+
                 String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                 String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
                 String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
-                
+
                 JButton fetchNext = new JButton();
                 Mnemonics.setLocalizedText(fetchNext, nextset);
                 fetchNext.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
@@ -759,7 +760,7 @@ public class DataViewWindow extends TopComponent {
                 JButton no = new JButton();
                 Mnemonics.setLocalizedText(no, cancel);
                 no.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewCancelButtonA11yDesc")); //NOI18N
-                
+
                 String message;
                 NotifyDescriptor ndesc;
                 while (rs.next()) {
@@ -770,13 +771,13 @@ public class DataViewWindow extends TopComponent {
 
                     // Catch row count
                     if (++rcounter >= limit) {
-                        
+
                         message = MessageFormat.format(bundle.getString("DataViewMessage"), new Object[] {
                             new Integer(rcounter),
                             new Integer(step)
                         }); //NOI18N
                         ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
-                        
+
                         Object ret = DialogDisplayer.getDefault().notify(ndesc);
                         if (fetchAll.equals(ret)) {
                             limit = Integer.MAX_VALUE;
@@ -791,7 +792,7 @@ public class DataViewWindow extends TopComponent {
                         }
                     }
                 }
-                
+
                 // Replace model in the swing event thread
                 // Alternative is to lock on the instance and assign it.
                 final Vector assignData = dataWork;
@@ -811,25 +812,28 @@ public class DataViewWindow extends TopComponent {
                     data = assignData;
                 }
                  */
-                rs.close();               
+                rs.close();
                 //fireTableChanged(null);
             } else {
-                if (command.toLowerCase().startsWith("delete") || 
-                        command.toLowerCase().startsWith("insert") || 
+                if (command.toLowerCase().startsWith("delete") ||
+                        command.toLowerCase().startsWith("insert") ||
                         command.toLowerCase().startsWith("update")) //NOI18N
                     stat.executeUpdate(command);
                 else {
                     stat.execute(command);
 
                     //refresh DBExplorer nodes
-                    while (!(info instanceof ConnectionNodeInfo)) {
-                        info = info.getParent();
-                    }
-                    
+                    //while (!(info instanceof ConnectionNodeInfo)) {
+                    //    info = info.getParent();
+                    //}
+                    connection.notifyChange();
+
+                    /*
                     Vector<DatabaseNodeInfo> children = info.getChildren();
                     for (DatabaseNodeInfo child : children ) {
                         child.refreshChildren();
                     }
+                    */
                 }
             }
             status.setText(bundle.getString("CommandExecuted")); //NOI18N

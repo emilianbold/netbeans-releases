@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.options.SvnOptionsController;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -89,12 +90,13 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         panel.textPane.addHyperlinkListener(this);
         panel.downloadRadioButton.addActionListener(this);
         panel.cliRadioButton.addActionListener(this);        
-        if(Utilities.isWindows()) {
+        if(Utilities.isWindows() && !SvnUtils.isJava64()) {
             panel.downloadRadioButton.setSelected(true);
         } else {
             panel.cliRadioButton.setSelected(true);
             panel.downloadRadioButton.setEnabled(false);
             panel.forceGlobalCheckBox.setEnabled(false);
+            panel.lblBinariesAvailableTip.setEnabled(false);
         }
         radioSwitch();
     }

@@ -3,15 +3,15 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   cats:FIELD:[]:ESCAPED{cats}:
   check:METHOD:[PUBLIC]:ESCAPED{check}(PARAMETERS{ESCAPED{uri}, ESCAPED{username}, ESCAPED{password}, ESCAPED{requested_e_coll}, ESCAPED{requested_m_coll}}):
   check_new_entry:METHOD:[PUBLIC]:ESCAPED{check_new_entry}(PARAMETERS{ESCAPED{as_posted}, ESCAPED{new_entry}, ESCAPED{desc}}):
-  check_resource:METHOD:[PUBLIC]:ESCAPED{check_resource}(PARAMETERS{ESCAPED{uri}, ESCAPED{name}, ESCAPED{content_type}, ESCAPED{report}}):
-  compare1:METHOD:[PUBLIC]:ESCAPED{compare1}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}, ESCAPED{field}}):
-  compare_entries:METHOD:[PUBLIC]:ESCAPED{compare_entries}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}}):
+  check_resource:METHOD:[PUBLIC]:ESCAPED{check_resource}(PARAMETERS{ESCAPED{uri}, ESCAPED{name}, ESCAPED{content_type}, ESCAPED{report}})<font color='#777777'> : ESCAPED{NilClass, Getter}</font>:
+  compare1:METHOD:[PUBLIC]:ESCAPED{compare1}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}, ESCAPED{field}})<font color='#777777'> : ESCAPED{TrueClass}</font>:
+  compare_entries:METHOD:[PUBLIC]:ESCAPED{compare_entries}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   dialogs:FIELD:[]:ESCAPED{dialogs}:
   dianum:FIELD:[]:ESCAPED{dianum}:
   diarefs:FIELD:[]:ESCAPED{diarefs}:
   end_list:METHOD:[PUBLIC]:ESCAPED{end_list}:
   error:METHOD:[PUBLIC]:ESCAPED{error}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
-  find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}}):
+  find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}})<font color='#777777'> : ESCAPED{String, _unknown_}</font>:
   footer:METHOD:[PUBLIC]:ESCAPED{footer}(PARAMETERS{ESCAPED{message}}):
   footer:FIELD:[]:ESCAPED{footer}:
   good:METHOD:[PUBLIC]:ESCAPED{good}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
@@ -27,12 +27,12 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   report:METHOD:[PUBLIC]:ESCAPED{report}(PARAMETERS{ESCAPED{output}}):
   report_html:METHOD:[PUBLIC]:ESCAPED{report_html}(PARAMETERS{ESCAPED{output}}):
   report_li:METHOD:[PUBLIC]:ESCAPED{report_li}(PARAMETERS{ESCAPED{dialog}, ESCAPED{marker}, ESCAPED{text}}):
-  report_text:METHOD:[PUBLIC]:ESCAPED{report_text}:
+  report_text:METHOD:[PUBLIC]:ESCAPED{report_text}<font color='#777777'> : ESCAPED{Array}</font>:
   save_dialog:METHOD:[PUBLIC]:ESCAPED{save_dialog}(PARAMETERS{ESCAPED{name}, ESCAPED{actor}}):
   show_crumbs:METHOD:[PUBLIC]:ESCAPED{show_crumbs}(PARAMETERS{ESCAPED{key}}):
   show_message:METHOD:[PUBLIC]:ESCAPED{show_message}(PARAMETERS{ESCAPED{crumb}, ESCAPED{tf}}):
   start_list:METHOD:[PUBLIC]:ESCAPED{start_list}(PARAMETERS{ESCAPED{message}}):
-  step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{message}}):
+  step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
   steps:FIELD:[]:ESCAPED{steps}:
   test_entry_posts:METHOD:[PUBLIC]:ESCAPED{test_entry_posts}(PARAMETERS{ESCAPED{entry_collection}}):
   test_media_linkage:METHOD:[PUBLIC]:ESCAPED{test_media_linkage}(PARAMETERS{ESCAPED{coll}}):

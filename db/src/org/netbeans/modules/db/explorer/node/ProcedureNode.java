@@ -49,6 +49,9 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -90,12 +93,25 @@ public class ProcedureNode extends BaseNode {
                         public void run(Metadata metaData) {
                             Procedure proc = procedureHandle.resolve(metaData);
                             name = proc.getName();
+
+                            updateProperties(proc);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
+        }
+    }
+
+    private void updateProperties(Procedure proc) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        if (proc.getReturnValue() == null) {
+            addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("StoredProcedure")); // NOI18N
+        } else {
+            addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("StoredFunction")); // NOI18N
         }
     }
 
@@ -112,5 +128,15 @@ public class ProcedureNode extends BaseNode {
     @Override
     public String getIconBase() {
         return ICONBASE;
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Procedure"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProcedureNode.class);
     }
 }

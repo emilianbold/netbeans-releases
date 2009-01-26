@@ -492,16 +492,24 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         return dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION;
     }
     
-    public Object show(String title, HelpCtx helpCtx, Object[] options) {
+    public Object show(String title, HelpCtx helpCtx, Object[] options, Object initialValue) {
         RepositoryDialogPanel rdp = new RepositoryDialogPanel();
         rdp.panel.setLayout(new BorderLayout());
         rdp.panel.add(getPanel(), BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(rdp, title); // NOI18N        
-        if(options!= null) {
-            dialogDescriptor.setOptions(options); // NOI18N
-        }        
+        DialogDescriptor dialogDescriptor = null;
+        if(options != null) {
+            dialogDescriptor = new DialogDescriptor(rdp, title, // NOI18N
+                    true, options, initialValue,
+                    DialogDescriptor.DEFAULT_ALIGN, helpCtx, null);
+        } else {
+            dialogDescriptor = new DialogDescriptor(rdp, title); // NOI18N
+        }
         showDialog(dialogDescriptor, helpCtx);
         return dialogDescriptor.getValue();
+    }
+
+    public Object show(String title, HelpCtx helpCtx, Object[] options) {
+        return show(title, helpCtx, options, null);
     }
     
     private void showDialog(DialogDescriptor dialogDescriptor, HelpCtx helpCtx) {

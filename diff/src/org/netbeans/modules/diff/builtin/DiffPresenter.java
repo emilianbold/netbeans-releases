@@ -59,7 +59,6 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.DefaultPropertyModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -75,6 +74,7 @@ import org.openide.util.Task;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
+import org.openide.filesystems.FileUtil;
 
 /**
  * This panel is to be used as a wrapper for diff visualizers.
@@ -209,8 +209,7 @@ public class DiffPresenter extends javax.swing.JPanel {
         PropertyModel model;
         PropertyPanel panel;
         java.awt.GridBagConstraints gridBagConstraints;
-        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-        FileObject services = dfs.findResource("Services");
+        FileObject services = FileUtil.getConfigFile("Services");
         DataFolder df = DataFolder.findFolder(services);
         Object editor = PropertyEditorManager.findEditor (Object.class);
         if (diffInfo.isChooseProviders() && editor != null) {
@@ -308,8 +307,7 @@ public class DiffPresenter extends javax.swing.JPanel {
     
     private static void setDefaultDiffService(Object ds, String folder) {
         //System.out.println("setDefaultDiffService("+ds+")");
-        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-        FileObject services = dfs.findResource(folder);
+        FileObject services = FileUtil.getConfigFile(folder);
         DataFolder df = DataFolder.findFolder(services);
         DataObject[] children = df.getChildren();
         //System.out.println("  Got children.");

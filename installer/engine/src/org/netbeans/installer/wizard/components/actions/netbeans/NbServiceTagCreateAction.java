@@ -62,6 +62,7 @@ import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.modules.reglib.BrowserSupport;
 import org.netbeans.modules.reglib.NbServiceTagSupport;
@@ -287,14 +288,28 @@ public class NbServiceTagCreateAction extends WizardAction {
             ServiceTag gfST = null;
             if (System.getProperty("netbeans.home") != null) {
                 // java.home system variable usually points to private jre with MacOS exception
+
+                LogManager.log("... calling RegLib function");
+                LogManager.log("...... gfJavaHome : "  + gfJavaHome);
+                LogManager.log("...... gfLocation : "  + location);
+
                 final File jreHome = new File(gfJavaHome, "jre");
                 final File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
-                final String version = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
+                LogManager.log("...... javaHome : "    + javaHome);
+
+
+                final String gfVersion = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
+                LogManager.log("...... gfVersion : "   + gfVersion);
+
+                final Version javaVersion = JavaUtils.getVersion(gfJavaHome);
+                final String  jdkVersion = javaVersion.toJdkStyle();
+                LogManager.log("...... javaVersion : " + jdkVersion);
+                
                 gfST = NbServiceTagSupport.createGfServiceTag(source,
                         javaHome.getAbsolutePath(),
-                        JavaUtils.getVersion(gfJavaHome).toJdkStyle(),
+                        jdkVersion,
                         location.getAbsolutePath(),
-                        version);
+                        gfVersion);
             }
             final String registry = "lib/registration/servicetag-registry.xml";
             final String relativeLocation = (gfProduct.getVersion().getMajor() == 3 ? "glassfish/" : "") + registry;

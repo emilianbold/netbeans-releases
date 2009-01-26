@@ -52,6 +52,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -310,7 +311,13 @@ public abstract class FileSystem implements Serializable {
      * @return true if this is {@link Repository#getDefaultFileSystem}
     */
     public final boolean isDefault() {
-        return this == ExternalUtil.getRepository().getDefaultFileSystem();
+        FileSystem fs = null;
+        try {
+            fs = FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return this == fs;
     }
 
     /** Test if the filesystem is read-only or not.

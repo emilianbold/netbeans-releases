@@ -75,7 +75,6 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -925,7 +924,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
-            templatesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates"); // NOI18N
+            templatesRoot = FileUtil.getConfigFile("Templates"); // NOI18N
         }
         return templatesRoot;
     }

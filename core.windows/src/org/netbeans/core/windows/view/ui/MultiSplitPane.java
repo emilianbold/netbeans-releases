@@ -98,13 +98,7 @@ public class MultiSplitPane extends JPanel
         setLayout( new MultiSplitLayout() );
         addMouseMotionListener( this );
         addMouseListener( this );
-        
-        //get default divider size from SplitPane's UI
-        dividerSize = UIManager.getInt("NbSplitPane.dividerSize"); //NOI18N
-        if( 0 == dividerSize )
-            dividerSize = UIManager.getInt("SplitPane.dividerSize"); //NOI18N
-        if( 0 == dividerSize )
-            dividerSize = 7;
+
         Color bkColor = UIManager.getColor("NbSplitPane.background");
         if( null != bkColor ) {
             setBackground(bkColor);

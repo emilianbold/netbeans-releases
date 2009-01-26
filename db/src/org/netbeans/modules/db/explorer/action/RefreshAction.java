@@ -46,6 +46,8 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,6 +58,11 @@ public class RefreshAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("Refresh"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RefreshAction.class);
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -85,7 +92,7 @@ public class RefreshAction extends BaseAction {
                                 }
                             );
                         } catch (MetadataModelException e) {
-                            // TODO report exception
+                            Exceptions.printStackTrace(e);
                         }
                     }
 

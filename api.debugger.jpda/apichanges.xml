@@ -689,6 +689,27 @@ These are mainly class and thread filters and hit counts.
         <issue number="136099"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Improve threading model.</summary>
+        <version major="2" minor="18"/>
+        <date day="13" month="1" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            ReadWriteLock is introduced to synchronize the access to JPDAThread.
+            ReadLock of that read/write pair is publicly available through the
+            new method JPDAThread.getReadAccessLock(). Clients can use this lock
+            to assure that the thread is not resumed in the mean time.
+            <p>
+                Added methods:<br/>
+                <code>JPDAThread.getReadAccessLock()</code>,
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAThread" />
+        <issue number="156368"/>
+    </change>
+
 
 </changes>
 

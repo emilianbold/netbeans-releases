@@ -134,7 +134,7 @@ public final class ModelUtils {
      * @param mdl
      * @param url of the repository
      * @param add true == add to model, will not add if the repo is in project but not in model (eg. central repo)
-     * @return null
+     * @return null if repository with given url exists, otherwise a returned newly created item.
      */
     public static Repository addModelRepository(MavenProject project, POMModel mdl, String url) {
         if (url.contains("http://repo1.maven.org/maven2")) { //NOI18N
@@ -219,74 +219,82 @@ public final class ModelUtils {
      * @param enc encoding to use
      */
     public static void checkEncoding(ModelHandle handle, String enc) {
-        boolean wasProperty = false;
         String source = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (source == null) {
-            source = PluginPropertyUtils.getPluginProperty(handle.getProject(),
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER,
-                    Constants.ENCODING_PARAM, null);
-        } else {
-            wasProperty = true;
-        }
         if (source != null && source.contains(enc)) {
             return;
         }
-        if (wasProperty) {
-            //new approach, assume all plugins conform to the new setting.
-            Properties props = handle.getPOMModel().getProject().getProperties();
-            if (props == null) {
-                props = handle.getPOMModel().getFactory().createProperties();
-                handle.getPOMModel().getProject().setProperties(props);
-            }
-            props.setProperty(Constants.ENCODING_PROP, enc);
-            //do not bother configuring the plugins in this case.
-        } else {
-            POMModel model = handle.getPOMModel();
-            POMComponentFactory fact = model.getFactory();
-            Plugin plugin;
-            Plugin plugin2;
-            Plugin old = null;
-            Plugin old2 = null;
-            Build bld = handle.getPOMModel().getProject().getBuild();
-            if (bld != null) {
-                old = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-                old2 = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES);
+        //new approach, assume all plugins conform to the new setting.
+        Properties props = handle.getPOMModel().getProject().getProperties();
+        if (props == null) {
+            props = handle.getPOMModel().getFactory().createProperties();
+            handle.getPOMModel().getProject().setProperties(props);
+            handle.markAsModified(handle.getPOMModel());
+        }
+        props.setProperty(Constants.ENCODING_PROP, enc);
+        boolean createPlugins = source == null;
+
+        //check if compiler/resources plugins are configured and update them to ${project.source.encoding expression
+        POMModel model = handle.getPOMModel();
+        POMComponentFactory fact = model.getFactory();
+        Plugin plugin;
+        Plugin plugin2;
+        Build bld = handle.getPOMModel().getProject().getBuild();
+        if (bld == null) {
+            if (createPlugins) {
+                bld = fact.createBuild();
+                model.getProject().setBuild(bld);
             } else {
-                model.getProject().setBuild(fact.createBuild());
+                return;
             }
-            if (old != null) {
-                plugin = old;
-            } else {
-                plugin = fact.createPlugin();
-                plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-                plugin.setArtifactId(Constants.PLUGIN_COMPILER);
-                plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
-                model.getProject().getBuild().addPlugin(plugin);
-            }
-            if (old2 != null) {
-                plugin2 = old2;
-            } else {
-                plugin2 = fact.createPlugin();
-                plugin2.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-                plugin2.setArtifactId(Constants.PLUGIN_RESOURCES);
-                plugin2.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_RESOURCES));
-                model.getProject().getBuild().addPlugin(plugin2);
-            }
+        }
+
+        plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+        plugin2 = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES);
+
+        String compilesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER,
+                    Constants.ENCODING_PARAM, null);
+        String resourcesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES,
+                    Constants.ENCODING_PARAM, null);
+
+        boolean updateCompiler = createPlugins || compilesource != null; /** configured in parent somehow */
+        if (plugin == null && updateCompiler) {
+            plugin = fact.createPlugin();
+            plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plugin.setArtifactId(Constants.PLUGIN_COMPILER);
+            plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
+            bld.addPlugin(plugin);
+        }
+        if (plugin != null) {
             Configuration conf = plugin.getConfiguration();
-            if (conf == null) {
+            if (conf == null && updateCompiler) {
                 conf = fact.createConfiguration();
                 plugin.setConfiguration(conf);
             }
-            conf.setSimpleParameter(Constants.ENCODING_PARAM, enc);
+            if (conf != null && updateCompiler) {
+                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
+            }
+        }
 
-            conf = plugin2.getConfiguration();
-            if (conf == null) {
+        boolean updateResources = createPlugins || resourcesource != null; /** configured in parent somehow */
+        if (plugin2 == null && updateResources) {
+            plugin2 = fact.createPlugin();
+            plugin2.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plugin2.setArtifactId(Constants.PLUGIN_RESOURCES);
+            plugin2.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_RESOURCES));
+            bld.addPlugin(plugin2);
+        }
+        if (plugin2 != null) {
+            Configuration conf = plugin2.getConfiguration();
+            if (conf == null && updateResources) {
                 conf = fact.createConfiguration();
                 plugin2.setConfiguration(conf);
             }
-            conf.setSimpleParameter(Constants.ENCODING_PARAM, enc);
+            if (conf != null && updateResources) {
+                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
+            }
         }
-        handle.markAsModified(handle.getPOMModel());
     }
 
 

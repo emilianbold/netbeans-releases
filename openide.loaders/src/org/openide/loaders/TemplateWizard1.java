@@ -60,7 +60,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.NodeTreeModel;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -192,7 +192,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
      */
     private void updateRootNode (DataFolder root) {
         if (root == null) {
-            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("/Templates"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Templates"); // NOI18N
             if (fo != null && fo.isFolder ())
                 root = DataFolder.findFolder (fo);
         }

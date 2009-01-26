@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [schemaName of copyright owner]"
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -41,8 +41,19 @@ package org.netbeans.modules.db.explorer.action;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.MessageFormat;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.dlg.AddViewDialog;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -65,17 +76,54 @@ public class CreateViewAction extends BaseAction {
                     enabled = !conn.isClosed();
                 }
             } catch (SQLException e) {
-
+                Exceptions.printStackTrace(e);
             }
         }
 
         return enabled;
     }
 
-    public void performAction (Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1) {
-        }
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CreateViewAction.class);
     }
+
+    public void performAction (Node[] activatedNodes) {
+        final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    perform(node);
+                }
+            }
+        );
+    }
+
+    private void perform(final BaseNode node) {
+        DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
+
+        String schemaName = findSchemaWorkingName(node.getLookup());
+
+        try {
+            boolean viewsSupported = connection.getConnector().getDriverSpecification(schemaName).areViewsSupported();
+            if (!viewsSupported) {
+                String message = MessageFormat.format(bundle().getString("MSG_ViewsAreNotSupported"), 
+                        new String[] {connection.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
+                return;
+            }
+
+            Specification spec = connection.getConnector().getDatabaseSpecification();
+
+            // Create and execute command
+            AddViewDialog dlg = new AddViewDialog(spec, schemaName);
+            if (dlg.run()) {
+                SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
+            }
+        } catch(Exception exc) {
+            DbUtilities.reportError(bundle().getString("ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
+        }
+     }
 
     @Override
     public String getName() {

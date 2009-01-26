@@ -51,10 +51,11 @@
  */
 package org.netbeans.modules.cnd.spi.model.services;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
- * Servise that provides macro expansions
+ * Service that provides macro expansions
  *
  * @author Nick Krasilnikov
  */
@@ -69,4 +70,49 @@ public interface CsmMacroExpansionProvider {
      */
     public abstract String getExpandedText(CsmFile file, int startOffset, int endOffset);
 
+    /**
+     * Macro expands content of one document to another
+     *
+     * @param inDoc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @param outDoc - result
+     */
+    public abstract void expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
+
+    /**
+     * Transforms original offset to offset in expanded text
+     *
+     * @param expandedDoc - document
+     * @param originalOffset - original offset
+     * @return offset in expanded text
+     */
+    public abstract int getOffsetInExpandedText(Document expandedDoc, int originalOffset);
+
+    /**
+     * Transforms offset in expanded text to original offset
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return original offset
+     */
+    public abstract int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
+
+    /**
+     * Returns offset of the next macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public abstract int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+
+    /**
+     * Returns offset of the previous macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public abstract int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
 }

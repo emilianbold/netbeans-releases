@@ -53,7 +53,6 @@ import org.netbeans.junit.Manager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
@@ -123,7 +122,7 @@ public class IDEInitializer extends ProxyLookup {
             Lookups.metaInfServices (classLoader),
             Lookups.singleton (classLoader),
         });
-        Assert.assertEquals (myFileSystem, Repository.getDefault ().getDefaultFileSystem ());
+        Assert.assertTrue (myFileSystem.isDefault());
     }
     
     public static void cleanWorkDir () {

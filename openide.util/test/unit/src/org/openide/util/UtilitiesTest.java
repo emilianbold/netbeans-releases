@@ -42,6 +42,7 @@
 package org.openide.util;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -50,23 +51,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Semaphore;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import junit.framework.TestCase;
+import junit.framework.Assert;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.util.AWTBridge;
+import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Jiri Rechtacek et al.
  */
-public class UtilitiesTest extends TestCase {
+public class UtilitiesTest extends NbTestCase {
 
     public UtilitiesTest (String testName) {
         super (testName);
@@ -160,6 +168,17 @@ public class UtilitiesTest extends TestCase {
         // XXX stringToKeys, Mac support, various more exotic conditions...
     }
 
+    public void testKeyConversionsPortable() throws Exception {
+        if (Utilities.isMac()) {
+            assertEquals("SD-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.META_MASK), true));
+            assertEquals("SO-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK), true));
+            assertEquals("A-RIGHT", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), true));
+        } else {
+            assertEquals("SD-D", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK), true));
+            assertEquals("O-RIGHT", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), true));
+        }
+    }
+
     public void testSpecialKeyworksOn14AsWell15 () throws Exception {
         KeyStroke ks = Utilities.stringToKey("C-CONTEXT_MENU");
         assertNotNull ("key stroke created", ks);
@@ -174,7 +193,7 @@ public class UtilitiesTest extends TestCase {
         String s = Utilities.keyToString(ks);
         assertEquals ("Correctly converted", "CONTEXT_MENU", s);
     }
-    
+
     public void testActionsToPopupWithLookup() throws Exception {
         MockServices.setServices(AwtBridgeImpl.class);
         final List<String> commands = new ArrayList<String>();
@@ -261,6 +280,77 @@ public class UtilitiesTest extends TestCase {
             // trailing separators must be stripped
         };
         assertEquals("correct generated menu", Arrays.asList(expectedCommands), commands);
+    }
+
+    public void testActionsForPath() throws Exception {
+        MockLookup.setInstances(new NamedServicesProvider() {
+            public Lookup create(String path) {
+                if (!path.equals("stuff/")) {
+                    return Lookup.EMPTY;
+                }
+                InstanceContent content = new InstanceContent();
+                InstanceContent.Convertor<String,Action> actionConvertor = new InstanceContent.Convertor<String,Action>() {
+                    public Action convert(final String obj) {
+                        return new AbstractAction() {
+                            public void actionPerformed(ActionEvent e) {}
+                            public @Override String toString() {
+                                return obj;
+                            }
+
+                        };
+                    }
+                    public Class<? extends Action> type(String obj) {
+                        return AbstractAction.class;
+                    }
+                    public String id(String obj) {
+                        return obj;
+                    }
+                    public String displayName(String obj) {
+                        return id(obj);
+                    }
+                };
+                InstanceContent.Convertor<Boolean,JSeparator> separatorConvertor = new InstanceContent.Convertor<Boolean,JSeparator>() {
+                    public JSeparator convert(Boolean obj) {
+                        Assert.fail("should not be creating the JSeparator yet");
+                        return new JSeparator();
+                    }
+                    public Class<? extends JSeparator> type(Boolean obj) {
+                        return JSeparator.class;
+                    }
+                    public String id(Boolean obj) {
+                        return "sep";
+                    }
+                    public String displayName(Boolean obj) {
+                        return id(obj);
+                    }
+                };
+                content.add("hello", actionConvertor);
+                content.add(true, separatorConvertor);
+                content.add("there", actionConvertor);
+                return new AbstractLookup(content);
+            }
+        });
+        // #156829: ensure that no tree lock is acquired.
+        final Semaphore ready = new Semaphore(0);
+        final Semaphore done = new Semaphore(0);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                synchronized (new JSeparator().getTreeLock()) {
+                    ready.release();
+                    try {
+                        done.acquire();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        ready.acquire();
+        try {
+            assertEquals("[hello, null, there]", Utilities.actionsForPath("stuff").toString());
+        } finally {
+            done.release();
+        }
     }
 
     /*

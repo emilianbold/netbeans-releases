@@ -40,9 +40,42 @@
  */
 package org.netbeans.modules.maven.jaxws.wizards;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.prefs.Preferences;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
+import org.netbeans.modules.maven.jaxws.MavenWebService;
+import org.netbeans.modules.maven.jaxws.WSUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import java.io.IOException;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -51,13 +84,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -70,7 +110,10 @@ import org.openide.util.RequestProcessor;
  * @author Radko, Milan Kuchtiak
  */
 public class JaxWsServiceCreator implements ServiceCreator {
-
+    private static final String SOAP_BINDING_TYPE = "javax.xml.ws.soap.SOAPBinding";  //NOI18N
+    private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
+    private static final String SOAP12_HTTP_BINDING = "SOAP12HTTP_BINDING"; //NOI18N
+    
     private Project project;
     private WizardDescriptor wiz;
     private boolean addJaxWsLib;
@@ -97,7 +140,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             public void run() {
                 try {
                     generateWebService(handle);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     //finish progress bar
                     handle.finish();
                     String message = e.getLocalizedMessage();
@@ -124,9 +167,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
             public void run() {
                 try {
-                    handle.start();
-                    //generateWsFromWsdl15(handle);
-                } catch (Exception e) {
+                    handle.start(100);
+                    generateWsFromWsdl15(handle);
+                } catch (IOException e) {
                     //finish progress bar
                     handle.finish();
                     String message = e.getLocalizedMessage();
@@ -144,7 +187,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
     }
 
     //TODO it should be refactored to prevent duplicate code but it is more readable now during development
-    private void generateWebService(ProgressHandle handle) throws Exception {
+    private void generateWebService(ProgressHandle handle) throws IOException {
 
         FileObject pkg = Templates.getTargetFolder(wiz);
 
@@ -154,17 +197,135 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (addJaxWsLib) {
                 MavenModelUtils.addJaxws21Library(project);
             }
-            generateJaxWSImplFromTemplate(pkg);
+            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
-            return;
         }
     }
+
+    private void generateWsFromWsdl15(final ProgressHandle handle) throws IOException {
+        handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
+
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
+        String wsdlUrl = (String)wiz.getProperty(WizardProperties.WSDL_URL);
+        String filePath = (String)wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
+
+        //Boolean useDispatch = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH);
+        //if (wsdlUrl==null) wsdlUrl = "file:"+(filePath.startsWith("/")?filePath:"/"+filePath); //NOI18N
+
+        if(wsdlUrl == null) {
+            wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
+        }
+        FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(true);
+
+        boolean hasSrcFolder = false;
+        File srcFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src"); //NOI18N
+        if (srcFile.exists()) {
+            hasSrcFolder = true;
+        } else {
+            hasSrcFolder = srcFile.mkdirs();
+        }
+
+        if (localWsdlFolder != null) {
+            FileObject wsdlFo = null;
+            try {
+                wsdlFo = WSUtils.retrieveResource(
+                        localWsdlFolder,
+                        (hasSrcFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
+                        new URI(wsdlUrl));
+            } catch (URISyntaxException ex) {
+                //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String mes = NbBundle.getMessage(JaxWsServiceCreator.class, "ERR_IncorrectURI", wsdlUrl); // NOI18N
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            } catch (UnknownHostException ex) {
+                //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String mes = NbBundle.getMessage(JaxWsServiceCreator.class, "ERR_UnknownHost", ex.getMessage()); // NOI18N
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            } catch (IOException ex) {
+                //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                String mes = NbBundle.getMessage(JaxWsServiceCreator.class, "ERR_WsdlRetrieverFailure", wsdlUrl); // NOI18N
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            }
+
+            Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
+            if (prefs != null) {
+                // remember original WSDL URL for service
+                prefs.put(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), wsdlUrl);
+            }
+
+            if (wsdlFo != null) {
+                MavenModelUtils.addJaxws21Library(project);
+                final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                final String serviceName = wsdlFo.getName();
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                WSUtils.isEJB(project) ?
+                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                    MavenModelUtils.addJaxWSPlugin(model);
+                        MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
+                        if (WSUtils.isWeb(project)) { // expecting web project
+                            MavenModelUtils.addWarPlugin(model);
+                        } else { // J2SE Project
+                            MavenModelUtils.addWsdlResources(model);
+                        }
+                    }
+                };
+                Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
+                        Collections.singletonList(operation));
+
+                // create empty web service implementation class
+                FileObject pkg = Templates.getTargetFolder(wiz);
+                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
+
+                // execute wsimport goal
+                RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport",
+                        Collections.singletonList("jaxws:wsimport"));
+                ExecutorTask task = RunUtils.executeMaven(cfg);
+
+                try {
+                    task.waitFinished(60000);
+                } catch (InterruptedException ex) {
+
+                }
+
+                final WsdlService wsdlService = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
+                final WsdlPort wsdlPort = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
+
+                try {
+                    String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
+                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
+                    DataObject targetDo = DataObject.find(targetFile);
+                    if (targetDo != null) {
+                        SaveCookie save = targetDo.getCookie(SaveCookie.class);
+                        if (save != null) {
+                            save.save();
+                        }
+                    }
+
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);                   
+                }
+
+            }
+        }
+
+        handle.finish();
+    }
     
-    private FileObject generateJaxWSImplFromTemplate(FileObject pkg) throws Exception {
+    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
+
+        if (isEjbTemplate) { //EJB Web Service
+            FileObject templateParent = template.getParent();
+            template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
+        }
         
         DataObject dTemplate = DataObject.find(template);
+
         DataObject dobj = dTemplate.createFromTemplate(df, Templates.getTargetName(wiz));
         FileObject createdFile = dobj.getPrimaryFile();
            
@@ -195,5 +356,126 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 }
             }, 1000);
         }
+    }
+
+    private void generateJaxWsImplClass(FileObject targetFile, final WsdlService service, final WsdlPort port, final String wsdlLocation) throws IOException {
+
+        JavaSource targetSource = JavaSource.forFileObject(targetFile);
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass != null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+
+                    //add @WebService annotation
+                    TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                    attrs.add(
+                            make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("portName"), make.Literal(port.getName()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("endpointInterface"), make.Literal(port.getJavaName()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
+
+                    AnnotationTree WSAnnotation = make.Annotation(
+                            make.QualIdent(WSAn),
+                            attrs);
+                    ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, WSAnnotation);
+
+                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
+                        //if SOAP 1.2 binding, add BindingType annotation
+                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
+                        if (bindingElement != null) {
+                            TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
+                            ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
+
+                            AnnotationTree bindingAnnotation = make.Annotation(
+                                    make.QualIdent(bindingElement),
+                                    Collections.<ExpressionTree>singletonList(exp));
+
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                        }
+                    }
+
+                    // add @Stateless annotation
+                    if (WSUtils.isEJB(project)) {
+                        TypeElement statelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+                        if (statelessAn != null) {
+                            AnnotationTree StatelessAnnotation = make.Annotation(
+                                    make.QualIdent(statelessAn),
+                                    Collections.<ExpressionTree>emptyList());
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                        }
+                    }
+
+                    List<WsdlOperation> operations = port.getOperations();
+                    for (WsdlOperation operation : operations) {
+
+                        // return type
+                        String returnType = operation.getReturnTypeName();
+
+                        // create parameters
+                        List<WsdlParameter> parameters = operation.getParameters();
+                        List<VariableTree> params = new ArrayList<VariableTree>();
+                        for (WsdlParameter parameter : parameters) {
+                            // create parameter:
+                            // final ObjectOutput arg0
+                            params.add(make.Variable(
+                                    make.Modifiers(
+                                    Collections.<Modifier>emptySet(),
+                                    Collections.<AnnotationTree>emptyList()),
+                                    parameter.getName(), // name
+                                    make.Identifier(parameter.getTypeName()), // parameter type
+                                    null // initializer - does not make sense in parameters.
+                                    ));
+                        }
+
+                        // create exceptions
+                        Iterator<String> exceptions = operation.getExceptions();
+                        List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
+                        while (exceptions.hasNext()) {
+                            String exception = exceptions.next();
+                            TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
+                            if (excEl != null) {
+                                exc.add(make.QualIdent(excEl));
+                            } else {
+                                exc.add(make.Identifier(exception));
+                            }
+                        }
+
+                        // create method
+                        ModifiersTree methodModifiers = make.Modifiers(
+                                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                                Collections.<AnnotationTree>emptyList());
+                        MethodTree method = make.Method(
+                                methodModifiers, // public
+                                operation.getJavaName(), // operation name
+                                make.Identifier(returnType), // return type
+                                Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                                params,
+                                exc, // throws
+                                "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
+                                null // default value - not applicable here, used by annotations
+                                );
+
+                        modifiedClass = make.addClassMember(modifiedClass, method);
+                    }
+                    workingCopy.rewrite(javaClass, modifiedClass);
+
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        targetSource.runModificationTask(task).commit();
+
     }
 }

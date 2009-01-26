@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.explorer.node;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -49,7 +48,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.action.RefreshAction;
-import org.netbeans.modules.db.explorer.infos.DDLHelper;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -59,6 +57,9 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -66,7 +67,6 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class IndexNode extends BaseNode {
-    private static final Logger LOGGER = Logger.getLogger(IndexNode.class.getName());
     private static final String ICONBASE = "org/netbeans/modules/db/resources/index.gif";
     private static final String FOLDER = "Index"; //NOI18N
 
@@ -102,13 +102,21 @@ public class IndexNode extends BaseNode {
                         public void run(Metadata metaData) {
                             Index index = indexHandle.resolve(metaData);
                             name = index.getName();
+                            updateProperties(index);
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    private void updateProperties(Index index) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
     }
 
     public String getCatalogName() {
@@ -121,6 +129,16 @@ public class IndexNode extends BaseNode {
 
     public String getTableName() {
         return getTableName(connection, indexHandle);
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Index"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(IndexNode.class);
     }
 
     @Override
@@ -155,7 +173,7 @@ public class IndexNode extends BaseNode {
         } catch (DDLException e) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, null, e);
+            Exceptions.printStackTrace(e);
         }
     }
 

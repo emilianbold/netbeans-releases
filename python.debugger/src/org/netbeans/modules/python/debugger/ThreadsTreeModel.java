@@ -193,7 +193,7 @@ public class ThreadsTreeModel
     if (node == ROOT) {
       return null;
     }
-    if (columnID == Constants.THREAD_STATE_COLUMN_ID) {
+    if (columnID.equals( Constants.THREAD_STATE_COLUMN_ID) ) {
       if (node instanceof PythonThreadInfos) {
         PythonThreadInfos curThread = (PythonThreadInfos) node;
         if (curThread.isCurrent()) {
@@ -201,6 +201,12 @@ public class ThreadsTreeModel
         } else {
           return _RUNNING_;
         }
+      }
+    }
+    if (columnID.equals(Constants.THREAD_SUSPENDED_COLUMN_ID ) ){
+      if (node instanceof PythonThreadInfos) {
+        PythonThreadInfos curThread = (PythonThreadInfos) node;
+        return new Boolean( curThread.isSuspended() ) ;
       }
     }
     return ("");

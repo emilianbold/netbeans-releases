@@ -51,7 +51,11 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createUploadAction"/>
             </file>
         </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
+        </folder>
     </folder>
+
     <!-- uncomment/change default values for actions Download, Upload
     <folder name="Shortcuts">
         <file name="CSA-D.shadow">
@@ -243,6 +247,12 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                         <attr name="position" intvalue="840"/>
                     </file>
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>

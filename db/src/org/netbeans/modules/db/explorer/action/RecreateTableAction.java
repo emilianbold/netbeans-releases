@@ -54,7 +54,7 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.dataview.DataViewWindow2;
+import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
 import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
@@ -62,6 +62,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -72,6 +74,7 @@ import org.openide.windows.WindowManager;
  * @author Rob Englander
  */
 public class RecreateTableAction extends BaseAction {
+    private static final Logger LOGGER = Logger.getLogger(RecreateTableAction.class.getName());
 
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
@@ -86,7 +89,7 @@ public class RecreateTableAction extends BaseAction {
                         enabled = !conn.isClosed();
                     }
                 } catch (SQLException e) {
-
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -163,7 +166,7 @@ public class RecreateTableAction extends BaseAction {
                         }
                     }
                 } catch (Exception exc) {
-                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                    LOGGER.log(Level.INFO, null, exc);
                     DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
 
@@ -195,13 +198,13 @@ public class RecreateTableAction extends BaseAction {
             //info.addTable(newtab);
             noResult = false;
         } catch (org.netbeans.lib.ddl.DDLException exc) {
-            Logger.getLogger("global").log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, null, exc);
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(exc.getMessage(),
                     NotifyDescriptor.ERROR_MESSAGE));
             noResult = true;
         } catch (Exception exc) {
-            Logger.getLogger("global").log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, null, exc);
             DbUtilities.reportError(bundle().
                     getString("ERR_UnableToRecreateTable"),
                     exc.getMessage()); //NOI18N
@@ -236,7 +239,7 @@ public class RecreateTableAction extends BaseAction {
     }
 
     private static class WindowTask implements Runnable {
-        public DataViewWindow2 win;
+        public DataViewWindow win;
         public Exception exc = null;
         public boolean completed = false;
         private final DatabaseConnection connection;
@@ -250,7 +253,7 @@ public class RecreateTableAction extends BaseAction {
 
         public void run() {
             try {
-                win = new DataViewWindow2(connection, dlg.getEditedCommand());
+                win = new DataViewWindow(connection, dlg.getEditedCommand());
             } catch ( Exception e ) {
                 this.exc = e;
             }
@@ -262,5 +265,10 @@ public class RecreateTableAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("RecreateTable"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RecreateTableAction.class);
     }
 }

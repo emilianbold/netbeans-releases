@@ -257,6 +257,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     void onNextButton() {
         if (currentDiff != null) {
             if (++currentDifferenceIndex >= currentDiff.getDifferenceCount()) {
+                currentDifferenceIndex = 0; // preventing exception when only one item is showed
                 if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
                 setDiffIndex(currentIndex, false);
             } else {
@@ -271,6 +272,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     void onPrevButton() {
         if (currentDiff != null) {
             if (--currentDifferenceIndex < 0) {
+                currentDifferenceIndex = 0; // preventing exception when only one item is showed
                 if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
                 setDiffIndex(currentIndex, true);
             } else {
@@ -283,15 +285,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     boolean isNextEnabled() {
-        if (currentDiff != null) {
-            return currentIndex < treeView.getRowCount() - 1 || currentDifferenceIndex < currentDiff.getDifferenceCount() - 1;
-        } else {
-            return false;
-        }
+        return currentDiff != null;
     }
 
     boolean isPrevEnabled() {
-        return currentIndex > 0 || currentDifferenceIndex > 0;
+        return currentDiff != null;
     }
     
     /**

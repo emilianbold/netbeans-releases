@@ -40,19 +40,24 @@
 package org.netbeans.modules.db.explorer;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
+import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
+import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
@@ -61,6 +66,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,8 +79,6 @@ public class DatabaseConnector {
 
     private DatabaseConnection databaseConnection;
     private Connection connection = null;
-    private SpecificationFactory factory;
-    private boolean readOnly = false;
     private Specification spec;
 
     // we maintain a lazy cache of driver specs mapped to the catalog name
@@ -84,24 +88,14 @@ public class DatabaseConnector {
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
+    }
 
-        try {
-            factory = new SpecificationFactory();
-        } catch (DDLException e) {
-            // throw a runtime exception?
-        }
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     }
 
     public DatabaseConnection getDatabaseConnection() {
         return databaseConnection;
-    }
-
-    public void setRememberPassword(boolean val) {
-
-    }
-
-    public boolean getRememberPassword() {
-        return true;
     }
 
     public Specification getDatabaseSpecification() {
@@ -112,6 +106,7 @@ public class DatabaseConnector {
         DriverSpecification dspec = driverSpecCache.get(catName);
         if (dspec == null) {
             try {
+                SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
                 dspec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
                 if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
                     //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
@@ -133,22 +128,45 @@ public class DatabaseConnector {
     
     public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
         try {
+            SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
+            int readOnlyFlag = 0;
             if (dbsys != null) {
                 spec = (Specification) factory.createSpecification(con, dbsys, connection);
-                readOnly = true;
+
+                readOnlyFlag = 1;
             } else {
-                readOnly = false;
                 spec = (Specification) factory.createSpecification(con, connection);
             }
-            //put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
+
+            DatabaseMetaData md = spec.getMetaData();
+            ((DefaultAdaptor)md).setreadOnly(readOnlyFlag);
+
             String adaname = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; // NOI18N
             if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
                 spec.setMetaDataAdaptorClassName(adaname);
             }
 
             setConnection(connection);
+        } catch (DatabaseProductNotFoundException e) {
+            connect("GenericDatabaseSystem"); //NOI18N
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    private void connect(String dbsys) throws DatabaseException {
+        String drvurl = databaseConnection.getDriver();
+        String dburl = databaseConnection.getDatabase();
+
+        try {
+            DatabaseConnection con = new DatabaseConnection(drvurl, dburl, databaseConnection.getUser(), databaseConnection.getPassword());
+            Connection c = con.createJDBCConnection();
+
+            finishConnect(dbsys, con, c);
+        } catch (Exception e) {
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -174,7 +192,7 @@ public class DatabaseConnector {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
 
-                //message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
+                message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
             }
 
             // XXX hack for Derby
@@ -200,7 +218,6 @@ public class DatabaseConnector {
             connection = null;
         }
 
-        //databaseConnection.getConnectionPCS().firePropertyChange(CONNECTION, oldval, databaseConnection);
         notifyChange();
     }
 

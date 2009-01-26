@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.Lookup;
@@ -87,9 +88,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private final ToolsCacheManager cacheManager;
 
-    /** Creates new form EditServerListDialog */
-    public EditServerListDialog(ServerUpdateCache cache, boolean tempUseWizard) {
+    @Deprecated
+    public EditServerListDialog(ServerUpdateCache cache) {
+        //TODO: get rid of ToolsPanel....
+        cacheManager = ToolsPanel.getToolsPanel() == null ? null : ToolsPanel.getToolsPanel().getToolsCacheManager();
         initComponents();
         initServerList(cache);
         desc = null;
@@ -97,9 +101,21 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
-        useWizard = tempUseWizard;
+        useWizard = false;
     }
     
+    public EditServerListDialog(ToolsCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+        initComponents();
+        initServerList(cacheManager.getServerUpdateCache());
+        desc = null;
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
+        tfReason.setVisible(false);
+        pbarStatusPanel.setVisible(false);
+        initListeners();
+        useWizard = true;
+    }
+
     private void initListeners() {
         lstDevHosts.addListSelectionListener(this);
         btAddServer.addActionListener(this);
@@ -136,7 +152,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (CompilerSetManager.LOCALHOST.equals(key)) {
             return false;
         } else {
-            CompilerSetManager compilerSetManagerCopy = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(key);
+            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(key);
             return compilerSetManagerCopy.isEmpty();
         }
     }
@@ -163,7 +179,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(entry);
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
                         csm.initialize(false);
                     }
                     phandle.finish();
@@ -312,8 +328,16 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
                 if (useWizard) {
-                    CreateHostWizardIterator.invokeMe();
+                    String hkey = CreateHostWizardIterator.invokeMe(cacheManager);
+                    if (hkey != null) {
+                        if (!model.contains(hkey)) {
+                            Lookup.getDefault().lookup(ServerList.class).addServer(hkey, false, false);
+                            model.addElement(hkey);
+                            lstDevHosts.setSelectedValue(hkey, true);
+                        }
+                    }
                 } else {
+                    //TODO: legacy
                     showAddServerDialog();
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N

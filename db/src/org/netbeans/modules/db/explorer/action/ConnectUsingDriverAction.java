@@ -77,9 +77,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.node.DriverNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
@@ -90,6 +88,11 @@ public class ConnectUsingDriverAction extends BaseAction {
     @Override
     public String getName() {
         return bundle().getString("ConnectUsing"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectUsingDriverAction.class);
     }
 
     @Override
@@ -111,7 +114,6 @@ public class ConnectUsingDriverAction extends BaseAction {
     public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
-        ConnectionNodeInfo cni;
         boolean advancedPanel = false;
         boolean okPressed = false;
 
@@ -216,7 +218,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                         try {
                             cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
                         } catch (DatabaseException exc) {
-                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            LOGGER.log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                             return;
                         }
@@ -264,9 +266,9 @@ public class ConnectUsingDriverAction extends BaseAction {
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
                     if (exc instanceof DDLException) {
-                        Logger.getLogger("global").log(Level.INFO, null, exc.getCause());
+                        LOGGER.log(Level.INFO, null, exc.getCause());
                     } else {
-                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                        LOGGER.log(Level.INFO, null, exc);
                     }
                     
                     String message = null;

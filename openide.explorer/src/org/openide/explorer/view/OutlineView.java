@@ -54,6 +54,7 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Properties;
 import javax.swing.AbstractButton;
@@ -824,8 +825,7 @@ public class OutlineView extends JScrollPane {
                 Mnemonics.setLocalizedText (b, b.getText ());
                 return b;
             } else if (value instanceof VisualizerNode) {
-                VisualizerNode vis = (VisualizerNode) value;
-                return vis.getDisplayName ();
+                return Visualizer.findNode (value);
             }
             return PropertiesRowModel.getValueFromProperty(value);
         }
@@ -888,12 +888,15 @@ public class OutlineView extends JScrollPane {
         protected TableColumn createColumn(int modelIndex) {
             return new OutlineViewOutlineColumn(modelIndex);
         }
+
         /**
          * Extension of ETableColumn using TableViewRowComparator as
          * comparator.
          */
         private class OutlineViewOutlineColumn extends OutlineColumn {
             private String tooltip;
+            private final Comparator originalNodeComparator = new NodeNestedComparator ();
+
             public OutlineViewOutlineColumn(int index) {
                 super(index);
             }
@@ -914,6 +917,16 @@ public class OutlineView extends JScrollPane {
                 }
                 return res;
             }
+
+            @Override
+            public Comparator getNestedComparator () {
+                // it it's the tree column
+                if (getModelIndex () == 0 && super.getNestedComparator () == null) {
+                    return originalNodeComparator;
+                }
+                return super.getNestedComparator ();
+            }
+
             @Override
             protected TableCellRenderer createDefaultHeaderRenderer() {
                 TableCellRenderer orig = super.createDefaultHeaderRenderer();
@@ -962,6 +975,16 @@ public class OutlineView extends JScrollPane {
                     return oc;
                 }
             }
+
+            private class NodeNestedComparator implements
+                    Comparator {
+                public int compare (Object o1, Object o2) {
+                    assert o1 instanceof Node : o1 + " is instanceof Node";
+                    assert o2 instanceof Node : o2 + " is instanceof Node";
+                    return ((Node) o1).getDisplayName ().compareTo (((Node) o2).getDisplayName ());
+                }
+            }
+
         }
     }
     

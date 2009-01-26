@@ -99,7 +99,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
@@ -436,6 +435,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();
         
         Object stdLookups[]=new Object[] {
+            this,
             new Info(),
             rp,
             aux,
@@ -817,7 +817,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     private void refreshBuildScripts(final boolean checkForProjectXmlModified) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                final FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Buildsystem/org.netbeans.modules.kjava.j2meproject"); //NOI18N
+                final FileObject root = FileUtil.getConfigFile("Buildsystem/org.netbeans.modules.kjava.j2meproject"); //NOI18N
                 final LinkedList<FileObject> files = new LinkedList();
                 files.addAll(Arrays.asList(root.getChildren()));
                 ProjectManager.mutex().postWriteRequest(new Runnable() {
@@ -975,7 +975,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
         
         public String[] getRecommendedTypes() {
-            FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(LOCATION);
+            FileObject root = FileUtil.getConfigFile(LOCATION);
             HashSet<String> result = new HashSet();
             for (FileObject fo : root.getChildren()) {
                 String s = (String) fo.getAttribute("RecommendedTemplates"); //NOI18N
@@ -986,7 +986,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         public String[] getPrivilegedTemplates() {
             //priviledged templates are ordered by module layer
-            DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(LOCATION));
+            DataFolder root = DataFolder.findFolder(FileUtil.getConfigFile(LOCATION));
             ArrayList<String> result = new ArrayList();
             for (DataObject ch : root.getChildren()) {
                 String s = (String) ch.getPrimaryFile().getAttribute("PriviledgedTemplates"); //NOI18N
@@ -1009,7 +1009,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             boolean log = Boolean.getBoolean("mobility.report.composed.stylesheets");//NOI18N
             byte[] data = cache.get(getURL());
             if (data == null) {
-                DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(getURL().getPath()));
+                DataFolder root = DataFolder.findFolder(FileUtil.getConfigFile(getURL().getPath()));
                 DataObject mainParts[] = root.getChildren();
                 StringBuffer sb = new StringBuffer();
                 String lastTarget = ""; //NOI18N

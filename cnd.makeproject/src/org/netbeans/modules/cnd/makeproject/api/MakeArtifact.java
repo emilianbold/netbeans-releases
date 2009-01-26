@@ -52,6 +52,8 @@ public class MakeArtifact {
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
     public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_DYNAMIC_LIB = 5;
+    public static final int TYPE_QT_STATIC_LIB = 6;
 
     // Project
     private String projectLocation;
@@ -115,6 +117,14 @@ public class MakeArtifact {
         else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION) {
             configurationType = MakeArtifact.TYPE_QT_APPLICATION;
             output = makeConfiguration.getLinkerConfiguration().getOutputValue();
+        }
+        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB) {
+            configurationType = MakeArtifact.TYPE_QT_DYNAMIC_LIB;
+            output = makeConfiguration.getLinkerConfiguration().getOutputValue();
+        }
+        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
+            configurationType = MakeArtifact.TYPE_QT_STATIC_LIB;
+            output = makeConfiguration.getArchiverConfiguration().getOutputValue();
         }
         else {
             assert false;// FIXUP: error

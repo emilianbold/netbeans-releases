@@ -62,11 +62,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
@@ -193,8 +193,7 @@ public final class GenerationUtils {
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() >  0;
 
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
+        FileObject templateFO = FileUtil.getConfigFile(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
         return templateDO.createFromTemplate(dataFolder, targetName, parameters);

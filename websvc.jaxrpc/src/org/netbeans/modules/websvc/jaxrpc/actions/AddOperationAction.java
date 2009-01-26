@@ -52,7 +52,7 @@ import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 public class AddOperationAction extends CookieAction {
     //private Service service;
     public String getName() {
-        return NbBundle.getMessage(AddOperationAction.class, "LBL_OperationAction");
+        return NbBundle.getMessage(AddOperationAction.class, "LBL_AddOperationAction");
     }
     
     public HelpCtx getHelpCtx() {

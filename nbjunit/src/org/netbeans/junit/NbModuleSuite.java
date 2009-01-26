@@ -112,6 +112,7 @@ public class NbModuleSuite {
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
+        final boolean enableClasspathModules;
 
         private Configuration(
             List<String> clusterRegExp,
@@ -120,7 +121,8 @@ public class NbModuleSuite {
             List<Item> testItems,
             Class<? extends TestCase> latestTestCase,
             boolean reuseUserDir,
-            boolean gui
+            boolean gui,
+            boolean enableCPModules
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
@@ -129,10 +131,14 @@ public class NbModuleSuite {
             this.reuseUserDir = reuseUserDir;
             this.latestTestCaseClass = latestTestCase;
             this.gui = gui;
+            this.enableClasspathModules = enableCPModules;
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {            
-            return new Configuration(null, null, ClassLoader.getSystemClassLoader().getParent(), Collections.<Item>emptyList(), clazz, false, true);
+            return new Configuration(
+                null, null, ClassLoader.getSystemClassLoader().getParent(),
+                Collections.<Item>emptyList(), clazz, false, true, true
+            );
         }
         
         /** Regular expression to match clusters that shall be enabled.
@@ -157,7 +163,10 @@ public class NbModuleSuite {
             if (list.isEmpty()) {
                 list = null;
             }
-            return new Configuration(list, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                list, moduleRegExp, parentClassLoader, tests,
+                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules
+            );
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -194,11 +203,18 @@ public class NbModuleSuite {
             }
             arr.add(clusterRegExp);
             arr.add(moduleRegExp);
-            return new Configuration(this.clusterRegExp, arr, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                this.clusterRegExp, arr, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules
+            );
         }
 
         Configuration classLoader(ClassLoader parent) {
-            return new Configuration(clusterRegExp, moduleRegExp, parent, tests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parent, tests,
+                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules
+            );
         }
 
         /** Adds new test name, or array of names into the configuration. By 
@@ -218,7 +234,11 @@ public class NbModuleSuite {
             }
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(true, latestTestCaseClass, testNames));
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                newTests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules
+            );
         }
         
         /** Adds new test class to run, together with a list of its methods
@@ -241,7 +261,10 @@ public class NbModuleSuite {
             if ((testNames != null) && (testNames.length != 0)){
                 newTests.add(new Item(true, test, testNames));
             }
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, test, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                newTests, test, reuseUserDir, gui, enableClasspathModules
+            );
         }
         
         /**
@@ -262,7 +285,28 @@ public class NbModuleSuite {
             }
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(false, test, null));
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                newTests, latestTestCaseClass, reuseUserDir,
+                gui, enableClasspathModules
+            );
+        }
+
+        /** By default all modules on classpath are enabled (so you can link
+         * with modules that you compile against), this method allows you to
+         * disable this feature, which is useful if the test is known to not
+         * link against any of classpath classes.
+         *
+         * @param enable pass false to ignore modules on classpath
+         * @return new configuration clone
+         * @since 1.56
+         */
+        public Configuration enableClasspathModules(boolean enable) {
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir,
+                gui, enable
+            );
         }
 
         private void addLatest(List<Item> newTests) {
@@ -280,7 +324,11 @@ public class NbModuleSuite {
         private Configuration getReady() {
             List<Item> newTests = new ArrayList<Item>(tests);
             addLatest(newTests);
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                newTests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules
+            );
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -293,7 +341,11 @@ public class NbModuleSuite {
          * @return clone of this configuration with gui mode associated
          */
         public Configuration gui(boolean gui) {
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules
+            );
         }
 
         /**
@@ -303,9 +355,12 @@ public class NbModuleSuite {
          * @since 1.52
          */
         public Configuration reuseUserDir(boolean reuse) {
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuse, gui);
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader, tests,
+                latestTestCaseClass, reuse, gui, enableClasspathModules
+            );
         }
-        }
+    }
 
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
@@ -455,6 +510,7 @@ public class NbModuleSuite {
         }
 
         private void runInRuntimeContainer(TestResult result) throws Exception {
+            System.getProperties().remove("netbeans.dirs");
             File platform = findPlatform();
             File[] boot = new File(platform, "lib").listFiles();
             List<URL> bootCP = new ArrayList<URL>();
@@ -502,7 +558,9 @@ public class NbModuleSuite {
             System.setProperty("netbeans.user", ud.getPath());
 
             TreeSet<String> modules = new TreeSet<String>();
-            modules.addAll(findEnabledModules(NbTestSuite.class.getClassLoader()));
+            if (config.enableClasspathModules) {
+                modules.addAll(findEnabledModules(NbTestSuite.class.getClassLoader()));
+            }
             modules.add("org.openide.filesystems");
             modules.add("org.openide.modules");
             modules.add("org.openide.util");
@@ -510,7 +568,9 @@ public class NbModuleSuite {
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
             turnModules(ud, modules, config.moduleRegExp, platform);
-            turnClassPathModules(ud, NbTestSuite.class.getClassLoader());
+            if (config.enableClasspathModules) {
+                turnClassPathModules(ud, NbTestSuite.class.getClassLoader());
+            }
 
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -631,16 +691,18 @@ public class NbModuleSuite {
                     }
                 }
             }
-            
-            // find "cluster" from
-            // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
-            // tested in apisupport.project
-            for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
-                File module = new File(s);
-                File cluster = module.getParentFile().getParentFile();
-                File m = new File(new File(cluster, "config"), "Modules");
-                if (m.exists() || cluster.getName().equals("cluster")) {
-                    clusters.add(cluster);
+
+            if (config.enableClasspathModules) {
+                // find "cluster" from
+                // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
+                // tested in apisupport.project
+                for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
+                    File module = new File(s);
+                    File cluster = module.getParentFile().getParentFile();
+                    File m = new File(new File(cluster, "config"), "Modules");
+                    if (m.exists() || cluster.getName().equals("cluster")) {
+                        clusters.add(cluster);
+                    }
                 }
             }
             return clusters.toArray(new File[0]);
@@ -817,6 +879,7 @@ public class NbModuleSuite {
 
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
         private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
+        private static Pattern EAGER = Pattern.compile("<param name=[\"']eager[\"']>([^<]*)</param>", Pattern.MULTILINE);
         
         private static void turnModules(File ud, TreeSet<String> modules, List<String> regExp, File... clusterDirs) throws IOException {
             if (regExp == null) {
@@ -872,6 +935,12 @@ public class NbModuleSuite {
                 if (matcherEnabled.find()) {
                     toEnable = "false".equals(matcherEnabled.group(1));
                 }
+                Matcher matcherEager = EAGER.matcher(xml);
+                if (matcherEager.find()) {
+                    if ("true".equals(matcherEager.group(1))) {
+                        return;
+                    }
+                }
                 if (toEnable) {
                     assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
                     try {
@@ -899,6 +968,13 @@ public class NbModuleSuite {
         }
 
         private static void writeModule(File file, String xml) throws IOException {
+            if (file.exists()) {
+                String previous = asString(new FileInputStream(file), true);
+                if (previous.equals(xml)) {
+                    return;
+                }
+            }
+
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));
             os.close();

@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import java.io.File;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.execute.MavenJavaExecutor;
@@ -84,12 +87,31 @@ public final class RunUtils {
         return executeMavenImpl(config.getTaskDisplayName(), exec);
     }
 
-    
+    public static RunConfig createRunConfig(File execDir, Project prj, String displayName, List<String> goals)
+    {
+        BeanRunConfig brc = new BeanRunConfig();
+        brc.setExecutionName(displayName);
+        brc.setExecutionDirectory(execDir);
+        brc.setProject(prj);
+        brc.setTaskDisplayName(displayName);
+        brc.setGoals(goals);
+        return brc;
+    }
     
     private static ExecutorTask executeMavenImpl(String runtimeName, MavenExecutor exec) {
         ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, exec.getInputOutput());
         exec.setTask(task);
         return task;
+    }
+
+    /**
+     *
+     * @param project
+     * @return true if compile on save is allowed for running the application.
+     */
+    public static boolean hasApplicationCompileOnSaveEnabled(Project prj) {
+        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
     }
 
     /**
@@ -100,12 +122,21 @@ public final class RunUtils {
     public static boolean hasApplicationCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {
-              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
-              return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+            return hasApplicationCompileOnSaveEnabled(prj);
         }
         return false;
     }
 
+    /**
+     *
+     * @param project
+     * @return true if compile on save is allowed for running tests.
+     */
+    public static boolean hasTestCompileOnSaveEnabled(Project prj) {
+        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        //COS for tests is the default value.
+        return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+    }
     /**
      *
      * @param config
@@ -114,9 +145,7 @@ public final class RunUtils {
     public static boolean hasTestCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {
-              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
-              //COS for tests is the default value.
-              return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+            return hasTestCompileOnSaveEnabled(prj);
         }
         return false;
     }

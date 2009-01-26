@@ -83,6 +83,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
+    private static final String CLASS = "class"; //NOI18N
     
     private CodeTemplateInsertRequest request;
 
@@ -474,7 +475,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
-                                return e.getKind().isField() && !ERROR.contentEquals(e.getSimpleName()) &&
+                                return e.getKind().isField() && !ERROR.contentEquals(e.getSimpleName()) && !CLASS.contentEquals(e.getSimpleName()) &&
                                         (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
                                         tu.isAccessible(scope, e, t) &&
                                         (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));

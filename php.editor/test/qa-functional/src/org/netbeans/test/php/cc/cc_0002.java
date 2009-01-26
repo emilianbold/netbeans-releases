@@ -215,7 +215,7 @@ public class cc_0002 extends cc
       new CCompletionCase( "*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\n}\nif ($test==1){\n$newvar=$tes;\n}", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -5, 8 ),
       new CCompletionCase( "*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\nif ($test==1){\n$newvar=$tes;\n}\n}{{", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -4, 9 ),
       new CCompletionCase( "*/", "$test=1;\n$test1=\"a\";\n// $newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 3 ),
-      new CCompletionCase( "*/", "$test=1;\n/*  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 4 ),
+      new CCompletionCase( "*/", "$test=1;\n/*  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[*] [$]newvar=[$]test;", -2, 4 ),
       new CCompletionCase( "*/", "$test=1;\n/**  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 4 ),
       new CCompletionCase( "*/", "/**  @v\n", "@v", CCompletionCase.COMPLETION_LIST, 0, "@var|@version", -1, 3 ),
       new CCompletionCase( "?>", "<html>\n<?php\n$test=1;\n?>\n$newvar=$tes\n</html>", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -4, 6 ),

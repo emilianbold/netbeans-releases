@@ -67,13 +67,10 @@ import org.w3c.dom.Text;
  *
  * @author mkleint
  */
+@LookupProvider.Registration(projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=400))
 public class LookupProviderImpl implements LookupProvider {
      private static final String HELP_ID_FRAGMENT = "java"; // NOI18N
   
-    /** Creates a new instance of LookupProviderImpl */
-    public LookupProviderImpl() {
-    }
-    
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project prj = baseContext.lookup(Project.class);
         ProjectAccessor acc = baseContext.lookup(ProjectAccessor.class);
@@ -95,6 +92,7 @@ public class LookupProviderImpl implements LookupProvider {
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
             new PrivilegedTemplatesImpl(), // PrivilegedTemplates
             new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
+            // XXX could use LookupMergerSupport.createClassPathProviderMerger here, though ClasspathsTest then fails:
             new LookupMergerImpl(), // LookupMerger
             new JavaFreeformFileBuiltQuery(project, projectHelper, projectEvaluator, aux), // FileBuiltQueryImplementation
             new HelpIDFragmentProviderImpl());

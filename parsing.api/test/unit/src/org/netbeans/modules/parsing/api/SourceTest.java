@@ -71,7 +71,7 @@ public class SourceTest extends NbTestCase {
         {
         FileObject crlfFile = createFileObject("crlf.txt", documentContent, "\r\n");
         Source crlfSource = Source.create(crlfFile);
-        assertNull("The crlfSource should have no document", crlfSource.getDocument());
+        assertNull("The crlfSource should have no document", crlfSource.getDocument(false));
         assertSame("Wrong file in crlfSource", crlfFile, crlfSource.getFileObject());
         Snapshot crlfSnapshot = crlfSource.createSnapshot();
         assertEquals("Wrong crlf endlines conversion", documentContent, crlfSnapshot.getText().toString());
@@ -81,7 +81,7 @@ public class SourceTest extends NbTestCase {
         {
         FileObject lfFile = createFileObject("lf.txt", documentContent, "\n");
         Source lfSource = Source.create(lfFile);
-        assertNull("The crlfSource should have no document", lfSource.getDocument());
+        assertNull("The crlfSource should have no document", lfSource.getDocument(false));
         assertSame("Wrong file in crlfSource", lfFile, lfSource.getFileObject());
         Snapshot lfSnapshot = lfSource.createSnapshot();
         assertEquals("Wrong crlf endlines conversion", documentContent, lfSnapshot.getText().toString());
@@ -199,7 +199,7 @@ public class SourceTest extends NbTestCase {
         Document doc = openDocument(file);
         assertNotNull("Can't open document for " + file, doc);
         assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
-        assertSame("Wrong document", doc, source.getDocument());
+        assertSame("Wrong document", doc, source.getDocument(false));
     }
 
     public void testConsistencySourceForDocument() throws IOException {
@@ -207,7 +207,7 @@ public class SourceTest extends NbTestCase {
         Document doc = openDocument(file);
         Source source = Source.create(doc);
         assertNotNull("No Source for " + doc, source);
-        assertSame("Wrong document", doc, source.getDocument());
+        assertSame("Wrong document", doc, source.getDocument(false));
         assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
 
         assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
@@ -218,7 +218,7 @@ public class SourceTest extends NbTestCase {
         Document doc = createDocument("text/plain", "");
         Source source = Source.create(doc);
         assertNotNull("No Source for " + doc, source);
-        assertSame("Wrong document", doc, source.getDocument());
+        assertSame("Wrong document", doc, source.getDocument(false));
         assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
         assertNull("Source for fileless document should not have FileObject", source.getFileObject());
     }
@@ -263,18 +263,18 @@ public class SourceTest extends NbTestCase {
         if (nueParent == null) {
             nueParent = wd.createFolder("test2");
         }
-        
+
         dfile.move(DataFolder.findFolder(nueParent));
         source = Source.create(doc);
         assertNotNull("No Source for " + doc, source);
         assertEquals("Correct FileObject", dfile.getPrimaryFile(), source.getFileObject());
     }
-    
+
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject f = FileUtil.createData(workDir, name);
         writeToFileObject(f, documentContent, eol);
-        
+
         return f;
     }
 

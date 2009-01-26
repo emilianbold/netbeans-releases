@@ -44,7 +44,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FindComponentModules;
 import org.openide.modules.ModuleInfo;
@@ -62,7 +62,7 @@ public class PerClusterEnablementCheck extends NbTestCase {
     public void testAPISupportTriggersAlsoJavaKit() throws Exception {
         FeatureInfo apisupport = null;
         FeatureInfo java = null;
-        for (FeatureInfo f : Feature2LayerMapping.features()) {
+        for (FeatureInfo f : FeatureManager.features()) {
             if (f.getCodeNames().contains("org.netbeans.modules.apisupport.kit")) {
                 apisupport = f;
             }
@@ -74,8 +74,6 @@ public class PerClusterEnablementCheck extends NbTestCase {
         assertNotNull("java feature found", java);
 
         FindComponentModules find = new FindComponentModules(apisupport);
-        find.createFindingTask().schedule(0);
-        find.getFindingTask().waitFinished();
         Set<String> expectedNames = new HashSet<String>(java.getCodeNames());
         for (UpdateElement updateElement : find.getModulesForEnable()) {
             expectedNames.remove(updateElement.getCodeName());

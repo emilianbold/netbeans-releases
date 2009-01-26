@@ -46,11 +46,8 @@ import java.io.PrintStream;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.Environment.Provider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.xml.sax.SAXException;
 
@@ -75,7 +72,7 @@ implements Node.Cookie {
     
     public void testQueryFromInsideTheQuery() throws IOException {
         FileObject res = FileUtil.createData(
-            Repository.getDefault().getDefaultFileSystem().getRoot(), 
+            FileUtil.getConfigRoot(),
             getName() + "/R.xml"
         );
         

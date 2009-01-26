@@ -108,6 +108,11 @@ made subject to such option by the copyright holder.
     <taskdef name="convertimport"
          classname="org.netbeans.nbbuild.ConvertImport"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="convertclusterpath"
+         classname="org.netbeans.nbbuild.ConvertClusterPath"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
@@ -128,6 +133,15 @@ made subject to such option by the copyright holder.
       <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
     </propertyfile>
     <property name="${module.name}.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
+
+    <!-- netbeans.dest.dir -> cluster.path.id translation for NB.org modules -->
+    <!-- XXX Does not preserve order of clusters specified in etc/netbeans.clusters -->
+    <pathconvert property="cluster.path.evaluated">
+        <path>
+            <dirset dir="${netbeans.dest.dir}" includesfile="${nb_all}/ide/launcher/netbeans.clusters"/>
+        </path>
+    </pathconvert>
+    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
   </target>
   
 </project>

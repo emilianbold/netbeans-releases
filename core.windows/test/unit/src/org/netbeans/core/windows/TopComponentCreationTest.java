@@ -51,8 +51,7 @@ import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.windows.Mode;
@@ -114,23 +113,19 @@ public class TopComponentCreationTest extends NbTestCase {
         //Check that persistent, opened TC is saved ie. wstcref file is created
         PersistenceHandler.getDefault().save();
         //Check wstcref file was created
-        assertNotNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNotNull(FileUtil.getConfigFile(res));
         deleteLocalData();
         //Check wstcref file was deleted
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
         
         //Check that persistent, closed TC is saved ie. wstcref file is created
         tc.close();
         PersistenceHandler.getDefault().save();        
         //Check wstcref file was created
-        assertNotNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNotNull(FileUtil.getConfigFile(res));
         deleteLocalData();
         //Check wstcref file was deleted
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
     }
     
     /**
@@ -153,19 +148,16 @@ public class TopComponentCreationTest extends NbTestCase {
         //Check that persistent only opened, opened TC is saved ie. wstcref file is created
         PersistenceHandler.getDefault().save();
         //Check wstcref file was created
-        assertNotNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNotNull(FileUtil.getConfigFile(res));
         deleteLocalData();
         //Check wstcref file was deleted
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
         
         //Check that persistent only opened, closed TC is NOT saved ie. wstcref file is NOT created
         tc.close();
         PersistenceHandler.getDefault().save();        
         //Check wstcref file was not created
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
         deleteLocalData();
     }
     /**
@@ -188,16 +180,14 @@ public class TopComponentCreationTest extends NbTestCase {
         //Check that non persistent, opened TC is NOT saved ie. wstcref file is NOT created
         PersistenceHandler.getDefault().save();
         //Check wstcref file was not created
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
         deleteLocalData();
         
         //Check that non persistent, closed TC is NOT saved ie. wstcref file is NOT created
         tc.close();
         PersistenceHandler.getDefault().save();        
         //Check wstcref file was not created
-        assertNull
-        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        assertNull(FileUtil.getConfigFile(res));
         deleteLocalData();
     }
     
@@ -205,8 +195,7 @@ public class TopComponentCreationTest extends NbTestCase {
      * Clean folder Windows2Local with custom data created when winsys is saved.
      */
     private void deleteLocalData () {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
+        FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
         if (rootFolder != null) {
             try {
                 for (FileObject fo : rootFolder.getChildren()) {

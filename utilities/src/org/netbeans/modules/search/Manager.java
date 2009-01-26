@@ -47,17 +47,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -77,15 +74,6 @@ import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAI
  */
 final class Manager {
     
-    /**
-     * timeout for cleanup in the case that the module is being uninstalled
-     * (in milliseconds)
-     */
-    private static final int CLEANUP_TIMEOUT_MILLIS = 3000;
-    
-/*
-    static final int NO_TASK          = 0;
-*/
     static final int SEARCHING        = 0x01;
 /*
     static final int CLEANING_RESULT  = 0x02;
@@ -230,9 +218,6 @@ final class Manager {
      *                     - one of the EVENT_xxx constants
      */
     private void notifySearchTaskStateChange(final SearchTask task, final int changeType) {
-        if (!searchWindowOpen) {
-            return;
-        }
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
@@ -490,15 +475,14 @@ final class Manager {
         if (moduleBeingUninstalled) {
             return;
         }
-        for(ListIterator<Runnable> iter = currentTasks.listIterator(); iter.hasNext();){
-            Runnable task = iter.next();
-            if (task instanceof SearchTask){
-                SearchTask sTask = (SearchTask)task;
-                sTask.stop(false);
+        Runnable[] tasks = currentTasks.toArray(new Runnable[currentTasks.size()]);
+        for(int i=0;i < tasks.length;i++){
+            if (tasks[i] instanceof SearchTask){
+                SearchTask sTask = (SearchTask)tasks[i];
+                sTask.stop(true);
                 scheduleCleanTask(new CleanTask(sTask.getResultModel()));
             }
         }
-        processNextPendingTask();
     }
     
     /**
@@ -513,17 +497,23 @@ final class Manager {
                 } else if (haveReplaceRunning)
                     notifySearchPending((SearchTask)pTasks[i], REPLACING);
                 else{
-                    startSearching((SearchTask)pTasks[i]);
+                    if(pendingTasks.remove(pTasks[i])){
+                        startSearching((SearchTask)pTasks[i]);
+                    }
                 }
             }else if (pTasks[i] instanceof ReplaceTask){
                 if (!haveReplaceRunning && !haveRunningSearchTask())
-                    startReplacing((ReplaceTask)pTasks[i]);
-//                else
-//                    notifySearchPending((SearchTask)pTasks[i], REPLACING);
+                    if(pendingTasks.remove(pTasks[i])){
+                        startReplacing((ReplaceTask)pTasks[i]);
+                    }
             }else if (pTasks[i] instanceof PrintDetailsTask){
-                startPrintingDetails((PrintDetailsTask)pTasks[i]);
+                if(pendingTasks.remove(pTasks[i])){
+                    startPrintingDetails((PrintDetailsTask)pTasks[i]);
+                }
             }else if (pTasks[i] instanceof CleanTask){
-                startCleaning((CleanTask)pTasks[i]);
+                if(pendingTasks.remove(pTasks[i])){
+                    startCleaning((CleanTask)pTasks[i]);
+                }
             }else{
                 assert false; //only 4 task types described above can be here
             }
@@ -587,15 +577,14 @@ final class Manager {
     }
 
     private void runTask(Runnable task){
-        pendingTasks.remove(task);
+        assert task != null;
         currentTasks.add(task);
 
         RequestProcessor.Task pTask;
         pTask = RequestProcessor.getDefault().create(task);
+        tasksMap.put(pTask, task);
         pTask.addTaskListener(getTaskListener());
         pTask.schedule(0);
-
-        tasksMap.put(pTask, task);
     }
 
     /**
@@ -701,8 +690,9 @@ final class Manager {
          */
         public void taskFinished(Task task) {
             Runnable rTask = Manager.this.tasksMap.remove(task);
-            assert rTask != null;
-            Manager.this.taskFinished(rTask);
+            if (rTask != null){
+                Manager.this.taskFinished(rTask);
+            }
         }
 
     }

@@ -82,7 +82,6 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -197,7 +196,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
-            iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
         @Override

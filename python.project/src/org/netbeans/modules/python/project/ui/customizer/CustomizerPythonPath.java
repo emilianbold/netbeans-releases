@@ -8,13 +8,11 @@
  *
  * Created on Sep 7, 2008, 6:56:16 PM
  */
-
 package org.netbeans.modules.python.project.ui.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.netbeans.modules.python.api.PlatformComponentFactory;
 import org.netbeans.modules.python.api.PythonPlatform;
@@ -23,7 +21,7 @@ import org.netbeans.modules.python.core.ui.models.PathListModel;
 
 import org.netbeans.modules.python.project.ui.Utils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Exceptions;
@@ -53,11 +51,13 @@ public class CustomizerPythonPath extends javax.swing.JPanel {
         }
     }
 
-    public @Override void addNotify() {
+    public 
+    @Override
+    void addNotify() {
         super.addNotify();
         platformListener = new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
-                PythonPlatform platform = (PythonPlatform) platforms.getSelectedItem();
+                PythonPlatform platform = (PythonPlatform)platforms.getSelectedItem();
                 if (platform != null) {
                     uiProperties.setActivePlatformId(platform.getId());
                     // When we support configurations:
@@ -68,11 +68,12 @@ public class CustomizerPythonPath extends javax.swing.JPanel {
         PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
     }
 
-    public @Override void removeNotify() {
+    public 
+    @Override
+    void removeNotify() {
         PlatformComponentFactory.removePlatformChangeListener(platforms, platformListener);
         super.removeNotify();
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -198,12 +199,18 @@ public class CustomizerPythonPath extends javax.swing.JPanel {
         final JFileChooser fc = new JFileChooser();
         fc.setFileHidingEnabled(false);
         fc.setDialogTitle("Select Python Egg or Python Lib Directory");
-        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES );
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        /* jean-Yves for practical reasons @@@ ENHANCE to have multiple selection enabled here */
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(this);
-        if(returnVal == JFileChooser.APPROVE_OPTION){
-            String cmd = fc.getSelectedFile().getAbsolutePath();
-            pythonPathModel.add( cmd);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File[] files = fc.getSelectedFiles();
+            for (File file : files) {
+                String cmd = file.getAbsolutePath();
+                pythonPathModel.add(cmd);
+            }
         }
+
 }//GEN-LAST:event_addPythonPathActionPerformed
 
     private void removePythonPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePythonPathActionPerformed
@@ -226,11 +233,11 @@ public class CustomizerPythonPath extends javax.swing.JPanel {
 
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
         //Workaround, Needs an API to display platform customizer
-        final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
+        final FileObject fo = FileUtil.getConfigFile("Actions/Python/org-netbeans-modules-python-platform-PythonManagerAction.instance");  //NOI18N
         if (fo != null) {
             try {
-                InstanceDataObject ido = (InstanceDataObject) DataObject.find(fo);
-                CallableSystemAction action = (CallableSystemAction) ido.instanceCreate();
+                InstanceDataObject ido = (InstanceDataObject)DataObject.find(fo);
+                CallableSystemAction action = (CallableSystemAction)ido.instanceCreate();
                 action.performAction();
                 platforms.setModel(Utils.createPlatformModel()); //Currentl the PythonManager doesn't fire events, we need to replace model.
             } catch (IOException ex) {

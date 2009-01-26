@@ -49,6 +49,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -57,7 +59,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 public class TableListNode extends BaseNode implements SchemaNameProvider {
     private static final String NAME = "Tables"; // NOI18N
     private static final String DISPLAYNAME = "Tables"; // NOI18N
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "TableList"; //NOI18N
 
     private MetadataElementHandle<Schema> schemaHandle;
@@ -99,6 +101,16 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
         return ICONBASE;
     }
 
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_TableList"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(TableListNode.class);
+    }
+
     public String getSchemaName() {
         return getSchemaName(connection, schemaHandle);
     }
@@ -123,7 +135,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -145,7 +157,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

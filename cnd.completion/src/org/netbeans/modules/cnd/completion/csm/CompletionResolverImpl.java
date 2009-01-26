@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.completion.csm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -55,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -73,8 +70,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
+import org.netbeans.modules.cnd.completion.csm.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -102,7 +101,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private int contextOffset = 0;
+    private static int NOT_INITIALIZED = -1;
+    private int contextOffset = NOT_INITIALIZED;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
     private final FileReferencesContext fileReferncesContext;
@@ -179,8 +179,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return refresh();
     }
 
-    public boolean resolve(int offset, String strPrefix, boolean match) {
-        offset += contextOffset;
+    public boolean resolve(int docOffset, String strPrefix, boolean match) {
+        int offset = contextOffset == NOT_INITIALIZED ? docOffset : contextOffset;
         if (file == null) {
             return false;
         }
@@ -220,43 +220,62 @@ public class CompletionResolverImpl implements CompletionResolver {
                 return;
             }
             if (fun != null) {
-                CsmUID uid = fun.getUID();
+                CsmUID uid = UIDs.get(fun);
+                //if (CsmKindUtilities.isMethodDeclaration(fun)) {
+                //    uid = ((CsmMethod)fun).getContainingClass().getUID();
+                //}
                 key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = getCache().get(key);
+                Result res = SymTabCache.get(key);
                 if (res != null) {
                     result = res;
                     return;
                 } else {
-                    Iterator<CacheEntry> it = getCache().keySet().iterator();
-                    if (it.hasNext()) {
-                        if (!it.next().function.equals(uid)){
-                            getCache().clear();
-                        }
-                    }
+                    SymTabCache.setScope(uid);
                 }
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
                 CsmVariable var = (CsmVariable) context.getLastObject();
-                CsmUID uid = var.getUID();
+                CsmUID uid = UIDs.get(var);
+                //if (CsmKindUtilities.isField(var)) {
+                //    uid = ((CsmField)var).getContainingClass().getUID();
+                //}
                 key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = getCache().get(key);
+                Result res = SymTabCache.get(key);
                 if (res != null) {
                     result = res;
                     return;
                 } else {
-                    Iterator<CacheEntry> it = getCache().keySet().iterator();
-                    if (it.hasNext()) {
-                        if (!it.next().function.equals(uid)){
-                            getCache().clear();
-                        }
-                    }
+                    SymTabCache.setScope(uid);
                 }
+            //} else {
+            //    CsmScope scope = context.getLastScope();
+            //    if (CsmKindUtilities.isClass(scope)) {
+            //        CsmUID uid = ((CsmClass)scope).getUID();
+            //        key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+            //        Result res = SymTabCache.get(key);
+            //        if (res != null) {
+            //            result = res;
+            //            return;
+            //        } else {
+            //            SymTabCache.setScope(uid);
+            //        }
+            //    } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+            //        CsmUID uid = ((CsmNamespaceDefinition)scope).getUID();
+            //        key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+            //        Result res = SymTabCache.get(key);
+            //        if (res != null) {
+            //            result = res;
+            //            return;
+            //        } else {
+            //            SymTabCache.setScope(uid);
+            //        }
+            //    }
             }
         }
         //long timeStart = System.nanoTime();
         resolveContext(prj, resImpl, context, offset, strPrefix, match);
         result = buildResult(context, resImpl);
         if (key != null){
-            getCache().put(key, result);
+            SymTabCache.put(key, result);
         }
         //long timeEnd = System.nanoTime();
         //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
@@ -1603,44 +1622,4 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
 
-    //private static Map<CacheEntry, Result> cache = new ConcurrentHashMap<CacheEntry, Result>();
-    private static ThreadLocal<Map<CacheEntry, Result>> threadCache = new ThreadLocal<Map<CacheEntry, Result>>();
-    private static synchronized Map<CacheEntry, Result> getCache(){
-        Map<CacheEntry, Result> cache = threadCache.get();
-        if (cache == null) {
-            cache = new HashMap<CacheEntry, Result>();
-            threadCache.set(cache);
-        }
-        return cache;
-    }
-        
-    private static class CacheEntry {
-        private int resolve;
-        private int hide;
-        private String name;
-        private CsmUID function;
-
-        private CacheEntry(int resolve, int hide, String name, CsmUID function){
-            this.resolve = resolve;
-            this.hide = hide;
-            this.name = name;
-            this.function = function;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof CacheEntry)){
-                return false;
-            }
-            CacheEntry o = (CacheEntry) obj;
-            return resolve == o.resolve && hide == o.hide &&
-                   name.equals(o.name) && function.equals(o.function);
-        }
-
-        @Override
-        public int hashCode() {
-            return resolve + 17*(hide + 17*(name.hashCode()+17*function.hashCode()));
-        }
-
-    }
 }

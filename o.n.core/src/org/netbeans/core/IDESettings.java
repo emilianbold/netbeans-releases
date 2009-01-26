@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -91,8 +91,7 @@ public class IDESettings  {
                     HtmlBrowser.Factory brow = it.next ();
 
                     // check if it is not set to be hidden
-                    FileObject fo = Repository.getDefault ()
-                    .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
+                    FileObject fo = FileUtil.getConfigFile ("Services/Browsers");   // NOI18N
 
                     DataFolder folder = DataFolder.findFolder (fo);
                     DataObject [] dobjs = folder.getChildren ();

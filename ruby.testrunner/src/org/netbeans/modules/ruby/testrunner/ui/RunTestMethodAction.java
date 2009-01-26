@@ -63,7 +63,7 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         this.debug = debug;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    protected void doActionPerformed(ActionEvent e) {
         // XXX
         TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
         if (TestRunner.TestType.RSPEC == type) {
@@ -71,6 +71,11 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
             return;
         }
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
+        if (DeclarationLocation.NONE == location) {
+            // try to get a location for the class if the test method was not found -- needed e.g.
+            // for shoulda test methods that are not indexed
+            location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
+        }
         if (!(DeclarationLocation.NONE == location)) {
             getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getName(), debug);
         }

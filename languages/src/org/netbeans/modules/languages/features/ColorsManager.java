@@ -48,22 +48,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.List;
-import java.util.Map;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
@@ -73,8 +64,7 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.TokenType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -225,15 +215,14 @@ public class ColorsManager {
         fcsf.setAllFontColors("NetBeans", colorsMap.values());
         
         if (bundleName != null) {
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = fs.findResource("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
+            FileObject fo = FileUtil.getConfigFile("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
             try {
                 if (fo != null) {
                     fo.setAttribute("SystemFileSystem.localizingBundle", bundleName);
                 }
             } catch (IOException e) {
             }
-            fo = fs.findResource("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/Defaults/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
+            fo = FileUtil.getConfigFile("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/Defaults/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
             try {
                 if (fo != null) {
                     fo.setAttribute("SystemFileSystem.localizingBundle", bundleName);
@@ -486,8 +475,7 @@ public class ColorsManager {
     }
     
     private static String getBundleName(Language l) {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
+        FileObject root = FileUtil.getConfigFile("Editors/" + l.getMimeType()); // NOI18N
         Object attrValue = root.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
         // [PENDING] if (bundleName == null) ... check for bundle name in nbs file
         return (String) attrValue;

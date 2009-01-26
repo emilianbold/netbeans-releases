@@ -158,28 +158,14 @@ public final class FileUtilities {
     
     /**
      * force refreshes of Filesystem to make the conversion to FileObject work.
-     * replace with FileUtil.refreshFile(File) in 6.1
      * 
      * @param file
      * @return
+     * @deprecated Use FileUtil.refreshFor() + FileUtil.toFileObject()
      */
-    public static FileObject toFileObject(File fl) {
-      //TODO replace with FileUtil.refreshFile(File) in 6.1
-        FileObject outDir = null;
-        outDir = FileUtil.toFileObject(fl);
-        File parent = fl.getParentFile();
-        boolean wasRefreshed = false;
-        while (outDir == null && parent != null && !wasRefreshed) {
-            FileObject par = FileUtil.toFileObject(parent);
-            if (par != null) {
-                par.refresh();
-                outDir = FileUtil.toFileObject(fl);
-                wasRefreshed = true;
-            } else {
-                parent = parent.getParentFile();
-            }
-        }
-        return outDir;
+    public @Deprecated static FileObject toFileObject(File fl) {
+        FileUtil.refreshFor(fl);
+        return FileUtil.toFileObject(fl);
     }
 
     /**

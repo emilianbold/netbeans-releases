@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collections;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
@@ -48,6 +47,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -85,7 +86,16 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
     public String toString () {
         return "CursorSensitiveScheduller";
     }
-    
+
+    @Override
+    protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
+        if (currentEditor == null) return null;
+        return new CursorMovedSchedulerEvent (this, currentEditor.getCaret ().getDot (), currentEditor.getCaret ().getMark ()) {};
+    }
+
+
+    // innerclasses ............................................................
+
     private class ACaretListener implements CaretListener {
 
         public void caretUpdate (CaretEvent e) {

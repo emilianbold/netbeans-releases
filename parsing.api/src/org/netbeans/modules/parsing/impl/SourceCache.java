@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -180,6 +181,7 @@ public final class SourceCache {
                 }
                 SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
                 _parser.parse (_snapshot, task, event);
+                SourceAccessor.getINSTANCE ().parsed (source);
                 parseSuccess = true;
             } finally {
                 if (!parseSuccess) {
@@ -247,52 +249,56 @@ public final class SourceCache {
 
     
     void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
+        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+        List<Embedding> oldEmbeddings;
         synchronized (this.source) {
-            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
-            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-            updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
+            oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+        }
+        updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
+        synchronized (this.source) {
             embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
             upToDateEmbeddingProviders.add (embeddingProvider);
         }
     }
     
-    //@NotThreadSafe - has to be called in GuardedBy(this)
     private void updateEmbeddings (
-            List<Embedding> embeddings,
-            List<Embedding> oldEmbeddings,
-            boolean         updateTasks,
-            Class<? extends Scheduler>           schedulerType
+            List<Embedding>                 embeddings,
+            List<Embedding>                 oldEmbeddings,
+            boolean                         updateTasks,
+            Class<? extends Scheduler>      schedulerType
     ) {
-        if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
-            for (int i = 0; i < embeddings.size (); i++) {
-                SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
-                if (cache != null) {
-                    cache.setEmbedding (embeddings.get (i));
-                    embeddingToCache.put (embeddings.get (i), cache);
-                } else {
-                    cache = getCache(embeddings.get(i));
-                }
-
-                if (updateTasks) {
-                    //S ystem.out.println ("\nSchedule embedded tasks (" + embeddings.get (i) + "):");
-                    cache.scheduleTasks (schedulerType);
-                }
-            }
-        } else {
-            if (oldEmbeddings != null)
-                for (Embedding _embedding : oldEmbeddings) {
-                    SourceCache cache = embeddingToCache.remove (_embedding);
+        List<SourceCache> toBeSchedulled = new ArrayList<SourceCache> ();
+        synchronized (this.source) {
+            if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
+                for (int i = 0; i < embeddings.size (); i++) {
+                    SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
                     if (cache != null) {
-                        cache.removeTasks ();
+                        cache.setEmbedding (embeddings.get (i));
+                        embeddingToCache.put (embeddings.get (i), cache);
+                    } else {
+                        cache = getCache(embeddings.get(i));
                     }
+
+                    if (updateTasks)
+                        toBeSchedulled.add (cache);
                 }
-            if (updateTasks)
-                for (Embedding _embedding : embeddings) {
-                    SourceCache cache = getCache (_embedding);
-                    //S ystem.out.println ("\nSchedule embedded tasks (" + _embedding + "):");
-                    cache.scheduleTasks (schedulerType);
-                }
+            } else {
+                if (oldEmbeddings != null)
+                    for (Embedding _embedding : oldEmbeddings) {
+                        SourceCache cache = embeddingToCache.remove (_embedding);
+                        if (cache != null) {
+                            cache.removeTasks ();
+                        }
+                    }
+                if (updateTasks)
+                    for (Embedding _embedding : embeddings) {
+                        SourceCache cache = getCache (_embedding);
+                        toBeSchedulled.add (cache);
+                    }
+            }
         }
+        for (SourceCache cache : toBeSchedulled)
+            cache.scheduleTasks (schedulerType);
     }
     
     //@GuardedBy(this)
@@ -341,13 +347,17 @@ public final class SourceCache {
 
     //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
+        //S ystem.out.println("scheduleTasks " + schedulerType);
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         synchronized (this.source) {
             if (tasks == null)
                 createTasks ();
             for (SchedulerTask task : tasks) {
-                if (task.getSchedulerClass () == schedulerType || task instanceof EmbeddingProvider) {
+                if (schedulerType == null ||
+                    task.getSchedulerClass () == schedulerType ||
+                    task instanceof EmbeddingProvider
+                ) {
                     if (pendingTasks.remove (task)) {
                         add.add (task);
                     }
@@ -364,6 +374,37 @@ public final class SourceCache {
             TaskProcessor.updatePhaseCompletionTask(add, remove, source, this, schedulerType);
         }
     }
+
+    //jjancura: probably has race condition too
+    public void sourceModified () {
+        SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
+        Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
+        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
+            SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
+            schedulerEvents.put (scheduler.getClass (), schedulerEvent);
+        }
+        SourceAccessor.getINSTANCE ().setSchedulerEvents (source, schedulerEvents);
+        final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
+        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        synchronized (this) {
+            if (tasks == null)
+                createTasks ();
+            for (SchedulerTask task : tasks) {
+                if (pendingTasks.remove (task)) {
+                    add.add (task);
+                }
+                else {
+                    remove.add (task);
+                    //S ystem.out.println ("  remove: " + task);
+                    add.add (task);
+                }
+                //S ystem.out.println ("  add: " + task);
+            }
+        }
+        if (!add.isEmpty ()) {
+            TaskProcessor.updatePhaseCompletionTask (add, remove, source, this, null);
+        }
+    }
     
     @Override
     public String toString () {
@@ -376,7 +417,7 @@ public final class SourceCache {
         if (fileObject != null)
             sb.append (fileObject.getNameExt ());
         else
-            sb.append (mimeType).append (" ").append (_source.getDocument ());
+            sb.append (mimeType).append (" ").append (_source.getDocument (false));
         if (!_snapshot.getMimeType ().equals (_source.getMimeType ())) {
             sb.append ("( ").append (_snapshot.getMimeType ()).append (" ");
             sb.append (_snapshot.getOriginalOffset (0)).append ("-").append (_snapshot.getOriginalOffset (_snapshot.getText ().length () - 1)).append (")");

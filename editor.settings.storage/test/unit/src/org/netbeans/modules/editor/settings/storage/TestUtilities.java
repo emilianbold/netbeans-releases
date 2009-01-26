@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -87,17 +87,10 @@ public final class TestUtilities {
     
     
     private static FileObject createFO(final String path, final boolean folder, final String contents, long delay) throws IOException {
-        Repository rp = Repository.getDefault();
-        final FileSystem sfs = rp == null ? null : rp.getDefaultFileSystem();
-        
-        if (sfs == null) {
-            throw new IOException("No system FS.");
-        }
-
         final FileObject [] createdFo = new FileObject[1];
-        sfs.runAtomicAction(new FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                FileObject fo = sfs.getRoot();
+                FileObject fo = FileUtil.getConfigRoot();
                 String [] pathElements = path.split("/", -1);
                 for (int i = 0; i < pathElements.length; i++ ) {
                     String elementName = pathElements[i];
@@ -146,14 +139,7 @@ public final class TestUtilities {
     }
     
     public static void delete(String path, long delay) throws IOException {
-        Repository rp = Repository.getDefault();
-        FileSystem sfs = rp == null ? null : rp.getDefaultFileSystem();
-        
-        if (sfs == null) {
-            throw new IOException("No system FS.");
-        }
-
-        FileObject fo = sfs.findResource(path);
+        FileObject fo = FileUtil.getConfigFile(path);
         if (fo != null) {
             fo.delete();
         }

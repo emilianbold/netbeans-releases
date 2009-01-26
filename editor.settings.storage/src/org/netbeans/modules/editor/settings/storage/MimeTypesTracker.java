@@ -58,8 +58,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -132,7 +134,12 @@ public final class MimeTypesTracker {
         
         // Start listening
         this.listener = new Listener();
-        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileSystem sfs = null;
+        try {
+            sfs = FileUtil.getConfigRoot().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         sfs.addFileChangeListener(WeakListeners.create(FileChangeListener.class,listener, sfs));
     }
     
@@ -310,7 +317,7 @@ public final class MimeTypesTracker {
     }        
     
     private static Object [] findTarget(String [] path) {
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject target = FileUtil.getConfigRoot();
         boolean isTarget = 0 == path.length;
         
         for (int i = 0; i < path.length; i++) {

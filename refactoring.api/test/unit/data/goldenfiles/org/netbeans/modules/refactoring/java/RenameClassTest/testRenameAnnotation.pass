@@ -39,7 +39,7 @@ Update reference to RenameAnnot
  19       }
 
 
-defaultpkg.NewAnnotName
+defaultpkg.NewAnnotName.java
 --------------------
 package defaultpkg;
 

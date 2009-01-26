@@ -738,6 +738,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         t = o.toString();
                     } else if (o instanceof Map) {
                         t = (String) ((Map) o).get("<name>"); // NOI18N
+			if (t == null) {
+			    log.warning("GdbDebugger.completeFieldDefinition: Missing <name> from map");
+			    return null; // FIXME (See IZ 157133)
+			}
                     } else if (isNumber(v)) {
                         t = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {

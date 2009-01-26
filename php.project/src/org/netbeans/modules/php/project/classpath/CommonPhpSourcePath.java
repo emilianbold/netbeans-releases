@@ -50,7 +50,6 @@ import java.util.List;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
@@ -79,7 +78,7 @@ public final class CommonPhpSourcePath {
         assert Thread.holdsLock(CommonPhpSourcePath.class);
 
         // FS AtomicAction should not be needed (synchronized)
-        FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
+        FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
         for (FileObject fo : sfsFolder.getChildren()) {
             // XXX need to handle file updates as well
             if (FileUtil.toFile(fo) != null) {

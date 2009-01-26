@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -155,35 +154,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
      * @param userCodeLabel - text labe for custom code window
      * @param databinding - Boolena.TRUE FALSE is databinding is used
      */
-    @Deprecated
-    public PropertyEditorResourceLazyInit(PropertyEditorResourceElement perElement,
-            TypeID type,
-            String newComponentAsText,
-            String noneComponentAsText,
-            String userCodeLabel,
-            boolean databinding) {
-        super(userCodeLabel);
-
-        this.databinding = databinding;
-
-        if (newComponentAsText == null || noneComponentAsText == null) {
-            throw Debug.illegalArgument("Argument can not be null"); //NOI18N
-        }
-
-        if (newComponentAsText.equals(noneComponentAsText)) {
-            throw Debug.illegalArgument("Arguments can not be equal"); //NOI18N
-        }
-
-        this.componentTypeID = type;
-        this.newComponentAsText = newComponentAsText;
-        this.noneComponentAsText = noneComponentAsText;
-
-        createdComponents = new HashMap<String, DesignComponent>();
-
-        this.perElement = perElement;
-        perElement.setPropertyEditorMessageAwareness(this);
-    }
-
     public PropertyEditorResourceLazyInit(
             TypeID type,
             String newComponentAsText,
@@ -207,15 +177,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         this.noneComponentAsText = noneComponentAsText;
 
         createdComponents = new HashMap<String, DesignComponent>();
-
-        //TODO This hack! must be remove it for M2! PropertyEditorResources must be rewriten!
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                getCustomEditor();
-            }
-        });
-
     }
 
     protected abstract PropertyEditorResourceElement createElement();
@@ -238,15 +199,16 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         }
         if (databindingElement != null) {
             databindingElement.clean(component);
+            databindingElement = null;
         }
-        databindingElement = null;
+        
     }
 
     @Override
     public void setAsText(String text) {
         saveValue(text);
     }
-
+    
     @Override
     public final Component getCustomEditor() {
         if (perElement == null) {
@@ -285,7 +247,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         return superCustomEditor;
     }
 
-    private Map<String, DesignComponent> getComponentsMap() {
+    protected Map<String, DesignComponent> getComponentsMap() {
         final Map<String, DesignComponent> componentsMap = new TreeMap<String, DesignComponent>();
         if (component == null || component.get() == null) {
             return componentsMap;
@@ -334,6 +296,19 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         return getDecodeValue(value);
     }
 
+    private void setValue(PropertyValue value) {
+        super.setValue(value);
+        if (perElement == null) {
+            return;
+        }
+        final DesignComponent component_ = component.get();
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+            perElement.postSetValue(component_, value.getComponent());
+        } else if (NULL_VALUE.equals(value)) {
+            perElement.nullValueSet(component_);
+        }
+    }
+
     private void saveValue(String text) {
         if (text == null || text.length() <= 0) {
             return;
@@ -377,19 +352,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
                 }
             }
         }
-    }
-
-    private void setValue(final PropertyValue value) {
-        super.setValue(value);
-        final DesignComponent component_ = component.get();
-        //TODO THIS HACK FOR M1 it has to be change M1 this milston!!
-
-        if (!NULL_VALUE.equals(value) && perElement != null && perElement.isPostSetValueSupported(component_)) {
-            perElement.postSetValue(component_, value.getComponent());
-        } else if (NULL_VALUE.equals(value)) {
-            perElement.nullValueSet(component_);
-        }
-
     }
 
     // invoke in the write transaction
@@ -498,20 +460,20 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
 
                             public void run() {
                                 if (wrapper.getComponent() != null) {
-                                    // component need to be changed
+                                    // component needs to be changed
                                     Map<String, PropertyValue> changes = wrapper.getChanges();
                                     for (String propertyName : changes.keySet()) {
                                         final PropertyValue propertyValue = changes.get(propertyName);
                                         _component.writeProperty(propertyName, propertyValue);
                                     }
                                 } else {
-                                    // component need to be deleted
+                                    // component needs to be deleted
                                     toBeDeleted.add(_component);
                                 }
                             }
                         });
                     } else {
-                        // component need to be created
+                        // component needs to be created
                         if (wrapper.isDeleted()) {
                             // do not create
                             continue;
@@ -558,6 +520,7 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
             }
             perElement.postSaveValue(component.get());
         }
+        
     }
 
     public JComponent getCustomEditorComponent() {

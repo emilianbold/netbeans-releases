@@ -55,8 +55,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -67,6 +65,7 @@ import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
 import javax.swing.JDialog;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Panel for selecting a page fragment
@@ -370,9 +369,8 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
 
         // Create files
         try {
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
             String tmpl = "Templates/JSF/PageFragment.jspf"; // NOI18N
-            FileObject fo = fs.findResource(tmpl);
+            FileObject fo = FileUtil.getConfigFile(tmpl);
             if (fo == null)
                 throw new IOException("Can't find template FileObject for " + tmpl);  // NOI18N
             DataObject webformTemplate = DataObject.find(fo);

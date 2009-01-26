@@ -198,7 +198,7 @@ public class MIMESupportTest extends NbTestCase {
     }
     
     public void testDeclarativeMIMEResolvers() throws Exception {
-        FileObject resolver = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver/r.xml");
+        FileObject resolver = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MIMEResolver/r.xml");
         resolver.setAttribute("position", 2);
         OutputStream os = resolver.getOutputStream();
         PrintStream ps = new PrintStream(os);
@@ -226,7 +226,7 @@ public class MIMESupportTest extends NbTestCase {
         foo = FileUtil.createMemoryFileSystem().getRoot().createData("x2.foo");
         assertEquals("text/x-foo2", foo.getMIMEType());
         // Test adding a resolver:
-        resolver = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver/r2.xml");
+        resolver = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MIMEResolver/r2.xml");
         resolver.setAttribute("position", 1);
         os = resolver.getOutputStream();
         ps = new PrintStream(os);
