@@ -202,7 +202,7 @@
             </file>
         </folder>
     </folder>
-    <folder name="gsf-hints">
+    <folder name="csl-hints">
         <folder name="text">
             <folder name="x-php5">
                 <folder name="hints">
