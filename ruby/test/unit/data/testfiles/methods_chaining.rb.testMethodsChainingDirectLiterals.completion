@@ -1,6 +1,6 @@
 Code completion result for source line:
 puts 1.even?.to|_s
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     to_s                                       FalseClass
 METHOD     to_s                                       TrueClass
 CALL       puts(obj)                                  Kernel

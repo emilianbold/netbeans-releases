@@ -1,6 +1,6 @@
 Code completion result for source line:
 
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     abort                                      Kernel
 METHOD     alias_method(new_name, old_nam             Module

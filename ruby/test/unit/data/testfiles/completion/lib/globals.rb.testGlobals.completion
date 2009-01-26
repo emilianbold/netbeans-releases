@@ -1,6 +1,6 @@
 Code completion result for source line:
 $|m # input
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 GLOBAL     $myglob                                    globals.rb
 GLOBAL     $myotherglob                               globals.rb
 ------------------------------------
