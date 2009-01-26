@@ -274,5 +274,4 @@ public class ActionsTest extends JellyTestCase {
         }
     }
 
-
 }
