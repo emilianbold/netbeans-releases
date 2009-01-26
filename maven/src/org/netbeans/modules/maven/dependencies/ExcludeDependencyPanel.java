@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.maven.dependencies;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,14 +51,18 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -70,6 +77,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
     private Map<ChangeListener, CheckNode> change2Trans;
     private Map<ChangeListener, List<CheckNode>> change2Refs;
     private boolean isSingle = false;
+    private NotificationLineSupport lineSupport;
 
     /** Creates new form ExcludeDependencyPanel */
     public ExcludeDependencyPanel(MavenProject prj, final Artifact single, final Set<DependencyNode> directs, final DependencyNode root) {
@@ -109,6 +117,39 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
                 }
             }            
         });
+        trTrans.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                printSpaceMessage();
+            }
+
+            public void focusLost(FocusEvent e) {
+                printSpaceMessage();
+            }
+
+        });
+        trTrans.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                printSpaceMessage();
+            }
+        });
+        trTrans.addKeyListener(new KeyListener() {
+           public void keyTyped(KeyEvent e) {}
+            public void keyPressed(KeyEvent e) {
+                if (KeyEvent.VK_SPACE == e.getKeyCode()) {
+                    TreePath path = trTrans.getSelectionPath();
+                    CheckNode nd = (CheckNode) path.getLastPathComponent();
+                    TreeModel mdl = trRef.getModel();
+                    int childs = mdl.getChildCount(mdl.getRoot());
+                    for (int i = 0; i < childs; i++) {
+                        CheckNode refNode = (CheckNode) mdl.getChild(mdl.getRoot(), i);
+                        refNode.setSelected(true);
+                    }
+                    trRef.repaint();
+
+                }
+            }
+            public void keyReleased(KeyEvent e) {}
+        });
     }
 
     public ExcludeDependencyPanel(MavenProject prj) {
@@ -129,6 +170,21 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
             toRet.put((Artifact)trans.getUserObject(), nds);
         }
         return toRet;
+    }
+
+    public void setStatusDisplayer(NotificationLineSupport createNotificationLineSupport) {
+        lineSupport = createNotificationLineSupport;
+    }
+
+    private void printSpaceMessage() {
+        if (lineSupport == null) {
+            return;
+        }
+        if (trTrans.isFocusOwner() && trTrans.getSelectionPath() != null) {
+            lineSupport.setInformationMessage("Exclude from all by pressing 'SPACE' key.");
+        } else {
+            lineSupport.clearMessages();
+        }
     }
 
     private TreeNode createReferenceModel(Set<DependencyNode> nds, CheckNode trans) {
@@ -221,8 +277,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
-                    .add(jScrollPane1))
-                .addContainerGap())
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

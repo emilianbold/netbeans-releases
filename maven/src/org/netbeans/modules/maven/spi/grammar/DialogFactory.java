@@ -104,6 +104,7 @@ public final class DialogFactory {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(nbproj.getMavenProject());
         DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class,"TIT_Exclude"));
+        pnl.setStatusDisplayer(dd.createNotificationLineSupport());
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             Map<Artifact, List<DependencyNode>> dependencyExcludes = pnl.getDependencyExcludes();
