@@ -48,25 +48,19 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
 import org.netbeans.modules.dlight.core.stack.model.Function;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.model.NaturalFunctionCallComparator;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.util.CollectionToStringConvertor;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.util.CollectionToStringConvertor;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 class SSStackDataProvider implements StackDataProvider {
 
@@ -217,9 +211,8 @@ class SSStackDataProvider implements StackDataProvider {
   public void attachTo(DataStorage storage) {
     if (storage instanceof PerfanDataStorage) {
       this.storage = (PerfanDataStorage) storage;
-      log.info("SSStackDataProvider is attached to storage '" + storage.getID() + "'");
     } else {
-      throw new IllegalArgumentException("Attempt to attach SSStackDataProvider to storage '" + storage.getID() + "'");
+      throw new IllegalArgumentException("Attempt to attach SSStackDataProvider to storage '" + storage + "'");
     }
   }
 

@@ -40,13 +40,14 @@ package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+
 
 /**
  * @author Alexey Vladykin

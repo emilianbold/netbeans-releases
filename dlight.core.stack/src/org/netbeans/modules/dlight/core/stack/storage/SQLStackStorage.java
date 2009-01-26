@@ -51,11 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.netbeans.modules.dlight.storage.api.Time;
+import org.netbeans.modules.dlight.api.storage.Time;
 import org.netbeans.modules.dlight.core.stack.model.Function;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 
 /**
  * Stack data storage over a relational database.

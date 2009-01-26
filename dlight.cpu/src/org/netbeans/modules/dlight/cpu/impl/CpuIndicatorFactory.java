@@ -5,8 +5,10 @@
 
 package org.netbeans.modules.dlight.cpu.impl;
 
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorFactory;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+
+
 
 /**
  *

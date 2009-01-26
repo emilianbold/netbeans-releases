@@ -40,11 +40,12 @@ package org.netbeans.modules.dlight.perfan;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
-import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
+
 
 /**
  *

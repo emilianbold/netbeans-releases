@@ -40,9 +40,10 @@ package org.netbeans.modules.dlight.sync;
 
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+
 
 /**
  * Mmory usage indicator

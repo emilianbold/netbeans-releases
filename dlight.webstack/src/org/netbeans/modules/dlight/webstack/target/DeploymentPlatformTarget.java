@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.dlight.webstack.target;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
+
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.DLightTargetExecutionService;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -51,62 +51,50 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * php source root installation
  * @author mt154047
  */
-public class DeploymentPlatformTarget implements DLightTarget {
+public final class DeploymentPlatformTarget extends DLightTarget {
 
   private boolean isStarted = false;
-  private List<DLightTargetListener> listeners = Collections.synchronizedList(new ArrayList<DLightTargetListener>());
-
+ 
   public DeploymentPlatformTarget() {
+    super(new DeploymentPlatformTargetExecutionService());
   }
 
-  public void addTargetListener(DLightTargetListener listener) {
-    if (listener != null && !listeners.contains(listener)) {
-      listeners.add(listener);
-    }
-  }
-
-  public void removeTargetListener(DLightTargetListener listener) {
-    if (listeners.contains(listener)) {
-      listeners.remove(listener);
-    }
-  }
-
-  public void start() {
+  
+  private void start() {
     //we will startdemon task, which will search for everything
     //needed for WebStack
     isStarted = true;
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
-    for (DLightTargetListener l : ls) {
-      l.targetStarted(this);
-    }
+   notifyListeners(DLightTarget.State.INIT, DLightTarget.State.RUNNING);
   }
 
-  public void terminate() {
+  private void terminate() {
     //  throw new UnsupportedOperationException("Not supported yet.");
     isStarted = false;
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
-    for (DLightTargetListener l : ls) {
-      l.targetFinished(this, 0);
-    }
+   notifyListeners(DLightTarget.State.RUNNING, DLightTarget.State.STOPPED);
   }
 
   public State getState() {
     return isStarted ? State.RUNNING : State.STOPPED;
   }
 
-  public boolean canBeSubstituted() {
-    return false;
-  }
-
-  public void substitute(String cmd, String[] args) {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+  
   public ExecutionEnvironment getExecEnv() {
     String user_name = System.getProperty("dlight.webstack.user", "masha");
     String host_name = System.getProperty("dlight.webstack.host", "localhost");
     int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
    // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
      return new ExecutionEnvironment(user_name, host_name,  port_number);
+  }
+
+  private static final class DeploymentPlatformTargetExecutionService implements 
+          DLightTargetExecutionService<DeploymentPlatformTarget> {
+
+    public void start(DeploymentPlatformTarget target) {
+      target.start();
+    }
+
+    public void terminate(DeploymentPlatformTarget target) {
+      target.terminate();
+    }
   }
 }

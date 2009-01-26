@@ -46,37 +46,38 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.dlight.api.execution.AttachableTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.Validateable.ValidationState;
+import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
 import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
-import org.netbeans.modules.dlight.execution.api.AttachableTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.management.api.DLightManager;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.model.Validateable.ValidationState;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +85,8 @@ import org.openide.util.NbBundle;
  * Implements both {@link org.netbeans.modules.dlight.spi.collectorDataCollector}
  * and {@link org.netbeans.modules.dlight.spi.collector.DataCollector} via invocation of a command-line tool and parsing its output.
  */
-public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements DataCollector<CLIODCConfiguration> {
+public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfiguration> implements 
+    DataCollector<CLIODCConfiguration> {
 
   private static final Logger log = DLightLogger.getLogger(CLIODataCollector.class);
   private String command;
@@ -122,7 +124,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
    * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
    * data collector can put data into
    */
-  public List<DataStorageType> getSupportedDataStorageTypes() {
+  public Collection<DataStorageType> getSupportedDataStorageTypes() {
     return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
   }
 
@@ -135,7 +137,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     DataRow dataRow = parser.process(line);
     if (dataRow != null) {
       if (dataTablesMetadata != null && !dataTablesMetadata.isEmpty() && storage != null) {
-        storage.addData(dataTablesMetadata.get(0).getName()/*"prstat"*/, Arrays.asList(dataRow));
+        storage.addData(dataTablesMetadata.iterator().next().getName()/*"prstat"*/, Arrays.asList(dataRow));
       }
       notifyIndicators(Arrays.asList(dataRow));
     }
@@ -154,7 +156,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     return new NativeTask(target.getExecEnv(), cmd, null);
   }
 
-  public void targetStarted(DLightTarget target) {
+  private void targetStarted(DLightTarget target) {
     resetIndicators();
     collectorTask = getCollectorTaskFor(target);
 
@@ -194,14 +196,14 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     outProcessingThread.start();
   }
 
-  public void targetFinished(DLightTarget target, int result) {
-    log.fine("Stopping CLIODataCollector: " + collectorTask.toString());
+  private void targetFinished(DLightTarget target) {
+    log.fine("Stopping CLIODataCollector: " + collectorTask.getCommand());
     collectorTask.cancel();
     outProcessingThread.interrupt();
   }
 
   /** {@inheritDoc */
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
+  public List<DataTableMetadata> getDataTablesMetadata() {
     return dataTablesMetadata;
   }
 
@@ -238,9 +240,9 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     validationListeners.remove(listener);
   }
 
-  protected void notifyStatusChanged(ValidationStatus newStatus) {
+  protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
     for (ValidationListener validationListener : validationListeners) {
-      validationListener.validationStateChanged(this, newStatus);
+      validationListener.validationStateChanged(this, oldStatus, newStatus);
     }
   }
 
@@ -261,7 +263,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
 
         if (!(newStatus.getState().equals(oldStatus.getState()) &&
                 newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(newStatus);
+          notifyStatusChanged(oldStatus, newStatus);
         }
 
         validationStatus = newStatus;
@@ -296,8 +298,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
                 loc("ValidationStatus.CommandNotFound", command)); // NOI18N
       }
     } else {
-      ConnectionManager cm = ConnectionManager.getInstance();
-      ObservableAction<Boolean> connectAction = cm.getConnectAction(target.getExecEnv());
+      ObservableAction<Boolean> connectAction = target.getExecEnv().getConnectToAction();
 
       connectAction.addObservableActionListener(new ObservableActionListener<Boolean>() {
           public void actionCompleted(Action source, Boolean result) {
@@ -318,6 +319,19 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
 
   public ValidationStatus getValidationStatus() {
     return validationStatus;
+  }
+
+  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+    switch (newState){
+      case STARTING :
+        targetStarted(source);
+      case FAILED:
+        targetFinished(source);
+      case TERMINATED:
+        targetFinished(source);
+      case DONE:
+        targetFinished(source);
+    }
   }
   
   
