@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.dlight.db.h2;
 
-import org.netbeans.modules.dlight.db.h2.H2DataStorage;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +47,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.storage.api.Time;
 import static org.junit.Assert.*;
 
 /**
@@ -74,20 +74,20 @@ public class H2DataStorageTest {
         assertEquals(4, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
-        assertEquals(40e-6, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(40, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func2", hotSpots.get(1).getFunction().getName());
-        assertEquals(30e-6, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(30, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func3", hotSpots.get(2).getFunction().getName());
-        assertEquals(20e-6, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func4", hotSpots.get(3).getFunction().getName());
-        assertEquals(10e-6, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         List<FunctionCall> callees = db.getCallees(new FunctionCall[] {hotSpots.get(0)}, true);
         assertEquals(1, callees.size());
@@ -110,40 +110,40 @@ public class H2DataStorageTest {
         assertEquals(3, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
-        assertEquals(40e-6, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(30e-6, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(40, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(30, hotSpots.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func2", hotSpots.get(1).getFunction().getName());
-        assertEquals(30e-6, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(30, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, hotSpots.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func3", hotSpots.get(2).getFunction().getName());
-        assertEquals(20e-6, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         List<FunctionCall> callees = db.getCallees(new FunctionCall[] {hotSpots.get(0)}, true);
         assertEquals(2, callees.size());
         Collections.sort(callees, new FunctionCallComparator());
 
         assertEquals("func1", callees.get(0).getFunction().getName());
-        assertEquals(10e-6, callees.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(10e-6, callees.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(10, callees.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(10, callees.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func2", callees.get(1).getFunction().getName());
-        assertEquals(10e-6, callees.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, callees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(10, callees.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, callees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         List<FunctionCall> callers = db.getCallers(new FunctionCall[] {hotSpots.get(0)}, true);
         assertEquals(2, callers.size());
         Collections.sort(callers, new FunctionCallComparator());
 
         assertEquals("func1", callers.get(0).getFunction().getName());
-        assertEquals(20e-6, callers.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, callers.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, callers.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, callers.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("func2", callers.get(1).getFunction().getName());
-        assertEquals(20e-6, callers.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, callers.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, callers.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, callers.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
     }
 
     @Test
@@ -164,21 +164,21 @@ public class H2DataStorageTest {
 
         FunctionCall b = cCallers.get(0);
         assertEquals("b", b.getFunction().getName());
-        assertEquals(50e-6, b.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, b.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(50, b.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, b.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
         List<FunctionCall> bCallers = db.getCallers(new FunctionCall[] {b, c}, true);
         assertEquals(2, bCallers.size());
 
         FunctionCall a = find(bCallers, "a");
         assertNotNull(a);
-        assertEquals(40e-6, a.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, a.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(40, a.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, a.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
         List<FunctionCall> aCallers = db.getCallers(new FunctionCall[] {a, b, c}, true);
         assertEquals(1, aCallers.size());
 
         FunctionCall x = aCallers.get(0);
-        assertEquals(50e-6, x.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(0e-6, x.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(50, x.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(0, x.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
     }
 
     @Test
@@ -211,12 +211,17 @@ public class H2DataStorageTest {
         Collections.sort(dCallees, new FunctionCallComparator());
 
         assertEquals("e", dCallees.get(0).getFunction().getName());
-        assertEquals(20e-6, dCallees.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(20e-6, dCallees.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, dCallees.get(0).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(20, dCallees.get(0).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
         assertEquals("f", dCallees.get(1).getFunction().getName());
-        assertEquals(20e-6, dCallees.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
-        assertEquals(20e-6, dCallees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+        assertTimeEquals(20, dCallees.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
+        assertTimeEquals(20, dCallees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
+    }
+
+    private static void assertTimeEquals(long nanos, Object obj) {
+        assertTrue(obj instanceof Time);
+        assertEquals(nanos, ((Time)obj).getNanos());
     }
 
     private static FunctionCall find(List<FunctionCall> list, String name) {
