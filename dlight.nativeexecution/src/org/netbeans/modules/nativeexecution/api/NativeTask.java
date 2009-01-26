@@ -58,6 +58,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -74,6 +75,11 @@ public class NativeTask implements Future<Integer> {
     private Reader redirectionInputReader;
     private InputOutput redirectionIO = null;
     private boolean showProgress;
+
+
+    static {
+        NativeTaskAccessor.setDefault(new NativeTaskAccessorImpl());
+    }
 
     /**
      * Creates <tt>NativeTask</tt> that can be executed in the
@@ -150,13 +156,18 @@ public class NativeTask implements Future<Integer> {
     /**
      * Submit task and wait for it's start.
      * Task is considered to be started if and only if it has been submitted,
-     * native process has been crreated and PID of this process has been
+     * native process has been created and PID of this process has been
      * obtained.
      */
     final public void submit() {
         submit(true);
     }
 
+    /**
+     * Starts execution of <tt>NativeTask</tt> and waits for its completion.
+     * @return result (exit value) of underlaying native process
+     * @throws java.lang.Exception when some exception occurs during execution.
+     */
     final public Integer invoke() throws Exception {
         return executor.invokeAndWait();
     }
@@ -185,19 +196,6 @@ public class NativeTask implements Future<Integer> {
      */
     public void setShowProgress(boolean b) {
         showProgress = b;
-    }
-
-    protected final NativeExecutor getExecutor() {
-        return executor;
-    }
-
-    public final ProgressHandle getProgressHandler() {
-        return (showProgress ? ProgressHandleFactory.createHandle(this.toString(), executor, redirectionIO == null ? null : new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                redirectionIO.select();
-            }
-        }) : null);
     }
 
     /**
@@ -235,10 +233,6 @@ public class NativeTask implements Future<Integer> {
         this.redirectionInputReader = inReader;
     }
 
-    final public Reader getRedirectionInputReader() {
-        return redirectionInputReader;
-    }
-
     /**
      * Disables error stream redirection. Effect is the same as calling
      * <tt>redirectErrTo(null)</tt>.
@@ -258,10 +252,6 @@ public class NativeTask implements Future<Integer> {
         this.redirectionErrorWriter = errWriter;
     }
 
-    final public Writer getRedirectionErrorWriter() {
-        return redirectionErrorWriter;
-    }
-
     /**
      * Disables output stream redirection. Effect is the same as calling
      * <tt>redirectOutTo(null)</tt>.
@@ -279,10 +269,6 @@ public class NativeTask implements Future<Integer> {
      */
     final public void redirectOutTo(Writer outWriter) {
         this.redirectionOutputWriter = outWriter;
-    }
-
-    final public Writer getRedirectionOutputWriter() {
-        return redirectionOutputWriter;
     }
 
     /**
@@ -364,14 +350,14 @@ public class NativeTask implements Future<Integer> {
     }
 
     /**
-     * Returns taks's 'Cancel' and 'Restart' actions.
-     * @return taks's 'Cancel' and 'Restart' actions.
+     * Returns task's actions.
+     * @return task's actions (like 'Cancel' and 'Restart').
      */
     public Action[] getActions() {
         return executor.getActions();
     }
 
-    public void reset() {
+    void reset() {
         if (redirectionIO != null) {
             try {
                 redirectionIO.getOut().reset();
@@ -386,6 +372,10 @@ public class NativeTask implements Future<Integer> {
         }
     }
 
+    /**
+     * Returns string representation of the <tt>NativeTask</tt>.
+     * @return string representation of the <tt>NativeTask</tt>.
+     */
     @Override
     public String toString() {
         return command + " [" + execEnv.toString() + "]"; // NOI18N
@@ -470,5 +460,47 @@ public class NativeTask implements Future<Integer> {
         public void write(String s) {
             super.write("TaskError: " + s); // NOI18N
         }
+    }
+
+    private static class NativeTaskAccessorImpl extends NativeTaskAccessor {
+
+        @Override
+        public NativeExecutor getExecutor(NativeTask task) {
+            return task.executor;
+        }
+
+        @Override
+        public ProgressHandle getProgressHandler(final NativeTask task) {
+            return (task.showProgress ?
+                ProgressHandleFactory.createHandle(task.toString(),
+                task.executor,
+                task.redirectionIO == null ? null : new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    task.redirectionIO.select();
+                }
+            }) : null);
+        }
+
+        @Override
+        public Writer getRedirectionErrorWriter(NativeTask task) {
+            return task.redirectionErrorWriter;
+        }
+
+        @Override
+        public Reader getRedirectionInputReader(NativeTask task) {
+            return task.redirectionInputReader;
+        }
+
+        @Override
+        public Writer getRedirectionOutputWriter(NativeTask task) {
+            return task.redirectionOutputWriter;
+        }
+
+        @Override
+        public void resetTask(NativeTask task) {
+            task.reset();
+        }
+
     }
 }

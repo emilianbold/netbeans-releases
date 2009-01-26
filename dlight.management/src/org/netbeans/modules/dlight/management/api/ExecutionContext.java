@@ -124,7 +124,11 @@ final class ExecutionContext {
                             ObservableAction[] actions = toolNewStatus.getRequiredActions();
                             if (actions != null) {
                                 for (ObservableAction a : actions) {
-                                    a.invokeAndWait();
+                                    try {
+                                        a.call();
+                                    } catch (Exception ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
                             }
 

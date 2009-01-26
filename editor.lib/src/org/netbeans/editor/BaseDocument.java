@@ -277,7 +277,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
-    protected LineRootElement lineRootElement;
+    LineRootElement lineRootElement;
 
     /** Last document event to be undone. The field is filled
      * by the lastly done modification undoable edit.

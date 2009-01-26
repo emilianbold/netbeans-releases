@@ -39,16 +39,10 @@
 
 package org.netbeans.modules.nativeexecution.support;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.openide.util.Exceptions;
 
-/**
- *
- * @author ak119685
- */
 public class NativeTaskSupport {
     private static final String CMD_KILL="/bin/kill"; // NOI18N
 

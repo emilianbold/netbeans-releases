@@ -543,7 +543,7 @@ public class DDRegistry extends Object {
     /**
      *	Return the entry for the BaseBean, if any.
      */
-    public RegEntry getRegEntry(BaseBean bean, boolean raise) {
+    RegEntry getRegEntry(BaseBean bean, boolean raise) {
 	for (int i=0; i<this.scopes.size(); i++) {
 	    RegEntry se = (RegEntry)this.scopes.get(i);
 	    if (se.getBean() == bean) {
