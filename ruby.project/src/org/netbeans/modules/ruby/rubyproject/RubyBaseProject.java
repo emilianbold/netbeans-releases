@@ -49,10 +49,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Icon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
@@ -64,6 +67,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -276,10 +280,16 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     public void removePlatformChangeListener(final PlatformChangeListener platformChangeListener) {
         platformCLs.remove(platformChangeListener);
     }
-    
+
+    private ClassPath[] getRubyStubsCP() {
+        ClassPath rubyStubsCP = ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs());
+        return new ClassPath[]{rubyStubsCP};
+    }
+
     /** Mainly for unit tests. */
     protected void open() {
         registerClassPath();
+        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, getRubyStubsCP());
 
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
@@ -403,6 +413,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
                 ErrorManager.getDefault().notify(e);
             }
             
+            GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, getRubyStubsCP());
             unregisterClassPath();
         }
     }
