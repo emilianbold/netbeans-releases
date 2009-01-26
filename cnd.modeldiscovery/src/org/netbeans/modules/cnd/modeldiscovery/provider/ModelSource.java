@@ -49,6 +49,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
@@ -69,6 +71,11 @@ import org.openide.util.Utilities;
  */
 public class ModelSource implements SourceFileProperties {
     private static final boolean TRACE_AMBIGUOUS = Boolean.getBoolean("cnd.modeldiscovery.trace.ambiguous"); // NOI18N
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.cnd.modeldiscovery.provider.SourceFileProperties"); // NOI18N
+    {
+        if (TRACE_AMBIGUOUS){logger.setLevel(Level.ALL);}
+    }
+
     private Item item;
     private CsmFile file;
     private Map<String,List<String>> searchBase;
@@ -228,9 +235,9 @@ public class ModelSource implements SourceFileProperties {
                 if (result.get(j).endsWith(name)){
                     if (pos >= 0) {
                         if (TRACE_AMBIGUOUS) {
-                            System.out.println("Ambiguous name for item: "+getItemPath()); // NOI18N
-                            System.out.println("  name1: "+result.get(pos)); // NOI18N
-                            System.out.println("  name2: "+result.get(j)); // NOI18N
+                            logger.fine("Ambiguous name for item: "+getItemPath()); // NOI18N
+                            logger.fine("  name1: "+result.get(pos)); // NOI18N
+                            logger.fine("  name2: "+result.get(j)); // NOI18N
                         }
                     } else {
                         pos = j;
@@ -244,12 +251,12 @@ public class ModelSource implements SourceFileProperties {
             }
         }
         if (TRACE_AMBIGUOUS) {
-            System.out.println("Unresolved name for item: "+getItemPath()); // NOI18N
-            System.out.println("  from: "+include.getContainingFile().getAbsolutePath()); // NOI18N
-            System.out.println("  name: "+include.getIncludeName()); // NOI18N
+            logger.fine("Unresolved name for item: "+getItemPath()); // NOI18N
+            logger.fine("  from: "+include.getContainingFile().getAbsolutePath()); // NOI18N
+            logger.fine("  name: "+include.getIncludeName()); // NOI18N
             if (result != null && result.size()>0){
                 for(int j = 0; j < result.size(); j++){
-                    System.out.println("  candidate: "+result.get(j)); // NOI18N
+                    logger.fine("  candidate: "+result.get(j)); // NOI18N
                 }
             }
         }
