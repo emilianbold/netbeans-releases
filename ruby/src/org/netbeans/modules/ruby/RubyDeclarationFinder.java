@@ -1589,7 +1589,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         for (IndexedMethod method : methods) {
             String url = method.getFileUrl();
 
-            if (url != null && url.indexOf("rubystubs") != -1) { // NOI18N
+            if (RubyUtils.isRubyStubsURL(url)) {
                 candidates.add(method);
             }
         }

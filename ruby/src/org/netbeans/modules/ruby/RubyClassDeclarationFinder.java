@@ -272,7 +272,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
         for (IndexedClass clz : classes) {
             String url = clz.getFileUrl();
 
-            if (url != null && url.indexOf("rubystubs") != -1) { // NOI18N
+            if (RubyUtils.isRubyStubsURL(url)) {
                 candidates.add(clz);
             }
         }

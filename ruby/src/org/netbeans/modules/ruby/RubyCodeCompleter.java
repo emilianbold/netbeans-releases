@@ -1968,7 +1968,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         for (IndexedElement o : result) {
             String url = o.getFileUrl();
 
-            if (url.indexOf("rubystubs") != -1) {
+            if (RubyUtils.isRubyStubsURL(url)) {
                 candidates.add(o);
             }
         }

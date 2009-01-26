@@ -926,4 +926,8 @@ public class RubyUtils {
     public static FileObject getFileObject(Result result) {
         return result.getSnapshot().getSource().getFileObject();
     }
+
+    static boolean isRubyStubsURL(String url) {
+        return url != null && url.indexOf("rubystubs") != -1; // NOI18N
+    }
 }

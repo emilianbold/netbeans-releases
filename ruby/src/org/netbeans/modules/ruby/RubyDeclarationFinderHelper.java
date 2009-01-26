@@ -132,7 +132,7 @@ abstract class RubyDeclarationFinderHelper {
                 if (url == null) {
                     // Deleted file?
                     // Just leave out the file name
-                } else if (url.indexOf("rubystubs") != -1) {
+                } else if (RubyUtils.isRubyStubsURL(url)) {
                     filename = NbBundle.getMessage(RubyDeclarationFinder.class, "RubyLib");
 
                     if (url.indexOf("/stub_") == -1) {
