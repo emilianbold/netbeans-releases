@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.csl.api;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -86,13 +83,6 @@ public interface GsfLanguage {
     Language getLexerLanguage();
     
     /**
-     * Return a set of file object folders for core libraries for this language that should be added
-     * to the indexing and querying paths.
-     */
-    @NonNull
-    Collection<FileObject> getCoreLibraries();
-
-    /**
      * Display name for this language. This name should be localized since it can be shown to
      * the user (currently, it shows up in the Tasklist filter for example).
      */
@@ -113,21 +103,6 @@ public interface GsfLanguage {
     @CheckForNull
     String getPreferredExtension();
     
-    /**
-     * Get source types for files corresponding to this language. This is used by for example
-     * the tasklist to locate source files in a project by using the 
-     *   ProjectUtils.getSources(p).getSourceGroups(x)
-     * mechanism.
-     * <p>
-     * The map corresponds to the project name mapped to the source group. If no mapping exists
-     * for a target project type the infrastructure will use the generic source type.
-     * <p>
-     * As with #acceptQueryPath, this is just a temporary measure (i.e. NetBeans 6.1) to deal with shortcomings
-     * in the path and project integration for GSF.
-     */
-    @NonNull
-    Map<String,String> getSourceGroupNames();
-
     /**
      * Gets IDs uniquely identifying source classpaths used by this language.
      *

@@ -40,13 +40,9 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
@@ -60,7 +56,6 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileObject;
 
 /*
  * Language/lexing configuration for Ruby
@@ -105,22 +100,6 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "rb"; // NOI18N
-    }
-
-    @Override
-    public Map<String,String> getSourceGroupNames() {
-        Map<String,String> sourceGroups = new HashMap<String,String>();
-        sourceGroups.put("RubyProject", "ruby"); // NOI18N
-        sourceGroups.put("WebProject", "ruby"); // NOI18N
-        sourceGroups.put("RailsProject", "ruby"); // NOI18N
-        
-        return sourceGroups;
-    }
-    
-    
-    @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.singletonList(RubyPlatform.getRubyStubs());
     }
 
     @Override

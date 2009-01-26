@@ -72,8 +72,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -670,15 +668,6 @@ public final class GsfUtilities {
         collectClasspathRoots(f, libraryPathIds, false, roots);
         collectClasspathRoots(f, binaryLibraryPathIds, true, roots);
 
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(f.getMIMEType());
-        if (l != null) {
-            if (roots == null) {
-                roots = l.getGsfLanguage().getCoreLibraries();
-            } else {
-                roots.addAll(l.getGsfLanguage().getCoreLibraries());
-            }
-        }
-        
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Roots for file " + f //NOI18N
                     + ", sourcePathIds=" + sourcePathIds //NOI18N
