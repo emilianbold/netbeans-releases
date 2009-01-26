@@ -166,6 +166,9 @@ public final class AquaLFCustoms extends LFCustoms {
             "nb.desktop.splitpane.border", BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(49,49,49)),
             "nb.desktop.view.insets", new Insets(3, 0, 0, 0),
 
+            SPLIT_PANE_DIVIDER_SIZE_VERTICAL, new Integer(3),
+            SPLIT_PANE_DIVIDER_SIZE_HORIZONTAL, new Integer(3),
+
             "NbExplorerView.background", new Color(226,226,226),
             "NbEditorStatusBar.background", new Color(226,226,226),
             "NbEditorGlyphGutter.background", new Color(255,255,255),
