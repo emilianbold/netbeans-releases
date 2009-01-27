@@ -45,7 +45,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -129,6 +128,23 @@ public class PHPIndexer extends EmbeddingIndexer {
     static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
     static final String FIELD_TOP_LEVEL = "top"; //NOI18N
+
+    static final String [] ALL_FIELDS = new String [] {
+        FIELD_BASE,
+        FIELD_EXTEND,
+        FIELD_CLASS,
+        FIELD_IFACE,
+        FIELD_CONST,
+        FIELD_CLASS_CONST,
+        FIELD_FIELD,
+        FIELD_METHOD,
+        FIELD_CONSTRUCTOR,
+        FIELD_INCLUDE,
+        FIELD_IDENTIFIER,
+        FIELD_IDENTIFIER_DECLARATION,
+        FIELD_VAR,
+        FIELD_TOP_LEVEL,
+    };
 
     public String getPersistentUrl(File file) {
         String url;
