@@ -4,10 +4,12 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
-import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProviderFactory;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+
+
 
 /**
  *

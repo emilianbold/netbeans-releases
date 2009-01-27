@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
-import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProviderFactory;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+
+
 
 /**
  *

@@ -41,12 +41,13 @@ package org.netbeans.modules.dlight.visualizers.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+
 
 /**
  *
@@ -87,7 +88,7 @@ public final class CallersCalleesVisualizerConfiguration extends TreeTableVisual
 
   @Override
   public DataModelScheme getSupportedDataScheme() {
-   return StackDataModel.instance;
+   return DataModelSchemeProvider.getInstance().getScheme("model:stack");
   }
 
 

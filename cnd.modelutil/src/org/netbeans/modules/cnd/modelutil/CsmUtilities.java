@@ -102,6 +102,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -251,6 +252,27 @@ public class CsmUtilities {
             }
         }
         return panes[0];
+    }
+
+    public static TopComponent getTopComponentInEQ(final String tcID) {
+        assert tcID != null;
+        final TopComponent tc[] = {null};
+        if (SwingUtilities.isEventDispatchThread()) {
+            tc[0] = WindowManager.getDefault().findTopComponent(tcID);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        tc[0] = WindowManager.getDefault().findTopComponent(tcID);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return tc[0];
     }
 
     public static File getFile(Document bDoc) {

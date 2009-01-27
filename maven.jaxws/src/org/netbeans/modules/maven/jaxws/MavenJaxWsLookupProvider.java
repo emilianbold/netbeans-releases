@@ -77,6 +77,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
+
+@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class MavenJaxWsLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
