@@ -1022,6 +1022,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             Item item = viewItemNode.getItem();
             ItemConfiguration[] oldConfigurations = item.getItemConfigurations();
+            if (oldConfigurations.length == 0) {
+                // Item may have been removed or renamed inbetween copy and paste
+                return null;
+            }
             if (type == DnDConstants.ACTION_MOVE) {
                 // Drag&Drop, Cut&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
