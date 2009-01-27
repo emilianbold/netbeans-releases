@@ -203,7 +203,7 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
             setState(TaskExecutionState.ERROR);
         } finally {
             double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-            System.err.println("Task " + task + " finished in " + duration + "s");
+            System.err.println("Task " + task + " finished with rc=" + task.get() + " in " + duration + "s");
 
             if (it != null) {
                 it.interrupt();

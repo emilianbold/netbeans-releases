@@ -13,7 +13,7 @@ public final class Testcase {
     private final String type;
     private String className;
     private String name;
-    private int timeMillis;
+    private long timeMillis;
     private Trouble trouble;
     private Status status;
     private final List<OutputLine> output = new ArrayList<OutputLine>();
@@ -110,14 +110,14 @@ public final class Testcase {
     /**
      * @return the timeMillis
      */
-    public int getTimeMillis() {
+    public long getTimeMillis() {
         return timeMillis;
     }
 
     /**
      * @param timeMillis the timeMillis to set
      */
-    public void setTimeMillis(int timeMillis) {
+    public void setTimeMillis(long timeMillis) {
         this.timeMillis = timeMillis;
     }
 

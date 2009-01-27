@@ -40,8 +40,6 @@
 package org.netbeans.modules.dlight.spi.dataprovider;
 
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 
