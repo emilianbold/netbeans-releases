@@ -107,7 +107,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (!isSingle) {
-                    rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), "test");
+                    rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     trTrans.setModel(new DefaultTreeModel(createTransitiveDependenciesList()));
                 } else {
                     rootnode = root;
