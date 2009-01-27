@@ -74,7 +74,7 @@ public class DocumentUtil {
 
     // when fields == null load all fields
     static FieldSelector selector (String... fieldNames) {
-        if (fieldNames != null) {
+        if (fieldNames != null && fieldNames.length > 0) {
             final Set<String> fields = new HashSet<String>(Arrays.asList(fieldNames));
             fields.add(FIELD_SOURCE_NAME);
             final FieldSelector selector = new SetBasedFieldSelector(fields,
