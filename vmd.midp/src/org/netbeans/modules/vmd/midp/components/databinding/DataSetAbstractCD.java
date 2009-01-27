@@ -59,7 +59,6 @@ import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 import org.openide.util.NbBundle;
 
@@ -110,8 +109,6 @@ public class DataSetAbstractCD extends ComponentDescriptor {
                 .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(TYPEID), ClassCD.PROP_INSTANCE_NAME); // NOI18N
                 
     }
-
-
 
     @Override
     protected List<? extends Presenter> createPresenters() {
