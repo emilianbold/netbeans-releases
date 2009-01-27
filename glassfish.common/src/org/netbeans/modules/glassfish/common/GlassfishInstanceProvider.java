@@ -423,7 +423,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
                                 NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
-                            String domainNameValue = "Glassfishv3Domain";    // NOI18N
+                            String domainNameValue = "Glassfishv3PreludeDomain";    // NOI18N
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             
