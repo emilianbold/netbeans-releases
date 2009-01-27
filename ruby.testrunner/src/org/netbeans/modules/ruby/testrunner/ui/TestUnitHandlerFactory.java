@@ -122,9 +122,8 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.toString(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
 
@@ -180,10 +179,9 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
-            testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
             testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
@@ -250,10 +248,9 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
-            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }
