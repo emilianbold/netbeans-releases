@@ -841,7 +841,7 @@ public class WsValidation extends WebServicesTestBase {
         //Add...
         JButtonOperator jbo = new JButtonOperator(ndo, 0);
         //Add Message Handler Class
-        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.utilities.ui.Bundle", "TTL_SelectHandler");
+        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.utilities.ui.Bundle", "TTL_SelectHandler");
         //Source Packages
         String srcPkgLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
         for (int i = 0; i < handlers.length; i++) {

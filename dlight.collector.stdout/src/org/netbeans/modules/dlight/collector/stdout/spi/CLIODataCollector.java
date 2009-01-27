@@ -56,8 +56,7 @@ import javax.swing.Action;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationState;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -96,11 +95,9 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   private NativeTask collectorTask;
   private CLIOParser parser;
   private List<DataTableMetadata> dataTablesMetadata;
-  private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+  private ValidationStatus validationStatus = ValidationStatus.initialStatus;
   private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
 
-
-  
   /**
    *
    * @param command command to invoke (without arguments)
@@ -241,6 +238,10 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
   protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+      if (oldStatus.equals(newStatus)) {
+          return;
+      }
+      
     for (ValidationListener validationListener : validationListeners) {
       validationListener.validationStateChanged(this, oldStatus, newStatus);
     }
@@ -254,17 +255,14 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
     return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
       public ValidationStatus call() throws Exception {
-        if (validationStatus.isOK()) {
+        if (validationStatus.isValid()) {
           return validationStatus;
         }
 
         ValidationStatus oldStatus = validationStatus;
         ValidationStatus newStatus = doValidation(target);
 
-        if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(oldStatus, newStatus);
-        }
+        notifyStatusChanged(oldStatus, newStatus);
 
         validationStatus = newStatus;
         return newStatus;
@@ -273,13 +271,13 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
   }
 
   public void invalidate() {
-    validationStatus = ValidationStatus.NOT_VALIDATED;
+    validationStatus = ValidationStatus.initialStatus;
   }
 
   private ValidationStatus doValidation(final DLightTarget target) {
     DLightLogger.assertNonUiThread();
 
-    ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+    ValidationStatus result = null;
     boolean fileExists = false;
     boolean connected = true;
 
@@ -291,11 +289,11 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
 
     if (connected) {
       if (fileExists) {
-        result = ValidationStatus.VALID;
+        result = ValidationStatus.validStatus;
       } else {
-        result = new ValidationStatus(
-                ValidationState.NOT_VALID,
-                loc("ValidationStatus.CommandNotFound", command)); // NOI18N
+        result = ValidationStatus.invalidStatus(
+                loc("ValidationStatus.CommandNotFound", // NOI18N
+                command));
       }
     } else {
       ObservableAction<Boolean> connectAction = target.getExecEnv().getConnectToAction();
@@ -308,8 +306,7 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
           }
       });
 
-
-      result = new ValidationStatus(ValidationState.UNKNOWN,
+      result = ValidationStatus.unknownStatus(
               loc("ValidationStatus.HostNotConnected"), // NOI18N
               connectAction);
     }
@@ -323,14 +320,18 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
 
   public void targetStateChanged(DLightTarget source, State oldState, State newState) {
     switch (newState){
-      case STARTING :
+      case RUNNING :
         targetStarted(source);
+        break;
       case FAILED:
         targetFinished(source);
+        break;
       case TERMINATED:
         targetFinished(source);
+        break;
       case DONE:
         targetFinished(source);
+        break;
     }
   }
   

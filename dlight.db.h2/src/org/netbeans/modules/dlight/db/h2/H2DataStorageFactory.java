@@ -50,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author masha
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position=10)
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
   static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";

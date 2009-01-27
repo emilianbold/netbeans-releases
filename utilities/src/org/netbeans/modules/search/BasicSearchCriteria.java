@@ -186,7 +186,6 @@ final class BasicSearchCriteria {
         
         /* So now we know that the pattern is valid but not compiled. */
         if (regexp) {
-            assert false;//valid pattern for a regexp should be already compiled
             textPatternValid = compileRegexpPattern();
         } else {
             compileSimpleTextPattern();
@@ -257,7 +256,11 @@ final class BasicSearchCriteria {
             if (LOG.isLoggable(FINEST)) {
                 LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
             }
-            textPattern = Pattern.compile(textPatternExpr);
+            int flags = Pattern.UNICODE_CASE;
+            if (!caseSensitive) {
+                flags |= Pattern.CASE_INSENSITIVE;
+            }
+            textPattern = Pattern.compile(textPatternExpr, flags);
             return true;
         } catch (PatternSyntaxException ex) {
             LOG.finest(" - invalid regexp - setting 'textPattern' to <null>");  //NOI18N
@@ -275,7 +278,6 @@ final class BasicSearchCriteria {
         if (LOG.isLoggable(FINER)) {
             LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
         }
-        assert !regexp;
         assert textPatternExpr != null;
         try {
             int flags = Pattern.UNICODE_CASE;
@@ -359,9 +361,7 @@ final class BasicSearchCriteria {
         
         this.caseSensitive = caseSensitive;
         
-        if (!regexp) {
-            textPattern = null;
-        }
+        textPattern = null;
     }
 
     boolean isFullText() {
@@ -567,8 +567,11 @@ final class BasicSearchCriteria {
     void onOk() {
         LOG.finer("onOk()");                                              //NOI18N
         if (textPatternValid && (textPattern == null)) {
-            assert !regexp;             //should have been already compiled
-            compileSimpleTextPattern();
+            if (regexp){
+                compileRegexpPattern();
+            }else{
+                compileSimpleTextPattern();
+            }
         }
         if (fileNamePatternValid && (fileNamePattern == null)) {
             compileSimpleFileNamePattern();

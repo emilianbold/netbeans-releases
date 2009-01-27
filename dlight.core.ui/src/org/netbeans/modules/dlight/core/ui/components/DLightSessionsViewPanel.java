@@ -58,7 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import org.netbeans.modules.dlight.api.execution.Validateable;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
@@ -268,14 +268,15 @@ public class DLightSessionsViewPanel extends JPanel
                 DLightTool tool = (DLightTool) node;
                 ValidationStatus status = tool.getValidationStatus();
                 if (columnID.equals(stateColumnID)) {
-                    switch (status.getState()) {
-                        case UNKNOWN:
-                            return status.getReason();
-                        case NOT_VALID:
-                            return "Tool cannot be used. " + status.getReason();
-                        case VALID:
-                            return "OK";
+                    if (status.isValid()) {
+                        return "OK"; // NOI18N
                     }
+
+                    if (status.isInvalid()) {
+                        return "Tool cannot be used. " + status.getReason(); // NOI18N
+                    }
+
+                    return status.getReason();
                 }
 
                 return null;
@@ -360,15 +361,16 @@ public class DLightSessionsViewPanel extends JPanel
             if (node instanceof DLightTool) {
                 DLightTool tool = (DLightTool) node;
                 ValidationStatus status = tool.getValidationStatus();
-                switch (status.getState()) {
-                    case UNKNOWN:
-                        return "<html><b>?</b> " + tool.getName() + "</html>"; // NOI18N
-                    case NOT_VALID:
-                        return "<html><font color=\"#FF0000\">" + tool.getName() + "</font></html>"; // NOI18N
-                    case VALID:
-                    default:
-                        return tool.getName();
+
+                if (status.isValid()) {
+                    return tool.getName();
                 }
+
+                if (status.isInvalid()) {
+                    return "<html><font color=\"#FF0000\">" + tool.getName() + "</font></html>"; // NOI18N
+                }
+
+                return "<html><b>?</b> " + tool.getName() + "</html>"; // NOI18N
             }
 
             throw new UnknownTypeException(node);
@@ -444,12 +446,9 @@ public class DLightSessionsViewPanel extends JPanel
                 status = ((Validateable)node).getValidationStatus();
             }
 
-            if (status == null) {
-                status = ValidationStatus.NOT_VALIDATED;
-            }
-
             if (node instanceof DLightTool) {
-                return status.getRequiredActions();
+                return status == null ? new Action[0] : 
+                    status.getRequiredActions().toArray(new Action[0]);
             }
 
             return new Action[]{};

@@ -436,7 +436,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.addItemListener(this);
 
         boolean regexp = chkRegexp.isSelected();
-        chkCaseSensitive.setEnabled(!regexp);
         chkWholeWords.setEnabled(!regexp);
 
         searchCriteria.setUsabilityChangeListener(this);
@@ -585,7 +584,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (toggle == chkRegexp) {
             searchCriteria.setRegexp(selected);
             updateTextPatternColor();
-            chkCaseSensitive.setEnabled(!selected);
             chkWholeWords.setEnabled(!selected);
             lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {
