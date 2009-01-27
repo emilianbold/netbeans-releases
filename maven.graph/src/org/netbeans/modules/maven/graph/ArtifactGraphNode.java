@@ -38,7 +38,9 @@
  */
 
 package org.netbeans.modules.maven.graph;
-import org.apache.maven.artifact.resolver.ResolutionNode;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
@@ -46,7 +48,7 @@ import org.netbeans.api.visual.widget.Widget;
  * @author Milos Kleint 
  */
 public class ArtifactGraphNode {
-    private ResolutionNode artifact;
+    private DependencyNode artifact;
     //for the layout
     double locX;
     double locY;
@@ -56,18 +58,29 @@ public class ArtifactGraphNode {
     private Widget widget;
     
     private boolean root;
+    private HashSet<DependencyNode> dupl;
+
     /** Creates a new instance of ArtifactGraphNode */
-    public ArtifactGraphNode(ResolutionNode art) {
+    public ArtifactGraphNode(DependencyNode art) {
         artifact = art;
+        dupl = new HashSet<DependencyNode>();
     }
     
     
-    ResolutionNode getArtifact() {
+    DependencyNode getArtifact() {
         return artifact;
     }
     
-    void setArtifact(ResolutionNode ar) {
+    void setArtifact(DependencyNode ar) {
         artifact = ar;
+    }
+
+    void addDuplicateOrConflict(DependencyNode nd) {
+        dupl.add(nd);
+    }
+
+    Set<DependencyNode> getDuplicatesOrConflicts() {
+        return dupl;
     }
     
     public void setRoot(boolean r) {

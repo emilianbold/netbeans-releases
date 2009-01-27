@@ -40,21 +40,15 @@
 
 package org.netbeans.modules.maven.graph;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ResolutionNode;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 
 /**
  *
@@ -71,64 +65,18 @@ public class GraphDocumentFactory {
      */
     static DependencyGraphScene createDependencyDocument(Project project) {
         DependencyGraphScene scene = new DependencyGraphScene();
-        try {
-                MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-                req.setPomFile(FileUtil.toFile(project.getProjectDirectory().getFileObject("pom.xml")).getAbsolutePath());
-                MavenExecutionResult res = EmbedderFactory.getOnlineEmbedder().readProjectWithDependencies(req);
-                if (res.hasExceptions()) {
-                    for (Object e : res.getExceptions()) {
-                        Exceptions.printStackTrace((Exception)e);
-                        ((Exception)e).printStackTrace();
-                    }
-                }
-                generate(res.getArtifactResolutionResult(), scene);
-        } finally {
-            return scene;
-        }
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        DependencyNode root = DependencyTreeFactory.createDependencyTree(prj.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+        generate(root, scene);
+        return scene;
     }
     
-    private static void generate(ArtifactResolutionResult res, DependencyGraphScene scene) {
-        Map<Artifact, ArtifactGraphNode> cache = new HashMap<Artifact, ArtifactGraphNode>();
-        Set<ResolutionNode> nodes = res.getArtifactResolutionNodes();
-        Artifact root = res.getOriginatingArtifact();
-        ResolutionNode nd1 = new ResolutionNode(root, new ArrayList());
-        ArtifactGraphNode rootNode = getNode(nd1, cache, scene);
-        rootNode.setRoot(true);
-        for (ResolutionNode nd : nodes) {
-            ArtifactGraphNode gr = getNode(nd, cache, scene);
-            if (nd.isChildOfRootNode()) {
-                String edge = nd1.getArtifact().getId() + "--" + nd.getArtifact().getId(); //NOI18N
-                ArtifactGraphEdge ed = new ArtifactGraphEdge(edge);
-                ed.setLevel(0);
-                scene.addEdge(ed);
-                scene.setEdgeTarget(ed, gr);
-                scene.setEdgeSource(ed, rootNode);
-            }
-//            if (nd.isResolved()) {
-                Iterator<ResolutionNode> it = nd.getChildrenIterator();
-                while (it.hasNext()) {
-                    ResolutionNode child = it.next();
-                    ArtifactGraphNode childNode = getNode(child, cache, scene);
-                    String edge = nd.getArtifact().getId() + "--" + child.getArtifact().getId();//NOI18N
-                    ArtifactGraphEdge ed = new ArtifactGraphEdge(edge);
-                    ed.setLevel(nd.getDepth() + 1);
-                    scene.addEdge(ed);
-                    scene.setEdgeTarget(ed, childNode);
-                    scene.setEdgeSource(ed, gr);
-                }
-//            }
-        }
+    private static void generate(DependencyNode root, DependencyGraphScene scene) {
+        GraphConstructor constr = new GraphConstructor(scene);
+        root.accept(constr);
+        
     }
     
-        private static ArtifactGraphNode getNode(ResolutionNode art, Map<Artifact, ArtifactGraphNode> cache, DependencyGraphScene scene) {
-            ArtifactGraphNode nd = cache.get(art.getArtifact());
-            if (nd == null) {
-                nd = new ArtifactGraphNode(art);
-                cache.put(art.getArtifact(), nd);
-                scene.addNode(nd);
-            }
-            return nd;
-        }
     
     
     
