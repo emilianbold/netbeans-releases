@@ -39,20 +39,16 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
 import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataProvider;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
+
 
 
 

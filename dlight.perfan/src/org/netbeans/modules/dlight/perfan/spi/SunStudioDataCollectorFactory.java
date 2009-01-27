@@ -38,15 +38,20 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.openide.util.lookup.ServiceProvider;
+
+
 
 /**
  *
  * @author mt154047
+ *
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.collector.DataCollectorFactory.class)
 public final class SunStudioDataCollectorFactory implements DataCollectorFactory<SunStudioDCConfiguration> {
 
   public DataCollector<SunStudioDCConfiguration> create(SunStudioDCConfiguration configuration) {

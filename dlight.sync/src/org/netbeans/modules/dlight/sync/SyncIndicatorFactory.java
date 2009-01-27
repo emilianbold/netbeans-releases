@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.dlight.sync;
 
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorFactory;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 
 /**
  *
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
 public class SyncIndicatorFactory implements IndicatorFactory<SyncIndicatorConfiguration> {
 
   @Override

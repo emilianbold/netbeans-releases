@@ -6,12 +6,11 @@
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.List;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.management.api.DLightTool;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
-
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 
 /**
  *

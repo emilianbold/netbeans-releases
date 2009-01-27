@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.dlight.dtrace.collector;
 
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
+
+
 
 /**
  * This class is to configure

@@ -131,7 +131,7 @@ class MemoryIndicatorPanel extends JPanel {
         graph.addData(value);
     }
     
-    private String formatValue(int value) {
+    private String formatValue(long value) {
         return String.format("%02d", value);
     }
 }

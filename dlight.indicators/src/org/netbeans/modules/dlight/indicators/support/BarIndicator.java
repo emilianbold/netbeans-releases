@@ -47,11 +47,12 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+
 
 
 public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
