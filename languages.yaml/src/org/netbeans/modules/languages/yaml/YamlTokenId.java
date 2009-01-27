@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.yaml.ruby.RubyEmbeddingProvider;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LanguageProvider;
@@ -121,7 +122,7 @@ public enum YamlTokenId implements TokenId {
                             @SuppressWarnings("unchecked")
                             Collection<LanguageProvider> providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
                             for (LanguageProvider provider : providers) {
-                                rubyLanguage = (Language<? extends TokenId>)provider.findLanguage(RubyEmbeddingModel.RUBY_MIME_TYPE);
+                                rubyLanguage = (Language<? extends TokenId>) provider.findLanguage(RubyEmbeddingProvider.RUBY_MIME_TYPE);
                                 if (rubyLanguage != null) {
                                     break;
                                 }
