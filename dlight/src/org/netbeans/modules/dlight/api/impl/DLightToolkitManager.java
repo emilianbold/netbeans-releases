@@ -48,9 +48,7 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightS
  */
 public interface DLightToolkitManager {
   DLightSessionHandler createSession(DLightTarget target, String configurationName);
-
-  DLightSessionHandler createSession(DLightTarget target);
-
+  
   void startSession(DLightSessionHandler reference);
 
   void stopSession(DLightSessionHandler reference);

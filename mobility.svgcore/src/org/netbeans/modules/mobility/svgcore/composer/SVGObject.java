@@ -71,7 +71,11 @@ public final class SVGObject {
     private       float               m_scaleX      = 1;
     private       float               m_scaleY      = 1;
     private       float               m_rotate      = 0;
+    //AVKprivate       float[]             m_rotatePivot = null;
     private       ScalePivotPoint     m_scalePivot  = null;
+    private       boolean             m_lanscapeUpdate = false;
+
+    //private final static Logger LOG = Logger.getLogger(SVGObject.class.getName());
 
     public enum ScalePivotPoint{
         NW_CORNER,
@@ -217,16 +221,27 @@ public final class SVGObject {
         });
     }
 
+    public void setLandscape(int rotateAngle, float[] translate){
+        m_lanscapeUpdate = true;
+        rotate(rotateAngle);
+        translate(translate[0], translate[1], true);
+    }
+
     public void rotate(final float rotate) {
+//AVK        rotate(rotate, null);
+//AVK    }
+
+//AVK    public void rotate(final float rotate, final float[] rotatePrivot) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
                 try {
                     m_rotate = rotate;
+                    //AVKm_rotatePivot = rotatePrivot;
                     applyUserTransform();
                 } catch (Exception ex) {
-                    SceneManager.error( "Rotate operation failed!", ex); //NOI18N        
+                    SceneManager.error( "Rotate operation failed!", ex); //NOI18N
                 }
-            }            
+            }
         });
     }
 
@@ -298,20 +313,30 @@ public final class SVGObject {
     }
     
     public void applyTextChanges() {
-        if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
-            PatchedTransformableElement pte   = (PatchedTransformableElement) m_elem;
-            SVGFileModel                model = m_sceneMgr.getDataObject().getModel();
-            
-            String [] changedAttrs = pte.optimizeTransform();
-            if ( changedAttrs != null) {
-                model.setAttributes(getElementId(), changedAttrs);
-            } else {
-                String transform = getTransformAsText(pte.getTransform());
-                model.setAttribute(getElementId(), SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform);
-            }
+        SVGFileModel model = m_sceneMgr.getDataObject().getModel();
+
+        String[] changedAttrs = prepareTextChanges();
+        if (changedAttrs != null) {
+            model.setAttributes(getElementId(), changedAttrs);
         }
     }
     
+    public String[] prepareTextChanges() {
+        String[] changedAttrs = null;
+        if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
+            PatchedTransformableElement pte = (PatchedTransformableElement) m_elem;
+
+            changedAttrs = pte.optimizeTransform();
+            if (changedAttrs == null) {
+                String transform = getTransformAsText(pte.getTransform());
+                changedAttrs = new String[]{
+                            SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform
+                        };
+            }
+        }
+        return changedAttrs;
+    }
+
     public void commitChanges() {
         applyUserTransform(true);
 
@@ -323,6 +348,8 @@ public final class SVGObject {
         m_scaleY = 1;
         m_scalePivot = null;
         m_rotate = 0;
+//AVK        m_rotatePivot = null;
+        m_lanscapeUpdate = false;
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
@@ -386,6 +413,10 @@ public final class SVGObject {
         sb.append( m_scalePivot);
         sb.append( " rotate="); //NOI18N
         sb.append( m_rotate);
+//AVK        sb.append( " rotatePivot="); //NOI18N
+//AVK        sb.append( m_rotatePivot ==null ? "null" : "["+m_rotatePivot[0]+","+m_rotatePivot[1]+"]" );
+        sb.append( " lanscapeUpdate="); //NOI18N
+        sb.append( m_lanscapeUpdate);
         sb.append(")"); //NOI18N
 
         return sb.toString();
@@ -427,13 +458,23 @@ public final class SVGObject {
                 txf.mTranslate( scalePivot[0], scalePivot[1]);
                 txf.mScale(getCurrentScaleX(), getCurrentScaleY());
                 txf.mTranslate( -scalePivot[0], -scalePivot[1]);
-                
-                txf.mMultiply(m_initialTransform);
-                
-                pe.setTransform(txf);
-                if (commit){
-                    m_initialTransform = txf;
-                }
+
+//                if (!m_lanscapeUpdate) {
+                    txf.mMultiply(m_initialTransform);
+                    pe.setTransform(txf);
+                    if (commit) {
+                        m_initialTransform = txf;
+                    }
+//                } else {
+//                    Transform resultTxf = new Transform(m_initialTransform);
+//                    resultTxf.mMultiply(txf);
+//                    LOG.warning("         final init*tmp : " + getTransformAsText(resultTxf));
+//                    pe.setTransform(resultTxf);
+//                    if (commit) {
+//                        m_initialTransform = resultTxf;
+//                    }
+//                }
+
             } else {
                 SceneManager.log( Level.SEVERE, "Null BBox for " + pe); //NOI18N                        
             }
@@ -441,13 +482,21 @@ public final class SVGObject {
     }
 
     private float[] prepareRotatePivot(SVGRect rect){
-        float[] tempRotatePivot = new float[]{
-            rect.getX() + rect.getWidth() / 2,
-            rect.getY() + rect.getHeight() / 2
-        };
-        float[] rotatePivot = new float[2];
-        m_initialTransform.transformPoint(tempRotatePivot, rotatePivot);
-        return rotatePivot;
+        if (!m_lanscapeUpdate) {
+//AVK        float[] tempRotatePivot = m_rotatePivot != null ? m_rotatePivot : new float[]{
+//AVK                    rect.getX() + rect.getWidth() / 2,
+//AVK                    rect.getY() + rect.getHeight() / 2
+//AVK                };
+            float[] tempRotatePivot = new float[]{
+                rect.getX() + rect.getWidth() / 2,
+                rect.getY() + rect.getHeight() / 2
+            };
+            float[] rotatePivot = new float[2];
+            m_initialTransform.transformPoint(tempRotatePivot, rotatePivot);
+            return rotatePivot;
+        } else {
+            return new float[]{0f, 0f};
+        }
     }
 
     private float[] prepareScalePivot(SVGRect rect){
