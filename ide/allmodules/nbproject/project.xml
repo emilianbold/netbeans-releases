@@ -43,8 +43,17 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>All NetBeans Modules</name>
+            <view>
+                <items/>
+                <context-menu>
+                    <action>
+                        <label>Regenerate Subproject List</label>
+                        <target>regenerate-project.xml</target>
+                    </action>
+                </context-menu>
+            </view>
             <subprojects>
                 <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
                 <project>../../ant.browsetask</project>
@@ -52,6 +61,7 @@ made subject to such option by the copyright holder.
                 <project>../../ant.freeform</project>
                 <project>../../ant.grammar</project>
                 <project>../../ant.kit</project>
+                <project>../../api.annotations.common</project>
                 <project>../../api.debugger</project>
                 <project>../../api.debugger.jpda</project>
                 <project>../../api.java</project>
@@ -166,7 +176,6 @@ made subject to such option by the copyright holder.
                 <project>../../editor.bracesmatching</project>
                 <project>../../editor.codetemplates</project>
                 <project>../../editor.completion</project>
-                <project>../../editor.deprecated.pre61completion</project>
                 <project>../../editor.deprecated.pre61settings</project>
                 <project>../../editor.errorstripe</project>
                 <project>../../editor.errorstripe.api</project>
@@ -208,6 +217,8 @@ made subject to such option by the copyright holder.
                 <project>../../groovy.support</project>
                 <project>../../gsf</project>
                 <project>../../gsf.api</project>
+                <project>../../gsf.codecoverage</project>
+                <project>../../gsf.testrunner</project>
                 <project>../../gsfpath.api</project>
                 <project>../../hibernate</project>
                 <project>../../hibernatelib</project>
@@ -221,6 +232,7 @@ made subject to such option by the copyright holder.
                 <project>../../i18n.form</project>
                 <project>../../ide.branding</project>
                 <project>../../ide.branding.kit</project>
+                <project>../../ide.ergonomics</project>
                 <project>../../ide.kit</project>
                 <project>../../identity.ant</project>
                 <project>../../identity.kit</project>
@@ -475,6 +487,7 @@ made subject to such option by the copyright holder.
                 <project>../../profiler.j2ee.weblogic</project>
                 <project>../../profiler.j2se</project>
                 <project>../../profiler.nbmodule</project>
+                <project>../../profiler.oql.language</project>
                 <project>../../profiler.projectsupport</project>
                 <project>../../profiler.selector.java</project>
                 <project>../../profiler.selector.spi</project>
@@ -498,6 +511,7 @@ made subject to such option by the copyright holder.
                 <project>../../registration</project>
                 <project>../../reglib</project>
                 <project>../../ruby</project>
+                <project>../../ruby.codecoverage</project>
                 <project>../../ruby.debugger</project>
                 <project>../../ruby.extrahints</project>
                 <project>../../ruby.help</project>
@@ -603,6 +617,7 @@ made subject to such option by the copyright holder.
                 <project>../../visualweb.propertyeditors.resolver</project>
                 <project>../../visualweb.ravehelp.rave_nbpack</project>
                 <project>../../visualweb.rowset</project>
+                <project>../../visualweb.runtime.kit</project>
                 <project>../../visualweb.samples.bundled</project>
                 <project>../../visualweb.web.ui.appbase</project>
                 <project>../../visualweb.websvcmgr</project>
@@ -645,6 +660,7 @@ made subject to such option by the copyright holder.
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
                 <project>../../web.examples</project>
+                <project>../../web.fake</project>
                 <project>../../web.flyingsaucer</project>
                 <project>../../web.freeform</project>
                 <project>../../web.jsf</project>
