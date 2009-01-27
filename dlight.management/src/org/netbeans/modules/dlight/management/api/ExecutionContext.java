@@ -89,6 +89,8 @@ final class ExecutionContext {
     }
 
     void validateTools(boolean performRequiredActions) {
+        DLightLogger.assertNonUiThread();
+        
         synchronized (lock) {
             if (validationInProgress) {
                 return;

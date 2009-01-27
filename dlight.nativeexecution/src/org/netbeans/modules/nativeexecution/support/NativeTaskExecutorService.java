@@ -50,7 +50,8 @@ import java.util.concurrent.Future;
  */
 public class NativeTaskExecutorService {
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private static ExecutorService executorService =
+            Executors.newCachedThreadPool();
 
 
     static {
