@@ -122,9 +122,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
         MultiViewDescription artDesc = new BasicArtifactMD(lookup);
         MultiViewDescription prjDesc = new BasicProjectMD(lookup);
-//        MultiViewDescription depDesc = new BasicDependencyMD(lookup);
+        MultiViewDescription depDesc = new BasicDependencyMD(lookup);
         TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[]
-            { artDesc, prjDesc, /*depDesc*/ }, artDesc);
+            { artDesc, prjDesc, depDesc }, artDesc);
         tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         return tc;

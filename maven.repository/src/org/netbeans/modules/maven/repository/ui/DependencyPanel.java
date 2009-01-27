@@ -41,11 +41,16 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -54,13 +59,19 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 /**
@@ -70,6 +81,13 @@ import org.openide.windows.TopComponent;
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
     private MultiViewElementCallback callback;
     private Result<MavenProject> result;
+    private final static Icon dirIcon;
+    private final static Icon trIcon;
+
+    static {
+        dirIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/DependencyIcon.png", true));
+        trIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/TransitiveDependencyIcon.png", true));
+    }
 
     DependencyPanel(Lookup lookup) {
         super(lookup);
@@ -173,7 +191,11 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     public void componentOpened() {
         super.componentOpened();
         result = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
-        populateFields();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                populateFields();
+            }
+        });
         result.addLookupListener(this);
     }
 
@@ -218,37 +240,36 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         if (iter.hasNext()) {
             loading = false;
             MavenProject prj = iter.next();
-            @SuppressWarnings("unchecked")
-            List<Dependency> dep = prj.getDependencies();
-            setDepModel(lstCompile, dep, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));
-            setDepModel(lstRuntime, dep, Arrays.asList(new String[]{ Artifact.SCOPE_RUNTIME}));
-            setDepModel(lstTest, dep, Arrays.asList(new String[]{ Artifact.SCOPE_TEST}));
+            final DependencyNode root = DependencyTreeFactory.createDependencyTree(prj, EmbedderFactory.getOnlineEmbedder(), "test");
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setDepModel(lstCompile, root, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));
+                    setDepModel(lstRuntime, root, Arrays.asList(new String[]{ Artifact.SCOPE_RUNTIME}));
+                    setDepModel(lstTest, root, Arrays.asList(new String[]{ Artifact.SCOPE_TEST}));
+                }
+            });
         } else {
 
         }
     }
 
     public void resultChanged(LookupEvent ev) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                populateFields();
-            }
-        });
-
+        populateFields();
     }
 
-    private void setDepModel(JList lst, List<Dependency> dep, List<String> scopes) {
+    private void setDepModel(JList lst, DependencyNode root, List<String> scopes) {
         DefaultListModel dlm = new DefaultListModel();
-        for (Dependency d : dep) {
-            String scope = d.getScope();
-            if (scope == null) {
-                scope = Artifact.SCOPE_COMPILE;
-            }
-            if (scopes.contains(scope)) {
-                dlm.addElement(d);
-            }
+        NodeVisitor vis = new NodeVisitor(scopes);
+        root.accept(vis);
+        for (DependencyNode d : vis.getDirects()) {
+            dlm.addElement(d);
+        }
+        for (DependencyNode d : vis.getTransitives()) {
+            dlm.addElement(d);
         }
         lst.setModel(dlm);
+        lst.putClientProperty("directs", vis.getDirects());
+        lst.putClientProperty("trans", vis.getTransitives());
     }
 
     private static class Rend extends DefaultListCellRenderer {
@@ -256,13 +277,73 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Dependency) {
-                Dependency d = (Dependency)value;
-                ((JLabel)cmp).setText(d.getArtifactId() + ":" + d.getVersion());
+            if (value instanceof DependencyNode) {
+                DependencyNode d = (DependencyNode)value;
+                JLabel lbl = (JLabel)cmp;
+                lbl.setText(d.getArtifact().getArtifactId() + ":" + d.getArtifact().getVersion());
+                @SuppressWarnings("unchecked")
+                List<DependencyNode> dirs = (List<DependencyNode>)list.getClientProperty("directs");
+                if (dirs.contains(d)) {
+                    lbl.setIcon(dirIcon);
+                } else {
+                    lbl.setIcon(trIcon);
+                }
             }
             return cmp;
         }
 
     }
+
+    private static class NodeVisitor implements DependencyNodeVisitor {
+        private List<DependencyNode> directs;
+        private List<DependencyNode> trans;
+        private List<String> scopes;
+        private DependencyNode root;
+        private Stack<DependencyNode> path;
+
+        private NodeVisitor(List<String> scopes) {
+            this.scopes = scopes;
+        }
+
+    public boolean visit(DependencyNode node) {
+        if (root == null) {
+            root = node;
+            directs = new ArrayList<DependencyNode>();
+            trans = new ArrayList<DependencyNode>();
+            path = new Stack<DependencyNode>();
+            return true;
+        }
+        if (node.getState() == DependencyNode.INCLUDED &&
+                scopes.contains(node.getArtifact().getScope())) {
+            if (path.empty()) {
+                directs.add(node);
+            } else {
+                trans.add(node);
+            }
+        }
+        path.push(node);
+        return true;
+    }
+
+    public boolean endVisit(DependencyNode node) {
+        if (root == node) {
+            root = null;
+            path = null;
+            return true;
+        }
+        path.pop();
+        return true;
+    }
+
+        private Iterable<DependencyNode> getDirects() {
+            return directs;
+        }
+
+        private Iterable<DependencyNode> getTransitives() {
+            return trans;
+        }
+
+    }
+
 
 }
