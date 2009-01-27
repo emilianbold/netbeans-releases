@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.codegen;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.Lookup;
+package org.netbeans.modules.maven.api.customizer.support;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 /**
  *
- * @author Milos Kleint
+ * @author Dafe Simonek
  */
-public class PluginGenerator implements CodeGenerator {
+public final class DelayedDocumentChangeListener implements DocumentListener {
 
-    public static class Factory implements CodeGenerator.Factory {
-        
-        public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
-            POMModel model = context.lookup(POMModel.class);
-            JTextComponent component = context.lookup(JTextComponent.class);
-            if (model != null) {
-                toRet.add(new PluginGenerator(model, component));
+    public static DocumentListener create (Document doc, ChangeListener l, int delay) {
+        return new DelayedDocumentChangeListener(doc, l, delay);
+    }
+
+    private Document doc;
+    private Timer changeTimer;
+    private ChangeEvent chEvt;
+
+    private DelayedDocumentChangeListener (Document doc, final ChangeListener l, int delay) {
+        this.doc = doc;
+        this.doc.addDocumentListener(this);
+        this.chEvt = new ChangeEvent(doc);
+        changeTimer = new Timer(delay, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                l.stateChanged(chEvt);
             }
-            return toRet;
-        }
+        });
+        changeTimer.setRepeats(false);
     }
 
-    private POMModel model;
-    private JTextComponent component;
-    
-    /** Creates a new instance of PluginGenerator */
-    private PluginGenerator(POMModel model, JTextComponent component) {
-        this.model = model;
-        this.component = component;
+    public void insertUpdate(DocumentEvent e) {
+        maybeChange(e);
     }
 
-    public String getDisplayName() {
-        return "Plugin...";
+    public void removeUpdate(DocumentEvent e) {
+        maybeChange(e);
     }
 
-    public void invoke() {
-        DialogDescriptor dd = new DialogDescriptor(new NewPluginPanel(), "Insert plugin");
-        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+    public void changedUpdate(DocumentEvent e) {
+        maybeChange(e);
     }
+
+    private void maybeChange(DocumentEvent e) {
+        changeTimer.restart();
+    }
+
 }
