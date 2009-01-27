@@ -49,6 +49,8 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.security.auth.RefreshFailedException;
 import javax.swing.DefaultListModel;
@@ -204,7 +206,11 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesList.setCellRenderer(new ListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 ClassFilter cf = (ClassFilter) value;
-                JCheckBox cb = cf.getComponent();
+                JCheckBox cb = classFilterComponents.get(cf);
+                if (cb == null) {
+                    cb = new JCheckBox(cf.toString(), cf.isCurrent());
+                    classFilterComponents.put(cf, cb);
+                }
                 cb.setEnabled(list.isEnabled());
                 cb.setFont(list.getFont());
                 cb.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
@@ -218,6 +224,7 @@ class CategoryPanelStepFilters extends StorablePanel {
                 JList list = (JList) event.getSource();
                 // Get index of item clicked
                 int index = list.locationToIndex(event.getPoint());
+                if (index < 0) return ;
                 int height = list.getUI().getCellBounds(filterClassesList, index, index).height;
                 Point cellLocation = list.getUI().indexToLocation(filterClassesList, index);
                 int x = event.getPoint().x - cellLocation.x;
@@ -225,6 +232,8 @@ class CategoryPanelStepFilters extends StorablePanel {
                     ClassFilter cf = (ClassFilter) list.getModel().getElementAt(index);
                     // Toggle selected state
                     cf.setCurrent(!cf.isCurrent());
+                    JCheckBox cb = classFilterComponents.get(cf);
+                    cb.setSelected(cf.isCurrent());
                     // Repaint cell
                     list.repaint(list.getCellBounds(index, index));
                 }
@@ -244,7 +253,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     }//GEN-LAST:event_useStepFiltersCheckBoxActionPerformed
 
     private void filterAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterAddButtonActionPerformed
-        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine("", "Add Class Filter");
+        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine("Class", "Add Class Filter");
         DialogDisplayer.getDefault().notify(nd);
         ((DefaultListModel) filterClassesList.getModel()).addElement(new ClassFilter(nd.getInputText(), true));
         //JCheckBox cb = new JCheckBox(nd.getInputText());
@@ -254,7 +263,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     }//GEN-LAST:event_filterAddButtonActionPerformed
 
     private void filterRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterRemoveButtonActionPerformed
-        filterClassesList.remove(filterClassesList.getSelectedIndex());
+        ((DefaultListModel) filterClassesList.getModel()).remove(filterClassesList.getSelectedIndex());
         filterClassesList.repaint();
     }//GEN-LAST:event_filterRemoveButtonActionPerformed
 
@@ -263,6 +272,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         for (int i = 0; i < model.getSize(); i++) {
             ClassFilter cf = (ClassFilter) model.get(i);
             cf.setCurrent(true);
+            classFilterComponents.get(cf).setSelected(true);
         }
         filterClassesList.repaint();
     }//GEN-LAST:event_filtersCheckAllButtonActionPerformed
@@ -272,6 +282,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         for (int i = 0; i < model.getSize(); i++) {
             ClassFilter cf = (ClassFilter) model.get(i);
             cf.setCurrent(false);
+            classFilterComponents.get(cf).setSelected(false);
         }
         filterClassesList.repaint();
     }//GEN-LAST:event_filtersUncheckAllButtonActionPerformed
@@ -338,12 +349,13 @@ class CategoryPanelStepFilters extends StorablePanel {
     private javax.swing.JCheckBox stepThroughFiltersCheckBox;
     private javax.swing.JCheckBox useStepFiltersCheckBox;
     // End of variables declaration//GEN-END:variables
-
-    static class ClassFilter implements javax.security.auth.Refreshable {
+    private Map<ClassFilter, JCheckBox> classFilterComponents = new WeakHashMap<ClassFilter, JCheckBox>();
+    
+    private static class ClassFilter implements javax.security.auth.Refreshable {
 
         private String clazz;
         private boolean enabled;
-        private JCheckBox checkBox;
+        //private JCheckBox checkBox;
 
         private ClassFilter(String clazz, boolean enabled) {
             this.clazz = clazz;
@@ -356,9 +368,9 @@ class CategoryPanelStepFilters extends StorablePanel {
 
         void setCurrent(boolean enabled) {
             this.enabled = enabled;
-            if (checkBox != null) {
-                checkBox.setSelected(enabled);
-            }
+            //if (checkBox != null) {
+            //    checkBox.setSelected(enabled);
+            //}
         }
 
         @Override
@@ -374,11 +386,11 @@ class CategoryPanelStepFilters extends StorablePanel {
             throw new UnsupportedOperationException("Not supported.");
         }
 
-        JCheckBox getComponent() {
-            if (checkBox == null) {
-                checkBox = new JCheckBox(toString(), isCurrent());
-            }
-            return checkBox;
-        }
+        //JCheckBox getComponent() {
+        //    if (checkBox == null) {
+        //        checkBox = new JCheckBox(toString(), isCurrent());
+        //    }
+        //    return checkBox;
+        //}
     }
 }
