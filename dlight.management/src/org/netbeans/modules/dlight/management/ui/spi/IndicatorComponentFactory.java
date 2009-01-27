@@ -36,43 +36,14 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.webstack.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
-import org.netbeans.modules.dlight.webstack.target.DeploymentPlatformTarget;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.dlight.management.ui.spi;
 
 /**
  *
  * @author mt154047
  */
-public class StartWebStackAction implements ActionListener {
+public interface IndicatorComponentFactory {
+  IndicatorComponent get();
 
-    private static final String CONFIGURATION_NAME = "Photon"; // NOI18N
-
-    public void actionPerformed(ActionEvent e) {
-        final DeploymentPlatformTarget target = new DeploymentPlatformTarget();
-        final DLightToolkitManagement dtm = 
-                DLightToolkitManagement.getInstance();
-
-        final Future<DLightToolkitManagement.DLightSessionHandler> 
-                sessionCreationTask = 
-                dtm.createSession(target, CONFIGURATION_NAME);
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    dtm.startSession(sessionCreationTask.get());
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }).start();
-    }
 }

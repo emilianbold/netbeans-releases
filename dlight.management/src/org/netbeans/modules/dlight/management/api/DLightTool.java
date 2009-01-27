@@ -95,6 +95,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private DLightTool(DLightToolConfiguration configuration) {
     this.toolName = DLightToolConfigurationAccessor.getDefault().getToolName(configuration);
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector>());
+    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
+    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
     List<DataCollectorConfiguration> configurations = DLightToolConfigurationAccessor.getDefault().getDataCollectors(configuration);
     List<IndicatorDataProviderConfiguration> idpConfigurations = DLightToolConfigurationAccessor.getDefault().getIndicatorDataProviders(configuration);
 
@@ -110,8 +112,6 @@ public final class DLightTool implements Validateable<DLightTarget> {
         registerIndicatorDataProvider((IndicatorDataProvider)collector);
       }
     }
-    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
-    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
     for (IndicatorDataProviderConfiguration idp : idpConfigurations) {
       //we could create already object
       if (!configurations.contains(idp)) {
