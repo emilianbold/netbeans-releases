@@ -104,7 +104,14 @@ public class PackageConfigTestCase extends BaseTestCase {
                 }
                 buf.append(p);
             }
-            System.out.println("\t[" + buf.toString() + "]");
+            StringBuilder buf2 = new StringBuilder();
+            for (String p : pkg.getMacros()) {
+                if (buf2.length() > 0) {
+                    buf2.append(", ");
+                }
+                buf2.append(p);
+            }
+            System.out.println("\t[" + buf.toString() + "] ["+buf2.toString()+"]");
         }
         assert packages.toString().indexOf(packageName + " ") >= 0;
 

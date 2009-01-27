@@ -191,27 +191,29 @@ public class ConfigurationMakefileWriter {
 
     public static String getCompilerName(MakeConfiguration conf, int tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
-        if (compiler != null) {
-            BasicCompilerConfiguration compilerConf = null;
-            switch (tool) {
-                case Tool.CCompiler:
-                    compilerConf = conf.getCCompilerConfiguration();
-                    break;
-                case Tool.CCCompiler:
-                    compilerConf = conf.getCCCompilerConfiguration();
-                    break;
-                case Tool.FortranCompiler:
-                    compilerConf = conf.getFortranCompilerConfiguration();
-                    break;
-                case Tool.Assembler:
-                    compilerConf = conf.getAssemblerConfiguration();
-                    break;
-            }
-            if (compilerConf != null && compilerConf.getTool().getModified()) {
-                return compilerConf.getTool().getValue();
-            } else {
-                return compiler.getName();
+        if (compilerSet != null) {
+            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
+            if (compiler != null) {
+                BasicCompilerConfiguration compilerConf = null;
+                switch (tool) {
+                    case Tool.CCompiler:
+                        compilerConf = conf.getCCompilerConfiguration();
+                        break;
+                    case Tool.CCCompiler:
+                        compilerConf = conf.getCCCompilerConfiguration();
+                        break;
+                    case Tool.FortranCompiler:
+                        compilerConf = conf.getFortranCompilerConfiguration();
+                        break;
+                    case Tool.Assembler:
+                        compilerConf = conf.getAssemblerConfiguration();
+                        break;
+                }
+                if (compilerConf != null && compilerConf.getTool().getModified()) {
+                    return compilerConf.getTool().getValue();
+                } else {
+                    return compiler.getName();
+                }
             }
         }
         return ""; // NOI18N
@@ -303,9 +305,16 @@ public class ConfigurationMakefileWriter {
     }
 
     protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            bw.write(".build-conf:\n"); // NOI18N
+            bw.write("\t@echo Tool collection not found.\n"); // NOI18N
+            bw.write("\t@echo Please specify existing tool collection in project properties\n"); // NOI18N
+            bw.write("\t@exit 1\n\n"); // NOI18N
+            return;
+        }
         String output = getOutput(conf);
-        output = cs.normalizeDriveLetter(output);
+        output = compilerSet.normalizeDriveLetter(output);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N

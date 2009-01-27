@@ -41,17 +41,18 @@ package org.netbeans.modules.cnd.gizmo.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.execution.api.NativeExecutableTarget;
-import org.netbeans.modules.dlight.execution.api.NativeExecutableTargetConfiguration;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.DLightToolkitManagement;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
+import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
+import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
 import org.openide.util.Exceptions;
 
 public final class StartGizmoAction implements ActionListener {
@@ -79,8 +80,25 @@ public final class StartGizmoAction implements ActionListener {
 //    conf.setSSHPort(2222);
 //    conf.setUser("masha");
         DLightTarget target = new NativeExecutableTarget(conf);
-        DLightToolkitManagement.DLightSessionHandler session = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); //NOI18N
-        DLightToolkitManagement.getInstance().startSession(session);
+
+        final DLightToolkitManagement dtm =
+                DLightToolkitManagement.getInstance();
+
+        final Future<DLightToolkitManagement.DLightSessionHandler>
+                sessionCreationTask =
+                dtm.createSession(target, "Gizmo"); // NOI18N
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    dtm.startSession(sessionCreationTask.get());
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }).start();
     }
 
     private Configuration getActiveConfiguration(Project project) {

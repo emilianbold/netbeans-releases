@@ -2966,6 +2966,11 @@ org.netbeans.modules.i18n.form.I18nFormCrossModule
 org.netbeans.modules.i18n.wizard.I18nTestWizardAction
 org.netbeans.modules.i18n.wizard.I18nWizardAction
 org.netbeans.modules.i18n.wizard.Util
+org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfo
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor$Internal
+org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem
 org.netbeans.modules.image.ImageDataLoader
 org.netbeans.modules.image.ImageDataObject
 org.netbeans.modules.j2ee.archive.project.ArchiveProjectType
@@ -3224,6 +3229,8 @@ org.netbeans.modules.languages.FeatureList
 org.netbeans.modules.languages.Language
 org.netbeans.modules.languages.Language$EmptyLanguage
 org.netbeans.modules.languages.LanguagesManager
+org.netbeans.modules.languages.ParserImpl$AParserFactory
+org.netbeans.modules.languages.ParserListenerFactoryImpl
 org.netbeans.modules.languages.dataobject.Install
 org.netbeans.modules.languages.dataobject.LanguagesDataLoader
 org.netbeans.modules.languages.dataobject.LanguagesDataNode
@@ -3409,6 +3416,10 @@ org.netbeans.modules.palette.ui.DnDSupport
 org.netbeans.modules.palette.ui.DropGlassPane
 org.netbeans.modules.palette.ui.PalettePanel
 org.netbeans.modules.palette.ui.PalettePanel$PaletteLayoutManager
+org.netbeans.modules.parsing.impl.SchedulerAccessor
+org.netbeans.modules.parsing.spi.ParserFactory
+org.netbeans.modules.parsing.spi.Scheduler$Accessor
+org.netbeans.modules.parsing.spi.TaskFactory
 org.netbeans.modules.pdf.LinkProcessor
 org.netbeans.modules.pdf.PDFDataLoader
 org.netbeans.modules.pdf.PDFDataObject
@@ -5025,6 +5036,7 @@ org.openide.loaders.DataShadow$OrigL
 org.openide.loaders.DataShadow$ShadowNode
 org.openide.loaders.DataTransferSupport
 org.openide.loaders.DefaultDataObject
+org.openide.loaders.DefaultES
 org.openide.loaders.Environment
 org.openide.loaders.Environment$Provider
 org.openide.loaders.ExtensionList

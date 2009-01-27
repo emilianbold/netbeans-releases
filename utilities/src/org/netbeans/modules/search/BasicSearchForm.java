@@ -128,7 +128,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * be initialized at all if the user keeps the field "Replace With:"
              * empty. One of the side-effects would be that method
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
-            searchCriteria.setReplaceString("");                        //NOI18N
+            searchCriteria.setReplaceExpr("");                        //NOI18N
         }
 
         /*
@@ -407,7 +407,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     searchCriteria.setFileNamePattern(text);
                 } else {
                     assert sourceComboBox == cboxReplacement;
-                    searchCriteria.setReplaceString(text);
+                    searchCriteria.setReplaceExpr(text);
                 }
             }
         }

@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.dlight.memory;
 
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorFactory;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+
 
 /**
  *
  * @author mt154047
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
 public class MemoryIndicatorFactory implements IndicatorFactory<MemoryIndicatorConfiguration>{
 
   @Override

@@ -180,6 +180,7 @@ public final class SceneManager {
         
     /** persistent properties */
     private boolean  m_isReadOnly   = false;
+    private boolean  m_isLandscape   = false;
             float    m_zoomRatio    = (float)1.0;
     
     public static interface SelectionListener {
@@ -348,11 +349,13 @@ public final class SceneManager {
     
     public void serialize(ObjectOutputStream out) throws IOException {
         out.writeBoolean(m_isReadOnly);
+        out.writeBoolean(m_isLandscape);
         out.writeFloat(m_zoomRatio);
     }
 
     public void deserialize(ObjectInputStream in) throws IOException {
         m_isReadOnly   = in.readBoolean();
+        m_isLandscape   = in.readBoolean();
         m_zoomRatio    = in.readFloat();
     }
         
@@ -458,16 +461,16 @@ public final class SceneManager {
     public boolean isReadOnly() {
         return m_isReadOnly;
     }
-        
+
     public void setReadOnly(boolean isReadOnly) {
         if ( m_isReadOnly != isReadOnly) {
             m_isReadOnly = isReadOnly;
             updateStatusBar();
             /*
-             * Fix for IZ#145739 - [65cat] NullPointerException at 
+             * Fix for IZ#145739 - [65cat] NullPointerException at
              * org.netbeans.modules.mobility.svgcore.composer.SceneManager.setReadOnly
-             * 
-             * m_perseusController could be null when image was broken 
+             *
+             * m_perseusController could be null when image was broken
              * from very beginning. In this case it was not initialized .
              */
             if ( !m_isReadOnly && m_perseusController!= null) {

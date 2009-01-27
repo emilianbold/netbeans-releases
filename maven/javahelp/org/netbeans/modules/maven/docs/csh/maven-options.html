@@ -20,6 +20,52 @@
         <p>You can access this panel by choosing Tools &gt; Options from the main menu, clicking the Miscellaneous category and then clicking the Maven tab.</p>
 
         <p>You can specify the following Maven settings:</p>
+        <ul>
+            <li><strong>External Maven Home.</strong>
+            Click Browse to locate the local version of your Maven installation.
+            eg <tt>/usr/local/maven/apache-maven-209</tt></li>
+            
+            <li><strong>Edit Global Custom Goal Definitions.</strong></li>
+            <li><strong>Work Offline.</strong></li>
+            <li><strong>Produce Debug Output.</strong></li>
+            <li><strong>Produce Exception Error Messages.</strong></li>
+            <li><strong>Use Plugin Registry.</strong></li>
+            
+            <li><strong>Multiproject build fail policy.</strong>
+            <ul>
+                <li><strong>Stop at first failure.</strong></li>
+                <li><strong>Fali at the end.</strong></li>
+                <li><strong>Never Fail.</strong></li>
+            </ul>
+            </li>
+            <li><strong>Checksum policy.</strong>
+            <ul>
+                <li><strong>No Global Policy.</strong> (Default)
+                When selected, the IDE ignores checksums when caching an artefact from the remote repository. </li>
+                <li><strong>Strict (Fail).</strong>
+                When selected, the IDE will not cache an artefact from the remote repository if the checksums do not match.</li>
+                <li><strong>Lax (Warn Only).</strong>
+                When selected, the IDE will cache an artefact from the remote repository if the checksums do not match and
+                will also print a warning to the output window.</li>
+            </ul>
+            </li>
+            <li><strong>Plugin Update Policy.</strong>
+            <ul>
+                <li><strong>No Global Policy.</strong> (Default)
+                If selected, plugin updates are not suppressed.</li>
+                <li><strong>Check For Updates.</strong> If selected, plugins are checked for updates.</li>
+                <li><strong>Suppress Checking.</strong> If selected, plugins are not checked for updates.</li>
+            </ul>
+            </li>
+            <li><strong>Local Repository.</strong> Click Browse to specify or modify the location of the
+            local Maven repository.
+            The location is populated by default when you install the IDE.</li>
+            <li><strong>Index.</strong> Use the drop-down menu to specify how often the IDE
+            checks the remote repository for updates.</li>
+            <li><strong>Include Snapshots.</strong></li>
+        </ul>
+
+
         <!--<ul>
             <li><b>Ant Home.</b> The installation directory of the Ant executable 
                 used by the IDE. You can change Ant versions by typing the full path to a 
@@ -71,5 +117,14 @@
                 <td>&nbsp;</td>
             </tr>
         </table>-->
-    </body>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/maven/docs/maven-about.html">About Maven Project Support</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
 </html>

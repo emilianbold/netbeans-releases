@@ -39,34 +39,38 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory;
-import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
-public class SSStackDataProviderFactory implements DataProviderFactory {
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
+public final class SSStackDataProviderFactory implements DataProviderFactory {
 
-  public DataProvider create() {
-    return new SSStackDataProvider();
-  }
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:stack"));
+    private static final String ID = "PerfanDataStorage";
 
-  public List<DataStorageType> getSupportedDataStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(PerfanDataStorage.ID));
-  }
+    public DataProvider create() {
+        return new SSStackDataProvider();
+    }
 
-  public List<? extends DataModelScheme> getProvidedDataModelScheme() {
-    return Arrays.asList(StackDataModel.instance);
-  }
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+        return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+    }
 
-  public boolean provides(DataModelScheme schema) {
-    return getProvidedDataModelScheme().contains(schema);
-  }
+    public Collection<DataModelScheme> getProvidedDataModelScheme() {
+       return providedSchemas;
+    }
+
+    public boolean provides(DataModelScheme schema) {
+        return getProvidedDataModelScheme().contains(schema);
+    }
 }
