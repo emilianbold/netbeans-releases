@@ -182,6 +182,10 @@ public abstract class JavaSourceTaskFactory {
                 
                 if (js != null) {
                     CancellableTask<CompilationInfo> task = createTask(a);
+
+                    if (task == null) {
+                        throw new IllegalStateException("createTask(FileObject) returned null for factory: " + getClass().getName());
+                    }
                     
                     toAdd.put(js, task);
                     
