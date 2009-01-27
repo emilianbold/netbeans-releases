@@ -41,9 +41,11 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -54,6 +56,7 @@ import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -117,8 +120,7 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        final TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.TEST); // NOI18N
-        new RunScript(new ScriptProvider(testSession, project, pair, context)).run();
+        new RunScript(new RunScriptProvider(project, pair, context)).run();
     }
 
     private void debug(PhpProject project, Lookup context) {
@@ -127,8 +129,7 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        final TestSession testSession = new TestSession("PHPUnit test session", project, TestSession.SessionType.DEBUG); // NOI18N
-        new DebugScript(new ScriptProvider(testSession, project, pair, context)).run();
+        new DebugScript(new DebugScriptProvider(project, pair, context)).run();
     }
 
     private Pair<FileObject, String> getValidPair(PhpProject project, Lookup context) {
@@ -163,54 +164,42 @@ public class ConfigActionTest extends ConfigAction {
         return Pair.of(fileObj.getParent(), fileObj.getName());
     }
 
-    private final class ScriptProvider implements DebugScript.Provider {
-        private final PhpProject project;
-        private final Lookup context;
-        private final Pair<FileObject, String> pair;
-        private final PhpUnit program;
-        private final File startFile;
-        private final TestSession testSession;
+    private class RunScriptProvider implements RunScript.Provider {
+        protected final PhpProject project;
+        protected final Lookup context;
+        protected final Pair<FileObject, String> pair;
+        protected final PhpUnit program;
+        protected final UnitTestRunner testRunner;
+        protected final RerunUnitTestHandler rerunUnitTestHandler;
 
-        public ScriptProvider(TestSession testSession, PhpProject project, Pair<FileObject, String> pair, Lookup context) {
-            assert testSession != null;
+        public RunScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
             assert project != null;
             assert pair != null;
 
-            this.testSession = testSession;
             this.project = project;
             this.pair = pair;
             this.context = context;
+            rerunUnitTestHandler = getRerunUnitTestHandler();
+            testRunner = getTestRunner();
             program = CommandUtils.getPhpUnit(false);
-            startFile = getStartFile(context);
-        }
-
-        public Project getProject() {
-            assert context != null : "Only particular test files can be debugged";
-            assert startFile != null;
-            return project;
-        }
-
-        public FileObject getStartFile() {
-            assert context != null : "Only particular test files can be debugged";
-            assert startFile != null;
-            return FileUtil.toFileObject(startFile);
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
             return new ExecutionDescriptor()
-                    .frontWindow(true)
+                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .frontWindow(false)
                     .showProgress(true)
                     .preExecution(new Runnable() {
                         public void run() {
-                            UnitTestRunner.start(testSession);
+                            testRunner.start();
                         }
                     })
                     .postExecution(new Runnable() {
                         public void run() {
-                            UnitTestRunner.display(testSession);
+                            rerunUnitTestHandler.enable();
+                            testRunner.showResults();
                         }
-                    })
-                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                    });
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
@@ -240,6 +229,46 @@ public class ConfigActionTest extends ConfigAction {
             return program.isValid() && pair.first != null && pair.second != null;
         }
 
+        protected RerunUnitTestHandler getRerunUnitTestHandler() {
+            return new RerunUnitTestHandler(project, context);
+        }
+
+        protected UnitTestRunner getTestRunner() {
+            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler);
+        }
+    }
+
+    private final class DebugScriptProvider extends RunScriptProvider implements DebugScript.Provider {
+        protected final File startFile;
+
+        public DebugScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
+            super(project, pair, context);
+            startFile = getStartFile(context);
+        }
+
+        public Project getProject() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return project;
+        }
+
+        public FileObject getStartFile() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return FileUtil.toFileObject(startFile);
+        }
+
+        @Override
+        protected RerunUnitTestHandler getRerunUnitTestHandler() {
+            return new RedebugUnitTestHandler(project, context);
+        }
+
+        @Override
+        protected UnitTestRunner getTestRunner() {
+            assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
+            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler);
+        }
+
         private File getStartFile(Lookup context) {
             if (context == null) {
                 return null;
@@ -249,6 +278,52 @@ public class ConfigActionTest extends ConfigAction {
             FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, testRoot);
             assert file != null : "Start file must be found";
             return FileUtil.toFile(file);
+        }
+    }
+
+    private class RerunUnitTestHandler implements RerunHandler {
+        protected final PhpProject project;
+        protected final Lookup context;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private volatile boolean enabled = false;
+
+        public RerunUnitTestHandler(PhpProject project, Lookup context) {
+            assert project != null;
+
+            this.project = project;
+            this.context = context;
+        }
+
+        public void rerun() {
+            run(project, context);
+        }
+
+        public boolean enabled() {
+            return enabled;
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
+        void enable() {
+            enabled = true;
+            changeSupport.fireChange();
+        }
+    }
+
+    private class RedebugUnitTestHandler extends RerunUnitTestHandler {
+        public RedebugUnitTestHandler(PhpProject project, Lookup context) {
+            super(project, context);
+        }
+
+        @Override
+        public void rerun() {
+            debug(project, context);
         }
     }
 }

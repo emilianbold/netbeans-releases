@@ -41,6 +41,8 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
@@ -58,7 +60,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Tomas Mysik
  */
 public final class PhpUnitLogParser extends DefaultHandler {
+    private static final Logger LOGGER = Logger.getLogger(PhpUnitLogParser.class.getName());
     enum Content { NONE, ERROR, FAILURE };
+
     private final XMLReader xmlReader;
     private final TestSessionVO testSession;
     private TestSuiteVO testSuite; // actual test suite
@@ -79,7 +83,8 @@ public final class PhpUnitLogParser extends DefaultHandler {
             PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
             parser.xmlReader.parse(new InputSource(reader));
         } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
+            // ignore (this can happen e.g. if one interrupts debugging)
+            LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             assert false;
         } finally {

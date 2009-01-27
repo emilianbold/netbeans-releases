@@ -79,6 +79,11 @@ public final class TestSessionVO {
         this.time = time;
     }
 
+    @Override
+    public String toString() {
+        return String.format("TestSessionVO{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
+    }
+
     public static final class TestSuiteVO {
         private final List<TestCaseVO> testCases = new ArrayList<TestCaseVO>();
         private final String name;
@@ -120,6 +125,11 @@ public final class TestSessionVO {
                 return;
             }
             testCases.add(TestCaseVO.pendingTestCase());
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TestSuiteVO{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size());
         }
     }
 
@@ -191,6 +201,12 @@ public final class TestSessionVO {
 
         public boolean isFailure() {
             return status.equals(Status.FAILED);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TestCaseVO{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}",
+                    name, file, line, time, status, stacktrace);
         }
     }
 }

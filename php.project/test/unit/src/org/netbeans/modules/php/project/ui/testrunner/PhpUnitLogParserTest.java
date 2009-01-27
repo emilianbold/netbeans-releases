@@ -51,9 +51,9 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 /**
  * @author Tomas Mysik
  */
-public class UnitTestRunnerTest extends NbTestCase {
+public class PhpUnitLogParserTest extends NbTestCase {
 
-    public UnitTestRunnerTest(String name) {
+    public PhpUnitLogParserTest(String name) {
         super(name);
     }
 
@@ -63,8 +63,8 @@ public class UnitTestRunnerTest extends NbTestCase {
 
         PhpUnitLogParser.parse(reader, testSession);
 
-        assertEquals(104, testSession.getTime());
-        assertEquals(10, testSession.getTests());
+        assertEquals(64, testSession.getTime());
+        assertEquals(6, testSession.getTests());
 
         // test suites & test cases
         assertEquals(3, testSession.getTestSuites().size());
@@ -73,14 +73,14 @@ public class UnitTestRunnerTest extends NbTestCase {
         TestSuiteVO testSuite = testSession.getTestSuites().get(0);
         assertEquals("Calculator2Test", testSuite.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testSuite.getFile());
-        assertEquals(54, testSuite.getTime());
-        assertEquals(5, testSuite.getTestCases().size());
+        assertEquals(11, testSuite.getTime());
+        assertEquals(1, testSuite.getTestCases().size());
 
         TestCaseVO testCase = testSuite.getTestCases().get(0);
         assertEquals("testAdd", testCase.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testCase.getFile());
         assertEquals(43, testCase.getLine());
-        assertEquals(12, testCase.getTime());
+        assertEquals(11, testCase.getTime());
 
         // 2nd - pending test suite
         testSuite = testSession.getTestSuites().get(1);

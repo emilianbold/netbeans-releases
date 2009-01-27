@@ -44,7 +44,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -54,7 +56,8 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 
 /**
- * Test runner UI for PHP unit tests.
+ * Test runner UI for PHP unit tests. One must call {@link #start()} first
+ * and after the test results are available, {@link #showResults()} will show them.
  * <p>
  * Currently, only PHPUnit is supported.
  * All the times are in milliseconds.
@@ -62,16 +65,27 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
  */
 public final class UnitTestRunner {
     private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());
+    private static final Manager MANAGER = Manager.getInstance();
+    private final TestSession testSession;
+    private volatile boolean started = false;
 
-    private UnitTestRunner() {
+    public UnitTestRunner(Project project, TestSession.SessionType sessionType, RerunHandler rerunHandler) {
+        assert project != null;
+        assert sessionType != null;
+        assert rerunHandler != null;
+        testSession = new TestSession("PHPUnit test session", project, sessionType); // NOI18N
+        testSession.setRerunHandler(rerunHandler);
     }
 
-    public static void start(TestSession testSession) {
-        Manager manager = Manager.getInstance();
-        manager.testStarted(testSession);
+    public void start() {
+        MANAGER.testStarted(testSession);
+        started = true;
     }
 
-    public static void display(TestSession testSession) {
+    public void showResults() {
+        if (!started) {
+            throw new IllegalStateException("Test runner must be started. Call start() method first.");
+        }
         Reader reader;
         try {
             reader = new BufferedReader(new FileReader(PhpUnitConstants.XML_LOG));
@@ -83,9 +97,8 @@ public final class UnitTestRunner {
         TestSessionVO session = new TestSessionVO();
         PhpUnitLogParser.parse(reader, session);
 
-        Manager manager = Manager.getInstance();
         for (TestSuiteVO suite : session.getTestSuites()) {
-            manager.displaySuiteRunning(testSession, suite.getName());
+            MANAGER.displaySuiteRunning(testSession, suite.getName());
 
             TestSuite testSuite = new TestSuite(suite.getName());
             testSession.addSuite(testSuite);
@@ -100,25 +113,25 @@ public final class UnitTestRunner {
                 if (stacktrace.length > 0) {
                     boolean isError = kase.isError();
                     Trouble trouble = new Trouble(isError);
-                    trouble.setStackTrace(kase.getStacktrace());
+                    trouble.setStackTrace(stacktrace);
                     // XXX will be used with php unit 3.4+
 //                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
 //                    trouble.setComparisonFailure(failure);
                     testcase.setTrouble(trouble);
-                    manager.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
+                    MANAGER.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
-                    for (String s : kase.getStacktrace()) {
-                        manager.displayOutput(testSession, s, isError);
+                    for (String s : stacktrace) {
+                        MANAGER.displayOutput(testSession, s, isError);
                         testSession.addOutput(s);
                     }
-                    manager.displayOutput(testSession, "", false); // NOI18N
+                    MANAGER.displayOutput(testSession, "", false); // NOI18N
                     testSession.addOutput(""); // NOI18N
                 }
                 testSession.addTestCase(testcase);
             }
-            manager.displayReport(testSession, testSession.getReport(suite.getTime()));
+            MANAGER.displayReport(testSession, testSession.getReport(suite.getTime()));
         }
 
-        manager.sessionFinished(testSession);
+        MANAGER.sessionFinished(testSession);
     }
 }
