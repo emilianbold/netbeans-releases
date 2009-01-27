@@ -92,7 +92,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
     public void targetStateChanged(DLightTarget source, State oldState, State newState) {
         switch (newState) {
-            case STARTING:
+            case RUNNING:
                 targetStarted(source);
                 break;
             case FAILED:

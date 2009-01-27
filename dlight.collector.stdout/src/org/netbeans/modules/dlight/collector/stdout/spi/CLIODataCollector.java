@@ -323,14 +323,18 @@ public final class CLIODataCollector extends IndicatorDataProvider<CLIODCConfigu
 
   public void targetStateChanged(DLightTarget source, State oldState, State newState) {
     switch (newState){
-      case STARTING :
+      case RUNNING :
         targetStarted(source);
+        break;
       case FAILED:
         targetFinished(source);
+        break;
       case TERMINATED:
         targetFinished(source);
+        break;
       case DONE:
         targetFinished(source);
+        break;
     }
   }
   
