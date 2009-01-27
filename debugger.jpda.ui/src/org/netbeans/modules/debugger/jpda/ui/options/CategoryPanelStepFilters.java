@@ -45,6 +45,25 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.prefs.Preferences;
+import javax.security.auth.RefreshFailedException;
+import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.debugger.Properties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbPreferences;
+
 /**
  *
  * @author martin
@@ -54,6 +73,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     /** Creates new form CategoryPanelStepFilters */
     public CategoryPanelStepFilters() {
         initComponents();
+        initFilterClassesList();
     }
 
     /** This method is called from within the constructor to
@@ -93,22 +113,37 @@ class CategoryPanelStepFilters extends StorablePanel {
 
         filterClassesLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
 
-        filterClassesList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         filterClassesScrollPane.setViewportView(filterClassesList);
 
         stepThroughFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
 
         filterAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.text")); // NOI18N
+        filterAddButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterAddButtonActionPerformed(evt);
+            }
+        });
 
         filterRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.text")); // NOI18N
+        filterRemoveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterRemoveButtonActionPerformed(evt);
+            }
+        });
 
         filtersCheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.text")); // NOI18N
+        filtersCheckAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filtersCheckAllButtonActionPerformed(evt);
+            }
+        });
 
         filtersUncheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.text")); // NOI18N
+        filtersUncheckAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filtersUncheckAllButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -165,18 +200,127 @@ class CategoryPanelStepFilters extends StorablePanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void initFilterClassesList() {
+        filterClassesList.setCellRenderer(new ListCellRenderer() {
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                ClassFilter cf = (ClassFilter) value;
+                JCheckBox cb = cf.getComponent();
+                cb.setEnabled(list.isEnabled());
+                cb.setFont(list.getFont());
+                cb.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                cb.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                return cb;
+            }
+        });
+        filterClassesList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                JList list = (JList) event.getSource();
+                // Get index of item clicked
+                int index = list.locationToIndex(event.getPoint());
+                int height = list.getUI().getCellBounds(filterClassesList, index, index).height;
+                Point cellLocation = list.getUI().indexToLocation(filterClassesList, index);
+                int x = event.getPoint().x - cellLocation.x;
+                if (x >= 0 && x <= height) {
+                    ClassFilter cf = (ClassFilter) list.getModel().getElementAt(index);
+                    // Toggle selected state
+                    cf.setCurrent(!cf.isCurrent());
+                    // Repaint cell
+                    list.repaint(list.getCellBounds(index, index));
+                }
+            }
+        });
+        filterClassesList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                filterRemoveButton.setEnabled(filterClassesList.getSelectedIndex() >= 0);
+            }
+        });
+        filterClassesList.setModel(new DefaultListModel());
+        filterClassesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
     private void useStepFiltersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useStepFiltersCheckBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_useStepFiltersCheckBoxActionPerformed
 
+    private void filterAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterAddButtonActionPerformed
+        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine("", "Add Class Filter");
+        DialogDisplayer.getDefault().notify(nd);
+        ((DefaultListModel) filterClassesList.getModel()).addElement(new ClassFilter(nd.getInputText(), true));
+        //JCheckBox cb = new JCheckBox(nd.getInputText());
+        //cb.setSelected(true);
+        //filterClassesList.add(cb);
+        filterClassesList.repaint();
+    }//GEN-LAST:event_filterAddButtonActionPerformed
+
+    private void filterRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterRemoveButtonActionPerformed
+        filterClassesList.remove(filterClassesList.getSelectedIndex());
+        filterClassesList.repaint();
+    }//GEN-LAST:event_filterRemoveButtonActionPerformed
+
+    private void filtersCheckAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersCheckAllButtonActionPerformed
+        DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            ClassFilter cf = (ClassFilter) model.get(i);
+            cf.setCurrent(true);
+        }
+        filterClassesList.repaint();
+    }//GEN-LAST:event_filtersCheckAllButtonActionPerformed
+
+    private void filtersUncheckAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersUncheckAllButtonActionPerformed
+        DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            ClassFilter cf = (ClassFilter) model.get(i);
+            cf.setCurrent(false);
+        }
+        filterClassesList.repaint();
+    }//GEN-LAST:event_filtersUncheckAllButtonActionPerformed
+
     @Override
     void load() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Preferences p = NbPreferences.root().node("Debugger/JPDA");
+        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        useStepFiltersCheckBox.setSelected(p.getBoolean("UseStepFilters", true));
+        filterSyntheticCheckBox.setSelected(p.getBoolean("FilterSyntheticMethods", true));
+        filterStaticInitCheckBox.setSelected(p.getBoolean("FilterStaticInitializers", false));
+        filterConstructorsCheckBox.setSelected(p.getBoolean("FilterConstructors", false));
+        //String[] filterClasses = (String[]) pp.getArray("FilterClasses", new String[] {});
+        javax.security.auth.Refreshable[] filterClasses = (javax.security.auth.Refreshable[]) p.getArray("FilterClasses", null);
+        DefaultListModel filterClassesModel = (DefaultListModel) filterClassesList.getModel();
+        if (filterClasses != null) {
+            for (javax.security.auth.Refreshable r : filterClasses) {
+                ClassFilter cf;
+                if (r instanceof ClassFilter) {
+                    cf = (ClassFilter) r;
+                } else {
+                    cf = new ClassFilter(r.toString(), r.isCurrent());
+                }
+                filterClassesModel.addElement(cf);
+                //JCheckBox cb = new JCheckBox(cf.toString(), cf.isCurrent());
+                //filterClassesList.add(new ClassFilterComponent(cf));
+                //filterClassesList.add(cb);
+            }
+        }
+        stepThroughFiltersCheckBox.setSelected(p.getBoolean("StepThroughFilters", false));
     }
 
     @Override
     void store() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        p.setBoolean("UseStepFilters", useStepFiltersCheckBox.isSelected());
+        p.setBoolean("FilterSyntheticMethods", filterSyntheticCheckBox.isSelected());
+        p.setBoolean("FilterStaticInitializers", filterStaticInitCheckBox.isSelected());
+        p.setBoolean("FilterConstructors", filterConstructorsCheckBox.isSelected());
+        ListModel filterClassesModel = filterClassesList.getModel();
+        javax.security.auth.Refreshable[] filterClasses = new javax.security.auth.Refreshable[filterClassesModel.getSize()];
+        for (int i = 0; i < filterClasses.length; i++) {
+            ClassFilter cf = (ClassFilter) filterClassesModel.getElementAt(i);
+            //JCheckBox cb = (JCheckBox) filterClassesList.getComponent(i);
+            //ClassFilter cf = new ClassFilter(cb.getText(), cb.isSelected());
+            filterClasses[i] = cf;
+        }
+        p.setArray("FilterClasses", filterClasses);
+        p.setBoolean("StepThroughFilters", stepThroughFiltersCheckBox.isSelected());
     }
 
 
@@ -195,4 +339,46 @@ class CategoryPanelStepFilters extends StorablePanel {
     private javax.swing.JCheckBox useStepFiltersCheckBox;
     // End of variables declaration//GEN-END:variables
 
+    static class ClassFilter implements javax.security.auth.Refreshable {
+
+        private String clazz;
+        private boolean enabled;
+        private JCheckBox checkBox;
+
+        private ClassFilter(String clazz, boolean enabled) {
+            this.clazz = clazz;
+            this.enabled = enabled;
+        }
+
+        public boolean isCurrent() {
+            return enabled;
+        }
+
+        void setCurrent(boolean enabled) {
+            this.enabled = enabled;
+            if (checkBox != null) {
+                checkBox.setSelected(enabled);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return clazz;
+        }
+
+        void setClass(String clazz) {
+            this.clazz = clazz;
+        }
+
+        public void refresh() throws RefreshFailedException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        JCheckBox getComponent() {
+            if (checkBox == null) {
+                checkBox = new JCheckBox(toString(), isCurrent());
+            }
+            return checkBox;
+        }
+    }
 }
