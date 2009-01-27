@@ -58,8 +58,7 @@ import javax.swing.Action;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationState;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -106,7 +105,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private String scriptPath;
     private NativeTask collectorTask;
     private DTDCConfiguration configuration;
-    private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
     private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
     private String command;
     private String argsTemplate;
@@ -265,7 +264,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
-        ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+        ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
 
@@ -277,11 +276,11 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 
         if (connected) {
             if (fileExists) {
-                result = ValidationStatus.VALID;
+                result = ValidationStatus.validStatus;
             } else {
-                result = new ValidationStatus(
-                        ValidationState.NOT_VALID,
-                        loc("ValidationStatus.CommandNotFound", command)); // NOI18N
+                result = ValidationStatus.invalidStatus(
+                        loc("ValidationStatus.CommandNotFound", // NOI18N
+                        command));
             }
         } else {
             ObservableActionListener<Boolean> listener = new ObservableActionListener<Boolean>() {
@@ -298,7 +297,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             ObservableAction<Boolean> connectAction = target.getExecEnv().getConnectToAction();
             connectAction.addObservableActionListener(listener);
 
-            result = new ValidationStatus(ValidationState.UNKNOWN,
+            result = ValidationStatus.unknownStatus(
                     loc("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
         }
@@ -307,7 +306,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 //    ValidationStatus result = super.doValidation(targetToValidate);
         ExecutionEnvironment execEnv = target.getExecEnv();
 
-        if (result.isOK()) {
+        if (result.isValid()) {
 
             // /usr/sbin/dtrace exists...
             // check for permissions ...
@@ -326,8 +325,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             });
 
             if (!status) {
-                result = result.merge(
-                        new ValidationStatus(ValidationState.UNKNOWN,
+                result = result.merge(ValidationStatus.unknownStatus(
                         loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
                         requestPrivilegesAction));
             }
@@ -340,17 +338,14 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
-                if (validationStatus.isOK()) {
+                if (validationStatus.isValid()) {
                     return validationStatus;
                 }
 
                 ValidationStatus oldStatus = validationStatus;
                 ValidationStatus newStatus = doValidation(target);
 
-                if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                        newStatus.getReason().equals(oldStatus.getReason()))) {
                     notifyStatusChanged(oldStatus, newStatus);
-                }
 
                 validationStatus = newStatus;
                 return newStatus;
@@ -365,7 +360,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 //        }
 //    }
     public void invalidate() {
-        validationStatus = ValidationStatus.NOT_VALIDATED;
+        validationStatus = ValidationStatus.initialStatus;
     }
 
     public ValidationStatus getValidationStatus() {
@@ -425,6 +420,9 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     }
 
     protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+        if (oldStatus.equals(newStatus)) {
+            return;
+        }
         for (ValidationListener validationListener : validationListeners) {
             validationListener.validationStateChanged(this, oldStatus, newStatus);
         }

@@ -251,7 +251,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         List<DLightTool> validTools = new ArrayList<DLightTool>();
 
         for (DLightTool tool : context.getTools()) {
-            if (tool.getValidationStatus().isOK()) {
+            if (tool.getValidationStatus().isValid()) {
                 validTools.add(tool);
             }
         }

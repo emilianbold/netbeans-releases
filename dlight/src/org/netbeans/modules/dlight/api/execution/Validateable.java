@@ -38,143 +38,45 @@
  */
 package org.netbeans.modules.dlight.api.execution;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
 
 /**
  *
+ * @param <T>
  */
 public interface Validateable<T> {
 
-    public enum ValidationState {
-
-        UNKNOWN,
-        NOT_VALID,
-        VALID
-    }
-
-    public static class ValidationStatus {
-        public static final ValidationStatus NOT_VALIDATED = new ValidationStatus(ValidationState.UNKNOWN, "Not yet validated");
-        public static final ValidationStatus NOT_VALID = new ValidationStatus(ValidationState.NOT_VALID, null);
-        public static final ValidationStatus VALID = new ValidationStatus(ValidationState.VALID, null);
-        private ValidationState state;
-        private String reason;
-        private List<ObservableAction> requiredActions;
-
-        public ValidationStatus(ValidationState state, String reason) {
-            this(state, reason, null);
-        }
-
-        public ValidationStatus(final ValidationState state, final String reason, final ObservableAction requiredAction) {
-            this.state = state;
-            this.reason = reason == null ? "-" : reason; // NOI18N
-            
-            if (requiredAction != null) {
-                this.requiredActions = new ArrayList<ObservableAction>();
-                this.requiredActions.add(requiredAction);
-            }
-        }
-
-        public ValidationState getState() {
-            return state;
-        }
-
-        public String getReason() {
-            return reason;
-        }
-
-        public ValidationStatus merge(ValidationStatus status) {
-            ValidationStatus merged = new ValidationStatus(null, null);
-
-            if (this == NOT_VALIDATED) {
-                merged.state = status.state;
-                merged.reason = status.reason;
-                merged.requiredActions = status.requiredActions;
-            } else {
-                merged.state = state;
-                merged.reason = reason;
-                merged.requiredActions = requiredActions;
-
-                switch (state) {
-                    case NOT_VALID:
-                        switch (status.state) {
-                            case VALID:
-                            case UNKNOWN:
-                                // Just skip ...
-                                break;
-                            case NOT_VALID:
-                                if (status.reason != null) {
-                                    merged.reason = reason.concat(status.reason).concat("; ");
-                                }
-                                break;
-                        }
-                        break;
-
-                    case VALID:
-                    case UNKNOWN:
-                        switch (status.state) {
-                            case VALID:
-                                break;
-                            case UNKNOWN:
-                            case NOT_VALID:
-                                merged.state = status.state;
-                                if (status.reason != null && !"-".equals(status.reason)) {
-                                    merged.reason = (merged.reason == null) ? status.reason : merged.reason.concat(status.reason).concat("; ");
-                                }
-                                if (merged.requiredActions == null) {
-                                    merged.requiredActions = status.requiredActions;
-                                } else {
-                                    if (status.requiredActions != null) {
-                                        merged.requiredActions.addAll(status.requiredActions);
-                                    }
-                                }
-                                break;
-                        }
-                        break;
-                }
-            }
-
-            return merged;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof ValidationStatus) {
-                ValidationStatus st = (ValidationStatus)obj;
-                return st.state.equals(state) && st.reason.equals(reason);
-            }
-
-            return false;
-        }
-
-        public boolean stateEquals(ValidationStatus obj) {
-            return obj.state.equals(state);
-        }
-
-        @Override
-        public String toString() {
-            return "" + (state == null ? "null" : state.toString()) + ": " + (reason == null ? "null" : reason);
-        }
-
-        public ObservableAction[] getRequiredActions() {
-            return requiredActions == null ? new ObservableAction[0] : requiredActions.toArray(new ObservableAction[0]);
-        }
-
-        public boolean isOK() {
-            return this.stateEquals(ValidationStatus.VALID);
-        }
-
-        public boolean isUnknown() {
-            return state.equals(ValidationState.UNKNOWN);
-        }
-
-    }
-
+    /**
+     *
+     * @param objectToValidate
+     * @return
+     */
     public Future<ValidationStatus> validate(T objectToValidate);
+
+    /**
+     *
+     */
     public void invalidate();
+
+    /**
+     *
+     * @return
+     */
     public ValidationStatus getValidationStatus();
+
+    /**
+     *
+     * @param listener
+     */
     public void addValidationListener(ValidationListener listener);
+
+    /**
+     *
+     * @param listener
+     */
     public void removeValidationListener(ValidationListener listener);
+
+    /**
+     *
+     */
 }
