@@ -46,6 +46,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -59,7 +60,6 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.ModuleManager;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ModuleSystem;
@@ -68,6 +68,7 @@ import org.netbeans.core.ui.SwingBrowser;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -244,22 +245,133 @@ public abstract class NbTopManager {
         /** Default constructor for lookup. */
         public NbStatusDisplayer() {}
         private final ChangeSupport cs = new ChangeSupport(this);
-        private String text = ""; // NOI18N
+        //list of status messages sorted by their importance in descending order
+        private List<WeakReference<MessageImpl>> messages = new ArrayList<WeakReference<MessageImpl>>(30);
+
+        private static int SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000);
+
         public void setStatusText(String text) {
-            synchronized (this) {
-                this.text = text;
-            }
-            cs.fireChange();
-            Logger.getLogger(NbStatusDisplayer.class.getName()).log(Level.FINE, "Status text updated: {0}", text);
+            //unimportant message are cleared automatically after some time
+            add( text, 0 ).clear(SURVIVING_TIME);
         }
+
+        @Override
+        public Message setStatusText(String text, int importance) {
+            if( importance <= 0 )
+                throw new IllegalArgumentException("Invalid importance value: " + importance);
+            return add( text, importance );
+        }
+        
         public synchronized String getStatusText() {
+            String text = null;
+            synchronized( this ) {
+                MessageImpl msg = getCurrent();
+                text = null == msg ? "" : msg.text;
+            }
             return text;
         }
+
         public void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);
         }
+
         public void removeChangeListener(ChangeListener l) {
             cs.removeChangeListener(l);
+        }
+
+        /**
+         * @return The most important status message in the list or null
+         */
+        private MessageImpl getCurrent() {
+            while( !messages.isEmpty() ) {
+                WeakReference<MessageImpl> ref = messages.get(0);
+                MessageImpl impl = ref.get();
+                if( null != impl ) {
+                    return impl;
+                } else {
+                    messages.remove(0);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Add new status message and fire change event. The message won't show
+         * in the status line if there's already a message with higher importance.
+         * @param text Status line message
+         * @param importance Message importance
+         * @return New status Message
+         */
+        private MessageImpl add( String text, int importance ) {
+            MessageImpl newMsg = new MessageImpl(text, importance);
+            WeakReference<MessageImpl> newRef = new WeakReference<MessageImpl>(newMsg);
+            synchronized( this ) {
+                boolean added = false;
+                for( int i=0; i<messages.size() && !added; i++ ) {
+                    WeakReference<MessageImpl> ref = messages.get(0);
+                    MessageImpl impl = ref.get();
+                    if( impl.importance == importance ) {
+                        messages.set(i, newRef);
+                        added = true;
+                    } else if( impl.importance < importance ) {
+                        messages.add(i, newRef);
+                        added = true;
+                    }
+                }
+                if( !added ) {
+                    messages.add(newRef);
+                }
+            }
+            cs.fireChange();
+            Logger.getLogger(NbStatusDisplayer.class.getName()).log(Level.FINE, 
+                    "Status text updated: {0}, importance: {1}", new Object[] {text, Integer.valueOf(importance)} );
+            return newMsg;
+        }
+
+        /**
+         * Remove given message and fire change event. If there's a less important
+         * message in the list, it will show in status line.
+         * @param toRemove
+         */
+        private void remove( MessageImpl toRemove ) {
+            synchronized( this ) {
+                WeakReference<MessageImpl> refToRemove = null;
+                for( WeakReference<MessageImpl> ref : messages ) {
+                    if( toRemove == ref.get() ) {
+                        refToRemove = ref;
+                        break;
+                    }
+                }
+                if( null != refToRemove )
+                    messages.remove(refToRemove);
+            }
+            cs.fireChange();
+        }
+
+        /**
+         * Status line message which clears itself when garbage collected.
+         */
+        private class MessageImpl implements StatusDisplayer.Message, Runnable {
+            private final String text;
+            private final int importance;
+
+            public MessageImpl( String text, int importance ) {
+                this.text = text;
+                this.importance = importance;
+            }
+
+            public void clear(int timeInMillis) {
+                RequestProcessor.getDefault().post(this, timeInMillis);
+            }
+
+            @Override
+            protected void finalize() throws Throwable {
+                run();
+            }
+
+            public void run() {
+                remove( this );
+            }
         }
     }
 
