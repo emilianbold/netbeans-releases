@@ -101,7 +101,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
-                developmentHost = info.getDevelopmentHost();
+                String dh = info.getDevelopmentHost();
+                if (dh != null) {
+                    developmentHost = dh;
+                }
             }
         }
         return developmentHost;

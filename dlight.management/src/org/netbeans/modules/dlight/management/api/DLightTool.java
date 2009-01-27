@@ -38,33 +38,34 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.collector.spi.impl.DataCollectorProvider;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorAccessor;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
-import org.netbeans.modules.dlight.indicator.spi.impl.IDPProvider;
-import org.netbeans.modules.dlight.indicator.spi.impl.IndicatorProvider;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.Validateable;
+import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.model.Validateable;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
-import org.netbeans.modules.dlight.tool.api.impl.DLightToolConfigurationAccessor;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.impl.IDPProvider;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
+
 
 /**
  * D-Light Tool is a set of registered collector used to collect data,
@@ -216,8 +217,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     collector.addValidationListener(new ValidationListener() {
 
-      public void validationStateChanged(Validateable source, ValidationStatus newStatus) {
-        notifyStatusChanged(newStatus);
+      public void validationStateChanged(Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {
+        notifyStatusChanged(oldStatus, newStatus);
       }
     });
   }
@@ -235,7 +236,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
         if (!(newStatus.getState().equals(oldStatus.getState()) &&
             newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(newStatus);
+          notifyStatusChanged(oldStatus, newStatus);
         }
 
         validationStatus = newStatus;
@@ -246,7 +247,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
   public final void invalidate() {
     validationStatus = ValidationStatus.NOT_VALIDATED;
-    notifyStatusChanged(validationStatus);
+    notifyStatusChanged(null, validationStatus);
   }
 
   final synchronized ValidationStatus doValidation(DLightTarget target) {
@@ -279,10 +280,15 @@ public final class DLightTool implements Validateable<DLightTarget> {
     validationListeners.remove(listener);
   }
 
-  private final void notifyStatusChanged(ValidationStatus newStatus) {
+  private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
     for (ValidationListener validationListener : validationListeners) {
-      validationListener.validationStateChanged(this, newStatus);
+      validationListener.validationStateChanged(this, oldStatus, newStatus);
     }
+  }
+
+  @Override
+  public String toString() {
+    return getName();
   }
 
   private static final class DLightToolAccessorImpl extends DLightToolAccessor {

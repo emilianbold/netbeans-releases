@@ -5,8 +5,8 @@
 
 package org.netbeans.modules.dlight.visualizers.api.impl;
 
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
  *

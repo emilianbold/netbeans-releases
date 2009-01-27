@@ -40,9 +40,9 @@
 package org.netbeans.modules.dlight.collector.stdout.api.impl;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
  *

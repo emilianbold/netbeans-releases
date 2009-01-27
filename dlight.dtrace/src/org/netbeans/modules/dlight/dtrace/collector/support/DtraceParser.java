@@ -43,10 +43,10 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
  *

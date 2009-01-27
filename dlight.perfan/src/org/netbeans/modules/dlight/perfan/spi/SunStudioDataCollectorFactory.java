@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+
+
 
 /**
  *

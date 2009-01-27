@@ -180,6 +180,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     <target name="test-lib-init" depends="init">
         <path id="test.unit.lib.cp"/>
         <!-- The IDE is so big that anything enabling all clusters will exceed the JVM's defaults! -->
+        <!-- Any changes please propagate into nbbuild/testdist/release/one-module.xml test.run.args property -->
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx256m"/>
     </target>
 

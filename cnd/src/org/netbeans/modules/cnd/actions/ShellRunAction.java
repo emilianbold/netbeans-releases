@@ -124,6 +124,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
+        if (shellFilePath.equals(shellFile.getName())) {
+		shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
+        }
         String[] args = bes.getArguments(); // from properties
 
         String developmentHost = getDevelopmentHost(fileObject);

@@ -5,11 +5,14 @@
 
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
-import org.netbeans.modules.dlight.visualizer.spi.VisualizerFactory;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
+import org.netbeans.modules.dlight.spi.support.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
+
 
 /**
  *
@@ -20,8 +23,11 @@ public String getID() {
     return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
   }
 
-  public Visualizer<TreeTableVisualizerConfiguration> create(TreeTableVisualizerConfiguration visualizer, DataProvider provider) {
-    return new TreeTableVisualizer(visualizer, provider);
+  public Visualizer<TreeTableVisualizerConfiguration> create(TreeTableVisualizerConfiguration visualizer, VisualizerDataProvider provider) {
+    if (!(provider instanceof TreeTableDataProvider)){
+      return null;
+    }
+    return new TreeTableVisualizer(visualizer, (TreeTableDataProvider)provider);
   }
 
 }
