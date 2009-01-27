@@ -100,7 +100,8 @@ public class ConfigurationDescriptorProvider {
 
                         if (trackedFiles == null) {
                             FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                            trackedFiles = new ArrayList<FileObject>();
+                             List<FileObject> files = new ArrayList<FileObject>(2);
+                            boolean first = true;
                             for (String path : new String[] {
                                     "nbproject/configurations.xml", //NOI18N
                                     "nbproject/private/configurations.xml"}) { //NOI18N
@@ -109,10 +110,19 @@ public class ConfigurationDescriptorProvider {
                                     fo.addFileChangeListener(fcl);
                                     // We have to store tracked files somewhere.
                                     // Otherwise they will be GCed, and we won't get notifications.
-                                    trackedFiles.add(fo);
+                                    files.add(fo);
+                                } else {
+                                    if (first) {
+                                        // prevent reading configurations before project cration
+                                        new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace();
+                                        return null;
+                                    }
                                 }
+                                first = false;
                             }
+                            trackedFiles = files;
                         }
+
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
                         if (waitReading && SwingUtilities.isEventDispatchThread()) {
@@ -126,6 +136,7 @@ public class ConfigurationDescriptorProvider {
                         try {
                             projectDescriptor = reader.read(relativeOffset);
                         } catch (java.io.IOException x) {
+                            x.printStackTrace();
                             // most likely open failed
                         }
                         
