@@ -42,9 +42,9 @@ import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
 /**
- * Configuration to create {@link org.netbeans.modules.dlight.indicator.spi.Indicator}
+ * Configuration to create {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
  * on the base of. Use it to register in
- * {@link org.netbeans.modules.dlight.tool.api.DLightToolConfiguration#addIndicatorConfiguration(org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration) 
+ * {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration#addIndicatorConfiguration(org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration)}
  *  
  */
 public abstract class IndicatorConfiguration {
@@ -59,7 +59,7 @@ public abstract class IndicatorConfiguration {
   }
 
   /**
-   * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.indicator.api.IndicatorMetadata}
+   * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
    * @param metadata metadata to create Indicator configuration for
    */
   public IndicatorConfiguration(IndicatorMetadata metadata) {
@@ -83,8 +83,8 @@ public abstract class IndicatorConfiguration {
   /**
    * Sets {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration}
    * which means Detailed View which will be opened when double or single mouse click on 
-   * {@link org.netbeans.modules.dlight.indicator.spiIndicator}
-   * @param configuration configuration to create {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
+   * {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
+   * @param configuration configuration to create {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
    * which will represent Detailed View
    */
   public final void setVisualizerConfiguration(VisualizerConfiguration configuration) {

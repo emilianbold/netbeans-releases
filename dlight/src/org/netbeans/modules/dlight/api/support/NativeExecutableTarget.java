@@ -57,7 +57,7 @@ import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Wrapper of {@link org.netbeans.modules.nativeexecution.NativeTask}
+ * Wrapper of {@link @org-netbeans-modules-nativeexecution@org.netbeans.modules.nativexecution.api.NativeTask}
  * 
  */
 public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, NativeTaskListener {
