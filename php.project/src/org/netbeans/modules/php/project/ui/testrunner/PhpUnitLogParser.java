@@ -68,9 +68,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private TestSuiteVO testSuite; // actual test suite
     private TestCaseVO testCase; // actual test case
     private Content content = Content.NONE;
-    private boolean firstContent = true; // for error/failure: the 1st line is ignored
-    private boolean stacktraceStarted = false; // for error/failure: flag for description/stacktrace
-    private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the 1st stacktrace
+    private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
 
     private PhpUnitLogParser(TestSessionVO testSession) throws SAXException {
         this.testSession = testSession;
@@ -126,38 +124,9 @@ public final class PhpUnitLogParser extends DefaultHandler {
         switch (content) {
             case FAILURE:
             case ERROR:
-                String string = getString(ch, start, length);
-                if (string == null) {
-                    break;
-                }
-                if (!stacktraceStarted) {
-                    buffer.append(string);
-                } else {
-                    assert testCase != null;
-                    if (buffer.length() > 0) {
-                        testCase.addStacktrace(buffer.toString().trim());
-                        buffer = new StringBuilder(200);
-                    }
-                    testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", string.trim()));
-                }
+                buffer.append(new String(ch, start, length));
                 break;
         }
-    }
-
-    private String getString(char[] ch, int start, int length) {
-        if (firstContent) {
-            firstContent = false;
-            return null;
-        }
-        String string = new String(ch, start, length);
-        if (string.trim().length() == 0) {
-            stacktraceStarted = true;
-            return null;
-        } else if (string.startsWith("\n\n")) { // NOI18N
-            // at least one empty line in the begining but do not return
-            stacktraceStarted = true;
-        }
-        return string;
     }
 
     private XMLReader createXmlReader() throws SAXException {
@@ -212,19 +181,50 @@ public final class PhpUnitLogParser extends DefaultHandler {
     }
 
     private void endTestContent() {
+        assert testCase != null;
+        assert buffer.length() > 0;
+
+        fillStacktrace();
         switch (content) {
             case FAILURE:
-                assert testCase != null;
                 testCase.setFailureStatus();
                 break;
             case ERROR:
-                assert testCase != null;
                 testCase.setErrorStatus();
                 break;
+            default:
+                assert false : "Unknown content type: " + content;
         }
-        firstContent = true;
-        stacktraceStarted = false;
+        buffer = new StringBuilder(200);
         content = Content.NONE;
+    }
+
+    private void fillStacktrace() {
+        String[] lines = buffer.toString().trim().split("\n"); // NOI18N
+        assert lines.length >= 2 : "At least 2 lines must be found (message + stacktrace)";
+
+        buffer = new StringBuilder(200);
+        boolean stacktraceStarted = false;
+        // 1st line is skipped
+        for (int i = 1; i < lines.length; ++i) {
+            String line = lines[i];
+            if (line.trim().length() == 0) {
+                if (!stacktraceStarted) {
+                    // empty line => stacktrace started
+                    stacktraceStarted = true;
+                    testCase.addStacktrace(buffer.toString().trim());
+                }
+                continue;
+            } else if (line.startsWith("\n\n")) { // NOI18N
+                // empty line => stacktrace started
+                stacktraceStarted = true;
+                testCase.addStacktrace(buffer.toString().trim());
+            } else if (!stacktraceStarted) {
+                buffer.append(line + "\n"); // NOI18N
+            } else {
+                testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", line.trim()));
+            }
+        }
     }
 
     private int getTests(Attributes attributes) {
