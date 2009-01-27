@@ -181,12 +181,14 @@ public final class TaskPrivilegesSupport {
 
         String[] outArray = taskOutput.toString().split("\n"); // NOI18N
         for (String str : outArray) {
-            String[] privs = str.substring(
-                    str.indexOf(": ") + 2).split(","); // NOI18N
 
             if (str.contains("I:")) { // NOI18N
+                String[] privs = str.substring(
+                        str.indexOf(": ") + 2).split(","); // NOI18N
                 iprivs = Arrays.asList(privs);
             } else if (str.contains("L:")) { // NOI18N
+                String[] privs = str.substring(
+                        str.indexOf(": ") + 2).split(","); // NOI18N
                 lprivs = Arrays.asList(privs);
             }
         }
