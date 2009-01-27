@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import org.jruby.nb.ast.Node;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -134,10 +135,15 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 //        // Force classpath initialization
 //        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
 //        platform.getGemManager().getNonGemLoadPath();
+
         Map<String, ClassPath> loadPath = new HashMap<String, ClassPath>();
+        
+        // rubystubs
+        loadPath.put(RubyLanguage.BOOT, ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs()));
+
+        // golden files
         FileObject testFileFO = FileUtil.toFileObject(getDataFile("/testfiles"));
-        ClassPath testFilesLoadPath = ClassPathSupport.createClassPath(testFileFO);
-        loadPath.put(RubyLanguage.SOURCE, testFilesLoadPath);
+        loadPath.put(RubyLanguage.SOURCE, ClassPathSupport.createClassPath(testFileFO));
         return loadPath;
     }
 
