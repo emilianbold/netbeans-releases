@@ -18,7 +18,7 @@ public final class Testcase {
      * The name of the class that contains this test case.
      */
     private String className;
-    private String name;
+    private final String name;
     private long timeMillis;
     private Trouble trouble;
     private Status status;
@@ -130,13 +130,6 @@ public final class Testcase {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return the execution time of this test case in millis.
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**
