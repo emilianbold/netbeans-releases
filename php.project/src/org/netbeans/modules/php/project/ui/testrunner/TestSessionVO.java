@@ -54,7 +54,7 @@ public final class TestSessionVO {
     private final List<TestSuiteVO> testSuites = new ArrayList<TestSuiteVO>();
     private long time = -1;
     private int tests = -1;
-    
+
     public void addTestSuite(TestSuiteVO testSuite) {
         testSuites.add(testSuite);
     }
