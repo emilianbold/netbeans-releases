@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.dependencies;
 
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
