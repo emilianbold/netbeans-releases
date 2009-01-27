@@ -105,8 +105,7 @@ public final class UnitTestRunner {
             testSession.addSuite(testSuite);
 
             for (TestCaseVO kase : suite.getTestCases()) {
-                Testcase testcase = new Testcase("PHPUnit test case", testSession); // NOI18N
-                testcase.setName(kase.getName());
+                Testcase testcase = new Testcase(kase.getName(), "PHPUnit test case", testSession); // NOI18N
                 testcase.setTimeMillis(kase.getTime());
                 testcase.setStatus(kase.getStatus());
 

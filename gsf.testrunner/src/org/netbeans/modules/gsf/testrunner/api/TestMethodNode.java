@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -76,9 +77,13 @@ public class TestMethodNode extends AbstractNode {
      * Creates a new instance of TestcaseNode
      */
     public TestMethodNode(final Testcase testcase, Project project) {
+        this(testcase, project, null);
+    }
+
+    protected TestMethodNode(final Testcase testcase, Project project, Lookup lookup) {
         super(testcase.getTrouble() != null
               ? new TestMethodNodeChildren(testcase)
-              : Children.LEAF);
+              : Children.LEAF, lookup);
 
         this.testcase = testcase;
         this.project = project;
@@ -189,7 +194,7 @@ public class TestMethodNode extends AbstractNode {
         return testcase.getStatus().equals(Status.FAILED)
                 || testcase.getStatus().equals(Status.ERROR);
     }
-    
+
     
     private static final class DisplayNameMapper {
 
