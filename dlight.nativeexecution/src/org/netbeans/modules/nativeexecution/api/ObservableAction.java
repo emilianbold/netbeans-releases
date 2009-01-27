@@ -50,18 +50,32 @@ import javax.swing.AbstractAction;
 
 /**
  * Extension of the <tt>AbstractAction</tt> implementation that allows to attach
- * listeners to get notifications on task start / finish events. 
- * 
+ * listeners to get notifications on task start / finish events.
+ *
  * @param <T> result type of the action
  */
-public abstract class ObservableAction<T> extends AbstractAction implements Callable<T> {
+public abstract class ObservableAction<T>
+        extends AbstractAction implements Callable<T> {
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private static ExecutorService executorService =
+            Executors.newCachedThreadPool();
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
     private volatile T result = null;
     private volatile Future<T> task = null;
     private ActionEvent event;
+
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+            public void run() {
+                if (executorService != null) {
+                    executorService.shutdown();
+                }
+            }
+        }));
+    }
 
     /**
      * Constructor
@@ -72,14 +86,15 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     }
 
     /**
-     * Adds an <tt>ObservableAction</tt> listener. Listener should be specified 
+     * Adds an <tt>ObservableAction</tt> listener. Listener should be specified
      * with the same type parameter as <tt>ObservableAction</tt> does.
      *
      * It is guarantied that the same listener will not be added more than once.
-     * 
+     *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void addObservableActionListener(ObservableActionListener<T> listener) {
+    public void addObservableActionListener(
+            ObservableActionListener<T> listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
@@ -88,10 +103,11 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     /**
      * Removes an <tt>ObservableAction</tt> listener. Removing not previously
      * added listener has no effect.
-     * 
+     *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void removeObservableActionListener(ObservableActionListener<T> listener) {
+    public void removeObservableActionListener(
+            ObservableActionListener<T> listener) {
         listeners.remove(listener);
     }
 
@@ -101,13 +117,14 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
      *
      * @param e <tt>ActionEvent</tt>
      * @return result of <tt>ObservableAction</tt> execution.
-     * 
-     * @see #actionPerformed(java.awt.event.ActionEvent) 
+     *
+     * @see #actionPerformed(java.awt.event.ActionEvent)
      */
     abstract protected T performAction(ActionEvent e);
 
     /**
      * Invoked when an action occurs.
+     * @param e event that causes the action. May be <tt>NULL</tt>
      */
     @Override
     public final void actionPerformed(final ActionEvent e) {
@@ -115,7 +132,7 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
         if (task != null) {
             return;
         }
-        
+
         // Will execute task unsynchronously ... Post the task
         event = e;
         task = executorService.submit(this);
@@ -132,12 +149,13 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
         result = performAction(event);
         task = null;
         fireCompleted();
-        
+
         return result;
     }
 
     private void fireStarted() {
-        List<ObservableActionListener<T>> ll = new ArrayList<ObservableActionListener<T>>(listeners);
+        List<ObservableActionListener<T>> ll =
+                new ArrayList<ObservableActionListener<T>>(listeners);
 
         for (ObservableActionListener l : ll) {
             l.actionStarted(this);
@@ -145,13 +163,14 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     }
 
     private void fireCompleted() {
-        List<ObservableActionListener<T>> ll = new ArrayList<ObservableActionListener<T>>(listeners);
+        List<ObservableActionListener<T>> ll =
+                new ArrayList<ObservableActionListener<T>>(listeners);
 
         for (ObservableActionListener<T> l : ll) {
             l.actionCompleted(this, result);
         }
     }
-    
+
     /**
      * Returns result of most recent finished invokation.
      * It is allowed to start action multiply times (though request to start

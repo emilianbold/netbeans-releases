@@ -73,12 +73,12 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
  */
 /**
  * Change History:
- * V53
+ * V53 - NB 7.0
  *   New configuration types: 4 (QT_APPLICATION), 5 (QT_LIBRARY)
- * V52
+ * V52 - NB 7.0
  *   ASSEMBLER_REQUIRED_ELEMENT
- * V51
- *   Now storing package type as name and not int
+ * V51 - NB 6.5
+ *   Now storing package type as name and not as int
  * V50 - 09.10.08 - NB 6.5
  *   Moved source encoding (SOURCE_ENCODING_ELEMENT) to project.xml
  * V49 - 09.02.08 - NB 6.5

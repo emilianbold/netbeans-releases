@@ -41,62 +41,116 @@ package org.netbeans.modules.dlight.api.storage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is virtual table description. This table description is
+ * used on all levels of communication.
+ * <p>
+ * <ul>
+ * <li> It should be used to describe data collected, see {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration}
+ * <li> It is used in storage 
+ * <li> It is used by Visualizer as table description to be visualized
+ * </ul>
+ * </p>
+ */
 public final class DataTableMetadata {
 
-  private String name;
-  private List<Column> columns = null;
-  private List<String> columnNames = null;
-  private List<DataTableMetadata> sourceTables;
-  private String sqlStatament;
+    private String name;
+    private List<Column> columns = null;
+    private List<String> columnNames = null;
+    private List<DataTableMetadata> sourceTables;
+    private String statement;
 
-  public DataTableMetadata(String name, List<Column> columns) {
-    this(name, columns, null, null);
-  }
-
-  public DataTableMetadata(String name, List<Column> columns, String sql, List<DataTableMetadata> sourceTables) {
-    this.columns = columns;
-    this.name = name;
-    this.sqlStatament = sql;
-    this.sourceTables = sourceTables;
-    columnNames = new ArrayList<String>();
-    for (Column c : columns) {
-      columnNames.add(c.getColumnName());
+    /**
+     * Creates new table description with the name <code>name</code> and using <code>columns</code> as table column descriptions
+     * @param name table name
+     * @param columns column names
+     */
+    public DataTableMetadata(String name, List<Column> columns) {
+        this(name, columns, null, null);
     }
 
-  }
+    /**
+     * Creates new VIEW description with the name <code>name</code>,using <code>columns</code> as table column descriptions,
+     *  <code>statement</code> string is info about gettig data and <code>sourceTables</code> is the list of tables
+     * this VIEW is built from
+     * @param name view name
+     * @param columns columns description
+     * @param statement string which represents infor about getting data for this VIEW
+     * @param sourceTables tables this VIEW is built on the base of
+     */
+    public DataTableMetadata(String name, List<Column> columns, String statement, List<DataTableMetadata> sourceTables) {
+        this.columns = columns;
+        this.name = name;
+        this.statement = statement;
+        this.sourceTables = sourceTables;
+        columnNames = new ArrayList<String>();
+        for (Column c : columns) {
+            columnNames.add(c.getColumnName());
+        }
 
-  public List<String> getColumnNames() {
-    return columnNames;
-  }
-
-  public List<DataTableMetadata> getSourceTables() {
-    return sourceTables;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public List<Column> getColumns() {
-    return columns;
-  }
-
-  public String getSQL() {
-    return sqlStatament;
-  }
-
-  public Column getColumnByName(String columnName) {
-    for (Column c : columns) {
-      if (c.getColumnName().equals(columnName)) {
-        return c;
-      }
     }
-    return null;
-  }
 
-  public int getColumnsCount() {
-    return columns.size();
-  }
+    /**
+     * Return column names
+     * @return column names
+     */
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
+
+    /**
+     * Return source tables this table is based on the top of, <code>null</code> if no such tables
+     * @return source tables this table is based on the top of, <code>null</code> if no such tables
+     */
+    public List<DataTableMetadata> getSourceTables() {
+        return sourceTables;
+    }
+
+    /**
+     * Return table name
+     * @return table name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Return columns list
+     * @return columns list
+     */
+    public List<Column> getColumns() {
+        return columns;
+    }
+
+    /**
+     * Return view statement if any
+     * @return view statement if any
+     */
+    public String getViewStatement() {
+        return statement;
+    }
+
+    /**
+     * Return column description by the column name, <code>null</code> if there is no column with the name <code>columnName</code>
+     * @param columnName column name to get Column for
+     * @return column if exists, <code>null</code> if not
+     */
+    public Column getColumnByName(String columnName) {
+        for (Column c : columns) {
+            if (c.getColumnName().equals(columnName)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns column count
+     * @return column count
+     */
+    public int getColumnsCount() {
+        return columns.size();
+    }
 
     @Override
     public String toString() {
@@ -111,52 +165,75 @@ public final class DataTableMetadata {
         return sb.toString();
     }
 
-  public static class Column {
+    /**
+     * Column description 
+     */
+    public static class Column {
 
-    String name;
-    Class columnClass;
-    String uname;
-    String expression;
+        String name;
+        Class columnClass;
+        String uname;
+        String expression;
 
-    public Column(String name, Class columnClass) {
-      this(name, columnClass, name, null);
-    }
+        /**
+         * Creates new column
+         * @param name column name
+         * @param columnClass class of this column
+         */
+        public Column(String name, Class columnClass) {
+            this(name, columnClass, name, null);
+        }
 
-    public Column(String name, Class columnClass, String uname, String expression) {
-      this.name = name;
-      this.columnClass = columnClass;
-      this.uname = uname;
-      this.expression = expression;
-    }
+        /**
+         * Creates new column
+         * @param name column name
+         * @param columnClass column class
+         * @param uname displayed name
+         * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
+         */
+        public Column(String name, Class columnClass, String uname, String expression) {
+            this.name = name;
+            this.columnClass = columnClass;
+            this.uname = uname;
+            this.expression = expression;
+        }
 
-    public Class getColumnClass() {
-      return columnClass;
-    }
+        /**
+         * Return column class
+         * @return column class
+         */
+        public Class getColumnClass() {
+            return columnClass;
+        }
 
-    public String getColumnName() {
-      return name;
-    }
+        /**
+         * Return column name
+         * @return column name
+         */
+        public String getColumnName() {
+            return name;
+        }
 
-    public String getColumnUName() {
-      return uname;
-    }
+        /**
+         * Column displayed (user) name
+         * @return column name
+         */
+        public String getColumnUName() {
+            return uname;
+        }
 
-    public String getExpression() {
-      return expression;
-    }
+        /**
+         * Return expression used to calculate column value if exists, <code>null</code> otherwise
+         * @return expression
+         */
+        public String getExpression() {
+            return expression;
+        }
 
-    @Override
-    public String toString() {
-      return name + " : (" + getColumnClass().getName() + ")";
-    }
-
-//    @Override
-//    public boolean equals(Object obj) {
-//      if (!(obj instanceof Column)){
-//        return false;
-//      }
-//      return name.equals(((Column)obj).getColumnName());
-//    }
+        @Override
+        public String toString() {
+            return name + " : (" + getColumnClass().getName() + ")";
+        }
     }
 
 }

@@ -82,14 +82,13 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.RSPEC.name(), session);
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(matcher.group(2));
-            testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(false));
             testcase.getTrouble().setComparisonFailure(getComparisonFailure(matcher.group(4)));
             testcase.getTrouble().setStackTrace(filterStackTrace(matcher.group(4), matcher.group(5)));
@@ -139,14 +138,13 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.RSPEC.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
-            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }
@@ -159,14 +157,13 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.RSPEC.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.RSPEC.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
-            testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(false));
             testcase.getTrouble().setStackTrace(new String[]{matcher.group(4)});
             testcase.setStatus(Status.PENDING);

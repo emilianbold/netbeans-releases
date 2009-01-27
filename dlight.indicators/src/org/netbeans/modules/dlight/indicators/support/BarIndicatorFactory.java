@@ -13,6 +13,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
  *
  * @author mt154047
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
 public final class BarIndicatorFactory implements IndicatorFactory<BarIndicatorConfiguration>{
 
   @Override

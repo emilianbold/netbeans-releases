@@ -105,9 +105,13 @@ public abstract class DLightTarget {
    * @param newState state  target is
    */
   protected final void notifyListeners(DLightTarget.State oldState, DLightTarget.State newState) {
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
+    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);    
     for (DLightTargetListener l : ls) {
+      if (oldState == State.INIT && newState == State.RUNNING &&  getState() != State.RUNNING){
+          break;
+      }      
       l.targetStateChanged(this, oldState, newState);
+      
     }
   }
 
@@ -167,11 +171,13 @@ public abstract class DLightTarget {
 
     /**
      * Start target
+     * @param target targeto start
      */
     public void start(T target);
 
     /**
      * Terminate target
+     * @param target target to terminate
      */
     public void terminate(T target);
   }

@@ -287,9 +287,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             ObservableActionListener<Boolean> listener = new ObservableActionListener<Boolean>() {
 
                 public void actionCompleted(Action source, Boolean result) {
-                    if (DLightManager.getDefault().getActiveSession() != null) {
-                        DLightManager.getDefault().getActiveSession().revalidate();
-                    }
+                    DLightManager.getDefault().revalidateSessions();
                 }
 
                 public void actionStarted(Action source) {
@@ -434,7 +432,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 
   public void targetStateChanged(DLightTarget source, State oldState, State newState) {
      switch (newState){
-      case STARTING :
+      case RUNNING :
         targetStarted(source);
         break;
       case FAILED:

@@ -12,12 +12,15 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author mt154047
  */
+@ServiceProviders({@ServiceProvider(service=DataProviderFactory.class), @ServiceProvider(service=VisualizerDataProviderFactory.class)})
 public final class SQLTableDataProviderFactory implements DataProviderFactory {
 
     private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table"));

@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.api.indicator;
 import java.util.HashMap;
 
 /**
- * Represents Map to be used by {@link org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration}
+ * Represents Map to be used by {@link org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration}
  */
 public final class ConfigurationData {
   private final HashMap<String, Object> map;
@@ -53,12 +53,21 @@ public final class ConfigurationData {
     this.map = map == null ? new HashMap<String, Object>() : map;
   }
   
+  /**
+   * Creates new configuration data 
+   * @param map pair name-value
+   */
   public ConfigurationData(HashMap<String, Object> map) {
     this(map, null);
   }
 
  
   
+  /**
+   *Returns value for the key
+   * @param key key to get value for
+   * @return value  if record with <code>key</code> exists, <code>null</code> otherwise
+   */
   public Object get(String key) {
     return get(path, key);
   }
@@ -80,10 +89,20 @@ public final class ConfigurationData {
     return get(prevPath == null ? null : prevPath.concat("/"), key);
   }
 
-  public String getFullKey(String key) {
+  /**
+   * Returns full keey value
+   * @param key
+   * @return
+   */
+  private String getFullKey(String key) {
     return path == null ? key : path + key;    
   }
   
+  /**
+   * Return node
+   * @param key
+   * @return ConfigurationData for the <code>key</code>
+   */
   public ConfigurationData getNode(String key) {
     String nodepath = getFullKey(key) + '/';
     return new ConfigurationData(map, nodepath);

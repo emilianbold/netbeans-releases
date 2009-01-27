@@ -97,7 +97,8 @@ public class NativeTask implements Future<Integer> {
      * @param outBuffer if not <tt>null</tt>, command's output will be
      *        redirected to provided <tt>StringBuffer</tt>
      */
-    public NativeTask(ExecutionEnvironment execEnv, String cmd, String[] args, StringBuffer outBuffer) {
+    public NativeTask(final ExecutionEnvironment execEnv, final String cmd,
+            final String[] args, final StringBuffer outBuffer) {
         this.execEnv = execEnv;
 
         if (args != null) {
@@ -112,12 +113,17 @@ public class NativeTask implements Future<Integer> {
             this.command = cmd;
         }
 
-        boolean redirectError = Boolean.valueOf(System.getProperty("dlight.nativetask.error.redirector", "false")); // NOI18N
-        this.redirectionErrorWriter = redirectError ? new ErrorWriter(System.err) : null;
+        boolean redirectError = Boolean.valueOf(System.getProperty(
+                "dlight.nativetask.error.redirector", // NOI18N
+                "false")); // NOI18N
+        this.redirectionErrorWriter = redirectError
+                ? new ErrorWriter(System.err) : null;
         this.redirectionOutputWriter = null;
         this.redirectionInputReader = null;
 
-        executor = execEnv.isRemote() ? new RemoteNativeExecutor(this) : new LocalNativeExecutor(this);
+        executor = execEnv.isRemote()
+                ? new RemoteNativeExecutor(this)
+                : new LocalNativeExecutor(this);
 
         if (outBuffer != null) {
             this.redirectionOutputWriter = new StringBufferWriter(outBuffer);
@@ -446,8 +452,9 @@ public class NativeTask implements Future<Integer> {
      * @throws java.util.concurrent.ExecutionException
      * @throws java.util.concurrent.TimeoutException
      */
-    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Integer get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     private static class ErrorWriter extends PrintWriter {
@@ -471,10 +478,10 @@ public class NativeTask implements Future<Integer> {
 
         @Override
         public ProgressHandle getProgressHandler(final NativeTask task) {
-            return (task.showProgress ?
-                ProgressHandleFactory.createHandle(task.toString(),
-                task.executor,
-                task.redirectionIO == null ? null : new AbstractAction() {
+            return (task.showProgress
+                    ? ProgressHandleFactory.createHandle(task.toString(),
+                    task.executor,
+                    task.redirectionIO == null ? null : new AbstractAction() {
 
                 public void actionPerformed(ActionEvent e) {
                     task.redirectionIO.select();
@@ -501,6 +508,5 @@ public class NativeTask implements Future<Integer> {
         public void resetTask(NativeTask task) {
             task.reset();
         }
-
     }
 }
