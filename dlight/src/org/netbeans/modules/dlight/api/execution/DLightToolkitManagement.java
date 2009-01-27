@@ -45,15 +45,19 @@ import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author masha
+ * Use this class to start D-Light'ing process.
+ * <pre>
+      NativeExecutableTargetConfiguration targetConfiguration = new NativeExecutableTargetConfiguration(application, arguments, environment);;
+      DLightTarget target = new NativeExecutableTarget(targetConfiguration);
+      DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, "MyFavoriteConfiguration");
+      DLightToolkitManagement.getInstance().startSession(session);
+ </pre>
  */
 public final class DLightToolkitManagement {
 
-  static{
+  static {
     DLightSessionHandlerAccessor.setDefault(new DLightSessionHandlerAccessorImpl());
   }
-
   private static DLightToolkitManagement instance = null;
   private static DLightToolkitManager toolkitManager;
 
@@ -62,6 +66,10 @@ public final class DLightToolkitManagement {
     toolkitManager = Lookup.getDefault().lookup(DLightToolkitManager.class);
   }
 
+  /**
+   * Singleton method to get instance to work with
+   * @return instance
+   */
   public static final DLightToolkitManagement getInstance() {
     if (instance == null) {
       instance = new DLightToolkitManagement();
@@ -69,26 +77,66 @@ public final class DLightToolkitManagement {
     return instance;
   }
 
+  /**
+   * Creates new session to start D-Light'ing of <code>target</code> using
+   * <code>configurationName</code> as a D-Light Configuration name.
+   * D-Light Configuration consist of tools to be used to d-light target.
+   * It is defined in NetBeans files system.
+    * <pre>
+ * &lt;filesystem&gt;
+  &lt;folder name="DLight"&gt;
+    &lt;folder name="Configurations"&gt;
+      &lt;folder name="MyFavoriteConfiguration"&gt;
+        &lt;folder name="KnownToolsConfigurationProviders"&gt;
+          &lt;file name="MyDLightToolConfigurationProvider.shadow"&gt;
+            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MyDLightToolConfigurationProvider.instance"/&gt;
+          &lt;/file&gt;
+          &lt;file name="MemoryToolConfigurationProvider.shadow"&gt;
+            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/&gt;
+          &lt;/file&gt;
+          &lt;file name="SyncToolConfigurationProvider.shadow"&gt;
+            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/&gt;
+          &lt;/file&gt;
+        &lt;/folder&gt;
+      &lt;/folder&gt;
+    &lt;/folder&gt;
+  &lt;/folder&gt;
+&lt;/filesystem&gt;
+</pre>
+   * @param target target to be d-lighted
+   * @param configurationName configuration name to be used 
+   * @return session handler, this handler should be used to start {@link #startSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) }
+   * or stop {@link #stopSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) } session.
+   */
   public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
     return toolkitManager.createSession(target, configurationName);
   }
 
-  public DLightSessionHandler createSession(DLightTarget target) {
-    return toolkitManager.createSession(target);
+
+  /**
+   * Stars session <code>sessionHandler<code>, the reference can be retrieved using {@link #createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) } method
+   * @param sessionHandler session to be started
+   */
+  public void startSession(DLightSessionHandler sessionHandler) {
+    toolkitManager.startSession(sessionHandler);
   }
 
-  public void startSession(DLightSessionHandler reference) {
-    toolkitManager.startSession(reference);
+  /**
+   * Stop session <code>sessionHandler</code>, , the reference can be retrieved using {@link #createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) } method
+   * @param sessionHandler session to be
+   */
+  public void stopSession(DLightSessionHandler sessionHandler) {
+    toolkitManager.stopSession(sessionHandler);
   }
 
-  public void stopSession(DLightSessionHandler reference) {
-    toolkitManager.stopSession(reference);
-  }
-
-  private  DLightSessionHandler create(DLightSessionInternalReference ref){
+  private DLightSessionHandler create(DLightSessionInternalReference ref) {
     return new DLightSessionHandler(ref);
   }
 
+  /**
+   * Sesion handler, it can be retrived using {@link DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) }
+   * method and used to start and stop D-Light Session.
+   */
   public final class DLightSessionHandler {
 
     private DLightSessionInternalReference ref;

@@ -166,7 +166,7 @@ public class TestMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[0];
+        return new Action[] {new DiffViewAction(testcase)};
     }
     
     @Override
@@ -186,7 +186,8 @@ public class TestMethodNode extends AbstractNode {
     }
 
     public boolean failed() {
-        return testcase.getTrouble() != null;
+        return testcase.getStatus().equals(Status.FAILED)
+                || testcase.getStatus().equals(Status.ERROR);
     }
     
     
