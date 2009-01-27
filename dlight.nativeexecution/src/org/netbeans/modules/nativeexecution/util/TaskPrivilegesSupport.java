@@ -83,9 +83,10 @@ import org.openide.util.NbBundle;
  * In case of remote - to remote sshd process.
  *
  */
-public class TaskPrivilegesSupport {
+public final class TaskPrivilegesSupport {
 
-    private Map<String, List<String>> privilegesHash = Collections.synchronizedMap(new HashMap<String, List<String>>());
+    private Map<String, List<String>> privilegesHash =
+            Collections.synchronizedMap(new HashMap<String, List<String>>());
     private static TaskPrivilegesSupport instance = new TaskPrivilegesSupport();
     private WeakReference<GrantPrivilegesDialog> dialogRef = null;
 
@@ -108,7 +109,10 @@ public class TaskPrivilegesSupport {
      * @return true if <tt>execEnv</tt> has all execution privileges listed in
      *         <tt>privs</tt>
      */
-    public boolean hasPrivileges(ExecutionEnvironment execEnv, List<String> privs) {
+    public boolean hasPrivileges(
+            final ExecutionEnvironment execEnv,
+            final List<String> privs) {
+
         boolean status = true;
         List<String> real_privs = getExecutionPrivileges(execEnv);
 
@@ -129,11 +133,14 @@ public class TaskPrivilegesSupport {
      * @param execEnv <tt>ExecutionEnvironment</tt> to get privileges list from
      * @return a list of currently effective execution privileges
      */
-    public List<String> getExecutionPrivileges(final ExecutionEnvironment execEnv) {
+    public List<String> getExecutionPrivileges(
+            final ExecutionEnvironment execEnv) {
         return getExecutionPrivileges(execEnv, false);
     }
 
-    private List<String> getExecutionPrivileges(final ExecutionEnvironment execEnv, boolean forceQuery) {
+    private List<String> getExecutionPrivileges(
+            final ExecutionEnvironment execEnv,
+            final boolean forceQuery) {
         if (!forceQuery && privilegesHash.containsKey(execEnv.toString())) {
             return privilegesHash.get(execEnv.toString());
         }
@@ -147,7 +154,11 @@ public class TaskPrivilegesSupport {
          */
 
         StringBuffer taskOutput = new StringBuffer();
-        NativeTask ppriv = new NativeTask(execEnv, "/bin/ppriv", new String[]{"-v $$ | /bin/grep [IL]"}, taskOutput); // NOI18N
+        NativeTask ppriv = new NativeTask(
+                execEnv,
+                "/bin/ppriv", // NOI18N
+                new String[]{"-v $$ | /bin/grep [IL]"}, taskOutput); // NOI18N
+
         ppriv.submit(true);
         int result = -1;
 
@@ -170,10 +181,13 @@ public class TaskPrivilegesSupport {
 
         String[] outArray = taskOutput.toString().split("\n"); // NOI18N
         for (String str : outArray) {
+            String[] privs = str.substring(
+                    str.indexOf(": ") + 2).split(","); // NOI18N
+
             if (str.contains("I:")) { // NOI18N
-                iprivs = Arrays.asList(str.substring(str.indexOf(": ") + 2).split(",")); // NOI18N
-            } else if (str.contains("L:")) {
-                lprivs = Arrays.asList(str.substring(str.indexOf(": ") + 2).split(",")); // NOI18N
+                iprivs = Arrays.asList(privs);
+            } else if (str.contains("L:")) { // NOI18N
+                lprivs = Arrays.asList(privs);
             }
         }
 
@@ -201,39 +215,48 @@ public class TaskPrivilegesSupport {
      * @return  true - if privileges has changed
      *          false - if no changes to privileges happened
      */
-    private synchronized boolean requestExecutionPrivileges(final ExecutionEnvironment execEnv, final List<String> requiredPrivileges) {
+    private synchronized boolean requestExecutionPrivileges(
+            final ExecutionEnvironment execEnv,
+            final List<String> requiredPrivileges) {
+
         if (SwingUtilities.isEventDispatchThread()) {
-            throw new RuntimeException("requestExecutionPrivileges should never be called in AWT thread"); // NOI18N
+            throw new RuntimeException("requestExecutionPrivileges " + // NOI18N
+                    "should never be called in AWT thread"); // NOI18N
         }
 
         if (hasPrivileges(execEnv, requiredPrivileges)) {
             return false;
         }
 
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(
+                loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
         ph.start();
 
-        final List<String> currentPrivileges = getExecutionPrivileges(execEnv, false);
+        final List<String> currentPrivileges =
+                getExecutionPrivileges(execEnv, false);
+
         List<String> newPrivileges = null;
 
         try {
             if (dialogRef == null || dialogRef.get() == null) {
-                dialogRef = new WeakReference<GrantPrivilegesDialog>(new GrantPrivilegesDialog());
+                dialogRef = new WeakReference<GrantPrivilegesDialog>(
+                        new GrantPrivilegesDialog());
             }
 
             GrantPrivilegesDialog dialog = dialogRef.get();
             boolean result = dialog.askPassword();
 
             if (result) {
-                PrivilegesRequestor.doRequest(execEnv,
-                        requiredPrivileges, dialog.getUser(), dialog.getPassword());
+                PrivilegesRequestor.doRequest(execEnv, requiredPrivileges,
+                        dialog.getUser(), dialog.getPassword());
                 newPrivileges = getExecutionPrivileges(execEnv, true);
             }
         } finally {
             ph.finish();
         }
 
-        return newPrivileges != null && !newPrivileges.equals(currentPrivileges);
+        return newPrivileges != null &&
+                !newPrivileges.equals(currentPrivileges);
     }
 
     /**
@@ -245,19 +268,26 @@ public class TaskPrivilegesSupport {
      * @return <tt>ObservableAction<Boolean></tt> that can be invoked in order
      * to request needed execution privileges
      */
-    public static ObservableAction<Boolean> getRequestPrivilegesAction(final ExecutionEnvironment execEnv,
+    public static ObservableAction<Boolean> getRequestPrivilegesAction(
+            final ExecutionEnvironment execEnv,
             final List<String> requestedPrivileges) {
-        RequestPrivilegesAction action = new RequestPrivilegesAction(execEnv, requestedPrivileges);
+
+        RequestPrivilegesAction action =
+                new RequestPrivilegesAction(execEnv, requestedPrivileges);
 
         return action;
     }
 
-    private static class RequestPrivilegesAction extends ObservableAction<Boolean> {
+    private static class RequestPrivilegesAction
+            extends ObservableAction<Boolean> {
 
         private final ExecutionEnvironment execEnv;
         private final List<String> requestedPrivileges;
 
-        public RequestPrivilegesAction(final ExecutionEnvironment execEnv, final List<String> requestedPrivileges) {
+        public RequestPrivilegesAction(
+                final ExecutionEnvironment execEnv,
+                final List<String> requestedPrivileges) {
+
             super(loc("TaskPrivilegesSupport_GrantPrivileges_Action")); // NOI18N
             this.execEnv = execEnv;
             this.requestedPrivileges = requestedPrivileges;
@@ -265,7 +295,8 @@ public class TaskPrivilegesSupport {
 
         @Override
         protected Boolean performAction(ActionEvent e) {
-            return TaskPrivilegesSupport.getInstance().requestExecutionPrivileges(execEnv, requestedPrivileges);
+            TaskPrivilegesSupport sup = TaskPrivilegesSupport.getInstance();
+            return sup.requestExecutionPrivileges(execEnv, requestedPrivileges);
         }
     }
 
@@ -275,20 +306,24 @@ public class TaskPrivilegesSupport {
 
     private static class PrivilegesRequestor {
 
-        private static final Map<String, Long> csums = new HashMap<String, Long>();
+        private static final Map<String, Long> csums =
+                new HashMap<String, Long>();
 
 
         static {
             csums.put("intel-S2", 848751545L); // NOI18N
         }
 
-        private static void doRequest(final ExecutionEnvironment execEnv, final List<String> requestedPrivileges,
+        private static void doRequest(
+                final ExecutionEnvironment execEnv,
+                final List<String> requestedPrivileges,
                 String user, String passwd) {
+
             // Construct privileges list
             StringBuffer sb = new StringBuffer();
 
             for (String priv : requestedPrivileges) {
-                sb.append(priv).append(",");
+                sb.append(priv).append(","); // NOI18N
             }
 
             if (execEnv.isLocal()) {
@@ -304,7 +339,8 @@ public class TaskPrivilegesSupport {
             String osPath = HostInfo.getPlatformPath(execEnv);
             String privp = String.format("bin/%s/privp", osPath); // NOI18N
 
-            File file = InstalledFileLocator.getDefault().locate(privp, null, false);
+            InstalledFileLocator fl = InstalledFileLocator.getDefault();
+            File file = fl.locate(privp, null, false);
 
             if (file == null || !file.exists()) {
                 return;
@@ -333,7 +369,8 @@ public class TaskPrivilegesSupport {
             String pid = null;
 
             try {
-                pid = new File("/proc/self").getCanonicalFile().getName(); // NOI18N
+                File self = new File("/proc/self"); // NOI18N
+                pid = self.getCanonicalFile().getName();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -369,7 +406,10 @@ public class TaskPrivilegesSupport {
          * @param expectedString
          * @return
          */
-        private final static String expect(InputStream in, final String expectedString) {
+        private final static String expect(
+                final InputStream in,
+                final String expectedString) {
+
             int pos = 0;
             int len = expectedString.length();
             char[] cbuf = new char[2];
@@ -396,21 +436,27 @@ public class TaskPrivilegesSupport {
 
         }
 
-        private static synchronized void doRequestRemote(final ExecutionEnvironment execEnv,
-                String requestedPrivs, String user, String passwd) {
+        private static synchronized void doRequestRemote(
+                final ExecutionEnvironment execEnv,
+                final String requestedPrivs,
+                final String user, final String passwd) {
 
-            Session session = ConnectionManager.getInstance().getConnectionSession(execEnv);
+            ConnectionManager cm = ConnectionManager.getInstance();
+            Session session = cm.getConnectionSession(execEnv);
 
             if (session == null) {
                 return;
             }
 
-            String pid = "`/usr/bin/ptree $$|/bin/awk '/sshd$/{p=$1}END{print p}'`"; // NOI18N
+            String pid = "`/usr/bin/ptree $$|" + // NOI18N
+                    "/bin/awk '/sshd$/{p=$1}END{print p}'`"; // NOI18N
 
             OutputStream out = null;
             InputStream in = null;
 
-            String script = "/usr/bin/ppriv -s I+" + requestedPrivs + " " + pid; // NOI18N
+            String script = "/usr/bin/ppriv -s I+" + // NOI18N
+                    requestedPrivs + " " + pid; // NOI18N
+
             StringBuffer cmd = new StringBuffer("/sbin/su - "); // NOI18N
             cmd.append(user).append(" -c \""); // NOI18N
             cmd.append(script).append("\"; echo ExitStatus:$?\n"); // NOI18N
@@ -442,7 +488,8 @@ public class TaskPrivilegesSupport {
                     status = Integer.valueOf(exitStatus).intValue();
                 } finally {
                     if (status != 0) {
-                        NotifyDescriptor dd = new NotifyDescriptor.Message("/sbin/su failed"); // NOI18N
+                        NotifyDescriptor dd =
+                                new NotifyDescriptor.Message("/sbin/su failed"); // NOI18N
                         DialogDisplayer.getDefault().notify(dd);
                     }
                 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.gizmo.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.Project;
@@ -79,8 +80,25 @@ public final class StartGizmoAction implements ActionListener {
 //    conf.setSSHPort(2222);
 //    conf.setUser("masha");
         DLightTarget target = new NativeExecutableTarget(conf);
-        DLightToolkitManagement.DLightSessionHandler session = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); //NOI18N
-        DLightToolkitManagement.getInstance().startSession(session);
+
+        final DLightToolkitManagement dtm =
+                DLightToolkitManagement.getInstance();
+
+        final Future<DLightToolkitManagement.DLightSessionHandler>
+                sessionCreationTask =
+                dtm.createSession(target, "Gizmo"); // NOI18N
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    dtm.startSession(sessionCreationTask.get());
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }).start();
     }
 
     private Configuration getActiveConfiguration(Project project) {

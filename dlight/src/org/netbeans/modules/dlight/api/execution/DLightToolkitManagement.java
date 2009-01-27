@@ -39,9 +39,12 @@
 package org.netbeans.modules.dlight.api.execution;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.util.Lookup;
 
 /**
@@ -108,8 +111,14 @@ public final class DLightToolkitManagement {
    * @return session handler, this handler should be used to start {@link #startSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) }
    * or stop {@link #stopSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) } session.
    */
-  public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
-    return toolkitManager.createSession(target, configurationName);
+  public Future<DLightSessionHandler> createSession(
+          final DLightTarget target,
+          final String configurationName) {
+      return DLightExecutorService.service.submit(new Callable<DLightSessionHandler>() {
+            public DLightSessionHandler call() throws Exception {
+                return toolkitManager.createSession(target, configurationName);
+            }
+        });
   }
 
 
