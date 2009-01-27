@@ -39,10 +39,24 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
+import org.openide.windows.InputOutput;
+
 /**
  * @author Tomas Mysik
  */
 public final class PhpUnit extends PhpProgram {
+    static int[] version = null;
 
     /**
      * {@inheritDoc}
@@ -54,5 +68,83 @@ public final class PhpUnit extends PhpProgram {
     @Override
     public boolean isValid() {
         return super.isValid();
+    }
+
+    /**
+     * The minimum version of PHPUnit is <b>3.3.0</b> because:
+     * - of XML log format changes (used for parsing of test results)
+     * - running project action Test (older versions don't support directory as a parameter to run)
+     * @return <code>true</code> if PHPUnit in minimum version was found
+     */
+    public boolean supportedVersionFound() {
+        getVersion();
+        if (version == null) {
+            return false;
+        }
+        return version[0] >= PhpUnitConstants.MINIMAL_VERSION[0] && version[1] >= PhpUnitConstants.MINIMAL_VERSION[1];
+    }
+
+    /**
+     * Get the version of PHPUnit in the form of [major][minor][revision].
+     * @return
+     */
+    public int[] getVersion() {
+        if (version != null) {
+            return version;
+        }
+
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+                .addArgument(PhpUnitConstants.PARAM_VERSION);
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new OutputProcessorFactory());
+        ExecutionService service = ExecutionService.newService(externalProcessBuilder, executionDescriptor, null);
+        Future<Integer> result = service.run();
+        try {
+            result.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        }
+        return version;
+    }
+
+    public void resetVersion() {
+        version = null;
+    }
+
+    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
+        private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+                public void processLine(String line) {
+                    int[] match = match(line);
+                    if (match != null) {
+                        version = match;
+                    }
+                }
+                public void reset() {
+                }
+                public void close() {
+                }
+            });
+        }
+
+        static int[] match(String text) {
+            assert text != null;
+            if (text.trim().length() == 0) {
+                return null;
+            }
+            Matcher matcher = PHPUNIT_VERSION.matcher(text);
+            if (matcher.find()) {
+                int major = Integer.parseInt(matcher.group(1));
+                int minor = Integer.parseInt(matcher.group(2));
+                int release = Integer.parseInt(matcher.group(3));
+                return new int[] {major, minor, release};
+            }
+            return null;
+        }
     }
 }

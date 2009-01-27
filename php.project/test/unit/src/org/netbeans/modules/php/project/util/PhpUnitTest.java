@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.actions.tests;
+package org.netbeans.modules.php.project.util;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
 /**
- * PHP Unit 3.x constants.
  * @author Tomas Mysik
  */
-public final class PhpUnitConstants {
-    // minimum supported version
-    public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
+public class PhpUnitTest extends NbTestCase {
 
-    // test files
-    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
-
-    // cli options
-    public static final String PARAM_VERSION = "--version"; // NOI18N
-    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
-    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
-    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
-    // for older PHP Unit versions
-    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
-
-    // output files
-    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
-
-    private PhpUnitConstants() {
+    public PhpUnitTest(String name) {
+        super(name);
     }
 
-    /**
-     * Get an array with actual and minimal PHPUnit versions.
-     */
-    public static String[] getPhpUnitVersions(int[] actualVersion) {
-        List<String> params = new ArrayList<String>(6);
-        if (actualVersion == null) {
-            params.add("?"); params.add("?"); params.add("?"); // NOI18N
-        } else {
-            for (Integer i : actualVersion) {
-                params.add(String.valueOf(i));
-            }
-        }
-        for (Integer i : MINIMAL_VERSION) {
-            params.add(String.valueOf(i));
-        }
-        return params.toArray(new String[params.size()]);
+    public void testPhpUnitVersion() {
+        int[] version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3 by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit A3.3.1 by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3x.1 by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1a by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit          3.3.1 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 323324.3877987.165456 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
     }
 }
