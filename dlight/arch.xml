@@ -142,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
 
      How to use D-Light Toolkit to implement Gizmo:
         <ul>
-          <li>Create Gizmo configuration: list tools to be used in Gizmo:
+          <li>Create MyFavoriteConfiguration configuration: list tools to be used in Gizmo:
             <pre>
  &lt;filesystem&gt;
   &lt;folder name="DLight"&gt;
@@ -166,12 +166,12 @@ Microsystems, Inc. All Rights Reserved.
             </pre>
           </li>
           <li>Create target to be d-lighted: use API support class NativeExecutableTarget and
-          NativeExecutableTargetConfiguration to create DLightTarget. Use org.netbeans.modules.dlight.execution.api.DLightToolkitManagement#createSession(org.netbeans.modules.dlight.execution.api.DLightTarget
+          NativeExecutableTargetConfiguration to create DLightTarget. Use org.netbeans.modules.dlight.api.execution.DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget
           to get DLightSessionReference object which can be used later to run D-Light.
             <pre>
            NativeExecutableTargetConfiguration targetConfiguration = new NativeExecutableTargetConfiguration(application, arguments, environment);;
-           DLightTarget target = new NativeExecutableTarget(conf);
-           DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, CONFIGURATION_NAME);
+           DLightTarget target = new NativeExecutableTarget(targetConfiguration);
+           DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, "MyFavoriteConfiguration");
            DLightToolkitManagement.getInstance().startSession(session);
             </pre>
           </li>

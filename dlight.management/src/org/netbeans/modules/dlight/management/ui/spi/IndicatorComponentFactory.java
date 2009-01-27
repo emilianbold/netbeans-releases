@@ -37,28 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.cpu.impl;
-
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-
+package org.netbeans.modules.dlight.management.ui.spi;
 
 /**
  *
  * @author mt154047
  */
-public final class CpuIndicatorConfiguration extends IndicatorConfiguration{
-  static final String ID = "CpuIndicatorConfiguration_ID";
-
-  public CpuIndicatorConfiguration(IndicatorMetadata metadata) {
-    super(metadata);
-  }
-
-  @Override
-  public String getID() {
-    return ID;
-  }
-
-
+public interface IndicatorComponentFactory {
+  IndicatorComponent get();
 
 }

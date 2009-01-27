@@ -41,7 +41,12 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 <toc version="2.0">
     <tocitem text="Java Applications"  expand="false">
         <tocitem text="Working with Maven">
+            <tocitem text="Creating a Maven Project" target="maven_project" />
             <tocitem text="Configuring Maven Settings" target="maven_settings" />
+            <tocitem text="Managing Maven Project Dependencies" target="maven_dependencies" />
+            <tocitem text="Working with Maven Repositories" target="maven_repositories" />
+            <tocitem text="Editing pom.xml" target="maven_pom" />
+
             
         </tocitem>
     </tocitem>

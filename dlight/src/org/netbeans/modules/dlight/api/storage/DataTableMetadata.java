@@ -41,6 +41,17 @@ package org.netbeans.modules.dlight.api.storage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is virtual table description. This table description is
+ * used on all levels of communication.
+ * <p>
+ * <ul>
+ * <li> It should be used to describe data collected, see {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration}
+ * <li> It is used in storage 
+ * <li> It is used by
+ * </ul>
+ * </p>
+ */
 public final class DataTableMetadata {
 
   private String name;
@@ -49,10 +60,22 @@ public final class DataTableMetadata {
   private List<DataTableMetadata> sourceTables;
   private String sqlStatament;
 
+  /**
+   *
+   * @param name
+   * @param columns
+   */
   public DataTableMetadata(String name, List<Column> columns) {
     this(name, columns, null, null);
   }
 
+  /**
+   *
+   * @param name
+   * @param columns
+   * @param sql
+   * @param sourceTables
+   */
   public DataTableMetadata(String name, List<Column> columns, String sql, List<DataTableMetadata> sourceTables) {
     this.columns = columns;
     this.name = name;
@@ -65,26 +88,51 @@ public final class DataTableMetadata {
 
   }
 
+  /**
+   *
+   * @return
+   */
   public List<String> getColumnNames() {
     return columnNames;
   }
 
+  /**
+   *
+   * @return
+   */
   public List<DataTableMetadata> getSourceTables() {
     return sourceTables;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   *
+   * @return
+   */
   public List<Column> getColumns() {
     return columns;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getSQL() {
     return sqlStatament;
   }
 
+  /**
+   *
+   * @param columnName
+   * @return
+   */
   public Column getColumnByName(String columnName) {
     for (Column c : columns) {
       if (c.getColumnName().equals(columnName)) {
@@ -94,6 +142,10 @@ public final class DataTableMetadata {
     return null;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getColumnsCount() {
     return columns.size();
   }
@@ -111,17 +163,32 @@ public final class DataTableMetadata {
         return sb.toString();
     }
 
-  public static class Column {
+    /**
+     *
+     */
+    public static class Column {
 
     String name;
     Class columnClass;
     String uname;
     String expression;
 
+    /**
+     *
+     * @param name
+     * @param columnClass
+     */
     public Column(String name, Class columnClass) {
       this(name, columnClass, name, null);
     }
 
+    /**
+     *
+     * @param name
+     * @param columnClass
+     * @param uname
+     * @param expression
+     */
     public Column(String name, Class columnClass, String uname, String expression) {
       this.name = name;
       this.columnClass = columnClass;
@@ -129,18 +196,34 @@ public final class DataTableMetadata {
       this.expression = expression;
     }
 
+    /**
+     *
+     * @return
+     */
     public Class getColumnClass() {
       return columnClass;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getColumnName() {
       return name;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getColumnUName() {
       return uname;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getExpression() {
       return expression;
     }
