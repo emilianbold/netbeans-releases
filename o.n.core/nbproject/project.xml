@@ -216,6 +216,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <test/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
