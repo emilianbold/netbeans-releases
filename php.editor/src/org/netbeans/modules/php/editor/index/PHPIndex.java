@@ -45,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +59,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -79,6 +82,8 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndex {
+
+    private static final Logger LOG = Logger.getLogger(PHPIndex.class.getName());
 
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
@@ -107,12 +112,12 @@ public class PHPIndex {
     private final QuerySupport index;
 
     /** Creates a new instance of JsIndex */
-    public PHPIndex(QuerySupport index) {
+    private PHPIndex(QuerySupport index) {
         this.index = index;
     }
 
     public static PHPIndex get(Collection<FileObject> roots) {
-           try {
+        try {
             return new PHPIndex(QuerySupport.forRoots(PHPIndexer.Factory.NAME,
                     PHPIndexer.Factory.VERSION,
                     roots.toArray(new FileObject[roots.size()])));
@@ -273,8 +278,33 @@ public class PHPIndex {
 
     private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
         try {
-            return index.query(key, name, kind, terms);
-        } catch (IOException ioe) {
+            Collection<? extends IndexResult> results = index.query(key, name, kind, terms);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                String msg = "PHPIndex.search(" + key + ", " + name + ", " + kind + ", " //NOI18N
+                        + (terms == null || terms.length == 0 ? "no terms" : Arrays.asList(terms)) + ")"; //NOI18N
+                LOG.fine(msg);
+                
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, null, new Throwable(msg));
+                }
+
+                for(IndexResult r : results) {
+                    LOG.fine("Fields in " + r + " (" + r.getFile().getPath() + "):"); //NOI18N
+                    for(String field : PHPIndexer.ALL_FIELDS) {
+                        String value = r.getValue(field);
+                        if (value != null) {
+                            LOG.fine(" <" + field + "> = <" + value + ">"); //NOI18N
+                        }
+                    }
+                    LOG.fine("----"); //NOI18N
+                }
+
+                LOG.fine("===="); //NOI18N
+            }
+
+        return results;
+    } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return Collections.<IndexResult>emptySet();
         }
