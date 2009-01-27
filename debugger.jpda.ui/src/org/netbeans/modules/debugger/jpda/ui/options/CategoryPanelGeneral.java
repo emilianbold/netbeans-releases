@@ -45,6 +45,11 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
+import java.util.prefs.Preferences;
+import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.openide.util.NbPreferences;
+
 /**
  *
  * @author Martin Entlicher
@@ -123,12 +128,61 @@ class CategoryPanelGeneral extends StorablePanel {
 
     @Override
     void load() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Preferences p = NbPreferences.root().node("Debugger/JPDA");
+        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        applyCodeChangesCheckBox.setSelected(p.getBoolean("ApplyCodeChangesOnSave", false));
+        stopOnExceptionsCheckBox.setSelected(p.getBoolean("CatchExceptions", false));
+        breakpointsSuspendComboBox.setSelectedIndex(suspendIndex(p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD)));
+        stepsResumeComboBox.setSelectedIndex(resumeIndex(p.getInt("StepResume", 1)));
     }
 
     @Override
     void store() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Preferences p = NbPreferences.root().node("Debugger/JPDA");
+        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        p.setBoolean("ApplyCodeChangesOnSave", applyCodeChangesCheckBox.isSelected());
+        p.setBoolean("CatchExceptions", stopOnExceptionsCheckBox.isSelected());
+        p.setInt("BreakpointSuspend", suspendProp(breakpointsSuspendComboBox.getSelectedIndex()));
+        p.setInt("StepResume", resumeProp(stepsResumeComboBox.getSelectedIndex()));
+    }
+
+    private static int suspendIndex(int jpdaBreakpointSuspend) {
+        switch (jpdaBreakpointSuspend) {
+            case JPDABreakpoint.SUSPEND_ALL: return 0;
+            case JPDABreakpoint.SUSPEND_EVENT_THREAD: return 1;
+            case JPDABreakpoint.SUSPEND_NONE: return 2;
+            default: return 1;
+        }
+    }
+
+    private static int suspendProp(int index) {
+        switch (index) {
+            case 0: return JPDABreakpoint.SUSPEND_ALL;
+            case 1: return JPDABreakpoint.SUSPEND_EVENT_THREAD;
+            case 2: return JPDABreakpoint.SUSPEND_NONE;
+            default:
+                throw new IllegalArgumentException("Bad index: "+index);
+        }
+    }
+
+    private static int resumeIndex(int stepResume) {
+        // 0 ... resume all threads
+        // 1 ... resume current thread
+        if (stepResume >= 0 && stepResume <= 1) {
+            return stepResume;
+        } else {
+            return 1;
+        }
+    }
+
+    private static int resumeProp(int index) {
+        // 0 ... resume all threads
+        // 1 ... resume current thread
+        if (index >= 0 && index <= 1) {
+            return index;
+        } else {
+            throw new IllegalArgumentException("Bad index: "+index);
+        }
     }
 
 

@@ -68,10 +68,6 @@ class CategoryPanelFormatters extends StorablePanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         formattersScrollPane = new javax.swing.JScrollPane();
         formattersList = new javax.swing.JList();
-        formattersAddButton = new javax.swing.JButton();
-        formattersRemoveButton = new javax.swing.JButton();
-        formattersMoveUpButton = new javax.swing.JButton();
-        formattersMoveDownButton = new javax.swing.JButton();
         formatterNameLabel = new javax.swing.JLabel();
         formatterNameTextField = new javax.swing.JTextField();
         formatterClassTypesLabel = new javax.swing.JLabel();
@@ -87,27 +83,20 @@ class CategoryPanelFormatters extends StorablePanel {
         formatChildrenAsListRadioButton = new javax.swing.JRadioButton();
         formatChildrenListScrollPane = new javax.swing.JScrollPane();
         formatChildrenListTable = new javax.swing.JTable();
+        childrenExpandExpressionLabel = new javax.swing.JLabel();
+        childrenExpandExpressionTextField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        formattersAddButton = new javax.swing.JButton();
+        formattersRemoveButton = new javax.swing.JButton();
+        formattersMoveUpButton = new javax.swing.JButton();
+        formattersMoveDownButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
         variableAddButton = new javax.swing.JButton();
         variableRemoveButton = new javax.swing.JButton();
         variableMoveUpButton = new javax.swing.JButton();
         variableMoveDownButton = new javax.swing.JButton();
-        childrenExpandExpressionLabel = new javax.swing.JLabel();
-        childrenExpandExpressionTextField = new javax.swing.JTextField();
 
-        formattersList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         formattersScrollPane.setViewportView(formattersList);
-
-        formattersAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.text")); // NOI18N
-
-        formattersRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.text")); // NOI18N
-
-        formattersMoveUpButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveUpButton.text")); // NOI18N
-
-        formattersMoveDownButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveDownButton.text")); // NOI18N
 
         formatterNameLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
 
@@ -131,10 +120,7 @@ class CategoryPanelFormatters extends StorablePanel {
 
         formatChildrenListTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+
             },
             new String [] {
                 "Name", "Value"
@@ -150,6 +136,37 @@ class CategoryPanelFormatters extends StorablePanel {
         });
         formatChildrenListScrollPane.setViewportView(formatChildrenListTable);
 
+        childrenExpandExpressionLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenExpandExpressionLabel.text")); // NOI18N
+
+        formattersAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.text")); // NOI18N
+
+        formattersRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.text")); // NOI18N
+
+        formattersMoveUpButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveUpButton.text")); // NOI18N
+
+        formattersMoveDownButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveDownButton.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(formattersMoveDownButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .add(formattersMoveUpButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .add(formattersRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .add(formattersAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(formattersAddButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(formattersRemoveButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(formattersMoveUpButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(formattersMoveDownButton))
+        );
+
         variableAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableAddButton.text")); // NOI18N
 
         variableRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableRemoveButton.text")); // NOI18N
@@ -158,7 +175,26 @@ class CategoryPanelFormatters extends StorablePanel {
 
         variableMoveDownButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveDownButton.text")); // NOI18N
 
-        childrenExpandExpressionLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenExpandExpressionLabel.text")); // NOI18N
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(variableAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+            .add(variableMoveUpButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+            .add(variableMoveDownButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(variableRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(variableAddButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(variableRemoveButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(variableMoveUpButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(variableMoveDownButton))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -172,10 +208,10 @@ class CategoryPanelFormatters extends StorablePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(formatterNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
+                        .add(formatterNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(formatterClassTypesSubtypesCheckBox)
                         .add(12, 12, 12))))
@@ -184,59 +220,44 @@ class CategoryPanelFormatters extends StorablePanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
-                        .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
+                        .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
                     .add(formatValueLabel))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(childrenExpandExpressionLabel)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(72, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(21, 21, 21)
-                        .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                        .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(variableRemoveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(variableAddButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(variableMoveUpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(variableMoveDownButton)))
+                        .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                        .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(formattersAddButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(formattersRemoveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(formattersMoveUpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(formattersMoveDownButton)))
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(formatChildrenAsListRadioButton)
                     .add(layout.createSequentialGroup()
                         .add(21, 21, 21)
-                        .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
+                        .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
                     .add(formatChildrenAsCodeRadioButton)
                     .add(formatChildrenLabel))
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(24, 24, 24)
-                .add(childrenExpandExpressionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                .add(childrenExpandExpressionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(formattersAddButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(formattersRemoveButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(formattersMoveUpButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(formattersMoveDownButton))
-                    .add(formattersScrollPane, 0, 0, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(formattersScrollPane, 0, 0, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(13, 13, 13)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(formatterNameLabel)
                     .add(formatterNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -248,42 +269,35 @@ class CategoryPanelFormatters extends StorablePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatValueLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatChildrenLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatChildrenAsCodeRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatChildrenAsListRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(variableAddButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(variableRemoveButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(variableMoveUpButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(variableMoveDownButton))
-                    .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(childrenExpandExpressionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(childrenExpandExpressionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(23, 23, 23))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
     void load() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     void store() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
@@ -312,6 +326,8 @@ class CategoryPanelFormatters extends StorablePanel {
     private javax.swing.JButton formattersMoveUpButton;
     private javax.swing.JButton formattersRemoveButton;
     private javax.swing.JScrollPane formattersScrollPane;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton variableAddButton;
     private javax.swing.JButton variableMoveDownButton;
     private javax.swing.JButton variableMoveUpButton;
