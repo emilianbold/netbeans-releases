@@ -160,6 +160,8 @@ made subject to such option by the copyright holder.
     <resolve name="modules" value="config.modules.${moduleconfig}"/>
     <resolve name="fixedmodules" value="config.fixedmodules.${moduleconfig}"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
+    <checkmoduleconfigs nbroot=".."/>
   </target>
 
   <target name="set-buildnumber" unless="buildnumber">
@@ -1970,12 +1972,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="${check-file-layout}${line.separator}" file="${check.files.layout.generated}" />
     <replace file="${check.files.layout.generated}" token="," value="${line.separator}" />
     <replace file="${check.files.layout.generated}" token="\" value="/" />
-  </target>
-  
-
-  <target name="check-module-configs" depends="bootstrap" description="Sanity-check build.properties and cluster.properties.">
-    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
-    <checkmoduleconfigs nbroot=".."/>
   </target>
 
   <target name="index-layer-paths" depends="generate-golden-files-init" description="Create index of layer paths.">
