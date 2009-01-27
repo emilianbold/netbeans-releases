@@ -45,8 +45,8 @@ import java.util.Comparator;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.storage.api.Time;
 import static org.junit.Assert.*;
 

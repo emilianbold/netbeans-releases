@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,72 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.dlight.api.storage;
-
-import java.beans.PropertyEditorManager;
-import org.netbeans.modules.dlight.spi.impl.TimeEditor;
+package org.netbeans.modules.dlight.core.stack.api;
 
 /**
- * Metric value class for time interval in nanoseconds. Immutable.
- *
- * @author Alexey Vladykin
+ * Function Call with metrics for function.
+ * As an example: you have the following
  */
-public class Time implements Comparable<Time> {
+public abstract class FunctionCall{
+  private final Function function;
 
-    private final long nanos;
+  protected FunctionCall(Function function) {
+    this.function = function;
+  }
 
-    /**
-     * Creates new instance.
-     *
-     * @param nanos  time in nanoseconds
-     */
-    public Time(long nanos) {
-        this.nanos = nanos;
-    }
+  public final Function getFunction() {
+    return function;
+  }
 
-    /**
-     * @return time in nanoseconds
-     */
-    public long getNanos() {
-        return nanos;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(nanos).append(" nanoseconds");
-        return buf.toString();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Time) {
-            return this.nanos == ((Time) obj).nanos;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return 29 + (int) (nanos ^ (nanos >>> 32));
-    }
-
-    public int compareTo(Time that) {
-        if (this.nanos < that.nanos) {
-            return -1;
-        } else if (this.nanos == that.nanos) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-
-    static {
-        PropertyEditorManager.registerEditor(Time.class, TimeEditor.class);
-    }
-
+  public abstract Object getMetricValue(FunctionMetric metric);
+  public abstract Object getMetricValue(String metric_id);
 }

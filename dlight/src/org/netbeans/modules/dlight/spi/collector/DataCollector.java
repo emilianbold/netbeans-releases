@@ -82,7 +82,7 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      */
     void init(DataStorage storage, DLightTarget target);
  /**
-     * DataCollector can attach to the {@link org.netbeans.modules.dlight.apiexecution.DLightTarget}.
+     * DataCollector can attach to the {@link org.netbeans.modules.dlight.api.execution.DLightTarget}.
      * @return <code>true</code> if collector is attachable, <code>false</code> otherwise
      */
     boolean isAttachable();
@@ -102,10 +102,4 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      */
     String[] getArgs();
 
-    /**
-     * 
-     * @param target
-     * @return
-     */
-    Future<ValidationStatus> validate(DLightTarget target);
 }

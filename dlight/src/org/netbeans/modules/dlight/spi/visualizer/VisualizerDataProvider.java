@@ -40,8 +40,7 @@
 package org.netbeans.modules.dlight.spi.visualizer;
 
 /**
- *
- * @author masha
+ * This class is used as data provider for Visualizer
  */
 public interface VisualizerDataProvider {
 

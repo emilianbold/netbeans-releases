@@ -42,13 +42,13 @@ import org.netbeans.modules.dlight.spi.impl.DataStorageTypeAccessor;
 
 /**
  * This object is marker object to define the following:
- * {@link  org.netbeans.modules.dlight.collector.spi.DataCollector} should
- * find the {@link  org.netbeans.modules.dlight.storage.spi.DataStorage}
+ * {@link  org.netbeans.modules.dlight.spi.collector.DataCollector} should
+ * find the {@link  org.netbeans.modules.dlight.spi.storage.DataStorage}
  * it can put data into (it support),
- * {@link  org.netbeans.modules.dlight.dataprovider.spi.DataProvider} should
- * find the {@link  org.netbeans.modules.dlight.storage.spi.DataStorage} which
+ * {@link  org.netbeans.modules.dlight.spi.dataprovider.DataProvider} should
+ * find the {@link  org.netbeans.modules.dlight.spi.storage.DataStorage} which
  * it can get data from and which contains data required.
- * Two objects of this typea are equals if they have the same  id returned by {@link  org.netbeans.modules.dlight.storage.spi.DataStorageType#getID() }
+ * Two objects of this typea are equals if they have the same  id returned by {@link  org.netbeans.modules.dlight.spi.storage.DataStorageType#getID() }
  *
  */
 public final class DataStorageType {
