@@ -43,17 +43,22 @@ import org.netbeans.modules.dlight.api.*;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 
-
+/**
+ * Represents visualizer configuration.
+ * Visualizer  is a Detailed view which displayed data collected.
+ * As any visualizer can be displayed on the base of table  {@link #getMetadata() } should
+ * be implemented to return table description to
+ */
 public interface VisualizerConfiguration {
   /**
-   * Returns @link org.netbeans.modules.dlight.dataprovider.api.DataModelScheme} the
+   * Returns {@link org.netbeans.modules.dlight.api.dataprovider.DataModelScheme} the
    * VisualizerConfiguration supports
    * @return scheme supported by VisualizerConfiguration
    */
   DataModelScheme getSupportedDataScheme();
   /**
-   * Returns {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/storage/api/DataTableMetadata.html}
-   * which will be used as
+   * Returns {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} which is
+   * used to create Visualizer on the base of 
    * @return table description
    */
   DataTableMetadata getMetadata();

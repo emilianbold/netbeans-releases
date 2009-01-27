@@ -68,10 +68,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * D-Light manager 
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.api.impl.DLightToolkitManager.class)
 public final class DLightManager implements DLightToolkitManager, IndicatorActionListener {
 
     private static final Logger log = DLightLogger.getLogger(DLightManager.class);
@@ -99,10 +101,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
         return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName));
-    }
-
-    public DLightSessionHandler createSession(DLightTarget target) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target));
     }
 
     public DLightSession createNewSession(DLightTarget target) {

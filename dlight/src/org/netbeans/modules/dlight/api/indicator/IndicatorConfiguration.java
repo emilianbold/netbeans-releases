@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.api.indicator;
 
-import org.netbeans.modules.dlight.api.*;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
@@ -75,7 +74,7 @@ public abstract class IndicatorConfiguration {
 
   /**
    * Sets configuration data if needed
-   * @param configurationData
+   * @param configurationData configuration to be used by {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
    */
   public final void setConfigurationData(ConfigurationData configurationData) {
     this.configurationData = configurationData;
@@ -92,15 +91,29 @@ public abstract class IndicatorConfiguration {
     this.visualizerConfiguration = configuration;
   }
 
-  protected ConfigurationData getConfigurationData() {
+  /**
+   * Returns {@link org.netbeans.modules.dlight.api.indicator.ConfigurationData} if it is set
+   * @return configuration data
+   */
+  protected final ConfigurationData getConfigurationData() {
     return configurationData;
   }
 
-  protected IndicatorMetadata getIndicatorMetadata() {
+  /**
+   * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
+   * @return indicator metadata
+   */
+  protected final IndicatorMetadata getIndicatorMetadata() {
     return metadata;
   }
 
-  protected VisualizerConfiguration getVisualizerConfiguration() {
+  /**
+   * Returns {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} used
+   * by the indicator as a configuration of Detailed View which will be opened by clicking on the
+   * indicator created on the base of this configuration
+   * @return visualizer configuraion
+   */
+  protected final VisualizerConfiguration getVisualizerConfiguration() {
     return visualizerConfiguration;
   }
 

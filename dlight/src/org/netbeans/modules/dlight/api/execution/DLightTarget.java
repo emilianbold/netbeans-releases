@@ -167,11 +167,13 @@ public abstract class DLightTarget {
 
     /**
      * Start target
+     * @param target targeto start
      */
     public void start(T target);
 
     /**
      * Terminate target
+     * @param target target to terminate
      */
     public void terminate(T target);
   }
