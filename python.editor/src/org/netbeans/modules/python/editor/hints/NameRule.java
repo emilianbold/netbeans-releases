@@ -143,7 +143,7 @@ public class NameRule extends PythonAstRule {
             }
 
             // Functions should have a first argument of name "self"
-            if (selfRequired) {
+            if (selfRequired && !PythonAstUtils.isStaticMethod(def)) {
                 arguments args = def.getInternalArgs();
                 if (args.getInternalArgs().size() > 0) {
                     String name = PythonAstUtils.getName(args.getInternalArgs().get(0));

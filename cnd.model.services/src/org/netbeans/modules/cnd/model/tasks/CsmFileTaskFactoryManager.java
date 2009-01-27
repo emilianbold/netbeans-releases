@@ -91,10 +91,10 @@ public class CsmFileTaskFactoryManager {
         }
     }
     
-    public static interface Accessor {
+    /*public*/ static interface Accessor {
         public abstract void fireChangeEvent(CsmFileTaskFactory f);
     }
     
-    public static Accessor ACCESSOR;
+    /*public*/ static Accessor ACCESSOR;
     
 }

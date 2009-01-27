@@ -29,6 +29,8 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.DropIndex;
+import org.netbeans.lib.ddl.impl.SetDefaultDatabase;
+import org.netbeans.lib.ddl.impl.SetDefaultSchema;
 import org.netbeans.lib.ddl.impl.Specification;
 
 /**
@@ -44,7 +46,17 @@ public class DDLHelper {
         cmd.setObjectOwner(schema);
         cmd.execute();
     }
-    
+
+    public static void setDefaultDatabase(Specification spec, String dbname) throws Exception {
+        SetDefaultDatabase cmd = spec.createSetDefaultDatabase(dbname);
+        cmd.execute();
+    }
+
+    public static void setDefaultSchema(Specification spec, String schemaName) throws Exception {
+        SetDefaultSchema cmd = spec.createSetDefaultSchema(schemaName);
+        cmd.execute();
+    }
+
     public static void deleteIndex(Specification spec,
             String schema, String tablename, String indexname)
             throws Exception

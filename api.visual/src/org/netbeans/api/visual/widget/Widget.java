@@ -1450,6 +1450,8 @@ public class Widget implements Accessible {
 
     /**
      * Called to paint the widget itself only using the Graphics2D instance acquired from Scene.getGraphics method.
+     * Do not call methods which modify state of the widget (all methods which calls revalidate like setFont(),
+     * setVisible(), setLayout(),...). It can cause another repaint and result in infinite paint cycle.
      */
     protected void paintWidget () {
     }
@@ -1476,6 +1478,7 @@ public class Widget implements Accessible {
      * Returns the object hash code.
      * @return the object hash code
      */
+    @Override
     public final int hashCode () {
         return super.hashCode ();
     }
@@ -1485,6 +1488,7 @@ public class Widget implements Accessible {
      * @param object the object
      * @return true if the object reference is the same as the widget
      */
+    @Override
     public final boolean equals (Object object) {
         return this == object;
     }

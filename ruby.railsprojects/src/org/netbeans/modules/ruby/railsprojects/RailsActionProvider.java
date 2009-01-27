@@ -60,6 +60,7 @@ import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.rubyproject.Migrations;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -163,7 +164,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             return false;
         }
         
-        return MigrateAction.getMigrationVersion(file.getName()) != null;
+        return Migrations.getMigrationVersion(file.getName()) != null;
     }
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
@@ -282,7 +283,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             
             if (isMigrationFile(file)) {
                 String name = file.getName();
-                Long version = MigrateAction.getMigrationVersion(name);
+                Long version = Migrations.getMigrationVersion(name);
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
                 runner.setFileLocator(new RailsFileLocator(context, project));

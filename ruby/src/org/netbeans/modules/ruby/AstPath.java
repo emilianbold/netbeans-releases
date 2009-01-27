@@ -53,7 +53,6 @@ import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.netbeans.api.annotations.common.CheckForNull;
 
-
 /**
  * This represents a path in a JRuby AST.
  *

@@ -470,7 +470,8 @@ cause it to fail.
                 <pathelement location="../nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}" report="${javadoc.out.dir}/checklinks-errors-${javadoc.name}.xml">
+        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}"
+                    report="${javadoc.out.dir}/checklinks-errors-${javadoc.name}.xml" checkspaces="false">
             <include name="overview-summary.html"/>
             <include name="apichanges.html"/>
             <include name="architecture-summary.html"/>

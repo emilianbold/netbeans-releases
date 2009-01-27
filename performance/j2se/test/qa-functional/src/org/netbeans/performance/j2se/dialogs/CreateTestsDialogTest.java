@@ -49,6 +49,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -103,6 +104,7 @@ public class CreateTestsDialogTest extends PerformanceTestCase {
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
         createTestsNode.performPopupActionNoBlock(CREATE_JUNIT_TESTS);
+        new JButtonOperator(new NbDialogOperator("Select")).push();
         return new NbDialogOperator(DIALOG_TITLE);
     }
     

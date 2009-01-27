@@ -40,11 +40,9 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
 
 /**
@@ -61,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
  *  
  * @author Alexander Simon
  */
-public class LazyCsmCollection<Tuid extends CsmIdentifiable<Tuid>, Tfact extends Tuid> implements Collection<Tfact> {
+public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
 
     private Collection<CsmUID<Tuid>> uids;
     boolean allowNullsAndSkip;
@@ -139,15 +137,11 @@ public class LazyCsmCollection<Tuid extends CsmIdentifiable<Tuid>, Tfact extends
     }
 
     public boolean add(Tfact o) {
-        return uids.add(o.getUID());
+        return uids.add(UIDs.<Tuid>get(o));
     }
 
     public boolean remove(Object o) {
-        if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isIdentifiable((CsmObject)o)) {
-            return uids.remove(((CsmIdentifiable)o).getUID());
-        } else {
-            return uids.remove(o);
-        }
+        return uids.remove(UIDs.get(o));
     }
 
     public boolean containsAll(Collection<?> c) {
@@ -209,7 +203,7 @@ public class LazyCsmCollection<Tuid extends CsmIdentifiable<Tuid>, Tfact extends
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("["); // NOI18N
 
         Iterator<Tfact> it = iterator();

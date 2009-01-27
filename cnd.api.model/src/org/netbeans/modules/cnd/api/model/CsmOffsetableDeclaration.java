@@ -45,6 +45,6 @@ package org.netbeans.modules.cnd.api.model;
  * Just a combination of two - for client convenience
  * @author Vladimir Kvashin
  */
-public interface CsmOffsetableDeclaration<T> extends CsmDeclaration<T>, CsmOffsetable {
+public interface CsmOffsetableDeclaration extends CsmDeclaration, CsmOffsetable {
 
 }

@@ -46,6 +46,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
 
@@ -112,12 +113,16 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<FieldSignature, String> getFields(FileObject source, String sourceClassName, String className) {
-        Project project = FileOwnerQuery.getOwner(source);
-        if (className.equals(sourceClassName) && project != null
-                && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+    public Map<FieldSignature, String> getFields(DynamicCompletionContext context) {
+        if (context.getSourceFile() == null) {
+            return Collections.emptyMap();
+        }
 
-            if (isController(source, project)) {
+        Project project = FileOwnerQuery.getOwner(context.getSourceFile());
+        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
+                &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+
+            if (isController(context.getSourceFile(), project)) {
                 return Collections.unmodifiableMap(FIELDS);
             }
         }
@@ -125,12 +130,16 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<MethodSignature, String> getMethods(FileObject source, String sourceClassName, String className) {
-        Project project = FileOwnerQuery.getOwner(source);
-        if (className.equals(sourceClassName) && project != null
-                && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+    public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+        if (context.getSourceFile() == null) {
+            return Collections.emptyMap();
+        }
 
-            if (isController(source, project)) {
+        Project project = FileOwnerQuery.getOwner(context.getSourceFile());
+        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
+                &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+
+            if (isController(context.getSourceFile(), project)) {
                 return Collections.unmodifiableMap(METHODS);
             }
         }
@@ -138,7 +147,8 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     private boolean isController(FileObject source, Project project) {
-        return source.getName().endsWith("Controller") // NOI18N
+        return source != null
+                    && source.getName().endsWith("Controller") // NOI18N
                     && source.getParent().getName().equals("controllers") // NOI18N
                     && source.getParent().getParent().getName().equals("grails-app") // NOI18N
                     && source.getParent().getParent().getParent().equals(project.getProjectDirectory());

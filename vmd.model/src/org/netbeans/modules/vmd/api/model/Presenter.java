@@ -52,7 +52,7 @@ package org.netbeans.modules.vmd.api.model;
  */
 public abstract class Presenter {
 
-    private DesignComponent component;
+    private DesignComponent contentComponent;
 
     /**
      * Creates a new presenter
@@ -65,19 +65,19 @@ public abstract class Presenter {
      * @return the component, null if not attached
      */
     protected final DesignComponent getComponent () {
-        return component;
+        return contentComponent;
     }
 
     void setNotifyAttached (DesignComponent component) {
         assert Debug.isFriend (ListenerManager.class, "addComponentDescriptorChanged")  ||  Debug.isFriend (DynamicPresenter.class, "setNotifyAttached"); // NOI18N
-        assert this.component == null && component != null;
-        this.component = component;
+        assert this.contentComponent == null && component != null;
+        this.contentComponent = component;
     }
 
     void setNotifyDetached (DesignComponent component) {
         assert Debug.isFriend (ListenerManager.class, "fireEventCore")  ||  Debug.isFriend (DynamicPresenter.class, "setNotifyDetached"); // NOI18N
-        assert this.component == component;
-        this.component = null;
+        assert this.contentComponent == component;
+        this.contentComponent = null;
     }
 
     /**
@@ -87,7 +87,7 @@ public abstract class Presenter {
      */
     @Override
     public String toString () {
-        return (component != null ? component.toString () : "<unassigned>") + "#" + getClass ().getSimpleName (); // NOI18N
+        return (contentComponent != null ? contentComponent.toString () : "<unassigned>") + "#" + getClass ().getSimpleName (); // NOI18N
     }
 
 }

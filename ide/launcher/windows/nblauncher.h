@@ -57,6 +57,7 @@ protected:
     static const char *OPT_NB_JDK_HOME;
     static const char *REG_SHELL_FOLDERS_KEY;
     static const char *HOME_TOKEN;
+    static const char *CON_ATTACH_MSG;
 
 private:
     static const char *ENV_USER_PROFILE;

@@ -98,4 +98,21 @@ public interface CsmMacroExpansionProvider {
      */
     public abstract int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
 
+    /**
+     * Returns offset of the next macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public abstract int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+
+    /**
+     * Returns offset of the previous macro expansion
+     *
+     * @param expandedDoc - document
+     * @param expandedOffset - offset in expanded text
+     * @return offset of the next macro expansion
+     */
+    public abstract int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
 }

@@ -124,6 +124,10 @@ public class CodeUtils {
                 return scalar.getStringValue();
             } else if (name instanceof Variable) {
                 var = (Variable)name;
+                return extractVariableName(var);
+            } else if (name instanceof FieldAccess) {
+                var = ((FieldAccess)name).getField();
+                return extractVariableName(var);
             }
         }
         if (var.getName() instanceof Identifier) {
@@ -140,7 +144,7 @@ public class CodeUtils {
             Variable name = (Variable) var.getName();
             return extractVariableName(name);
         }
-
+        assert false : var.getClass().toString();
         return null;
     }
 

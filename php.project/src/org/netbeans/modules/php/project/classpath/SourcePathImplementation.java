@@ -64,27 +64,27 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     public SourcePathImplementation(SourceRoots sources) {
         assert sources != null;
-        this.src = sources;
-        this.src.addPropertyChangeListener(WeakListeners.propertyChange(this, this.src));
+        src = sources;
+        src.addPropertyChangeListener(WeakListeners.propertyChange(this, src));
     }
 
     public List<PathResourceImplementation> getResources() {
         synchronized (this) {
-            if (this.resources != null) {
-                return this.resources;
+            if (resources != null) {
+                return resources;
             }
         }
-        final URL[] urls = this.src.getRootURLs();
+        final URL[] urls = src.getRootURLs();
         synchronized (this) {
-            if (this.resources == null) {
+            if (resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
                 for (URL root : urls) {
                     result.add(ClassPathSupport.createResource(root));
                 }
-                this.resources = Collections.unmodifiableList(result);
+                resources = Collections.unmodifiableList(result);
             }
         }
-        return this.resources;
+        return resources;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -96,6 +96,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-       this.resources = null;
+       resources = null;
     }
 }

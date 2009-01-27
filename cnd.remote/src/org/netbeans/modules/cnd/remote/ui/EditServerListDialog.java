@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.BorderLayout;
@@ -47,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -56,18 +57,24 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.remote.experimental.RemoteableExtExecution;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -78,7 +85,7 @@ import org.openide.util.RequestProcessor;
  * @author  gordonp
  */
 public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
-    
+
     private DefaultListModel model;
     private DialogDescriptor desc;
     private int defaultIndex;
@@ -87,9 +94,14 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private final ToolsCacheManager cacheManager;
 
-    /** Creates new form EditServerListDialog */
-    public EditServerListDialog(ServerUpdateCache cache, boolean tempUseWizard) {
+    private static final boolean testExtExecution = Boolean.getBoolean("cnd.remote.testextexectuion");
+
+    @Deprecated
+    public EditServerListDialog(ServerUpdateCache cache) {
+        //TODO: get rid of ToolsPanel....
+        cacheManager = ToolsPanel.getToolsPanel() == null ? null : ToolsPanel.getToolsPanel().getToolsCacheManager();
         initComponents();
         initServerList(cache);
         desc = null;
@@ -97,9 +109,23 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
-        useWizard = tempUseWizard;
+        useWizard = false;
+        jButton1.setVisible(testExtExecution);
     }
-    
+
+    public EditServerListDialog(ToolsCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+        initComponents();
+        initServerList(cacheManager.getServerUpdateCache());
+        desc = null;
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
+        tfReason.setVisible(false);
+        pbarStatusPanel.setVisible(false);
+        initListeners();
+        useWizard = true;
+        jButton1.setVisible(testExtExecution);
+    }
+
     private void initListeners() {
         lstDevHosts.addListSelectionListener(this);
         btAddServer.addActionListener(this);
@@ -111,10 +137,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         setButtons(true);
         valueChanged(null);
     }
-    
+
     private void initServerList(ServerUpdateCache cache) {
         model = new DefaultListModel();
-        
+
         if (cache == null) {
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             for (String hkey : registry.getServerNames()) {
@@ -136,7 +162,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (CompilerSetManager.LOCALHOST.equals(key)) {
             return false;
         } else {
-            CompilerSetManager compilerSetManagerCopy = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(key);
+            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(key);
             return compilerSetManagerCopy.isEmpty();
         }
     }
@@ -146,7 +172,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
-            hideReason();            
+            hideReason();
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
             userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
@@ -163,23 +189,24 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(entry);
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
                         csm.initialize(false);
                     }
                     phandle.finish();
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             pbarStatusPanel.setVisible(false);
                             setButtons(true);
                             valueChanged(null);
-                        }                        
+                        }
                     });
                 }
             });
         }
     }
-    
+
     private final class MyCellRenderer extends DefaultListCellRenderer {
 
         @Override
@@ -190,13 +217,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             }
             return out;
         }
-        
     }
-    
+
     public void setDialogDescriptor(DialogDescriptor desc) {
         this.desc = desc;
     }
-    
+
     public String[] getHostKeyList() {
         String[] hklist = new String[model.getSize()];
         for (int i = 0; i < hklist.length; i++) {
@@ -204,11 +230,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
         return hklist;
     }
-    
+
     public int getDefaultIndex() {
         return defaultIndex;
     }
-    
+
     /**
      * Show the AddServerDialog. If the user adds a new server, we need to verify the connection
      * before we return. This is tricky because we're on the AWT-Event thread and need this thread
@@ -232,17 +258,17 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 return;
             }
             if (!model.contains(entry)) {
-                model.addElement(entry);                              
+                model.addElement(entry);
                 lstDevHosts.setSelectedValue(entry, true);
                 revalidateRecord(entry, dlg.getPassword(), dlg.isRememberPassword());
             }
         }
     }
-    
+
     private void showPathMapper() {
         EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), getHostKeyList());
     }
-    
+
     private void setButtons(boolean enable) {
         buttonsEnabled = enable;
         if (desc != null) {
@@ -260,7 +286,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     public void propertyChange(PropertyChangeEvent evt) {
         Object source = evt.getSource();
         String prop = evt.getPropertyName();
-        
+
         if (source instanceof AddServerDialog && prop.equals(AddServerDialog.PROP_VALID)) {
             AddServerDialog dlg = (AddServerDialog) evt.getSource();
             ok.setEnabled(dlg.isOkValid());
@@ -268,7 +294,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             ((DialogDescriptor) source).setValid(false);
         }
     }
-    
+
     /** Enable/disable the Remove and Set As Default buttons */
     public void valueChanged(ListSelectionEvent evt) {
         int idx = lstDevHosts.getSelectedIndex();
@@ -291,29 +317,36 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             log.warning("ESLD.valueChanged: No selection in Dev Hosts list");
         }
     }
-    
+
     private void showReason(String reason) {
         lbReason.setText(NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason"));
         tfReason.setText(reason);
         tfReason.setVisible(true);
     }
-    
+
     private void hideReason() {
         lbReason.setText(" "); // NOI18N
         tfReason.setVisible(false);
     }
-
     private boolean useWizard;
 
     public void actionPerformed(ActionEvent evt) {
         Object o = evt.getSource();
-        
+
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
                 if (useWizard) {
-                    CreateHostWizardIterator.invokeMe();
+                    String hkey = CreateHostWizardIterator.invokeMe(cacheManager);
+                    if (hkey != null) {
+                        if (!model.contains(hkey)) {
+                            Lookup.getDefault().lookup(ServerList.class).addServer(hkey, false, false);
+                            model.addElement(hkey);
+                            lstDevHosts.setSelectedValue(hkey, true);
+                        }
+                    }
                 } else {
+                    //TODO: legacy
                     showAddServerDialog();
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
@@ -359,6 +392,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lbReason = new javax.swing.JLabel();
         tfReason = new javax.swing.JTextField();
         pbarStatusPanel = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(258, 315));
         setLayout(new java.awt.GridBagLayout());
@@ -503,19 +537,30 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(pbarStatusPanel, gridBagConstraints);
+
+        jButton1.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        add(jButton1, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), null, false);
+        this.revalidateRecord((String) lstDevHosts.getSelectedValue(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
-
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        RemoteableExtExecution.getInstance().test();
+    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;
     private javax.swing.JButton btPathMapper;
     private javax.swing.JButton btRemoveServer;
     private javax.swing.JButton btRetry;
     private javax.swing.JButton btSetAsDefault;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbDevHosts;
     private javax.swing.JLabel lbReason;

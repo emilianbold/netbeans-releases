@@ -66,7 +66,6 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
@@ -80,7 +79,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
-    private static final long serialVersionUID = -58846883387474071L;
+    private static final long serialVersionUID = -588487546787474071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
 
@@ -169,6 +168,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
         // sources
         sourceFolderTextField.setText(FileUtil.getFileDisplayName(ProjectPropertiesSupport.getSourcesDirectory(properties.getProject())));
+        // tests
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        if (testDirectory != null) {
+            testFolderTextField.setText(FileUtil.getFileDisplayName(testDirectory));
+        }
     }
 
     private void initTags() {
@@ -322,6 +326,8 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         projectFolderTextField = new javax.swing.JTextField();
         sourceFolderLabel = new javax.swing.JLabel();
         sourceFolderTextField = new javax.swing.JTextField();
+        testFolderLabel = new javax.swing.JLabel();
+        testFolderTextField = new javax.swing.JTextField();
         encodingComboBox = new javax.swing.JComboBox();
         copyFilesPanel = new javax.swing.JPanel();
         webRootLabel = new javax.swing.JLabel();
@@ -343,6 +349,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("LBL_SourceFolder")); // NOI18N
 
         sourceFolderTextField.setEditable(false);
+
+        testFolderLabel.setLabelFor(testFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(testFolderLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.text")); // NOI18N
+
+        testFolderTextField.setEditable(false);
 
         copyFilesPanel.setLayout(new java.awt.BorderLayout());
 
@@ -383,7 +394,8 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
                                 .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(webRootButton))
-                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
+                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                            .add(testFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(encodingLabel)
@@ -396,6 +408,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
             .add(layout.createSequentialGroup()
                 .add(aspTagsCheckBox)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(testFolderLabel)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -407,6 +422,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sourceFolderLabel)
                     .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(testFolderLabel)
+                    .add(testFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(webRootLabel)
@@ -473,6 +492,8 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     private javax.swing.JCheckBox shortTagsCheckBox;
     private javax.swing.JLabel sourceFolderLabel;
     private javax.swing.JTextField sourceFolderTextField;
+    private javax.swing.JLabel testFolderLabel;
+    private javax.swing.JTextField testFolderTextField;
     private javax.swing.JButton webRootButton;
     private javax.swing.JLabel webRootLabel;
     private javax.swing.JTextField webRootTextField;

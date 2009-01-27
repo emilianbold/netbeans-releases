@@ -68,7 +68,7 @@ public class CyclicDependencyWarningPanel extends JPanel implements Runnable {
     private final DefaultListModel model;
     
     protected Dialog d = null;
-    protected final CloseListener listener;
+    final CloseListener listener;
     protected static boolean dontShow = false;
     
     public static void showWarning(final String projectName) {
@@ -180,6 +180,7 @@ public class CyclicDependencyWarningPanel extends JPanel implements Runnable {
         }
         
         @SuppressWarnings("synthetic-access")
+        @Override
 		public void windowClosed(@SuppressWarnings("unused")
 		final WindowEvent e) {
             synchronized (CyclicDependencyWarningPanel.class) {

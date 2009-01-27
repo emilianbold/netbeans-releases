@@ -41,12 +41,14 @@ package org.netbeans.modules.maven.spring;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  *
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service=RecommendedTemplates.class, projectType="org-netbeans-modules-maven")
 public class RecommendedTemplatesImpl implements RecommendedTemplates {
 
     private static final String[] SPRING_TYPES = new String[] {

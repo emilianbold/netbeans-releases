@@ -180,9 +180,8 @@ public class DriverListUtilTest extends TestCase {
 
     public void testMySQL() throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
-        requiredProps.add(JdbcUrl.TOKEN_DB);
         JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_MySQL"), null, "com.mysql.jdbc.Driver", 
-                "jdbc:mysql://[<HOST>[:<PORT>]]/<DB>[?<ADDITIONAL>]",
+                "jdbc:mysql://[<HOST>[:<PORT>]][/<DB>][?<ADDITIONAL>]",
                 STD_SUPPORTED_PROPS, requiredProps);
         
         HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);

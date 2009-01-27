@@ -57,6 +57,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -65,13 +66,19 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=ClassPathProvider.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
 public class JaxRpcArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP, executeCP;
     
     private static final Logger LOG = Logger.getLogger(JaxRpcArtifactsClassPathProvider.class.getName());
     
-    JaxRpcArtifactsClassPathProvider(Project project) {
+    public JaxRpcArtifactsClassPathProvider(Project project) {
         this.project = project;
     }
     

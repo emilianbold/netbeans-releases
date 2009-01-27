@@ -36,14 +36,11 @@
 *
 * Portions Copyrighted 2009 Sun Microsystems, Inc.
 """
-import Queue
 import sys
 import traceback
 import os
-import socket
 import string
 import threading
-import time
 
 
 """ misc utility modules used by jpydbg stuff """
@@ -53,6 +50,9 @@ __date__='$Date: 2006/05/01 10:17:14 $'
 __author__= 'Jean-Yves Mengant'
 
 # $Source: /cvsroot/jpydbg/jpydebugforge/src/python/jpydbg/dbgutils.py,v $
+
+class JpyDbgQuit(Exception):
+    """Jpydbg Exception to Give up on debugging"""
 
 
 class JpyUtils :
@@ -186,13 +186,20 @@ _DEBUGLOG = _debugPath + "/jpydbg.log"
 class DebugLogger :
 
   def __init__( self  ) :
-      f = file( _DEBUGLOG ,"w") ;
-      f.close() # reset log on startup
+     self.lock = threading.Lock()
+     self._acquire_lock = self.lock.acquire
+     self._release_lock = self.lock.release
+     f = file( _DEBUGLOG ,"w")
+     f.close() # reset log on startup
 
   def debug( self , toWrite ) :
-      f = file( _DEBUGLOG ,"a+") ;
-      f.write( toWrite + '\n')
-      f.close()
+      self._acquire_lock()
+      try :
+          f = file( _DEBUGLOG ,"a+") ;
+          f.write( toWrite + '\n')
+          f.close()
+      finally :
+          self._release_lock()
 
 ###############################################################################
 # do a touch of jpydbg.log in same directory as jpydebug.py to get debug traces on
@@ -202,105 +209,3 @@ if os.path.exists(_DEBUGLOG) :
     debugLogger = DebugLogger()
     debugLogger.debug("***** Debug Session Started ******")
 
-class NetworkSession:
-    """ handle network session for JpyDbg and Completion engine """
-
-    def __init__( self , connection ) :
-        self._connection = connection
-        self._lastBuffer = ''
-        self._threadQ = Queue.Queue()
-        self.lock = threading.Lock()
-        self._acquire_lock = self.lock.acquire
-        self._release_lock = self.lock.release
-
-    def _DBG( self , toWrite ):
-        if debugLogger :
-            debugLogger.debug(toWrite)
-
-    def populateToClient( self , bufferList ) :
-        """ populate back bufferList to client side """
-        self._DBG( "populateXmlToClient --> " + buffer )
-        self._connection.send( ''.join(bufferList) )
-
-    def populateXmlToClient( self , bufferList ) :
-        """ populate JpyDbg Xml buffer back """
-        mbuffer = '<JPY>'
-        for element in bufferList:
-            mbuffer = mbuffer + ' ' + str(element)
-        mbuffer = mbuffer + '</JPY>\n'
-        self._DBG( "populateToClient --> " + mbuffer )
-        self._connection.send( mbuffer )
-
-
-    def readNetBuffer( self ):
-        """ reading on network socket """
-        try:
-            if ( self._lastBuffer.find('\n') != -1 ):
-                return self._lastBuffer ; # buffer stills contains commands
-            networkData = self._connection.recv(1024)
-            if not networkData:  # capture network interuptions if any
-                return None
-            data = self._lastBuffer + networkData
-            return data
-        except socket.error, (errno,strerror):
-            print "recv interupted errno(%s) : %s" % ( errno , strerror )
-            return None
-
-
-    def _receiveCommand( self ):
-        """ receive a command back """
-        self._DBG(">Wait on NET ... ")
-        data = self.readNetBuffer() ;
-        # data reception from Ip
-        while ( data != None and data):
-            eocPos = data.find('\n')
-            nextPos = eocPos ;
-            while (  nextPos < len(data) and \
-                   ( data[nextPos] == '\n' or data[nextPos] == '\r') ): # ignore consecutive \n\r
-                nextPos = nextPos+1
-            if ( eocPos != -1 ): # full command received in buffer
-                self._lastBuffer = data[nextPos:] # cleanup received command from buffer
-                returned = data[:eocPos]
-                self._DBG( "<-- received Command " + returned )
-                if (returned[-1] == '\r'):
-                    return returned[:-1]
-                return returned
-            data = self.readNetBuffer() ;
-        # returning None on Ip Exception
-        return None
-
-    def sendInternalThreadCommand(self , command ):
-        """ send threadQ a command ( internal usage by DebugCommander only ) """
-        self._threadQ.put(command)
-
-    def deprecatedReceiveCommand( self ):
-        """ Threads dispatched commands => just wait on Q"""
-        self._DBG(">Wait on Q ... ")
-        while True :
-            try :
-                returned = self._threadQ.get(timeout=1)
-                self._DBG("< got from Q : %s " %(returned) )
-                return returned
-            except Queue.Empty :
-                time.sleep(.100)
-
-    def receiveCommand(self ):
-        """ Network dbg command main entry dispatch to commander or Q"""
-        self._acquire_lock()
-        try :
-            self._DBG( "Waiting incomming commands ..."  )
-            command = self._receiveCommand()
-            self._DBG( "<-- Network command = %s" % (command)  )
-        finally :
-            self._release_lock()
-        # handle dispatching
-        verb , arg = jpyutils.nextArg(command)
-        if verb == 'GLBCMD' :
-            return arg
-        else :
-            return command
-
-    def close( self ):
-        """ close the associated ip session """
-        self._DBG( "**** DEBUGGER CONNECTION CLOSED ***" )
-        self._connection.close()

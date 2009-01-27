@@ -50,7 +50,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope, CsmIdentifiable<CsmNamespace> {
+public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope {
 
     CsmNamespace getParent();
     Collection<CsmNamespace> getNestedNamespaces();

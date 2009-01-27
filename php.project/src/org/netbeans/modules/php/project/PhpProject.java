@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -305,7 +306,7 @@ public class PhpProject implements Project {
                 new PhpConfigurationProvider(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator()),
+                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),
@@ -361,8 +362,12 @@ public class PhpProject implements Project {
             getSourcesDirectory();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
+            ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
+            GlobalPathRegistry.getDefault().register(PhpSourcePath.BOOT_CP, bootClassPaths);
             GlobalPathRegistry.getDefault().register(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+            for (ClassPath classPath : bootClassPaths) {
+                IncludePathClassPathProvider.addProjectIncludePath(classPath);
+            }
 
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {

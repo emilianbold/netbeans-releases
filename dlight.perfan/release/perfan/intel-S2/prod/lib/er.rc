@@ -1,0 +1,99 @@
+# Specify which classes of compiler commentary will be shown
+# with annotated source.
+scc all
+
+# Specify which classes of compiler commentary will be shown
+# with annotated disassembly
+dcc all:src
+
+# Set the default function-list metrics
+# for heap data, show inclusive leaks and bytes leaked; not allocations
+dmetrics e!bleak:i.bleak:e!leak:i.leak
+dmetrics e!balloc:i!balloc:e!alloc:i!alloc
+
+# for clock data, show inclusive and exclusive UCPU
+dmetrics ei.user:ei!wall:ei!total:ei!system:ei!wait:ei!lock:ei!text:ei!data:ei!owait
+
+# for kernel clock profiling data, show inclusive and exclusive KCPU
+dmetrics ei.kcpu
+
+# for count data, show exclusive metrics only
+dmetrics i!bit
+
+# Hide implementation hack. Functionmark column only serves
+# to force zero-count functions to be displayed.
+dmetrics e!bit_FM
+
+# for HWC, show inclusive and exclusive
+dmetrics ei.hwc
+
+# for synctrace, show inclusive only
+dmetrics e!sync:i.sync:e!syncn:i.syncn
+
+# Set the default function-list metrics
+# for MPI tracing
+dmetrics e!mpitime:i!mpitime
+dmetrics e!mpibytessent:i!mpibytessent:e!mpisend:i.mpisend
+dmetrics e!mpibytesrcvd:i!mpibytesrcvd:e!mpireceive:i.mpireceive
+dmetrics e!mpiother:i!mpiother
+
+# Set the default function-list metrics for MPI state profiling
+dmetrics i!mpiwork:i.mpiwait
+
+# Set the default function-list metrics for OMP profiling
+dmetrics i.ompwork:i.ompwait
+
+# Set the default function-list metrics for RDT experiments
+dmetrics i!raccess:e.raccess
+
+#set the default function-list metrics for deadlock detection
+dmetrics i!deadlocks:e.deadlocks
+
+# for any other unnamed metrics, don't show them
+dmetrics ei!any
+
+# don't show size or address; show name
+dmetrics !size:!address:name
+
+# Select the default function-list sorting metric
+dsort ei.any:name
+
+# Set function name style
+name long
+
+# Set View mode to user
+viewmode user
+
+# Set default tab list
+tabs races:deadlocks:mpi_timeline:mpi_chart:dsrc:function:callers-callees:src:disasm:data_objects:data_layout:leaks:timeline:ifreq:header
+
+# Set default tab list for race mode
+rtabs races:deadlocks:dsrc:header
+
+# Set enabling descendants to off
+en_desc off
+
+# Set timeline mode, stack alignment, and stack depth
+tlmode thread:root:depth=10
+
+# Set timeline data display list
+tldata sample:clock:hwc:heaptrace:datarace:synctrace:mpitrace:msgtrace
+
+# Add search path for annotated source and disasm
+addpath $expts:.
+
+# Add controls for specific load objects
+object_hide <Unknown>
+
+object_api libmpi_f77.so.0.0.0
+object_api libmpi_f77.so.0
+object_api libmpi_f90.so.0.0.0
+object_api libmpi_f90.so.0
+object_api libmpi_cxx.so.0.0.0
+object_api libmpi_cxx.so.0
+
+object_api libmpi.so.0.0.0
+object_api libmpi.so.0
+
+object_api er_mpview.so
+# object_api er_mpi.so

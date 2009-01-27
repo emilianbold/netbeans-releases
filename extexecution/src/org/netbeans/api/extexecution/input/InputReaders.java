@@ -44,6 +44,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.extexecution.input.FileInputReader;
 import org.netbeans.modules.extexecution.input.DefaultInputReader;
 import org.openide.util.Parameters;
@@ -75,7 +77,8 @@ public final class InputReaders {
      * @param reader real source of the data
      * @return input reader backed by the given reader
      */
-    public static InputReader forReader(Reader reader) {
+    @NonNull
+    public static InputReader forReader(@NonNull Reader reader) {
         return new DefaultInputReader(reader, true);
     }
 
@@ -96,7 +99,8 @@ public final class InputReaders {
      * @param charset bytes to characters conversion charset
      * @return input reader backed by the given stream
      */
-    public static InputReader forStream(InputStream stream, Charset charset) {
+    @NonNull
+    public static InputReader forStream(@NonNull InputStream stream, @NonNull Charset charset) {
         Parameters.notNull("stream", stream);
 
         return forReader(new InputStreamReader(stream, charset));
@@ -116,7 +120,8 @@ public final class InputReaders {
      * @param charset bytes to characters conversion charset
      * @return input reader for the given file
      */
-    public static InputReader forFile(File file, Charset charset) {
+    @NonNull
+    public static InputReader forFile(@NonNull File file, @NonNull Charset charset) {
         Parameters.notNull("file", file);
         Parameters.notNull("charset", charset);
 
@@ -148,7 +153,8 @@ public final class InputReaders {
      * @param fileProvider provider used to get the file to process
      * @return input reader for the given provider
      */
-    public static InputReader forFileInputProvider(FileInput.Provider fileProvider) {
+    @NonNull
+    public static InputReader forFileInputProvider(@NonNull FileInput.Provider fileProvider) {
         Parameters.notNull("fileProvider", fileProvider);
 
         return new FileInputReader(fileProvider);
@@ -171,7 +177,10 @@ public final class InputReaders {
          * @param file file to represent
          * @param charset associated charset
          */
-        public FileInput(File file, Charset charset) {
+        public FileInput(@NonNull File file, @NonNull Charset charset) {
+            Parameters.notNull("file", file);
+            Parameters.notNull("charset", charset);
+
             this.file = file;
             this.charset = charset;
         }
@@ -181,6 +190,7 @@ public final class InputReaders {
          *
          * @return the charset for reading the file
          */
+        @NonNull
         public Charset getCharset() {
             return charset;
         }
@@ -190,6 +200,7 @@ public final class InputReaders {
          *
          * @return the file represented by this input
          */
+        @NonNull
         public File getFile() {
             return file;
         }
@@ -208,6 +219,7 @@ public final class InputReaders {
              * @return the file input to use or <code>null</code> if there is
              * no file to read currently
              */
+            @CheckForNull
             FileInput getFileInput();
 
         }

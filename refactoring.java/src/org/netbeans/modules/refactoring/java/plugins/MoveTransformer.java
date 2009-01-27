@@ -127,9 +127,8 @@ public class MoveTransformer extends RefactoringVisitor {
                 TreePath exprPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), exprTree);
                 Element elem = workingCopy.getTrees().getElement(exprPath);
                 if (elem != null && elem.getKind() == ElementKind.PACKAGE) {
-                    String originalName = RetoucheUtils.getPackageName(originalFolder);
-                    if (originalName.equals(elem.toString())) {
-                        String newPackageName = move.getTargetPackageName(SourceUtils.getFile(elem, workingCopy.getClasspathInfo()));
+                    String newPackageName = move.getTargetPackageName(SourceUtils.getFile(elem, workingCopy.getClasspathInfo()));
+                    if (!newPackageName.equals(elem.toString())) {
                         Tree nju = make.MemberSelect(make.Identifier(newPackageName), "*"); // NOI18N
                         rewrite(node, nju);
                     }

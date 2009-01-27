@@ -41,9 +41,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import groovyjarjarasm.asm.Opcodes;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,6 +65,8 @@ import java.util.logging.Level;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.AstFieldElement;
+import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
@@ -289,10 +289,10 @@ public class GroovyIndexer extends EmbeddingIndexer {
             for (AstElement child : element.getChildren()) {
                 switch (child.getKind()) {
                     case METHOD:
-                        indexMethod(child, document);
+                        indexMethod((AstMethodElement) child, document);
                         break;
                     case FIELD:
-                        indexField(child, document);
+                        indexField((AstFieldElement) child, document);
                         break;
                 }
             }
@@ -305,7 +305,7 @@ public class GroovyIndexer extends EmbeddingIndexer {
             document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true, true);
         }
 
-        private void indexField(AstElement child, IndexDocument document) {
+        private void indexField(AstFieldElement child, IndexDocument document) {
 
             StringBuilder sb = new StringBuilder(child.getName());
             FieldNode node = (FieldNode) child.getNode();
@@ -314,17 +314,22 @@ public class GroovyIndexer extends EmbeddingIndexer {
                     node.getType().getName()));
 
             int flags = getFieldModifiersFlag(child.getModifiers());
-            if (flags != 0) {
+            if (flags != 0 || child.isProperty()) {
                 sb.append(';');
                 sb.append(IndexedElement.flagToFirstChar(flags));
                 sb.append(IndexedElement.flagToSecondChar(flags));
+            }
+
+            if (child.isProperty()) {
+                sb.append(';');
+                sb.append(child.isProperty());
             }
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_NAME, sb.toString(), true, true);
         }
 
-        private void indexMethod(AstElement child, IndexDocument document) {
+        private void indexMethod(AstMethodElement child, IndexDocument document) {
 
             MethodNode childNode = (MethodNode) child.getNode();
             StringBuilder sb = new StringBuilder(AstUtilities.getDefSignature(childNode));

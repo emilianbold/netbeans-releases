@@ -38,124 +38,22 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.ModelScope;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
-class VarAssignmentImpl extends ScopeImpl implements VarAssignment {
-
-    private VariableNameImpl var;
-    //TODO: typeName should be list or array to keep mixed types
-    private Union2<String,List<? extends TypeScope>> typeName;
-    private OffsetRange scopeRange;
-
+class VarAssignmentImpl extends AssignmentImpl<VariableNameImpl> {
     VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
-            Map<String, VariableNameImpl> allAssignments) {
-        this(var, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
+            Map<String, AssignmentImpl> allAssignments) {
+        super(var, scope, scopeRange, nameRange, assignment, allAssignments);
     }
 
     VarAssignmentImpl(VariableNameImpl var, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(scope, var.getName(), var.getFile(), nameRange, var.getPhpKind());
-        this.var = var;
-        this.typeName = Union2.<String,List<? extends TypeScope>>createFirst(typeName);
-        this.scopeRange = scopeRange;
-    }
-
-    @CheckForNull
-    Union2<String,List<? extends TypeScope>> getTypeUnion() {
-        return typeName;
-    }
-
-    @CheckForNull
-    private List<? extends TypeScope> typesFromUnion() {
-        Union2<String, List<? extends TypeScope>> typeUnion = getTypeUnion();
-        if (typeUnion != null) {
-            if (typeUnion.hasSecond() && typeUnion.second() != null) {
-                return typeUnion.second();
-            }
-        }
-        return null;
-    }
-
-    String typeNameFromUnion() {
-        Union2<String, List<? extends TypeScope>> typeUnion = getTypeUnion();
-        if (typeUnion != null) {
-            if (typeUnion.hasFirst() && typeUnion.first() != null) {
-                return typeUnion.first();
-            } else if (typeUnion.hasSecond() && typeUnion.second() != null) {
-                TypeScope type = ModelUtils.getFirst(typeUnion.second());
-                return type.getName();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getVar().getName());
-        sb.append(" == ").append(getTypeUnion());
-        return sb.toString();
-    }
-
-    /*@Override
-    StringBuilder golden(int indent) {
-        String prefix = "";//NOI18N
-        for (int i = 0; i < indent; i++) {
-            prefix += "  ";
-        }//NOI18N
-        StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append(toString()).append("\n");//NOI18N
-        return sb;
-    }*/
-
-    public List<? extends TypeScope> getTypes() {
-        String name = var.getName();
-        List<? extends TypeScope> empty = Collections.emptyList();
-        ModelScope topScope = ModelUtils.getModelScope(this);
-        //TODO: cache the value
-        List<? extends TypeScope> types = typesFromUnion();
-        if (types != null) {
-            return types;
-        }
-        String tName = typeNameFromUnion();
-        if (tName != null) {
-            //StackOverflow prevention
-            if (tName.indexOf(name) == -1) {
-                types = VariousUtils.getType(topScope, (VariableScope) getInScope(),
-                        tName, getOffset(), false);
-            }
-        }
-        if (types != null) {
-            typeName = Union2.<String, List<? extends TypeScope>>createSecond(types);
-            return types;
-        } else {
-            typeName = null;
-        }
-        return empty;
-    }
-
-    /**
-     * @return the var
-     */
-    VariableNameImpl getVar() {
-        return var;
-    }
-
-    @Override
-    public OffsetRange getBlockRange() {
-        return scopeRange;
+        super(var, scope, scopeRange, nameRange, typeName);
     }
 }

@@ -39,6 +39,9 @@
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 
@@ -47,6 +50,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
+import org.openide.actions.CopyAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -56,7 +60,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
@@ -111,11 +115,34 @@ public class VersionNode extends AbstractNode {
     }
 
     @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        Transferable deflt = super.clipboardCopy();
+        ExTransferable enriched = ExTransferable.create(deflt);
+        ExTransferable.Single ex = new ExTransferable.Single(DataFlavor.stringFlavor) {
+            protected Object getData() {
+                return "<dependency>\n" + //NOI18N
+                        "  <groupId>" + record.getGroupId() + "</groupId>\n" + //NOI18N
+                        "  <artifactId>" + record.getArtifactId() + "</artifactId>\n" + //NOI18N
+                        "  <version>" + record.getVersion() + "</version>\n" + //NOI18N
+                        "</dependency>"; //NOI18N
+            }
+        };
+        enriched.put(ex);
+        return enriched;
+    }
+
+    @Override
     public Action[] getActions(boolean context) {
        Artifact artifact = RepositoryUtil.createArtifact(record);
         Action[] retValue;
         if(info.isRemoteDownloadable()){
              retValue = new Action[]{
+            CopyAction.get(CopyAction.class),
             new AddAsDependencyAction(artifact),
             CommonArtifactActions.createFindUsages(artifact),
             null,
@@ -128,6 +155,7 @@ public class VersionNode extends AbstractNode {
         
 
         retValue = new Action[]{
+            CopyAction.get(CopyAction.class),
             new AddAsDependencyAction(artifact),
             null,
             CommonArtifactActions.createFindUsages(artifact),

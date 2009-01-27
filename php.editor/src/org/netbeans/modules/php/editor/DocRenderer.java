@@ -111,7 +111,7 @@ class DocRenderer {
         String location = null;
         
         if (indexedElement.isPlatform()){
-            location = NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform");
+            location = NbBundle.getMessage(DocRenderer.class, "PHPPlatform");
         } else {
             FileObject fobj = indexedElement.getFileObject();
 
@@ -164,7 +164,7 @@ class DocRenderer {
         if (phpDoc.length() > 0) {
             description.append(phpDoc);
         } else {
-            description.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
+            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
         }
 
         return header.getText() + description.toString();
@@ -263,7 +263,7 @@ class DocRenderer {
                         if (rparts.length > 0) {
                             String type = rparts[0];
                             returnValue.append(String.format("<b>%s:</b> %s<br><br>", //NOI18N
-                                    NbBundle.getMessage(PHPCodeCompletion.class, "Type"), type));
+                                    NbBundle.getMessage(DocRenderer.class, "Type"), type));
 
                             if (rparts.length > 1) {
                                 String desc = rparts[1];
@@ -284,19 +284,19 @@ class DocRenderer {
 
             if (params.length() > 0) {
                 phpDoc.append("<div style=\"padding-top:3px;\"><b>"); //NOI18N
-                phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "Parameters"));
+                phpDoc.append(NbBundle.getMessage(DocRenderer.class, "Parameters"));
                 phpDoc.append("</b></div>\n<table cellspacing=0 " + TABLE_STYLE + ">\n" + params + "</table>\n"); //NOI18N
             }
 
             if (returnValue.length() > 0) {
                 phpDoc.append("<h3>"); //NOI18N
-                phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "ReturnValue"));
+                phpDoc.append(NbBundle.getMessage(DocRenderer.class, "ReturnValue"));
                 phpDoc.append("</h3>\n" + returnValue); //NOI18N
             }
 
             if (links.length() > 0) {
                 phpDoc.append("<h3>"); //NOI18N
-                phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "OnlineDocs"));
+                phpDoc.append(NbBundle.getMessage(DocRenderer.class, "OnlineDocs"));
                 phpDoc.append("</h3>\n" + links); //NOI18N
             }
 

@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -90,7 +91,10 @@ public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDesc
     ////////////////////////////////////////////////////////////////////////////
     // settings
     public void readSettings(WizardDescriptor settings) {
-        getComponent().setHostname((String)settings.getProperty(CreateHostWizardPanel1.PROP_HOSTNAME));
+        getComponent().init(
+            (String)settings.getProperty(CreateHostWizardPanel1.PROP_HOSTNAME),
+            (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
+        );
     }
 
     static final String PROP_HOSTKEY = "hostkey"; //NOI18N

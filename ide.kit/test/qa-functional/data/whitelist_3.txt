@@ -1964,6 +1964,12 @@ org.netbeans.modules.i18n.form.FormI18nIntegerEditor
 org.netbeans.modules.i18n.form.FormI18nMnemonicEditor
 org.netbeans.modules.i18n.form.FormI18nStringEditor
 org.netbeans.modules.i18n.form.I18nFormCrossModule
+org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfo
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor
+org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor$Internal
+org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory
+org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem
 org.netbeans.modules.j2ee.archive.project.ArchiveProjectType
 org.netbeans.modules.j2ee.clientproject.AppClientProjectType
 org.netbeans.modules.j2ee.deployment.impl.Install
@@ -2402,6 +2408,7 @@ org.netbeans.modules.parsing.impl.FileObjectsTaskScheduler
 org.netbeans.modules.parsing.impl.Installer
 org.netbeans.modules.parsing.impl.ParserAccessor
 org.netbeans.modules.parsing.impl.ResultIteratorAccessor
+org.netbeans.modules.parsing.impl.SchedulerAccessor
 org.netbeans.modules.parsing.impl.Schedulers
 org.netbeans.modules.parsing.impl.SelectedNodesScheduler
 org.netbeans.modules.parsing.impl.SelectedNodesScheduler$AListener
@@ -2422,6 +2429,7 @@ org.netbeans.modules.parsing.spi.Parser$Result
 org.netbeans.modules.parsing.spi.ParserFactory
 org.netbeans.modules.parsing.spi.ParserResultTask
 org.netbeans.modules.parsing.spi.Scheduler
+org.netbeans.modules.parsing.spi.Scheduler$Accessor
 org.netbeans.modules.parsing.spi.SchedulerTask
 org.netbeans.modules.parsing.spi.TaskFactory
 org.netbeans.modules.php.dbgp.breakpoints.BreakpointActionProvider

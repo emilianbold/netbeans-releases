@@ -47,11 +47,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
 
 /**
  * Writes qmake project (*.pro file) for given configuration.
@@ -73,6 +76,7 @@ public class QmakeProjectWriter {
         TEMPLATE,
         TARGET,
         CONFIG,
+        QT,
         SOURCES,
         HEADERS,
         FORMS,
@@ -90,8 +94,9 @@ public class QmakeProjectWriter {
      * Qmake variable operations.
      */
     private static enum Operation {
-        ASSIGN("="), // NOI18N
-        APPEND("+="); // NOI18N
+        SET("="), // NOI18N
+        ADD("+="), // NOI18N
+        SUB("-="); // NOI18N
 
         private final String op;
 
@@ -105,7 +110,8 @@ public class QmakeProjectWriter {
     }
 
     /**
-     * 
+     * String to prepend to every include directory and preprocessor macro.
+     * It is empty, because qmake will prepend something later.
      */
     private static final String PREPEND = ""; // NOI18N
 
@@ -152,35 +158,37 @@ public class QmakeProjectWriter {
     }
 
     private void write(BufferedWriter bw) throws IOException {
-        write(bw, Variable.TEMPLATE, Operation.ASSIGN, getTemplate());
-        write(bw, Variable.TARGET, Operation.ASSIGN,
+        write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
+        write(bw, Variable.TARGET, Operation.SET,
                 configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
-        write(bw, Variable.CONFIG, Operation.APPEND,
+        write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
+        write(bw, Variable.CONFIG, Operation.ADD,
                 configuration.getQmakeConfiguration().getConfig().getValue());
+        write(bw, Variable.QT, Operation.SET, getQtModules());
 
         Item[] items = projectDescriptor.getProjectItems();
-        write(bw, Variable.SOURCES, Operation.APPEND, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
-        write(bw, Variable.HEADERS, Operation.APPEND, getItems(items, MIMENames.HEADER_MIME_TYPE));
-        write(bw, Variable.FORMS, Operation.APPEND, getItems(items, MIMENames.QT_UI_MIME_TYPE));
-        write(bw, Variable.RESOURCES, Operation.APPEND, getItems(items, MIMENames.QT_RESOURCE_MIME_TYPE));
-        write(bw, Variable.TRANSLATIONS, Operation.APPEND, getItems(items, MIMENames.QT_TRANSLATION_MIME_TYPE));
+        write(bw, Variable.SOURCES, Operation.ADD, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
+        write(bw, Variable.HEADERS, Operation.ADD, getItems(items, MIMENames.HEADER_MIME_TYPE));
+        write(bw, Variable.FORMS, Operation.ADD, getItems(items, MIMENames.QT_UI_MIME_TYPE));
+        write(bw, Variable.RESOURCES, Operation.ADD, getItems(items, MIMENames.QT_RESOURCE_MIME_TYPE));
+        write(bw, Variable.TRANSLATIONS, Operation.ADD, getItems(items, MIMENames.QT_TRANSLATION_MIME_TYPE));
 
-        write(bw, Variable.OBJECTS_DIR, Operation.ASSIGN,
+        write(bw, Variable.OBJECTS_DIR, Operation.SET,
                 configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
 
-        write(bw, Variable.QMAKE_CC, Operation.ASSIGN,
+        write(bw, Variable.QMAKE_CC, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
-        write(bw, Variable.QMAKE_CXX, Operation.ASSIGN,
+        write(bw, Variable.QMAKE_CXX, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
 
         CompilerSet cs = configuration.getCompilerSet().getCompilerSet();
-        write(bw, Variable.DEFINES, Operation.APPEND,
+        write(bw, Variable.DEFINES, Operation.ADD,
                 configuration.getCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, PREPEND) +
                 configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, PREPEND));
-        write(bw, Variable.INCLUDEPATH, Operation.APPEND,
+        write(bw, Variable.INCLUDEPATH, Operation.ADD,
                 configuration.getCCompilerConfiguration().getIncludeDirectories().getOption(cs, PREPEND) +
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().getOption(cs, PREPEND));
-        write(bw, Variable.LIBS, Operation.APPEND,
+        write(bw, Variable.LIBS, Operation.ADD,
                 configuration.getLinkerConfiguration().getLibrariesConfiguration().getOption(cs, PREPEND));
     }
 
@@ -211,10 +219,14 @@ public class QmakeProjectWriter {
             if (itemConf.getExcluded().getValue()) {
                 continue;
             }
-            String actualMimeType = item.getFileObject().getMIMEType();
+            FileObject fo = item.getFileObject();
+            if (fo == null) {
+                continue;
+            }
+            String actualMimeType = fo.getMIMEType();
             for (String mimeType : mimeTypes) {
                 if (mimeType.equals(actualMimeType)) {
-                    list.add(item.getPath());
+                    list.add(IpeUtils.quoteIfNecessary(item.getPath()));
                     break;
                 }
             }
@@ -226,11 +238,46 @@ public class QmakeProjectWriter {
         switch (configuration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_APPLICATION:
                 return "app"; // NOI18N
-            case MakeConfiguration.TYPE_QT_LIBRARY:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 return "lib"; // NOI18N
             default:
                 return ""; // NOI18N
         }
+    }
+
+    private String getQtModules() {
+        QmakeConfiguration conf = configuration.getQmakeConfiguration();
+        StringBuilder buf = new StringBuilder();
+        if (conf.isCoreEnabled().getValue()) {
+            append(buf, "core"); // NOI18N
+        }
+        if (conf.isGuiEnabled().getValue()) {
+            append(buf, "gui"); // NOI18N
+        }
+        if (conf.isNetworkEnabled().getValue()) {
+            append(buf, "network"); // NOI18N
+        }
+        if (conf.isOpenglEnabled().getValue()) {
+            append(buf, "opengl"); // NOI18N
+        }
+        if (conf.isSqlEnabled().getValue()) {
+            append(buf, "sql"); // NOI18N
+        }
+        if (conf.isSvgEnabled().getValue()) {
+            append(buf, "svg"); // NOI18N
+        }
+        if (conf.isXmlEnabled().getValue()) {
+            append(buf, "xml"); // NOI18N
+        }
+        return buf.toString();
+    }
+
+    private void append(StringBuilder buf, String val) {
+        if (0 < buf.length()) {
+            buf.append(' '); // NOI18N
+        }
+        buf.append(val);
     }
 
 }

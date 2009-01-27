@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmTypedef extends CsmOffsetableDeclaration<CsmTypedef>, CsmClassifier<CsmTypedef> {
+public interface CsmTypedef extends CsmOffsetableDeclaration, CsmClassifier {
 
         CsmType getType();
 

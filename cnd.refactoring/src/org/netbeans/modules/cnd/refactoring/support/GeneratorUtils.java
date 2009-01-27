@@ -49,11 +49,13 @@ import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -74,13 +76,27 @@ public class GeneratorUtils {
     private GeneratorUtils() {
     }
 
+    public static CsmClass extractEnclosingClass(CsmContext editorContext) {
+        if (editorContext == null) {
+            return null;
+        }
+        CsmClass cls = editorContext.getEnclosingClass();
+        if (cls == null) {
+            CsmFunction fun = editorContext.getEnclosingFunction();
+            if (fun != null && CsmKindUtilities.isMethod(fun)) {
+                cls = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
+            }
+        }
+        return cls;
+    }
+    
     public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
         // for now returns only current class elements, but in fact needs full hierarchy
         return typeElement.getMembers();
     }
 
     public static boolean isConstant(CsmVariable var) {
-        return var.getType().isConst();
+        return var.getType() != null && var.getType().isConst();
     }
 //    public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
 //        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
@@ -336,15 +352,28 @@ public class GeneratorUtils {
     public static String computeSetterName(CsmField field) {
         StringBuilder name = getCapitalizedName(field);
 
-        name.insert(0, "set"); //NOI18N
+        name.insert(0, toPrefix("set")); //NOI18N
         return name.toString();
     }
 
     public static String computeGetterName(CsmField field) {
         StringBuilder name = getCapitalizedName(field);
         CsmType type = field.getType();
-        name.insert(0, getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        name.insert(0, toPrefix(getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get")); //NOI18N
         return name.toString();
+    }
+
+    private static String toPrefix(String str) {
+        StringBuilder pref = new StringBuilder(str);
+        boolean isUpperCase = true;
+        char first = pref.charAt(0);
+        if (isUpperCase) {
+            first = Character.toUpperCase(first);
+        } else {
+            first = Character.toLowerCase(first);
+        }
+        pref.setCharAt(0, first);
+        return pref.toString();
     }
 
     private static enum TypeKind {

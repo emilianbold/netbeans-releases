@@ -64,8 +64,12 @@ function classpath() {
 	    	if [ -d "${nbdist}/ide10" ]; then
 		    ide="${nbdist}/ide10"
 		else 
-		    echo "Can not find ide subdirectory in Netbeans"
-		    return
+		    	if [ -d "${nbdist}/ide11" ]; then
+			    ide="${nbdist}/ide11"
+			else 
+			    echo "Can not find ide subdirectory in Netbeans"
+			    return
+			fi
 		fi
 	    fi
 	fi
@@ -78,12 +82,16 @@ function classpath() {
 	if [ -d "${nbdist}/platform8" ]; then
 	    platform="${nbdist}/platform8"
 	else 
-	    if [ -d "${nbdist}/platform9" ]; then
-		platform="${nbdist}/platform9"
-	    else
-		echo "Can not find platform subdirectory in Netbeans"
-		return
-	    fi
+		if [ -d "${nbdist}/platform9" ]; then
+		    platform="${nbdist}/platform9"
+		else 
+		    if [ -d "${nbdist}/platform10" ]; then
+			platform="${nbdist}/platform10"
+		    else
+			echo "Can not find platform subdirectory in Netbeans"
+			return
+		    fi
+		fi
 	fi
     fi
     
@@ -282,7 +290,7 @@ function main() {
     DBGPORT=${DBGPORT-5858}
 
     DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}"
-    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform9"
+    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform10"
     DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"

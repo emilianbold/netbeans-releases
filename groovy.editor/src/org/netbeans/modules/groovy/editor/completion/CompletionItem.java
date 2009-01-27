@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.*;
 import groovy.lang.MetaMethod;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +58,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
@@ -120,7 +120,27 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return cls + "(" + getKind() + "): " + getName();
     }
 
-    public static class JavaMethodItem extends CompletionItem {
+    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+            TypeMirror returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
+            boolean emphasise, boolean nameOnly) {
+        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+    }
+
+    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+            String returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
+            boolean emphasise, boolean nameOnly) {
+        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+    }
+
+    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
+        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly);
+    }
+
+//    public static CompletionItem forMetaMethod(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
+//        return new MetaMethodItem(clz, method, anchorOffset, isGDK);
+//    }
+
+    private static class JavaMethodItem extends CompletionItem {
 
         private final String className;
 
@@ -134,14 +154,16 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final boolean emphasise;
 
+        private final boolean nameOnly;
+
         public JavaMethodItem(String className, String simpleName, String parameterString, TypeMirror returnType,
-                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
             this(className, simpleName, parameterString,
-                    Utilities.getTypeName(returnType, false).toString(), modifiers, anchorOffset, emphasise);
+                    Utilities.getTypeName(returnType, false).toString(), modifiers, anchorOffset, emphasise, nameOnly);
         }
 
         public JavaMethodItem(String className, String simpleName, String parameterString, String returnType,
-                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
             super(null, anchorOffset);
             this.className = className;
             this.simpleName = simpleName;
@@ -149,6 +171,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             this.returnType = NbUtilities.stripPackage(returnType);
             this.modifiers = modifiers;
             this.emphasise = emphasise;
+            this.nameOnly = nameOnly;
         }
 
         @Override
@@ -203,6 +226,15 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             return ElementHandleSupport.createHandle(className, simpleName, ElementKind.METHOD,
                     Utilities.modelModifiersToGsf(modifiers));
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (nameOnly) {
+                return simpleName;
+            }
+            return super.getCustomInsertTemplate();
+        }
+
     }
 
     public static class DynamicFieldItem extends CompletionItem {
@@ -260,7 +292,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class DynamicMethodItem extends CompletionItem {
+    private static class DynamicMethodItem extends CompletionItem {
 
         private final String name;
 
@@ -268,11 +300,14 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String returnType;
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType) {
+        private final boolean nameOnly;
+
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
             this.returnType = returnType;
+            this.nameOnly = nameOnly;
         }
 
         @Override
@@ -343,6 +378,15 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             return ElementHandleSupport.createHandle(null, name, ElementKind.METHOD,
                     Collections.singleton(Modifier.PROTECTED));
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (nameOnly) {
+                return name;
+            }
+            return super.getCustomInsertTemplate();
+        }
+
     }
 
     public static class MetaMethodItem extends CompletionItem {
@@ -353,10 +397,13 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final AstMethodElement methodElement;
 
-        public MetaMethodItem(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
+        private final boolean nameOnly;
+
+        public MetaMethodItem(Class clz, MetaMethod method, int anchorOffset, boolean isGDK, boolean nameOnly) {
             super(null, anchorOffset);
             this.method = method;
             this.isGDK = isGDK;
+            this.nameOnly = nameOnly;
 
             // This is an artificial, new ElementHandle which has no real
             // equivalent in the AST. It's used to match the one passed to super.document()
@@ -456,6 +503,15 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             return methodElement;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (nameOnly) {
+                return method.getName();
+            }
+            return super.getCustomInsertTemplate();
+        }
+
     }
 
     public static class KeywordItem extends CompletionItem {

@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -420,10 +421,36 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             //TODO: global variables or vars from other files
             //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
-                Map<String, VariableNameImpl> allAssignments = vars.get(scope);
+                //Map<String, VariableNameImpl> allAssignments = vars.get(scope);
                 Variable var = ((Variable) leftHandSide);
-                varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node, allAssignments);
+                varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
+                        Collections.<String,AssignmentImpl>emptyMap());
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
+            }
+        } else if (leftHandSide instanceof FieldAccess) {
+            FieldAccess fieldAccess = (FieldAccess) leftHandSide;
+            VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
+            if (varN != null) {
+                List<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
+                //TODO: getFirst must be reviewed
+                TypeScope type = ModelUtils.getFirst(types);
+                if (type instanceof ClassScope) {
+                    ClassScope cls = (ClassScope) type;
+                    String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
+                    //TODO: wrap up this $ handling not to care about it ever
+                    if (!fldName.startsWith("$")) {//NOI18N
+                        fldName = "$" + fldName;//NOI18N
+                    }
+                    FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.getFields(fldName, PHPIndex.ANY_ATTR));
+                    if (field != null) {
+                        //List<? extends FieldAssignmentImpl> assignments = field.getAssignments();
+                        String typeName = VariousUtils.extractVariableTypeFromAssignment(node, 
+                                Collections.<String,AssignmentImpl>emptyMap());
+                        ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
+                        FieldAssignmentImpl fa = new FieldAssignmentImpl((FieldElementImpl) field, scope, scope.getBlockRange(), fieldInfo.getRange(), typeName);
+                        field.addElement(fa);
+                    }
+                }
             }
 
         }
@@ -713,7 +740,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (declaration instanceof VarAssignmentImpl) {
             VarAssignmentImpl impl = (VarAssignmentImpl) declaration;
-            declaration = impl.getVar();
+            declaration = impl.getContainer();
         }
         FileScope fileScope = (FileScope) modelScope;
         return fileScope.getAllOccurences(declaration);
@@ -790,7 +817,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Map<String, VariableNameImpl> varnames = vars.get(scope);
         VariableNameImpl varN = null;
         while (scope != null && varnames != null) {
-            varN = varnames.get(VariableNameImpl.toName((Variable) leftHandSide));
+            if (leftHandSide instanceof Variable) {
+                varN = varnames.get(VariableNameImpl.toName((Variable) leftHandSide));
+            }
             if (varN != null) {
                 break;
             }
