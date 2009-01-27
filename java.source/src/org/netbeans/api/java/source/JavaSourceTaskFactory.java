@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -90,7 +91,7 @@ public abstract class JavaSourceTaskFactory {
      * @param phase phase to use for tasks created by {@link #createTask}
      * @param priority priority to use for tasks created by {@link #createTask}
      */
-    protected JavaSourceTaskFactory(Phase phase, Priority priority) {
+    protected JavaSourceTaskFactory(@NonNull Phase phase, @NonNull Priority priority) {
         this.phase = phase;
         this.priority = priority;
         this.file2Task = new HashMap<FileObject, CancellableTask<CompilationInfo>>();
@@ -105,7 +106,7 @@ public abstract class JavaSourceTaskFactory {
      * @param file for which file the task should be created.
      * @return created {@link CancellableTask}  for a given file.
      */
-    protected abstract CancellableTask<CompilationInfo> createTask(FileObject file);
+    protected abstract @NonNull CancellableTask<CompilationInfo> createTask(FileObject file);
 
     /**Specifies on which files should be registered tasks created by this factory.
      * On {@link JavaSource}'s corresponding to {@link FileObject}s returned from
@@ -122,7 +123,7 @@ public abstract class JavaSourceTaskFactory {
      * @see EditorAwareJavaSourceTaskFactory
      * @see CaretAwareJavaSourceTaskFactory
      */
-    protected abstract Collection<FileObject> getFileObjects();
+    protected abstract @NonNull Collection<FileObject> getFileObjects();
 
     /**Notify the infrastructure that the collection of fileobjects has been changed.
      * The infrastructure calls {@link #getFileObjects()} to get a new collection files.
