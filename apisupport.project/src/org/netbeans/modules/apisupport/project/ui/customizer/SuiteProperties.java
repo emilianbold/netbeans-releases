@@ -42,7 +42,9 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,8 +53,14 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -60,7 +68,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -79,7 +86,8 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String CLUSTER_DIR = "build/cluster";    // NOI18N
     public static final String ACTIVE_NB_PLATFORM_PROPERTY = "nbplatform.active";    // NOI18N
-    
+    public static final String ACTIVE_NB_PLATFORM_DIR_PROPERTY = "nbplatform.active.dir";    // NOI18N
+    public static final String CLUSTER_PATH_PROPERTY = "cluster.path";    // NOI18N
     private NbPlatform activePlatform;
     private JavaPlatform activeJavaPlatform;
     
@@ -104,7 +112,7 @@ public final class SuiteProperties extends ModuleProperties {
     
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
-    private Set<File> clusterPath;
+    private Set<ClusterInfo> clusterPath;
     
     /**
      * Creates a new instance of SuiteProperties
@@ -156,6 +164,7 @@ public final class SuiteProperties extends ModuleProperties {
     void setActivePlatform(NbPlatform newPlaf) {
         NbPlatform oldPlaf = this.activePlatform;
         this.activePlatform = newPlaf;
+        clusterPath = null; // reset on platform change
         firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
     }
     
@@ -208,6 +217,37 @@ public final class SuiteProperties extends ModuleProperties {
         return arr == null ? new String[0] : arr;
     }
     
+    public static String[] getPathProperty(PropertyEvaluator evaluator, String prop) {
+        // XXX share code with nbbuild, copied from ShorterPaths
+        String val = evaluator.getProperty(prop);
+        if (val == null)
+            return new String[0];
+        StringTokenizer tokenizer = new StringTokenizer(val, ":;");
+        String nextToken = null;
+        ArrayList<String> entries = new ArrayList<String>();
+
+        while (nextToken != null || tokenizer.hasMoreTokens()) {
+            String token = nextToken;
+            nextToken = null;
+            if (token == null) {
+                token = tokenizer.nextToken();
+            }
+            if (tokenizer.hasMoreTokens()) {
+                nextToken = tokenizer.nextToken();
+            }
+            // check if <disk drive>:\path is property"
+            String path = token + ":" + nextToken;
+            if (new File(path).exists()) {
+                nextToken = null;
+            } else {
+                path = token;
+            }
+
+            entries.add(path);
+        }
+        return entries.toArray(new String[entries.size()]);
+    }
+
     public void storeProperties() throws IOException {
         NbPlatform plaf = getActivePlatform();
         ModuleProperties.storePlatform(getHelper(), plaf);
@@ -270,12 +310,67 @@ public final class SuiteProperties extends ModuleProperties {
         }
     }
 
-    Set<File> getClusterPath() {
+    // TODO C.P tests once SuiteProjectGenerator.createSuiteProject generates new
+    Set<ClusterInfo> getClusterPath() {
         if (clusterPath == null) {
-            clusterPath = new HashSet<File>();
-            // TODO - add folders on cluster.path
+            clusterPath = new HashSet<ClusterInfo>();
+            String[] paths = getPathProperty(getEvaluator(), CLUSTER_PATH_PROPERTY);
+            for (String path : paths) {
+                // TODO C.P sources/javadoc, disabled ext. clusters
+                boolean isPlaf = path.contains("${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
+                File cd = evaluateCPEntry(path);
+                FileObject fo = FileUtil.toFileObject(cd);
+                Project prj = FileOwnerQuery.getOwner(fo);
+                if (prj.getLookup().lookup(NbModuleProvider.class) == null
+                        && prj.getLookup().lookup(SuiteProvider.class) == null)
+                    // probably found nbbuild above the platform, use only regular NB module projects
+                    prj = null;
+                clusterPath.add(ClusterInfo.createFromCP(path, cd, prj, isPlaf));
+            }
         }
         return clusterPath;
+    }   // TODO C.P test non-existent project clusters
+
+    /**
+     * Converts "raw" cluster.path entry (possibly with nbplatform.active.dir,
+     * bare cluster names and project dir-relative path) into valid absolute file path.
+     * @param rawEntry
+     * @return
+     */
+    File evaluateCPEntry(String rawEntry) {
+        // When cluster does not exist, it is either bare name or one with different number
+        final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9]+)?[/\\\\]?$");
+        final String nbDirProp = "${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}";
+        if (rawEntry.startsWith(nbDirProp)) {
+            rawEntry = getActivePlatform().getDestDir().getAbsolutePath()
+                    + rawEntry.substring(nbDirProp.length());
+        }
+        
+        File path = getHelper().resolveFile(getEvaluator().evaluate(rawEntry));
+        if (! path.exists()) {
+            // search for corresponding numbered cluster
+            final Matcher cm = pat.matcher(path.getAbsolutePath());
+            if (cm.matches()) {
+                File parent = path.getParentFile();
+                if (parent != null) {
+                    File[] alternate = parent.listFiles(new FilenameFilter() {
+
+                        public boolean accept(File dir, String name) {
+                            Matcher am = pat.matcher(name);
+                            return am.matches() && cm.group(1).equalsIgnoreCase(am.group(1));
+                        }
+                    });
+                    if (alternate == null) {
+                        // not found, just return what we have
+                        return path;
+                    }
+                    if (alternate.length > 0 && alternate[0].isDirectory()) {
+                        return alternate[0];
+                    }
+                }
+            }
+        }
+        return path;
     }
 
     Set<NbModuleProject> getSubModules() {

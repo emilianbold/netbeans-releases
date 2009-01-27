@@ -74,6 +74,12 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     private NbPlatformCustomizerJavadoc javadocPanel;
     private JButton okButton;
 
+    /**
+     * Displays Add Cluster dialog and lets user select path to external cluster.
+     *
+     * @param prj Project into which the path will be stored. Returned path is relative to the project dir if possible.
+     * @return Info for newly added cluster or null if user cancelled the dialog.
+     */
     static ClusterInfo showAddDialog(Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
         panel.prjDir = prj.getProjectDirectory();
@@ -91,13 +97,46 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         panel.updateDialog();
         dlg.setVisible(true);
         ClusterInfo retVal = null;
-        if (descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
-            retVal = new ClusterInfo(new File(panel.clusterDirText.getText()));
+        if (descriptor.getValue() == panel.okButton) {
+            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false);
 
         }
         dlg.dispose();
         return retVal;
     }
+
+    /**
+     * Shows Edit Cluster dialog for existing external cluster.
+     * Browse button is disabled, user can only change src and javadoc.
+     *
+     * @param ci Original cluster info 
+     * @return Updated cluster info or null if user cancelled the dialog
+     */
+    static ClusterInfo showEditDialog(ClusterInfo ci) {
+        EditClusterPanel panel = new EditClusterPanel();
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(EditClusterPanel.class, "CTL_EditCluster_Title"), // NOI18N
+                true,
+                new Object[] { panel.okButton, NotifyDescriptor.CANCEL_OPTION },
+                panel.okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(EditClusterPanel.class),
+                null);
+        descriptor.setClosingOptions(null);
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        panel.clusterDirText.setText(ci.getClusterDir().toString());
+        panel.updateDialog();
+        panel.browseButton.setEnabled(false);
+        dlg.setVisible(true);
+        ClusterInfo retVal = null;
+        if (descriptor.getValue() == panel.okButton) {
+            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false); // TODO C.P src & javadoc
+        }
+        dlg.dispose();
+        return retVal;
+    }
+
     private ClusterInfo clusterInfo;
     private FileObject prjDir;
 

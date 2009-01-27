@@ -486,7 +486,7 @@ public final class ModuleList {
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
         ManifestManager mm = (manifest.isFile() ? 
             ManifestManager.getInstance(manifest, false) : ManifestManager.NULL_INSTANCE);
-        File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${cluster}")); // NOI18N
+        File clusterDir = PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")); // NOI18N
         ModuleEntry entry;
         ManifestManager.PackageExport[] publicPackages = ProjectXMLManager.findPublicPackages(data);
         String[] friends = ProjectXMLManager.findFriends(data);
@@ -745,51 +745,63 @@ public final class ModuleList {
             throw new IOException("Cannot examine dir " + root); // NOI18N
         }
         for (File cluster : clusters) {
-            for (String moduleDir : MODULE_DIRS) {
-                File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
-                if (!dir.isDirectory()) {
-                    continue;
-                }
-                File[] jars = dir.listFiles();
-                if (jars == null) {
-                    throw new IOException("Cannot examine dir " + dir); // NOI18N
-                }
-                for (File m : jars) {
-                    if (!m.getName().endsWith(".jar")) { // NOI18N
-                        continue;
-                    }
-                    jarsOpened++;
-                    ManifestManager mm = ManifestManager.getInstanceFromJAR(m);
-                    String codenamebase = mm.getCodeNameBase();
-                    if (codenamebase == null) {
-                        continue;
-                    }
-                    String cp = mm.getClassPath();
-                    File[] exts;
-                    if (cp == null) {
-                        exts = new File[0];
-                    } else {
-                        String[] pieces = cp.trim().split(" +"); // NOI18N
-                        exts = new File[pieces.length];
-                        for (int l = 0; l < pieces.length; l++) {
-                            exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
-                        }
-                    }
-                    ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, cluster,
-                            mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
-                            mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies());
-                    if (entries.containsKey(codenamebase)) {
-                        Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
-                    } else {
-                        entries.put(codenamebase, entry);
-                    }
-                    registerEntry(entry, findBinaryNBMFiles(cluster, codenamebase, m));
-                }
-            }
+            scanCluster(cluster, root, entries, true);
         }
         return new ModuleList(entries, root, false);
     }
-    
+
+    /**
+     * Scans cluster on disk and fills <tt>entries</tt> with found module entries.
+     * @param cluster Path to cluster dir
+     * @param nbDestDir <tt>netbeans.dest.dir</tt> folder for NB.org modules, may be <tt>null</tt>
+     * @param entries Map to be filled with module entries found in cluster
+     * @param registerEntry Whether register entries in known entries in ModuleList
+     * @throws java.io.IOException
+     */
+    public static void scanCluster(File cluster, File nbDestDir, Map<String, ModuleEntry> entries, boolean registerEntry) throws IOException {
+        for (String moduleDir : MODULE_DIRS) {
+            File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
+            if (!dir.isDirectory()) {
+                continue;
+            }
+            File[] jars = dir.listFiles();
+            if (jars == null) {
+                throw new IOException("Cannot examine dir " + dir); // NOI18N
+            }
+            for (File m : jars) {
+                if (!m.getName().endsWith(".jar")) {
+                    // NOI18N
+                    continue;
+                }
+                jarsOpened++;
+                ManifestManager mm = ManifestManager.getInstanceFromJAR(m);
+                String codenamebase = mm.getCodeNameBase();
+                if (codenamebase == null) {
+                    continue;
+                }
+                String cp = mm.getClassPath();
+                File[] exts;
+                if (cp == null) {
+                    exts = new File[0];
+                } else {
+                    String[] pieces = cp.trim().split(" +"); // NOI18N
+                    exts = new File[pieces.length];
+                    for (int l = 0; l < pieces.length; l++) {
+                        exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                    }
+                }
+                ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies());
+                if (entries.containsKey(codenamebase)) {
+                    Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
+                } else {
+                    entries.put(codenamebase, entry);
+                }
+                if (registerEntry)
+                    registerEntry(entry, findBinaryNBMFiles(cluster, codenamebase, m));
+            }
+        }
+    }
+
     /**
      * Try to find which files are part of a module's binary build (i.e. slated for NBM).
      * Tries to scan update tracking for the file, but also always adds in the module JAR

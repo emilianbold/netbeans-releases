@@ -187,6 +187,9 @@
               <ResourceString bundle="org/netbeans/modules/apisupport/project/Bundle.properties" key="CTL_RemoveButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="editButton">
           <Properties>
@@ -194,6 +197,9 @@
               <ResourceString bundle="org/netbeans/modules/apisupport/project/Bundle.properties" key="CTL_EditButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editButtonActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
