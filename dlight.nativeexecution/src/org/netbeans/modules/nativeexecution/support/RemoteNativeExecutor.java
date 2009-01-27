@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import com.jcraft.jsch.ChannelExec;
@@ -67,7 +66,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
     @Override
     protected int doInvoke() throws Exception {
         final ConnectionManager mgr = ConnectionManager.getInstance();
-        
+
         synchronized (mgr) {
             final Session session = mgr.getConnectionSession(execEnv);
 
@@ -75,10 +74,13 @@ public final class RemoteNativeExecutor extends NativeExecutor {
                 return -1;
             }
 
-            setProgress(loc("NativeExecutor_Progress_ExecutingTask", task.toString())); // NOI18N
+            setProgress(
+                    loc("NativeExecutor_Progress_ExecutingTask", // NOI18N
+                    task.toString()));
 
+            String cmd = "/bin/echo $$; exec " + task.getCommand(); // NOI18N
             channel = (ChannelExec) session.openChannel("exec"); // NOI18N
-            channel.setCommand("/bin/echo $$; exec " + task.getCommand()); // NOI18N
+            channel.setCommand(cmd);
             channel.connect();
         }
 
@@ -87,7 +89,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
             err = channel.getErrStream();
             in = channel.getOutputStream();
         } catch (Exception e) {
-            Logger.getInstance().severe("Failed to get streams from ChannelExec"); // NOI18N
+            Logger.severe("Failed to get streams from ChannelExec"); // NOI18N
             e.printStackTrace();
         }
 
@@ -113,7 +115,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         if (channel == null || !channel.isConnected()) {
             return true;
         }
-        
+
         channel.disconnect();
         NativeTaskSupport.kill(execEnv, 9, getPID());
 //            System.out.println("Will kill " + getPID());
@@ -128,7 +130,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         //TODO: Processes are still not killed ;(
         return !channel.isConnected();
 
-        // TODO: When to cancel session?
+    // TODO: When to cancel session?
 //    if (session != null) {
 //      session.disconnect();
 //    }

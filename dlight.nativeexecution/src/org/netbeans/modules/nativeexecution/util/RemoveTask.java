@@ -47,7 +47,7 @@ import org.openide.util.Exceptions;
 /**
  * Implementation of files removing routines
  */
-public class RemoveTask {
+public final class RemoveTask {
 
     private RemoveTask() {
     }
@@ -59,7 +59,8 @@ public class RemoveTask {
      * @param force whether delete read-only files or not
      * @return true on successfull removal
      */
-    public static boolean removeDirectory(ExecutionEnvironment execEnv, String dir, boolean force) {
+    public static boolean removeDirectory(final ExecutionEnvironment execEnv,
+            final String dir, final boolean force) {
         if (execEnv.isLocal()) {
             return deleteLocalDirectory(new File(dir), force);
         }
@@ -70,11 +71,14 @@ public class RemoveTask {
             flags = flags.concat("f"); // NOI18N
         }
 
-        NativeTask ddt = new NativeTask(execEnv, "/bin/rm", new String[]{flags, dir});
+        NativeTask ddt = new NativeTask(execEnv,
+                "/bin/rm", // NOI18N
+                new String[]{flags, dir});
+
         ddt.submit();
 
         Integer result = -1;
-        
+
         try {
             result = ddt.get();
         } catch (InterruptedException ex) {
@@ -86,7 +90,8 @@ public class RemoveTask {
         return result == 0;
     }
 
-    private static boolean deleteLocalDirectory(File path, boolean force) {
+    private static boolean deleteLocalDirectory(final File path,
+            final boolean force) {
         if (path.exists()) {
             File[] files = path.listFiles();
             for (int i = 0; i < files.length; i++) {

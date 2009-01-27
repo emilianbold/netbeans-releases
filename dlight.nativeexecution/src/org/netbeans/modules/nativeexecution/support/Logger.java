@@ -41,9 +41,14 @@ package org.netbeans.modules.nativeexecution.support;
 public class Logger {
 
     private static java.util.logging.Logger instance =
-            java.util.logging.Logger.getLogger("nativeexecution.support.logger");
+            java.util.logging.Logger.getLogger(
+            "nativeexecution.support.logger"); // NOI18N
 
     public static java.util.logging.Logger getInstance() {
         return instance;
+    }
+
+    public static void severe(String message) {
+        instance.severe(message);
     }
 }

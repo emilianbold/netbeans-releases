@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.support;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -44,7 +43,8 @@ import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.openide.util.Exceptions;
 
 public class NativeTaskSupport {
-    private static final String CMD_KILL="/bin/kill"; // NOI18N
+
+    private static final String CMD_KILL = "/bin/kill"; // NOI18N
 
     public static boolean kill(ExecutionEnvironment env, int pid) {
         return kill(env, 15, pid);
@@ -52,10 +52,12 @@ public class NativeTaskSupport {
 
     public static boolean kill(ExecutionEnvironment env, int signal, int pid) {
         NativeTask task = new NativeTask(env, CMD_KILL,
-                new String[]{"-" + Integer.toString(signal), Integer.toString(pid)});
+                new String[]{
+                    "-" + Integer.toString(signal), // NOI18N
+                    Integer.toString(pid)});
 
         Integer result = new Integer(-1);
-        
+
         try {
             result = task.invoke();
         } catch (Exception ex) {
