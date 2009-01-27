@@ -286,6 +286,11 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
   }
 
+  @Override
+  public String toString() {
+    return getName();
+  }
+
   private static final class DLightToolAccessorImpl extends DLightToolAccessor {
 
     @Override
