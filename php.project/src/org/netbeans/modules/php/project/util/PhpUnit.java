@@ -65,11 +65,6 @@ public final class PhpUnit extends PhpProgram {
         super(command);
     }
 
-    @Override
-    public boolean isValid() {
-        return super.isValid();
-    }
-
     /**
      * The minimum version of PHPUnit is <b>3.3.0</b> because:
      * - of XML log format changes (used for parsing of test results)
@@ -77,11 +72,13 @@ public final class PhpUnit extends PhpProgram {
      * @return <code>true</code> if PHPUnit in minimum version was found
      */
     public boolean supportedVersionFound() {
-        getVersion();
-        if (version == null) {
+        if (!isValid()) {
             return false;
         }
-        return version[0] >= PhpUnitConstants.MINIMAL_VERSION[0] && version[1] >= PhpUnitConstants.MINIMAL_VERSION[1];
+        getVersion();
+        return version != null
+                && version[0] >= PhpUnitConstants.MINIMAL_VERSION[0]
+                && version[1] >= PhpUnitConstants.MINIMAL_VERSION[1];
     }
 
     /**
@@ -89,6 +86,9 @@ public final class PhpUnit extends PhpProgram {
      * @return
      */
     public int[] getVersion() {
+        if (!isValid()) {
+            return null;
+        }
         if (version != null) {
             return version;
         }
@@ -105,11 +105,12 @@ public final class PhpUnit extends PhpProgram {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
+            // ignored
         }
         return version;
     }
 
-    public void resetVersion() {
+    public static void resetVersion() {
         version = null;
     }
 
