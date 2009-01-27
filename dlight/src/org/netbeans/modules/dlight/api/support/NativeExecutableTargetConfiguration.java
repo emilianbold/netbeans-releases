@@ -43,7 +43,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This class is configuration class used as constructor 
- * parameter when creating {@link org.netbeans.modules.dlight.execution.api.NativeExecutableTarget}.
+ * parameter when creating {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
  */
 public final class NativeExecutableTargetConfiguration {
   private String cmd;
@@ -55,7 +55,7 @@ public final class NativeExecutableTargetConfiguration {
   private boolean isSubstitutable;
 
   /**
-   * Creates new configuration for {@link org.netbeans.modules.dlight.execution.api.NativeExecutableTarget}
+   * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
    * @param cmd command line
    * @param args arguments to run
    * @param env enviroment variables

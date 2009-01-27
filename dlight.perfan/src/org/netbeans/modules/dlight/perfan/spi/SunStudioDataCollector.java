@@ -279,7 +279,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
     public void targetStateChanged(DLightTarget source, State oldState, State newState) {
         switch (newState) {
-            case STARTING:
+            case RUNNING:
                 targetStarted(source);
                 return;
             case FAILED:
