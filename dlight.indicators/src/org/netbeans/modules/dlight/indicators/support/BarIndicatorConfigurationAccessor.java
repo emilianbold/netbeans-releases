@@ -5,7 +5,7 @@
 
 package org.netbeans.modules.dlight.indicators.support;
 
-import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
+import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 
 /**

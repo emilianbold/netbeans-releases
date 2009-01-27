@@ -66,6 +66,8 @@ public final class CsmMacroExpansion {
 
     /** Flag for document of macro expansion view panel.*/
     public static final String MACRO_EXPANSION_VIEW_DOCUMENT = "macro-expansion-view-document"; // NOI18N
+    public static final String MACRO_EXPANSION_SYNC_CARET = "macro-expansion-sync-caret"; // NOI18N
+    public static final String MACRO_EXPANSION_SYNC_CONTEXT = "macro-expansion-sync-context"; // NOI18N
 
     /** A dummy providers that never returns any results.*/
     private static final CsmMacroExpansionProvider EMPTY_MACRO_EXPANSION_PROVIDER = new EmptyMacroExpansion();
@@ -118,9 +120,23 @@ public final class CsmMacroExpansion {
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
      * @param outDoc - result
+     * @return - number of expansions
      */
-    public static void expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
-        getMacroExpansionProvider().expand(inDoc, startOffset, endOffset, outDoc);
+    public static int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        return getMacroExpansionProvider().expand(inDoc, startOffset, endOffset, outDoc);
+    }
+
+    /**
+     * Check for changes in content of document
+     *
+     * @param inDoc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @param outDoc - result
+     * @return - changes found
+     */
+    public static boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        return getMacroExpansionProvider().isChanged(inDoc, startOffset, endOffset, outDoc);
     }
 
     /**
@@ -177,6 +193,16 @@ public final class CsmMacroExpansion {
         getMacroExpansionViewProvider().showMacroExpansionView(doc, offset);
     }
 
+    /**
+     * Updates position for Macro Expansion View panel.
+     *
+     * @param doc - document
+     * @param offset - offset in document
+     * @return - changes found
+     */
+    public static boolean updateMacroExpansionView(int newOffset) {
+        return getMacroExpansionViewProvider().updateMacroExpansionView(newOffset);
+    }
 
     //
     // Implementation of the default provider
@@ -190,7 +216,12 @@ public final class CsmMacroExpansion {
             return null;
         }
 
-        public void expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+            return 0;
+        }
+
+        public boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+            return false;
         }
 
         public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
@@ -219,6 +250,10 @@ public final class CsmMacroExpansion {
         }
 
         public void showMacroExpansionView(Document doc, int offset) {
+        }
+
+        public boolean updateMacroExpansionView(int newOffset) {
+            return false;
         }
 
     }

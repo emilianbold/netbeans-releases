@@ -43,25 +43,27 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
 
 
+
 public final class DataStorageManager {
 
-  private Collection<? extends DataStorage> allDataStorages;//this is to create new ones
+  private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
   private List<DataStorage> activeDataStorages = new ArrayList<DataStorage>();
   private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
   private static final DataStorageManager instance = new DataStorageManager();
 
   private DataStorageManager() {
-    allDataStorages = Lookup.getDefault().lookupAll(DataStorage.class);
-    log.info(allDataStorages.size() + " data storage(s) found!"); // NOI18N
+    dataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
+    log.info(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
   }
 
   public static DataStorageManager getInstance() {
@@ -77,7 +79,7 @@ public final class DataStorageManager {
    *  for requested schema (if it can be found within all available DataStorages)
    */
   public DataStorage getDataStorageFor(DataCollector collector) {
-    List<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
+    Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
     for (DataStorageType type : supportedTypes) {
       DataStorage storage = getDataStorageFor(type, collector.getDataTablesMetadata());
 
@@ -101,7 +103,7 @@ public final class DataStorageManager {
 //    if (activeDataStorages.contains(log))
 //  }
 
-  private DataStorage getDataStorageFor(DataStorageType storageType, List<? extends DataTableMetadata> tableMetadatas) {
+  private DataStorage getDataStorageFor(DataStorageType storageType,List<DataTableMetadata> tableMetadatas) {
     for (DataStorage storage :activeDataStorages){
       if (storage.supportsType(storageType)) {
         storage.createTables(tableMetadatas);
@@ -109,9 +111,9 @@ public final class DataStorageManager {
       }
     }
     //if no storage was created - create the new one
-    for (DataStorage storage : allDataStorages) {
-      if (storage.supportsType(storageType)) {
-        DataStorage newStorage = storage.newInstance();
+    for (DataStorageFactory storage : dataStorageFactories) {
+      if (storage.getStorageTypes().contains(storageType)) {
+        DataStorage newStorage = storage.createStorage();
         newStorage.createTables(tableMetadatas);
         activeDataStorages.add(newStorage);
         return newStorage;

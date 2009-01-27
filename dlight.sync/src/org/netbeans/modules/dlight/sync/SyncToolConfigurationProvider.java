@@ -41,17 +41,18 @@ package org.netbeans.modules.dlight.sync;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+
 
 
 

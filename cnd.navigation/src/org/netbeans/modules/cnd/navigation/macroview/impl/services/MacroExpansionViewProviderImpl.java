@@ -53,6 +53,8 @@
 package org.netbeans.modules.cnd.navigation.macroview.impl.services;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -89,7 +91,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
      * @param offset - offset in document
      */
     public void showMacroExpansionView(Document doc, int offset) {
-        Document mainDoc = doc;
+        final Document mainDoc = doc;
         if (mainDoc == null) {
             return;
         }
@@ -98,7 +100,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
             return;
         }
 
-        MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
+        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
         boolean localContext = view.isLocalContext();
 
         // Init expanded context field
@@ -107,7 +109,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         if(expandedContextFile == null) {
             return;
         }
-        Document expandedContextDoc = openFileDocument(expandedContextFile);
+        final Document expandedContextDoc = openFileDocument(expandedContextFile);
         if(expandedContextDoc == null) {
             return;
         }
@@ -121,15 +123,16 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         expandedContextDoc.putProperty(Document.class, mainDoc);
         setupMimeType(expandedContextDoc);
 
+        int expansionsNumber = 0;
         CsmScope scope = ContextUtils.findInnerFileScope(csmFile, offset);
         if (localContext && CsmKindUtilities.isOffsetable(scope)) {
-            CsmMacroExpansion.expand(mainDoc, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset(), expandedContextDoc);
+            expansionsNumber = CsmMacroExpansion.expand(mainDoc, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset(), expandedContextDoc);
         } else {
-            CsmMacroExpansion.expand(mainDoc, 0, mainDoc.getLength(), expandedContextDoc);
+            expansionsNumber = CsmMacroExpansion.expand(mainDoc, 0, mainDoc.getLength(), expandedContextDoc);
         }
 
         saveFile(expandedContextFile);
-        lockFile(expandedContextFile);
+//        lockFile(expandedContextFile);
 
         // Init expanded macro field
 
@@ -137,7 +140,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         if(expandedMacroFile == null) {
             return;
         }
-        Document expandedMacroDoc = openFileDocument(expandedMacroFile);
+        final Document expandedMacroDoc = openFileDocument(expandedMacroFile);
         if(expandedMacroDoc == null) {
             return;
         }
@@ -153,17 +156,162 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         }
 
         saveFile(expandedMacroFile);
-        lockFile(expandedMacroFile);
+//        lockFile(expandedMacroFile);
 
         // Open view
 
-        if (!view.isOpened()) {
-            view.open();
-        }
-        view.setDocuments(expandedContextDoc, expandedMacroDoc);
-        view.requestActive();
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (!view.isOpened()) {
+                view.open();
+            }
+            view.setDocuments(expandedContextDoc, expandedMacroDoc);
+            view.requestActive();
 
-        view.setDisplayName("Macro Expansion of " + CsmUtilities.getFile(mainDoc).getName()); // NOI18N
+            view.setDisplayName("Macro Expansion of " + CsmUtilities.getFile(mainDoc).getName()); // NOI18N
+
+            view.setStatusBarText("            Number of expansions: "+ expansionsNumber); // NOI18N
+        } else {
+            try {
+                final int en = expansionsNumber;
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        if (!view.isOpened()) {
+                            view.open();
+                        }
+                        view.setDocuments(expandedContextDoc, expandedMacroDoc);
+                        view.requestActive();
+
+                        view.setDisplayName("Macro Expansion of " + CsmUtilities.getFile(mainDoc).getName()); // NOI18N
+
+                        view.setStatusBarText("            Number of expansions: "+ en); // NOI18N
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
+    /**
+     * Updates Macro Expansion View panel.
+     *
+     * @param newOffset - new offset in document
+     * @return - changes found
+     */
+    public boolean updateMacroExpansionView(int newOffset) {
+        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
+        boolean localContext = view.isLocalContext();
+
+        final Document expandedContextDoc = view.getExpandedContextDoc();
+        if(expandedContextDoc == null) {
+            return false;
+        }
+        final Document mainDoc = (Document)expandedContextDoc.getProperty(Document.class);
+        if (mainDoc == null) {
+            return false;
+        }
+        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        if (csmFile == null) {
+            return false;
+        }
+
+        // Init expanded context field
+
+        boolean changed = false;
+        CsmScope scope = ContextUtils.findInnerFileScope(csmFile, newOffset);
+        if (localContext && CsmKindUtilities.isOffsetable(scope)) {
+            changed = CsmMacroExpansion.isChanged(mainDoc, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset(), expandedContextDoc);
+        } else {
+            changed = CsmMacroExpansion.isChanged(mainDoc, 0, mainDoc.getLength(), expandedContextDoc);
+        }
+
+        if(!changed) {
+            return false;
+        }
+
+        FileObject newExpandedContextFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
+        if(newExpandedContextFile == null) {
+            return false;
+        }
+        final Document newExpandedContextDoc = openFileDocument(newExpandedContextFile);
+        if(newExpandedContextDoc == null) {
+            return false;
+        }
+        newExpandedContextDoc.putProperty(Document.TitleProperty, mainDoc.getProperty(Document.TitleProperty));
+        newExpandedContextDoc.putProperty(CsmFile.class, csmFile);
+        newExpandedContextDoc.putProperty(FileObject.class, newExpandedContextFile);
+        newExpandedContextDoc.putProperty("beforeSaveRunnable", null); // NOI18N
+        newExpandedContextDoc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT, true);
+
+        mainDoc.putProperty(Document.class, newExpandedContextDoc);
+        newExpandedContextDoc.putProperty(Document.class, mainDoc);
+        setupMimeType(newExpandedContextDoc);
+
+        int expansionsNumber = 0;
+        if (localContext && CsmKindUtilities.isOffsetable(scope)) {
+            expansionsNumber = CsmMacroExpansion.expand(mainDoc, ((CsmOffsetable) scope).getStartOffset(), ((CsmOffsetable) scope).getEndOffset(), newExpandedContextDoc);
+        } else {
+            expansionsNumber = CsmMacroExpansion.expand(mainDoc, 0, mainDoc.getLength(), newExpandedContextDoc);
+        }
+
+        saveFile(newExpandedContextFile);
+
+
+        // Init expanded macro field
+
+        FileObject expandedMacroFile = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
+        if(expandedMacroFile == null) {
+            return false;
+        }
+        final Document expandedMacroDoc = openFileDocument(expandedMacroFile);
+        if(expandedMacroDoc == null) {
+            return false;
+        }
+        setupMimeType(expandedMacroDoc);
+
+        CsmDeclaration decl = ContextUtils.findInnerFileDeclaration(csmFile, newOffset);
+        if (decl != null) {
+            try {
+                expandedMacroDoc.insertString(0, decl.getName().toString(), null);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        saveFile(expandedMacroFile);
+//        lockFile(expandedMacroFile);
+
+        // Open view
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (!view.isOpened()) {
+                view.open();
+            }
+            view.setDocuments(newExpandedContextDoc, expandedMacroDoc);
+            view.setStatusBarText("            Number of expansions: "+ expansionsNumber); // NOI18N
+        } else {
+            try {
+                final int en = expansionsNumber;
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        if (!view.isOpened()) {
+                            view.open();
+                        }
+                        view.setDocuments(newExpandedContextDoc, expandedMacroDoc);
+                        view.setStatusBarText("            Number of expansions: "+ en); // NOI18N
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        return true;
     }
 
     private void setupMimeType(Document doc){

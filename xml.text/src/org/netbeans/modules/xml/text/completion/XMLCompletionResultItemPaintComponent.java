@@ -53,6 +53,7 @@ import javax.swing.*;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class XMLCompletionResultItemPaintComponent extends JPanel {
+    private Icon icon;
     
     /**
      * Creates a new instance of XMLCompletionResultItemPaintComponent
@@ -85,7 +86,11 @@ public class XMLCompletionResultItemPaintComponent extends JPanel {
     }
 
     protected Icon getIcon() {
-        return null;
+        return icon;
+    }
+    
+    public void setIcon(Icon icon) {
+        this.icon = icon;
     }
     
     public void paintComponent(Graphics g) {
