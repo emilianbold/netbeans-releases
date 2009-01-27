@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
+import org.openide.util.NbBundle;
 
 /**
  * Test runner UI for PHP unit tests. One must call {@link #start()} first
@@ -132,6 +133,7 @@ public final class UnitTestRunner {
             MANAGER.displayReport(testSession, testSession.getReport(suite.getTime()));
         }
 
+        MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_OutputInOutput"), false);
         MANAGER.sessionFinished(testSession);
     }
 }
