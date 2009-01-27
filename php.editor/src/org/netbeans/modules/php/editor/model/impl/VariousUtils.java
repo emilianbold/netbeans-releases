@@ -389,7 +389,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachedModelSupport.getInheritedMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
                         if (meth == null) {
                             return emptyStack;
                         } else {
