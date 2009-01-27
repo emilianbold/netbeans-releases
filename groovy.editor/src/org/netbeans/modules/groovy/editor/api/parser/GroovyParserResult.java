@@ -77,6 +77,7 @@ public class GroovyParserResult extends ParserResult {
         this.errorCollector = errorCollector;
     }
 
+    // FIXME remove this
     public ErrorCollector getErrorCollector() {
         return errorCollector;
     }

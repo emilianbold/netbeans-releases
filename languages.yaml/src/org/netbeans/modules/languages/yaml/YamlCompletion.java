@@ -48,18 +48,21 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParameterInfo;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -125,6 +128,7 @@ public class YamlCompletion implements CodeCompletionHandler {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
+    @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
@@ -161,7 +165,7 @@ public class YamlCompletion implements CodeCompletionHandler {
         return result;
     }
 
-    public String document(CompilationInfo info, ElementHandle element) {
+    public String document(ParserResult info, ElementHandle element) {
         if (refcard == null) {
             refcard = ""; // NOI18N
             // TODO: I18N
@@ -203,10 +207,15 @@ public class YamlCompletion implements CodeCompletionHandler {
         return null;
     }
 
-    public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
+    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         if (caretOffset > 0) {
             try {
-                return info.getDocument().getText(caretOffset - 1, 1);
+                Document doc = ((YamlParserResult) info).getSnapshot().getSource().getDocument(false);
+                if (doc != null) {
+                    return doc.getText(caretOffset - 1, 1);
+                } else {
+                    return null;
+                }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -219,20 +228,20 @@ public class YamlCompletion implements CodeCompletionHandler {
         return QueryType.NONE;
     }
 
-    public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
+    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return null;
     }
 
-    public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
+    public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
     }
     private static ImageIcon keywordIcon;
 
-    private class KeywordItem implements CompletionProposal, ElementHandle {
+    private static class KeywordItem implements CompletionProposal, ElementHandle {
 
         private int anchor;
         private static final String YAML_KEYWORD = "org/netbeans/modules/languages/yaml/yaml_files_16.png"; //NOI18N
@@ -341,6 +350,11 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public int getSortPrioOverride() {
             return 0;
+        }
+
+        public OffsetRange getOffsetRange(ParserResult result) {
+            // FIXME parsing API
+            return OffsetRange.NONE;
         }
     }
 }

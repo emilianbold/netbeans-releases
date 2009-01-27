@@ -56,10 +56,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.Exceptions;
 
 /**
@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
  */
 public class YamlKeystrokeHandler implements KeystrokeHandler {
 
+    @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char c) throws BadLocationException {
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument) document;
@@ -233,8 +234,8 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         return OffsetRange.NONE;
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
-        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
+        YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
             return Collections.emptyList();
         }
@@ -250,7 +251,10 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
 
         Collections.reverse(ranges);
-        ranges.add(new OffsetRange(0, info.getDocument().getLength()));
+        Document doc = info.getSnapshot().getSource().getDocument(false);
+        if (doc != null) {
+            ranges.add(new OffsetRange(0, doc.getLength()));
+        }
 
         return ranges;
     }

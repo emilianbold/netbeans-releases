@@ -101,6 +101,10 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
     private List<Embedding> translate(Snapshot snapshot) {
         TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
+        if (tokenSequence == null) {
+            return Collections.emptyList();
+        }
+        
         List<Embedding> embeddings = new ArrayList<Embedding>();
 
         @SuppressWarnings("unchecked")
@@ -245,38 +249,4 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
-//    private static class CodeBlockData {
-//        /** Start of section in GSP file */
-//        private int sourceStart;
-//        /** End of section in GSP file */
-//        private int sourceEnd;
-//        /** Start of section in generated Groovy */
-//        private int generatedStart;
-//        /** End of section in generated Groovy */
-//        private int generatedEnd;
-//
-//        public CodeBlockData(int sourceStart, int sourceEnd, int generatedStart, int generatedEnd) {
-//            this.sourceStart = sourceStart;
-//            this.generatedStart = generatedStart;
-//            this.sourceEnd = sourceEnd;
-//            this.generatedEnd = generatedEnd;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("CodeBlockData[");
-//            sb.append("\n  GSP(" + sourceStart+","+sourceEnd+")");
-//            //sb.append("=\"");
-//            //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
-//            //sb.append("\"");
-//            sb.append(",\n  GROOVY(" + generatedStart + "," + generatedEnd + ")");
-//            //sb.append("=\"");
-//            //sb.append(rubyCode.substring(generatedStart,generatedEnd));
-//            //sb.append("\"");
-//            sb.append("]");
-//
-//            return sb.toString();
-//        }
-//    }
 }
