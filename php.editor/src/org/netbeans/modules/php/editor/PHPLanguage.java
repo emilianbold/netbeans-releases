@@ -52,8 +52,10 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
 import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
@@ -172,5 +174,10 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public IndexSearcher getIndexSearcher() {
         return new PHPTypeSearcher();
+    }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new PHPIndexer.Factory();
     }
 }
