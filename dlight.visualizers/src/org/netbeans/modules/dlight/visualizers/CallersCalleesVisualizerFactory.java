@@ -5,9 +5,9 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
-import org.netbeans.modules.dlight.visualizer.spi.VisualizerFactory;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
@@ -24,10 +24,11 @@ public final class CallersCalleesVisualizerFactory implements VisualizerFactory<
   }
 
   @Override
-  public Visualizer<TreeTableVisualizerConfiguration> create(TreeTableVisualizerConfiguration configuration, DataProvider provider) {
+  public Visualizer<TreeTableVisualizerConfiguration> create(TreeTableVisualizerConfiguration configuration,
+          VisualizerDataProvider provider) {
     if (configuration instanceof CallersCalleesVisualizerConfiguration &&
         provider instanceof StackDataProvider) {
-      return new CallersCalleesVisualizer(provider, configuration);
+      return new CallersCalleesVisualizer((StackDataProvider)provider, configuration);
     }
     throw new IllegalStateException("Trying to create CallersCallees Visualizer " +
         "using incorrect VisualizerConfiguration and/or DataProvider object");

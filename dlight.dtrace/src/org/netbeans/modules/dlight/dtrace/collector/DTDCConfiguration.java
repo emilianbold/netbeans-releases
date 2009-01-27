@@ -39,11 +39,12 @@
 package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
-import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+
 
 /**
  * Configuration object for creating

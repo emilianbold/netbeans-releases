@@ -64,6 +64,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -97,10 +98,10 @@ public class actionsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(actionsTest.class).addTest(
-                "testDummy",
-                "testDuplicate",
-                "testEditContainer",
-                "testResizing",
+//                "testDummy",
+//                "testDuplicate",
+//                "testEditContainer",
+//                "testResizing",
                 "testBeans").gui(true).enableModules(".*").clusters(".*"));
     }
 
@@ -319,13 +320,20 @@ public class actionsTest extends JellyTestCase {
         String beanName = "MyBean";
 
         createForm("Bean Form", beanName);
-        inspector = new ComponentInspectorOperator();
 
-        new ActionNoBlock("Tools|Palette|Swing/AWT Components", null).performMenu();
+        Thread.sleep(3000);
+
+        //new ActionNoBlock("Tools|Palette|Swing/AWT Components", null).performMenu();
+        Action ac = new Action("Tools|Palette|Swing/AWT Components", null);
+        ac.setComparator(new DefaultStringComparator(true, true));
+        ac.perform();
+
+
         NbDialogOperator nbo = new NbDialogOperator("Palette Manager");
         nbo.btClose().push();
         Thread.sleep(3000);
 
+        inspector = new ComponentInspectorOperator();
         Node beanNode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + beanName);
         beanNode.select();
         new ActionNoBlock(null, "Tools|Add to Palette...").perform(beanNode);

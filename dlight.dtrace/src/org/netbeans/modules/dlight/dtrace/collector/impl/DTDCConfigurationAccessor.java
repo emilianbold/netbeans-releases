@@ -40,9 +40,9 @@ package org.netbeans.modules.dlight.dtrace.collector.impl;
 
 import com.sun.org.apache.xerces.internal.parsers.DTDConfiguration;
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
  *

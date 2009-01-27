@@ -58,7 +58,7 @@ public class GetterSetterPanel extends JPanel {
     private final ElementSelectorPanel elementSelector;
 
     /** Creates new form GetterSetterPanel */
-    public GetterSetterPanel(ElementNode.Description description, int type) {
+    public GetterSetterPanel(ElementNode.Description description, GeneratorUtils.Kind type) {
         initComponents();
         elementSelector = new ElementSelectorPanel(description, false, true);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -67,9 +67,9 @@ public class GetterSetterPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(elementSelector, gridBagConstraints);
-        if (type == GeneratorUtils.GETTERS_ONLY) {
+        if (type == GeneratorUtils.Kind.GETTERS_ONLY) {
             Mnemonics.setLocalizedText(selectorLabel, NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_field_select")); //NOI18N
-        } else if (type == GeneratorUtils.SETTERS_ONLY) {
+        } else if (type == GeneratorUtils.Kind.SETTERS_ONLY) {
             Mnemonics.setLocalizedText(selectorLabel, NbBundle.getMessage(GetterSetterGenerator.class, "LBL_setter_field_select")); //NOI18N
         } else {
             Mnemonics.setLocalizedText(selectorLabel, NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter_field_select")); //NOI18N
@@ -86,6 +86,10 @@ public class GetterSetterPanel extends JPanel {
         @SuppressWarnings("unchecked")
         List<CsmField> fields = (List<CsmField>) decls;
         return fields;
+    }
+
+    public final boolean isMethodInline() {
+        return elementSelector.isMethodInline();
     }
 
     /** This method is called from within the constructor to

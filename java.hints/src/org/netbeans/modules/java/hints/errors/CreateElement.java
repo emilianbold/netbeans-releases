@@ -65,6 +65,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -188,7 +189,17 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-        String simpleName = e.getSimpleName().toString();
+        Name name = e.getSimpleName();
+        if (name == null) {
+            if (ErrorHintsProvider.ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "e.simpleName=null"); // NOI18N
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset); // NOI18N
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + errorPath.getLeaf()); // NOI18N
+            }
+
+            return Collections.<Fix>emptyList();
+        }
+        String simpleName = name.toString();
         TypeElement source = (TypeElement) info.getTrees().getElement(firstClass);
         TypeElement target = null;
         boolean wasMemberSelect = false;
