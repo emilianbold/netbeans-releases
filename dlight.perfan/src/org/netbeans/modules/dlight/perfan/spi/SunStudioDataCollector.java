@@ -51,9 +51,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationState;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
@@ -79,7 +78,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
     private static final String ID = "PerfanDataStorage";
     private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
-    private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
     private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
     public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
     private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
@@ -108,17 +107,14 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
-                if (validationStatus.isOK()) {
+                if (validationStatus.isValid()) {
                     return validationStatus;
                 }
 
                 ValidationStatus oldStatus = validationStatus;
                 ValidationStatus newStatus = doValidation(targetToValidate);
 
-                if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                        newStatus.getReason().equals(oldStatus.getReason()))) {
-                    notifyStatusChanged(oldStatus, newStatus);
-                }
+                notifyStatusChanged(oldStatus, newStatus);
 
                 validationStatus = newStatus;
                 return newStatus;
@@ -127,7 +123,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public void invalidate() {
-        validationStatus = ValidationStatus.NOT_VALIDATED;
+        validationStatus = ValidationStatus.initialStatus;
     }
 
     public ValidationStatus getValidationStatus() {
@@ -140,17 +136,18 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         try {
             os = HostInfo.getOS(targetToValidate.getExecEnv());
         } catch (HostNotConnectedException ex) {
-            return new ValidationStatus(ValidationState.UNKNOWN, "Host is not connected...");
+            return ValidationStatus.unknownStatus("Host is not connected...", 
+                    targetToValidate.getExecEnv().getConnectToAction());
         }
 
         if (!"SunOS".equals(os)) {
-            return new ValidationStatus(ValidationState.NOT_VALID, "SunStudioDataCollector works on SunOS only.");
+            return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only.");
         }
 
-        ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+        ValidationStatus result = null;
 
         // TODO: files copying...????
-        result = ValidationStatus.VALID;
+        result = ValidationStatus.validStatus;
 
         return result;
     }
@@ -166,6 +163,10 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+        if (newStatus.equals(oldStatus)) {
+            return;
+        }
+        
         for (ValidationListener validationListener : validationListeners) {
             validationListener.validationStateChanged(this, oldStatus, newStatus);
         }
