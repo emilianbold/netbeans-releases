@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.api.indicator;
 import java.util.HashMap;
 
 /**
- * Represents Map to be used by {@link org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration}
+ * Represents Map to be used by {@link org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration}
  */
 public final class ConfigurationData {
   private final HashMap<String, Object> map;
@@ -101,7 +101,7 @@ public final class ConfigurationData {
   /**
    * Return node
    * @param key
-   * @return
+   * @return ConfigurationData for the <code>key</code>
    */
   public ConfigurationData getNode(String key) {
     String nodepath = getFullKey(key) + '/';
