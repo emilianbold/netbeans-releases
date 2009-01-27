@@ -30,8 +30,8 @@ public interface VisualizerDataProviderFactory<T extends VisualizerDataProvider>
   boolean provides(DataModelScheme dataModel);
 
   /**
-   * 
-   * @return
+   * Creates new {@link org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider}
+   * @return Visualizer data provider
    */
   T create();
 }

@@ -43,7 +43,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
 /**
- *  Indicator's data description, it should describe columns this indicator shows
+ *  Indicator's data description, it should describe columns this indicator shows.
  */
 public final class IndicatorMetadata {
 
@@ -57,10 +57,18 @@ public final class IndicatorMetadata {
     this.columns =  columns;
   }
 
+  /**
+   * Returns columns list
+   * @return columns list
+   */
   public List<Column> getColumns() {
     return columns;
   }
 
+  /**
+   * Returns columns count
+   * @return columns count
+   */
   public int getColumnsCount() {
     return columns.size();
   }

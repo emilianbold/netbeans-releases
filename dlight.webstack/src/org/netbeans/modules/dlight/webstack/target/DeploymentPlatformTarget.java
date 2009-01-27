@@ -43,7 +43,6 @@ package org.netbeans.modules.dlight.webstack.target;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.DLightTargetExecutionService;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
-import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -81,6 +80,7 @@ public final class DeploymentPlatformTarget extends DLightTarget {
   public ExecutionEnvironment getExecEnv() {
     String user_name = System.getProperty("dlight.webstack.user", "masha");
     String host_name = System.getProperty("dlight.webstack.host", "localhost");
+    host_name = "129.159.126.238";
     int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
    // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
      return new ExecutionEnvironment(user_name, host_name,  port_number);
