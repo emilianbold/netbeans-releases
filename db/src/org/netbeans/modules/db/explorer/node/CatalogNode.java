@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -49,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -72,6 +75,7 @@ public class CatalogNode extends BaseNode {
     }
 
     private String name = ""; // NOI18N
+    private String htmlName = null;
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Catalog> catalogHandle;
 
@@ -82,6 +86,20 @@ public class CatalogNode extends BaseNode {
     }
 
     protected void initialize() {
+        setupNames();
+
+        connection.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFCATALOG)) {
+                        updateProperties();
+                    }
+                }
+            }
+        );
+    }
+
+    private void setupNames() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         boolean connected = !connection.getConnector().isDisconnected();
         if (connected && metaDataModel != null) {
@@ -95,9 +113,15 @@ public class CatalogNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    @Override
+    protected void updateProperties() {
+        setupNames();
+        super.updateProperties();
     }
 
     @Override
@@ -110,6 +134,11 @@ public class CatalogNode extends BaseNode {
         return name;
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        return htmlName;
+    }
+
     private void renderNames(Catalog catalog) {
         if (catalog == null) {
             name = "";
@@ -118,6 +147,22 @@ public class CatalogNode extends BaseNode {
         name = catalog.getName();
         if (name == null) {
             name = "Default"; // NOI18N
+        }
+
+        if (catalog != null) {
+            boolean isDefault = false;
+            String def = connection.getDefaultCatalog();
+            if (def != null) {
+                isDefault = def.equals(name);
+            } else {
+                isDefault = catalog.isDefault();
+            }
+
+            if (isDefault) {
+                htmlName = "<b>" + name + "</b>"; // NOI18N
+            } else {
+                htmlName = null;
+            }
         }
     }
 

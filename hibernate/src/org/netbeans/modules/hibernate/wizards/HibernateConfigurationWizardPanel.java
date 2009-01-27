@@ -48,6 +48,8 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -67,11 +69,21 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
     public HibernateConfigurationWizardPanel() {
         initComponents();
         setDefaults();
+        cmbDbConnection.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                changeSupport.fireChange();
+            }
+
+        });
     }
 
     public void setDefaults() {
         cmbDbConnection.setModel(new javax.swing.DefaultComboBoxModel(new String[0]));
         DatabaseExplorerUIs.connect(cmbDbConnection, ConnectionManager.getDefault());
+        if(cmbDbConnection.getItemCount() > 1) {
+            cmbDbConnection.setSelectedIndex(0);
+        }
     }
 
     @Override
@@ -81,13 +93,12 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
 
     private void fillComponents() {
         DatabaseConnection dbConn = getDatabaseConnection();
-        if (dbConn != null  && cmbDbConnection.getItemCount() != 0) {
+        if (dbConn != null && cmbDbConnection.getItemCount() != 0) {
             txtDialect.setText(Util.getDialectName(dbConn.getDriverClass()));
         }
     }
-    
+
     private void checkAndRegisterDBDriver() {
-        
     }
 
     /** This method is called from within the constructor to
@@ -163,6 +174,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField txtDialect;
     // End of variables declaration//GEN-END:variables
+
     public void actionPerformed(ActionEvent e) {
     }
 
@@ -222,15 +234,20 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
         for (int i = 0; i < cmbDbConnection.getItemCount(); i++) {
             if (cmbDbConnection.getItemAt(i) instanceof DatabaseConnection) {
                 DatabaseConnection conn = (DatabaseConnection) cmbDbConnection.getItemAt(i);
-                if (conn.getDatabaseURL().equals(dbConnURL)) {                
+                if (conn.getDatabaseURL().equals(dbConnURL)) {
                     cmbDbConnection.setSelectedItem(conn);
                     break;
                 }
             }
-        }        
+        }
     }
 
     public boolean isPanelValid() {
+        if (cmbDbConnection.getModel().getSize() <= 1) {
+            // #155965. There are no registered db connection exists with the IDE...
+            // For Hibernate framework, developer should establish one db connection.
+            return false;
+        }
         return true;
     }
 

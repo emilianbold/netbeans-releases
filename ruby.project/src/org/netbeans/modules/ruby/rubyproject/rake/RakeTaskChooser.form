@@ -26,8 +26,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rakeTaskFieldPanel" alignment="0" pref="558" max="32767" attributes="0"/>
-                          <Component id="taskParamsField" alignment="0" pref="558" max="32767" attributes="2"/>
+                          <Component id="taskParametersComboBox" pref="568" max="32767" attributes="0"/>
+                          <Component id="rakeTaskFieldPanel" alignment="0" pref="568" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -59,13 +59,13 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="taskParamsField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="taskParamLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="taskParametersComboBox" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="matchingTaskLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="matchingTaskSP" pref="346" max="32767" attributes="0"/>
+              <Component id="matchingTaskSP" pref="352" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="debugCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -89,23 +89,10 @@
     </Component>
     <Component class="javax.swing.JLabel" name="taskParamLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="taskParamsField"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/rake/Bundle.properties" key="RakeTaskChooser.taskParamLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="taskParamsField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/rake/Bundle.properties" key="RakeTaskChooser.taskParamsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="taskParamsFieldKeyPressed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="matchingTaskLabel">
       <Properties>
@@ -187,5 +174,18 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JComboBox" name="taskParametersComboBox">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="4">
+            <StringItem index="0" value="Item 1"/>
+            <StringItem index="1" value="Item 2"/>
+            <StringItem index="2" value="Item 3"/>
+            <StringItem index="3" value="Item 4"/>
+          </StringArray>
+        </Property>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>

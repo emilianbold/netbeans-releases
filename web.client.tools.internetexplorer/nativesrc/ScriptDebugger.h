@@ -143,6 +143,7 @@ static const unsigned int SUSPEND_ON_EXCEPTIONS = SUSPEND_ON_FIRSTLINE << 1;
 static const unsigned int SUSPEND_ON_ERRORS = SUSPEND_ON_EXCEPTIONS << 1;
 static const unsigned int SUSPEND_ON_DEBUGGER_KEYWORD = SUSPEND_ON_ERRORS << 1;
 static const unsigned int IGNORE_QUERY_STRINGS = SUSPEND_ON_DEBUGGER_KEYWORD << 1;
+static const unsigned int HTTP_MONITOR_ENABLED = IGNORE_QUERY_STRINGS << 1;
 
 // ScriptDebugger
 class ATL_NO_VTABLE ScriptDebugger :
@@ -153,6 +154,7 @@ class ATL_NO_VTABLE ScriptDebugger :
     public IDebugExpressionCallBack {
 public:
 	ScriptDebugger() {
+        httpMonitorEnabled = true; //enable http monitor until disabled
 	}
 
 BEGIN_COM_MAP(ScriptDebugger)
@@ -216,7 +218,7 @@ public:
     BOOL setBreakpoint(Breakpoint *pBreakpoint) {
         return setBreakpoint(pBreakpoint, false);
     }
-   BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI) {
+    BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI) {
         return setBreakpoint(pBreakpoint, fileURI, false);
     }
     BOOL removeBreakpoint(Breakpoint *pBreakpoint) {
@@ -265,6 +267,12 @@ public:
     BOOL isFeatureSet(const unsigned int feature) {
         return featureSet & feature;
     }
+    void enableHttpMonitor(bool nowEnabled) {
+        httpMonitorEnabled = nowEnabled;
+    }
+    bool isHttpMonitorEnabled() {
+        return httpMonitorEnabled;
+    }
     tstring getStatusString() {
         return statesMap.find(state)->second;
     }
@@ -310,6 +318,7 @@ private:
     void pauseImpl();
     Breakpoint *m_pCurrentBreakpoint;
     unsigned int featureSet;
+    bool httpMonitorEnabled;
     static BOOL alreadyStoppedOnFirstLine;
     DWORD registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc);
     void unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie);

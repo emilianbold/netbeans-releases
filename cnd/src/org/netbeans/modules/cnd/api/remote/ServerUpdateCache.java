@@ -80,4 +80,44 @@ public class ServerUpdateCache {
     public void setDefaultIndex(int defaultIndex) {
         this.defaultIndex = defaultIndex;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ServerUpdateCache)) {
+            return false;
+        }
+        ServerUpdateCache cache2 = (ServerUpdateCache)obj;
+        if (this == cache2) {
+            return true;
+        }
+        if (cache2 == null) {
+            return false;
+        }
+        if (this.getDefaultIndex() != cache2.getDefaultIndex()) {
+            return false;
+        }
+        String[] lst1 = this.getHostKeyList();
+        String[] lst2 = cache2.getHostKeyList();
+        if (lst1.length != lst2.length) {
+            return false;
+        }
+        for (int i = 0; i < lst1.length; i++) {
+            String str1 = lst1[i];
+            String str2 = lst1[i];
+            if (!str1.equals(str2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + (this.hklist != null ? this.hklist.hashCode() : 0);
+        hash = 37 * hash + this.defaultIndex;
+        return hash;
+    }
+
+
 }

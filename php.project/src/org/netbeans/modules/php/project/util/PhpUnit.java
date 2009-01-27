@@ -51,13 +51,6 @@ public final class PhpUnit extends PhpProgram {
         super(command);
     }
 
-    /**
-     * @return PHP Unit, never <code>null</code>.
-     */
-    public String getPhpUnit() {
-        return super.getProgram();
-    }
-
     @Override
     public boolean isValid() {
         return super.isValid();

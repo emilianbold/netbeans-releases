@@ -102,7 +102,7 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
 
     private boolean renderStatements(List<CsmStatement> list) {
         FileImpl file = (FileImpl) getContainingFile();
-        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset());
+        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), true);
         if (stream == null) {
             Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
             return false;

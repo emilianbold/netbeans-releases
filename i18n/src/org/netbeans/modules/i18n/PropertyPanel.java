@@ -451,7 +451,7 @@ public class PropertyPanel extends JPanel {
                                 .addPreferredGap(RELATED)
                                 .add(browseButton))
                             .add(warningLabel)
-                            .add(keyBundleCombo)
+                            .add(keyBundleCombo,0,GroupLayout.PREFERRED_SIZE,Short.MAX_VALUE)
                             .add(valueScroll)
                             .add(commentScroll)
                             .add(replaceFormatTextField)))

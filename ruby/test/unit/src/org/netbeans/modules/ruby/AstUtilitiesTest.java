@@ -228,6 +228,14 @@ public class AstUtilitiesTest extends RubyTestBase {
         int offset = 0;
         String test = null;
 
+        offset = text.indexOf("be empty");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("Queue should be empty", test);
+
+        offset = text.indexOf("work  ");
+        test = AstUtilities.getTestName(fileObject, offset);
+        assertEquals("A Queue instance with a space at the end should work  ", test);
+
         offset = text.indexOf("respond to :push");
         test = AstUtilities.getTestName(fileObject, offset);
         assertEquals("A Queue instance should respond to :push", test);

@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,6 +57,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author gpatil
  */
+@ProjectServiceProvider(service=SourceForBinaryQueryImplementation.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
+})
 public class JAXBWizSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
 

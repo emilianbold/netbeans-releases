@@ -328,15 +328,11 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (!this.getNormalizedName().equals(other.getNormalizedName())) {
             return false;
         }
-        /*if (this.getInScope() != null && !this.getInScope().equals(other.getInScope())) {
+        //TODO: classscopes from different files are not the same, but be carefull about
+        // perf. problems before uncommenting it
+        /*if (!this.getFileObject().equals(other.getFileObject())) {
             return false;
         }*/
-        /*if (this.getOffset() != other.getOffset()) {
-            return false;
-        }*/
-//        if (!this.file.equals(other.file)) {
-//            return false;
-//        }
         return true;
     }
 

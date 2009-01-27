@@ -63,6 +63,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -80,12 +81,26 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     private boolean hasServiceArtifacts;
     private Set<URI> jarArtifacts = new HashSet<URI>();
 
+    @ProjectServiceProvider(service=SourceForBinaryQueryImplementation.class, projectType="org-netbeans-modules-java-j2seproject")
+    public static SourceForBinaryQueryImplementation forJavaSE(Project project) {
+        return new JaxWsSourceForBinaryQueryImpl(project, false);
+    }
+
+    @ProjectServiceProvider(service=SourceForBinaryQueryImplementation.class, projectType={
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject",
+        "org-netbeans-modules-j2ee-clientproject"
+    })
+    public static SourceForBinaryQueryImplementation forJavaEE(Project project) {
+        return new JaxWsSourceForBinaryQueryImpl(project, true);
+    }
+
     /** Constructor.
      *
      * @param project Project instance
      * @param hasServiceArtifacts true if project can contain services generated from WSDL
      */
-    JaxWsSourceForBinaryQueryImpl(Project project, boolean hasServiceArtifacts) {
+    private JaxWsSourceForBinaryQueryImpl(Project project, boolean hasServiceArtifacts) {
         this.project = project;
         this.hasServiceArtifacts = hasServiceArtifacts;
     }

@@ -50,8 +50,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -84,20 +84,26 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
+    private final SourceRoots sources;
+    private final SourceRoots tests;
 
     // GuardedBy(dirCache)
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sources, SourceRoots tests) {
         assert helper != null;
         assert evaluator != null;
+        assert sources != null;
+        assert tests != null;
 
         this.helper = helper;
         projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert projectDirectory != null;
         this.evaluator = evaluator;
+        this.sources = sources;
+        this.tests = tests;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
@@ -139,26 +145,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
 
-    private FileObject getSrcPath() {
-        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC_DIR);
-        if (dirs.size() == 0) {
-            // non-existing directory??
-            return null;
-        }
-        assert dirs.size() == 1; // one source directory is allowed
-        return dirs.get(0);
-    }
-
-    private FileObject getTestPath() {
-        List<FileObject> dirs = getDirs(PhpProjectProperties.TEST_SRC_DIR);
-        if (dirs.size() == 0) {
-            // non-existing directory
-            return null;
-        }
-        assert dirs.size() == 1; // one source directory is allowed
-        return dirs.get(0);
-    }
-
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
@@ -181,16 +167,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         }
 
         // first check tests because test directory can be underneath sources directory
-        FileObject path = getTestPath();
-        if (path != null
-                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
-            return FileType.TEST;
+        for (FileObject root : tests.getRoots()) {
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                return FileType.TEST;
+            }
         }
 
-        path = getSrcPath();
-        if (path != null
-                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
-            return FileType.SOURCE;
+        for (FileObject root : sources.getRoots()) {
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                return FileType.SOURCE;
+            }
         }
         return FileType.UNKNOWN;
     }
@@ -224,10 +210,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 synchronized (cache) {
                     cp = cache.get(ClassPathCache.SOURCE);
                     if (cp == null) {
-                        // XXX sources cannot be changed
-                        cp = ClassPathFactory.createClassPath(
-                                ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
-                                evaluator, new String[] {PhpProjectProperties.SRC_DIR}));
+                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(sources));
                         cache.put(ClassPathCache.SOURCE, cp);
                     }
                 }
@@ -236,10 +219,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 synchronized (cache) {
                     cp = cache.get(ClassPathCache.TEST);
                     if (cp == null) {
-                        // XXX test cannot be changed
-                        cp = ClassPathFactory.createClassPath(
-                                ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
-                                evaluator, new String[] {PhpProjectProperties.SRC_DIR, PhpProjectProperties.TEST_SRC_DIR}));
+                        // return both because people expect such behaviour (in CC e.g.)
+                        ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(tests));
+                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(sources));
+                        cp = ClassPathSupport.createProxyClassPath(testsCp, sourcesCp);
                         cache.put(ClassPathCache.TEST, cp);
                     }
                 }
@@ -252,21 +235,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     }
 
     private ClassPath getBootClassPath() {
-        // because of global include path, we need to ensure that it is known for poperty evaluator
-        //  (=> need to be written in global properties)
-        PhpOptions.getInstance().getPhpGlobalIncludePath();
         ClassPath cp;
         // #141746
         synchronized (cache) {
             cp = cache.get(ClassPathCache.PLATFORM);
             if (cp == null) {
                 List<FileObject> internalFolders = CommonPhpSourcePath.getInternalPath();
-                ClassPath internalClassPath =
-                        ClassPathSupport.createClassPath(
+                ClassPath internalClassPath = ClassPathSupport.createClassPath(
                         internalFolders.toArray(new FileObject[internalFolders.size()]));
                 ClassPath includePath = ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
-                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
+                        new String[] {PhpProjectProperties.INCLUDE_PATH}));                
                 cp = ClassPathSupport.createProxyClassPath(
                         internalClassPath, includePath);
                 cache.put(ClassPathCache.PLATFORM, cp);
@@ -296,9 +275,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
      */
     public ClassPath[] getProjectClassPaths(String type) {
         if (PhpSourcePath.BOOT_CP.equals(type)) {
+            // because of global include path, we need to ensure that it is known for property evaluator
+            //  (=> need to be written in global properties, do it just once, just before getting BOOT class path)
+            PhpOptions.getInstance().getPhpGlobalIncludePath();
+
             return new ClassPath[] {getBootClassPath()};
         } else if (PhpSourcePath.SOURCE_CP.equals(type)) {
-            return new ClassPath[] {getSourcePath(FileType.SOURCE)};
+            return new ClassPath[] {
+                getSourcePath(FileType.SOURCE),
+                getSourcePath(FileType.TEST),
+            };
         }
         assert false : "Unknown classpath type requested: " + type;
         return null;

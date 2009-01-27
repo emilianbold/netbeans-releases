@@ -71,6 +71,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -89,6 +90,7 @@ public class StructureAnalyzer implements StructureScanner {
 
     private List<AstElement> structure;
     private Map<AstClassElement, Set<FieldNode>> fields;
+    private Map<AstClassElement, Set<PropertyNode>> properties;
     private List<AstMethodElement> methods;
     
     private static final Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
@@ -123,6 +125,7 @@ public class StructureAnalyzer implements StructureScanner {
         structure = new ArrayList<AstElement>();
         fields = new HashMap<AstClassElement, Set<FieldNode>>();
         methods = new ArrayList<AstMethodElement>();
+        properties = new HashMap<AstClassElement, Set<PropertyNode>>();
 
         AstPath path = new AstPath();
         path.descend(root);
@@ -154,18 +157,20 @@ public class StructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
-                    for (AstElement member : clz.getChildren()) {
-                        if ((member.getKind() == ElementKind.ATTRIBUTE) &&
-                                member.getName().equals(fieldName)) {
-                            found = true;
-
-                            break;
+                    Set<PropertyNode> nodes = properties.get(clz);
+                    if (nodes != null) {
+                        for (PropertyNode node : nodes) {
+                            if (fieldName.equals(node.getName())) {
+                                found = true;
+                                break;
+                            }
                         }
                     }
 
-                    if (!found) {
-                        clz.addChild(co);
+                    if (found) {
+                        co.setProperty(true);
                     }
+                    clz.addChild(co);
                 }
 
                 names.clear();
@@ -181,7 +186,7 @@ public class StructureAnalyzer implements StructureScanner {
 
         if (node instanceof ClassNode) {
             AstClassElement co = new AstClassElement(node);
-            co.setFqn(((ClassNode)node).getName());
+            co.setFqn(((ClassNode) node).getName());
 
             if (parent != null) {
                 parent.addChild(co);
@@ -198,10 +203,10 @@ public class StructureAnalyzer implements StructureScanner {
 
                 if (assignments == null) {
                     assignments = new HashSet<FieldNode>();
-                    fields.put((AstClassElement)parent, assignments);
+                    fields.put((AstClassElement) parent, assignments);
                 }
 
-                assignments.add((FieldNode)node);
+                assignments.add((FieldNode) node);
             }
         } else if (node instanceof MethodNode) {
             AstMethodElement co = new AstMethodElement(node);
@@ -214,6 +219,15 @@ public class StructureAnalyzer implements StructureScanner {
             } else {
                 structure.add(co);
             }
+        } else if (node instanceof PropertyNode) {
+            Set<PropertyNode> declarations = properties.get(parent);
+
+            if (declarations == null) {
+                declarations = new HashSet<PropertyNode>();
+                properties.put((AstClassElement) parent, declarations);
+            }
+
+            declarations.add((PropertyNode) node);
         }
 
         @SuppressWarnings("unchecked")
@@ -434,6 +448,7 @@ public class StructureAnalyzer implements StructureScanner {
         public boolean isLeaf() {
             switch (kind) {
             case ATTRIBUTE:
+            case PROPERTY:
             case CONSTANT:
             case CONSTRUCTOR:
             case METHOD:

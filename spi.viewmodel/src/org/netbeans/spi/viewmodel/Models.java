@@ -64,7 +64,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.OutlineTable;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
-import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.openide.ErrorManager;
 
@@ -111,15 +110,9 @@ public final class Models {
     public static JComponent createView (
         CompoundModel compoundModel
     ) {
-        if (Boolean.getBoolean("debugger.outline")) {
-            OutlineTable ot = new OutlineTable ();
-            ot.setModel (compoundModel);
-            return ot;
-        } else {
-            TreeTable tt = new TreeTable ();
-            tt.setModel (compoundModel);
-            return tt;
-        }
+        OutlineTable ot = new OutlineTable ();
+        ot.setModel (compoundModel);
+        return ot;
     }
     
     /**
@@ -149,18 +142,14 @@ public final class Models {
         final JComponent view,
         final CompoundModel compoundModel
     ) {
-        if (!(view instanceof TreeTable || view instanceof OutlineTable)) {
-            throw new IllegalArgumentException("Expecting an instance of "+TreeTable.class.getName()+", or "+OutlineTable.class.getName()+", which can be obtained from Models.createView().");
+        if (!(view instanceof OutlineTable)) {
+            throw new IllegalArgumentException("Expecting an instance of "+OutlineTable.class.getName()+", which can be obtained from Models.createView().");
         }
         if (verbose)
             System.out.println (compoundModel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                if (view instanceof TreeTable) {
-                    ((TreeTable) view).setModel (compoundModel);
-                } else {
-                    ((OutlineTable) view).setModel (compoundModel);
-                }
+                ((OutlineTable) view).setModel (compoundModel);
             }
         });
     }
@@ -2877,11 +2866,7 @@ public final class Models {
         public boolean isExpanded (
             Object node
         ) {
-            if (view instanceof TreeTable) {
-                return ((TreeTable) view).isExpanded (node);
-            } else {
-                return ((OutlineTable) view).isExpanded (node);
-            }
+            return ((OutlineTable) view).isExpanded (node);
         }
 
         /**
@@ -2892,11 +2877,7 @@ public final class Models {
         public void expandNode (
             Object node
         ) {
-            if (view instanceof TreeTable) {
-                ((TreeTable) view).expandNode (node);
-            } else {
-                ((OutlineTable) view).expandNode (node);
-            }
+            ((OutlineTable) view).expandNode (node);
         }
 
         /**
@@ -2907,11 +2888,7 @@ public final class Models {
         public void collapseNode (
             Object node
         ) {
-            if (view instanceof TreeTable) {
-                ((TreeTable) view).collapseNode (node);
-            } else {
-                ((OutlineTable) view).collapseNode (node);
-            }
+            ((OutlineTable) view).collapseNode (node);
         }
     }
 

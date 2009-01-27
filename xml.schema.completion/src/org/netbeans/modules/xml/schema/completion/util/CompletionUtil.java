@@ -70,8 +70,6 @@ import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
@@ -90,21 +88,6 @@ public class CompletionUtil {
     private CompletionUtil() {
     }
         
-    /**
-     * Returns the StartTag corresponding to the root element.
-     */
-    public static StartTag getRoot(SyntaxElement se) {
-        StartTag root = null;
-        while( se != null) {
-            if(se instanceof StartTag) {
-                root = (StartTag)se;
-            }
-            se = se.getPrevious();
-        }
-        
-        return root;
-    }
-    
     /**
      * For debugging purposes only.
      */

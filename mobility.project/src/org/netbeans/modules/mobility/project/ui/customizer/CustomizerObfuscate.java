@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.mobility.project.ui.customizer;
 
+import java.awt.Component;
 import java.util.Hashtable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -197,6 +198,17 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
     public void initValues(ProjectProperties props, String configuration) {
         this.vps = VisualPropertySupport.getDefault(props);
         vps.register(defaultCheck, configuration, this);
+        J2MEProjectProperties pp = (J2MEProjectProperties) props;
+        //Work-around for http://www.netbeans.org/issues/show_bug.cgi?id=149919 -
+        //CDC projects fail if obfuscated
+        String trigger = (String) pp.get ("platform.trigger"); //NOI18N
+        if ("CDC".equals(trigger)) { //NOI18N
+            for (Component c : getComponents()) {
+                c.setEnabled(false);
+            }
+            descriptionArea.setText (NbBundle.getMessage(CustomizerObfuscate.class,
+                    "LBL_NO_CDC_OBFUSCATION"));
+        }
     }
     
     public String[] getGroupPropertyNames() {

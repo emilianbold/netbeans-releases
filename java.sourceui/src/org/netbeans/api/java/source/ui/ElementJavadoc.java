@@ -603,6 +603,7 @@ public class ElementJavadoc {
             len++;
             Parameter[] params = mdoc.parameters();
             for(int i = 0; i < params.length; i++) {
+                sb.append(getAnnotations(params[i].annotations()));
                 boolean varArg = i == params.length - 1 && mdoc.isVarArgs();
                 appendType(sb, params[i].type(), varArg, false, false);
                 sb.append(' ').append(params[i].name()); //NOI18N

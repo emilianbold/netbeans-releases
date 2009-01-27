@@ -4,7 +4,6 @@
  *
  * Created on Jun 28, 2008, 11:23:04 AM
  */
-
 package org.netbeans.modules.python.platform.panels;
 
 import java.awt.Dialog;
@@ -73,8 +72,6 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
             }
         }
     }
-
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -430,8 +427,9 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         // Make copy so we don't muck with the master copy in the platform manager...
         pythonPathModel.setModel(new ArrayList<String>(platform.getPythonPath()));
         javaPathModel.setModel(new ArrayList<String>(platform.getJavaPath()));
-        
+
     }
+
     private void clearPlatform() {
         platformName.setText("");
         command.setText("");
@@ -441,14 +439,13 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         javaPathModel.setModel(new ArrayList<String>());
 
     }
-    
 
     private void newPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newPlatformActionPerformed
         final JFileChooser fc = new JFileChooser();
         fc.setFileHidingEnabled(false);
         fc.addChoosableFileFilter(new ExeFilter());
         int returnVal = fc.showOpenDialog(this);
-        if(returnVal == JFileChooser.APPROVE_OPTION){
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
                 String cmd = fc.getSelectedFile().getAbsolutePath();
                 platform = manager.findPlatformProperties(cmd, null);
@@ -458,13 +455,14 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
 
     }//GEN-LAST:event_newPlatformActionPerformed
 
     private void platformListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_platformListValueChanged
-        if(platform != null)
+        if (platform != null) {
             updatePlatform();
+        }
         int selectedIndex = platformList.getSelectedIndex();
         if (selectedIndex != -1) {
             platform = (PythonPlatform)platformListModel.getElementAt(selectedIndex);
@@ -477,7 +475,7 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         fc.setFileHidingEnabled(false);
         fc.addChoosableFileFilter(new ExeFilter());
         int returnVal = fc.showOpenDialog(this);
-        if(returnVal == JFileChooser.APPROVE_OPTION){
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             console.setText(fc.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_btnConsoleBrowseActionPerformed
@@ -498,7 +496,7 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         int selectedIndex = platformList.getSelectedIndex();
         if (selectedIndex != -1) {
             manager.setDefaultPlatform(
-                    ((PythonPlatform) platformListModel.getElementAt(
+                    ((PythonPlatform)platformListModel.getElementAt(
                     selectedIndex)).getId());
             platformListModel.refresh();
         }
@@ -508,11 +506,15 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         final JFileChooser fc = new JFileChooser();
         fc.setFileHidingEnabled(false);
         fc.setDialogTitle("Select Python Egg or Python Lib Directory");
-        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES );
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(this);
-        if(returnVal == JFileChooser.APPROVE_OPTION){
-            String cmd = fc.getSelectedFile().getAbsolutePath();
-            pythonPathModel.add( cmd);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File files[] = fc.getSelectedFiles();
+            for (File file : files) {
+                String cmd = file.getAbsolutePath();
+                pythonPathModel.add(cmd);
+            }
         }
     }//GEN-LAST:event_addPythonPathActionPerformed
 
@@ -541,11 +543,15 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         final JFileChooser fc = new JFileChooser();
         fc.setFileHidingEnabled(false);
         fc.setDialogTitle("Select Jar or Directory");
-        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES );        
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setMultiSelectionEnabled(true);
         int returnVal = fc.showOpenDialog(this);
-        if(returnVal == JFileChooser.APPROVE_OPTION){
-            String cmd = fc.getSelectedFile().getAbsolutePath();
-            javaPathModel.add(cmd);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File files[] = fc.getSelectedFiles();
+            for (File file : files) {
+                String cmd = file.getAbsolutePath();
+                javaPathModel.add(cmd);
+            }
         }
     }//GEN-LAST:event_addJavaPathActionPerformed
 
@@ -575,8 +581,6 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         manager.autoDetect();
         platformListModel.refresh();
     }//GEN-LAST:event_autoDetectPlatformActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addJavaPath;
     private javax.swing.JButton addPythonPath;
@@ -619,16 +623,14 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
     private PathListModel pythonPathModel = new PathListModel();
     private PathListModel javaPathModel = new PathListModel();
     private PythonPlatformListModel platformListModel = new PythonPlatformListModel();
-        
-    public static void showPlatformManager(){
+
+    public static void showPlatformManager() {
         final PythonPlatformPanel customizer = new PythonPlatformPanel();
         JButton closeButton = new JButton();
-        closeButton.addActionListener(new ActionListener(){
-
+        closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 customizer.savePlatform();
             }
-
         });
         closeButton.getAccessibleContext().setAccessibleDescription(getMessage("PythonPlatformPanel.closeButton.AccessibleContext.accessibleName"));
         Mnemonics.setLocalizedText(closeButton,
@@ -637,7 +639,7 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
                 customizer,
                 getMessage("CTL_PythonPlatformManager_Title"), // NOI18N
                 true,
-                new Object[] {closeButton},
+                new Object[]{closeButton},
                 closeButton,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(PythonPlatformPanel.class),
@@ -647,6 +649,7 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         PythonPlatformManager.getInstance().save();
         dlg.dispose();
     }
+
     private static String getMessage(String key) {
         return NbBundle.getMessage(PythonPlatformPanel.class, key);
     }
@@ -671,21 +674,21 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         //manager.addPlatform(platform);
     }
 
-    public void savePlatform(){
-        if(platform != null)
+    public void savePlatform() {
+        if (platform != null) {
             updatePlatform();
+        }
     }
 
-    class ExeFilter extends FileFilter{
-
+    class ExeFilter extends FileFilter {
         @Override
         public boolean accept(File file) {
             String ext = getExtention(file);
-            if(ext == null){
+            if (ext == null) {
                 return true;
-            }else if (ext.equalsIgnoreCase("bat") ||ext.equalsIgnoreCase("com")||ext.equalsIgnoreCase("exe")){ // NOI18N
+            } else if (ext.equalsIgnoreCase("bat") || ext.equalsIgnoreCase("com") || ext.equalsIgnoreCase("exe")) { // NOI18N
                 return true;
-            }else {
+            } else {
                 return false;
             }
         }
@@ -694,12 +697,13 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
         public String getDescription() {
             return NbBundle.getMessage(PythonPlatformPanel.class, "Executables");
         }
-        private String getExtention(File file){
+
+        private String getExtention(File file) {
             String ext = null;
-            if(file.isFile()){
+            if (file.isFile()) {
                 int pos = file.getName().indexOf(".");
-                if(pos > 0){
-                    ext = file.getName().substring(pos +1);
+                if (pos > 0) {
+                    ext = file.getName().substring(pos + 1);
                 }
             }
             return ext;

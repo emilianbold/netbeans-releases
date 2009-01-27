@@ -66,7 +66,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -111,7 +110,10 @@ import org.openide.util.RequestProcessor;
  * @author Radko, Milan Kuchtiak
  */
 public class JaxWsServiceCreator implements ServiceCreator {
-
+    private static final String SOAP_BINDING_TYPE = "javax.xml.ws.soap.SOAPBinding";  //NOI18N
+    private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
+    private static final String SOAP12_HTTP_BINDING = "SOAP12HTTP_BINDING"; //NOI18N
+    
     private Project project;
     private WizardDescriptor wiz;
     private boolean addJaxWsLib;
@@ -195,7 +197,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (addJaxWsLib) {
                 MavenModelUtils.addJaxws21Library(project);
             }
-            generateJaxWSImplFromTemplate(pkg);
+            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
         }
     }
@@ -213,7 +215,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         if(wsdlUrl == null) {
             wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
         }
-        FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(true);
+        FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(true);
 
         boolean hasSrcFolder = false;
         File srcFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src"); //NOI18N
@@ -259,10 +261,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final String serviceName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
-                        org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
+                        org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                WSUtils.isEJB(project) ?
+                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                    MavenModelUtils.addJaxWSPlugin(model);
                         MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
-                        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-                        if (provider != null) { // expecting web project
+                        if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
@@ -274,7 +278,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 // create empty web service implementation class
                 FileObject pkg = Templates.getTargetFolder(wiz);
-                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg);
+                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
 
                 // execute wsimport goal
                 RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport",
@@ -291,7 +295,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final WsdlPort wsdlPort = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
 
                 try {
-                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, "WEB-INF/wsdl/"+relativePath); //NOI18N
+                    String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
+                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
                     DataObject targetDo = DataObject.find(targetFile);
                     if (targetDo != null) {
                         SaveCookie save = targetDo.getCookie(SaveCookie.class);
@@ -310,9 +315,14 @@ public class JaxWsServiceCreator implements ServiceCreator {
         handle.finish();
     }
     
-    private FileObject generateJaxWSImplFromTemplate(FileObject pkg) throws IOException {
+    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
+
+        if (isEjbTemplate) { //EJB Web Service
+            FileObject templateParent = template.getParent();
+            template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
+        }
         
         DataObject dTemplate = DataObject.find(template);
 
@@ -380,25 +390,30 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, WSAnnotation);
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
-                        TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+                        //if SOAP 1.2 binding, add BindingType annotation
+                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
+                        if (bindingElement != null) {
+                            TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
+                            ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
 
-                        List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
-                        bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
-                                make.Identifier("javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING"))); //NOI18N
-                        AnnotationTree bindingAnnotation = make.Annotation(
-                                make.QualIdent(BindingAn),
-                                bindingAttrs);
-                        modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                            AnnotationTree bindingAnnotation = make.Annotation(
+                                    make.QualIdent(bindingElement),
+                                    Collections.<ExpressionTree>singletonList(exp));
+
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                        }
                     }
 
                     // add @Stateless annotation
-//                    if (projectType == EJB_PROJECT_TYPE) {//EJB project
-//                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
-//                        AnnotationTree StatelessAnnotation = make.Annotation(
-//                                make.QualIdent(StatelessAn),
-//                                Collections.<ExpressionTree>emptyList());
-//                        modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
-//                    }
+                    if (WSUtils.isEJB(project)) {
+                        TypeElement statelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+                        if (statelessAn != null) {
+                            AnnotationTree StatelessAnnotation = make.Annotation(
+                                    make.QualIdent(statelessAn),
+                                    Collections.<ExpressionTree>emptyList());
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                        }
+                    }
 
                     List<WsdlOperation> operations = port.getOperations();
                     for (WsdlOperation operation : operations) {
@@ -454,19 +469,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
 
-//                    if (port.getSOAPVersion().equals(SOAP12_VERSION)) {  //if SOAP 1.2 binding, add BindingType annotation
-//                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
-//                        if (bindingElement != null) {
-//                            ModifiersTree modifiersTree = modifiedClass.getModifiers();
-//                            AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
-//                            AnnotationTree soapVersionAnnotation = make.Annotation(
-//                                    make.QualIdent(bindingElement),
-//                                    Collections.<ExpressionTree>singletonList(soapVersion));
-//
-//                            ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
-//                            workingCopy.rewrite(modifiersTree, newModifiersTree);
-//                        }
-//                    }
                 }
             }
 

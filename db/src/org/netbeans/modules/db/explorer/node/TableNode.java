@@ -59,7 +59,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -110,7 +110,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
 
         }
@@ -120,12 +120,8 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
         PropertySupport ps = new PropertySupport.Name(TableNode.this);
         addProperty(ps);
 
-        try {
-            addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
-            addProperty(SCHEMA, SCHEMADESC, String.class, false, getSchemaName());
-        } catch (Exception e) {
-            // TODO report exception
-        }
+        addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
+        addProperty(SCHEMA, SCHEMADESC, String.class, false, getSchemaName());
     }
 
     public MetadataElementHandle<Table> getTableHandle() {
@@ -156,6 +152,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             command.setObjectOwner(schemaName);
             command.execute();
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
@@ -225,7 +222,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];
@@ -247,7 +244,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

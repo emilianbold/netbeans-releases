@@ -93,8 +93,18 @@ public final class SvnPropertiesAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {       
         final Context ctx = getContext(nodes);
         String ctxDisplayName = getContextDisplayName(nodes);       
-        File root = SvnUtils.getActionRoot(ctx);
-        openProperties(root, ctxDisplayName);
+        File[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) {
+            return;
+        }
+
+        File interestingFile;
+        if(roots.length == 1) {
+            interestingFile = roots[0];
+        } else {
+            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+        }
+        openProperties(interestingFile, ctxDisplayName);
     }
 
     public static void openProperties(File root, String ctxDisplayName) {

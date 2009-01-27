@@ -410,10 +410,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
     }
     
     private String generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
-        
-        if (Utils.getAntArtifact(ejbReference) == null) {
-            return "";
-        }
+// maven projects never have ant artifacts, if you want to uncomment this, talk to me please, mkleint.
+//        if (Utils.getAntArtifact(ejbReference) == null) {
+//            return "";
+//        }
 
         String name = "";
 
@@ -491,12 +491,13 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallItself", className)); //NOI18N
                 return false;
             }
-            
-            // builded archive with beans is not available
-            if (!hasJarArtifact()) {
-                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_EJBNotInDistributionArchive")); //NOI18N
-                return false;
-            }
+// maven projects never have ant artifacts, if you want to uncomment this, talk to me please, mkleint.
+//
+//            // builded archive with beans is not available
+//            if (!hasJarArtifact()) {
+//                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_EJBNotInDistributionArchive")); //NOI18N
+//                return false;
+//            }
             // node cannot act as EJB reference
             if (nodes[0].getLookup().lookup(EjbReference.class) == null) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N

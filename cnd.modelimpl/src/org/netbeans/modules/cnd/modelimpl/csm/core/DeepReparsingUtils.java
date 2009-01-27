@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -235,12 +236,22 @@ public final class DeepReparsingUtils {
      * Reparse included files at file added.
      */
     public static void reparseOnAdded(NativeFileItem nativeFile, ProjectBase project) {
+        reparseOnAdded(nativeFile.getFile().getName(), project);
+    }
+
+    /**
+     * Reparse included files at file added.
+     */
+    public static void reparseOnAdded(FileImpl addedFile, ProjectBase project) {
+        reparseOnAdded(addedFile.getName().toString(), project);
+    }
+
+    private static void reparseOnAdded(String name, ProjectBase project) {
         if (!TraceFlags.USE_DEEP_REPARSING) {
             return;
         }
-        String name = nativeFile.getFile().getName();
         Set<CsmFile> resolved = new HashSet<CsmFile>();
-        for (CsmFile file : project.getSourceFiles()) {
+        for (CsmFile file : project.getAllFiles()) {
             for (CsmInclude incl : file.getIncludes()) {
                 if (incl.getIncludeName().toString().endsWith(name)/* && incl.getIncludeFile() == null*/) {
                     resolved.add(file);
@@ -253,6 +264,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for (CsmFile file : resolved) {
                 top.addAll(project.getGraph().getTopParentFiles(file));
+                coherence.add(file);
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             addToReparse(project, top, coherence, true);

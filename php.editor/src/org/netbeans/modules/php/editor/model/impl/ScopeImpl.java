@@ -81,7 +81,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             OffsetRange offsetRange, PhpKind kind,
             PhpModifiers modifier) {
         super(inScope, name, file, offsetRange, kind, modifier);
-        assert isScopeKind(kind);
+        assert isScopeKind(kind) : kind.toString();
     }
 
     private static boolean isScopeKind(PhpKind kind) {
@@ -93,6 +93,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             case IFACE:
             case METHOD:
             case VARIABLE:
+            case FIELD:
                 return true;
         }
         return false;

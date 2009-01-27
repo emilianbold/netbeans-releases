@@ -71,6 +71,7 @@ public class AstRenderer {
         render(root, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
     }
 
+    @SuppressWarnings("fallthrough")
     public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (tree == null) {
             return; // paranoia
@@ -574,6 +575,7 @@ public class AstRenderer {
         return false;
     }
 
+    @SuppressWarnings("fallthrough")
     protected void renderVariableInClassifier(AST ast, CsmClassifier classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
         AST token = ast.getFirstChild();
@@ -667,6 +669,7 @@ public class AstRenderer {
         }
     }
 
+    @SuppressWarnings("fallthrough")
     protected CsmTypedef[] renderTypedef(AST ast, CsmClass cls, CsmObject container) {
 
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
@@ -740,6 +743,7 @@ public class AstRenderer {
         return results.toArray(new CsmTypedef[results.size()]);
     }
 
+    @SuppressWarnings("fallthrough")
     protected CsmTypedef[] renderTypedef(AST ast, FileImpl file, CsmScope scope, MutableDeclarationsContainer container) {
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if (ast != null) {
@@ -1252,6 +1256,7 @@ public class AstRenderer {
         return false;
     }
 
+    @SuppressWarnings("fallthrough")
     protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst, AST classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
             FileImpl file, boolean _static, boolean inFunctionParameters) {
@@ -1368,7 +1373,7 @@ public class AstRenderer {
         AST firstChild = ast.getFirstChild();
         if (firstChild != null) {
             if (firstChild.getType() == CPPTokenTypes.ELLIPSIS) {
-                ParameterImpl parameter = new ParameterImpl(ast.getFirstChild(), file, null, "...", scope1); // NOI18N
+                ParameterEllipsisImpl parameter = new ParameterEllipsisImpl(ast.getFirstChild(), file, null, scope1); // NOI18N
                 result.add(parameter);
                 return result;
             }
@@ -1388,7 +1393,12 @@ public class AstRenderer {
             @Override
             protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
                 type = TemplateUtils.checkTemplateType(type, scope1);
-                ParameterImpl parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+                ParameterImpl parameter;
+                if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {
+                    parameter = new ParameterEllipsisImpl(offsetAst, file, type, scope1);
+                } else {
+                    parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+                }
                 result.add(parameter);
                 return parameter;
             }

@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -73,6 +74,7 @@ import org.openide.windows.WindowManager;
  * @author Rob Englander
  */
 public class RecreateTableAction extends BaseAction {
+    private static final Logger LOGGER = Logger.getLogger(RecreateTableAction.class.getName());
 
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
@@ -87,7 +89,7 @@ public class RecreateTableAction extends BaseAction {
                         enabled = !conn.isClosed();
                     }
                 } catch (SQLException e) {
-
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -164,7 +166,7 @@ public class RecreateTableAction extends BaseAction {
                         }
                     }
                 } catch (Exception exc) {
-                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                    LOGGER.log(Level.INFO, null, exc);
                     DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
 
@@ -196,13 +198,13 @@ public class RecreateTableAction extends BaseAction {
             //info.addTable(newtab);
             noResult = false;
         } catch (org.netbeans.lib.ddl.DDLException exc) {
-            Logger.getLogger("global").log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, null, exc);
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(exc.getMessage(),
                     NotifyDescriptor.ERROR_MESSAGE));
             noResult = true;
         } catch (Exception exc) {
-            Logger.getLogger("global").log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, null, exc);
             DbUtilities.reportError(bundle().
                     getString("ERR_UnableToRecreateTable"),
                     exc.getMessage()); //NOI18N

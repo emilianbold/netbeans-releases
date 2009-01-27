@@ -123,6 +123,16 @@ public class IndexedField extends IndexedElement {
         this.inherited = inherited;
     }
 
+    public boolean isProperty() {
+        if (attributes != null) {
+            int separatorIndex = attributes.indexOf(';');
+            if (separatorIndex != -1) {
+                return Boolean.parseBoolean(attributes.substring(separatorIndex + 1));
+            }
+        }
+        return false;
+    }
+
     // For testsuite
     public static String decodeFlags(int flags) {
         return IndexedElement.decodeFlags(flags);

@@ -45,6 +45,9 @@ import java.text.NumberFormat;
 import javax.swing.JCheckBox;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
@@ -56,6 +59,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -68,6 +73,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private Binding binding;
     private boolean inSync = false;
 
+    private Project project;
+    
     private static final String DEFAULT_LIFETIME = "36000";                     //NOI18N
     private static final String DEFAULT_RMRESENDINTERVAL = "2000";              //NOI18N
     private static final String DEFAULT_RMCLOSETIMEOUT = "0";                    //NOI18N
@@ -81,10 +88,15 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private DefaultFormatterFactory freshnessDff = null;
     private DefaultFormatterFactory skewDff = null;
 
-    public AdvancedConfigPanelClient(SectionView view, Binding binding, WSDLModel serviceModel) {
+    public AdvancedConfigPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel) {
         super(view);
         this.serviceModel = serviceModel;
         this.binding = binding;
+
+        FileObject fo = node.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            project = FileOwnerQuery.getOwner(fo);
+        }
 
         lifetimeDff = new DefaultFormatterFactory();
         NumberFormat lifetimeFormat = NumberFormat.getIntegerInstance();
@@ -257,6 +269,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     public void setValue(javax.swing.JComponent source, Object value) {
         if (!inSync) {
 
+            Util.checkMetroLibrary(project);
+            
             ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
             RMModelHelper rmh = RMModelHelper.getInstance(configVersion);
             if (source.equals(lifeTimeTextField)) {

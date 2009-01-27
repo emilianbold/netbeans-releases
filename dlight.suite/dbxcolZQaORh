@@ -1,0 +1,18 @@
+if [ -f ./.dbxrc ]
+then . ./.dbxrc
+elif [ -f ~/.dbxrc ]
+then . ~/.dbxrc
+fi
+attach 3929
+collector store experiment /tmp/perfanDataStorage.er
+collector store directory /tmp
+collector profile timer 10007u
+collector hwprofile off
+collector limit 2000
+collector sample period 1
+collector sample periodic
+collector archive on
+collector enable
+cont
+rm dbxcolZQaORh
+exit

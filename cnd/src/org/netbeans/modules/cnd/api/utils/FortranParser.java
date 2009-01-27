@@ -119,7 +119,7 @@ public class FortranParser {
 
     /** Get the name following a MODULE or USE keyword */
     private String getName(String arg) {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	String arg2 = arg.trim();
 	
 	for (int i = 0; i < arg2.length(); i++) {
