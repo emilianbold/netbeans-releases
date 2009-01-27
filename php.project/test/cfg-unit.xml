@@ -39,17 +39,18 @@ Contributor(s):
 Portions Copyrighted 2007 Sun Microsystems, Inc.
 -->
 
-<mconfig name="php/project">
+<mconfig name="php.project">
 
-    <testbag testattribs="stable" executor="unit-executor" name="php/project">
+    <testbag testattribs="stable" executor="unit-executor" name="php.project">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <exclude name="**/data/**"/>
             </patternset>
         </testset>
     </testbag>
 
-    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test" default="true"/>
 
 </mconfig>
