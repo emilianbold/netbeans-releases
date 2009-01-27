@@ -114,7 +114,7 @@ public class ConfigurationDescriptorProvider {
                                 } else {
                                     if (first) {
                                         // prevent reading configurations before project cration
-                                        new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace();
+                                        new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
                                         return null;
                                     }
                                 }
