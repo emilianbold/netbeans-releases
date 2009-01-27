@@ -39,13 +39,11 @@
 package org.netbeans.modules.dlight.api.support;
 
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.*;
 import org.netbeans.modules.dlight.execution.api.support.IOTabManagerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
@@ -57,7 +55,7 @@ import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Wrapper of {@link @org-netbeans-modules-nativeexecution@org.netbeans.modules.nativexecution.api.NativeTask}
+ * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  * 
  */
 public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, NativeTaskListener {

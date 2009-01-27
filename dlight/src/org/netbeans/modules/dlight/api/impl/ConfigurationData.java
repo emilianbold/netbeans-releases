@@ -37,25 +37,74 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.support;
+package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import java.util.HashMap;
 
 /**
- * This data provider should provide information
- * to the {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer}
- * in table. In almost all cases data to visualize can
- * be presented in the table view. 
- * 
+ * Represents Map to be used by {@link org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration}
  */
-public interface TableDataProvider extends DataProvider{
+final class ConfigurationData {
+  private final HashMap<String, Object> map;
+  private final String path;
+  
+  private ConfigurationData(HashMap<String, Object> map, String path) {
+    this.path = path;
+    this.map = map == null ? new HashMap<String, Object>() : map;
+  }
+  
   /**
-   * Returns table view to visualize
-   * @param tableMetadata table description to get data from
-   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
+   * Creates new configuration data 
+   * @param map pair name-value
    */
-  public List<DataRow> queryData(DataTableMetadata tableMetadata);
+  public ConfigurationData(HashMap<String, Object> map) {
+    this(map, null);
+  }
+
+ 
+  
+  /**
+   *Returns value for the key
+   * @param key key to get value for
+   * @return value  if record with <code>key</code> exists, <code>null</code> otherwise
+   */
+  public Object get(String key) {
+    return get(path, key);
+  }
+  
+  private Object get(final String path, final String key) {
+    String k = path == null ? key : path + key;
+    if (map.containsKey(k)) {
+      return map.get(k);
+    }
+    
+    if (path == null || path.length() == 0) {
+      return null;
+    }
+    
+    String prevPath = path.substring(0, path.length() - 1);
+    int idx = prevPath.lastIndexOf('/');
+    prevPath = (idx >= 0) ? prevPath.substring(0, idx) : null;
+    
+    return get(prevPath == null ? null : prevPath.concat("/"), key);
+  }
+
+  /**
+   * Returns full keey value
+   * @param key
+   * @return
+   */
+  private String getFullKey(String key) {
+    return path == null ? key : path + key;    
+  }
+  
+  /**
+   * Return node
+   * @param key
+   * @return ConfigurationData for the <code>key</code>
+   */
+  public ConfigurationData getNode(String key) {
+    String nodepath = getFullKey(key) + '/';
+    return new ConfigurationData(map, nodepath);
+  }
 }

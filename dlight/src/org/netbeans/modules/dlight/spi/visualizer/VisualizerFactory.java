@@ -42,9 +42,10 @@ package org.netbeans.modules.dlight.spi.visualizer;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
 /**
- * Factory  used to create new {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
+ * Factory  used to create new {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
  * instance.
  * Register in Global Lookup.
+ * @param <T>
  */
 public interface VisualizerFactory <T extends VisualizerConfiguration> {
 
@@ -52,7 +53,8 @@ public interface VisualizerFactory <T extends VisualizerConfiguration> {
    * Unique ID, infrastructire will compare this value with the value
    * returned by VisualizerConfiguration specialization to check
    * if this find factory which can create Visualizer on the base of given configuration
-   * @return
+   * @return unique id, it is used to find VisualizerFactory instance to create Visualizer on the base of VisualizerConfiguration.
+   * This id should be the same T has
    */
   String getID();
   /**

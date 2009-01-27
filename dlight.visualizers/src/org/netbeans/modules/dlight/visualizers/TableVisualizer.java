@@ -51,7 +51,7 @@ import javax.swing.JToolBar;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.support.TableDataProvider;
+import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -74,9 +74,9 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
     private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
 
-    TableVisualizer(DataProvider provider, final TableVisualizerConfiguration configuration) {
+    TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
         timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
-        this.provider = (TableDataProvider) provider;
+        this.provider =  provider;
         this.configuration = configuration;
 
         tableModel = new AbstractTableModel() {

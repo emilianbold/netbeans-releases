@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
-import org.netbeans.modules.dlight.spi.support.*;
+import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;

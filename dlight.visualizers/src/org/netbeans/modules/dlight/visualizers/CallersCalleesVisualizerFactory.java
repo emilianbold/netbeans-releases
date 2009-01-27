@@ -11,11 +11,13 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
 public final class CallersCalleesVisualizerFactory implements VisualizerFactory<TreeTableVisualizerConfiguration> {
 
   @Override

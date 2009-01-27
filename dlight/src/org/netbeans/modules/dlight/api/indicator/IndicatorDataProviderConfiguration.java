@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.api.indicator;
 /**
  * Configuration to create {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider}
  * on the base of. Use it to register in
-  * {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration#addIndicatorDataProviderConfiguration(org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration)
+  * {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration#addIndicatorDataProviderConfiguration(org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration) }
  *
  */
 public interface IndicatorDataProviderConfiguration {

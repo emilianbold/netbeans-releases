@@ -4,7 +4,7 @@
  */
 package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
+//import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -40,7 +40,7 @@ public abstract class IndicatorConfigurationAccessor {
   public IndicatorConfigurationAccessor() {
   }
 
-  public abstract ConfigurationData getConfigurationData(IndicatorConfiguration configuration);
+//  public abstract ConfigurationData getConfigurationData(IndicatorConfiguration configuration);
 
   public abstract IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration);
 

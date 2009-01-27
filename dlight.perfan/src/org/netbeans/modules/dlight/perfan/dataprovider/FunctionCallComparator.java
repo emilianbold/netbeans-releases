@@ -36,23 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.model;
 
-/**
- * Function Call with metrics for function.
- * As an example: you have the following
- */
-public abstract class FunctionCall{
-  private final Function function;
+package org.netbeans.modules.dlight.perfan.dataprovider;
 
-  protected FunctionCall(Function function) {
-    this.function = function;
-  }
+import org.netbeans.modules.dlight.core.stack.api.*;
+import java.util.Comparator;
 
-  public final Function getFunction() {
-    return function;
-  }
+public interface FunctionCallComparator extends Comparator<FunctionCall> {
 
-  public abstract Object getMetricValue(FunctionMetric metric);
-  public abstract Object getMetricValue(String metric_id);
 }

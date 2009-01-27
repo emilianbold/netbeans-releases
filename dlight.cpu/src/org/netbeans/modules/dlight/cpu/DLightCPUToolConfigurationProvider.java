@@ -16,7 +16,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;

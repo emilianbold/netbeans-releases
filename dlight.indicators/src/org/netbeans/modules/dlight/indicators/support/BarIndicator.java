@@ -102,13 +102,13 @@ public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
       if (count == 0) {
         barData[idx] = Double.valueOf(value);
       } else {
-        String aggregationType = (String)(BarIndicatorConfigurationAccessor.getDefault().getConfigurationData(configuration).getNode(col.getColumnName()).get("aggregation"));
-        if (aggregationType != null && aggregationType.equals("avrg")) {
-          double total = barData[idx].doubleValue() * count + Double.valueOf(value);
-          barData[idx] = total / newCount;
-        } else {
+//        String aggregationType = (String)(BarIndicatorConfigurationAccessor.getDefault().getConfigurationData(configuration).getNode(col.getColumnName()).get("aggregation"));
+//        if (aggregationType != null && aggregationType.equals("avrg")) {
+//          double total = barData[idx].doubleValue() * count + Double.valueOf(value);
+//          barData[idx] = total / newCount;
+    //    } else {
           barData[idx] = Double.valueOf(value);
-        }
+ //       }
       }
       idx++;
     }

@@ -44,9 +44,9 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
 
 /**
- * Provides the data to the {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}.
+ * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
  * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory} which
+ * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
  * will be used to create the data provider instance
  *
  */
@@ -55,7 +55,7 @@ public interface DataProvider extends VisualizerDataProvider{
 
   /**
    * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer} will
+   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
    * be extracted from this storage. This method is invoked  automatically by infrastracture
    * when  Visualizer need to be displayed.
    * It will be invoked automatically when needed.</i></b>
