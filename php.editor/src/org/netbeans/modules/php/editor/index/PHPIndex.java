@@ -719,18 +719,16 @@ public class PHPIndex {
     }
     
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
-        search(PHPIndexer.FIELD_VAR, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_VAR);
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_VAR, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_VAR);
         findTopVariables(result, kind, name, vars);
         return vars;
     }
 
     /** returns GLOBAL constants. */
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_CONST);
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CONST, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_CONST);
         findConstants(result, kind, name, constants);
         return constants;
     }
@@ -738,10 +736,10 @@ public class PHPIndex {
     public Set<FileObject> filesWithIdentifiers(String identifierName) {
         final Set<FileObject> result = new HashSet<FileObject>();
         
-        search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
-//        for (IndexResult indexResult : idIndexResult) {
-//            result.add(FileUtil.toFileObject(new File(URI.create(indexResult.getUrl().toString()))));
-//        }
+        Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
+        for (IndexResult indexResult : idIndexResult) {
+            result.add(FileUtil.toFileObject(new File(URI.create(indexResult.getUrl().toString()))));
+        }
         return result;
     }
 
@@ -792,21 +790,20 @@ public class PHPIndex {
 
 
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
-        search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), QuerySupport.Kind.PREFIX);
+        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         findClasses(result, kind, name, classes);
 
         return classes;
     }
 
     public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
+        Collection<? extends IndexResult> result = null;
         Collection<IndexedInterface> ifaces = new ArrayList<IndexedInterface>();
         if (name != null && name.trim().length() > 0) {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
+            result = search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         } else {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
+            result = search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         }
 
         for (IndexResult map : result) {
@@ -879,8 +876,7 @@ public class PHPIndex {
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");
         ArrayList<String> includes = new ArrayList<String>();
-        final Set<IndexResult> result = new HashSet<IndexResult>();
-        search("filename", "file:" + filePath, QuerySupport.Kind.EXACT); //NOI18N
+        final Collection<? extends IndexResult> result = search("filename", "file:" + filePath, QuerySupport.Kind.EXACT); //NOI18N
 
         for (IndexResult map : result) {
             String[] signatures = map.getValues(PHPIndexer.FIELD_INCLUDE);
