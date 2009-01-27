@@ -48,8 +48,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.Validateable;
-import org.netbeans.modules.dlight.api.execution.Validateable.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -82,7 +82,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private final List<DataCollector> dataCollectors;
   private final List<IndicatorDataProvider> indicatorDataProviders;
   private final List<Indicator> indicators;
-  private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+  private ValidationStatus validationStatus = ValidationStatus.initialStatus;
   private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
   //register accessor which will be used ne friend packages of API/SPI accessor packages
   //to get access to tool creation, etc.
@@ -95,6 +95,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private DLightTool(DLightToolConfiguration configuration) {
     this.toolName = DLightToolConfigurationAccessor.getDefault().getToolName(configuration);
     dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector>());
+    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
+    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
     List<DataCollectorConfiguration> configurations = DLightToolConfigurationAccessor.getDefault().getDataCollectors(configuration);
     List<IndicatorDataProviderConfiguration> idpConfigurations = DLightToolConfigurationAccessor.getDefault().getIndicatorDataProviders(configuration);
 
@@ -110,8 +112,6 @@ public final class DLightTool implements Validateable<DLightTarget> {
         registerIndicatorDataProvider((IndicatorDataProvider)collector);
       }
     }
-    indicators = Collections.synchronizedList(new ArrayList<Indicator>());
-    indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
     for (IndicatorDataProviderConfiguration idp : idpConfigurations) {
       //we could create already object
       if (!configurations.contains(idp)) {
@@ -154,11 +154,11 @@ public final class DLightTool implements Validateable<DLightTarget> {
     return DLightExecutorService.service.submit(new Callable<Boolean>() {
 
       public Boolean call() throws Exception {
-        if (validationStatus.isUnknown()) {
+        if (!validationStatus.isKnown()) {
           validationStatus = validate(target).get();
         }
 
-        enabled = validationStatus.isOK();
+        enabled = validationStatus.isValid();
         return enabled == true;
       }
     });
@@ -227,17 +227,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
     return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
       public ValidationStatus call() throws Exception {
-        if (validationStatus.isOK()) {
+        if (validationStatus.isValid()) {
           return validationStatus;
         }
 
         ValidationStatus oldStatus = validationStatus;
         ValidationStatus newStatus = doValidation(target);
 
-        if (!(newStatus.getState().equals(oldStatus.getState()) &&
-            newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(oldStatus, newStatus);
-        }
+        notifyStatusChanged(oldStatus, newStatus);
 
         validationStatus = newStatus;
         return newStatus;
@@ -246,23 +243,24 @@ public final class DLightTool implements Validateable<DLightTarget> {
   }
 
   public final void invalidate() {
-    validationStatus = ValidationStatus.NOT_VALIDATED;
+    validationStatus = ValidationStatus.initialStatus;
     notifyStatusChanged(null, validationStatus);
   }
 
   final synchronized ValidationStatus doValidation(DLightTarget target) {
-    ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+    ValidationStatus result = ValidationStatus.initialStatus;
 
     for (DataCollector dc : dataCollectors) {
       try {
-        result = result.merge(((Future<ValidationStatus>) dc.validate(target)).get());
+          Future<ValidationStatus> validationTask = dc.validate(target);
+          result = result.merge(validationTask.get());
       } catch (InterruptedException ex) {
         Exceptions.printStackTrace(ex);
       } catch (ExecutionException ex) {
         Exceptions.printStackTrace(ex);
       }
 
-      if (!result.isOK()) {
+      if (result.isInvalid()) {
         break;
       }
     }
@@ -281,9 +279,17 @@ public final class DLightTool implements Validateable<DLightTarget> {
   }
 
   private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+      if (oldStatus.equals(newStatus)) {
+          return;
+      }
     for (ValidationListener validationListener : validationListeners) {
       validationListener.validationStateChanged(this, oldStatus, newStatus);
     }
+  }
+
+  @Override
+  public String toString() {
+    return getName();
   }
 
   private static final class DLightToolAccessorImpl extends DLightToolAccessor {

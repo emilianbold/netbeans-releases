@@ -303,12 +303,23 @@ final class ResultPanelOutput extends JScrollPane
     /**
      */
     private void displayOutputLine(final String text, final boolean error) {
-        try {
-            doc.insertString(doc.getLength(),
-                             text + "\n",                               //NOI18N
-                             error ? OutputDocument.attrs : null);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+        // split to lines, otherwise everything will
+        // be printed on one line even if the text 
+        // contains line breaks
+        String[] lines = text.split("\\\\n"); //NO18N
+        for (int i = 0; i < lines.length; i++) {
+            if (i == lines.length - 1) {
+                // add a trailing new line to the last line
+                lines[i] = lines[i] + "\n"; //NOI18N
+            }
+            try {
+                doc.insertString(doc.getLength(),
+                        lines[i],
+                        error ? OutputDocument.attrs : null);
+
+            } catch (BadLocationException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
         }
     }
     

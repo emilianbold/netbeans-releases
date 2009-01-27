@@ -54,8 +54,8 @@ import org.openide.util.Exceptions;
 
 public final class LocalNativeExecutor extends NativeExecutor {
 
-    private final Integer TIMEOUT_TO_USE =
-            Integer.valueOf(System.getProperty("dlight.localnativeexecutor.timeout", "3")); // NOI18N
+    private final Integer TIMEOUT_TO_USE = Integer.valueOf(System.getProperty(
+            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
     private static final Runtime rt = Runtime.getRuntime();
     private Process process;
     private InputStream processOutput;
@@ -71,7 +71,8 @@ public final class LocalNativeExecutor extends NativeExecutor {
             /*
              * This should not normally happen...
              * this means that user initiated cancel BEFORE process started.
-             * Mainly UI should not allow to initiate Cancel before process start...
+             * Mainly UI should not allow to initiate Cancel before
+             * process start...
              * Still, this indicates another problem - that, for some reason, we
              * cannot get PID for a long period of time....
              * See commants below...
@@ -153,7 +154,8 @@ public final class LocalNativeExecutor extends NativeExecutor {
                 }
             };
 
-            Future<Boolean> waitTask = NativeTaskExecutorService.submit(processWaiter);
+            Future<Boolean> waitTask =
+                    NativeTaskExecutorService.submit(processWaiter);
 
             Boolean processTerminated = true;
 
@@ -178,7 +180,8 @@ public final class LocalNativeExecutor extends NativeExecutor {
                 // So... Do one more attempt using 'kill -9'...
                 NativeTask killTask = new NativeTask(task.getExecEnv(),
                         "/bin/kill", // NOI18N
-                        new String[]{"-9", Integer.toString(task.getPID())}); // NOI18N
+                        new String[]{"-9", // NOI18N
+                            Integer.toString(task.getPID())});
 
                 killTask.submit();
             }
@@ -190,7 +193,9 @@ public final class LocalNativeExecutor extends NativeExecutor {
         int pid = -1;
 
         synchronized (rt) {
-            process = rt.exec(new String[]{"/bin/sh", "-c", "/bin/echo $$; exec " + task.getCommand()}); // NOI18N
+            process = rt.exec(new String[]{
+                        "/bin/sh", "-c", // NOI18N
+                        "/bin/echo $$; exec " + task.getCommand()}); // NOI18N
             processOutput = process.getInputStream();
             processError = process.getErrorStream();
             processInput = process.getOutputStream();

@@ -221,6 +221,13 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="195"/>
                     </file>
                     
+                    <file name="ActionLandscapeMode.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
+                        <attr name="actionId" stringvalue="svg_landscape_mode"/>
+                        <attr name="position" intvalue="198"/>
+                    </file>
+
                     <file name="ActionMoveBackward.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
@@ -233,8 +240,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
                         <attr name="actionId" stringvalue="svg_move_forward"/>
                         <attr name="position" intvalue="210"/>
-                    </file>     
-                    
+                    </file>
+
                     <file name="ActionMoveToTop.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>

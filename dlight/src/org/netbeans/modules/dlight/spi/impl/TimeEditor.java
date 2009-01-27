@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.dlight.spi.impl;
 
-import org.netbeans.modules.dlight.api.storage.Time;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import java.beans.PropertyEditorSupport;
 import java.text.NumberFormat;
 

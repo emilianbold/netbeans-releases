@@ -14,7 +14,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
 
 /**
- * This class represents configuration object to create D-Light Tool on the base of.
+ * This class represents configuration object to create D-Light Tool  on the base of.
  * 
  */
 public final class DLightToolConfiguration {
@@ -40,7 +40,7 @@ public final class DLightToolConfiguration {
   }
 
   /**
-   * Adds {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration}
+   * Adds {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration}
    * @param collector collector configuration
    */
   public void addDataCollectorConfiguration(DataCollectorConfiguration collector) {

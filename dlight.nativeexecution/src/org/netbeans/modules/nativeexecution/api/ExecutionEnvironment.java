@@ -46,14 +46,15 @@ import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
  * Configuration of environment for <tt>NativeTask</tt> execution.
  */
 final public class ExecutionEnvironment {
-    
+
     private final String user;
     private final String host;
     private final int sshPort;
     private final String toString;
 
     /**
-     * Creates new instance of <tt>ExecutionEnvironment</tt> for local execution.
+     * Creates new instance of <tt>ExecutionEnvironment</tt> for local
+     * execution.
      */
     public ExecutionEnvironment() {
         this(null, null);
@@ -81,7 +82,9 @@ final public class ExecutionEnvironment {
      * @param host host identification string. Either hostname or IP address
      * @param sshPort port to be used to establish ssh connection.
      */
-    public ExecutionEnvironment(final String user, final String host, final int sshPort) {
+    public ExecutionEnvironment(final String user,
+            final String host,
+            final int sshPort) {
         if (user == null) {
             this.user = System.getProperty("user.name"); // NOI18N
         } else {
@@ -100,8 +103,8 @@ final public class ExecutionEnvironment {
             this.sshPort = sshPort;
         }
 
-        toString = this.user + "@" + this.host +
-                (this.sshPort == 0 ? "" : ":" + this.sshPort);
+        toString = this.user + "@" + this.host + // NOI18N
+                (this.sshPort == 0 ? "" : ":" + this.sshPort); // NOI18N
     }
 
     /**
@@ -157,7 +160,7 @@ final public class ExecutionEnvironment {
     /**
      * Opposite to <tt>isRemote()</tt>.
      * @return true if no ssh connection required for this environment.
-     * @see #isRemote() 
+     * @see #isRemote()
      */
     public boolean isLocal() {
         return sshPort == 0;
@@ -165,13 +168,13 @@ final public class ExecutionEnvironment {
 
     /**
      * Returns true if <tt>obj</tt> represents the same
-     * <tt>ExecutionEnvironment</tt>. Two execution environments are equal if 
+     * <tt>ExecutionEnvironment</tt>. Two execution environments are equal if
      * and only if <tt>host</tt>, <tt>user</tt> and <tt>sshPort</tt> are all
      * equal.
      *
      * @param obj object to compare with
-     * @return <tt>true</tt> if this <tt>ExecutionEnvironment</tt> equals to <tt>obj</tt>
-     * or not.
+     * @return <tt>true</tt> if this <tt>ExecutionEnvironment</tt> equals to
+     * <tt>obj</tt> or not.
      */
     @Override
     public boolean equals(Object obj) {
@@ -206,16 +209,17 @@ final public class ExecutionEnvironment {
      * @return true if and only if host, identified by this environment runs
      * Linux or Solaris OS.
      *
-     * @throws org.netbeans.modules.nativeexecution.util.HostNotConnectedException
+     * @throws HostNotConnectedException if the host, reffered by this execution
+     * environment is not connected yet.
      */
     public final boolean isUnix() throws HostNotConnectedException {
         return HostInfo.isUnix(this);
-}
+    }
 
     /**
-     * Returns true if and only if this environmrnt reffers to a localhost.
+     * Returns true if and only if this environment reffers to a localhost.
      *
-     * @return true if and only if this environmrnt reffers to a localhost.
+     * @return true if and only if this environment reffers to a localhost.
      */
     public final boolean isLocalhost() {
         return HostInfo.isLocalhost(host);
@@ -225,7 +229,8 @@ final public class ExecutionEnvironment {
      * Returns OS name that is run on the host, reffered by this execution
      * environment.
      * @return String that represents OS name
-     * @throws org.netbeans.modules.nativeexecution.util.HostNotConnectedException
+     * @throws HostNotConnectedException if the host, reffered by this execution
+     * environment is not connected yet.
      * @see HostInfo
      */
     public String getOS() throws HostNotConnectedException {
@@ -243,8 +248,14 @@ final public class ExecutionEnvironment {
         return HostInfo.getPlatformPath(this);
     }
 
+    /**
+     * Returns observable action that can be invoked to initiate connection to
+     * a host specified by this execution environment.
+     *
+     * @return action that can be invoked to initiate connection to a host
+     * specified by this execution environment.
+     */
     public ObservableAction<Boolean> getConnectToAction() {
         return ConnectionManager.getInstance().getConnectAction(this);
     }
-
 }

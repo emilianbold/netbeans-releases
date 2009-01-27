@@ -47,17 +47,16 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-    
    This module contains  API and SPI classes which can be used by D-Light
     Toolkit clients to build observability tools on the top of D-Light Toolkit.
      The overall architecture is decsribed here
       <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a>.
-      
      This module provides <api name="ClientAPI" group="java" type="export" category="devel"/>,
       <api name="VisualizerSPI" group="java" type="export" category="devel"/>,
       <api name="IndicatorSPI" group="java" type="export" category="devel"/>,
       <api name="DataStorageSPI" group="java" type="export" category="devel"/>,
-      <api name="DataCollectorSPI" group="java" type="export" category="devel"/>
+      <api name="DataCollectorSPI" group="java" type="export" category="devel"/>,
+      <api name="DLightToolSPI" group="java" type="export" category="devel"/>,
       and <api name="DataProviderSPI" group="java" type="export" category="devel"/>.
 
      See use case section for more details.
@@ -66,12 +65,13 @@ Microsystems, Inc. All Rights Reserved.
      to D-Light Toolkit infrastructure and pusblish it to other clients
      should implement Visualizer interface and provide
      VisualizerConfiguration implementation
-     which is actually a part of D-Light Toolkit  <api name="ClientAPI" group="java" type="export" category="devel"/> . VisualizerConfiguration.getID() and
+     which is actually a part of D-Light Toolkit  <api name="ClientAPI" group="java" type="export" category="devel"/> .
+     VisualizerConfiguration.getID() and
      Visualizer.getID() should return the same value to be able to find Visualizer instance
      using VisualizerConfiguration. Visualizer should be registered in Global Lookup.
-
-     Clients which want to create their own D-Light tools on the base of already provided API/SPI implemetations
-
+     Clients who want to create their own D-Light tools on the base of already provided API/SPI implemetations should
+     implements DLightToolConfigurationProvider interface to provide their own DLightToolConfiguration. See Use Cases
+         section for more details.
   </p>
  </answer>
 
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+  Unit tests will be developed
   </p>
  </answer>
 
@@ -142,15 +142,15 @@ Microsystems, Inc. All Rights Reserved.
 
      How to use D-Light Toolkit to implement Gizmo:
         <ul>
-          <li>Create Gizmo configuration: list tools to be used in Gizmo:
+          <li>Create MyFavoriteConfiguration configuration: list tools to be used in Gizmo:
             <pre>
  &lt;filesystem&gt;
   &lt;folder name="DLight"&gt;
     &lt;folder name="Configurations"&gt;
-      &lt;folder name="MyFavoriteConfiguration"&gt;
+      &lt;folder name="Gizmo"&gt;
         &lt;folder name="KnownToolsConfigurationProviders"&gt;
-          &lt;file name="MyDLightToolConfigurationProvider.shadow"&gt;
-            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MyDLightToolConfigurationProvider.instance"/&gt;
+          &lt;file name="DLightCPUToolConfigurationProvider.shadow"&gt;
+            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/&gt;
           &lt;/file&gt;
           &lt;file name="MemoryToolConfigurationProvider.shadow"&gt;
             &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/&gt;
@@ -166,13 +166,23 @@ Microsystems, Inc. All Rights Reserved.
             </pre>
           </li>
           <li>Create target to be d-lighted: use API support class NativeExecutableTarget and
-          NativeExecutableTargetConfiguration to create DLightTarget. Use org.netbeans.modules.dlight.execution.api.DLightToolkitManagement#createSession(org.netbeans.modules.dlight.execution.api.DLightTarget
+          NativeExecutableTargetConfiguration to create DLightTarget. Use org.netbeans.modules.dlight.api.execution.DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget
           to get DLightSessionReference object which can be used later to run D-Light.
             <pre>
-           NativeExecutableTargetConfiguration targetConfiguration = new NativeExecutableTargetConfiguration(application, arguments, environment);;
-           DLightTarget target = new NativeExecutableTarget(conf);
-           DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, CONFIGURATION_NAME);
-           DLightToolkitManagement.getInstance().startSession(session);
+    final NativeExecutableTarget target = new NativeExecutableTarget(new NativeExecutableTargetConfiguration(application, arguments, environment));
+    final DLightToolkitManagement dtm = DLightToolkitManagement.getInstance();
+    final Future&lt;DLightToolkitManagement.DLightSessionHandler&gt; sessionCreationTask = dtm.createSession(target, "Gizmo);
+    new Thread(new Runnable() {
+        public void run() {
+            try {
+                dtm.startSession(sessionCreationTask.get());
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+     }).start();
             </pre>
           </li>
         </ul>
@@ -195,58 +205,40 @@ Microsystems, Inc. All Rights Reserved.
 
 To create own D-Light Tool client should implement SPI interface DLightToolConfigurationProvider.
         <pre>
-public final class PhpConfigurationProvider implements DLightToolConfigurationProvider {
+public final class MySQLConfigurationProvider implements DLightToolConfigurationProvider {
 
-  public PhpConfigurationProvider() {
+  public MySQLConfigurationProvider() {
   }
 
   public DLightToolConfiguration create() {
-    final String toolName = "Php D-Light Tool";
-    //Create New Configuration
+    final String toolName = "Web Stack MySQL Monitor";
     final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-    List&lt;Column&gt; indicatorColumns = Arrays.asList(
-            new Column("utime", Double.class, "User Time", null),
-            new Column("stime", Double.class, "System Time", null),
-            new Column("wtime", Double.class, "Wait Time", null));
-    //Create table will be created while data collecting process
-    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns);
-    //Create 
-    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata));
-    toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
-
-
-    IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-    HashMap&lt;String, Object&gt; configuration = new HashMap&lt;String, Object&gt;();
-    configuration.put("aggregation", "avrg");
-
-    BarIndicator cpuIndicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
-    toolConfiguration.addIndicator(cpuIndicator);
-
-    List&lt;Column&gt; phpColumns = Arrays.asList(
-            new Column("kind", Integer.class, "Kind", null),
+    List&lt;Column&gt; mysqlColumns = Arrays.asList(
             new Column("timestamp", Long.class, "Timestamp", null),
-            new Column("function_name", String.class, "FunctionName", null),
-            new Column("source_file", String.class, "PHP script", null),
-            new Column("line_number", Integer.class, "Line Number", null),
-            new Column("class_name", String.class, "Class", null));
-
-    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns);
+            new Column("query", String.class, "SQL Query", null),
+            new Column("time", Double.class, "Execution time", null));
+    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns);
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata));
+            "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata));
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner"));
+    dcConfiguration.setScriptArgs("`pgrep -x mysqld`");
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
-    cpuIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
-
+    toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
+    IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+    ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
+    clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
+    toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
   }
+}
 </pre>
   and register it in layer.xml file:
     <pre>
   &lt;filesystem&gt;
     &lt;folder name="DLight"&gt;
         &lt;folder name="ToolConfigurationProviders"&gt;
-            &lt;file name="MyDLightToolConfigurationProvider.instance"&gt;
-               &lt;attr name="instanceClass" stringvalue="org.netbeans.mytool.MyDLightToolConfigurationProvider"/&gt;
+            &lt;file name="MySQLConfigurationProvider.instance"&gt;
+               &lt;attr name="instanceClass" stringvalue="org.netbeans.mytool.MySQLConfigurationProvider"/&gt;
             &lt;/file&gt;
         &lt;/folder&gt;
     &lt;/folder&gt;
@@ -477,10 +469,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="dep-platform">
   <p>
-   D-Light Toolkit can be run on any OS as it is OS independent.
-   D-Light Toolkit provides some SPI implementation which are OS dependent
-   in terms of it is available on Solaris only: DtraceDataCollector can be run
-   on Solaris OS only but D-Light Toolkit supports remote mode.
+   D-Light Toolkit is pure API/SPI module which is OS independent.
   </p>
  </answer>
 
@@ -685,7 +674,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   no
   </p>
  </answer>
 
@@ -703,7 +692,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-process">
   <p>
-   no, another closed module is executing process
+   no
   </p>
  </answer>
 
@@ -781,7 +770,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   no execution, just pure API/SPI module
   </p>
  </answer>
 
@@ -881,7 +870,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="lookup-lookup">
   <p>
-  Yes, Lookup is used but it is closed for API users
+  Yes, Lookup is used but it is closed for both API and SPI clients
   </p>
  </answer>
 
@@ -898,7 +887,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="lookup-register">
   <p>
-   2 services are registered usinf META-INF/service, 
+   2 services are registered using ServiceProvider tag.
    D-Light Toolkit Management module which is closed module(infrastructure) is supposed to
    use the services registered
   </p>
@@ -1031,7 +1020,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-progress">
   <p>
-   Execution is provided by another module
+   This is just pure API/SPI module, no execution in this module
   </p>
  </answer>
 
@@ -1070,7 +1059,8 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-spi">
   <p>
-   SPI will be well documented
+   This is just a toolkit SPI imlementator which will
+   build own tools on the base of this toolkit should take care of their SPI implementations performancce
   </p>
  </answer>
 
@@ -1097,7 +1087,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   no
   </p>
  </answer>
 
@@ -1141,7 +1131,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   no
   </p>
  </answer>
 
@@ -1162,7 +1152,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   no
   </p>
  </answer>
 
@@ -1187,7 +1177,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   no
   </p>
  </answer>
 
@@ -1227,7 +1217,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   no
   </p>
  </answer>
 
@@ -1244,7 +1234,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+  no
   </p>
  </answer>
 
