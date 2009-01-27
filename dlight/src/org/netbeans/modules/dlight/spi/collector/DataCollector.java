@@ -40,12 +40,10 @@ package org.netbeans.modules.dlight.spi.collector;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.Validateable;
-import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -81,7 +79,8 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      * @param target target this collector serve for
      */
     void init(DataStorage storage, DLightTarget target);
- /**
+
+    /**
      * DataCollector can attach to the {@link org.netbeans.modules.dlight.api.execution.DLightTarget}.
      * @return <code>true</code> if collector is attachable, <code>false</code> otherwise
      */
@@ -101,5 +100,4 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      * @return aguments for running this data collector
      */
     String[] getArgs();
-
 }
