@@ -280,13 +280,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
             return getBootClassPath();
         } else if (type.equals(PhpSourcePath.SOURCE_CP)) {
             return getSourcePath(file);
-        } else if (type.equals(ClassPath.COMPILE)) {
-            // ???
-            return getBootClassPath();
-        } else if (type.equals("js/library")) { // NOI18N
-            return getSourcePath(FileType.SOURCE);
+//        } else if (type.equals(ClassPath.COMPILE)) {
+//            // ???
+//            return getBootClassPath();
+//        } else if (type.equals("js/library")) { // NOI18N
+//            return getSourcePath(FileType.SOURCE);
         }
-        assert false : "Unknown classpath type requested: " + type;
+//        assert false : "Unknown classpath type requested: " + type;
         return null;
     }
 

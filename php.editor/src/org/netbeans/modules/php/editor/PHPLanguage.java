@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -65,6 +67,7 @@ import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 
 /**
  *
@@ -180,4 +183,15 @@ public class PHPLanguage extends DefaultLanguageConfig {
     public EmbeddingIndexerFactory getIndexerFactory() {
         return new PHPIndexer.Factory();
     }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(PhpSourcePath.BOOT_CP);
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.singleton(PhpSourcePath.SOURCE_CP);
+    }
+
 }
