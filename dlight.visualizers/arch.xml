@@ -29,7 +29,14 @@
 -->
  <answer id="arch-overall">
   <p>
-   
+    This module contains implementation of   D-Light Toolkit <api name="VisualizerSPI" group="java" type="import" category="devel"></api>.
+    See <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a> for more details about D-Light Toolkit.
+    This module provides to the clients <api name="TableVisualizerConfiguration" group="java" type="export" category="devel"></api> ,
+    <api name="TreeTableVisualizerConfiguration" group="java" type="export" category="devel"></api>  and 
+    <api name="CallersCaleesTableVisualizerConfiguration" group="java" type="export" category="devel"></api> which
+    can be used by the clients which would like to display data collected in Table View, in Tree Table View and as Callers/Callees View/
+
+
   </p>
  </answer>
 
@@ -50,7 +57,7 @@
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   will be tested by SunStudio IDE QE
   </p>
  </answer>
 
@@ -69,7 +76,7 @@
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   
   </p>
  </answer>
 
@@ -93,7 +100,33 @@
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+   <usecase name="Gizmo: Display Memory Leaksin Table View" id="GizmoDLightVisualizerUsage">
+       <pre>
+           ...
+    IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
+    DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
+    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/usr/bin/truss", "-l -d -t '!all' -u 'libc:*alloc,free' -p @PID 2&lt;&amp;1", new MyCLIOParser(totalColumn), Arrays.asList(indicatorTableMetadata));
+    toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
+    MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
+    List&lt;Column&gt; viewColumns = Arrays.asList(
+                new Column("func_name", String.class, "Function", null),
+                new Column("leak", Long.class, "Leak", null));
+    String sql =
+          "SELECT func.func_name as func_name, SUM(size) as leak " +
+          "FROM mem, node AS node, func, ( " +
+          "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
+          "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
+          "   ) WHERE address = leak_address GROUP BY address " +
+          ") WHERE timestamp = leak_timestamp " +
+          "AND stackid = node.node_id and node.func_id = func.func_id " +
+          "GROUP BY node.func_id";
+
+    DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
+    indicator.setVisualizerConfiguration(new TableVisualizerConfiguration(viewTableMetadata));
+    toolConfiguration.addIndicatorConfiguration(indicator);
+        ...
+    </pre>
+   </usecase>
   </p>
  </answer>
 
@@ -111,8 +144,12 @@
 -->
  <answer id="arch-what">
   <p>
-   This module represents some implementation for Visualizers which can be used by the tool which is built on the top
-   of D-Light Toolkit.
+   This module represents implementation for Visualizers which can be used by the tool which is built on the top
+   of D-Light Toolkit. <br></br>
+   The following Visualizer are implemented here:<br></br>
+   <i>Table View Visualizer</i><br></br>
+   <i>Tree Table View Visualizer</i><br></br>
+   <i>Callers/Callees View Visualizer</i><br></br>
   </p>
  </answer>
 
@@ -147,7 +184,7 @@
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   
   </p>
  </answer>
 
@@ -165,7 +202,7 @@
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   not yet
   </p>
  </answer>
 
@@ -179,7 +216,7 @@
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   no
   </p>
  </answer>
 
@@ -201,7 +238,7 @@
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   no settings
   </p>
  </answer>
 
@@ -219,7 +256,7 @@
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   This module was developed using JDK 1.5
   </p>
  </answer>
 
@@ -232,7 +269,7 @@
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+     JRE is enough.
   </p>
  </answer>
 
@@ -285,7 +322,7 @@
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   none
   </p>
  </answer>
 
@@ -313,7 +350,7 @@
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   any
   </p>
  </answer>
 
@@ -337,7 +374,7 @@
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+  nothing
   </p>
  </answer>
 
@@ -365,7 +402,7 @@
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   jar file only
   </p>
  </answer>
 
@@ -381,7 +418,7 @@
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   yes
   </p>
  </answer>
 
@@ -402,7 +439,6 @@
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
   </p>
  </answer>
 
@@ -420,7 +456,7 @@
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   anywhere
   </p>
  </answer>
 
@@ -440,7 +476,7 @@
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   no
   </p>
  </answer>
 
@@ -456,7 +492,7 @@
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   no
   </p>
  </answer>
 
@@ -479,7 +515,7 @@
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   no
   </p>
  </answer>
 
@@ -499,7 +535,7 @@
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   no
   </p>
  </answer>
 
@@ -517,7 +553,7 @@
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   no
   </p>
  </answer>
 
@@ -535,7 +571,7 @@
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   no
   </p>
  </answer>
 
@@ -563,7 +599,7 @@
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   no
   </p>
  </answer>
 
@@ -581,7 +617,7 @@
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   no
   </p>
  </answer>
 
@@ -613,7 +649,6 @@
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
   </p>
  </answer>
 
@@ -632,7 +667,7 @@
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   none
   </p>
  </answer>
 
@@ -650,7 +685,7 @@
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   none
   </p>
  </answer>
 
@@ -681,7 +716,7 @@
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   none
   </p>
  </answer>
 
@@ -713,7 +748,7 @@
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+   no
   </p>
  </answer>
 
@@ -730,7 +765,8 @@
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   Register Factories to create Visualizers on the base of configuration provided by this module using  a declarative annotation such as <code>@ServiceProvider</code>.
+   Infrastructure D-Light Toolkit module is supposed  to find these factories.
   </p>
  </answer>
 
@@ -747,7 +783,7 @@
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   no
   </p>
  </answer>
 
@@ -760,7 +796,7 @@
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   no
   </p>
  </answer>
 
@@ -774,7 +810,7 @@
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   no
   </p>
  </answer>
 
@@ -801,7 +837,7 @@
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   no
   </p>
  </answer>
 
@@ -815,7 +851,7 @@
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   no measurement
   </p>
  </answer>
 
@@ -837,7 +873,7 @@
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   no
   </p>
  </answer>
 
@@ -861,7 +897,8 @@
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   it can be in when data are requested by Visualizer from VisualizerDataProvider, but
+   it is done in non AWT thread
   </p>
  </answer>
 
@@ -880,7 +917,7 @@
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   
   </p>
  </answer>
 
@@ -898,7 +935,7 @@
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   
   </p>
  </answer>
 
@@ -911,7 +948,7 @@
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   no
   </p>
  </answer>
 
@@ -925,7 +962,7 @@
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   no
   </p>
  </answer>
 
@@ -946,7 +983,7 @@
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   no
   </p>
  </answer>
 
@@ -969,7 +1006,7 @@
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   Yes, Top Component which will be used to put Visualizers provided in are registered in layer.xml
   </p>
  </answer>
 
@@ -990,7 +1027,7 @@
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   no
   </p>
  </answer>
 
@@ -1015,7 +1052,7 @@
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   no settings
   </p>
  </answer>
 
@@ -1035,7 +1072,7 @@
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   no
   </p>
  </answer>
 
@@ -1053,7 +1090,7 @@
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   no
   </p>
  </answer>
 
@@ -1070,7 +1107,7 @@
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   no
   </p>
  </answer>
 

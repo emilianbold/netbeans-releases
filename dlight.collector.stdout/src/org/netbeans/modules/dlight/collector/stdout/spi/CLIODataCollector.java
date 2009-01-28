@@ -365,6 +365,9 @@ public final class CLIODataCollector
             case DONE:
                 targetFinished(source);
                 break;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 }
