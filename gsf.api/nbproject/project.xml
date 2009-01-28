@@ -142,6 +142,7 @@
                 <friend>org.netbeans.modules.erlang.project</friend>
                 <friend>org.netbeans.modules.fortress.editing</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.gsf</friend>

@@ -67,10 +67,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
     
     private static final String V3_LOCATION_REFERENCE_URL = 
-            "http://serverplugins.netbeans.org/glassfishv3/zipfilenamefornb70.txt"; // NOI18N
+            "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
     private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
     private static final String V3_DEFAULT_DOWNLOAD_URL = 
-            "http://java.net/download/glassfish/v3/promoted/latest.zip"; // NOI18N
+            "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
     
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;
@@ -115,7 +115,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                  return installDir;
             } else {
                 return System.getProperty("user.home") + File.separatorChar + 
-                        "GlassFish_v3";
+                        "GlassFish_v3_Prelude";
             }
         } else {
             return prevValue;            

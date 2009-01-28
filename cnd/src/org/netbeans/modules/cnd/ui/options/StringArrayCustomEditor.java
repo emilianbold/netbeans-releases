@@ -58,7 +58,7 @@ import org.openide.awt.Mnemonics;
  * 
  * Improved to have isEmptyAllowed and default value 
  */
-public final class StringArrayCustomEditor extends javax.swing.JPanel {
+/*package-local*/ final class StringArrayCustomEditor extends javax.swing.JPanel {
 
     // the bundle to use
     private ResourceBundle bundle = NbBundle.getBundle (
@@ -95,9 +95,11 @@ public final class StringArrayCustomEditor extends javax.swing.JPanel {
         this.isEmptyAllowed = isEmptyAllowed;
         itemsVector = new Vector<String>();
         this.array = array;
-        if (array != null)
-            for (int i = 0; i < array.length; i++)
-                itemsVector.addElement (array[i]);
+        if (array != null) {
+            for (int i = 0; i < array.length; i++) {
+                itemsVector.addElement(array[i]);
+            }
+        }
         initComponents ();
         itemList.setCellRenderer (new EmptyStringListCellRenderer ());
         itemList.setListData (itemsVector);
@@ -302,8 +304,9 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
         // set new selection
         if (itemsVector.size () != 0) {
-            if (currentIndex >= itemsVector.size ())
-                currentIndex = itemsVector.size () - 1;
+            if (currentIndex >= itemsVector.size ()) {
+                currentIndex = itemsVector.size() - 1;
+            }
             itemList.setSelectedIndex (currentIndex);
             if (!itemsVector.contains(defaultValue)) {
                 defaultValue = itemsVector.firstElement();
@@ -406,7 +409,9 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             boolean isSelected,      // is the cell selected
             boolean cellHasFocus)    // the list and the cell have the focus
         {
-            if (!(value instanceof String)) return this;
+            if (!(value instanceof String)) {
+                return this;
+            }
             String text = (String)value;
             setFont(defaultValue.equals (text) ? boldFont : normalFont);
             setText(text);
