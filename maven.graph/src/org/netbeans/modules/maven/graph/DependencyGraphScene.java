@@ -39,14 +39,11 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Paint;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -55,20 +52,15 @@ import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
-import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -79,8 +71,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
-        final Color ROOT = new Color(71, 215, 217);
-        final Color DIRECTS = new Color(154, 215, 217);
     
 //    private GraphLayout layout;
     private WidgetAction moveAction = ActionFactory.createMoveAction();
@@ -273,68 +263,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         
     }
     
-    private class ArtifactWidget extends Widget {
-        private Widget detailsWidget;
-        Widget label1;
-        
-        private ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
-            super(scene);
-
-            Artifact artifact = node.getArtifact().getArtifact();
-            setLayout (LayoutFactory.createVerticalFlowLayout());
-            setOpaque (true);
-            checkBackground(node);
-
-            setBorder (BorderFactory.createLineBorder (10));
-            setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
-                    "TIP_Artifact", new Object[] {artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getScope(), artifact.getType()}));
-            Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
-            addChild(root);
-            root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-            LabelWidget lbl = new LabelWidget(scene);
-            lbl.setLabel(artifact.getArtifactId() + "  ");
-//            lbl.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
-            root.addChild(lbl);
-            label1 = lbl;
-        
-            Widget details1 = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-            details1.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-            root.addChild(details1);
-            LabelWidget lbl2 = new LabelWidget(scene);
-            lbl2.setLabel(artifact.getVersion() + "  ");
-            details1.addChild(lbl2);
-        }
-
-        public void setTextBackGround(Paint pnt) {
-            label1.setOpaque(true);
-            label1.setBackground(pnt);
-            label1.setVisible(true);
-            label1.repaint();
-//            DependencyGraphScene.this.repaint();
-        }
-
-        public void checkBackground(ArtifactGraphNode node) {
-            if (node.isRoot()) {
-                setBackground(new GradientPaint(0,0, ROOT, 100, 50, Color.WHITE));
-            } else if (node.getPrimaryLevel() == 1) {
-                setBackground (new GradientPaint(0,0, DIRECTS, 15, 15, Color.WHITE));
-            } else {
-                boolean conflict = false;
-                for (DependencyNode src : node.getDuplicatesOrConflicts()) {
-                    if (src.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                        conflict = true;
-                    }
-                }
-                if (conflict) {
-                    setBackground (new GradientPaint(0,0, Color.RED, 15, 15, Color.WHITE));
-                } else {
-                    setBackground (Color.WHITE);
-                }
-            }
-        }
-    }
     
     public class SceneListener implements ObjectSceneListener {
         
