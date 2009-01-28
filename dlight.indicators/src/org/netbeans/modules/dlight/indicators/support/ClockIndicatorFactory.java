@@ -25,7 +25,7 @@ public class ClockIndicatorFactory implements IndicatorFactory<ClockIndicatorCon
 
   @Override
   public String getID() {
-    return IndicatorConfigurationIDs.BAR_ID;
+    return IndicatorConfigurationIDs.CLOCK_ID;
   }
 
 }

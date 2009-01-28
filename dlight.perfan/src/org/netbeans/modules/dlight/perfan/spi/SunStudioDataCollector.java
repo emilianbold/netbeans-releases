@@ -291,6 +291,9 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
             case DONE:
                 targetFinished(source);
                 return;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 }

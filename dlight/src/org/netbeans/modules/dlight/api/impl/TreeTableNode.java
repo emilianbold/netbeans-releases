@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.support;
+package org.netbeans.modules.dlight.api.impl;
 
 /**
  * Represents tree table node
