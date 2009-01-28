@@ -53,7 +53,6 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -70,6 +69,7 @@ import org.openide.util.Utilities;
 public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
     private JToolBar toolbar = null;
     private static final Border buttonBorder;
+    private static final boolean isMac = "Aqua".equals(UIManager.getLookAndFeel().getID());
     
     static {
         //Get the HIE requested button border via an ugly hack
@@ -258,9 +258,14 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             addActionListener(this);
             setFont (displayer.getFont());
             setFocusable(false);
-            setBorder (buttonBorder);
-            setMargin(new Insets(0, 3, 0, 3));
+            if( isMac ) {
+                putClientProperty("JButton.buttonType", "square");
+            } else {
+                setBorder (buttonBorder);
+                setMargin(new Insets(0, 3, 0, 3));
+            }
             setRolloverEnabled( true );
+
         }
 
         public void addNotify() {
