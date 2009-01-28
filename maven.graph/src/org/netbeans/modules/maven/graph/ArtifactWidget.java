@@ -124,6 +124,7 @@ class ArtifactWidget extends Widget {
     }
 
     void hightlightText(String searchTerm) {
+        System.out.println("do highlight");
         this.currentSearchTerm = searchTerm;
         doHightlightText(searchTerm, hiddenCard);
         doHightlightText(searchTerm, defaultCard);
@@ -134,14 +135,14 @@ class ArtifactWidget extends Widget {
         for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
             if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                 if (toRet.length() == 0) {
-                    toRet = "<b>Conflicts with:</b>";
+                    toRet = "<b>Conflicts with:</b><table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>";
                 }
-                toRet = toRet + "<br>" + nd.getArtifact().getVersion();
-                toRet = toRet + " by " + nd.getParent().getArtifact().getId();
+                toRet = toRet + "<tr><td>" + nd.getArtifact().getVersion() + "</td>";
+                toRet = toRet + "<td>" + nd.getParent().getArtifact().getId() + "</td></tr>";
             }
         }
         if (toRet.length() > 0) {
-            toRet = toRet + "";
+            toRet = toRet + "</tbody></table>";
         }
         return toRet;
     }
