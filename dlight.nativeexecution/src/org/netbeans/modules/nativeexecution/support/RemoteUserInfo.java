@@ -124,7 +124,8 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     public String getPassword() {
-        return encryptedPassword == null ? null : crypter.decrypt(encryptedPassword);
+        return encryptedPassword == null
+                ? null : crypter.decrypt(encryptedPassword);
     }
 
     final public void setPassword(final String password,
@@ -246,10 +247,15 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             }
 
             synchronized (DLGLOCK) {
-                if (!isCancelled() && JOptionPane.showConfirmDialog(parent, panel,
-                        loc("TITLE_KeyboardInteractive", destination, name), // NOI18N
+                String title = loc(
+                        "TITLE_KeyboardInteractive", // NOI18N
+                        destination, name);
+
+                if (!isCancelled() &&
+                        JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(
+                        parent, panel, title,
                         JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                        JOptionPane.QUESTION_MESSAGE)) {
                     String[] response = new String[prompt.length];
                     for (int i = 0; i < prompt.length; i++) {
                         response[i] = texts[i].getText();

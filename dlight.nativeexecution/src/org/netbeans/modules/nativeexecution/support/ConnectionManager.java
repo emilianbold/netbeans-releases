@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
@@ -48,11 +49,15 @@ import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -123,27 +128,58 @@ public final class ConnectionManager {
             }
         }
 
-        String user = execEnv.getUser();
-        String host = execEnv.getHost();
-        int sshPort = execEnv.getSSHPort();
+        final String user = execEnv.getUser();
+        final String host = execEnv.getHost();
+        final int sshPort = execEnv.getSSHPort();
+
+        final Callable<Session> connectionTask = new Callable<Session>() {
+
+            public Session call() throws Exception {
+                Session result = null;
+                try {
+                    if (sessions.containsKey(sessionKey)) {
+                        result = sessions.get(sessionKey);
+                    } else {
+                        synchronized (jsch) {
+                            result = jsch.getSession(user, host, sshPort);
+                            result.setUserInfo(
+                                    RemoteUserInfo.getUserInfo(execEnv, true));
+                        }
+                    }
+
+                    result.connect();
+                } catch (JSchException e) {
+                    NotifyDescriptor nd =
+                            new NotifyDescriptor.Message(e.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
+                    result = null;
+                }
+                return result;
+            }
+        };
+
+        final Future<Session> futureSession =
+                NativeTaskExecutorService.submit(connectionTask);
+
+        final Cancellable cancelConnection = new Cancellable() {
+
+            public boolean cancel() {
+                return futureSession.cancel(true);
+            }
+        };
 
         ProgressHandle ph = ProgressHandleFactory.createHandle(
                 loc("ConnectionManager.Connecting", // NOI18N
-                execEnv.toString()));
+                execEnv.toString()), cancelConnection);
 
         ph.start();
 
         try {
-            synchronized (jsch) {
-                session = jsch.getSession(user, host, sshPort);
-            }
-
-            session.setUserInfo(RemoteUserInfo.getUserInfo(execEnv, true));
-            session.connect();
-        } catch (JSchException e) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(e.getMessage());
-            DialogDisplayer.getDefault().notify(nd);
-            session = null;
+            session = futureSession.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
             ph.finish();
         }

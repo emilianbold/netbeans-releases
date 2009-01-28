@@ -47,4 +47,12 @@ import java.util.concurrent.Executors;
  */
 public final class DLightExecutorService {
   public static ExecutorService service = Executors.newCachedThreadPool();
+  
+  static {
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                service.shutdown();
+            }
+        }));
+  }
 }

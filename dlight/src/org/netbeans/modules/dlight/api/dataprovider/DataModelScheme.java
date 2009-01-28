@@ -43,27 +43,26 @@ import org.netbeans.modules.dlight.api.impl.DataModelSchemeAccessor;
 /**
  * <p>
  * This is marker class  which declares scheme which
- * will be used by {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer}
- * to find {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory} which
- * will create  {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider} used by
- *  {@link org.netbeans.modules.dlight.visualizer.spi.Visualizer} to get data from.
+ * will be used by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
+ * to find {@link org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory} which
+ * will create  {@link org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider} used by
+ *  {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} to get data from.
+ * <p>
+ * Use {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider} to get
+ * instance of DataModelScheme for the particular id.
  * <p>
  * As an example let's pretend you need to view data in Table View and
  * creates your own TableVisualizer configuration which implements
- * {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration} and
- *  it will announce that <code>TableScheme</code> is supported and
+ * {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} and
+ *  it will announce that <code>TableScheme</code> is supported (id is equals to "model:table") and
  *  When Table Visualizer (created along with TableVisuallizer configuration) needs
- *  to be opened infrastructure should find the proper {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider}
+ *  to be opened infrastructure should find the proper {@link org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider}
  *  which will be used by Visualizer and *the proper*  means that DataProvider should
  *  provide </code>TableScheme</code> in the
- * {@link org.netbeans.modules.dlight.dataprovider.spi.DataProviderFactory#getProvidedDataModelScheme() }
+ * {@link org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory#getProvidedDataModelScheme() }
  *
  */
 
-/**
- * This class represents unique marker to get correspondence
- *  between 
- */
 public final class DataModelScheme {
 
     static {

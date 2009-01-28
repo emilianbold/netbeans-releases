@@ -46,6 +46,7 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 
 
@@ -53,6 +54,7 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
  *
  * @author mt154047
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
 public final class SunStudioDataProviderFactory implements DataProviderFactory {
     private static final Collection<DataModelScheme> providedSchemas =
             Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table"),

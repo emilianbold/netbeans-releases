@@ -40,8 +40,11 @@ package org.netbeans.modules.dlight.webstack.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.webstack.target.DeploymentPlatformTarget;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -49,12 +52,27 @@ import org.netbeans.modules.dlight.webstack.target.DeploymentPlatformTarget;
  */
 public class StartWebStackAction implements ActionListener {
 
-  private static final String CONFIGURATION_NAME = "Photon";
+    private static final String CONFIGURATION_NAME = "Photon"; // NOI18N
 
-  public void actionPerformed(ActionEvent e) {
-    //throw new UnsupportedOperationException("Not supported yet.");
-    final DeploymentPlatformTarget target = new DeploymentPlatformTarget();
-    DLightToolkitManagement.DLightSessionHandler session = DLightToolkitManagement.getInstance().createSession(target, CONFIGURATION_NAME);
-    DLightToolkitManagement.getInstance().startSession(session);
-  }
+    public void actionPerformed(ActionEvent e) {
+        final DeploymentPlatformTarget target = new DeploymentPlatformTarget();
+        final DLightToolkitManagement dtm = 
+                DLightToolkitManagement.getInstance();
+
+        final Future<DLightToolkitManagement.DLightSessionHandler> 
+                sessionCreationTask = 
+                dtm.createSession(target, CONFIGURATION_NAME);
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    dtm.startSession(sessionCreationTask.get());
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }).start();
+    }
 }

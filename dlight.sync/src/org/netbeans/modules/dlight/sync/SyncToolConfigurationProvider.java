@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.sync;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -98,13 +97,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     List<Column> indicatorColumns = Arrays.asList(
             timeColumn);
     IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-
-    HashMap<String, Object> configuration = new HashMap<String, Object>();
-    configuration.put("aggregation", "avrg");
-
     SyncIndicatorConfiguration indicatorConf =
         new SyncIndicatorConfiguration(indicatorMetadata);
-    indicatorConf.setConfigurationData(new ConfigurationData(configuration));
     indicatorConf.setVisualizerConfiguration(getDetails(rawTableMetadata));
     toolConfiguration.addIndicatorConfiguration(indicatorConf);
     return toolConfiguration;
