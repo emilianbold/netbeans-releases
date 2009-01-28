@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.perfan.spi;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +67,6 @@ import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.RemoveTask;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  * This class will represent SunStudio Performance Analyzer collect
@@ -95,8 +93,9 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-        File collectFile = InstalledFileLocator.getDefault().locate("perfan/intel-S2/prod/bin/collect", null, false);
-        execFileName = collectFile.getAbsolutePath();
+        //TODO: Uncomment
+     //   File collectFile = InstalledFileLocator.getDefault().locate("perfan/intel-S2/prod/bin/collect", null, false);
+      // execFileName = collectFile.getAbsolutePath();
         // experimentDir either local or remote! This will be known when target is known
         experimentDir = "/tmp/perfanDataStorage.er"; // TODO:
         this.collectedInfoList = collectedInfoList;
