@@ -64,8 +64,8 @@ public class GraphDocumentFactory {
      * creates a graph document for transitive dependencies
      */
     static DependencyGraphScene createDependencyDocument(Project project) {
-        DependencyGraphScene scene = new DependencyGraphScene();
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        DependencyGraphScene scene = new DependencyGraphScene(prj.getMavenProject());
         DependencyNode root = DependencyTreeFactory.createDependencyTree(prj.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
         generate(root, scene);
         return scene;

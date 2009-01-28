@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -71,6 +72,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,9 +95,11 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction selectAction = ActionFactory.createSelectAction(new MySelectProvider());
     private WidgetAction hoverAction; 
     private FruchtermanReingoldLayout layout;
+    private MavenProject project;
     
     /** Creates a new instance ofla DependencyGraphScene */
-    public DependencyGraphScene() {
+    DependencyGraphScene(MavenProject prj) {
+        project = prj;
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
@@ -109,6 +113,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         getActions().addAction(panAction);
         addObjectSceneListener(new SceneListener(), ObjectSceneEventType.OBJECT_HOVER_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
     }
+
 
     void cleanLayout(JScrollPane panel) {
 //        layout = GraphLayoutFactory.createHierarchicalGraphLayout(this, true, false);
@@ -263,10 +268,11 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     
     private class MyPopupMenuProvider implements PopupMenuProvider {
         
+        @SuppressWarnings("unchecked")
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
             ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-            popupMenu.add(CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), null));
+            popupMenu.add(CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories()));
             return popupMenu;
         }
         
