@@ -40,12 +40,20 @@
  */
 package org.netbeans.modules.maven.codegen;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,10 +84,36 @@ public class PluginGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return "Plugin...";
+        return NbBundle.getMessage(PluginGenerator.class, "NAME_Plugin");
     }
 
     public void invoke() {
-        System.out.println("TODO");
+        NewPluginPanel pluginPanel = new NewPluginPanel();
+        DialogDescriptor dd = new DialogDescriptor(pluginPanel,
+                NbBundle.getMessage(PluginGenerator.class, "TIT_Add_plugin"));
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            NBVersionInfo vi = pluginPanel.getResult();
+            if (vi != null) {
+                //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
+                model.startTransaction();
+                Plugin plug = model.getFactory().createPlugin();
+                plug.setGroupId(vi.getGroupId());
+                plug.setArtifactId(vi.getArtifactId());
+                plug.setVersion(vi.getVersion());
+                Build buildSection = model.getProject().getBuild();
+                if (buildSection == null) {
+                    buildSection = model.getFactory().createBuild();
+                }
+                buildSection.addPlugin(plug);
+                model.endTransaction();
+                try {
+                    model.sync();
+                    int pos = model.getAccess().findPosition(plug.getPeer());
+                    component.setCaretPosition(pos);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }

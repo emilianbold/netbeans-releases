@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,69 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.indexer.api;
+package org.netbeans.modules.maven.api.customizer.support;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 /**
- * 
- * @author mkleint
+ *
+ * @author Dafe Simonek
  */
-public final class QueryField {
+public final class DelayedDocumentChangeListener implements DocumentListener {
 
-    public static final String FIELD_ANY = "any";
-    public static final String FIELD_GROUPID = "groupId";
-    public static final String FIELD_ARTIFACTID = "artifactId";
-    public static final String FIELD_VERSION = "version";
-    public static final String FIELD_CLASSES = "classes";
-    public static final String FIELD_NAME = "name";
-    public static final String FIELD_DESCRIPTION = "description";
-    public static final String FIELD_PACKAGING = "packaging";
-
-    
-    public static final int MATCH_EXACT = 0;
-    public static final int MATCH_ANY = 1;
-    
-    public static final int OCCUR_MUST = 0;
-    public static final int OCCUR_SHOULD = 1;
-    
-    private int match = MATCH_ANY;
-    private String field = FIELD_ANY;
-    private int occur = OCCUR_SHOULD;
-
-    public int getOccur() {
-        return occur;
+    public static DocumentListener create (Document doc, ChangeListener l, int delay) {
+        return new DelayedDocumentChangeListener(doc, l, delay);
     }
 
-    public void setOccur(int occur) {
-        this.occur = occur;
-    }
-    private String value;
+    private Document doc;
+    private Timer changeTimer;
+    private ChangeEvent chEvt;
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
+    private DelayedDocumentChangeListener (Document doc, final ChangeListener l, int delay) {
+        this.doc = doc;
+        this.doc.addDocumentListener(this);
+        this.chEvt = new ChangeEvent(doc);
+        changeTimer = new Timer(delay, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                l.stateChanged(chEvt);
+            }
+        });
+        changeTimer.setRepeats(false);
     }
 
-    public int getMatch() {
-        return match;
+    public void insertUpdate(DocumentEvent e) {
+        maybeChange(e);
     }
 
-    public void setMatch(int match) {
-        this.match = match;
+    public void removeUpdate(DocumentEvent e) {
+        maybeChange(e);
     }
-    
-    
+
+    public void changedUpdate(DocumentEvent e) {
+        maybeChange(e);
+    }
+
+    private void maybeChange(DocumentEvent e) {
+        changeTimer.restart();
+    }
+
 }
