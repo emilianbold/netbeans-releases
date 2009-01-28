@@ -56,14 +56,14 @@ class GraphConstructor implements DependencyNodeVisitor {
     private DependencyGraphScene scene;
     private DependencyNode root;
     private Stack<DependencyNode> path;
-    private Stack<ArtifactGraphNode> graphPath;
+//    private Stack<ArtifactGraphNode> graphPath;
     private Map<String, ArtifactGraphNode> cache;
     private List<ArtifactGraphEdge> edges;
 
     GraphConstructor(DependencyGraphScene scene) {
         this.scene = scene;
         path = new Stack<DependencyNode>();
-        graphPath = new Stack<ArtifactGraphNode>();
+//        graphPath = new Stack<ArtifactGraphNode>();
         cache = new HashMap<String, ArtifactGraphNode>();
         edges = new ArrayList<ArtifactGraphEdge>();
     }
@@ -75,19 +75,17 @@ class GraphConstructor implements DependencyNodeVisitor {
         }
         ArtifactGraphNode grNode;
         boolean primary = false;
+        grNode = cache.get(node.getArtifact().getDependencyConflictId());
         if (node.getState() == DependencyNode.INCLUDED) {
-            grNode = cache.get(node.getArtifact().getDependencyConflictId());
             if (grNode == null) {
                 grNode = new ArtifactGraphNode(node);
-                grNode.setPrimaryLevel(path.size());
                 cache.put(node.getArtifact().getDependencyConflictId(), grNode);
             } else {
                 grNode.setArtifact(node);
-                grNode.setPrimaryLevel(path.size());
             }
+            grNode.setPrimaryLevel(path.size());
             primary = true;
         } else {
-            grNode = cache.get(node.getArtifact().getDependencyConflictId());
             if (grNode == null) {
                 grNode = new ArtifactGraphNode(null);
                 Artifact a = node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact() : node.getArtifact();
@@ -105,18 +103,23 @@ class GraphConstructor implements DependencyNodeVisitor {
         }
 
         path.push(node);
-        graphPath.push(grNode);
+//        graphPath.push(grNode);
 
         return true;
     }
 
     public boolean endVisit(DependencyNode node) {
         path.pop();
-        graphPath.pop();
+//        graphPath.pop();
         if (root == node) {
-            //add all edges now
+            //add all nodes and edges now
+            ArtifactGraphNode rootNode = cache.get(node.getArtifact().getDependencyConflictId());
+            //root needs to go first..
+            scene.addNode(rootNode);
             for (ArtifactGraphNode nd : cache.values()) {
-                scene.addNode(nd);
+                if (nd != rootNode) {
+                    scene.addNode(nd);
+                }
             }
             for (ArtifactGraphEdge ed : edges) {
                 scene.addEdge(ed);
