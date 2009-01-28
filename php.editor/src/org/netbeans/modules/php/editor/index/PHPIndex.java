@@ -686,7 +686,6 @@ public class PHPIndex {
                 assert typeSignatures.length == 1;
                 String foundTypeName = getSignatureItem(typeSignatures[0], 1);
                 foundTypeName = (foundTypeName != null) ? foundTypeName.toLowerCase() : null;
-                String persistentURL = typeMap.getUrl().toString();
 
                 if (forConstructor) {
                     if (!foundTypeName.startsWith(typeName.toLowerCase())) {
