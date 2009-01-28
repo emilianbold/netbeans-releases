@@ -37,52 +37,75 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.actions.tests;
+package org.netbeans.modules.glassfish.javaee.db;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * PHP Unit 3.x constants.
- * @author Tomas Mysik
+ *
+ * @author vkraemer
  */
-public final class PhpUnitConstants {
-    // minimum supported version
-    public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
+public class SunDatasourceTest {
 
-    // test files
-    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
+    public SunDatasourceTest() {
+    }
 
-    // cli options
-    public static final String PARAM_VERSION = "--version"; // NOI18N
-    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
-    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
-    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
-    // for older PHP Unit versions
-    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
 
-    // output files
-    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
 
-    private PhpUnitConstants() {
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
-     * Get an array with actual and minimal PHPUnit versions.
+     * Test of equals method, of class SunDatasource.
      */
-    public static String[] getPhpUnitVersions(int[] actualVersion) {
-        List<String> params = new ArrayList<String>(6);
-        if (actualVersion == null) {
-            params.add("?"); params.add("?"); params.add("?"); // NOI18N
-        } else {
-            for (Integer i : actualVersion) {
-                params.add(String.valueOf(i));
-            }
-        }
-        for (Integer i : MINIMAL_VERSION) {
-            params.add(String.valueOf(i));
-        }
-        return params.toArray(new String[params.size()]);
+    @Test
+    public void testEquals() {
+        System.out.println("equals");
+        Object obj = null;
+        String a="A";
+        String b="B";
+        String c="C";
+        String d="D";
+        String e="E";
+        SunDatasource instance = new SunDatasource(a,b,c,d,e);
+        boolean expResult = false;
+        boolean result = instance.equals(obj);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        //fail("The test case is a prototype.");
+        obj = "String";
+        expResult = false;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource("a","b","c","d","e");
+        expResult = false;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource("A","B","C","D","E");
+        expResult = true;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource(a,b,c,d,e);
+        expResult = true;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
     }
+
 }

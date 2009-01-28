@@ -82,7 +82,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
 
-    public static final String URI_PREFIX = "deployer:gfv3";
+    public static final String PRELUDE_URI_PREFIX = "deployer:gfv3";
 
     private final transient Lookup lookup;
     private final Map<String, String> properties =
@@ -132,7 +132,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public static String formatUri(String glassfishRoot, String host, int port) {
-        return "[" + glassfishRoot + "]" + URI_PREFIX + ":" + host + ":" + port;
+        return "[" + glassfishRoot + "]" + PRELUDE_URI_PREFIX + ":" + host + ":" + port;
     }
 
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
