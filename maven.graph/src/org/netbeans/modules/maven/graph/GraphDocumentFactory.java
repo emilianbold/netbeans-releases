@@ -40,10 +40,7 @@
 
 package org.netbeans.modules.maven.graph;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ResolutionNode;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.api.project.Project;

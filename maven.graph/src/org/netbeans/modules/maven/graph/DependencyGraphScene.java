@@ -42,11 +42,7 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Paint;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -72,7 +68,6 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.NbBundle;
 
 /**
