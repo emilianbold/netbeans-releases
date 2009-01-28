@@ -36,31 +36,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
-import org.netbeans.modules.dlight.collector.spi.DataCollectorFactory;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProviderFactory;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author mt154047
  */
-public final class CLIODataCollectorFactory implements DataCollectorFactory<CLIODCConfiguration>,
-  IndicatorDataProviderFactory<CLIODCConfiguration>{
+@ServiceProviders({
+    @ServiceProvider(service = DataCollectorFactory.class),
+    @ServiceProvider(service = IndicatorDataProviderFactory.class)
+})
+public final class CLIODataCollectorFactory
+        implements DataCollectorFactory<CLIODCConfiguration>,
+        IndicatorDataProviderFactory<CLIODCConfiguration> {
 
-  public CLIODataCollector create(CLIODCConfiguration configuration) {
-    return new CLIODataCollector(configuration);
-  }
+    public CLIODataCollector create(CLIODCConfiguration configuration) {
+        return new CLIODataCollector(configuration);
+    }
 
-
-  /** {@inheritDoc */
-  public String getID(){
-    return CLIODCConfigurationAccessor.getDefault().getCLIODCConfigurationID();
-  }
-
- 
-
+    /** {@inheritDoc */
+    public String getID() {
+        CLIODCConfigurationAccessor access =
+                CLIODCConfigurationAccessor.getDefault();
+        return access.getCLIODCConfigurationID();
+    }
 }

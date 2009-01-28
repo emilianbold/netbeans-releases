@@ -42,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,14 +60,15 @@ import org.netbeans.modules.nativeexecution.api.TaskExecutionState;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 
-public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable {
+public abstract class NativeExecutor implements Cancellable {
 
     public final String CANCEL_ACTION = "Cancel"; // NOI18N
     public final String RESTART_ACTION = "Restart"; // NOI18N
     protected final static java.util.logging.Logger log = Logger.getInstance();
     final Object stateMonitor = new Object();
     private TaskExecutionState state = TaskExecutionState.INITIAL;
-    final List<NativeTaskListener> taskListeners = Collections.synchronizedList(new ArrayList<NativeTaskListener>());
+    final List<NativeTaskListener> taskListeners =
+            Collections.synchronizedList(new ArrayList<NativeTaskListener>());
     protected final NativeTask task;
     private int pid;
     private Integer exitValue;
@@ -105,7 +108,9 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
 
     public final Action[] getActions() {
         if (actions == null) {
-            actions = new Action[]{getAction(CANCEL_ACTION), getAction(RESTART_ACTION)};
+            actions = new Action[]{
+                        getAction(CANCEL_ACTION),
+                        getAction(RESTART_ACTION)};
         }
         return actions;
     }
@@ -170,22 +175,32 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
 
             InputStream taskOut = getTaskInputStream();
             ot = null;
-            if (taskOut != null && taskInfo.getRedirectionOutputWriter(task) != null) {
-                ot = new StreamRedirector(taskOut, taskInfo.getRedirectionOutputWriter(task), "output from " + task.toString()); // NOI18N
+
+            Writer w = null;
+            Reader r = null;
+
+            if (taskOut != null &&
+                    (w = taskInfo.getRedirectionOutputWriter(task)) != null) {
+                String name = "output from " + task.toString(); // NOI18N
+                ot = new StreamRedirector(taskOut, w, name);
                 ot.start();
             }
 
             InputStream taskErr = getTaskErrorStream();
             et = null;
-            if (taskErr != null && taskInfo.getRedirectionErrorWriter(task) != null) {
-                et = new StreamRedirector(taskErr, taskInfo.getRedirectionErrorWriter(task), "error from " + task.toString()); // NOI18N
+            if (taskErr != null &&
+                    (w = taskInfo.getRedirectionErrorWriter(task)) != null) {
+                String name = "error from " + task.toString(); // NOI18N
+                et = new StreamRedirector(taskErr, w, name);
                 et.start();
             }
 
             OutputStream taskIn = getTaskOutputStream();
             it = null;
-            if (taskIn != null && taskInfo.getRedirectionInputReader(task) != null) {
-                it = new StreamRedirector(taskInfo.getRedirectionInputReader(task), getTaskOutputStream(), "input of " + task.toString()); // NOI18N
+            if (taskIn != null &&
+                    (r = taskInfo.getRedirectionInputReader(task)) != null) {
+                String name = "input from " + task.toString(); // NOI18N
+                it = new StreamRedirector(r, getTaskOutputStream(), name);
                 it.start();
             }
 
@@ -203,7 +218,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
             setState(TaskExecutionState.ERROR);
         } finally {
             double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-            System.err.println("Task " + task + " finished in " + duration + "s");
+            log.fine("Task " + task + " finished with rc=" + // NOI18N
+                    task.get() + " in " + duration + " s"); // NOI18N
 
             if (it != null) {
                 it.interrupt();
@@ -295,7 +311,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
         synchronized (stateMonitor) {
             if (state == TaskExecutionState.INITIAL ||
                     state == TaskExecutionState.STARTING) {
-                throw new IllegalStateException("Task is not started yet"); // NOI18N
+                String err = "Task is not started yet"; // NOI18N
+                throw new IllegalStateException(err);
             }
         }
 
@@ -341,8 +358,10 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     private void notifyListeners() {
         synchronized (stateMonitor) {
             log.fine("Task " + task + " changed state to " + state); // NOI18N
+            NativeTaskListener[] ll =
+                    taskListeners.toArray(new NativeTaskListener[0]);
 
-            for (NativeTaskListener l : taskListeners.toArray(new NativeTaskListener[0])) {
+            for (NativeTaskListener l : ll) {
                 try {
                     switch (state) {
                         case RUNNING:
@@ -355,11 +374,14 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
                             l.taskError(task, exception);
                             break;
                         case CANCELED:
-                            l.taskCancelled(task, (CancellationException) exception);
+                            l.taskCancelled(task,
+                                    (CancellationException) exception);
                             break;
                     }
                 } catch (Exception e) {
-                    log.severe("Exception during ExecutorTaskListener " + l + " notification. " + e.toString()); // NOI18N
+                    log.severe(
+                            "Exception during ExecutorTaskListener " // NOI18N
+                            + l + " notification. " + e.toString()); // NOI18N
                 }
             }
         }
@@ -409,7 +431,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
 
     private void updateActions() {
         synchronized (stateMonitor) {
-            if (state == TaskExecutionState.RUNNING || state == TaskExecutionState.STARTING) {
+            if (state == TaskExecutionState.RUNNING ||
+                    state == TaskExecutionState.STARTING) {
                 getAction(CANCEL_ACTION).setEnabled(true);
                 getAction(RESTART_ACTION).setEnabled(false);
             } else if (state == TaskExecutionState.INITIAL) {
@@ -425,7 +448,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     class SimpleCancelAction extends AbstractAction {
 
         public SimpleCancelAction() {
-            super("Cancel " + task.toString(), ImageLoader.loadIcon("CancelTask.png")); // NOI18N
+            super("Cancel " + task.toString(), // NOI18N
+                    ImageLoader.loadIcon("CancelTask.png")); // NOI18N
             setEnabled(false);
         }
 
@@ -440,7 +464,8 @@ public abstract class NativeExecutor implements /*ActionsProvider,*/ Cancellable
     class SimpleRestartAction extends AbstractAction {
 
         public SimpleRestartAction() {
-            super("Restart " + task.toString(), ImageLoader.loadIcon("RerunTask.png")); // NOI18N
+            super("Restart " + task.toString(), // NOI18N
+                    ImageLoader.loadIcon("RerunTask.png")); // NOI18N
             setEnabled(false);
         }
 

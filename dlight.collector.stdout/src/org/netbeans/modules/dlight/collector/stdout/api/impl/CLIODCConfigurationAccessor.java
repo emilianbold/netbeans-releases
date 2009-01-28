@@ -36,55 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.collector.stdout.api.impl;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
 
 /**
  *
  * @author masha
  */
 public abstract class CLIODCConfigurationAccessor {
- private static volatile CLIODCConfigurationAccessor DEFAULT;
 
-  public static CLIODCConfigurationAccessor getDefault(){
-    CLIODCConfigurationAccessor a = DEFAULT;
-    if (a!= null){
-      return a;
+    private static volatile CLIODCConfigurationAccessor DEFAULT;
+
+    public static CLIODCConfigurationAccessor getDefault() {
+        CLIODCConfigurationAccessor a = DEFAULT;
+
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(CLIODCConfiguration.class.getName(), true,
+                    CLIODCConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+        }
+
+        return DEFAULT;
     }
 
-    try{
-      Class.forName(CLIODCConfiguration.class.getName(), true, CLIODCConfiguration.class.getClassLoader());//
-    }catch(Exception e){
+    public static void setDefault(CLIODCConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
 
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(CLIODCConfigurationAccessor accessor){
-    if (DEFAULT != null){
-      throw new IllegalStateException();
+    public CLIODCConfigurationAccessor() {
     }
-    DEFAULT = accessor;
-  }
 
-  public CLIODCConfigurationAccessor(){
+    public abstract String getCommand(CLIODCConfiguration configuration);
 
-  }
+    public abstract String getArguments(CLIODCConfiguration configuration);
 
-   public  abstract String getCommand(CLIODCConfiguration configuration);
-   
+    public abstract List<DataTableMetadata> getDataTablesMetadata(CLIODCConfiguration configuration);
 
-  public abstract String getArguments(CLIODCConfiguration configuration);
+    public abstract CLIOParser getParser(CLIODCConfiguration configuration);
 
-  public abstract List<DataTableMetadata> getDataTablesMetadata(CLIODCConfiguration configuration) ;
+    public abstract String getCLIODCConfigurationID();
 
-  public abstract CLIOParser getParser(CLIODCConfiguration configuration) ;
-
-  public abstract String getCLIODCConfigurationID();
-  public abstract  boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
+    public abstract boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
 }

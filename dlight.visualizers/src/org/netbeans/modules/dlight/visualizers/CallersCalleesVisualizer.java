@@ -49,18 +49,16 @@ import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.model.Function;
-import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
-import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
-import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
@@ -83,10 +81,10 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
 
   
 
-  CallersCalleesVisualizer(DataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
+  CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
     super(configuration, dataProvider);
     this.configuration = (CallersCalleesVisualizerConfiguration)configuration;
-    this.dataProvider = (StackDataProvider)dataProvider;
+    this.dataProvider = dataProvider;
     isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
 //    functionsCallTreeModel = new DefaultTreeModel(TREE_ROOT);
 //    metricsList = dataProvider.getMetricsList();

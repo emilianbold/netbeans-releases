@@ -38,22 +38,25 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
-import org.netbeans.modules.dlight.execution.api.impl.DLightSessionInternalReference;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
+
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
+import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
+import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -63,7 +66,8 @@ import org.openide.util.Task;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference{
+public final class DLightSession implements DLightTargetListener, DLightSessionInternalReference {
+
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
@@ -84,6 +88,23 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         RUNNING,
         PAUSED,
         ANALYZE,
+    }
+
+    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case RUNNING:
+                targetStarted(source);
+                break;
+            case FAILED:
+                targetFinished(source);
+                break;
+            case TERMINATED:
+                targetFinished(source);
+                break;
+            case DONE:
+                targetFinished(source);
+                break;
+        }
     }
 
     /**
@@ -177,12 +198,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         // TODO: review later....
         for (ExecutionContext c : contexts) {
             final DLightTarget target = c.getTarget();
-            target.terminate();
+            DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
         }
     }
 
     void start() {
         Runnable sessionRunnable = new Runnable() {
+
             boolean hasValidContext = true;
 
             public void run() {
@@ -191,7 +213,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 if (storages != null) {
                     storages.clear();
                 }
-                
+
                 for (ExecutionContext context : contexts) {
                     boolean result = prepareContext(context);
                     hasValidContext &= result;
@@ -213,7 +235,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         context.getTarget().addTargetListener(DLightSession.this);
                         f = true;
                     }
-                    context.getTarget().start();
+                    DLightTargetAccessor.getDefault().getDLightTargetExecution(context.getTarget()).start(context.getTarget());
                 }
             }
         };
@@ -229,7 +251,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         List<DLightTool> validTools = new ArrayList<DLightTool>();
 
         for (DLightTool tool : context.getTools()) {
-            if (tool.getValidationStatus().isOK()) {
+            if (tool.getValidationStatus().isValid()) {
                 validTools.add(tool);
             }
         }
@@ -277,7 +299,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
-                  List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                    List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                     for (Indicator i : indicators) {
                         boolean wasSubscribed = idp.subscribe(i);
                         if (wasSubscribed) {
@@ -292,8 +314,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget
         //or SystemTarget
-        if (notAttachableDataCollector != null && target.canBeSubstituted()) {
-            target.substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
+            ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
         }
 
         return true;
@@ -325,11 +347,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
     }
 
-    public void targetStarted(DLightTarget target) {
+    private void targetStarted(DLightTarget target) {
         setState(SessionState.RUNNING);
     }
 
-    public void targetFinished(DLightTarget target, int result) {
+    private void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
     }

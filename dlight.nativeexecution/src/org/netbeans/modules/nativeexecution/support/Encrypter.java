@@ -68,11 +68,13 @@ public class Encrypter {
 
     public Encrypter(String passPhrase) {
         if (passPhrase == null) {
-            throw new NullPointerException("passPhrase cannot be NULL"); // NOI18N
+            throw new NullPointerException(
+                    "passPhrase cannot be NULL"); // NOI18N
         }
 
         if (passPhrase.length() < 8) {
-            throw new RuntimeException("passPhrase cannot be less than 8 characters"); // NOI18N
+            throw new RuntimeException(
+                    "passPhrase cannot be less than 8 characters"); // NOI18N
         }
 
         try {
@@ -145,13 +147,17 @@ public class Encrypter {
     private static class DESEncrypter implements EncryptionAlgorythm {
 
         private SecretKey key;
-        private sun.misc.BASE64Encoder base64encoder = new sun.misc.BASE64Encoder();
-        private sun.misc.BASE64Decoder base64decoder = new sun.misc.BASE64Decoder();
+        private sun.misc.BASE64Encoder base64encoder =
+                new sun.misc.BASE64Encoder();
+        private sun.misc.BASE64Decoder base64decoder =
+                new sun.misc.BASE64Decoder();
 
         public DESEncrypter(final String passPhrase) throws NoSuchAlgorithmException {
             try {
-                DESKeySpec keySpec = new DESKeySpec(passPhrase.getBytes("UTF8"));
-                SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+                DESKeySpec keySpec =
+                        new DESKeySpec(passPhrase.getBytes("UTF8")); // NOI18N
+                SecretKeyFactory keyFactory =
+                        SecretKeyFactory.getInstance("DES"); // NOI18N
                 key = keyFactory.generateSecret(keySpec);
             } catch (UnsupportedEncodingException ex) {
                 Exceptions.printStackTrace(ex);
@@ -162,12 +168,12 @@ public class Encrypter {
             }
         }
 
-        synchronized public String encrypt(String str) {
+        public synchronized String encrypt(String str) {
             String result = null;
 
             try {
-                byte[] cleartext = str.getBytes("UTF8");
-                Cipher cipher = Cipher.getInstance("DES");
+                byte[] cleartext = str.getBytes("UTF8"); // NOI18N
+                Cipher cipher = Cipher.getInstance("DES"); // NOI18N
                 cipher.init(Cipher.ENCRYPT_MODE, key);
                 result = base64encoder.encode(cipher.doFinal(cleartext));
             } catch (IllegalBlockSizeException ex) {
@@ -187,11 +193,11 @@ public class Encrypter {
             return result;
         }
 
-        public String decrypt(String str) {
-            String result = "";
+        public synchronized String decrypt(String str) {
+            String result = ""; // NOI18N
             try {
                 byte[] encrypedPwdBytes = base64decoder.decodeBuffer(str);
-                Cipher cipher = Cipher.getInstance("DES"); // cipher is not thread safe
+                Cipher cipher = Cipher.getInstance("DES"); // NOI18N
                 cipher.init(Cipher.DECRYPT_MODE, key);
                 byte[] plainTextPwdBytes = cipher.doFinal(encrypedPwdBytes);
                 StringBuilder sb = new StringBuilder();
@@ -222,7 +228,7 @@ public class Encrypter {
     private static class XOREncrypter implements EncryptionAlgorythm {
 
         private final static String emptyPwd = "$$$EmptyPassword$$$"; // NOI18N
-        private final static char delimeter = '\000';
+        private final static char delimeter = '\000'; // NOI18N
         private final byte[] passPhrase;
 
         public XOREncrypter(String passPhrase) {
@@ -257,7 +263,8 @@ public class Encrypter {
             int len = Math.max(passPhrase.length, bytes.length);
             byte[] out = new byte[len];
             for (int i = 0; i < len; i++) {
-                out[i] = (byte) (bytes[i % bytes.length] ^ passPhrase[i % passPhrase.length]);
+                out[i] = (byte) (bytes[i % bytes.length] ^
+                        passPhrase[i % passPhrase.length]);
             }
             return new String(out);
         }

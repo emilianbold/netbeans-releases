@@ -128,7 +128,6 @@ public class ImportProject implements PropertyChangeListener {
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
-    private boolean postponeModel;
     private String includeDirectories = "";
     private String macros = "";
     private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
@@ -323,19 +322,22 @@ public class ImportProject implements PropertyChangeListener {
         //if (setAsMain) {
         //    OpenProjects.getDefault().setMainProject(makeProject);
         //}
-        if (configurePath != null && configurePath.length() > 0) {
-            postConfigure();
-        }
-        if (runMake) {
-            makeProject(true);
-            postponeModel = true;
-        }
-        if (!postponeModel) {
-            RequestProcessor.getDefault().post(new Runnable(){
-                public void run() {
-                    discovery(0, null);
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        pdp.getConfigurationDescriptor();
+        if (pdp.gotDescriptor()) {
+            if (configurePath != null && configurePath.length() > 0) {
+                postConfigure();
+            } else {
+                if (runMake) {
+                    makeProject(true);
+                } else {
+                    RequestProcessor.getDefault().post(new Runnable(){
+                        public void run() {
+                            discovery(0, null);
+                        }
+                    });
                 }
-            });
+            }
         }
     }
 
@@ -388,7 +390,6 @@ public class ImportProject implements PropertyChangeListener {
                 //if (!makefileFile.exists()) {
                 //    makefileFile.createNewFile();
                 //}
-                final boolean userRunMake = runMake;
                 //final File configureLog = createTempFile("configure");
                 ExecutionListener listener = new ExecutionListener() {
                     public void executionStarted() {
@@ -399,18 +400,17 @@ public class ImportProject implements PropertyChangeListener {
                         } else {
                             importResult.put(Step.Configure, State.Fail);
                         }
-                        if (userRunMake && rc == 0) {
+                        if (runMake && rc == 0) {
                             //parseConfigureLog(configureLog);
                             makeProject(false);
+                        } else {
+                            switchModel(true);
+                            postModelDiscovery(true);
                         }
                     }
                 };
-                if (runMake) {
-                    runMake = false;
-                    postponeModel = true;
-                }
                 if (TRACE) {logger.log(Level.INFO, "#configure " + configureArguments); } // NOI18N
-                ShellRunAction.performAction(node, listener, null); //, new BufferedWriter(new FileWriter(configureLog)));
+                ShellRunAction.performAction(node, listener, null, makeProject); //, new BufferedWriter(new FileWriter(configureLog)));
             }
         } catch (DataObjectNotFoundException e) {
         }
@@ -443,8 +443,6 @@ public class ImportProject implements PropertyChangeListener {
             } catch (DataObjectNotFoundException ex) {
             }
         } else {
-            runMake = false;
-            postponeModel = false;
             switchModel(true);
             postModelDiscovery(true);
         }
@@ -464,7 +462,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         };
         if (TRACE) {logger.log(Level.INFO, "#make clean");} // NOI18N
-        MakeAction.execute(node, "clean", listener, null); // NOI18N
+        MakeAction.execute(node, "clean", listener, null, makeProject); // NOI18N
     }
 
     private void postMake(Node node){
@@ -490,7 +488,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         if (TRACE) {logger.log(Level.INFO, "#make > "+makeLog.getAbsolutePath());} // NOI18N
-        MakeAction.execute(node, "", listener, outputListener); // NOI18N
+        MakeAction.execute(node, "", listener, outputListener, makeProject); // NOI18N
     }
 
     private DiscoveryProvider getProvider(String id){
@@ -580,7 +578,6 @@ public class ImportProject implements PropertyChangeListener {
                 }
             }
         }
-        postponeModel = false;
         switchModel(true);
         if (!done){
             postModelDiscovery(true);
@@ -614,6 +611,7 @@ public class ImportProject implements PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable(){
             public void run() {
                 makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
+                if (TRACE) {logger.log(Level.INFO, "#save configuration descriptor");} // NOI18N
            }
         });
     }

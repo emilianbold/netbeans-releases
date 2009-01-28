@@ -36,63 +36,79 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataModel;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
 /**
- *
- * @author mt154047
+ * Configuration class which will be used to create Callers/Callees visualizer.
+ * Callers/Callees visualizer is Tree Table View which contains functions list
+ * along with metrics and with the posibility to shift View  from Callers View  to Callees View,
+ *  refresh all data and focus on some selected function.
  */
-public final class CallersCalleesVisualizerConfiguration extends TreeTableVisualizerConfiguration{
-    
-  public CallersCalleesVisualizerConfiguration(List<FunctionMetric> metrics, boolean isPlainTable) {
-    List<Column> columns = new ArrayList<Column>();
-    columns.add(new Column("name", String.class, "Function Name", null));
-    //e.user:i.user:i.sync:i.syncn:name
-//    List<Column> tableColumns = new ArrayList<Column>();
-    for (FunctionMetric metric : metrics){
-      columns.add(new Column(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null));
+public final class CallersCalleesVisualizerConfiguration extends TreeTableVisualizerConfiguration {
+
+//    /**
+//     * Creates new configuration to create Callers/Callees Visualizer
+//     * @param metrics
+//     * @param isPlainTable
+//     */
+//    private CallersCalleesVisualizerConfiguration(List<FunctionMetric> metrics, boolean isPlainTable) {
+//        List<Column> columns = new ArrayList<Column>();
+//        columns.add(new Column("name", String.class, "Function Name", null));
+//        for (FunctionMetric metric : metrics) {
+//            columns.add(new Column(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null));
+//        }
+//        DataTableMetadata result = new DataTableMetadata("DtraceStacks", columns);
+//        setDataTableMetadata(result, "name");
+//    }
+//
+//    /**
+//     *
+//     * @param metrics
+//     */
+//    private CallersCalleesVisualizerConfiguration(List<FunctionMetric> metrics) {
+//        this(metrics, false);
+//
+//    }
+
+    /**
+     * Creates new Callers/Callees Visualizer configuration using <code>dataTableMetadat</code> as function tables list and
+     * <code>functionNameColumnName</code> as name of the column which represents function name and will be used
+     * in Tree Table View as tree column
+     * @param dataTableMetadata functions table
+     * @param functionNameColumnName name of the column which represents function name and will be used
+     */
+    public CallersCalleesVisualizerConfiguration(DataTableMetadata dataTableMetadata, String functionNameColumnName) {
+        super(dataTableMetadata, functionNameColumnName);
     }
-    DataTableMetadata result = new DataTableMetadata("DtraceStacks", columns);
-    setDataTableMetadata(result, "name");
-  }
 
-  public CallersCalleesVisualizerConfiguration(List<FunctionMetric> metrics) {
-    this(metrics, false);
+    /**
+     * Creates new Callers/Callees Visualizer configuration using <code>dataTableMetadat</code> as function tables list and
+     * <code>functionNameColumnName</code> as name of the column which represents function name and will be used
+     * in Tree Table View as tree column
+     * @param dataTableMetadata functions table
+     * @param functionNameColumnName name of the column which represents function name and will be used
+     * @param isTableView  <code>true</code> if you would liek to see plain table, <code>false</code> otherwise
+     */
+    public CallersCalleesVisualizerConfiguration(DataTableMetadata dataTableMetadata, String functionNameColumnName, boolean isTableView) {
+        super(dataTableMetadata, functionNameColumnName, isTableView);
+    }
 
-  }
+    @Override
+    public String getID() {
+        return VisualizerConfigurationIDsProvider.CALLERS_CALLEES_VISUALIZER;
+    }
 
-
-  public CallersCalleesVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName){
-    super(dataTableMetadata, treeColumnName);
-  }
-
-  public CallersCalleesVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName, boolean isTableView){
-    super(dataTableMetadata, treeColumnName, isTableView);
-  }
-
-  @Override
-  public String getID() {
-   return VisualizerConfigurationIDsProvider.CALLERS_CALLEES_VISUALIZER;
-  }
-
-  @Override
-  public DataModelScheme getSupportedDataScheme() {
-   return StackDataModel.instance;
-  }
-
-
-
-
-
-
+    @Override
+    public DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:stack");
+    }
 }

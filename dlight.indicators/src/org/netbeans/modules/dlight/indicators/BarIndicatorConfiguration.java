@@ -6,10 +6,9 @@
 package org.netbeans.modules.dlight.indicators;
 
 
-import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
-import org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicators.support.BarIndicatorConfigurationAccessor;
+
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicators.support.IndicatorConfigurationIDs;
 
 /**
@@ -19,9 +18,6 @@ import org.netbeans.modules.dlight.indicators.support.IndicatorConfigurationIDs;
 public final class BarIndicatorConfiguration extends IndicatorConfiguration{
 
 
-  static{
-    BarIndicatorConfigurationAccessor.setDefault(new BarIndicatorConfigurationAccessorImpl());
-  }
   public BarIndicatorConfiguration(IndicatorMetadata metadata) {
     super(metadata);
   }
@@ -30,24 +26,6 @@ public final class BarIndicatorConfiguration extends IndicatorConfiguration{
   public String getID() {
     return IndicatorConfigurationIDs.BAR_ID;
   }
-
-
-  ConfigurationData getData(){
-    return super.getConfigurationData();
-  }
-
-  private static final class BarIndicatorConfigurationAccessorImpl extends BarIndicatorConfigurationAccessor{
-
-    @Override
-    public ConfigurationData getConfigurationData(BarIndicatorConfiguration configuration) {
-      return configuration.getData();
-    }
-    
-  }
-  
-
-
-  
 
 
 }

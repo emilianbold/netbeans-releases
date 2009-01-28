@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

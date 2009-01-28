@@ -60,21 +60,22 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.dlight.collector.api</package>
-                <package>org.netbeans.modules.dlight.collector.spi</package>
-                <package>org.netbeans.modules.dlight.dataprovider.api</package>
-                <package>org.netbeans.modules.dlight.dataprovider.spi</package>
-                <package>org.netbeans.modules.dlight.execution.api</package>
-                <package>org.netbeans.modules.dlight.indicator.api</package>
-                <package>org.netbeans.modules.dlight.indicator.impl</package>
-                <package>org.netbeans.modules.dlight.indicator.spi</package>
-                <package>org.netbeans.modules.dlight.model</package>
-                <package>org.netbeans.modules.dlight.storage.api</package>
-                <package>org.netbeans.modules.dlight.storage.spi</package>
-                <package>org.netbeans.modules.dlight.tool.api</package>
-                <package>org.netbeans.modules.dlight.tool.spi</package>
-                <package>org.netbeans.modules.dlight.visualizer.api</package>
-                <package>org.netbeans.modules.dlight.visualizer.spi</package>
+                <package>org.netbeans.modules.dlight.api.collector</package>
+                <package>org.netbeans.modules.dlight.api.dataprovider</package>
+                <package>org.netbeans.modules.dlight.api.execution</package>
+                <package>org.netbeans.modules.dlight.api.indicator</package>
+                <package>org.netbeans.modules.dlight.api.storage</package>
+                <package>org.netbeans.modules.dlight.api.storage.types</package>
+                <package>org.netbeans.modules.dlight.api.support</package>
+                <package>org.netbeans.modules.dlight.api.tool</package>
+                <package>org.netbeans.modules.dlight.api.visualizer</package>
+                <package>org.netbeans.modules.dlight.spi.collector</package>
+                <package>org.netbeans.modules.dlight.spi.dataprovider</package>
+                <package>org.netbeans.modules.dlight.spi.indicator</package>
+                <package>org.netbeans.modules.dlight.spi.storage</package>
+                <package>org.netbeans.modules.dlight.spi.support</package>
+                <package>org.netbeans.modules.dlight.spi.tool</package>
+                <package>org.netbeans.modules.dlight.spi.visualizer</package>
             </public-packages>
         </data>
     </configuration>

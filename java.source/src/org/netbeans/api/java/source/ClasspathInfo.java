@@ -49,6 +49,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -186,7 +189,7 @@ public final class ClasspathInfo {
      * @return ClasspathInfo or null if the file does not exist on the
      * local file system or it has no classpath associated
      */
-    public static ClasspathInfo create (final File file) {
+    public static @NullUnknown ClasspathInfo create (@NonNull final File file) {
         if (file == null) {
             throw new IllegalArgumentException ("Cannot pass null as parameter of ClasspathInfo.create(java.io.File)");     //NOI18N
         }
@@ -213,7 +216,7 @@ public final class ClasspathInfo {
      * found.
      * @since 0.42
      */
-    public static ClasspathInfo create(final Document doc) {
+    public static @NullUnknown ClasspathInfo create(@NonNull final Document doc) {
         Parameters.notNull("doc", doc);
         final Object source = doc.getProperty(Document.StreamDescriptionProperty);
         if (source instanceof DataObject) {
@@ -254,7 +257,7 @@ public final class ClasspathInfo {
     /** Creates new interface to the compiler
      * @param fo for which the CompilerInterface should be created
      */
-    public static ClasspathInfo create(FileObject fo) {
+    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
         return create (fo, null, false, false, false);
     }            
     
@@ -264,7 +267,7 @@ public final class ClasspathInfo {
         return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
     }
     
-    public static ClasspathInfo create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {        
+    public static @NonNull ClasspathInfo create(@NonNull final ClassPath bootPath, @NonNull final ClassPath classPath, @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
         return create (bootPath, classPath, sourcePath, null, false, false, false);
@@ -289,7 +292,7 @@ public final class ClasspathInfo {
         listenerList.remove (ChangeListener.class, listener);
     }
 
-    public ClassPath getClassPath (PathKind pathKind) {
+    public ClassPath getClassPath (@NonNull PathKind pathKind) {
 	switch( pathKind ) {
 	    case BOOT:
 		return this.bootClassPath;
@@ -320,7 +323,7 @@ public final class ClasspathInfo {
     }
     
     
-    public synchronized ClassIndex getClassIndex () {
+    public synchronized @NonNull ClassIndex getClassIndex () {
         if ( usagesQuery == null ) {
             usagesQuery = new ClassIndex (
                     this.bootClassPath,

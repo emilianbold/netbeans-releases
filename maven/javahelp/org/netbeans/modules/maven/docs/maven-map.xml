@@ -39,6 +39,14 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
-    <mapID target="maven_settings" url="maven/maven_settings.html" />
+    <mapID target="maven_settings" url="maven_settings.html" />
+    <mapID target="maven_project" url="maven-newproj.html"/>
+    <mapID target="maven_dependencies" url="maven-dependencies.html"/>
+    <mapID target="maven_repositories" url="maven-repositories.html"/>
+    <mapID target="maven_pom" url="maven-pom.html"/>
+
+<!-- ++++++ CSH topics ++++++ -->
     <mapID target="org.netbeans.modules.maven.options.MavenAdvancedOption" url="csh/maven-options.html"/>
+    <mapID target="org.netbeans.modules.maven.newproject.BasicWizardPanel" url="csh/maven-newproj-web.html"/>
+    <mapID target="org.netbeans.modules.maven.newproject.ChooseWizardPanel" url="csh/maven-newproj-archetype.html"/>
 </map>

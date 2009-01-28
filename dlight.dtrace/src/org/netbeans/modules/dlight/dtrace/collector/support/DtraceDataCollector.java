@@ -48,42 +48,44 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.dlight.api.execution.AttachableTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.execution.api.AttachableTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
 import org.netbeans.modules.dlight.management.api.DLightManager;
-import org.netbeans.modules.dlight.model.Validateable.ValidationState;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.CopyTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.util.CopyTask;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.TaskPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+
+
 
 /**
  * Collector which collects data using DTrace sctiprs.
@@ -103,7 +105,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private String scriptPath;
     private NativeTask collectorTask;
     private DTDCConfiguration configuration;
-    private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
     private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
     private String command;
     private String argsTemplate;
@@ -117,6 +119,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
 
+    
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
@@ -127,7 +130,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         } else {
             this.parser = DTDCConfigurationAccessor.getDefault().getParser(configuration) == null ? (tableMetaData != null ? new DtraceParser(tableMetaData) : (DtraceParser) null) : DTDCConfigurationAccessor.getDefault().getParser(configuration);
         }
-// super(cmd_dtrace, null,
+        // super(cmd_dtrace, null,
 //            configuration.getParser() == null ? (configuration.getDatatableMetadata() != null && configuration.getDatatableMetadata().size() > 0 ? new DtraceParser(configuration.getDatatableMetadata().get(0)) : (DtraceParser) null) : configuration.getParser(), configuration.getDatatableMetadata());
         this.localScriptPath = DTDCConfigurationAccessor.getDefault().getScriptPath(configuration);
         this.extraArgs = DTDCConfigurationAccessor.getDefault().getArgs(configuration);
@@ -167,7 +170,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
      * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
-    public List<DataStorageType> getSupportedDataStorageTypes() {
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
@@ -175,7 +178,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return true;
     }
 
-    @Override
+//    @Override
     public void init(DataStorage storage, DLightTarget target) {
         this.storage = storage;
         if (isSlave) {
@@ -209,10 +212,11 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return null;
     }
 
-    public List<? extends DataTableMetadata> getDataTablesMetadata() {
+    public List<DataTableMetadata> getDataTablesMetadata() {
         return dataTablesMetadata;
     }
 
+  
     NativeTask getCollectorTaskFor(DLightTarget target) {
         String taskCommand = scriptPath;//"pfexec " + scriptPath;
         if (target instanceof AttachableTarget) {
@@ -234,10 +238,10 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return extraArgs;
     }
 
-    @Override
-    public void targetFinished(DLightTarget target, int result) {
+//    @Override
+    private void targetFinished(DLightTarget target) {
         if (!isSlave) {
-            log.fine("Stopping DtraceDataCollector: " + collectorTask.toString()); // NOI18N
+            log.fine("Stopping DtraceDataCollector: " + collectorTask.getCommand());
             collectorTask.cancel();
             outProcessingThread.interrupt();
         }
@@ -260,7 +264,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
-        ValidationStatus result = ValidationStatus.NOT_VALIDATED;
+        ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
 
@@ -272,20 +276,17 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 
         if (connected) {
             if (fileExists) {
-                result = ValidationStatus.VALID;
+                result = ValidationStatus.validStatus;
             } else {
-                result = new ValidationStatus(
-                        ValidationState.NOT_VALID,
-                        loc("ValidationStatus.CommandNotFound", command)); // NOI18N
+                result = ValidationStatus.invalidStatus(
+                        loc("ValidationStatus.CommandNotFound", // NOI18N
+                        command));
             }
         } else {
-            ConnectionManager cm = ConnectionManager.getInstance();
             ObservableActionListener<Boolean> listener = new ObservableActionListener<Boolean>() {
 
                 public void actionCompleted(Action source, Boolean result) {
-                    if (DLightManager.getDefault().getActiveSession() != null) {
-                        DLightManager.getDefault().getActiveSession().revalidate();
-                    }
+                    DLightManager.getDefault().revalidateSessions();
                 }
 
                 public void actionStarted(Action source) {
@@ -293,10 +294,10 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 }
             };
 
-            ObservableAction<Boolean> connectAction = cm.getConnectAction(target.getExecEnv());
+            ObservableAction<Boolean> connectAction = target.getExecEnv().getConnectToAction();
             connectAction.addObservableActionListener(listener);
 
-            result = new ValidationStatus(ValidationState.UNKNOWN,
+            result = ValidationStatus.unknownStatus(
                     loc("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
         }
@@ -305,7 +306,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 //    ValidationStatus result = super.doValidation(targetToValidate);
         ExecutionEnvironment execEnv = target.getExecEnv();
 
-        if (result.isOK()) {
+        if (result.isValid()) {
 
             // /usr/sbin/dtrace exists...
             // check for permissions ...
@@ -324,8 +325,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             });
 
             if (!status) {
-                result = result.merge(
-                        new ValidationStatus(ValidationState.UNKNOWN,
+                result = result.merge(ValidationStatus.unknownStatus(
                         loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
                         requestPrivilegesAction));
             }
@@ -338,17 +338,14 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
-                if (validationStatus.isOK()) {
+                if (validationStatus.isValid()) {
                     return validationStatus;
                 }
 
                 ValidationStatus oldStatus = validationStatus;
                 ValidationStatus newStatus = doValidation(target);
 
-                if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                        newStatus.getReason().equals(oldStatus.getReason()))) {
-                    notifyStatusChanged(newStatus);
-                }
+                    notifyStatusChanged(oldStatus, newStatus);
 
                 validationStatus = newStatus;
                 return newStatus;
@@ -363,14 +360,14 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 //        }
 //    }
     public void invalidate() {
-        validationStatus = ValidationStatus.NOT_VALIDATED;
+        validationStatus = ValidationStatus.initialStatus;
     }
 
     public ValidationStatus getValidationStatus() {
         return validationStatus;
     }
 
-    public void targetStarted(DLightTarget target) {
+    private void targetStarted(DLightTarget target) {
         if (isSlave) {
             return;
         }
@@ -400,7 +397,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 } catch (InterruptedIOException ex) {
                     log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
                 } catch (ClosedByInterruptException ex) {
-                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it.");
+                    log.fine(Thread.currentThread().getName() + " interrupted. Stop it."); // NOI18N
                 } catch (IOException ex) {
                     log.fine(Thread.currentThread().getName() + " io. Stop it.");
                 //Logger.getLogger(CLIODataCollector.class.getName()).log(Level.SEVERE, null, ex);
@@ -422,11 +419,33 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         validationListeners.remove(listener);
     }
 
-    protected void notifyStatusChanged(ValidationStatus newStatus) {
+    protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+        if (oldStatus.equals(newStatus)) {
+            return;
+        }
         for (ValidationListener validationListener : validationListeners) {
-            validationListener.validationStateChanged(this, newStatus);
+            validationListener.validationStateChanged(this, oldStatus, newStatus);
         }
     }
+
+  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+     switch (newState){
+      case RUNNING :
+        targetStarted(source);
+        break;
+      case FAILED:
+        targetFinished(source);
+         break;
+      case TERMINATED:
+        targetFinished(source);
+         break;
+      case DONE:
+        targetFinished(source);
+         break;
+    }
+  }
+
+    
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 

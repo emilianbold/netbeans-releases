@@ -40,16 +40,16 @@ package org.netbeans.modules.dlight.webstack;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.indicator.impl.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
+import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 
 /**
  *
@@ -67,8 +67,6 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
             new Column("timestamp", Long.class, "Timestamp", null),
             new Column("query", String.class, "SQL Query", null),
             new Column("time", Double.class, "Execution time", null));
-
-/// "`pgrep -x mysqld`"
     final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns);
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
             "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata));

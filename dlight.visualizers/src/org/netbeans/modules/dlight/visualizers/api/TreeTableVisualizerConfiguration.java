@@ -38,111 +38,155 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.impl.TreeTableDataModel;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
 
+/**
+ * This configuration is used to be able to show data collected
+ * in Table View. It supports "model:tree:table" scheme. Which means
+ * if you would like to create own implementation of  implementation of Visualizer DataProvider which will be used by default implementation
+ * of Tree Table visualizer, it should return that it supports model scheme which can be retrieved  using
+ * {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider#getScheme(java.lang.String)} where id equals to "model:tree:table".
+ */
 public class TreeTableVisualizerConfiguration implements VisualizerConfiguration {
-  private DataTableMetadata dataTableMetadata;
-  private Column treeColumn;
-  private Column[] tableColumns;
-  private boolean isPlainTable = false;
 
-  static{
-    TreeTableVisualizerConfigurationAccessor.setDefault(new TreeTableVisualizerConfigurationAccessorImpl());
-  }
+    private DataTableMetadata dataTableMetadata;
+    private Column treeColumn;
+    private Column[] tableColumns;
+    private boolean isPlainTable = false;
 
-  public TreeTableVisualizerConfiguration(String tableName, Column treeColumn, Column[] tableColumns) {
-    this.treeColumn = treeColumn;
-    this.tableColumns = tableColumns;
-    List<Column> columns = Arrays.asList(treeColumn);
-    columns.addAll(Arrays.asList(tableColumns));
-    this.dataTableMetadata = new DataTableMetadata(tableName, columns);
-  }
 
-  public TreeTableVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName) {
-    this(dataTableMetadata, treeColumnName, false);
-
-  }
-
-  public TreeTableVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName, boolean isPlainTable) {
-    setDataTableMetadata(dataTableMetadata, treeColumnName);
-    this.isPlainTable = isPlainTable;
-  }
-
-  protected TreeTableVisualizerConfiguration() {
-  }
-
-  protected void setDataTableMetadata(DataTableMetadata dataTableMetadata, String treeColumnName) {
-    this.dataTableMetadata = dataTableMetadata;
-    this.treeColumn = dataTableMetadata.getColumnByName(treeColumnName);
-    List<Column> columns = dataTableMetadata.getColumns();
-    List<Column> tableColumnsList = new ArrayList<Column>();
-    for (Column c : columns) {
-      if (!c.getColumnName().equals(treeColumnName)) {
-        tableColumnsList.add(c);
-      }
-    }
-    this.tableColumns = tableColumnsList.toArray(new Column[0]);
-
-  }
-
-  boolean isTableView() {
-    return isPlainTable;
-  }
-
-  protected void setTreeColumn(Column treeColumn) {
-    this.treeColumn = treeColumn;
-  }
-
-  public void setTableColumns(Column[] tableColumns) {
-    this.tableColumns = tableColumns;
-  }
-
-  Column[] getTableColumns() {
-    return tableColumns;
-  }
-
-  Column getTreeColumn() {
-    return treeColumn;
-  }
-
-  public DataTableMetadata getMetadata() {
-    return dataTableMetadata;
-  }
-
-  public DataModelScheme getSupportedDataScheme() {
-    return TreeTableDataModel.instance;
-  }
-
-  public String getID() {
-    return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
-  }
-
-  private static final class TreeTableVisualizerConfigurationAccessorImpl extends TreeTableVisualizerConfigurationAccessor{
-
-    @Override
-    public Column[] getTableColumns(TreeTableVisualizerConfiguration configuration) {
-      return configuration.getTableColumns();
+    static {
+        TreeTableVisualizerConfigurationAccessor.setDefault(new TreeTableVisualizerConfigurationAccessorImpl());
     }
 
-    @Override
-    public Column getTreeColumn(TreeTableVisualizerConfiguration configuration) {
-      return configuration.getTreeColumn();
+    /**
+     * Creates new instance of tree table visualizer configuration
+     * @param tableName table name
+     * @param treeColumn
+     * @param tableColumns
+     */
+    private TreeTableVisualizerConfiguration(String tableName, Column treeColumn, Column[] tableColumns) {
+        this.treeColumn = treeColumn;
+        this.tableColumns = tableColumns;
+        List<Column> columns = Arrays.asList(treeColumn);
+        columns.addAll(Arrays.asList(tableColumns));
+        this.dataTableMetadata = new DataTableMetadata(tableName, columns);
     }
 
-    @Override
-    public boolean isTableView(TreeTableVisualizerConfiguration configuration) {
-      return configuration.isTableView();
+    /**
+     * Creates new configuration to create Tree Table Visualizer on the base of, <code>dataTableMetadata</code>
+     * is table description, <code> treeColumnName</code> name of the column which is used in Tree Table View as tree column
+     * @param dataTableMetadata table description
+     * @param treeColumnName the name of the column which will be used as tree column
+     */
+    public TreeTableVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName) {
+        this(dataTableMetadata, treeColumnName, false);
+
     }
-    
-  }
+
+    /**
+     * Creates new configuration to create Tree Table Visualizer on the base of, <code>dataTableMetadata</code>
+     * is table description, <code> treeColumnName</code> name of the column which is used in Tree Table View as tree column
+     * @param dataTableMetadata table description
+     * @param treeColumnName the name of the column which will be used as tree column
+     * @param isPlainTable  <code>true</code> if you would liek to see plain table, <code>false</code> otherwise
+     */
+    public TreeTableVisualizerConfiguration(DataTableMetadata dataTableMetadata, String treeColumnName, boolean isPlainTable) {
+        setDataTableMetadata(dataTableMetadata, treeColumnName);
+        this.isPlainTable = isPlainTable;
+    }
+
+    /**
+     *
+     */
+    protected TreeTableVisualizerConfiguration() {
+    }
+
+    /**
+     * Sets
+     * @param dataTableMetadata
+     * @param treeColumnName
+     */
+    private void setDataTableMetadata(DataTableMetadata dataTableMetadata, String treeColumnName) {
+        this.dataTableMetadata = dataTableMetadata;
+        this.treeColumn = dataTableMetadata.getColumnByName(treeColumnName);
+        List<Column> columns = dataTableMetadata.getColumns();
+        List<Column> tableColumnsList = new ArrayList<Column>();
+        for (Column c : columns) {
+            if (!c.getColumnName().equals(treeColumnName)) {
+                tableColumnsList.add(c);
+            }
+        }
+        this.tableColumns = tableColumnsList.toArray(new Column[0]);
+
+    }
+
+    boolean isTableView() {
+        return isPlainTable;
+    }
+//
+//    /**
+//     *
+//     * @param treeColumn
+//     */
+//    protected void setTreeColumn(Column treeColumn) {
+//        this.treeColumn = treeColumn;
+//    }
+//
+//    /**
+//     * Sets tableColumns
+//     * @param tableColumns
+//     */
+//    void setTableColumns(Column[] tableColumns) {
+//        this.tableColumns = tableColumns;
+//    }
+
+    Column[] getTableColumns() {
+        return tableColumns;
+    }
+
+    Column getTreeColumn() {
+        return treeColumn;
+    }
+
+    public DataTableMetadata getMetadata() {
+        return dataTableMetadata;
+    }
+
+    public DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:tree:table");
+    }
+
+    public String getID() {
+        return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
+    }
+
+    private static final class TreeTableVisualizerConfigurationAccessorImpl extends TreeTableVisualizerConfigurationAccessor {
+
+        @Override
+        public Column[] getTableColumns(TreeTableVisualizerConfiguration configuration) {
+            return configuration.getTableColumns();
+        }
+
+        @Override
+        public Column getTreeColumn(TreeTableVisualizerConfiguration configuration) {
+            return configuration.getTreeColumn();
+        }
+
+        @Override
+        public boolean isTableView(TreeTableVisualizerConfiguration configuration) {
+            return configuration.isTableView();
+        }
+    }
+
 }
 

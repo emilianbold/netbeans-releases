@@ -49,14 +49,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.DataProvider;
-import org.netbeans.modules.dlight.dataprovider.spi.support.TableDataProvider;
-import org.netbeans.modules.dlight.visualizer.spi.Visualizer;
-import org.netbeans.modules.dlight.storage.api.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.visualizer.spi.VisualizerContainer;
 import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -74,9 +74,9 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
     private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
 
-    TableVisualizer(DataProvider provider, final TableVisualizerConfiguration configuration) {
+    TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
         timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
-        this.provider = (TableDataProvider) provider;
+        this.provider =  provider;
         this.configuration = configuration;
 
         tableModel = new AbstractTableModel() {

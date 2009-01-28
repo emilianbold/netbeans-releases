@@ -40,7 +40,6 @@
  */
 package org.netbeans.qa.form.actions;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
@@ -64,6 +63,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -97,10 +97,10 @@ public class actionsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(actionsTest.class).addTest(
-                "testDummy",
-                "testDuplicate",
-                "testEditContainer",
-                "testResizing",
+//                "testDummy",
+//                "testDuplicate",
+//                "testEditContainer",
+//                "testResizing",
                 "testBeans").gui(true).enableModules(".*").clusters(".*"));
     }
 
@@ -313,32 +313,41 @@ public class actionsTest extends JellyTestCase {
 
     /** Test case 5
      * org.netbeans.modules.form.actions.InstallBeanAction 
-     * org.netbeans.modules.form.actions.InstallToPaletteAction 
      */
     public void testBeans() throws InterruptedException {
         String beanName = "MyBean";
 
         createForm("Bean Form", beanName);
-        inspector = new ComponentInspectorOperator();
 
-        new ActionNoBlock("Tools|Palette|Swing/AWT Components", null).performMenu();
+        Thread.sleep(3000);
+
+        //new ActionNoBlock("Tools|Palette|Swing/AWT Components", null).performMenu();
+        Action ac = new Action("Tools|Palette|Swing/AWT Components", null);
+        ac.setComparator(new DefaultStringComparator(true, true));
+        ac.perform();
+
+
         NbDialogOperator nbo = new NbDialogOperator("Palette Manager");
         nbo.btClose().push();
         Thread.sleep(3000);
 
+        inspector = new ComponentInspectorOperator();
         Node beanNode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + beanName);
         beanNode.select();
         new ActionNoBlock(null, "Tools|Add to Palette...").perform(beanNode);
 
         Thread.sleep(2000);
+    }
+
+    /** Test case 6
+     * org.netbeans.modules.form.actions.InstallToPaletteAction
+     */
+    public void testBeans2() throws InterruptedException {
         NbDialogOperator jdo = new NbDialogOperator("Select Palette Category");
         JListOperator jlo = new JListOperator(jdo);
         jlo.selectItem("Beans");
         jdo.btOK().push();
         Thread.sleep(3000);
-
-
-
     }
 
     private void createForm(String formType, String name) throws InterruptedException {
