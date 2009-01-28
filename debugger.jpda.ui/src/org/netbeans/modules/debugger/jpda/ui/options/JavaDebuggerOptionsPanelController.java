@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,45 +34,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+package org.netbeans.modules.debugger.jpda.ui.options;
 
-/**
- * Preferences class 
- * @author mkleint
- */
-public final class DontShowAgainSettings {
-    private static final DontShowAgainSettings INSTANCE = new DontShowAgainSettings();
-    
-    public static DontShowAgainSettings getDefault() {
-        return INSTANCE;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+
+public final class JavaDebuggerOptionsPanelController extends OptionsPanelController {
+
+    private JavaDebuggerPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+
+    public void update() {
+        getPanel().load();
+        changed = false;
     }
 
-    private DontShowAgainSettings() {
-    }
-    
-    protected final Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/showQuestions"); //NOI18N
-    }
-    
-    public boolean showWarningAboutBuildWithDependencies() {
-        return getPreferences().getBoolean("showBuildWithDependenciesWarning", true);//NOI18N
+    public void applyChanges() {
+        getPanel().store();
+        changed = false;
     }
 
-    public void dontShowWarningAboutBuildWithDependenciesAnymore() {
-        getPreferences().putBoolean("showBuildWithDependenciesWarning", false);//NOI18N
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
     }
 
-    public boolean showWarningAboutEmbeddedBuild() {
-        return getPreferences().getBoolean("showEmbeddedBuildWarning", true);//NOI18N
+    public boolean isValid() {
+        return getPanel().valid();
     }
 
-    public void dontshowWarningAboutEmbeddedBuildAnymore() {
-        getPreferences().putBoolean("showEmbeddedBuildWarning", false);//NOI18N
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private JavaDebuggerPanel getPanel() {
+        if (panel == null) {
+            panel = new JavaDebuggerPanel(this);
+        }
+        return panel;
+    }
+
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
 }

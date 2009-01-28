@@ -81,9 +81,36 @@ import org.openide.util.actions.Presenter;
  */
 public class DebuggingActionsProvider implements NodeActionsProvider {
 
-    private Action MAKE_CURRENT_ACTION = Models.createAction (
+    private JPDADebugger debugger;
+    private Session session;
+    private RequestProcessor requestProcessor;
+    private Action POP_TO_HERE_ACTION;
+    private Action MAKE_CURRENT_ACTION;
+    private Action SUSPEND_ACTION;
+    private Action RESUME_ACTION;
+    private Action INTERRUPT_ACTION;
+    private Action COPY_TO_CLBD_ACTION;
+    private Action LANGUAGE_SELECTION;
+
+
+    public DebuggingActionsProvider (ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        MAKE_CURRENT_ACTION = createMAKE_CURRENT_ACTION(requestProcessor);
+        SUSPEND_ACTION = createSUSPEND_ACTION(requestProcessor);
+        RESUME_ACTION = createRESUME_ACTION(requestProcessor);
+        INTERRUPT_ACTION = createINTERRUPT_ACTION(requestProcessor);
+        COPY_TO_CLBD_ACTION = createCOPY_TO_CLBD_ACTION(requestProcessor);
+        POP_TO_HERE_ACTION = createPOP_TO_HERE_ACTION(requestProcessor);
+        LANGUAGE_SELECTION = new LanguageSelection(session);
+    }
+    
+
+    private Action createMAKE_CURRENT_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
-        new LazyActionPerformer () {
+        new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread) {
                     return debugger.getCurrentThread () != node;
@@ -113,10 +140,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     
     );
+    }
 
-    private final Action COPY_TO_CLBD_ACTION = Models.createAction (
+    private Action createCOPY_TO_CLBD_ACTION(RequestProcessor requestProcessor) {
+        return  Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
-        new LazyActionPerformer () {
+        new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 if (node instanceof JPDAThread) {
                     return !DebuggingTreeModel.isMethodInvoking((JPDAThread) node);
@@ -146,6 +175,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    }
 
     static Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
@@ -192,14 +222,18 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         );
     }
 
-    private abstract class LazyActionPerformer implements Models.ActionPerformer {
+    static abstract class LazyActionPerformer implements Models.ActionPerformer {
 
-        public LazyActionPerformer() {}
+        private RequestProcessor rp;
+
+        public LazyActionPerformer(RequestProcessor rp) {
+            this.rp = rp;
+        }
 
         public abstract boolean isEnabled (Object node);
 
         public final void perform (final Object[] nodes) {
-            requestProcessor.post(new Runnable() {
+            rp.post(new Runnable() {
                 public void run() {
                     LazyActionPerformer.this.run(nodes);
                 }
@@ -209,9 +243,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         public abstract void run(Object[] nodes);
     }
 
-    private Action SUSPEND_ACTION = Models.createAction (
+    private Action createSUSPEND_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Suspend_Label"),
-        new LazyActionPerformer () {
+        new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread) {
@@ -237,10 +272,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ALL
     );
+    }
 
-    private Action RESUME_ACTION = Models.createAction (
+    private Action createRESUME_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Resume_Label"),
-        new LazyActionPerformer () {
+        new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread) {
@@ -267,10 +304,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ALL
     
     );
+    }
         
-    private Action INTERRUPT_ACTION = Models.createAction (
+    private Action createINTERRUPT_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
-        new LazyActionPerformer () {
+        new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
                 if (node instanceof JPDAThread)
@@ -293,6 +332,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ALL
     
     );
+    }
         
     private static class LanguageSelection extends AbstractAction implements Presenter.Popup {
 
@@ -326,22 +366,6 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
 
 
         
-    private JPDADebugger debugger;
-    private Session session;
-    RequestProcessor requestProcessor;
-    private Action POP_TO_HERE_ACTION;
-    
-    private Action LANGUAGE_SELECTION;
-
-    
-    public DebuggingActionsProvider (ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        session = lookupProvider.lookupFirst(null, Session.class);
-        requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
-        POP_TO_HERE_ACTION = createPOP_TO_HERE_ACTION(requestProcessor);
-        LANGUAGE_SELECTION = new LanguageSelection(session);
-    }
-    
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) {
             Action[] sa = getSessionActions();

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.java.source;
-
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.openide.util.Parameters;
+package org.netbeans.modules.debugger.jpda.ui.options;
 
 /**
- * Java specific version of the {@link ParserResultTask}. In addition to the
- * {@link ParserResultTask} it adds a support for javac phases.
- * @see JavaSource
- * @since 0.42
- * @author Tomas Zezula
+ *
+ * @author Martin Entlicher
  */
-public abstract class JavaParserResultTask<T extends Parser.Result> extends ParserResultTask<T> {
-
-    private final JavaSource.Phase phase;
+abstract class StorablePanel extends javax.swing.JPanel {
 
     /**
-     * Creates a new JavaParserResultTask
-     * @param phase needed by the task.
+     * Read settings and initialize GUI
      */
-    protected JavaParserResultTask (final @NonNull JavaSource.Phase phase) {
-        Parameters.notNull("phase", phase);
-        this.phase = phase;
-    }
+    abstract void load();
 
     /**
-     * Returns the phase needed by task.
-     * @return the pahse
+     * Store modified settings
      */
-    public final @NonNull JavaSource.Phase getPhase () {
-        return this.phase;
-    }
+    abstract void store();
 
 }
