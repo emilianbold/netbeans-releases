@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 import groovy.lang.MetaMethod;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     private static volatile ImageIcon groovyIcon;
 
     private static volatile ImageIcon javaIcon;
-    
+
     private static volatile ImageIcon newConstructorIcon;
 
     private CompletionItem(GroovyElement element, int anchorOffset) {
@@ -132,8 +132,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
-        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly);
+    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly, boolean prefix) {
+        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly, prefix);
+    }
+
+    public static CompletionItem forDynamicField(int anchorOffset, String name, String type) {
+        return new DynamicFieldItem(anchorOffset, name, type);
     }
 
 //    public static CompletionItem forMetaMethod(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
@@ -302,12 +306,15 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final boolean nameOnly;
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly) {
+        private final boolean prefix;
+
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly, boolean prefix) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
             this.returnType = returnType;
             this.nameOnly = nameOnly;
+            this.prefix = prefix;
         }
 
         @Override
@@ -329,18 +336,21 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             formatter.appendText(name);
 
-            StringBuilder buf = new StringBuilder();
-            // construct signature by removing package names.
-            for (String param : parameters) {
-                if (buf.length() > 0) {
-                    buf.append(", ");
+            if (!prefix) {
+                StringBuilder buf = new StringBuilder();
+                // construct signature by removing package names.
+                for (String param : parameters) {
+                    if (buf.length() > 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
-                buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
+
+                String simpleSig = buf.toString();
+                formatter.appendText("(" + simpleSig + ")");
+            } else {
+                formatter.appendText("..."); // NOI18N
             }
-
-            String simpleSig = buf.toString();
-            formatter.appendText("(" + simpleSig + ")");
-
 
             formatter.name(kind, false);
 

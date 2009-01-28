@@ -47,7 +47,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hejl
  */
-public final class DynamicCompletionContext {
+public final class CompletionContext {
+
+    private final int anchor;
 
     private final FileObject sourceFile;
 
@@ -63,9 +65,11 @@ public final class DynamicCompletionContext {
 
     private final boolean leaf;
 
+    private final boolean nameOnly;
+
     // FIXME - accessor
-    public DynamicCompletionContext(FileObject sourceFile, String sourceClassName, String className,
-            String prefix, boolean staticContext, List<String> properties, boolean leaf) {
+    public CompletionContext(int anchor, FileObject sourceFile, String sourceClassName, String className,
+            String prefix, boolean staticContext, List<String> properties, boolean leaf, boolean nameOnly) {
 
         this.sourceFile = sourceFile;
         this.sourceClassName = sourceClassName;
@@ -74,6 +78,12 @@ public final class DynamicCompletionContext {
         this.staticContext = staticContext;
         this.properties = properties;
         this.leaf = leaf;
+        this.nameOnly = nameOnly;
+        this.anchor = anchor;
+    }
+
+    public int getAnchor() {
+        return anchor;
     }
 
     public String getClassName() {
@@ -103,4 +113,9 @@ public final class DynamicCompletionContext {
     public boolean isLeaf() {
         return leaf;
     }
+
+    public boolean isNameOnly() {
+        return nameOnly;
+    }
+
 }
