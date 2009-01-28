@@ -91,7 +91,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /** Display the "Tools Default" panel */
-public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
+public final class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
         ListSelectionListener, ItemListener {
 
     // The following are constants so I can do == rather than "equals"
