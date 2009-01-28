@@ -129,7 +129,7 @@ class CategoryPanelGeneral extends StorablePanel {
     @Override
     void load() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
-        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         applyCodeChangesCheckBox.setSelected(p.getBoolean("ApplyCodeChangesOnSave", false));
         stopOnExceptionsCheckBox.setSelected(p.getBoolean("CatchExceptions", false));
         breakpointsSuspendComboBox.setSelectedIndex(suspendIndex(p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD)));
@@ -139,7 +139,7 @@ class CategoryPanelGeneral extends StorablePanel {
     @Override
     void store() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
-        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         p.setBoolean("ApplyCodeChangesOnSave", applyCodeChangesCheckBox.isSelected());
         p.setBoolean("CatchExceptions", stopOnExceptionsCheckBox.isSelected());
         p.setInt("BreakpointSuspend", suspendProp(breakpointsSuspendComboBox.getSelectedIndex()));

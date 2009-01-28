@@ -307,7 +307,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <!--folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
@@ -318,5 +318,5 @@ made subject to such option by the copyright holder.
                 <attr name="keywordsCategory" stringvalue="Advanced/JavaDebugger"/>
             </file>
         </folder>
-    </folder-->
+    </folder>
 </filesystem>

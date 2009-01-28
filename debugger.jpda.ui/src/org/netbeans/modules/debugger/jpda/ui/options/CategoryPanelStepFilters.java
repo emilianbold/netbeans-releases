@@ -49,10 +49,13 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
-import javax.security.auth.RefreshFailedException;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
@@ -208,7 +211,7 @@ class CategoryPanelStepFilters extends StorablePanel {
                 ClassFilter cf = (ClassFilter) value;
                 JCheckBox cb = classFilterComponents.get(cf);
                 if (cb == null) {
-                    cb = new JCheckBox(cf.toString(), cf.isCurrent());
+                    cb = new JCheckBox(cf.toString(), cf.isEnabled());
                     classFilterComponents.put(cf, cb);
                 }
                 cb.setEnabled(list.isEnabled());
@@ -231,9 +234,9 @@ class CategoryPanelStepFilters extends StorablePanel {
                 if (x >= 0 && x <= height) {
                     ClassFilter cf = (ClassFilter) list.getModel().getElementAt(index);
                     // Toggle selected state
-                    cf.setCurrent(!cf.isCurrent());
+                    cf.setEnabled(!cf.isEnabled());
                     JCheckBox cb = classFilterComponents.get(cf);
-                    cb.setSelected(cf.isCurrent());
+                    cb.setSelected(cf.isEnabled());
                     // Repaint cell
                     list.repaint(list.getCellBounds(index, index));
                 }
@@ -271,7 +274,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             ClassFilter cf = (ClassFilter) model.get(i);
-            cf.setCurrent(true);
+            cf.setEnabled(true);
             classFilterComponents.get(cf).setSelected(true);
         }
         filterClassesList.repaint();
@@ -281,7 +284,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             ClassFilter cf = (ClassFilter) model.get(i);
-            cf.setCurrent(false);
+            cf.setEnabled(false);
             classFilterComponents.get(cf).setSelected(false);
         }
         filterClassesList.repaint();
@@ -290,47 +293,62 @@ class CategoryPanelStepFilters extends StorablePanel {
     @Override
     void load() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
-        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         useStepFiltersCheckBox.setSelected(p.getBoolean("UseStepFilters", true));
         filterSyntheticCheckBox.setSelected(p.getBoolean("FilterSyntheticMethods", true));
         filterStaticInitCheckBox.setSelected(p.getBoolean("FilterStaticInitializers", false));
         filterConstructorsCheckBox.setSelected(p.getBoolean("FilterConstructors", false));
         //String[] filterClasses = (String[]) pp.getArray("FilterClasses", new String[] {});
-        javax.security.auth.Refreshable[] filterClasses = (javax.security.auth.Refreshable[]) p.getArray("FilterClasses", null);
         DefaultListModel filterClassesModel = (DefaultListModel) filterClassesList.getModel();
-        if (filterClasses != null) {
-            for (javax.security.auth.Refreshable r : filterClasses) {
-                ClassFilter cf;
-                if (r instanceof ClassFilter) {
-                    cf = (ClassFilter) r;
-                } else {
-                    cf = new ClassFilter(r.toString(), r.isCurrent());
-                }
-                filterClassesModel.addElement(cf);
-                //JCheckBox cb = new JCheckBox(cf.toString(), cf.isCurrent());
-                //filterClassesList.add(new ClassFilterComponent(cf));
-                //filterClassesList.add(cb);
-            }
+        Set enabledFilters = (Set) Properties.getDefault ().getProperties ("debugger").
+                getProperties ("sources").getProperties ("class_filters").
+                getCollection (
+                    "enabled",
+                    Collections.EMPTY_SET
+                );
+        Set<String> allFilters = (Set<String>) Properties.getDefault ().getProperties ("debugger").
+                getProperties ("sources").getProperties ("class_filters").
+                getCollection (
+                    "all",
+                    Collections.EMPTY_SET
+                );
+        for (String filter : allFilters) {
+            ClassFilter cf = new ClassFilter(filter, enabledFilters.contains(filter));
+            filterClassesModel.addElement(cf);
         }
         stepThroughFiltersCheckBox.setSelected(p.getBoolean("StepThroughFilters", false));
     }
 
     @Override
     void store() {
-        Properties p = Properties.getDefault().getProperties("Options.JPDA");
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         p.setBoolean("UseStepFilters", useStepFiltersCheckBox.isSelected());
         p.setBoolean("FilterSyntheticMethods", filterSyntheticCheckBox.isSelected());
         p.setBoolean("FilterStaticInitializers", filterStaticInitCheckBox.isSelected());
         p.setBoolean("FilterConstructors", filterConstructorsCheckBox.isSelected());
         ListModel filterClassesModel = filterClassesList.getModel();
-        javax.security.auth.Refreshable[] filterClasses = new javax.security.auth.Refreshable[filterClassesModel.getSize()];
-        for (int i = 0; i < filterClasses.length; i++) {
+        Set<String> allFilters = new LinkedHashSet<String>();
+        Set<String> enabledFilters = new HashSet<String>();
+        int n = filterClassesModel.getSize();
+        for (int i = 0; i < n; i++) {
             ClassFilter cf = (ClassFilter) filterClassesModel.getElementAt(i);
-            //JCheckBox cb = (JCheckBox) filterClassesList.getComponent(i);
-            //ClassFilter cf = new ClassFilter(cb.getText(), cb.isSelected());
-            filterClasses[i] = cf;
+            allFilters.add(cf.toString());
+            if (cf.isEnabled()) {
+                enabledFilters.add(cf.toString());
+            }
         }
-        p.setArray("FilterClasses", filterClasses);
+        Properties.getDefault ().getProperties ("debugger").
+                getProperties ("sources").getProperties ("class_filters").
+                setCollection (
+                    "all",
+                    allFilters
+                );
+        Properties.getDefault ().getProperties ("debugger").
+                getProperties ("sources").getProperties ("class_filters").
+                setCollection (
+                    "enabled",
+                    enabledFilters
+                );
         p.setBoolean("StepThroughFilters", stepThroughFiltersCheckBox.isSelected());
     }
 
@@ -351,7 +369,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     // End of variables declaration//GEN-END:variables
     private Map<ClassFilter, JCheckBox> classFilterComponents = new WeakHashMap<ClassFilter, JCheckBox>();
     
-    private static class ClassFilter implements javax.security.auth.Refreshable {
+    private static class ClassFilter {
 
         private String clazz;
         private boolean enabled;
@@ -362,11 +380,11 @@ class CategoryPanelStepFilters extends StorablePanel {
             this.enabled = enabled;
         }
 
-        public boolean isCurrent() {
+        public boolean isEnabled() {
             return enabled;
         }
 
-        void setCurrent(boolean enabled) {
+        void setEnabled(boolean enabled) {
             this.enabled = enabled;
             //if (checkBox != null) {
             //    checkBox.setSelected(enabled);
@@ -382,13 +400,9 @@ class CategoryPanelStepFilters extends StorablePanel {
             this.clazz = clazz;
         }
 
-        public void refresh() throws RefreshFailedException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
         //JCheckBox getComponent() {
         //    if (checkBox == null) {
-        //        checkBox = new JCheckBox(toString(), isCurrent());
+        //        checkBox = new JCheckBox(toString(), isEnabled());
         //    }
         //    return checkBox;
         //}

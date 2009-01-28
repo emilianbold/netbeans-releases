@@ -41,6 +41,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.netbeans.api.debugger.Properties;
 
 /**
  *
@@ -256,4 +257,38 @@ public class VariablesFormatter {
         this.childrenExpandTestCode = childrenExpandTestCode;
     }
 
+    public static class ReaderWriter implements Properties.Reader {
+
+        public String[] getSupportedClassNames() {
+            return new String[] { VariablesFormatter.class.getName() };
+        }
+
+        public Object read(String className, Properties properties) {
+            String name = properties.getString("name", "<EMPTY>");
+            VariablesFormatter f = new VariablesFormatter(name);
+            f.setEnabled(properties.getBoolean("enabled", f.isEnabled()));
+            f.setClassTypes(properties.getString("classTypes", f.getClassTypesCommaSeparated()));
+            f.setIncludeSubTypes(properties.getBoolean("includeSubTypes", f.isIncludeSubTypes()));
+            f.setValueFormatCode(properties.getString("valueFormatCode", f.getValueFormatCode()));
+            f.setChildrenFormatCode(properties.getString("childrenFormatCode", f.getChildrenFormatCode()));
+            f.setChildrenVariables(properties.getMap("childrenVariables", f.getChildrenVariables()));
+            f.setUseChildrenVariables(properties.getBoolean("useChildrenVariables", f.isUseChildrenVariables()));
+            f.setChildrenExpandTestCode(properties.getString("childrenExpandTestCode", f.getChildrenExpandTestCode()));
+            return f;
+        }
+
+        public void write(Object object, Properties properties) {
+            VariablesFormatter f = (VariablesFormatter) object;
+            properties.setString("name", f.getName());
+            properties.setBoolean("enabled", f.isEnabled());
+            properties.setString("classTypes", f.getClassTypesCommaSeparated());
+            properties.setBoolean("includeSubTypes", f.isIncludeSubTypes());
+            properties.setString("valueFormatCode", f.getValueFormatCode());
+            properties.setString("childrenFormatCode", f.getChildrenFormatCode());
+            properties.setMap("childrenVariables", f.getChildrenVariables());
+            properties.setBoolean("useChildrenVariables", f.isUseChildrenVariables());
+            properties.setString("childrenExpandTestCode", f.getChildrenExpandTestCode());
+        }
+        
+    }
 }
