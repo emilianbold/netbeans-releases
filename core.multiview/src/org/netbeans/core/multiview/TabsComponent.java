@@ -84,7 +84,7 @@ class TabsComponent extends JPanel {
     /** Creates a new instance of TabsComponent */
     public TabsComponent(boolean toolVis) {
         super();
-        bar = AQUA ? new TB() : new JToolBar();
+        bar = new JToolBar();
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         bar.setBorder(b);
         bar.setFloatable(false);
@@ -93,6 +93,8 @@ class TabsComponent extends JPanel {
                 && !isXPTheme()
                 && System.getProperty("java.version").startsWith("1.6") ) {
             bar.setRollover(true);
+        } else if( AQUA ) {
+            bar.setBackground(UIManager.getColor("NbExplorerView.background"));
         }
         
         setLayout(new BorderLayout());
@@ -220,6 +222,9 @@ class TabsComponent extends JPanel {
                 && !isXPTheme()
                 && System.getProperty("java.version").startsWith("1.5")) { //NOI18N
             button.setBorderPainted(false);
+        } else if( AQUA ) {
+            button.putClientProperty("JButton.buttonType", "square");
+            button.putClientProperty("JComponent.sizeVariant", "small");
         }
           
         if (buttonMouseListener == null) {
@@ -461,22 +466,4 @@ class TabsComponent extends JPanel {
         }
         
     }    
-   
-    
-    private static final class TB extends JToolBar {
-
-        public TB() {
-            //Aqua UI will look for this value to ensure the
-            //toolbar is tall enough that the "glow" which paints
-            //outside the combo box bounds doesn't make a mess painting
-            //into other components
-            super( "editorToolbar" );
-        }
-        
-        @Override
-        public String getUIClassID() {
-            return UIManager.get("Nb.Toolbar.ui") == null ? //NOI18N
-                super.getUIClassID() : "Nb.Toolbar.ui"; //NOI18N
-        }
-    }
 }
