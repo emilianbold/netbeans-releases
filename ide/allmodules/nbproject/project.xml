@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                 </context-menu>
             </view>
             <subprojects>
-                <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
+                <!-- To update, run target listed above -->
                 <project>../../ant.browsetask</project>
                 <project>../../ant.debugger</project>
                 <project>../../ant.freeform</project>
