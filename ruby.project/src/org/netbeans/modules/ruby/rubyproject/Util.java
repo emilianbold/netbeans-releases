@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -52,6 +53,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -195,4 +197,20 @@ public final class Util {
         }
         USG_LOGGER.log(logRecord);
     }
+
+    /**
+     * Gets a TestRunner instance for running tests of the given type.
+     * @param testType the
+     * @return a a TestRunner instance or <code>null</code>.
+     */
+    public static TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }
