@@ -78,7 +78,7 @@ class ArtifactWidget extends Widget {
         setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
                     artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getScope(), artifact.getType()}));
+                    artifact.getScope(), artifact.getType(), constructConflictText(node)}));
         defaultCard = createCardContent(scene, artifact, true);
         addChild(defaultCard);
         hiddenCard = createCardContent(scene, artifact, false);
@@ -127,6 +127,23 @@ class ArtifactWidget extends Widget {
         this.currentSearchTerm = searchTerm;
         doHightlightText(searchTerm, hiddenCard);
         doHightlightText(searchTerm, defaultCard);
+    }
+
+    private String constructConflictText(ArtifactGraphNode node) {
+        String toRet = "";
+        for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
+            if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                if (toRet.length() == 0) {
+                    toRet = "<b>Conflicts with:</b>";
+                }
+                toRet = toRet + "<br>" + nd.getArtifact().getVersion();
+                toRet = toRet + " by " + nd.getParent().getArtifact().getId();
+            }
+        }
+        if (toRet.length() > 0) {
+            toRet = toRet + "";
+        }
+        return toRet;
     }
 
     private void doHightlightText(String searchTerm, Widget wid) {
