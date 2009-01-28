@@ -480,7 +480,7 @@ public class NetBeansUtils {
             return matcher.group(1);
         } else {
             throw new IOException(StringUtils.format(
-                    ERROR_CANNOT_GET_USERDIR_STRING, netbeansconf));
+                    ERROR_CANNOT_GET_JAVAHOME_STRING, netbeansconf));
         }
     }
     
@@ -790,6 +790,9 @@ public class NetBeansUtils {
     public static final String ERROR_CANNOT_GET_USERDIR_STRING =
             ResourceUtils.getString(NetBeansUtils.class,
             "NU.error.cannot.get.userdir");//NOI18N
+    public static final String ERROR_CANNOT_GET_JAVAHOME_STRING =
+            ResourceUtils.getString(NetBeansUtils.class,
+            "NU.error.cannot.get.javahome");//NOI18N
     
     public static final long K =
             1024; // NOMAGI
