@@ -167,53 +167,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         wid.checkBackground(target);
     }
     
-    
-    void findNodeByText(String text) {
-//        clearFind();
-//        List<ArtifactGraphNode> found = new ArrayList<ArtifactGraphNode>();
-//        for (ArtifactGraphNode node : getNodes()) {
-//            Artifact art = node.getArtifact().getArtifact();
-//            if (art.getId().contains(text)) {
-//                found.add(node);
-//            }
-//        }
-//        Set<ArtifactGraphNode> toShow = new HashSet<ArtifactGraphNode>();
-//        toShow.addAll(found);
-//        for (ArtifactGraphNode nd : found) {
-//            Widget widget = findWidget(nd);
-////            widget.setBackground(ROOT);
-//            markParent(nd, found, toShow);
-//        }
-//        if (toShow.size() > 0) {
-//            for (ArtifactGraphNode node : getNodes()) {
-//                if (!toShow.contains(node)) {
-//                    findWidget(node).setVisible(false);
-//                }
-//            }
-//            for (ArtifactGraphEdge edge : getEdges()) {
-//                if (!toShow.contains(getEdgeSource(edge)) || !toShow.contains(getEdgeTarget(edge))) {
-//                    findWidget(edge).setVisible(false);
-//                }
-//            }
-//        }
-    }
-    
-    void clearFind() {
-//        for (ArtifactGraphNode nd: getNodes()) {
-//            ArtifactWidget wid = (ArtifactWidget) DependencyGraphScene.this.findWidget(nd);
-//            wid.setBorder (BorderFactory.createLineBorder (10));
-//            wid.label1.setOpaque(false);
-//            wid.label1.setBackground(Color.WHITE);
-//            wid.setVisible(true);
-//        }
-//        for (ArtifactGraphEdge ed : getEdges()) {
-//            Widget wid = DependencyGraphScene.this.findWidget(ed);
-//            wid.setForeground(null);
-//            wid.repaint();
-//            wid.setVisible(true);
-//        }
-    }
-
         Color parents = new Color(219, 197, 191);
         Color parentsLink = new Color(219, 46, 0);
     

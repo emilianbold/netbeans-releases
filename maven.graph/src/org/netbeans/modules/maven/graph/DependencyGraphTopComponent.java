@@ -109,10 +109,17 @@ public class DependencyGraphTopComponent extends TopComponent {
     private void checkFindValue() {
         String val = txtFind.getText().trim();
         if ("".equals(val)) { //NOI18N
-            scene.clearFind();
-        } else {
-            scene.findNodeByText(val);
+            val = null;
         }
+        SearchVisitor visitor = new SearchVisitor(scene);
+        visitor.setSearchString(val);
+        DependencyNode node = scene.getRootGraphNode().getArtifact();
+        node.accept(visitor);
+        scene.validate();
+        scene.repaint();
+        revalidate();
+        repaint();
+
     }
     
     @Override

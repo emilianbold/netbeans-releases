@@ -61,9 +61,12 @@ class ArtifactWidget extends Widget {
     private Widget defaultCard;
     private Widget hiddenCard;
     Widget label1;
+    private ArtifactGraphNode node;
+    private String currentSearchTerm;
 
     ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
         super(scene);
+        this.node = node;
 
         Artifact artifact = node.getArtifact().getArtifact();
         setLayout(LayoutFactory.createCardLayout(this));
@@ -118,6 +121,29 @@ class ArtifactWidget extends Widget {
             } else {
                 setBackground(Color.WHITE);
             }
+        }
+    }
+
+    void hightlightText(String searchTerm) {
+        this.currentSearchTerm = searchTerm;
+        doHightlightText(searchTerm, hiddenCard);
+        doHightlightText(searchTerm, defaultCard);
+    }
+
+    private void doHightlightText(String searchTerm, Widget wid) {
+        LabelWidget firstChild = (LabelWidget) wid.getChildren().get(0);
+        boolean hidden = wid == hiddenCard;
+        if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
+            if (hidden) {
+                firstChild.setBackground(Color.yellow);
+            } else {
+                firstChild.setBackground(Color.YELLOW);
+            }
+            firstChild.setOpaque(true);
+        } else {
+            //reset
+            firstChild.setBackground(Color.WHITE);
+            firstChild.setOpaque(false);
         }
     }
 
