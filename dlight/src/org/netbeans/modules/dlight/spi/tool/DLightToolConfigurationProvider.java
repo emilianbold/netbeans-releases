@@ -42,12 +42,13 @@ package org.netbeans.modules.dlight.spi.tool;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 
 /**
- * Implement this interface whenever you want to create new {@link @org-netbeans-modules-dlight
- * DLightTool instance will be created for
+ * Implement this interface whenever you want to create new {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration} which
+ * is used  DLightTool instance will be created for.
+ * <p>
  * To register your D-Light tool configuration provider add the following to the D-Light filesystem
  * (layer.xml file).
- * <pre>
- * &lt;filesystem&gt;
+  <pre>
+  &lt;filesystem&gt;
     &lt;folder name="DLight"&gt;
         &lt;folder name="ToolConfigurationProviders"&gt;
             &lt;file name="MyDLightToolConfigurationProvider.instance"&gt;
@@ -56,14 +57,14 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
         &lt;/folder&gt;
     &lt;/folder&gt;
 &lt;/filesystem&gt;
- * </pre>
+  </pre>
  */
  
 public interface DLightToolConfigurationProvider {
   /**
    * Please be aware that instance returned by this method should be
    * new every time this method is invoked
-   * @return new instance of {@link org.netbeans.modules.dlight.modules.tool.api.DLightToolConfiguration}
+   * @return new instance of {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration}
    */
   public DLightToolConfiguration create();
 }

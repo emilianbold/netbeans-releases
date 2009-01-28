@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
-import org.netbeans.modules.dlight.core.stack.model.Function;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 
 public class FunctionImpl implements Function {
 

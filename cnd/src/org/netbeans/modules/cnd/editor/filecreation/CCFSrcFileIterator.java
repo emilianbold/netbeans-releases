@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -98,7 +99,9 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
 
     protected WizardDescriptor.Panel<WizardDescriptor> createPanel(TemplateWizard wiz) {
         DataObject dobj = wiz.getTemplate();
-        MIMEExtensions extensions = MIMEExtensions.get(dobj.getPrimaryFile().getMIMEType());
+        FileObject fobj = dobj.getPrimaryFile();
+        String mimeType = fobj.getMIMEType();
+        MIMEExtensions extensions = MIMEExtensions.get(mimeType);
         if (extensions != null) {
             Project project = Templates.getProject(wiz);
             Sources sources = ProjectUtils.getSources(project);
@@ -114,7 +117,13 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
                     }
                 }
             }
-            return new NewCndFileChooserPanel(project, groups, null, extensions);
+            String defaultExt = null; // let the chooser panel decide default extension
+            if (mimeType.equals(MIMENames.SHELL_MIME_TYPE)) {
+                // for shell scripts set default extension explicitly
+                defaultExt = fobj.getExt();
+            }
+            NewCndFileChooserPanel panel = new NewCndFileChooserPanel(project, groups, null, extensions, defaultExt);
+            return panel;
         } else {
             return wiz.targetChooser();
         }

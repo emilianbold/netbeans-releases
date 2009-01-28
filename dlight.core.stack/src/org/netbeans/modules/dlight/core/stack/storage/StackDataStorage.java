@@ -39,8 +39,8 @@
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
  * @author Alexey Vladykin

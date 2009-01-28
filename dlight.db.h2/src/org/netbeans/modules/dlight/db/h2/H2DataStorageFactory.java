@@ -41,17 +41,19 @@ package org.netbeans.modules.dlight.db.h2;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position=10)
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
-static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
+
+  static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
   private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
   public H2DataStorageFactory() {

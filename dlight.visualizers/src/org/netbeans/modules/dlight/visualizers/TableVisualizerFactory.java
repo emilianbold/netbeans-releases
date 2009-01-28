@@ -4,18 +4,19 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.support.TableDataProvider;
+import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
 public final class TableVisualizerFactory implements VisualizerFactory<TableVisualizerConfiguration> {
 
   public String getID() {

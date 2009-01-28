@@ -91,7 +91,6 @@ import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 
@@ -628,7 +627,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
     } // End of inner class PropertiesOpenAt.
 
-    
+
     /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
@@ -646,7 +645,13 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
         }
-        
+
+        @Override
+        protected void componentHidden() {
+            ((BundleEditPanel)getComponent(0)).getTable().firePropertyChange("componentHidden", 0, 1);  //NOI18N
+            super.componentHidden();
+        }
+
         /** Constructor.
         * @param propDataObject data object we belong to */
         public PropertiesCloneableTopComponent (PropertiesDataObject propDataObject) {
@@ -1004,10 +1009,10 @@ public class PropertiesOpen extends CloneableOpenSupport
     } // End of nested class PropertiesCloneableTopComponent.
 
 
-    /** 
-     * {@code UndoRedo} manager for {@code PropertiesOpen} support. It contains weak references 
-     * to all UndoRedo managers from all PropertiesEditor supports (for each entry of dataobject one manager). 
-     * It uses it's "timeStamp" methods to find out which one of these managers comes to play. 
+    /**
+     * {@code UndoRedo} manager for {@code PropertiesOpen} support. It contains weak references
+     * to all UndoRedo managers from all PropertiesEditor supports (for each entry of dataobject one manager).
+     * It uses it's "timeStamp" methods to find out which one of these managers comes to play.
      */
     private static class CompoundUndoRedoManager implements UndoRedo {
         

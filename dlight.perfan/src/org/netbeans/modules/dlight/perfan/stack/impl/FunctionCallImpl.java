@@ -39,9 +39,9 @@
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
 import java.util.Map;
-import org.netbeans.modules.dlight.core.stack.model.Function;
-import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
  * This class holds metric values for Function calls.

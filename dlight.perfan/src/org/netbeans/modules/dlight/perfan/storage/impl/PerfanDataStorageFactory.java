@@ -44,11 +44,13 @@ import java.util.Collection;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
 public final class PerfanDataStorageFactory implements DataStorageFactory<PerfanDataStorage>{
   static final String ID = "PerfanDataStorage";
   static final Collection<DataStorageType> supportedTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));

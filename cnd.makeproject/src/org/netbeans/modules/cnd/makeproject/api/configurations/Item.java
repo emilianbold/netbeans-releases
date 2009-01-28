@@ -373,7 +373,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         Folder curFolder = getFolder();
         if (curFolder != null) {
             Project project = curFolder.getProject();
-            return project.getLookup().lookup(NativeProject.class);
+            if (project != null) {
+                return project.getLookup().lookup(NativeProject.class);
+            }
         }
         return null;
     }

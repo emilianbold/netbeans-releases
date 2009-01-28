@@ -57,12 +57,13 @@ public class StreamRedirector extends Thread {
     private static final void stopIfInterrupted() throws InterruptedException {
         Thread.yield();
         if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException("Stopped by stopIfInterrupted()"); // NOI18N
+            throw new InterruptedException(
+                    "Stopped by stopIfInterrupted()"); // NOI18N
         }
     }
 
     public StreamRedirector(Reader reader, Writer writer, String name) {
-        super("Stream redirection thread " + name);
+        super("Stream redirection thread " + name); // NOI18N
         this.reader = reader;
         this.writer = writer;
         this.name = name;
@@ -74,7 +75,7 @@ public class StreamRedirector extends Thread {
     }
 
     public StreamRedirector(InputStream is, Writer writer, String name) {
-        this(Channels.newReader(Channels.newChannel(is), "UTF-8"),
+        this(Channels.newReader(Channels.newChannel(is), "UTF-8"), // NOI18N
                 writer, name);
     }
 
@@ -90,9 +91,9 @@ public class StreamRedirector extends Thread {
             return;
         }
 
-        log.fine("StreamRedirector " + name + " started in thread " + Thread.currentThread().toString()); // NOI18N
+        log.fine("StreamRedirector " + name + " started in thread " + // NOI18N
+                Thread.currentThread().toString());
 
-//      PrintWriter bwriter = new PrintWriter(writer);
         BufferedReader breader = new BufferedReader(reader);
         try {
             String line;
@@ -107,10 +108,12 @@ public class StreamRedirector extends Thread {
             if (ex.getCause() instanceof InterruptedException) {
                 // OK ... expected
             } else {
-                log.severe("IOException in StreamRedirector " + name + ": " + ex.toString()); // NOI18N
+                log.severe("IOException in StreamRedirector " + name + // NOI18N
+                        ": " + ex.toString()); // NOI18N
             }
         } catch (Exception ex) {
-            log.severe("Exception in StreamRedirector " + name + ": " + ex.toString()); // NOI18N
+            log.severe("Exception in StreamRedirector " + name + // NOI18N
+                    ": " + ex.toString()); // NOI18N
         }
 
     }
