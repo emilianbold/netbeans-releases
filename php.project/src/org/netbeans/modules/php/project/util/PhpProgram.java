@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public abstract class PhpProgram {
-    private static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
+    protected static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
     private static final String[] NO_PARAMETERS = new String[0];
 
     private final String program;
