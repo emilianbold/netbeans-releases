@@ -297,7 +297,10 @@ final class ResultPanelTree extends JPanel
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
             }
         }
-        node.getPreferredAction().actionPerformed(null);
+        Locator locator = node.getLookup().lookup(Locator.class);
+        if (locator != null) {
+            locator.jumpToSource(node);
+        }
     }
 
     private List<TestMethodNode> getFailedTestMethodNodes() {

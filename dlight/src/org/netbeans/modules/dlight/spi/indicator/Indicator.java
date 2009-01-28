@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
@@ -63,155 +62,154 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  *  <li> Create own org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration
  *  <li> Extend Indicator with the specialization for your configuration
  *  <li> Create and register in Global Lookup factory to create
- *   your Indicator instance: {@link org.netbeans.modules.dlight.indicator.spi.IndicatorFactory}
+ *   your Indicator instance: {@link org.netbeans.modules.dlight.spi.indicator.IndicatorFactory}
  * </ul>
  *
+ * @param <T> configuration indicator can be built on the base of
  */
 public abstract class Indicator<T extends IndicatorConfiguration> {
-  
-  private final ConfigurationData configurationData;
-  private final IndicatorMetadata metadata;
-  private String toolName;
-  private final List<IndicatorActionListener> listeners;
+
+    private final IndicatorMetadata metadata;
+    private String toolName;
+    private final List<IndicatorActionListener> listeners;
 
 
-  static {
-    IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
-  }
-  
-  private VisualizerConfiguration visualizerConfiguraiton;
-
-  
-
-  protected final void notifyListeners() {
-    for (IndicatorActionListener l : listeners) {
-      l.mouseClickedOnIndicator(this);
+    static {
+        IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
     }
-  }
+    private VisualizerConfiguration visualizerConfiguraiton;
 
-  protected Indicator(T configuration) {
-    listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
-    this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
-    this.visualizerConfiguraiton = IndicatorConfigurationAccessor.getDefault().getVisualizerConfiguration(configuration);
-    this.configurationData = IndicatorConfigurationAccessor.getDefault().getConfigurationData(configuration);
-    
-  }
-
-
-  private void initMouseListener(){
-    getComponent().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        notifyListeners();
-      }
-    });
-  }
-
-  void setToolName(String toolName){
-    this.toolName = toolName;
-  }
-  
-  VisualizerConfiguration getVisualizerConfiguration() {
-    return visualizerConfiguraiton;
-  }
-
-  void addIndicatorActionListener(IndicatorActionListener l) {
-    if (!listeners.contains(l)) {
-      listeners.add(l);
+    protected final void notifyListeners() {
+        for (IndicatorActionListener l : listeners) {
+            l.mouseClickedOnIndicator(this);
+        }
     }
-  }
-  
 
-  void removeIndicatorActionListener(IndicatorActionListener l) {
-    listeners.remove(l);
-  }
+    protected Indicator(T configuration) {
+        listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
+        this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
+        this.visualizerConfiguraiton = IndicatorConfigurationAccessor.getDefault().getVisualizerConfiguration(configuration);
 
-  /**
-   * Invoked when new data is occurred.
-   * @param data data added
-   */
-  public abstract void updated(List<DataRow> data);
+    }
 
-  /**
-   * Resets to the initial state
-   */
-  public abstract void reset();
+    private void initMouseListener() {
+        getComponent().addMouseListener(new MouseAdapter() {
 
-  /**
-   * Returns indicator metadata
-   * @return metada - list of columns 
-   */
-  public IndicatorMetadata getMetadata() {
-    return metadata;
-  }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                notifyListeners();
+            }
+        });
+    }
 
-  /**
-   * Returns list of columns
-   * @return
-   */
-  protected List<Column> getMetadataColumns() {
-    return metadata.getColumns();
-  }
+    void setToolName(String toolName) {
+        this.toolName = toolName;
+    }
 
-  protected String getMetadataColumnName(int idx) {
-    Column col = metadata.getColumns().get(idx);
-    return col.getColumnName();
-  }
+    VisualizerConfiguration getVisualizerConfiguration() {
+        return visualizerConfiguraiton;
+    }
 
-  /**
-   * Returns component this indicator will paint data at
-   * @return component this indicator will paint own data at
-   */
-  public abstract JComponent getComponent();
+    void addIndicatorActionListener(IndicatorActionListener l) {
+        if (!listeners.contains(l)) {
+            listeners.add(l);
+        }
+    }
 
-  
+    void removeIndicatorActionListener(IndicatorActionListener l) {
+        listeners.remove(l);
+    }
+
+    /**
+     * Invoked when new data is occurred.
+     * @param data data added
+     */
+    public abstract void updated(List<DataRow> data);
+
+    /**
+     * Resets to the initial state
+     */
+    public abstract void reset();
+
+    /**
+     * Returns indicator metadata
+     * @return metada - list of columns
+     */
+    public IndicatorMetadata getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * Returns list of columns
+     * @return return columns of {@link #getMetadata() }
+     */
+    protected List<Column> getMetadataColumns() {
+        return metadata.getColumns();
+    }
+
+    /**
+     * Return column name for the column with index <code>idx</code>
+     * @param idx index of column to get name of
+     * @return column name, <code>null</code> if there is no column with the index <code>idx</code>
+     */
+    protected String getMetadataColumnName(int idx) {
+        if (idx < 0 || idx >= metadata.getColumnsCount()) {
+            return null;
+        }
+        Column col = metadata.getColumns().get(idx);
+        return col.getColumnName();
+    }
+
+    /**
+     * Returns component this indicator will paint data at
+     * @return component this indicator will paint own data at
+     */
+    public abstract JComponent getComponent();
 
 //  public final Indicator create(IndicatorConfiguration configuration);
 //    return new
 //  }
-  private static class IndicatorAccessorImpl extends IndicatorAccessor {
+    private static class IndicatorAccessorImpl extends IndicatorAccessor {
 
-    @Override
-    public void setToolName(Indicator ind, String toolName) {
-      ind.setToolName(toolName);
+        @Override
+        public void setToolName(Indicator ind, String toolName) {
+            ind.setToolName(toolName);
+        }
+
+        @Override
+        public List<Column> getMetadataColumns(Indicator indicator) {
+            return indicator.getMetadataColumns();
+        }
+
+        @Override
+        public String getMetadataColumnName(Indicator indicator, int idx) {
+            return indicator.getMetadataColumnName(idx);
+        }
+
+        @Override
+        public VisualizerConfiguration getVisualizerConfiguration(Indicator indicator) {
+            return indicator.getVisualizerConfiguration();
+        }
+
+        @Override
+        public void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+            indicator.addIndicatorActionListener(l);
+        }
+
+        @Override
+        public void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+            indicator.removeIndicatorActionListener(l);
+        }
+
+        @Override
+        public String getToolName(Indicator ind) {
+            return ind.toolName;
+        }
+
+        @Override
+        public void initMouseListener(Indicator indicator) {
+            indicator.initMouseListener();
+        }
     }
-
-    @Override
-    public List<Column> getMetadataColumns(Indicator indicator) {
-      return indicator.getMetadataColumns();
-    }
-
-    @Override
-    public String getMetadataColumnName(Indicator indicator, int idx) {
-      return indicator.getMetadataColumnName(idx);
-    }
-
-    @Override
-    public VisualizerConfiguration getVisualizerConfiguration(Indicator indicator) {
-      return indicator.getVisualizerConfiguration();
-    }
-
-    @Override
-    public void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
-      indicator.addIndicatorActionListener(l);
-    }
-
-    @Override
-    public void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
-      indicator.removeIndicatorActionListener(l);
-    }
-
-    @Override
-    public String getToolName(Indicator ind) {
-      return ind.toolName;
-    }
-
-    @Override
-    public void initMouseListener(Indicator indicator) {
-      indicator.initMouseListener();
-    }
-
-
-  }
 
 }

@@ -67,8 +67,6 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
             new Column("timestamp", Long.class, "Timestamp", null),
             new Column("query", String.class, "SQL Query", null),
             new Column("time", Double.class, "Execution time", null));
-
-/// "`pgrep -x mysqld`"
     final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns);
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
             "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata));

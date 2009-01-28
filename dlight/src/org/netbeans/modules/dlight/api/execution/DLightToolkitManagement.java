@@ -39,18 +39,32 @@
 package org.netbeans.modules.dlight.api.execution;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.util.Lookup;
 
 /**
  * Use this class to start D-Light'ing process.
  * <pre>
-      NativeExecutableTargetConfiguration targetConfiguration = new NativeExecutableTargetConfiguration(application, arguments, environment);;
-      DLightTarget target = new NativeExecutableTarget(targetConfiguration);
-      DLightSessionReference session = DLightToolkitManagement.getInstance().createSession(target, "MyFavoriteConfiguration");
-      DLightToolkitManagement.getInstance().startSession(session);
+    final NativeExecutableTarget target = new NativeExecutableTarget(new NativeExecutableTargetConfiguration(application, arguments, environment));
+    final DLightToolkitManagement dtm = DLightToolkitManagement.getInstance();
+    final Future&lt;DLightToolkitManagement.DLightSessionHandler&gt; sessionCreationTask = dtm.createSession(target, "Gizmo);
+    new Thread(new Runnable() {
+        public void run() {
+            try {
+                dtm.startSession(sessionCreationTask.get());
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+     }).start();
+
  </pre>
  */
 public final class DLightToolkitManagement {
@@ -103,13 +117,36 @@ public final class DLightToolkitManagement {
   &lt;/folder&gt;
 &lt;/filesystem&gt;
 </pre>
+   * Example of usage:
+               <pre>
+    final NativeExecutableTarget target = new NativeExecutableTarget(new NativeExecutableTargetConfiguration(application, arguments, environment));
+    final DLightToolkitManagement dtm = DLightToolkitManagement.getInstance();
+    final Future&lt;DLightToolkitManagement.DLightSessionHandler&gt; sessionCreationTask = dtm.createSession(target, "Gizmo);
+    new Thread(new Runnable() {
+        public void run() {
+            try {
+                dtm.startSession(sessionCreationTask.get());
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+     }).start();
+            </pre>   
    * @param target target to be d-lighted
    * @param configurationName configuration name to be used 
    * @return session handler, this handler should be used to start {@link #startSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) }
    * or stop {@link #stopSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) } session.
    */
-  public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
-    return toolkitManager.createSession(target, configurationName);
+  public Future<DLightSessionHandler> createSession(
+          final DLightTarget target,
+          final String configurationName) {
+      return DLightExecutorService.service.submit(new Callable<DLightSessionHandler>() {
+            public DLightSessionHandler call() throws Exception {
+                return toolkitManager.createSession(target, configurationName);
+            }
+        });
   }
 
 

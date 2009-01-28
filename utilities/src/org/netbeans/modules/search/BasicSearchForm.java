@@ -128,7 +128,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * be initialized at all if the user keeps the field "Replace With:"
              * empty. One of the side-effects would be that method
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
-            searchCriteria.setReplaceString("");                        //NOI18N
+            searchCriteria.setReplaceExpr("");                        //NOI18N
         }
 
         /*
@@ -407,7 +407,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     searchCriteria.setFileNamePattern(text);
                 } else {
                     assert sourceComboBox == cboxReplacement;
-                    searchCriteria.setReplaceString(text);
+                    searchCriteria.setReplaceExpr(text);
                 }
             }
         }
@@ -436,7 +436,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.addItemListener(this);
 
         boolean regexp = chkRegexp.isSelected();
-        chkCaseSensitive.setEnabled(!regexp);
         chkWholeWords.setEnabled(!regexp);
 
         searchCriteria.setUsabilityChangeListener(this);
@@ -585,7 +584,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (toggle == chkRegexp) {
             searchCriteria.setRegexp(selected);
             updateTextPatternColor();
-            chkCaseSensitive.setEnabled(!selected);
             chkWholeWords.setEnabled(!selected);
             lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {

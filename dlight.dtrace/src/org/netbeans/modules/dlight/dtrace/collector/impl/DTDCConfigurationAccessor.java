@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.impl;
 
-import com.sun.org.apache.xerces.internal.parsers.DTDConfiguration;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -60,7 +59,7 @@ public abstract class DTDCConfigurationAccessor {
 
         try {
             Class.forName(DTDCConfiguration.class.getName(), true,
-                    DTDConfiguration.class.getClassLoader());
+                    DTDCConfiguration.class.getClassLoader());
         } catch (Exception e) {
         }
         return DEFAULT;

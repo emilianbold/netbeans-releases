@@ -51,7 +51,7 @@ public interface SubstitutableTarget {
   /**
    * Returns <code>true</code> if this target can be substituted.
    * There are collectors that cannot be attachable to
-   * target (method {@link org.netbeans.modules.spi.collector.DataCollector#isAttachable()}
+   * target (method {@link org.netbeans.modules.dlight.spi.collector.DataCollector#isAttachable() }
    * returns false), for example to collect synchronization data using SunStudio
    * Performance Analyzer you should run your application as following:
    * <code>collect -s &lt;application&gt; &lt;args&gt; </code>.

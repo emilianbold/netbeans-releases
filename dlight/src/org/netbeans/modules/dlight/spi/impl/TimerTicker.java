@@ -90,7 +90,7 @@ public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfigurati
 
    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
         switch (newState) {
-            case STARTING:
+            case RUNNING:
                 targetStarted(source);
                 return;
             case FAILED:

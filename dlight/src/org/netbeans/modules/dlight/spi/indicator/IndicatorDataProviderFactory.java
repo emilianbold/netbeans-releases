@@ -36,32 +36,32 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.indicator;
 
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 
-
 /**
- * Factory to create {@link org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider} instance.
+ * Factory to create {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} instance.
  * Please register your factory in the Global Lookup.
+ * @param <T> indicator data provider configuration implementation that this factory can create
+ * {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} instances on the base of
  */
 public interface IndicatorDataProviderFactory<T extends IndicatorDataProviderConfiguration> {
 
-  /**
-   * Creates new instance of {@link org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider} on
-   * the base of <code>configuration</code>
-   * @param configuration configuration to create {@link org.netbeans.modules.dlight.indicator.spi.IndicatorDataProvider} on the base of
-   * @return newly created instance
-   */
-  IndicatorDataProvider<T> create(T configuration);
+    /**
+     * Creates new instance of {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} on
+     * the base of <code>configuration</code>
+     * @param configuration configuration to create {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} on the base of
+     * @return newly created instance
+     */
+    IndicatorDataProvider<T> create(T configuration);
 
-  /**
-   * Unique id, it is used by infrastructure to compare with the
-   *  {@link org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration#getID() }
-   *  to find the proper factory.
-   * @return unique ID, should be the same as configuration  id this factory can create Indicator  DataProvider for for
-   *
-   */
-  String getID();
+    /**
+     * Unique id, it is used by infrastructure to compare with the
+     *  {@link org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration#getID() }
+     *  to find the proper factory.
+     * @return unique ID, should be the same as configuration  id this factory can create Indicator  DataProvider for for
+     *
+     */
+    String getID();
 }

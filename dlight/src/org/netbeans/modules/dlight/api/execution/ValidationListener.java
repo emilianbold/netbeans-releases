@@ -41,9 +41,8 @@ package org.netbeans.modules.dlight.api.execution;
 
 /**
  *
- * @author ak119685
  */
 public interface ValidationListener {
     public void validationStateChanged(Validateable source, 
-            Validateable.ValidationStatus oldStatus, Validateable.ValidationStatus newStatus);
+            ValidationStatus oldStatus, ValidationStatus newStatus);
 }
