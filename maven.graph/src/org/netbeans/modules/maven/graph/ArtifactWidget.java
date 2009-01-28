@@ -57,6 +57,10 @@ import org.openide.util.NbBundle;
 class ArtifactWidget extends Widget {
     final Color ROOT = new Color(71, 215, 217);
     final Color DIRECTS = new Color(154, 215, 217);
+    final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
+    final Color HIGHTLIGHT = new Color(255, 255, 129);
+    final Color DISABLE_CONFLICT = new Color(255, 168, 168);
+    final Color CONFLICT = new Color(255, 103, 103);
 
     private Widget defaultCard;
     private Widget hiddenCard;
@@ -70,8 +74,6 @@ class ArtifactWidget extends Widget {
 
         Artifact artifact = node.getArtifact().getArtifact();
         setLayout(LayoutFactory.createCardLayout(this));
-        setOpaque(true);
-        checkBackground(node);
 
         setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
@@ -84,13 +86,6 @@ class ArtifactWidget extends Widget {
         LayoutFactory.setActiveCard(this, defaultCard);
     }
 
-    public void setTextBackGround(Paint pnt) {
-        label1.setOpaque(true);
-        label1.setBackground(pnt);
-        label1.setVisible(true);
-        label1.repaint();
-//            DependencyGraphScene.this.repaint();
-    }
 
     public void switchToHidden() {
         LayoutFactory.setActiveCard(this, hiddenCard);
@@ -104,11 +99,11 @@ class ArtifactWidget extends Widget {
         this.revalidate();
     }
 
-    public void checkBackground(ArtifactGraphNode node) {
+    public void checkBackground(ArtifactGraphNode node, Widget widget, boolean shown) {
         if (node.isRoot()) {
-            setBackground(new GradientPaint(0, 0, ROOT, 100, 50, Color.WHITE));
+            widget.setBackground(new GradientPaint(0, 0, ROOT, 100, 50, Color.WHITE));
         } else if (node.getPrimaryLevel() == 1) {
-            setBackground(new GradientPaint(0, 0, DIRECTS, 15, 15, Color.WHITE));
+            widget.setBackground(new GradientPaint(0, 0, DIRECTS, 15, 15, Color.WHITE));
         } else {
             boolean conflict = false;
             for (DependencyNode src : node.getDuplicatesOrConflicts()) {
@@ -117,9 +112,13 @@ class ArtifactWidget extends Widget {
                 }
             }
             if (conflict) {
-                setBackground(new GradientPaint(0, 0, Color.RED, 15, 15, Color.WHITE));
+                if (shown) {
+                    widget.setBackground(new GradientPaint(0, 0, CONFLICT, 15, 15, Color.WHITE));
+                } else {
+                    widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, 15, 15, Color.WHITE));
+                }
             } else {
-                setBackground(Color.WHITE);
+                widget.setBackground(Color.WHITE);
             }
         }
     }
@@ -135,9 +134,9 @@ class ArtifactWidget extends Widget {
         boolean hidden = wid == hiddenCard;
         if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
             if (hidden) {
-                firstChild.setBackground(Color.yellow);
+                firstChild.setBackground(DISABLE_HIGHTLIGHT);
             } else {
-                firstChild.setBackground(Color.YELLOW);
+                firstChild.setBackground(HIGHTLIGHT);
             }
             firstChild.setOpaque(true);
         } else {
@@ -154,6 +153,8 @@ class ArtifactWidget extends Widget {
         } else {
             root.setBorder(BorderFactory.createLineBorder(10,Color.lightGray));
         }
+        checkBackground(node, root, shown);
+        root.setOpaque(true);
         root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
         LabelWidget lbl = new LabelWidget(scene);
         lbl.setLabel(artifact.getArtifactId() + "  ");

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven.graph;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.Set;
@@ -51,7 +50,6 @@ import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
-import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
@@ -164,33 +162,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             ArtifactGraphNode target) {
         ArtifactWidget wid = (ArtifactWidget)findWidget(target);
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(wid));
-        wid.checkBackground(target);
     }
-    
-        Color parents = new Color(219, 197, 191);
-        Color parentsLink = new Color(219, 46, 0);
-    
-//        private void markParent(ArtifactGraphNode target, List<ArtifactGraphNode> excludes, Set<ArtifactGraphNode> collect) {
-//            Collection<ArtifactGraphEdge> col = DependencyGraphScene.this.findNodeEdges(target, false, true);
-//            for (ArtifactGraphEdge edge : col) {
-//                ArtifactGraphNode source = DependencyGraphScene.this.getEdgeSource(edge);
-////                Widget wid2 = DependencyGraphScene.this.findWidget(edge);
-////                wid2.setForeground(parentsLink);
-//////                DependencyGraphScene.this.getSceneAnimator().animateBackgroundColor(wid2, parentsLink);
-////                getSceneAnimator().animateForegroundColor(wid2, parentsLink);
-//                if (!excludes.contains(source)) {
-//                    ArtifactWidget wid = (ArtifactWidget) DependencyGraphScene.this.findWidget(source);
-//                    wid.setTextBackGround(parents);
-////                    getSceneAnimator().animateBackgroundColor(wid.label1, parents);
-//                }
-//                if (collect != null) {
-//                    collect.add(source);
-//                }
-//                markParent(source, excludes, collect);
-//            }
-//        }
-    
-    
     
     private class MySelectProvider implements SelectProvider {
         
@@ -229,23 +201,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         public void selectionChanged(ObjectSceneEvent state,
                                      Set<Object> oldSet,
                                      Set<Object> newSet) {
-//            clearFind();
-//            for (Object obj : newSet) {
-//                Widget widget = findWidget(obj);
-//                widget.setBorder(BorderFactory.createSwingBorder(DependencyGraphScene.this, javax.swing.BorderFactory.createLineBorder(Color.BLACK, 5)));
-//
-//                if (obj instanceof ArtifactGraphNode) {
-//                    ArtifactGraphNode art = (ArtifactGraphNode)obj;
-////                    for (ArtifactGraphEdge edge : findNodeEdges(art, true, false)) {
-////                        Widget wid = findWidget(DependencyGraphScene.this.getEdgeTarget(edge));
-////                        wid.setOpaque(true);
-////                        getSceneAnimator().animateBackgroundColor(wid, DIRECTS);
-////                    }
-//                    markParent(art, new ArrayList<ArtifactGraphNode>(), new HashSet<ArtifactGraphNode>());
-//                }
-//            }
-//            DependencyGraphScene.this.repaint();
-            
+
+
         }
 
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
