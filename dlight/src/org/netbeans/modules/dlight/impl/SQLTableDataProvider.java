@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
-import org.netbeans.modules.dlight.spi.support.*;
+import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class SQLTableDataProvider implements TableDataProvider {
     List<Column> columns = tableMetadata.getColumns();
     List<DataRow> result = new ArrayList<DataRow>();
     try {
-      ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getSQL());
+      ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
       if (rs == null) {
         return Collections.emptyList();
       }

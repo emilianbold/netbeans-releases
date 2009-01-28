@@ -44,15 +44,15 @@ import javax.swing.JComponent;
 
 /**
  * Visualizer represents Datailed View of data collected
- * using {@link org.netbeans.modules.dlight.collector.spi.DataCollector}.
- * Visualizer should get data from  {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider}.
+ * using {@link org.netbeans.modules.dlight.spi.collector.DataCollector}.<br>
+ * Visualizer should get data from  {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider}.
  * 
+ * @param <T>  Visualizer configuration this Visualizer can be created on the base of
  */
-
 public interface Visualizer<T extends VisualizerConfiguration> {
   /**
    * Visualizer configuration this visualizer was created on the base of
-   * @return {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration}
+   * @return {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
    */
   T getVisualizerConfiguration();
   /**

@@ -55,12 +55,15 @@ public class PasswordDlg extends javax.swing.JPanel {
     }
 
     public boolean askPassword(String message) {
-        tfHost.setText(loc("MSG_Message", message));
+        tfHost.setText(loc("MSG_Message", message)); // NOI18N
 
         DialogDescriptor dd = new DialogDescriptor(this,
-                loc("TITLE_Password"), true,
-                new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
-                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                loc("TITLE_Password"), true, // NOI18N
+                new Object[]{
+                    DialogDescriptor.OK_OPTION,
+                    DialogDescriptor.CANCEL_OPTION},
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
@@ -145,14 +148,14 @@ public class PasswordDlg extends javax.swing.JPanel {
 
     layout.linkSize(new java.awt.Component[] {tfHost, tfPassword}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-    tfPassword.getAccessibleContext().setAccessibleName("null");
-    tfPassword.getAccessibleContext().setAccessibleDescription("null");
-    jLabel2.getAccessibleContext().setAccessibleName("null");
-    jLabel2.getAccessibleContext().setAccessibleDescription("null");
-    tfHost.getAccessibleContext().setAccessibleName("null");
-    tfHost.getAccessibleContext().setAccessibleDescription("null");
-    cbRememberPwd.getAccessibleContext().setAccessibleName("null");
-    cbRememberPwd.getAccessibleContext().setAccessibleDescription("null");
+    tfPassword.getAccessibleContext().setAccessibleName("null"); // NOI18N
+    tfPassword.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+    jLabel2.getAccessibleContext().setAccessibleName("null"); // NOI18N
+    jLabel2.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+    tfHost.getAccessibleContext().setAccessibleName("null"); // NOI18N
+    tfHost.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+    cbRememberPwd.getAccessibleContext().setAccessibleName("null"); // NOI18N
+    cbRememberPwd.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
   }// </editor-fold>//GEN-END:initComponents
 
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus

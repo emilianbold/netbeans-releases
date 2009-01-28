@@ -36,9 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.collector.stdout.api;
-
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -49,14 +47,16 @@ import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfiguration
 /**
  * Implementation of the <code>DataCollectorConfiguration</code> interface
  * that uses the output of a command as its data source.
- * It invokes the given command, feds the given parser with its output line by line
- * and stores the data it returns in the tables described in the given tables metadata.
- * 
- * @author masha
+ * It invokes the given command, feds the given parser with its output line by
+ * line and stores the data it returns in the tables described in the given
+ * tables metadata.
+ *
  */
-public final class CLIODCConfiguration implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
+public final class CLIODCConfiguration
+        implements DataCollectorConfiguration,
+        IndicatorDataProviderConfiguration {
 
-    static final String ID = "dlight.CLIODataColectorConfiguration";
+    static final String ID = "dlight.CLIODataColectorConfiguration"; // NOI18N
     private final String command;
     private final String arguments;
     private final CLIOParser parser;
@@ -65,23 +65,39 @@ public final class CLIODCConfiguration implements DataCollectorConfiguration, In
 
 
     static {
-        CLIODCConfigurationAccessor.setDefault(new CLIODCConfigurationAccessorImpl());
+        CLIODCConfigurationAccessor.setDefault(
+                new CLIODCConfigurationAccessorImpl());
     }
 
-    public CLIODCConfiguration(String command, String arguments, CLIOParser parser, List<DataTableMetadata> dataTablesMetadata) {
+    /**
+     *
+     * @param command
+     * @param arguments
+     * @param parser
+     * @param dataTablesMetadata
+     */
+    public CLIODCConfiguration(final String command, final String arguments,
+            final CLIOParser parser,
+            final List<DataTableMetadata> dataTablesMetadata) {
+
         this.command = command;
         this.arguments = arguments;
         this.parser = parser;
         this.dataTablesMetadata = dataTablesMetadata;
     }
 
+    /**
+     *
+     * @param indicatorDataProvider
+     */
     public void registerAsIndicatorDataProvider(boolean indicatorDataProvider) {
         this.indicatorDataProvider = indicatorDataProvider;
     }
 
     /**
      * Gets this configuration unique ID (implements both
-     * {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration} and
+     * {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration}
+     * and
      * {@link org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration}.
      * method <code>getID()</code>).
      *
@@ -116,7 +132,8 @@ public final class CLIODCConfiguration implements DataCollectorConfiguration, In
         return parser;
     }
 
-    private static final class CLIODCConfigurationAccessorImpl extends CLIODCConfigurationAccessor {
+    private static final class CLIODCConfigurationAccessorImpl
+            extends CLIODCConfigurationAccessor {
 
         @Override
         public String getCommand(CLIODCConfiguration configuration) {
@@ -129,7 +146,8 @@ public final class CLIODCConfiguration implements DataCollectorConfiguration, In
         }
 
         @Override
-        public List<DataTableMetadata> getDataTablesMetadata(CLIODCConfiguration configuration) {
+        public List<DataTableMetadata> getDataTablesMetadata(
+                final CLIODCConfiguration configuration) {
             return configuration.getDataTablesMetadata();
         }
 
@@ -144,7 +162,8 @@ public final class CLIODCConfiguration implements DataCollectorConfiguration, In
         }
 
         @Override
-        public boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration) {
+        public boolean registerAsIndicatorDataProvider(
+                CLIODCConfiguration configuration) {
             return configuration.registerAsIndicatorDataProvider();
         }
     }

@@ -46,10 +46,12 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Locator;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
-import org.netbeans.modules.python.api.PythonPlatform;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -58,7 +60,12 @@ import org.openide.util.NbBundle;
 public final class PythonTestMethodNode extends TestMethodNode {
 
     public PythonTestMethodNode(Testcase testcase, Project project) {
-        super(testcase, project);
+        super(testcase, project, Lookups.singleton(new Locator() {
+
+            public void jumpToSource(Node node) {
+                node.getPreferredAction().actionPerformed(null);
+            }
+        }));
     }
 
     /**

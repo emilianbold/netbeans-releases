@@ -56,6 +56,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -238,7 +240,7 @@ public final class ClassIndex {
      * changes of declared types in this {@link ClassIndex}
      * @param listener to be added
      */
-    public void addClassIndexListener (final ClassIndexListener listener) {
+    public void addClassIndexListener (final @NonNull ClassIndexListener listener) {
         assert listener != null;
         listeners.add (listener);
     }
@@ -248,7 +250,7 @@ public final class ClassIndex {
      * changes of declared types in this {@link ClassIndex}
      * @param listener to be removed
      */
-    public void removeClassIndexListener (final ClassIndexListener listener) {
+    public void removeClassIndexListener (final @NonNull ClassIndexListener listener) {
         assert listener != null;
         listeners.remove(listener);
     }
@@ -263,7 +265,7 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public Set<ElementHandle<TypeElement>> getElements (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
+    public @NullUnknown Set<ElementHandle<TypeElement>> getElements (final @NonNull ElementHandle<TypeElement> element, final @NonNull Set<SearchKind> searchKind, final @NonNull Set<SearchScope> scope) {
         assert element != null;
         assert element.getSignature()[0] != null;
         assert searchKind != null;
@@ -299,7 +301,7 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public Set<FileObject> getResources (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
+    public @NullUnknown Set<FileObject> getResources (final @NonNull ElementHandle<TypeElement> element, final @NonNull Set<SearchKind> searchKind, final @NonNull Set<SearchScope> scope) {
         assert element != null;
         assert element.getSignature()[0] != null;
         assert searchKind != null;
@@ -337,7 +339,7 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public Set<ElementHandle<TypeElement>> getDeclaredTypes (final String name, final NameKind kind, final Set<SearchScope> scope) {
+    public @NullUnknown Set<ElementHandle<TypeElement>> getDeclaredTypes (final @NonNull String name, final @NonNull NameKind kind, final @NonNull Set<SearchScope> scope) {
         assert name != null;
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
@@ -370,7 +372,7 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public Set<String> getPackageNames (final String prefix, boolean directOnly, final Set<SearchScope> scope) {
+    public @NullUnknown Set<String> getPackageNames (final @NonNull String prefix, boolean directOnly, final @NonNull Set<SearchScope> scope) {
         assert prefix != null;
         final Set<String> result = new HashSet<String> ();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);

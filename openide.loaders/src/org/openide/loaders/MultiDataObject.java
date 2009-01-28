@@ -1233,8 +1233,9 @@ public class MultiDataObject extends DataObject {
             try {
                 MultiDataObject.this.markInvalid0 ();
             } catch (PropertyVetoException ex) {
-                // silently ignore?
-                Logger.getLogger(MultiDataObject.class.getName()).log(Level.WARNING, null, ex);
+                // silently ignore - the file has an opened editor with unsaved changes
+                // and user chose to keep the editor opened
+                Logger.getLogger(MultiDataObject.class.getName()).log(Level.FINE, null, ex);
             }
         }
     }

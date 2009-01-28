@@ -44,14 +44,13 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
-import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service=DataStorageFactory.class, position=100)
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position=100)
 public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage>{
   static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby";
   private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
