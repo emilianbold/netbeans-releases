@@ -490,7 +490,7 @@ public class TargetServer {
                     break;
                 }
                 case PROFILE: {
-                    ProfilerServerSettings settings = Lookup.getDefault().lookup(Profiler.class).getSettings(instance.getUrl());
+                    ProfilerServerSettings settings = Lookup.getDefault().lookup(Profiler.class).getSettings(instance.getUrl(), false);
                     instance.startProfile(settings, false, ui);
                     break;
                 }
