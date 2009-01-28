@@ -219,6 +219,12 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
 
     public void fileDeleted(FileEvent fe) {
+        final FileObject fo = fe.getFile();
+        final URL root = getOwningSourceRoot (fo);
+        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
+            final Work w = new FileListWork(WorkType.DELETE,root,fo);
+            submit(w);
+        }
     }
 
     public void fileRenamed(FileRenameEvent fe) {
@@ -258,7 +264,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     enum State {CREATED, INITIALIZED, INITIALIZED_AFTER_FIRST_SCAN, CLOSED};
 
-    private enum WorkType {COMPILE_BATCH, COMPILE};
+    private enum WorkType {COMPILE_BATCH, COMPILE, DELETE};
 
     private static class Work {
         
@@ -351,7 +357,12 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                     case COMPILE:
                         LOGGER.fine("Compile: " + work);
                         final FileListWork sfw = (FileListWork) work;
-                        compile (sfw.getFiles(),sfw.root);
+                        compile (sfw.getFiles(),sfw.getRoot());
+                        break;
+                    case DELETE:
+                        LOGGER.fine("Delete: " + work);
+                        final FileListWork swf = (FileListWork) work;
+                        delete (swf.getFiles(),swf.getRoot());
                         break;
                     default:
                         throw new IllegalArgumentException();
@@ -370,6 +381,20 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 active = false;
             }
             return !empty;
+        }
+
+        private void delete (final FileObject[] affected, final URL root) {
+            try {
+                final ArrayList<Indexable> indexables = new ArrayList<Indexable>(affected.length);
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                for (int i=0; i< affected.length; i++) {
+                    indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, FileUtil.getRelativePath(rootFo, affected[i]))));
+                }
+                index(Collections.<String,Collection<Indexable>>emptyMap(), indexables, root);
+                TEST_LEGGER.log(Level.FINEST, "delete");         //NOI18N
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
 
         private void compile (final FileObject[] affected, final URL root) {
@@ -469,10 +494,10 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 //First use all custom indexers
-                for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
-                    final Map.Entry<String,Collection<Indexable>> entry = it.next();
-                    final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
-                    LOGGER.fine("Using CustomIndexerFactories(" + entry.getKey() + "): " + factories);
+                Set<String> allMimeTypes = Util.getAllMimeTypes();
+                for (String mimeType : allMimeTypes) {
+                    final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                    LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories);
                     
                     boolean supportsEmbeddings = true;
                     try {
@@ -483,13 +508,16 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                             supportsEmbeddings &= b;
                             final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
                             factory.filesDeleted(deleted, ctx);
-                            final CustomIndexer indexer = factory.createIndexer();
-                            SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(entry.getValue()), ctx);
+                            final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                            if (indexables != null) {
+                                final CustomIndexer indexer = factory.createIndexer();
+                                SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                            }
                         }
                     } finally {
                         if (!supportsEmbeddings) {
-                            LOGGER.fine("Removing roots for " + entry.getKey() + ", indexed by custom indexers, embedded indexers forbidden");
-                            it.remove();
+                            LOGGER.fine("Removing roots for " + mimeType + ", indexed by custom indexers, embedded indexers forbidden");
+                            resources.remove(mimeType);
                         }
                     }
                 }

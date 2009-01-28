@@ -79,6 +79,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -157,7 +158,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
         Set<String> mt = new HashSet<String>();
         mt.add(EMIME);
-        SourceIndexer.allMimeTypes = mt;
+        mt.add(MIME);
+        Util.allMimeTypes = mt;
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -501,12 +503,21 @@ public class RepositoryUpdaterTest extends NbTestCase {
         touchFile (newFile);
         touchFile (newFile2);
         assertEquals(2,newFolder.list().length);
-        containerFo.refresh();
-        containerFo.getFileSystem().refresh(true);
         FileUtil.toFileObject(newFolder);   //Refresh fs 
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
         assertEquals(2, eindexerFactory.indexer.counter);
+
+        //Test file deleted
+        handler.reset(TestHandler.Type.DELETE);
+        indexerFactory.indexer.setExpectedFile(new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()});
+        f3.delete();
+        assertTrue (handler.await());
+        assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
+        assertEquals(0, eindexerFactory.indexer.counter);
+        assertEquals(0,eindexerFactory.indexer.expectedDeleted.size());
     }
 
     private void touchFile (final File file) throws IOException {
@@ -517,6 +528,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public static class TestHandler extends Handler {
 
+        static enum Type {BATCH, DELETE};
+
             private CountDownLatch latch;
             private List<URL> sources;
             private Set<URL> binaries;
@@ -526,9 +539,18 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
 
             public void reset () {
+                reset (Type.BATCH);
+            }
+
+            public void reset (final Type type) {
                 sources = null;
                 binaries = null;
-                latch = new CountDownLatch(2);
+                if (type == Type.BATCH) {
+                    latch = new CountDownLatch(2);
+                }
+                else {
+                    latch = new CountDownLatch(1);
+                }
             }
 
             public boolean await () throws InterruptedException {
@@ -552,6 +574,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 }
                 else if ("scanSources".equals(msg)) {
                     sources = (List<URL>) record.getParameters()[0];
+                    latch.countDown();
+                }
+                else if ("delete".equals(msg)) {
                     latch.countDown();
                 }
             }
@@ -965,7 +990,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         protected void index(Indexable indexable, Result parserResult, Context context) {
             try {
                 final URL url = parserResult.getSnapshot().getSource().getFileObject().getURL();
-                counter++;
+                counter++;                
                 if (expectedFiles.remove(url)) {
                     latch.countDown();
                 }

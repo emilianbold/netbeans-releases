@@ -112,6 +112,12 @@ public final class Indexable {
         return this.delegate.openInputStream();
     }
 
+    @Override
+    public String toString() {
+        final URL url = this.delegate.getURL();
+        return String.format("Indexable[%s]", url == null ? "null" : url.toString());
+    }
+
     private static class MyAccessor extends SPIAccessor {
 
         @Override
