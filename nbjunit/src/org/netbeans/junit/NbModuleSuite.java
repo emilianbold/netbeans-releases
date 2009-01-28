@@ -424,7 +424,8 @@ public class NbModuleSuite {
      * in the tested applicationwill be included in the test. 
      * 
      * @param clazz the class with bunch of testXYZ methods
-     * @param tests names of test methods to execute from the <code>clazz</code>
+     * @param tests names of test methods to execute from the <code>clazz</code>, if
+     *    no test methods are specified, all tests in the class are executed
      * @return runtime container ready test
      * @since 1.49
      */

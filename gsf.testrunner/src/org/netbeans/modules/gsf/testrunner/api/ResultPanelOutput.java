@@ -306,7 +306,7 @@ final class ResultPanelOutput extends JScrollPane
         // split to lines, otherwise everything will
         // be printed on one line even if the text 
         // contains line breaks
-        String[] lines = text.split("\\\\n"); //NO18N
+        String[] lines = text.split("\n"); //NO18N
         for (int i = 0; i < lines.length; i++) {
             if (i == lines.length - 1) {
                 // add a trailing new line to the last line
