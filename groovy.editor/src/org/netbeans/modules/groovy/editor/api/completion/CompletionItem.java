@@ -308,7 +308,8 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final boolean prefix;
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly, boolean prefix) {
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType,
+                boolean nameOnly, boolean prefix) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
@@ -321,6 +322,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public String getName() {
             return name + "()";
         }
+
+        @Override
+        public String getSortText() {
+            return (name + (prefix ? 1 : 0)) + parameters.length;
+        }
+
 
         @Override
         public ElementKind getKind() {
