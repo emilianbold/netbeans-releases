@@ -1,5 +1,5 @@
 Code completion result for source line:
 func|tion afterComment() {}
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    function                                   null

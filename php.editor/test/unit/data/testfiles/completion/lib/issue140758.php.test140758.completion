@@ -1,6 +1,6 @@
 Code completion result for source line:
 echo $_SERVER['|'];
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    AUTH_TYPE                                  null
 KEYWORD    DOCUMENT_ROOT                              null

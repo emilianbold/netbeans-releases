@@ -1,6 +1,6 @@
 Code completion result for source line:
 getBookMagazine()->|pages;
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 VARIABLE   ? pages                         [PUBLIC]   Magazine
 VARIABLE   Author|null author              [PUBLIC]   Book
 VARIABLE   string title                    [PUBLIC]   Book

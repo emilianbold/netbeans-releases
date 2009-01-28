@@ -1,6 +1,6 @@
 Code completion result for source line:
 public function |setFld($fld) {
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     __call($name,  $arguments) - g  [PUBLIC]   Magic Method
 METHOD     __callStatic($name,  $argument  [STATIC]   Magic Method
