@@ -231,8 +231,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
             return;
+        }
 
         CompilerSet cs = panel.getCompilerSet();
         csm.add(cs);
@@ -246,8 +247,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, getString("COPY_TOOL_SET_TITLE"));
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
             return;
+        }
         String compilerSetName = panel.getCompilerSetName().trim();
         CompilerSet cs = selectedCompilerSet.createCopy();
         cs.setName(compilerSetName);
@@ -298,8 +300,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             int index = csm.getCompilerSets().indexOf(cs);
             csm.remove(cs);
             if (cs.isDefault()) {
-                if (csm.getCompilerSets().size() > 0)
+                if (csm.getCompilerSets().size() > 0) {
                     csm.setDefault(csm.getCompilerSet(0));
+                }
             }
             if (index >= 0 && index < csm.getCompilerSets().size()) {
                 update(false, csm.getCompilerSets().get(index));
@@ -486,13 +489,15 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                     selectedCS = csm.getCompilerSet(selectedName);
 
                 }
-                if (selectedCS == null)
+                if (selectedCS == null) {
                     selectedCS = csm.getDefaultCompilerSet();
+                }
             }
         }
 
-        if (selectedCS == null)
-            selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
+        if (selectedCS == null) {
+            selectedCS = (CompilerSet) lstDirlist.getSelectedValue();
+        }
         lstDirlist.setListData(csm.getCompilerSets().toArray());
         if (selectedCS != null) {
             lstDirlist.setSelectedValue(selectedCS, true); // FIXUP: should use name
@@ -592,7 +597,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     /** Apply changes */
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
-            cacheManager.applyChanges(cbDevHost.getSelectedIndex());
 
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
@@ -607,6 +611,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 model.setSelectedCompilerSetName(cs.getName());
             }
             currentCompilerSet = cs;
+            cacheManager.applyChanges(cbDevHost.getSelectedIndex());
         }
 
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
@@ -715,8 +720,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 StringBuilder errorString = new StringBuilder();
                 for (int i = 0; i < errors.size(); i++) {
                     errorString.append(errors.get(i));
-                    if (i < errors.size() - 1)
+                    if (i < errors.size() - 1) {
                         errorString.append("<br>"); // NOI18N
+                    } // NOI18N
                 }
                 lblErrors.setText("<html>" + errorString.toString() + "</html>"); //NOI18N
 
