@@ -52,7 +52,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 
-public final class CndOptionsPanelController extends OptionsPanelController implements LookupListener {
+/*package-local*/ final class CndOptionsPanelController extends OptionsPanelController implements LookupListener {
 
     private OptionsPanelController[] controllers = new OptionsPanelController[0];
     private Lookup.Result<OptionsPanelController> res = null;

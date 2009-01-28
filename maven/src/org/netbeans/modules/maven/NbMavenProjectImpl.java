@@ -234,13 +234,16 @@ public final class NbMavenProjectImpl implements Project {
             req.setPomFile(projectFile.getAbsolutePath());
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            req.setUserProperties(properties);
+            Properties props = new Properties();
+            props.putAll(properties);
+            req.setUserProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             // recursive == false is important to avoid checking all submodules for extensions
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
+            req.setProperty("netbeans.execution", "true"); //NOI18N
             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();

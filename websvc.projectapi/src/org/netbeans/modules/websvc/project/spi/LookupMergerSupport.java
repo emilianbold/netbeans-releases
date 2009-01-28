@@ -63,6 +63,12 @@ public class LookupMergerSupport {
      * which contains the merged content of all providers can be obtained from this LookupMerger.
      * @return instance of LookupMerger to include in the project lookup
      */
+    @LookupMerger.Registration(projectType={
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject",
+    "org-netbeans-modules-java-j2seproject"
+})
     public static LookupMerger<WebServiceDataProvider> createWebServiceDataProviderMerger() {
         return new WebServiceDataProviderMerger();
     }

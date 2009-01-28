@@ -48,7 +48,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 /** Implementation of C/C++ Options panel */
-public final class CndOptionsPanel extends JPanel {
+/*package-local*/ final class CndOptionsPanel extends JPanel {
 
     private JTabbedPane tabbedPane = new JTabbedPane();
 
