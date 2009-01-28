@@ -147,19 +147,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     }
     
     protected Widget attachEdgeWidget(ArtifactGraphEdge edge) {
-        ConnectionWidget connectionWidget = new ConnectionWidget(this);
+        EdgeWidget connectionWidget = new EdgeWidget(this, edge);
         connectionLayer.addChild(connectionWidget);
-        connectionWidget.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
-        if (edge.isPrimary()) {
-            connectionWidget.setLineColor(Color.BLACK);
-        } else {
-            if (edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                connectionWidget.setLineColor(Color.RED.darker());
-                connectionWidget.setToolTipText("Conflicting version of " + edge.getTarget().getArtifact().getArtifactId() + ": " + edge.getTarget().getArtifact().getVersion() );
-            } else {
-                connectionWidget.setLineColor(Color.LIGHT_GRAY);
-            }
-        }
         return connectionWidget;
     }
     

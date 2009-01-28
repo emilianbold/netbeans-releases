@@ -39,63 +39,47 @@
 
 package org.netbeans.modules.maven.graph;
 
-import java.util.Collection;
-import java.util.Stack;
+import java.awt.Color;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 
 /**
  *
  * @author mkleint
  */
-class HighlightVisitor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
-    private int max = Integer.MAX_VALUE;
+public class EdgeWidget extends ConnectionWidget {
+    private ArtifactGraphEdge edge;
 
-    HighlightVisitor(DependencyGraphScene scene) {
-        this.scene = scene;
-        path = new Stack<DependencyNode>();
+    public EdgeWidget(DependencyGraphScene scene, ArtifactGraphEdge edge) {
+        super(scene);
+        this.edge = edge;
+        setupAppearance();
     }
 
-    void setMaxDepth(int max) {
-        this.max = max;
-    }
-
-
-    public boolean visit(DependencyNode node) {
-        if (root == null) {
-            root = node;
-        }
-        if (node.getState() == DependencyNode.INCLUDED) {
-            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
-            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            Collection<ArtifactGraphEdge> edges = scene.findNodeEdges(grNode, true, true);
-            if (path.size() > max) {
-                aw.switchToHidden();
-                for (ArtifactGraphEdge e : edges) {
-                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
-                    ew.switchToHidden();
-                }
-            } else {
-                aw.switchToDefault();
-                for (ArtifactGraphEdge e : edges) {
-                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
-                    ew.switchToDefault();
-                }
-            }
-            path.push(node);
-            return true;
+    void setupAppearance() {
+        setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
+        if (edge.isPrimary()) {
+            setLineColor(Color.BLACK);
         } else {
-            return false;
+            if (edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                setLineColor(Color.RED.darker());
+                setToolTipText("Conflicting version of " + edge.getTarget().getArtifact().getArtifactId() + ": " + edge.getTarget().getArtifact().getVersion() );
+            } else {
+                setLineColor(Color.LIGHT_GRAY);
+            }
         }
+    }
+    public void switchToHidden() {
+        setLineColor(Color.LIGHT_GRAY);
+        setVisible(true);
+        this.revalidate();
     }
 
-    public boolean endVisit(DependencyNode node) {
-        if (node.getState() == DependencyNode.INCLUDED) {
-            path.pop();
-        }
-        return true;
+    public void switchToDefault() {
+        setupAppearance();
+        setVisible(true);
+        this.revalidate();
     }
+
 }
