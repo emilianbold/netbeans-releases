@@ -28,11 +28,11 @@ pack_all_components()
     cd $NB_ALL/nbbuild
 
     #Pack the distrubutions
-    find netbeans | egrep -v "netbeans/(extra|testtools|uml|maven)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|uml|visualweb|maven)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
 
     #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php|maven)" | zip -q $DIST_DIR/zip/$NAME-java.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|uml|visualweb|ruby|soa|cnd|identity|php|maven)" | zip -q $DIST_DIR/zip/$NAME-java.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
@@ -44,6 +44,9 @@ pack_all_components()
     cd $NB_ALL/nbbuild/netbeans
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
+    rm -rf visualweb*
 
     cd $NB_ALL/nbbuild
 
@@ -61,9 +64,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
     rm -rf php*
-
-    pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
-    rm -rf visualweb*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME ruby "ruby*"
     rm -rf ruby*

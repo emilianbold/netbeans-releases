@@ -74,19 +74,38 @@ import java.awt.datatransfer.Transferable;
  */
 public class CallStackActionsProvider implements NodeActionsProvider {
     
-    private final Action MAKE_CURRENT_ACTION = Models.createAction (
+    private JPDADebugger    debugger;
+    private ContextProvider lookupProvider;
+    private Action          POP_TO_HERE_ACTION;
+    private Action          MAKE_CURRENT_ACTION;
+    private Action          COPY_TO_CLBD_ACTION;
+
+
+    public CallStackActionsProvider (ContextProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        POP_TO_HERE_ACTION = DebuggingActionsProvider.createPOP_TO_HERE_ACTION(requestProcessor);
+        MAKE_CURRENT_ACTION = createMAKE_CURRENT_ACTION(requestProcessor);
+        COPY_TO_CLBD_ACTION = createCOPY_TO_CLBD_ACTION(requestProcessor);
+    }
+    
+
+    private Action createMAKE_CURRENT_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_MakeCurrent_Label"),
-        new Models.ActionPerformer () {
+        new DebuggingActionsProvider.LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 // TODO: Check whether is not current - API change necessary
                 return true;
             }
-            public void perform (Object[] nodes) {
+            public void run (Object[] nodes) {
                 makeCurrent ((CallStackFrame) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+    }
         
 //    private final Action COPY_TO_CLBD_ACTION = Models.createAction (
 //        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
@@ -101,30 +120,22 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 //        Models.MULTISELECTION_TYPE_ANY
 //    );
         
-    private final Action COPY_TO_CLBD_ACTION = new AbstractAction (
-        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label")) {
-        @Override
-        public boolean isEnabled () {
-            JPDAThread t = debugger.getCurrentThread();
-            return t != null && t.isSuspended();
-        }
-        public void actionPerformed (ActionEvent e) {
-            stackToCLBD ();
-        }
-    };
-        
-    private JPDADebugger    debugger;
-    private ContextProvider lookupProvider;
-    private Action          POP_TO_HERE_ACTION;
-
-
-    public CallStackActionsProvider (ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
-        POP_TO_HERE_ACTION = DebuggingActionsProvider.createPOP_TO_HERE_ACTION(requestProcessor);
+    private Action createCOPY_TO_CLBD_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
+        NbBundle.getBundle(CallStackActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
+        new DebuggingActionsProvider.LazyActionPerformer (requestProcessor) {
+            public boolean isEnabled (Object node) {
+                JPDAThread t = debugger.getCurrentThread();
+                return t != null && t.isSuspended();
+            }
+            public void run (Object[] nodes) {
+                stackToCLBD ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
     }
-    
+
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) {
             return new Action [] { COPY_TO_CLBD_ACTION };
