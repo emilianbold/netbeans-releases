@@ -204,6 +204,12 @@ public final class Util {
      * @return a a TestRunner instance or <code>null</code>.
      */
     public static TestRunner getTestRunner(TestRunner.TestType testType) {
+        
+        if (!RubyTestingSettings.getDefault().useRunner(testType)) {
+            // don't use the UI runner for this type
+            return null;
+        }
+
         Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
         for (TestRunner each : testRunners) {
             if (each.supports(testType)) {
