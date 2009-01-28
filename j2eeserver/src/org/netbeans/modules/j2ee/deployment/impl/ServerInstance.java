@@ -1402,6 +1402,21 @@ public class ServerInstance implements Node.Cookie, Comparable {
         synchronized (this) {
             profilerSettings = settings;
             managerStartedByIde = true;
+            coTarget = null;
+            targets = null;
+            /** the following loop is a workaround
+                GF startup can be screwed up really badly if we don't wait
+                till the server is known to be running before
+                attempting do anything with targets ...
+             */
+            while(!isRunning()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            initCoTarget();
         }
     }
     
