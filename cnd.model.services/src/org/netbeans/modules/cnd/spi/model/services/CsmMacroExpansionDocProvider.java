@@ -52,26 +52,15 @@
 package org.netbeans.modules.cnd.spi.model.services;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
- * Service that provides macro expansions
+ * Service that provides macro expansions.
  *
  * @author Nick Krasilnikov
  */
-public interface CsmMacroExpansionProvider {
-
+public interface CsmMacroExpansionDocProvider {
     /**
-     * Returns instantiation of template
-     *
-     * @param template - template for instantiation
-     * @param params - template paramrters
-     * @return - instantiation
-     */
-    public abstract String getExpandedText(CsmFile file, int startOffset, int endOffset);
-
-    /**
-     * Macro expands content of one document to another
+     * Macro expands content of one document to another.
      *
      * @param inDoc - document for macro expansion
      * @param startOffset - start offset for expansion
@@ -82,18 +71,7 @@ public interface CsmMacroExpansionProvider {
     public abstract int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
 
     /**
-     * Check for changes in content of document
-     *
-     * @param inDoc - document for macro expansion
-     * @param startOffset - start offset for expansion
-     * @param endOffset - end offset for expansion
-     * @param outDoc - result
-     * @return - changes found
-     */
-    public abstract boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc);
-
-    /**
-     * Transforms original offset to offset in expanded text
+     * Transforms original offset to offset in expanded text.
      *
      * @param expandedDoc - document
      * @param originalOffset - original offset
@@ -102,7 +80,7 @@ public interface CsmMacroExpansionProvider {
     public abstract int getOffsetInExpandedText(Document expandedDoc, int originalOffset);
 
     /**
-     * Transforms offset in expanded text to original offset
+     * Transforms offset in expanded text to original offset.
      *
      * @param expandedDoc - document
      * @param expandedOffset - offset in expanded text
@@ -111,7 +89,7 @@ public interface CsmMacroExpansionProvider {
     public abstract int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
 
     /**
-     * Returns offset of the next macro expansion
+     * Returns offset of the next macro expansion.
      *
      * @param expandedDoc - document
      * @param expandedOffset - offset in expanded text
@@ -120,7 +98,7 @@ public interface CsmMacroExpansionProvider {
     public abstract int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
 
     /**
-     * Returns offset of the previous macro expansion
+     * Returns offset of the previous macro expansion.
      *
      * @param expandedDoc - document
      * @param expandedOffset - offset in expanded text

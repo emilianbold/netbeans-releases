@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider;
+import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -75,31 +75,31 @@ import org.openide.util.Exceptions;
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionProvider.class)
-public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider.class)
+public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvider {
 
     public final static String MACRO_EXPANSION_OFFSET_TRANSFORMER = "macro-expansion-offset-transformer"; // NOI18N
 
-    public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
-        if (file instanceof FileImpl) {
-            FileImpl f = (FileImpl) file;
-            TokenStream ts = f.getTokenStream(startOffset, endOffset, false);
-            StringBuilder sb = new StringBuilder();
-            try {
-                antlr.Token token = ts.nextToken();
-                while (token != null && !APTUtils.isEOF(token)) {
-                    sb.append(token.getText());
-                    sb.append(' '); // NOI18N
-                    token = ts.nextToken();
-                }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            f.releaseTokenStream(ts);
-            return sb.toString();
-        }
-        return null;
-    }
+//    public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
+//        if (file instanceof FileImpl) {
+//            FileImpl f = (FileImpl) file;
+//            TokenStream ts = f.getTokenStream(startOffset, endOffset, false);
+//            StringBuilder sb = new StringBuilder();
+//            try {
+//                antlr.Token token = ts.nextToken();
+//                while (token != null && !APTUtils.isEOF(token)) {
+//                    sb.append(token.getText());
+//                    sb.append(' '); // NOI18N
+//                    token = ts.nextToken();
+//                }
+//            } catch (TokenStreamException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//            f.releaseTokenStream(ts);
+//            return sb.toString();
+//        }
+//        return null;
+//    }
 
     public synchronized int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
         int expansionsNumber = 0;
@@ -156,8 +156,8 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
                     fileToken = findRelatedTokenInExpandedStream(fileToken, docTokenStartOffset, fileTS);
                     if (fileToken == null) {
                         if (!(inMacroParams || inDeadCode)) {
-                            copyInterval(inDoc, outDoc, new Interval(inIntervalStart, docTokenStartOffset), shift, tt, expandedString);
-                            inIntervalStart = docTokenStartOffset;
+                            copyInterval(inDoc, outDoc, new Interval(inIntervalStart, endOffset), shift, tt, expandedString);
+                            inIntervalStart = endOffset;
                         }
                         int shiftShift = endOffset - inIntervalStart;
                         tt.intervals.add(new IntervalCorrespondence(new Interval(inIntervalStart, endOffset),
@@ -253,23 +253,23 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
         }
         return expansionsNumber;
     }
-
-    public boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc) {
-        if (inDoc == null || outDoc == null) {
-            return false;
-        }
-        Object o = outDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
-        if (o != null && o instanceof TransformationTable) {
-            TransformationTable tt = (TransformationTable) o;
-            if (tt.intervals.get(0).inInterval.start == startOffset &&
-                    tt.intervals.get(tt.intervals.size() - 1).inInterval.end == endOffset) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
+//
+//    public boolean isChanged(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+//        if (inDoc == null || outDoc == null) {
+//            return false;
+//        }
+//        Object o = outDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
+//        if (o != null && o instanceof TransformationTable) {
+//            TransformationTable tt = (TransformationTable) o;
+//            if (tt.intervals.get(0).inInterval.start == startOffset &&
+//                    tt.intervals.get(tt.intervals.size() - 1).inInterval.end == endOffset) {
+//                return false;
+//            }
+//        } else {
+//            return false;
+//        }
+//        return true;
+//    }
 
     private void copyInterval(Document inDoc, Document outDoc, Interval interval, int shift, TransformationTable tt, StringBuffer expandedString) {
         if (interval.length() != 0) {
@@ -285,10 +285,6 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
 
     private boolean isWhitespace(Token<CppTokenId> docToken) {
         switch (docToken.id()) {
-//            case PREPROCESSOR_DIRECTIVE:
-//            case LINE_COMMENT:
-//            case BLOCK_COMMENT:
-//            case DOXYGEN_COMMENT:
             case NEW_LINE:
             case WHITESPACE:
             case ESCAPED_WHITESPACE:
@@ -306,16 +302,21 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
                 TokenSequence<?> embTS = docTS.embedded();
                 if (embTS != null) {
                     embTS.moveStart();
+                    embTS.moveNext();
                     Token embToken = embTS.token();
-                    Object id = embToken.id();
-                    if (embToken == null || !(id instanceof CppTokenId) || (id != CppTokenId.PREPROCESSOR_START)) {
+                    if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
                         return false;
                     }
                     embTS.moveNext();
                     embToken = embTS.token();
-                    id = embToken.id();
-                    if (embToken != null && (id instanceof CppTokenId) && embToken.id() == CppTokenId.PREPROCESSOR_INCLUDE) {
-                        return true;
+                    if (embToken != null && (embToken.id() instanceof CppTokenId)) {
+                        switch ((CppTokenId)embToken.id()) {
+                            case PREPROCESSOR_INCLUDE:
+                            case PREPROCESSOR_INCLUDE_NEXT:
+                                return true;
+                            default:
+                                return false;
+                        }
                     }
                 }
                 break;
@@ -337,7 +338,6 @@ public class MacroExpansionProviderImpl implements CsmMacroExpansionProvider {
         } catch (TokenStreamException ex) {
             Exceptions.printStackTrace(ex);
         }
-
         return null;
     }
 
