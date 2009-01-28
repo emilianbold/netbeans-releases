@@ -49,13 +49,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Icon;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
@@ -67,7 +64,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -107,7 +103,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     protected final UpdateHelper updateHelper;
     private final String projectConfigurationNamespace;
     private CopyOnWriteArrayList<PlatformChangeListener> platformCLs;
-    private ClassPath[] rubyStubsCP;
 
     protected RubyBaseProject(final RakeProjectHelper helper, final String projectConfigurationNamespace) {
         this.helper = helper;
@@ -284,13 +279,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     /** Mainly for unit tests. */
     protected void open() {
         registerClassPath();
-        assert rubyStubsCP == null : "opened twice?";
-        rubyStubsCP = new ClassPath[] {
-            ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs())
-        };
-
-        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, rubyStubsCP);
-
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
             rakeFile.addFileChangeListener(new FileChangeAdapter() {
@@ -392,7 +380,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
+
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
@@ -412,9 +400,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            
-            GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, rubyStubsCP);
-            rubyStubsCP = null;
             unregisterClassPath();
         }
     }
