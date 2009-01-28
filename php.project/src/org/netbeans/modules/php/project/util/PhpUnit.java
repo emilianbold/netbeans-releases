@@ -67,7 +67,6 @@ public final class PhpUnit extends PhpProgram {
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
     public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
-    public static final String PARAM_XML_CONFIG = "--configuration"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
