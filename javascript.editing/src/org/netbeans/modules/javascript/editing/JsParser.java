@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
 import org.mozilla.nb.javascript.CompilerEnvirons;
+import org.mozilla.nb.javascript.ContextFactory;
 import org.mozilla.nb.javascript.ScriptOrFnNode;
 import org.mozilla.nb.javascript.ErrorReporter;
 import org.mozilla.nb.javascript.EvaluatorException;
@@ -992,7 +993,7 @@ public class JsParser extends Parser {
 
         // XXX What do I set here: compilerEnv.setReservedKeywordAsIdentifier();
 
-        org.mozilla.nb.javascript.Context ctx = new org.mozilla.nb.javascript.Context();
+        RhinoContext ctx = new RhinoContext();
         compilerEnv.initFromContext(ctx);
         
         compilerEnv.setErrorReporter(errorReporter);
@@ -1210,4 +1211,10 @@ public class JsParser extends Parser {
             return "fileless"; //NOI18N
         }
     }
+
+    private static final class RhinoContext extends org.mozilla.nb.javascript.Context {
+        public RhinoContext() {
+            super(ContextFactory.getGlobal());
+        }
+    } // End of RhinoContext
 }
