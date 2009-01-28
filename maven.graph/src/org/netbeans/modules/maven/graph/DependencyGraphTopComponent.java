@@ -84,6 +84,7 @@ public class DependencyGraphTopComponent extends TopComponent {
     public DependencyGraphTopComponent(Project proj) {
         initComponents();
         project = proj;
+        sldDepth.getLabelTable().put(new Integer(0), new JLabel("All"));
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         setName("DependencyGraph" + info.getName()); //NOI18N
         setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class, 
