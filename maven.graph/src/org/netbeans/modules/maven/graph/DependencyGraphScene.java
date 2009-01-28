@@ -81,6 +81,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction hoverAction; 
     private FruchtermanReingoldLayout layout;
     private MavenProject project;
+    private int maxDepth = 0;
     
     /** Creates a new instance ofla DependencyGraphScene */
     DependencyGraphScene(MavenProject prj) {
@@ -107,11 +108,28 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         layout.invokeLayout();
     }
     
-    ArtifactGraphNode getRootArtifact() {
+    ArtifactGraphNode getRootGraphNode() {
         return rootNode;
+    }
+
+    int getMaxNodeDepth() {
+        return maxDepth;
+    }
+
+
+    ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
+        for (ArtifactGraphNode grnode : getNodes()) {
+            if (grnode.represents(node)) {
+                return grnode;
+            }
+        }
+        throw new IllegalStateException();
     }
     
     protected Widget attachNodeWidget(ArtifactGraphNode node) {
+        if (node.getPrimaryLevel() > maxDepth) {
+            maxDepth = node.getPrimaryLevel();
+        }
         Widget root = new ArtifactWidget(this, node);
         mainLayer.addChild(root);
         node.setWidget(root);

@@ -51,6 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.visual.widget.BirdViewController;
@@ -122,6 +123,7 @@ public class DependencyGraphTopComponent extends TopComponent {
     protected void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
+        sldDepth.setEnabled(false);
         add(pane, BorderLayout.CENTER);
         JLabel lbl = new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
         lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
@@ -133,6 +135,8 @@ public class DependencyGraphTopComponent extends TopComponent {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
+                            sldDepth.setEnabled(true);
+                            sldDepth.setMaximum(scene.getMaxNodeDepth());
                             JComponent sceneView = scene.getView ();
                             if (sceneView == null) {
                                 sceneView = scene.createView ();
@@ -141,7 +145,7 @@ public class DependencyGraphTopComponent extends TopComponent {
                             scene.cleanLayout(pane);
                             birdView = scene.createBirdView();
                             satelliteView = scene.createSatelliteView();
-                            scene.setSelectedObjects(Collections.singleton(scene.getRootArtifact()));
+                            scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
                         }
                     });
                 } catch (Exception e) {
@@ -167,6 +171,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         btnBirdEye = new javax.swing.JToggleButton();
         lblFind = new javax.swing.JLabel();
         txtFind = new javax.swing.JTextField();
+        sldDepth = new javax.swing.JSlider();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -202,6 +207,18 @@ public class DependencyGraphTopComponent extends TopComponent {
         txtFind.setMinimumSize(new java.awt.Dimension(100, 19));
         txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
         jPanel1.add(txtFind);
+
+        sldDepth.setMajorTickSpacing(1);
+        sldDepth.setMaximum(5);
+        sldDepth.setPaintLabels(true);
+        sldDepth.setSnapToTicks(true);
+        sldDepth.setValue(0);
+        sldDepth.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sldDepthStateChanged(evt);
+            }
+        });
+        jPanel1.add(sldDepth);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -244,6 +261,19 @@ public class DependencyGraphTopComponent extends TopComponent {
         
     }//GEN-LAST:event_btnBirdEyeActionPerformed
 
+    private void sldDepthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldDepthStateChanged
+        HighlightVisitor visitor = new HighlightVisitor(scene);
+        int value = sldDepth.getValue();
+        visitor.setMaxDepth(value == 0 ? Integer.MAX_VALUE : value);
+        DependencyNode node = scene.getRootGraphNode().getArtifact();
+        node.accept(visitor);
+        scene.validate();
+        scene.repaint();
+        revalidate();
+        repaint();
+
+    }//GEN-LAST:event_sldDepthStateChanged
+
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -252,6 +282,7 @@ public class DependencyGraphTopComponent extends TopComponent {
     private javax.swing.JButton btnSmaller;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblFind;
+    private javax.swing.JSlider sldDepth;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
     

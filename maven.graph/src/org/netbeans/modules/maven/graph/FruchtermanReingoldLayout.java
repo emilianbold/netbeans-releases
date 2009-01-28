@@ -153,7 +153,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         temp = bounds.getWidth() / 10;
         forceConstant = 0.75 * Math.sqrt(bounds.getHeight() * bounds.getWidth() / nds);
         
-        ArtifactGraphNode r = scene.getRootArtifact();
+        ArtifactGraphNode r = scene.getRootGraphNode();
         r.locX = bounds.getCenterX();
         r.locY = bounds.getCenterY();
         r.setFixed(true);
@@ -319,7 +319,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         for (ArtifactGraphNode nd : scene.getNodes()) {
             nd.setFixed(false);
         }
-        scene.getRootArtifact().setFixed(true);
+        scene.getRootGraphNode().setFixed(true);
     }
     
     private boolean isThereFreeSpaceNonFixedSpace(ArtifactGraphNode node) {

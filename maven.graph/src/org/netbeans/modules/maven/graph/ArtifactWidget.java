@@ -58,37 +58,27 @@ class ArtifactWidget extends Widget {
     final Color ROOT = new Color(71, 215, 217);
     final Color DIRECTS = new Color(154, 215, 217);
 
-    private Widget detailsWidget;
+    private Widget defaultCard;
+    private Widget hiddenCard;
     Widget label1;
 
     ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
         super(scene);
 
         Artifact artifact = node.getArtifact().getArtifact();
-        setLayout(LayoutFactory.createVerticalFlowLayout());
+        setLayout(LayoutFactory.createCardLayout(this));
         setOpaque(true);
         checkBackground(node);
 
-        setBorder(BorderFactory.createLineBorder(10));
         setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
                     artifact.getArtifactId(), artifact.getVersion(),
                     artifact.getScope(), artifact.getType()}));
-        Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
-        addChild(root);
-        root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        LabelWidget lbl = new LabelWidget(scene);
-        lbl.setLabel(artifact.getArtifactId() + "  ");
-//            lbl.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
-        root.addChild(lbl);
-        label1 = lbl;
-
-        Widget details1 = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-        details1.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        root.addChild(details1);
-        LabelWidget lbl2 = new LabelWidget(scene);
-        lbl2.setLabel(artifact.getVersion() + "  ");
-        details1.addChild(lbl2);
+        defaultCard = createCardContent(scene, artifact, true);
+        addChild(defaultCard);
+        hiddenCard = createCardContent(scene, artifact, false);
+        addChild(hiddenCard);
+        LayoutFactory.setActiveCard(this, defaultCard);
     }
 
     public void setTextBackGround(Paint pnt) {
@@ -97,7 +87,19 @@ class ArtifactWidget extends Widget {
         label1.setVisible(true);
         label1.repaint();
 //            DependencyGraphScene.this.repaint();
-        }
+    }
+
+    public void switchToHidden() {
+        LayoutFactory.setActiveCard(this, hiddenCard);
+        setVisible(true);
+        this.revalidate();
+    }
+
+    public void switchToDefault() {
+        LayoutFactory.setActiveCard(this, defaultCard);
+        setVisible(true);
+        this.revalidate();
+    }
 
     public void checkBackground(ArtifactGraphNode node) {
         if (node.isRoot()) {
@@ -117,5 +119,33 @@ class ArtifactWidget extends Widget {
                 setBackground(Color.WHITE);
             }
         }
+    }
+
+    private Widget createCardContent(DependencyGraphScene scene, Artifact artifact, boolean shown) {
+        Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
+        if (shown) {
+            root.setBorder(BorderFactory.createLineBorder(10));
+        } else {
+            root.setBorder(BorderFactory.createLineBorder(10,Color.lightGray));
+        }
+        root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
+        LabelWidget lbl = new LabelWidget(scene);
+        lbl.setLabel(artifact.getArtifactId() + "  ");
+        if (!shown) {
+            lbl.setForeground(Color.lightGray);
+        }
+//            lbl.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
+        root.addChild(lbl);
+        label1 = lbl;
+        Widget details1 = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
+        details1.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
+        root.addChild(details1);
+        LabelWidget lbl2 = new LabelWidget(scene);
+        lbl2.setLabel(artifact.getVersion() + "  ");
+        if (!shown) {
+            lbl2.setForeground(Color.lightGray);
+        }
+        details1.addChild(lbl2);
+        return root;
     }
 }

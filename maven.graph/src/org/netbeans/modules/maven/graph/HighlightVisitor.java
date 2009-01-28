@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,95 +34,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.graph;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.Stack;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.visual.widget.Widget;
+import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
 /**
  *
- * @author Milos Kleint 
+ * @author mkleint
  */
-public class ArtifactGraphNode {
-    private DependencyNode artifact;
-    //for the layout
-    double locX;
-    double locY;
-    double dispX;
-    double dispY;
-    private boolean fixed;
-    private Widget widget;
-    
-    private boolean root;
-    private HashSet<DependencyNode> dupl;
-    private int level;
+class HighlightVisitor implements DependencyNodeVisitor {
+    private DependencyGraphScene scene;
+    private DependencyNode root;
+    private Stack<DependencyNode> path;
+    private int max = Integer.MAX_VALUE;
 
-    /** Creates a new instance of ArtifactGraphNode */
-    public ArtifactGraphNode(DependencyNode art) {
-        artifact = art;
-        dupl = new HashSet<DependencyNode>();
-    }
-    
-    
-    DependencyNode getArtifact() {
-        return artifact;
-    }
-    
-    void setArtifact(DependencyNode ar) {
-        artifact = ar;
+    HighlightVisitor(DependencyGraphScene scene) {
+        this.scene = scene;
+        path = new Stack<DependencyNode>();
     }
 
-    void addDuplicateOrConflict(DependencyNode nd) {
-        dupl.add(nd);
+    void setMaxDepth(int max) {
+        this.max = max;
     }
 
-    Set<DependencyNode> getDuplicatesOrConflicts() {
-        return dupl;
-    }
 
-    boolean represents(DependencyNode node) {
-        if (artifact.equals(node)) {
-            return true;
+    public boolean visit(DependencyNode node) {
+        if (root == null) {
+            root = node;
         }
-        for (DependencyNode nd : dupl) {
-            if (nd.equals(node)) {
-                return true;
+        if (node.getState() == DependencyNode.INCLUDED) {
+            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
+            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
+            if (path.size() > max) {
+                aw.switchToHidden();
+            } else {
+                aw.switchToDefault();
             }
+            path.push(node);
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
-    
-    
-    public boolean isRoot() {
-        return level == 0;
-    }
-    
-    public void setFixed(boolean fixed) {
-        this.fixed = fixed;
-    }
-    
-    public boolean isFixed() {
-        return fixed;
-    }
-    
-    public boolean isVisible() {
-        return widget != null ? widget.isVisible() : true;
-    }
-
-    void setPrimaryLevel(int i) {
-        level = i;
-    }
-    
-    public int getPrimaryLevel() {
-        return level;
-    }
-    
-    void setWidget(Widget wid) {
-        widget = wid;
+    public boolean endVisit(DependencyNode node) {
+        if (node.getState() == DependencyNode.INCLUDED) {
+            path.pop();
+        }
+        return true;
     }
 }
