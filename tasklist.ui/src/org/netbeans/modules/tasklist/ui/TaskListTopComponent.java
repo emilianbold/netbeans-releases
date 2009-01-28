@@ -127,6 +127,7 @@ final class TaskListTopComponent extends TopComponent {
             tableScroll.setBackground(macBackground);
             tableScroll.getViewport().setBackground(macBackground);
             toolbar.setBackground(macBackground);
+            statusBarPanel.setBackground(macBackground);
         }
 
     }
@@ -168,7 +169,7 @@ final class TaskListTopComponent extends TopComponent {
         tableHolderPanel.setLayout(tableHolderPanelLayout);
         tableHolderPanelLayout.setHorizontalGroup(
             tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
         );
         tableHolderPanelLayout.setVerticalGroup(
             tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
