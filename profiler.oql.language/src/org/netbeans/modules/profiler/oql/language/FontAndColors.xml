@@ -61,4 +61,8 @@ made subject to such option by the copyright holder.
     <fontcolor default="string" name="js_error_string"/>
     <fontcolor default="string" name="s_string"/>
     <fontcolor foreColor="bbaa0000" name="oql_keyword"/>
+    <fontcolor foreColor="11aa8300" name="oql_method"/>
+    <fontcolor default="string" name="class_identifier">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>
