@@ -178,7 +178,6 @@ public final class HostInfo {
             result = myIPAdresses.contains(
                     InetAddress.getByName(host).getHostAddress());
         } catch (UnknownHostException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
         return result;

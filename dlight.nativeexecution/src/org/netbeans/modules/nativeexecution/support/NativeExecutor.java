@@ -260,7 +260,6 @@ public abstract class NativeExecutor implements Cancellable {
                 try {
                     result = invokeAndWait();
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 } finally {
                     // No matter what was the reason for task competion,
                     // notify on submisionLock.
