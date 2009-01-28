@@ -44,7 +44,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 
 /**
- * Factory to create {@link org.netbeans.modules.dlight.dataprovider.spi.DataProvider} instances.
+ * Factory to create {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider} instances.
  * Register your factory instance in Global Lookup.
  */
 public interface DataProviderFactory extends VisualizerDataProviderFactory<DataProvider>{
@@ -57,9 +57,9 @@ public interface DataProviderFactory extends VisualizerDataProviderFactory<DataP
 
  
   /**
-   * The types of {@link org.netbeans.modules.dlight.storage.spi.DataStorage} this
+   * The types of {@link org.netbeans.modules.dlight.spi.storage.DataStorage} this
    *  DataProvider can get data from
-   * @return the list of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType}
+   * @return the list of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
    *  supported by this DataProvider
    */
   Collection<DataStorageType> getSupportedDataStorageTypes();

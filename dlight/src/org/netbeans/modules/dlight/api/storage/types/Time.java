@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,45 +34,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.model;
 
-import java.util.Hashtable;
+package org.netbeans.modules.dlight.api.storage.types;
 
-public class NaturalFunctionCallComparator implements FunctionCallComparator {
+import java.beans.PropertyEditorManager;
+import org.netbeans.modules.dlight.spi.impl.TimeEditor;
 
-  private final FunctionMetric metric;
-  private static final Hashtable<FunctionMetric, NaturalFunctionCallComparator> instances =
-          new Hashtable<FunctionMetric, NaturalFunctionCallComparator>();
+/**
+ * Metric value class for time interval in nanoseconds. Immutable.
+ *
+ * @author Alexey Vladykin
+ */
+public class Time implements Comparable<Time> {
 
-  private NaturalFunctionCallComparator(FunctionMetric metric) {
-    this.metric = metric;
-  }
+    private final long nanos;
 
-  public static final NaturalFunctionCallComparator getInstance(FunctionMetric metric) {
-    if (instances.get(metric) == null) {
-      instances.put(metric, new NaturalFunctionCallComparator(metric));
+    /**
+     * Creates new instance.
+     *
+     * @param nanos  time in nanoseconds
+     */
+    public Time(long nanos) {
+        this.nanos = nanos;
     }
 
-    return instances.get(metric);
-  }
-
-  public int compare(FunctionCall o1, FunctionCall o2) {
-    int res = 0;
-    Object c1 = o1.getMetricValue(metric);
-    Object c2 = o2.getMetricValue(metric);
-    if (c1 instanceof String && c2 instanceof String) {
-      res = ((String) c1).compareTo((String) c2);
+    /**
+     * @return time in nanoseconds
+     */
+    public long getNanos() {
+        return nanos;
     }
 
-    if (c1 instanceof Number && c2 instanceof Number) {
-      double l1 = ((Number) c1).doubleValue();
-      double l2 = ((Number) c2).doubleValue();
-      res = l1 == l2 ? 0 : l1 < l2 ? 1 : -1;
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(nanos).append(" nanoseconds");
+        return buf.toString();
     }
 
-    return res == 0 ? o1.getFunction().getQuilifiedName().compareTo(o2.getFunction().getQuilifiedName()) : res;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Time) {
+            return this.nanos == ((Time) obj).nanos;
+        } else {
+            return false;
+        }
+    }
 
-  }
+    @Override
+    public int hashCode() {
+        return 29 + (int) (nanos ^ (nanos >>> 32));
+    }
+
+    public int compareTo(Time that) {
+        if (this.nanos < that.nanos) {
+            return -1;
+        } else if (this.nanos == that.nanos) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    static {
+        PropertyEditorManager.registerEditor(Time.class, TimeEditor.class);
+    }
+
 }

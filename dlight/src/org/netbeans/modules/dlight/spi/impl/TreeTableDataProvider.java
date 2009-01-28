@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.support;
+package org.netbeans.modules.dlight.spi.impl;
 
 import org.netbeans.modules.dlight.api.support.TreeTableNode;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
@@ -46,6 +46,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
 /**
  *
+ * @param <T>
  */
 public interface TreeTableDataProvider<T extends TreeTableNode> extends DataProvider {
 

@@ -42,66 +42,103 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 
+/**
+ *
+ */
 public final class ValidationStatus {
 
+    /**
+     * Object that represents VALID status. VALID status means that
+     * full validation was performed and passed.
+     */
     public static ValidationStatus validStatus =
-            new ValidationStatus(true, true, "OK", null);
+            new ValidationStatus(true, true, "OK", null); // NOI18N
+    /**
+     * Object that represents initial status (before any validation)
+     */
     public static ValidationStatus initialStatus =
-            new ValidationStatus(false, false, "Initial", null);
-
-
-    private boolean validated = false;
+            new ValidationStatus(false, false, "Initial", null); // NOI18N
+    private boolean isDefined = false;
     private boolean isValid = false;
     private String reason = "";
-    private Collection<ObservableAction> requiredActions = 
+    private Collection<ObservableAction> requiredActions =
             new ArrayList<ObservableAction>();
 
     private ValidationStatus(
-            final boolean validated,
+            final boolean isDefined,
             final boolean isValid,
             final String reason,
             final Collection<ObservableAction> requiredActions) {
         this.isValid = isValid;
-        this.validated = validated;
+        this.isDefined = isDefined;
         this.reason = reason == null ? "" : reason; // NOI18N
         if (requiredActions != null) {
             this.requiredActions.addAll(requiredActions);
         }
     }
 
-    public static ValidationStatus unknownStatus(final String reason,
-            final Collection<ObservableAction> requiredActions) {
-        return new ValidationStatus(false, false, reason, requiredActions);
-    }
+    /**
+     * Returns object that represents UNKNOWN validation status. This means that
+     * validation was not completed by some reason and some action should be
+     * performed in order to perform re-validation.
+     *
+     * @param reason string that describes why validation was not completed.
+     * @param requiredAction an action that should be performed prior to
+     * re-validation
+     * @return object that represents UNKNOWN validation status.
+     */
     public static ValidationStatus unknownStatus(final String reason,
             final ObservableAction requiredAction) {
+        if (requiredAction == null) {
+            throw new NullPointerException(
+                    "requiredAction cannot be NULL"); // NOI18N
+        }
+
         ArrayList<ObservableAction> actions = new ArrayList<ObservableAction>();
         actions.add(requiredAction);
         return new ValidationStatus(false, false, reason, actions);
 
     }
 
+    /**
+     * Returns object that represents INVALID validation status. This means that
+     * it is known that validation failed and no additional actions could be
+     * performed to perform re-validation.
+     *
+     * @param reason description of failure reason
+     * @return object that represents INVALID validation status.
+     */
     public static ValidationStatus invalidStatus(final String reason) {
         return new ValidationStatus(true, false, reason, null);
     }
 
     /**
-     *
-     * @return
+     * Returns a string that describes the reason of validation failure or why
+     * validation has not been fully performed.
+     * @return reason of validation failure.
      */
     public String getReason() {
         return reason;
     }
 
+    /**
+     * Merges two validation statuses and returns a new (merged) one.
+     *
+     * @param status validation status to merge with.
+     * @return new <tt>ValidationStatus</tt> object that is constructed
+     * from the provided <tt>status</tt> and this one.
+     */
     public ValidationStatus merge(final ValidationStatus status) {
         if (this.isInvalid()) {
-            // this was validated and is INVALID -> merged is invalid (just == this)
+            // this was validated and is INVALID ->
+            //              merged is invalid (just == this)
             // TODO: merge reasons?
             return this;
         }
 
         if (status.isInvalid()) {
-            // status was validated and is INVALID -> merged is invalid (just == status)
+            // status was validated and is INVALID ->
+            //              merged is invalid (just == status)
             // TODO: merge reasons?
             return status;
         }
@@ -112,12 +149,12 @@ public final class ValidationStatus {
 
         if (this.isValid()) {
             // here status is not validated -> merge is the status
-            return status.equals(initialStatus) ? this : status;
+            return status == initialStatus ? this : status;
         }
 
         if (status.isValid()) {
             // here this is not validated -> merge is this
-            return this.equals(initialStatus) ? status : this;
+            return this == initialStatus ? status : this;
         }
 
         // here both are not validated... do merge!
@@ -125,15 +162,15 @@ public final class ValidationStatus {
                 new ArrayList<ObservableAction>();
         mergedActions.addAll(this.requiredActions);
         mergedActions.addAll(status.requiredActions);
-        
-        StringBuffer mergedReason = new StringBuffer();
-        
-        if (this.equals(initialStatus)) {
-            mergedReason.append(status.reason);
-        } else if (status.equals(initialStatus)) {
-            mergedReason.append(this.reason);
+
+        String mergedReason = null;
+
+        if (this == initialStatus) {
+            mergedReason = status.reason;
+        } else if (status == initialStatus) {
+            mergedReason = this.reason;
         } else {
-            mergedReason.append(this.reason).append("; ").append(status.reason);
+            mergedReason = this.reason + "; " + status.reason; // NOI18N
         }
 
         ValidationStatus result = new ValidationStatus(false, false,
@@ -143,6 +180,14 @@ public final class ValidationStatus {
         return result;
     }
 
+    /**
+     * Compares this status with the provided <tt>obj</tt>.
+     * @param obj object to compare this status with.
+     * @return true if and only if <tt>obj</tt> is instance of
+     * <tt>ValidationStatus</tt> and their state (defined/undefined,
+     * valid/invalid) are equal and <tt>getReason</tt> returns the same string
+     * for both.
+     */
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof ValidationStatus)) {
@@ -155,11 +200,11 @@ public final class ValidationStatus {
             return false;
         }
 
-        if (st.validated != validated) {
+        if (st.isDefined != isDefined) {
             return false;
         }
 
-        if (validated == true) {
+        if (isDefined == true) {
             if (st.isValid != isValid) {
                 return false;
             }
@@ -168,18 +213,28 @@ public final class ValidationStatus {
         return true;
     }
 
+    /**
+     * Returns a hash code value for the object that is based on object's
+     * sate and validation failure reason.
+     *
+     * @return a hash code value for this object.
+     */
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + (this.validated ? 1 : 0);
+        hash = 97 * hash + (this.isDefined ? 1 : 0);
         hash = 97 * hash + (this.isValid ? 1 : 0);
         hash = 97 * hash + (this.reason != null ? this.reason.hashCode() : 0);
         return hash;
     }
 
+    /**
+     * Returns a string representation of the <tt>ValidationStatus</tt>.
+     * @return a string representation of the object.
+     */
     @Override
     public String toString() {
-        if (!validated) {
+        if (!isDefined) {
             return "UNKNOWN: " + reason; // NOI18N
         } else {
             if (isValid) {
@@ -190,19 +245,44 @@ public final class ValidationStatus {
         }
     }
 
+    /**
+     * Returns actions (usually that require user interaction) needed to be
+     * performed to complete full validation.
+     *
+     * @return Collection of observable actions needed to be performed to
+     * complete full validation.
+     */
     public Collection<ObservableAction> getRequiredActions() {
         return requiredActions;
     }
 
+    /**
+     * Returns <tt>true</tt> if and only if the status is known and is valid.
+     * @return
+     *          <tt>true</tt> if and only if the status is known and is valid.
+     *          <tt>false</tt> otherwise
+     */
     public boolean isValid() {
-        return validated && isValid;
+        return isDefined && isValid;
     }
 
+    /**
+     * Returns <tt>true</tt> if and only if the status is known and is invalid.
+     * @return
+     *          <tt>true</tt> if and only if status the is known and is invalid.
+     *          <tt>false</tt> otherwise
+     */
     public boolean isInvalid() {
-        return validated && !isValid;
+        return isDefined && !isValid;
     }
 
-    public boolean isValidated() {
-        return validated;
+    /**
+     * Returns <tt>true</tt> if and only if the status is known.
+     * @return
+     *          <tt>true</tt> if and only if the status is known.
+     *          <tt>false</tt> otherwise
+     */
+    public boolean isKnown() {
+        return isDefined;
     }
 }

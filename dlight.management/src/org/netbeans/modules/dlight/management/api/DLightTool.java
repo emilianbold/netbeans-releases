@@ -154,7 +154,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     return DLightExecutorService.service.submit(new Callable<Boolean>() {
 
       public Boolean call() throws Exception {
-        if (!validationStatus.isValidated()) {
+        if (!validationStatus.isKnown()) {
           validationStatus = validate(target).get();
         }
 

@@ -125,7 +125,7 @@ final class ExecutionContext {
                     boolean thisToolStateChanged = !toolNewStatus.equals(shash.get(tool));
 
                     if (performRequiredActions) {
-                        if (!toolNewStatus.isValidated()) {
+                        if (!toolNewStatus.isKnown()) {
                             Collection<ObservableAction> actions =
                                 toolNewStatus.getRequiredActions();
                             
@@ -144,7 +144,7 @@ final class ExecutionContext {
                             thisToolStateChanged = !toolNewStatus.equals(shash.get(tool));
                         }
 
-                        if (!toolNewStatus.isValidated() && thisToolStateChanged) {
+                        if (!toolNewStatus.isKnown() && thisToolStateChanged) {
                             shash.put(tool, toolNewStatus);
                             hash.put(tool, task);
                             willReiterate = true;

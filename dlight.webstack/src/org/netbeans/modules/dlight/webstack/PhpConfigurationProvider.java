@@ -40,9 +40,7 @@ package org.netbeans.modules.dlight.webstack;
 
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -79,11 +77,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
 
     IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-    HashMap<String, Object> configuration = new HashMap<String, Object>();
-    configuration.put("aggregation", "avrg");
-
     BarIndicatorConfiguration cpuIndicator = new BarIndicatorConfiguration(indicatorMetadata);
-    cpuIndicator.setConfigurationData(new ConfigurationData(configuration));
     toolConfiguration.addIndicatorConfiguration(cpuIndicator);
 
     List<Column> phpColumns = Arrays.asList(

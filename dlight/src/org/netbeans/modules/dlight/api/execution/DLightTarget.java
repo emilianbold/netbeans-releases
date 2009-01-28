@@ -47,8 +47,8 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * D-Light Target. It can be anything: starting from shell script to
- *  the whole system.
+ * D-Light Target.Target to be d-lighted, it can be anything: starting from shell script to
+ *  the whole system.<br>
  * You should implement this interface in case you have your own
  * target type.
  * Default implementation {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget} can
@@ -164,7 +164,8 @@ public abstract class DLightTarget {
   }
 
   /**
-   * This service should be implemented to run target
+   * This service should be implemented to run target along
+   * with DLightTarget implementation
    * @param <T> target to execute
    */
   public interface DLightTargetExecutionService<T extends DLightTarget> {

@@ -44,7 +44,7 @@ import java.util.HashMap;
 import org.netbeans.modules.dlight.spi.impl.DataStorageTypeAccessor;
 
 /**
- *This is factory to get instance of {@link org.netbeans.modules.dlight.storage.spi.DataStorageType} object
+ *This is factory to get instance of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType} object
  */
 public final class DataStorageTypeFactory {
   private static DataStorageTypeFactory instance = null;

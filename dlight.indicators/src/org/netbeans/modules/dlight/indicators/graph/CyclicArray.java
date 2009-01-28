@@ -48,7 +48,7 @@ import java.lang.reflect.Array;
  *
  * @author Vladimir Kvashin
  */
-public class CyclicArray<T> {
+class CyclicArray<T> {
 
     /** array that stores elements */
     private T[] data;

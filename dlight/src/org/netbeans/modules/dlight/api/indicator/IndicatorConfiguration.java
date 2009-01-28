@@ -51,8 +51,6 @@ public abstract class IndicatorConfiguration {
 
   private IndicatorMetadata metadata;
   private VisualizerConfiguration visualizerConfiguration;
-  private ConfigurationData configurationData;
-
 
   static {
     IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
@@ -72,16 +70,10 @@ public abstract class IndicatorConfiguration {
    */
   public abstract String getID();
 
-  /**
-   * Sets configuration data if needed
-   * @param configurationData configuration to be used by {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
-   */
-  public final void setConfigurationData(ConfigurationData configurationData) {
-    this.configurationData = configurationData;
-  }
+
 
   /**
-   * Sets {@link org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration}
+   * Sets {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
    * which means Detailed View which will be opened when double or single mouse click on 
    * {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
    * @param configuration configuration to create {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
@@ -91,13 +83,7 @@ public abstract class IndicatorConfiguration {
     this.visualizerConfiguration = configuration;
   }
 
-  /**
-   * Returns {@link org.netbeans.modules.dlight.api.indicator.ConfigurationData} if it is set
-   * @return configuration data
-   */
-  protected final ConfigurationData getConfigurationData() {
-    return configurationData;
-  }
+
 
   /**
    * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
@@ -119,10 +105,7 @@ public abstract class IndicatorConfiguration {
 
   private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
 
-    @Override
-    public ConfigurationData getConfigurationData(IndicatorConfiguration configuration) {
-      return configuration.getConfigurationData();
-    }
+
 
     @Override
     public IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration) {

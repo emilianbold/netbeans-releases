@@ -43,12 +43,13 @@ import java.util.Collection;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 
 /**
- *
- * @param <T> 
+ * Factory to create {@link  org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider},
+ * Register your implementation in Global Lookup
+ * @param <T> VisualizerDataProvider implemenration this factory can create instances of
  */
 public interface VisualizerDataProviderFactory<T extends VisualizerDataProvider> {
      /**
-   * Returns the list of {@link org.netbeans.modules.dlight.dataprovider.api.DataModelScheme}
+   * Returns the list of {@link org.netbeans.modules.dlight.api.dataprovider.DataModelScheme}
    * this data provider can serve.
    * @return the list of data model this DataProvider can serve
    */

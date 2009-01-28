@@ -41,42 +41,42 @@ package org.netbeans.modules.dlight.api.execution;
 import java.util.concurrent.Future;
 
 /**
+ * Validateable objects have the ability to validate their internal state
+ * against some object of type <tt>T</tt> and report validation errors
+ * and/or required actions (to proceed validation) to calling code.
  *
- * @param <T>
+ * @param <T> type of an object that is passed to <tt>validate</tt> method.
  */
 public interface Validateable<T> {
 
     /**
-     *
-     * @param objectToValidate
-     * @return
+     * Perform validation against provided <tt>objectToValidate</tt>
+     * @param objectToValidate object that validation should be performed
+     * against.
+     * @return a Future representing pending completion of the validation
      */
     public Future<ValidationStatus> validate(T objectToValidate);
 
     /**
-     *
+     * Discards previous result of <tt>validate</tt> method.
      */
     public void invalidate();
 
     /**
-     *
-     * @return
+     * Returns <tt>ValidationStatus</tt> of most recent completed validation.
+     * @return <tt>ValidationStatus</tt> of most recent completed validation.
      */
     public ValidationStatus getValidationStatus();
 
     /**
-     *
-     * @param listener
+     * Adds <tt>ValidationListener</tt> listener.
+     * @param listener listener to be added
      */
     public void addValidationListener(ValidationListener listener);
 
     /**
-     *
-     * @param listener
+     * Remove <tt>ValidationListener</tt> listener.
+     * @param listener listener to be removed
      */
     public void removeValidationListener(ValidationListener listener);
-
-    /**
-     *
-     */
 }
