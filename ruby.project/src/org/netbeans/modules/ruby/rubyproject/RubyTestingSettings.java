@@ -47,14 +47,14 @@ import org.openide.util.NbPreferences;
  *
  * @author Erno Mononen
  */
-final class RubyTestingSettings {
+public final class RubyTestingSettings {
 
     private static final RubyTestingSettings INSTANCE = new RubyTestingSettings();
 
     private RubyTestingSettings() {
     }
 
-    static RubyTestingSettings getDefault() {
+    public static RubyTestingSettings getDefault() {
         return INSTANCE;
     }
 
@@ -66,7 +66,7 @@ final class RubyTestingSettings {
         getPreferences().putBoolean(type.name(), useRunner);
     }
 
-    boolean useRunner(TestType type) {
+    public boolean useRunner(TestType type) {
         return getPreferences().getBoolean(type.name(), true);
     }
 
