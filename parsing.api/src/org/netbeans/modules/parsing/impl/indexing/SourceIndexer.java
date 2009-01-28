@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -127,7 +126,7 @@ public class SourceIndexer {
     }
 
     private void deleted (final Collection<? extends Indexable> deleted) throws IOException {
-        final Set<String> allMimeTypes = getAllMimeTypes();
+        final Set<String> allMimeTypes = Util.getAllMimeTypes();
         for (String mimeType : allMimeTypes) {
             final EmbeddingIndexerFactory factory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
             if (factory != null) {
@@ -137,14 +136,7 @@ public class SourceIndexer {
             }
         }
     }
-
-    private static Set<String> getAllMimeTypes () {
-        return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
-    }
-
-    //For unit tests
-    public static Set<String> allMimeTypes;
-
+    
     private EmbeddingIndexerFactory findIndexer (final String mimeType) {
         assert mimeType != null;
         EmbeddingIndexerFactory indexer = embeddedIndexers.get(mimeType);
