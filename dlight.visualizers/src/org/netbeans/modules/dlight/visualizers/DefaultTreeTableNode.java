@@ -40,7 +40,7 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.support.TreeTableNode;
+import org.netbeans.modules.dlight.api.impl.TreeTableNode;
 
 
 /**
