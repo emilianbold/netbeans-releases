@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.php.editor;
 
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author Tor Norbye
@@ -61,7 +58,7 @@ public abstract class PHPTestBase extends CslTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
-        getXTestJsCluster();
+        //getXTestJsCluster();
     }
     
     @Override
@@ -80,11 +77,11 @@ public abstract class PHPTestBase extends CslTestBase {
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
     // If anyone can figure this out, please let me know and simplify the
     // test infrastructure.
-    public static BaseDocument getDocumentFor(FileObject fo) {
-        BaseDocument doc = super.getDocument(read(fo));
-        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
-
-        return doc;
-    }
+//    public static BaseDocument getDocumentFor(FileObject fo) {
+//        BaseDocument doc = CslTestBase.getDocument(read(fo));
+//        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
+//        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
+//
+//        return doc;
+//    }
 }

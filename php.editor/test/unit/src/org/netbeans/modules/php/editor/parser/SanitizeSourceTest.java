@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 

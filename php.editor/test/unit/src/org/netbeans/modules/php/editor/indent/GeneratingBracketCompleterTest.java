@@ -46,9 +46,10 @@ import javax.swing.text.Caret;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.TestBase;
@@ -204,18 +205,21 @@ public class GeneratingBracketCompleterTest extends TestBase {
         final int finalCaretPos = expected.indexOf('^');
         final String originalFin = original.substring(0, insertOffset) + original.substring(insertOffset + 1);
         final String expectedFin = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos + 1);
-        performTest(new String[] {originalFin}, new CancellableTask<CompilationInfo>() {
+        performTest(new String[] {originalFin}, new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
+            
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                 insertBreak(parameter, originalFin, expectedFin, insertOffset, finalCaretPos);
             }
         });
     }
     
-    private void insertBreak(CompilationInfo info, String original, String expected, int insertOffset, int finalCaretPos) throws BadLocationException, DataObjectNotFoundException, IOException {
+    private void insertBreak(ParserResult info, String original, String expected, int insertOffset, int finalCaretPos) throws BadLocationException, DataObjectNotFoundException, IOException {
         PHPBracketCompleter bc = new PHPBracketCompleter();
         
-        BaseDocument doc = (BaseDocument) info.getDocument();//PHPBracketCompleterTest.getDocument(original);
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);//PHPBracketCompleterTest.getDocument(original);
         assertNotNull(doc);
 
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());

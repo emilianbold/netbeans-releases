@@ -46,18 +46,13 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,7 +62,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public class TestBase extends GsfTestBase {
+public class TestBase extends CslTestBase {
     
     public TestBase(String testName) {
         super(testName);
@@ -124,7 +119,7 @@ public class TestBase extends GsfTestBase {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
     
-    protected void performTest(String[] code, final CancellableTask<CompilationInfo> task) throws Exception {
+    protected void performTest(String[] code, final UserTask task) throws Exception {
         clearWorkDir();
         FileUtil.refreshAll();
         

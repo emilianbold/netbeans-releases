@@ -40,9 +40,9 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.List;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.StructureItem;
 
 /**
  *
