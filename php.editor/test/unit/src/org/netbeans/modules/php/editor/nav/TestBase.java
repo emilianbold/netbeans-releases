@@ -120,44 +120,44 @@ public class TestBase extends CslTestBase {
     }
     
     protected void performTest(String[] code, final UserTask task) throws Exception {
-        clearWorkDir();
-        FileUtil.refreshAll();
-        
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        FileObject cache = workDir.createFolder("cache");
-        FileObject folder = workDir.createFolder("src");
-        FileObject cluster = workDir.createFolder("cluster");
-        int index = -1;
-        
-        for (String c : code) {
-            FileObject f = FileUtil.createData(folder, computeFileName(index));
-            TestUtilities.copyStringToFile(f, c);
-            index++;
-        }
-        
-        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
-        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
-        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
-        
-        l.await();
-        
-        final FileObject test = folder.getFileObject("test.php");
-        
-        Document doc = openDocument(test);
-        
-        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath source = ClassPathSupport.createClassPath(folder);
-        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
-        Source s = Source.create(info, test);
-        
-        s.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(Phase.UP_TO_DATE);
-                
-                task.run(parameter);
-            }
-        }, true);
+//        clearWorkDir();
+//        FileUtil.refreshAll();
+//
+//        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//        FileObject cache = workDir.createFolder("cache");
+//        FileObject folder = workDir.createFolder("src");
+//        FileObject cluster = workDir.createFolder("cluster");
+//        int index = -1;
+//
+//        for (String c : code) {
+//            FileObject f = FileUtil.createData(folder, computeFileName(index));
+//            TestUtilities.copyStringToFile(f, c);
+//            index++;
+//        }
+//
+//        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
+//        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
+//        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
+//
+//        l.await();
+//
+//        final FileObject test = folder.getFileObject("test.php");
+//
+//        Document doc = openDocument(test);
+//
+//        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath source = ClassPathSupport.createClassPath(folder);
+//        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
+//        Source s = Source.create(info, test);
+//
+//        s.runUserActionTask(new CancellableTask<CompilationController>() {
+//            public void cancel() {}
+//            public void run(CompilationController parameter) throws Exception {
+//                parameter.toPhase(Phase.UP_TO_DATE);
+//
+//                task.run(parameter);
+//            }
+//        }, true);
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {
