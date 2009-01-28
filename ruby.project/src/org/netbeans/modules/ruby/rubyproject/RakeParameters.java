@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.rubyproject;
 
-package org.netbeans.modules.glassfish.javaee.ide;
-
-import javax.enterprise.deploy.spi.Target;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 
 /**
+ * A helper class for getting parameters for a rake task.
  *
- * @author Ludo
+ * @author Erno Mononen
  */
-public class Hk2Target implements Target {
-    
-    private String uri;
-    
-    public Hk2Target( String uri) {
-        this.uri=uri;
+public final class RakeParameters {
+
+    private RakeParameters() {
     }
-    
-    public String getName() {
-        return "GlassFish v3 Prelude";
+    /**
+     * Gets all the parameters applicable for the given task.
+     * 
+     * @param task
+     * @param project
+     * @return
+     */
+    public static List<RakeParameter> getParameters(RakeTask task, Project project) {
+        List<RakeParameter> result = new ArrayList<RakeParameter>();
+        if (Fixtures.isFixtureTask(task)) {
+            result.addAll(Fixtures.getFixtures(project));
+        }
+        if (Migrations.isMigrateTask(task)) {
+            result.addAll(Migrations.getMigrations(project));
+        }
+        return result;
     }
 
-    public String getDescription() {
-        return "GlassFish v3 Prelude Application server, the hundred K kernel...";
-    }
-    
-    public String getServerUri () {
-        return uri;
-    }
-    
-    @Override
-    public String toString() {
-        return getDescription();
-    }
+    public interface RakeParameter {
 
+        String toRakeParam();
+    }
 }
+

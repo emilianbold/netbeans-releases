@@ -40,6 +40,7 @@
             <exclude name="ide1*"/>
             <exclude name="platform*"/>
             <exclude name="ergonomics*"/>
+            <exclude name="extra*"/>
             <exclude name="nb*.*"/>
             <exclude name="bin"/>
             <exclude name="etc"/>
@@ -48,12 +49,29 @@
 
 
     <target name="-disable-kits" depends="-init-clusters">
-        <mkdir dir="${release.dir}/config/Modules"/>
+        <property name="build.release.dir" location="build/release"/>
+        <mkdir dir="${build.release.dir}/config/Modules"/>
         <subant genericantfile="build.xml" target="-disable-one-cluster">
-            <property name="xmldir" value="${release.dir}/config/Modules"/>
+            <property name="xmldir" value="${build.release.dir}/config/Modules"/>
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
+        <pathconvert property="extra.modules.files" pathsep=",">
+            <path>
+                <fileset id="-disable-kits" dir="${build.release.dir}">
+                    <include name="**/*"/>
+                </fileset>
+            </path>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="config/Modules/*"/>
+            </chainedmapper>
+        </pathconvert>
+        <copy todir="${cluster}">
+            <fileset dir="${build.release.dir}">
+                <include name="${extra.modules.files}"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="-generate-proxies" depends="-init-clusters">

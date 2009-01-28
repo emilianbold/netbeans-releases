@@ -72,8 +72,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ruby.rubyproject.Migrations;
-import org.netbeans.modules.ruby.rubyproject.Migrations.Migration;
+import org.netbeans.modules.ruby.rubyproject.RakeParameters;
+import org.netbeans.modules.ruby.rubyproject.RakeParameters.RakeParameter;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -163,7 +163,7 @@ public final class RakeTaskChooser extends JPanel {
         // no param option for convenience
         params.add(""); //NOI18N
         params.addAll(getStoredParams(task));
-        params.addAll(getMigrations(task));
+        params.addAll(RakeParameters.getParameters(task, project));
         taskParametersComboBox.setModel(new DefaultComboBoxModel(params.toArray()));
         preselectLastSelectedParam(task);
     }
@@ -186,8 +186,8 @@ public final class RakeTaskChooser extends JPanel {
         }
         for (int i = 0; i < taskParametersComboBox.getItemCount(); i++) {
             Object item = taskParametersComboBox.getItemAt(i);
-            if (item instanceof Migration) {
-                if (((Migration) item).toRakeParam().equals(lastSelected)) {
+            if (item instanceof RakeParameter) {
+                if (((RakeParameter) item).toRakeParam().equals(lastSelected)) {
                     taskParametersComboBox.setSelectedIndex(i);
                     break;
                 }
@@ -195,18 +195,6 @@ public final class RakeTaskChooser extends JPanel {
                 taskParametersComboBox.setSelectedIndex(i);
             }
         }
-    }
-
-    /**
-     * Gets the db migrations (if any) for the given task.
-     * @param task
-     * @return
-     */
-    private List<Migration> getMigrations(RakeTask task) {
-        if (Migrations.isMigrateTask(task)) {
-            return Migrations.getMigrations(project);
-        }
-        return Collections.<Migration>emptyList();
     }
 
     private Map<RakeTask,ParameterContainer> getTasksToParams() {
@@ -239,8 +227,8 @@ public final class RakeTaskChooser extends JPanel {
     private String getParameters() {
         Object selected = taskParametersComboBox.getSelectedItem();
         String result = ""; //NOI18N
-        if (selected instanceof Migration) {
-            result = ((Migration) selected).toRakeParam();
+        if (selected instanceof RakeParameter) {
+            result = ((RakeParameter) selected).toRakeParam();
         } else {
             result = selected.toString();
         }

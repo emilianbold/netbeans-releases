@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.ide;
+package org.netbeans.modules.php.project.util;
 
-import javax.enterprise.deploy.spi.Target;
+import java.util.Arrays;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
 /**
- *
- * @author Ludo
+ * @author Tomas Mysik
  */
-public class Hk2Target implements Target {
-    
-    private String uri;
-    
-    public Hk2Target( String uri) {
-        this.uri=uri;
-    }
-    
-    public String getName() {
-        return "GlassFish v3 Prelude";
+public class PhpUnitTest extends NbTestCase {
+
+    public PhpUnitTest(String name) {
+        super(name);
     }
 
-    public String getDescription() {
-        return "GlassFish v3 Prelude Application server, the hundred K kernel...";
-    }
-    
-    public String getServerUri () {
-        return uri;
-    }
-    
-    @Override
-    public String toString() {
-        return getDescription();
-    }
+    public void testPhpUnitVersion() {
+        int[] version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3 by Sebastian Bergmann.");
+        assertNull(version);
 
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit A3.3.1 by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3x.1 by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1a by Sebastian Bergmann.");
+        assertNull(version);
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit          3.3.1 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
+
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 323324.3877987.165456 by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
+    }
 }

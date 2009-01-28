@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.rubyproject.RakeParameters.RakeParameter;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.openide.filesystems.FileObject;
 
@@ -76,7 +77,7 @@ public final class Migrations {
     /**
      * @return true if the given task represents a db migration task.
      */
-    public static boolean isMigrateTask(RakeTask task) {
+    static boolean isMigrateTask(RakeTask task) {
         if (task == null) {
             return false;
         }
@@ -162,7 +163,7 @@ public final class Migrations {
     /**
      * Represents a single migration.
      */
-    public static class Migration implements Comparable<Migration> {
+    public static class Migration implements RakeParameter, Comparable<Migration> {
 
         /**
          * The version of the migration.
@@ -206,7 +207,7 @@ public final class Migrations {
             return "VERSION=" + getVersion();  //NOI18N
         }
 
-        public String getDisplayName() {
+        private String getDisplayName() {
             return toRakeParam() + " (" + getDescription() + ")"; //NOI18N
         }
 
