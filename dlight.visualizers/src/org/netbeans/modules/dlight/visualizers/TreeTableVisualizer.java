@@ -57,7 +57,7 @@ import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.support.TreeTableNode;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
-import org.netbeans.modules.dlight.spi.support.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -98,10 +98,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JTable implements Vis
 
 
 
-  TreeTableVisualizer( TreeTableVisualizerConfiguration configuration, DataProvider dataProvider) {
+  TreeTableVisualizer( TreeTableVisualizerConfiguration configuration, TreeTableDataProvider<T> dataProvider) {
     timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
     this.configuration = configuration;
-    this.dataProvider = (TreeTableDataProvider<T>)dataProvider;
+    this.dataProvider = dataProvider;
 //    init(c);
 //    linkWith(dataView);
 //    isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);

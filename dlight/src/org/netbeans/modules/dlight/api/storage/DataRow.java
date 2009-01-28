@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.api.storage;
 import java.util.List;
 
 /**
- * Represents one table ro along with table description
+ * Represents one row of data along with column names
  */
 public final class DataRow {
   private List<String> colnames;
@@ -106,7 +106,7 @@ public final class DataRow {
   /**
    * Returns data for column with the name <code>columnName</code>
    * @param columnName column name
-   * @return
+   * @return return value for the column with <code>columnName</code>
    */
   public Object getData(String columnName){
     int idx = colnames.indexOf(columnName);

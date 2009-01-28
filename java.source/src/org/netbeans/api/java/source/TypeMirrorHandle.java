@@ -68,7 +68,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Represents a handle for {@link TypeMirror} which can be kept and later resolved
@@ -109,8 +109,8 @@ import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
  */
 public final class TypeMirrorHandle<T extends TypeMirror> {
 
-    private TypeKind kind;
-    private ElementHandle<? extends Element> element;
+    private final TypeKind kind;
+    private final ElementHandle<? extends Element> element;
     private List<TypeMirrorHandle<? extends TypeMirror>> typeMirrors;
     
     private TypeMirrorHandle(TypeKind kind, ElementHandle<? extends Element> element, List<TypeMirrorHandle<? extends TypeMirror>> typeArguments) {
@@ -129,7 +129,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * @throws {@link IllegalArgumentException} if the {@link TypeMirror} is of an unsupported
      * {@link TypeKind}.
      */
-    public static <T extends TypeMirror> TypeMirrorHandle<T> create(T tm) {
+    public static @NonNull <T extends TypeMirror> TypeMirrorHandle<T> create(@NonNull T tm) {
         return create(tm, new HashMap<TypeMirror, TypeMirrorHandle>());
     }
     
@@ -215,7 +215,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * @return resolved subclass of {@link TypeMirror} or null if the type cannot be
      * resolved in this {@link javax.tools.CompilationTask}.
      */
-    public T resolve(CompilationInfo info) {
+    public T resolve(@NonNull CompilationInfo info) {
         return resolve(info, new HashMap<TypeMirrorHandle, PlaceholderType>());
     }
     
@@ -334,7 +334,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * was created.
      * @return {@link TypeKind}
      */
-    public TypeKind getKind () {
+    public @NonNull TypeKind getKind () {
         return this.kind;
     }
     

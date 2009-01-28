@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,77 +34,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.indicator;
+package org.netbeans.modules.dlight.api.storage.types;
 
-import java.util.HashMap;
+import java.beans.PropertyEditorManager;
+import org.netbeans.modules.dlight.spi.impl.TimeEditor;
 
 /**
- * Represents Map to be used by {@link org.netbeans.modules.dlight.indicator.api.IndicatorConfiguration}
+ * Metric value class for time interval in nanoseconds. Immutable.
+ *
+ * @author Alexey Vladykin
  */
-public final class ConfigurationData {
-  private final HashMap<String, Object> map;
-  private final String path;
-  
-  private ConfigurationData(HashMap<String, Object> map, String path) {
-    this.path = path;
-    this.map = map == null ? new HashMap<String, Object>() : map;
-  }
-  
-  /**
-   * Creates new configuration data 
-   * @param map pair name-value
-   */
-  public ConfigurationData(HashMap<String, Object> map) {
-    this(map, null);
-  }
+public class Time implements Comparable<Time> {
 
- 
-  
-  /**
-   *Returns value for the key
-   * @param key key to get value for
-   * @return value  if record with <code>key</code> exists, <code>null</code> otherwise
-   */
-  public Object get(String key) {
-    return get(path, key);
-  }
-  
-  private Object get(final String path, final String key) {
-    String k = path == null ? key : path + key;
-    if (map.containsKey(k)) {
-      return map.get(k);
-    }
-    
-    if (path == null || path.length() == 0) {
-      return null;
-    }
-    
-    String prevPath = path.substring(0, path.length() - 1);
-    int idx = prevPath.lastIndexOf('/');
-    prevPath = (idx >= 0) ? prevPath.substring(0, idx) : null;
-    
-    return get(prevPath == null ? null : prevPath.concat("/"), key);
-  }
+    private final long nanos;
 
-  /**
-   * Returns full keey value
-   * @param key
-   * @return
-   */
-  private String getFullKey(String key) {
-    return path == null ? key : path + key;    
-  }
-  
-  /**
-   * Return node
-   * @param key
-   * @return
-   */
-  public ConfigurationData getNode(String key) {
-    String nodepath = getFullKey(key) + '/';
-    return new ConfigurationData(map, nodepath);
-  }
+    /**
+     * Creates new instance.
+     *
+     * @param nanos  time in nanoseconds
+     */
+    public Time(long nanos) {
+        this.nanos = nanos;
+    }
+
+    /**
+     * @return time in nanoseconds
+     */
+    public long getNanos() {
+        return nanos;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(nanos).append(" nanoseconds");
+        return buf.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Time) {
+            return this.nanos == ((Time) obj).nanos;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return 29 + (int) (nanos ^ (nanos >>> 32));
+    }
+
+    public int compareTo(Time that) {
+        if (this.nanos < that.nanos) {
+            return -1;
+        } else if (this.nanos == that.nanos) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    static {
+        PropertyEditorManager.registerEditor(Time.class, TimeEditor.class);
+    }
+
 }

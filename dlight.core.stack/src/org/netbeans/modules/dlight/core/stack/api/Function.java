@@ -36,43 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.model;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.Hashtable;
-
-public class NaturalFunctionCallComparator implements FunctionCallComparator {
-
-  private final FunctionMetric metric;
-  private static final Hashtable<FunctionMetric, NaturalFunctionCallComparator> instances =
-          new Hashtable<FunctionMetric, NaturalFunctionCallComparator>();
-
-  private NaturalFunctionCallComparator(FunctionMetric metric) {
-    this.metric = metric;
-  }
-
-  public static final NaturalFunctionCallComparator getInstance(FunctionMetric metric) {
-    if (instances.get(metric) == null) {
-      instances.put(metric, new NaturalFunctionCallComparator(metric));
-    }
-
-    return instances.get(metric);
-  }
-
-  public int compare(FunctionCall o1, FunctionCall o2) {
-    int res = 0;
-    Object c1 = o1.getMetricValue(metric);
-    Object c2 = o2.getMetricValue(metric);
-    if (c1 instanceof String && c2 instanceof String) {
-      res = ((String) c1).compareTo((String) c2);
-    }
-
-    if (c1 instanceof Number && c2 instanceof Number) {
-      double l1 = ((Number) c1).doubleValue();
-      double l2 = ((Number) c2).doubleValue();
-      res = l1 == l2 ? 0 : l1 < l2 ? 1 : -1;
-    }
-
-    return res == 0 ? o1.getFunction().getQuilifiedName().compareTo(o2.getFunction().getQuilifiedName()) : res;
-
-  }
+/**
+ * Function
+ */
+public interface Function {
+  public String getName();
+  public String getQuilifiedName();
 }

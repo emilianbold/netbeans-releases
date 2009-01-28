@@ -54,7 +54,7 @@ import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 /**
  * Implementation of files copying routines
  */
-public class CopyTask extends NativeTask {
+public final class CopyTask extends NativeTask {
 
     private final StringBuffer cmdOut;
 

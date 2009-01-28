@@ -41,7 +41,9 @@ package org.netbeans.modules.dlight.api.collector;
 
 /**
  * Use DataCollectorConfiguration to register it in
- * {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration}
+ * {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration}.
+ * DataCollectorConfiguration is used to create {@link org.netbeans.modules.dlight.spi.collector.DataCollector}
+ * instance.
  */
 public interface DataCollectorConfiguration {
   /**

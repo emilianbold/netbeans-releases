@@ -74,7 +74,7 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
         suLoginField = new javax.swing.JTextField();
         suPasswordField = new javax.swing.JPasswordField();
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
+        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background")); // NOI18N
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
@@ -137,10 +137,10 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_hdlPasswordFieldFocus
 
     public boolean askPassword() {
-        suPasswordField.setText("");
+        suPasswordField.setText(""); // NOI18N
 
         DialogDescriptor dd = new DialogDescriptor(this,
-                loc("GrantPrivilegesDialog.title"), true,
+                loc("GrantPrivilegesDialog.title"), true, // NOI18N
                 new Object[]{
                     DialogDescriptor.OK_OPTION,
                     DialogDescriptor.CANCEL_OPTION

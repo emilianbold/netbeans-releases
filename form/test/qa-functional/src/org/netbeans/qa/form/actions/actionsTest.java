@@ -40,7 +40,6 @@
  */
 package org.netbeans.qa.form.actions;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
@@ -314,7 +313,6 @@ public class actionsTest extends JellyTestCase {
 
     /** Test case 5
      * org.netbeans.modules.form.actions.InstallBeanAction 
-     * org.netbeans.modules.form.actions.InstallToPaletteAction 
      */
     public void testBeans() throws InterruptedException {
         String beanName = "MyBean";
@@ -339,14 +337,17 @@ public class actionsTest extends JellyTestCase {
         new ActionNoBlock(null, "Tools|Add to Palette...").perform(beanNode);
 
         Thread.sleep(2000);
+    }
+
+    /** Test case 6
+     * org.netbeans.modules.form.actions.InstallToPaletteAction
+     */
+    public void testBeans2() throws InterruptedException {
         NbDialogOperator jdo = new NbDialogOperator("Select Palette Category");
         JListOperator jlo = new JListOperator(jdo);
         jlo.selectItem("Beans");
         jdo.btOK().push();
         Thread.sleep(3000);
-
-
-
     }
 
     private void createForm(String formType, String name) throws InterruptedException {

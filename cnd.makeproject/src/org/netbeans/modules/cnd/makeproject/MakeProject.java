@@ -554,7 +554,9 @@ public final class MakeProject implements Project, AntProjectListener {
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
-            projectDescriptorProvider.getConfigurationDescriptor();
+            if (!projectDescriptorProvider.gotDescriptor()){
+                return FileEncodingQuery.getDefaultEncoding().name();
+            }
         }
         if (sourceEncoding == null) {
             sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();

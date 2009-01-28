@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -72,7 +73,7 @@ final class DLightSessionsTopComponent extends TopComponent
         initComponents();
         setName(NbBundle.getMessage(DLightSessionsTopComponent.class, "CTL_DLightSessionsTopComponent"));
         setToolTipText(NbBundle.getMessage(DLightSessionsTopComponent.class, "HINT_DLightSessionsTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
     }
 
     /** This method is called from within the constructor to

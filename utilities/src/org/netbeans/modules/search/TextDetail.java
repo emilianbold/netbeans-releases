@@ -95,9 +95,13 @@ final class TextDetail {
     private Line lineObj;
     /** SearchPattern used to create the hit of this DetailNode */
     private SearchPattern searchPattern;
+    /** Start offset of the matched text in the file */
+    private int startOffset;
+    /** End offset of the matched text in the file */
+    private int endOffset;
+    /** Whole matched text */
+    private String matchedText;
 
-    
-    
     /** Constructor using data object. 
      * @param pattern  SearchPattern used to create the hit of this DetailNode 
      */
@@ -197,6 +201,36 @@ final class TextDetail {
     /** @return length or 0 */
     int getMarkLength() {
         return markLength;
+    }
+
+    /** Gets the end position of the matched text in the file. */
+    int getEndOffset() {
+        return endOffset;
+    }
+
+    /** Sets the end position of the matched text in the file. */
+    void setEndOffset(int endOffset) {
+        this.endOffset = endOffset;
+    }
+
+    /** Gets the start position of the matched text in the file. */
+    int getStartOffset() {
+        return startOffset;
+    }
+
+    /** Sets the start position of the matched text in the file. */
+    void setStartOffset(int startOffset) {
+        this.startOffset = startOffset;
+    }
+
+    /** Gets the matched text. */
+    String getMatchedText() {
+        return matchedText;
+    }
+
+    /** Sets the matched text. */
+    void setMatchedText(String matchedText) {
+        this.matchedText = matchedText;
     }
 
     private void prepareLine() {
@@ -335,8 +369,12 @@ final class TextDetail {
 
                     bold.append(XMLUtil.toElementContent(plain.substring(0, col0)));  // NOI18N
                     bold.append("<b>");  // NOi18N
-                    int end = col0 + txtDetail.getMarkLength();
-                    bold.append(XMLUtil.toElementContent(plain.substring(col0, end)));
+                    int end = col0 + Math.min(txtDetail.getMarkLength(), txtDetail.getLineText().length() - col0);
+                    if ((col0 + txtDetail.getMarkLength()) > txtDetail.getLineText().length()){
+                        bold.append(XMLUtil.toElementContent(plain.substring(col0, end) + " ...")); //NOI18N
+                    }else{
+                        bold.append(XMLUtil.toElementContent(plain.substring(col0, end)));
+                    }
                     bold.append("</b>"); // NOi18N
                     if (txtDetail.getLineText().length() > end) {
                         bold.append(XMLUtil.toElementContent(plain.substring(end)));
