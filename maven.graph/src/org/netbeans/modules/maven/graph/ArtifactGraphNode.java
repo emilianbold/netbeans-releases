@@ -59,6 +59,7 @@ public class ArtifactGraphNode {
     
     private boolean root;
     private HashSet<DependencyNode> dupl;
+    private int level;
 
     /** Creates a new instance of ArtifactGraphNode */
     public ArtifactGraphNode(DependencyNode art) {
@@ -82,13 +83,11 @@ public class ArtifactGraphNode {
     Set<DependencyNode> getDuplicatesOrConflicts() {
         return dupl;
     }
+
     
-    public void setRoot(boolean r) {
-        root = r;
-    }
     
     public boolean isRoot() {
-        return root;
+        return level == 0;
     }
     
     public void setFixed(boolean fixed) {
@@ -101,6 +100,14 @@ public class ArtifactGraphNode {
     
     public boolean isVisible() {
         return widget != null ? widget.isVisible() : true;
+    }
+
+    void setPrimaryLevel(int i) {
+        level = i;
+    }
+    
+    public int getPrimaryLevel() {
+        return level;
     }
     
     void setWidget(Widget wid) {

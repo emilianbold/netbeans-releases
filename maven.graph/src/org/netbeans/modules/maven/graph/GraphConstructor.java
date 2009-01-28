@@ -79,10 +79,12 @@ class GraphConstructor implements DependencyNodeVisitor {
             grNode = cache.get(node.getArtifact().getDependencyConflictId());
             if (grNode == null) {
                 grNode = new ArtifactGraphNode(node);
+                grNode.setPrimaryLevel(path.size());
                 cache.put(node.getArtifact().getDependencyConflictId(), grNode);
                 scene.addNode(grNode);
             } else {
                 grNode.setArtifact(node);
+                grNode.setPrimaryLevel(path.size());
                 scene.addNode(grNode);
             }
             primary = true;
@@ -99,7 +101,7 @@ class GraphConstructor implements DependencyNodeVisitor {
         if (!path.empty()) {
             DependencyNode parent = path.peek();
             ArtifactGraphEdge ed = new ArtifactGraphEdge(parent, node);
-            ed.setLevel(path.size() - 0);
+            ed.setLevel(path.size() - 1);
             ed.setPrimaryPath(primary);
             edges.add(ed);
         }
