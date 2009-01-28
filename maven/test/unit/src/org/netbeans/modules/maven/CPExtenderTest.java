@@ -75,7 +75,17 @@ public class CPExtenderTest extends TestCase {
         assertEquals("toplink.essentials", result[2]);
         assertEquals("toplink-essentials-agent", result[3]);
         assertEquals("2.0-36", result[4]);
-        
+
+        pom = new URL("http://download.java.net/maven/1/javax.jws/poms/jsr181-api-1.0-MR1.pom");
+        result = CPExtender.checkLibrary(pom, repos);
+        assertNotNull(result);
+        assertEquals("legacy", result[0]);
+        assertEquals("http://download.java.net/maven/1/", result[1]);
+        assertEquals("javax.jws", result[2]);
+        assertEquals("jsr181-api", result[3]);
+        assertEquals("1.0-MR1", result[4]);
+
+
         pom = new URL("http://repo1.maven.org/maven2/org/codehaus/mevenide/netbeans-deploy-plugin/1.2.3/netbeans-deploy-plugin-1.2.3.pom");
         result = CPExtender.checkLibrary(pom, repos);
         assertNotNull(result);
