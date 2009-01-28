@@ -38,8 +38,9 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+
 
 /**
  * Formatter just for testing purposses

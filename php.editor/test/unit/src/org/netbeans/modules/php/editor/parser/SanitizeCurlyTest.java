@@ -253,7 +253,7 @@ public class SanitizeCurlyTest extends NbTestCase {
     private void execute(String original, String expected, int expectedDelta) throws Exception {
         int originalLength = original.length();
         GSFPHPParser parser = new GSFPHPParser();
-        Context context = new GSFPHPParser.Context(null, null , original, -1, null);
+        Context context = new GSFPHPParser.Context(null , original, -1);
         parser.sanitizeCurly(context);
         assertEquals(expected, context.getSanitizedSource());
         assertEquals(originalLength+expectedDelta, context.getSanitizedSource().length());
