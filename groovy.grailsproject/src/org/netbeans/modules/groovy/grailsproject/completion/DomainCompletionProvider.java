@@ -39,15 +39,23 @@
 
 package org.netbeans.modules.groovy.grailsproject.completion;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionContext;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
 
@@ -62,9 +70,22 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
     private static final String FIND_BY_METHOD = "findBy"; // NOI18N
 
-    // FIXME move it to some resource file, check the grails version
-    // 1.0.4
+    private static final String FIND_ALL_BY_METHOD = "findAllBy"; // NOI18N
+
+    private static final String COUNT_BY_METHOD = "countBy"; // NOI18N
+
+    private static final Set<String> QUERY_OPERATOR = new HashSet<String>();
+
+    private static final Set<String> QUERY_COMPARATOR = new HashSet<String>();
+
+    // FIXME move it to some resource file, check the grails version - this is for 1.0.4
     static {
+        Collections.addAll(QUERY_OPERATOR, "And", "Or");
+
+        Collections.addAll(QUERY_COMPARATOR, "LessThan", "LessThanEquals",
+                "GreaterThan", "GreaterThanEquals", "Like", "ILike",
+                "Equal", "NotEqual", "Between", "IsNotNull", "IsNull");
+
         String[] noParams = new String[] {};
 
         BASIC_METHODS.put(new MethodSignature("save", new String[] {"java.lang.Boolean"}), "java.lang.Object"); // NOI18N
@@ -98,12 +119,12 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<FieldSignature, String> getFields(DynamicCompletionContext context) {
+    public Map<FieldSignature, CompletionItem> getFields(CompletionContext context) {
         return Collections.emptyMap();
     }
 
     @Override
-    public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+    public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
         if (context.getSourceFile() == null) {
             return Collections.emptyMap();
         }
@@ -113,22 +134,230 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 && */context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
-                Map<MethodSignature, String> result = new HashMap<MethodSignature, String>();
-                for (String property : context.getProperties()) {
-                    result.put(new MethodSignature("findBy" + capitalise(property),
-                            new String[] {"java.lang.Object"}), "java.lang.Object");
-                    result.put(new MethodSignature("findAllBy" + capitalise(property),
-                            new String[] {"java.lang.Object"}), "java.util.List");
-                    result.put(new MethodSignature("countBy" + capitalise(property),
-                            new String[] {"java.lang.Object"}), "int");
+                Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+                result.putAll(getQueryMethods(context));
+                for (Map.Entry<MethodSignature, String> entry : BASIC_METHODS.entrySet()) {
+                    result.put(entry.getKey(), CompletionItem.forDynamicMethod(
+                            context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
                 }
-                result.putAll(BASIC_METHODS);
                 return result;
             }
         }
         return Collections.emptyMap();
     }
 
+    private Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
+        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+
+        Matcher matcher = getQueryMethodPattern(context).matcher(context.getPrefix());
+//        System.out.println("MATCHES: " + matcher.matches());
+//        if (matcher.matches()) {
+//            System.out.println("GROUPS: " + matcher.groupCount());
+//            for (int i = 1; i <= matcher.groupCount(); i++) {
+//                System.out.println("GROUP(" + i + "): " + matcher.group(i));
+//            }
+//            System.out.println("PREFIX: " + matcher.group(9));
+//        }
+
+        if (matcher.matches()) {
+            String prefix = matcher.group(13);
+            String name = context.getPrefix().substring(0, context.getPrefix().length() - prefix.length());
+
+            if (prefix == null) {
+                prefix = "";
+            }
+
+            Map<String, Integer> names = new HashMap<String, Integer>();
+            Set<String> forbidden = new HashSet<String>();
+            int paramCount = getUsedComparators(context, forbidden);
+
+            // comparator
+            if (matcher.group(10) != null) {
+                // operator + property
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+            // property
+            } else if (matcher.group(9) != null) {
+                // comparator or (operator + property)
+                names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(9), forbidden, paramCount));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+            // operator
+            } else if (matcher.group(7) != null) {
+                // property
+                names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
+            // comparator
+            } else if (matcher.group(4) != null) {
+                // operator + property
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+            // property
+            } else if (matcher.group(3) != null) {
+                // comparator or (operator + property)
+                names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(3), forbidden, paramCount));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+            }
+
+            for (Map.Entry<String, Integer> entry : names.entrySet()) {
+
+                String[] parameters = new String[entry.getValue().intValue()];
+                Arrays.fill(parameters, "java.lang.Object");
+                result.put(new MethodSignature(entry.getKey(), parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
+
+                parameters = new String[entry.getValue().intValue() + 1];
+                Arrays.fill(parameters, "java.lang.Object");
+                parameters[entry.getValue().intValue()] = "java.util.Map";
+                result.put(new MethodSignature(entry.getKey(), parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
+
+                if (!context.isNameOnly()) {
+                    result.put(new MethodSignature(entry.getKey() + "_", new String[] {}),
+                            CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), new String[] {}, "java.lang.Object", true, true));
+                }
+            }
+        } else {
+            for (String property : context.getProperties()) {
+                String name = FIND_BY_METHOD + capitalise(property);
+                String[] parameters = new String[] {"java.lang.Object"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.lang.Object", context.isNameOnly(), false));
+                parameters = new String[] {"java.lang.Object", "java.util.Map"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.lang.Object", context.isNameOnly(), false));
+
+                if (!context.isNameOnly()) {
+                    result.put(new MethodSignature(name + "_", new String[] {}),
+                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "java.lang.Object", true, true));
+                }
+
+                name = FIND_ALL_BY_METHOD + capitalise(property);
+                parameters = new String[] {"java.lang.Object"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.util.List", context.isNameOnly(), false));
+                parameters = new String[] {"java.lang.Object", "java.util.Map"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.util.List", context.isNameOnly(), false));
+
+                if (!context.isNameOnly()) {
+                    result.put(new MethodSignature(name + "_", new String[] {}),
+                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "java.util.List", true, true));
+                }
+
+                name = COUNT_BY_METHOD + capitalise(property);
+                parameters = new String[] {"java.lang.Object"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "int", context.isNameOnly(), false));
+                parameters = new String[] {"java.lang.Object", "java.util.Map"};
+                result.put(new MethodSignature(name, parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "int", context.isNameOnly(), false));
+
+                if (!context.isNameOnly()) {
+                    result.put(new MethodSignature(name + "_", new String[] {}),
+                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "int", true, true));
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Integer> getSuffixForOperator(String prefix, CompletionContext context, String tail, int paramCount) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
+        for (String property : context.getProperties()) {
+            for (String operator : QUERY_OPERATOR) {
+                String suffix = operator + capitalise(property);
+                if (suffix.startsWith(tail)) {
+                    result.put(prefix + suffix, paramCount + 1);
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Integer> getSuffixForComparator(String prefix, CompletionContext context, String tail,
+            String property, Set<String> forbidden, int paramCount) {
+
+        Map<String, Integer> result = new HashMap<String, Integer>();
+
+        for (String operator : QUERY_COMPARATOR) {
+            int realCount = paramCount;
+            String suffix = operator;
+            if (suffix.startsWith(tail) && !forbidden.contains(property + suffix)) {
+                if ("Between".equals(operator)) {
+                    realCount++;
+                } else if ("IsNotNull".equals(operator) || "IsNull".equals(operator)) {
+                    realCount--;
+                }
+                result.put(prefix + suffix, realCount);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Integer> getSuffixForProperty(String prefix, CompletionContext context, String tail, int paramCount) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
+        for (String property : context.getProperties()) {
+            String suffix = capitalise(property);
+            if (suffix.startsWith(tail)) {
+                result.put(prefix + suffix, paramCount + 1);
+            }
+        }
+        return result;
+    }
+
+    private Pattern getQueryMethodPattern(CompletionContext context) {
+        StringBuilder builder = new StringBuilder("(findBy|findAllBy|countBy)");
+        builder.append("(");
+
+        StringBuilder propertyBuilder = new StringBuilder();
+        propertyBuilder.append("(");
+        for (String property : context.getProperties()) {
+            propertyBuilder.append(Pattern.quote(capitalise(property)));
+            propertyBuilder.append('|');
+        }
+        propertyBuilder.setLength(propertyBuilder.length() - 1);
+        propertyBuilder.append(")");
+
+        builder.append(propertyBuilder);
+        builder.append("(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?");
+        builder.append("(And|Or)");
+        builder.append(")*");
+
+        builder.append("(");
+        builder.append(propertyBuilder);
+        builder.append("(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?");
+        builder.append(")?");
+
+        builder.append("(.*)");
+        return Pattern.compile(builder.toString());
+    }
+
+    private int getUsedComparators(CompletionContext context, Set<String> result) {
+        Matcher matcher = Pattern.compile("(findBy|findAllBy|countBy)(.*)").matcher(context.getPrefix());
+        if (!matcher.matches()) {
+            return 0;
+        }
+
+        String[] parts = matcher.group(2).split("(And|Or)");
+
+        int paramCount = 0;
+        Pattern pattern = Pattern.compile("(.*)(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?");
+        for (String part : parts) {
+            result.add(part);
+
+            Matcher singleMatcher = pattern.matcher(part);
+            if (singleMatcher.matches()) {
+                String comparator = singleMatcher.group(2);
+                if ("Between".equals(comparator)) {
+                    paramCount += 2;
+                } else if (!"IsNotNull".equals(comparator) && !"IsNull".equals(comparator)) {
+                    paramCount += 1;
+                } else if (comparator == null) {
+                    paramCount += 1;
+                    result.add(part + "Equal");
+                }
+            }
+        }
+
+        return paramCount;
+    }
 
     private boolean isDomain(FileObject source, Project project) {
         return source != null

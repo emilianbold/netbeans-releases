@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author sg155630
  */
-public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionListener {
+/*package-local*/ final class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionListener {
 
     public CndOtherOptionsPanel() {
         setName("TAB_CndOtherOptionsTab"); // NOI18N (used as a pattern...)

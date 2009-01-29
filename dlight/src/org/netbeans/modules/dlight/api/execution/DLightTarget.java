@@ -107,9 +107,9 @@ public abstract class DLightTarget {
   protected final void notifyListeners(DLightTarget.State oldState, DLightTarget.State newState) {
     DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);    
     for (DLightTargetListener l : ls) {
-      if (oldState == State.INIT && newState == State.RUNNING &&  getState() != State.RUNNING){
-          break;
-      }      
+//      if ((oldState == State.INIT && newState == State.RUNNING &&  getState() != State.RUNNING)){
+//          break;
+//      }
       l.targetStateChanged(this, oldState, newState);
       
     }
