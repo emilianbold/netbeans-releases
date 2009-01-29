@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 class ArtifactWidget extends Widget {
     final Color ROOT = new Color(71, 215, 217);
     final Color DIRECTS = new Color(154, 215, 217);
+    final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
     final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
     final Color HIGHTLIGHT = new Color(255, 255, 129);
     final Color DISABLE_CONFLICT = new Color(255, 168, 168);
@@ -104,8 +105,6 @@ class ArtifactWidget extends Widget {
     public void checkBackground(ArtifactGraphNode node, Widget widget, boolean shown) {
         if (node.isRoot()) {
             widget.setBackground(new GradientPaint(0, 0, ROOT, 100, 50, Color.WHITE));
-        } else if (node.getPrimaryLevel() == 1) {
-            widget.setBackground(new GradientPaint(0, 0, DIRECTS, 15, 15, Color.WHITE));
         } else {
             boolean conflict = false;
             for (DependencyNode src : node.getDuplicatesOrConflicts()) {
@@ -114,19 +113,25 @@ class ArtifactWidget extends Widget {
                 }
             }
             if (conflict) {
-                if (shown) {
-                    widget.setBackground(new GradientPaint(0, 0, CONFLICT, 15, 15, Color.WHITE));
+                if (node.getPrimaryLevel() == 1) {
+                    widget.setBackground(new GradientPaint(0, 0, DIRECTS_CONFLICT, 15, 15, Color.WHITE));
+                }
+                else if (shown) {
+                        widget.setBackground(new GradientPaint(0, 0, CONFLICT, 15, 15, Color.WHITE));
                 } else {
-                    widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, 15, 15, Color.WHITE));
+                        widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, 15, 15, Color.WHITE));
                 }
             } else {
-                widget.setBackground(Color.WHITE);
+                if (node.getPrimaryLevel() == 1) {
+                    widget.setBackground(new GradientPaint(0, 0, DIRECTS, 15, 15, Color.WHITE));
+                } else {
+                    widget.setBackground(Color.WHITE);
+                }
             }
         }
     }
 
     void hightlightText(String searchTerm) {
-        System.out.println("do highlight");
         this.currentSearchTerm = searchTerm;
         doHightlightText(searchTerm, hiddenCard);
         doHightlightText(searchTerm, defaultCard);
