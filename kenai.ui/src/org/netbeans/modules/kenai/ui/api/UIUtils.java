@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.kenai.ui.api;
 
+import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JButton;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLDocument;
@@ -65,5 +70,27 @@ public final class UIUtils {
         textPane.setEditable(false);
         textPane.setBackground(UIManager.getColor("TextPane.background"));
         return textPane;
+    }
+
+    public static final JButton createFocusableHyperlink(String text) {
+        final JButton hyperlink=new JButton("<html><body><a href=\"foo\">"+text+"</a>");
+        hyperlink.setBorderPainted(false);
+        hyperlink.setContentAreaFilled(false);
+        hyperlink.setOpaque(false);
+        hyperlink.addMouseListener(new MouseAdapter() {
+            private Cursor oldCursor;
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                oldCursor = hyperlink.getCursor();
+                hyperlink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                hyperlink.setCursor(oldCursor);
+            }
+        });
+        return hyperlink;
     }
 }

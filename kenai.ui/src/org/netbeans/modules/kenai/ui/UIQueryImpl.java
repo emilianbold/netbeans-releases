@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.UIQuery.Type;
@@ -48,5 +49,7 @@ import org.netbeans.modules.kenai.ui.UIQuery.Type;
  * @author Jan Becicka
  */
 interface UIQueryImpl {
-    JComponent getComponent(Type t, KenaiProject k);
+
+    public Collection<LinkNode> getNodes(Type t, KenaiProject k);
+    public JComponent getComponent(Type t, KenaiProject k);
 }
