@@ -346,6 +346,7 @@ public abstract class AbstractRefactoring {
                 try {
                     problem=chainProblems(plugin.preCheck(),problem);
                 } catch (Throwable t) {
+                    t.printStackTrace();
                     problem =createProblemAndLog(problem, t, plugin.getClass());
                 }
                 if (problem!=null && problem.isFatal())

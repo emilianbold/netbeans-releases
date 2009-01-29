@@ -118,8 +118,8 @@ public final class CodeWriter {
 
             if (section != null) {
                 section.setText (text);
-                System.out.println(" Section: " + section.getName());
-                System.out.println(" Code: \n" + text);
+                //System.out.println(" Section: " + section.getName());
+                //System.out.println(" Code: \n" + text);
             } else {
                 if (endOffset != Integer.MIN_VALUE)
                     document.remove (offset, endOffset - offset);
