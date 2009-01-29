@@ -209,7 +209,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    public DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
+    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
         DLightSession session = new DLightSession();
         session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
         sessions.add(session);
@@ -218,6 +218,10 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
+        //should add existinhg listeners
+        for (DLightSessionListener sessionListener : sessionListeners){
+            sessionListener.sessionAdded(session);
+        }
         return session;
     }
 

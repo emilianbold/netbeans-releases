@@ -45,7 +45,6 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenExecutionSettings;
@@ -243,6 +242,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 toRet.add("-D" + key + "=" + val);//NOI18N
             }
         }
+        toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
             toRet.add("--offline");//NOI18N

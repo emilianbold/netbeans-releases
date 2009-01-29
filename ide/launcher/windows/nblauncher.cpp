@@ -60,8 +60,8 @@ const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
 
 const char *NbLauncher::CON_ATTACH_MSG = 
 "\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
-"Use 'netbeans.exe --console suppress' to suppress console output.\n"
-"Use 'netbeans.exe --console new' to create a separate console window.\n";
+"Use '--console suppress' to suppress console output.\n"
+"Use '--console new' to create a separate console window.\n";
 
 const char *NbLauncher::staticOptions[] = {
     "-J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade",
