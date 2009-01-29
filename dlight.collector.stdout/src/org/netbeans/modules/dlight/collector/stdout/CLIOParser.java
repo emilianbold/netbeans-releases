@@ -36,13 +36,13 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.collector.stdout.api;
+package org.netbeans.modules.dlight.collector.stdout;
 
 import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
  * Command line tool output parser used by
- * {@link org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration}.
+ * {@link org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration}.
  */
 public interface CLIOParser {
 

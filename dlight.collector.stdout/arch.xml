@@ -466,7 +466,7 @@ Yes.
     <answer id="deploy-packages">
         <p>
    Yes. The module provides an API and
-   <tt>org.netbeans.modules.dlight.collector.stdout.api</tt> module is made
+   <tt>org.netbeans.modules.dlight.collector.stdout</tt> module is made
    public. Other packages are not public.
         </p>
     </answer>

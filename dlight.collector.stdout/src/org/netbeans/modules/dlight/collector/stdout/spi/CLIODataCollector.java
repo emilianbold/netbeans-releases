@@ -61,9 +61,9 @@ import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -108,7 +108,7 @@ public final class CLIODataCollector
      *
      * @param command command to invoke (without arguments)
      * @param arguments command arguments
-     * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.api.CLIOParser}
+     * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.CLIOParser}
      * to parse command output with
      * @param dataTablesMetadata describes the tables to store parsed data in
      */

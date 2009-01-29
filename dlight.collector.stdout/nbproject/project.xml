@@ -51,7 +51,7 @@
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <package>org.netbeans.modules.dlight.collector.stdout.api</package>
+                <package>org.netbeans.modules.dlight.collector.stdout</package>
             </friend-packages>
         </data>
     </configuration>
