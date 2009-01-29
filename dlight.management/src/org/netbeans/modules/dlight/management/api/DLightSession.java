@@ -104,6 +104,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             case DONE:
                 targetFinished(source);
                 break;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 
@@ -200,6 +203,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             final DLightTarget target = c.getTarget();
             DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
         }
+//        setState(SessionState.ANALYZE);
     }
 
     void start() {

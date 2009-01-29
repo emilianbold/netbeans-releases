@@ -85,8 +85,6 @@ import org.netbeans.modules.nativeexecution.util.TaskPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-
-
 /**
  * Collector which collects data using DTrace sctiprs.
  * You should describe data collected using list of {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}.
@@ -95,7 +93,7 @@ import org.openide.util.NbBundle;
 public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfiguration> implements DataCollector<DTDCConfiguration> {
 
     private static final List<String> ultimateDTracePrivilegesList =
-            Arrays.asList(new String[]{DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER});
+        Arrays.asList(new String[]{DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER});
     private static final String cmd_dtrace = "/usr/sbin/dtrace"; // NOI18N
     private static final Logger log = DLightLogger.getLogger(DtraceDataCollector.class);
     private List<String> requiredPrivilegesList;
@@ -119,7 +117,6 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
 
-    
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
@@ -136,7 +133,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         this.extraArgs = DTDCConfigurationAccessor.getDefault().getArgs(configuration);
 
         this.requiredPrivilegesList =
-                DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration) == null ? ultimateDTracePrivilegesList : DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration);
+            DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration) == null ? ultimateDTracePrivilegesList : DTDCConfigurationAccessor.getDefault().getRequiredPrivileges(configuration);
         this.configuration = configuration;
         this.indicatorFiringFactor = DTDCConfigurationAccessor.getDefault().getIndicatorFiringFactor(configuration);
     }
@@ -216,7 +213,6 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         return dataTablesMetadata;
     }
 
-  
     NativeTask getCollectorTaskFor(DLightTarget target) {
         String taskCommand = scriptPath;//"pfexec " + scriptPath;
         if (target instanceof AttachableTarget) {
@@ -241,9 +237,14 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 //    @Override
     private void targetFinished(DLightTarget target) {
         if (!isSlave) {
-            log.fine("Stopping DtraceDataCollector: " + collectorTask.getCommand());
-            collectorTask.cancel();
-            outProcessingThread.interrupt();
+
+            if (collectorTask != null){
+                log.fine("Stopping DtraceDataCollector: " + collectorTask.getCommand());
+                collectorTask.cancel();
+            }
+            if (outProcessingThread != null){
+                outProcessingThread.interrupt();
+            }
         }
         synchronized (indicatorDataBuffer) {
             if (!indicatorDataBuffer.isEmpty()) {
@@ -279,8 +280,8 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 result = ValidationStatus.validStatus;
             } else {
                 result = ValidationStatus.invalidStatus(
-                        loc("ValidationStatus.CommandNotFound", // NOI18N
-                        command));
+                    loc("ValidationStatus.CommandNotFound", // NOI18N
+                    command));
             }
         } else {
             ObservableActionListener<Boolean> listener = new ObservableActionListener<Boolean>() {
@@ -298,8 +299,8 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             connectAction.addObservableActionListener(listener);
 
             result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.HostNotConnected"), // NOI18N
-                    connectAction);
+                loc("ValidationStatus.HostNotConnected"), // NOI18N
+                connectAction);
         }
 
 //    return result;
@@ -312,7 +313,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
             // check for permissions ...
             boolean status = TaskPrivilegesSupport.getInstance().hasPrivileges(execEnv, requiredPrivilegesList);
             ObservableAction<Boolean> requestPrivilegesAction = TaskPrivilegesSupport.getRequestPrivilegesAction(
-                    execEnv, requiredPrivilegesList);
+                execEnv, requiredPrivilegesList);
 
             requestPrivilegesAction.addObservableActionListener(new ObservableActionListener<Boolean>() {
 
@@ -326,8 +327,8 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
 
             if (!status) {
                 result = result.merge(ValidationStatus.unknownStatus(
-                        loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
-                        requestPrivilegesAction));
+                    loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
+                    requestPrivilegesAction));
             }
         }
 
@@ -345,7 +346,7 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
                 ValidationStatus oldStatus = validationStatus;
                 ValidationStatus newStatus = doValidation(target);
 
-                    notifyStatusChanged(oldStatus, newStatus);
+                notifyStatusChanged(oldStatus, newStatus);
 
                 validationStatus = newStatus;
                 return newStatus;
@@ -428,24 +429,25 @@ public final class DtraceDataCollector extends IndicatorDataProvider<DTDCConfigu
         }
     }
 
-  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-     switch (newState){
-      case RUNNING :
-        targetStarted(source);
-        break;
-      case FAILED:
-        targetFinished(source);
-         break;
-      case TERMINATED:
-        targetFinished(source);
-         break;
-      case DONE:
-        targetFinished(source);
-         break;
+    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case RUNNING:
+                targetStarted(source);
+                break;
+            case FAILED:
+                targetFinished(source);
+                break;
+            case TERMINATED:
+                targetFinished(source);
+                break;
+            case DONE:
+                targetFinished(source);
+                break;
+            case STOPPED:
+                targetFinished(source);
+                return;
+        }
     }
-  }
-
-    
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {
 
