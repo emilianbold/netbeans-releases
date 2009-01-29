@@ -54,7 +54,7 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Lookup;
 
 /**
- * Handler of context aware services that implement one or more interface.
+ * Handler of context aware services that implement one or more interfaces.
  * The services are registered through {@link DebuggerServiceRegistration} annotation.
  *
  * This handler guarantees that it creates only one service for given context and given set of interfaces.

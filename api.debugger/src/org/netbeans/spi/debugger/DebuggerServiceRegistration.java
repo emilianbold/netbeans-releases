@@ -61,7 +61,7 @@ public @interface DebuggerServiceRegistration {
 
     /**
      * An optional path to register this implementation in.
-     * Usually the session ID.
+     * Usually the session ID, view name, etc.
      */
     String path() default "";
 

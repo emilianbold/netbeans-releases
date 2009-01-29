@@ -45,7 +45,7 @@ package org.netbeans.spi.debugger;
  * This instances should be registered in layers and created by <code>ContextAwareSupport.createService</code> factory
  * method as follows:
  *
- *   <pre style="background-color: rgb(255, 255, 153);">
+ *   <pre style="background-color: rgb(255, 255, 200);">
  *   &lt;folder name="Debugger"&gt;
  *       &lt;file name="MyDebuggerService.instance"&gt;
  *           &lt;attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ContextAwareSupport.createService"/&gt;

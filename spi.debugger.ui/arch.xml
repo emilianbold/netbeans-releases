@@ -125,6 +125,13 @@ List of APIs:
 
 <li><api name="netbeans.debugger.models" group="property" type="import" category="private"/>Writes information about loading of models to console.</li>
 </ul>
+Registrations in standard Lookup:
+<ul>
+<li><api name="org.netbeans.spi.debugger.ui.AttachType$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all attach type providers.</li>
+<li><api name="org.netbeans.spi.debugger.ui.BreakpointType$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all breakpoint type providers.</li>
+<li><api name="org.netbeans.modules.debugger.ui.registry.ColumnModelContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all column models registered for specific view (according to the path).</li>
+</ul>
+
 </answer>
         
 <!--
@@ -650,7 +657,9 @@ Nothing.
         </question>
 -->
 <answer id="lookup-lookup">
-    No. But we use our own private implementation of lookup pattern.
+    Yes. We search for debugger services registered on module layers
+    (System FileSystem).
+    In addition to that we use our own private implementation of lookup pattern.
     We are searching for instances of various servies defined in *.spi.* packages.
     The contract is described in JavaDoc.
 </answer>
@@ -668,7 +677,9 @@ Nothing.
         </question>
 -->
 <answer id="lookup-register">
-    We use our private namespace <code>META-INF/debugger</code> for registration. 
+    We use services registered under <code>Debugger</code> folder in System FileSystem.
+    In addition to that we use our private namespace <code>META-INF/debugger</code>
+    for registration.
     The contract is described in JavaDoc.
 </answer>
 

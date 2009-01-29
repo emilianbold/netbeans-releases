@@ -110,6 +110,7 @@ public abstract class DebuggerEngineProvider {
     public @interface Registration {
         /**
          * An optional path to register this implementation in.
+         * Usually the session ID.
          */
         String path() default "";
 

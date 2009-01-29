@@ -94,14 +94,15 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             AttachType.Registration reg = e.getAnnotation(AttachType.Registration.class);
 
             final String displayName = reg.displayName();
-            handleProviderRegistrationDisplayName(e, AttachType.class, displayName);
+            handleProviderRegistrationDisplayName(e, AttachType.class, displayName, null);
             cnt++;
         }
         for (Element e : env.getElementsAnnotatedWith(BreakpointType.Registration.class)) {
             BreakpointType.Registration reg = e.getAnnotation(BreakpointType.Registration.class);
 
             final String displayName = reg.displayName();
-            handleProviderRegistrationDisplayName(e, BreakpointType.class, displayName);
+            final String path = reg.path();
+            handleProviderRegistrationDisplayName(e, BreakpointType.class, displayName, path);
             cnt++;
         }
         for (Element e : env.getElementsAnnotatedWith(ColumnModelRegistration.class)) {
@@ -120,7 +121,12 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
-        layer(e).instanceFile("Debugger/"+path, null, providerClass).
+        if (path != null && path.length() > 0) {
+            path = "Debugger/"+path;
+        } else {
+            path = "Debugger";
+        }
+        layer(e).instanceFile(path, null, providerClass).
                 stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
                 //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
@@ -129,15 +135,20 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 write();
     }
 
-    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName) throws IllegalArgumentException, LayerGenerationException {
+    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName, String path) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
-        layer(e).instanceFile("Debugger", null, providerClass).
+        if (path != null && path.length() > 0) {
+            path = "Debugger/"+path;
+        } else {
+            path = "Debugger";
+        }
+        layer(e).instanceFile(path, null, providerClass).
                 stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("displayName", displayName). // TODO bundleValue
+                bundlevalue("displayName", displayName).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 write();
     }

@@ -61,6 +61,7 @@ public @interface ColumnModelRegistration {
 
     /**
      * An optional path to register this implementation in.
+     * Usually the session ID, view name, etc.
      */
     String path();
 

@@ -62,7 +62,11 @@ import org.netbeans.spi.debugger.ContextProvider;
 public abstract class AttachType {
 
     /**
-     * TODO
+     * Provide the display name of this attach type.
+     * The return value is read from "displayName" attribute of the registry file
+     * when this implementation is registered via {@link Registration} annotation.
+     * Therefore in this case the implementation should NOT override this method
+     * as it's not called.
      *
      * @return display name of this Attach Type
      */
@@ -99,9 +103,27 @@ public abstract class AttachType {
         return null;
     }
 
+    /**
+     * Declarative registration of an AttachType implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     * <p>
+     * The implementation is always registered in the empty default path.
+     * @since 2.16
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE})
     public @interface Registration {
+        /**
+         * The display name, in the form of either a general string to take as is,
+         * or a resource bundle reference such as "my.module.Bundle#some_key",
+         * or just "#some_key" to load from a "Bundle" in the same package
+         * as the registered implementation.
+         *
+         * @return The display name or resource bundle reference
+         */
         String displayName();
     }
 

@@ -130,6 +130,7 @@ public abstract class ActionsProvider {
     public @interface Registration {
         /**
          * An optional path to register this implementation in.
+         * Usually the session ID.
          */
         String path() default "";
 
