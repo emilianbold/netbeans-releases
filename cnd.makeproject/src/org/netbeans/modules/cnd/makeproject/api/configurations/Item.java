@@ -95,6 +95,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
         }
+        if (path.equals(newname)) {
+            return;
+        }
 
         // Rename name in path
         int indexName = path.lastIndexOf('/');

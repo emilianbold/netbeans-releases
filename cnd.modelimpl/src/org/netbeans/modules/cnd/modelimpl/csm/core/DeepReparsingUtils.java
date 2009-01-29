@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.filesystems.FileObject;
 
 /**
  * Reparse dependant files.
@@ -242,8 +243,8 @@ public final class DeepReparsingUtils {
     /**
      * Reparse included files at file added.
      */
-    public static void reparseOnAdded(FileImpl addedFile, ProjectBase project) {
-        reparseOnAdded(addedFile.getName().toString(), project);
+    public static void reparseOnAdded(FileObject addedFile, ProjectBase project) {
+        reparseOnAdded(addedFile.getNameExt(), project);
     }
 
     private static void reparseOnAdded(String name, ProjectBase project) {
