@@ -79,6 +79,7 @@ public final class APTMacroMapSnapshot {
         return null;
     }
     
+    @Override
     public String toString() {
         Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
         addAllMacros(this, tmpMap);
@@ -124,8 +125,8 @@ public final class APTMacroMapSnapshot {
             return "Macro undefined"; // NOI18N
         }
 
-        public MacroType getKind() {
-            throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
+        public Kind getKind() {
+            return Kind.USER_SPECIFIED;
         }
 
         public boolean isFunctionLike() {
