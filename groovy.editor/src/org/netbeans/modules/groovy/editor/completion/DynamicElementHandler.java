@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -53,7 +54,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionContext;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -85,17 +86,16 @@ public final class DynamicElementHandler {
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
             String className, String prefix, int anchor, boolean nameOnly, boolean leaf, FileObject classSource) {
 
-        DynamicCompletionContext context = new DynamicCompletionContext(classSource,
-                sourceClassName, className, prefix, false, getProperties(className), leaf);
+        CompletionContext context = new CompletionContext(anchor, classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf, nameOnly);
 
         Map<MethodSignature, CompletionItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
-            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(context).entrySet()) {
+            for (Map.Entry<MethodSignature, CompletionItem> entry : provider.getMethods(context).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
-                    resultDynamic.put(entry.getKey(), CompletionItem.forDynamicMethod(
-                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), nameOnly));
+                    resultDynamic.put(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -106,17 +106,16 @@ public final class DynamicElementHandler {
     public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
             String className, String prefix, int anchor, boolean leaf, FileObject classSource) {
 
-        DynamicCompletionContext context = new DynamicCompletionContext(classSource,
-                sourceClassName, className, prefix, false, getProperties(className), leaf);
+        CompletionContext context = new CompletionContext(anchor, classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf, false);
 
-        Map<FieldSignature, CompletionItem.DynamicFieldItem> resultDynamic =
-                new HashMap<FieldSignature, CompletionItem.DynamicFieldItem>();
+        Map<FieldSignature, CompletionItem> resultDynamic =
+                new HashMap<FieldSignature, CompletionItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
-            for (Map.Entry<FieldSignature, String> entry : provider.getFields(context).entrySet()) {
+            for (Map.Entry<FieldSignature, CompletionItem> entry : provider.getFields(context).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
-                    resultDynamic.put(entry.getKey(), new CompletionItem.DynamicFieldItem(
-                            anchor, entry.getKey().getName(), entry.getValue()));
+                    resultDynamic.put(entry.getKey(), entry.getValue());
                 }
             }
         }

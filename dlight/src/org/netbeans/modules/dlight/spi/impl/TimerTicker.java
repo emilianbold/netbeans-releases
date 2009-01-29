@@ -102,6 +102,9 @@ public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfigurati
             case DONE:
                 targetFinished(source);
                 return;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 
