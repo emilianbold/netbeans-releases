@@ -702,6 +702,18 @@ final class ColorUtil {
         i.setRGB(0, 0, up.getRGB());
         return new ImageIcon(i);
     }
+
+    /**
+     * Fills given rectangle using top-down gradient fill of specified colors
+     */
+    public static void paintMacGradientFill(Graphics2D g, Rectangle rect,
+                                            Color brightC, Color darkC) {
+        Paint oldPaint = g.getPaint();
+
+        g.setPaint( new GradientPaint(rect.x, rect.y, brightC, rect.x, rect.y+rect.height/2, darkC) );
+        g.fillRect(rect.x, rect.y, rect.width, rect.height);
+        g.setPaint(oldPaint);
+    }
     
     /**
      * Fills given rectangle using top-down gradient fill of specified colors
