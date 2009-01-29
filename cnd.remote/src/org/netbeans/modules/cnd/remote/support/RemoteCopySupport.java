@@ -68,7 +68,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     }
 
     public RemoteCopySupport(String key) {
-        this(key, 22);
+        this(key, PORT);
     }
 
     private void setChannelCommand(String cmd) {
