@@ -36,13 +36,13 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.collector.stdout.api;
+package org.netbeans.modules.dlight.collector.stdout;
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
 
 /**
  * Implementation of the <code>DataCollectorConfiguration</code> interface

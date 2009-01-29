@@ -31,13 +31,16 @@
   <p>
    The module provides implementation of <tt>DataCollectorConfiguration</tt>
    (<tt>DTDCConfiguration</tt>) that can be used by D-Light clients to create
-   DataCollectors based on dtrace(1M) that take information from dtrace script's
-   output. See use case section for more details.
+   DataCollectors based on dtrace(1M). D-Light infrastructure handles obtaining
+   needed privileges, invokation of dtrace itself and parsing of it's output.
+   In the simpliest case user just provides a d-script and set of
+   <tt>DataTableMetadata</tt>. Output of d-script should follow this simple
+   format: one data-record per line, where data-record is a white-space-separated
+   values that can be matched with provided <tt>DataTableMetadata</tt>.
+   See use case section for more details.
    This module provides <api name="DtraceCollectorAPI" group="java" type="export" category="devel"/>,
   </p>
  </answer>
-
-
 
 <!--
         <question id="arch-quality" when="init">
@@ -54,7 +57,8 @@
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   No unit tests so far... Module is intensively used by C/C++ Observability 
+   tool that (will) have assigned QE.
   </p>
  </answer>
 
@@ -97,11 +101,65 @@
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+      Below is an example of <tt>DLightToolConfigurationProvider</tt> creation
+      that returns <tt>DLightToolConfiguration</tt>, based on a simple
+      <tt>DTDCConfiguration</tt>. This DTrace-Data-Collector-Configuration
+      is based on a small d-tarce script that provides information about
+      system read(2) activity.
+  </p>
+
+<pre>
+public class DTraceSysReadConfigurationProvider implements DLightToolConfigurationProvider {
+  ...
+
+
+  public DLightToolConfiguration create() {
+    final String toolName = "Read Monitor Tool";
+    final DLightToolConfiguration toolConfiguration =
+            new DLightToolConfiguration(toolName);
+
+    List&lt;Column&gt; fopsColumns = Arrays.asList(
+        new Column("timestamp", Long.class, "Timestamp", null),
+        new Column("fd", Integer.class, "File descriptor", null),
+        new Column("fname", String.class, "File name", null),
+        new Column("args", String.class, "File arguments", null),
+
+    final DataTableMetadata dtraceFopsMetadata = new DataTableMetadata("fops", fopsColumns);
+    toolConfiguration.addDataCollectorConfiguration(
+        new DTDCConfiguration("/tmp/fops.d", Arrays.asList(dtraceFopsMetadata)));
+
+    return toolConfiguration;
+  }
+
+  ...
+
+}
+
+</pre>
+
+Where fops.d is
+
+<pre>
+#!/usr/sbin/dtrace -s
+#pragma D option quiet
+
+syscall::read:entry
+/pid == $1/
+{
+    self->fd = arg0;
+}
+
+syscall::read:return
+/pid == $1/
+{
+    fname = (self->fd == 0 ) ? "&lt;stdin&gt;" : fds[self->fd].fi_pathname;
+    printf("%d %d \"%s\" %d\n", timestamp, self->fd, fname, arg1);
+}
+
+</pre>
+  <p>
   </p>
  </answer>
-
-
 
 <!--
         <question id="arch-what" when="init">
@@ -115,7 +173,13 @@
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+   D-Trace (dtrace(1M)) is a very powerfull observability tool available on
+   Solaris 10+ OS. It can be used to obtain almost any information about system
+   as a whole as well as about an individual process. This package provides a
+   simple way of integrating dtrace scripts with D-Light infrastructure.
+   <br/>
+   More information can be found in
+   <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit Design Document</a>.
   </p>
  </answer>
 
@@ -150,7 +214,7 @@
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+        No plans to deprecate anything..
   </p>
  </answer>
 
@@ -168,7 +232,7 @@
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+        Partly.
   </p>
  </answer>
 
@@ -182,7 +246,7 @@
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   None.
   </p>
  </answer>
 
@@ -204,7 +268,7 @@
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+      Yes.
   </p>
  </answer>
 
@@ -222,7 +286,7 @@
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+      1.5
   </p>
  </answer>
 
@@ -235,7 +299,7 @@
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+JRE is enough.
   </p>
  </answer>
 
@@ -288,7 +352,7 @@
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+    This modules contains no dependencies from any external libraries.
   </p>
  </answer>
 
@@ -316,7 +380,8 @@
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+      As dtrace(1M) is available on Solaris 10 and above, it is Solaris -
+      specific.
   </p>
  </answer>
 
@@ -340,7 +405,7 @@
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   Nothing.
   </p>
  </answer>
 
@@ -368,7 +433,8 @@
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+      This module uses a small native program to grant required privileges to
+      be able to use dtrace. This utility goes along with the module.
   </p>
  </answer>
 
@@ -384,7 +450,7 @@
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -405,7 +471,10 @@
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Yes. The module provides an API and
+   <tt>org.netbeans.modules.dlight.dtrace.collector</tt> module is made
+   public. Other packages are not public.
+   
   </p>
  </answer>
 
@@ -423,7 +492,7 @@
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   No matter.
   </p>
  </answer>
 
@@ -443,7 +512,7 @@
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   None.
   </p>
  </answer>
 
@@ -459,7 +528,7 @@
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -482,7 +551,7 @@
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+      No.
   </p>
  </answer>
 
@@ -502,7 +571,8 @@
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   Yes. In case if <tt>DLightTarget</tt> is attachable dtrace is started with
+   <tt>PID</tt> (PID of the D-Light target) additional parameter.
   </p>
  </answer>
 
@@ -520,7 +590,7 @@
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+      No.
   </p>
  </answer>
 
@@ -538,7 +608,9 @@
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+      Yes. dtrace is executed. Also own utility is started to gain needed
+      privileges. As module is Solaris-specific, it is not executed on other
+      systems.
   </p>
  </answer>
 
@@ -566,7 +638,7 @@
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -584,7 +656,7 @@
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -616,7 +688,7 @@
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   No. All threading-related stuff is handled by the D-Light Toolkit.
   </p>
  </answer>
 
@@ -635,7 +707,7 @@
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+      No.
   </p>
  </answer>
 
@@ -653,7 +725,7 @@
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+  No.
   </p>
  </answer>
 
@@ -684,7 +756,7 @@
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+      No.
   </p>
  </answer>
 
@@ -716,7 +788,7 @@
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+      No.
   </p>
  </answer>
 
@@ -733,7 +805,9 @@
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   The module provides implementations of <tt>DataCollectorFactory</tt> and
+   <tt>IndicatorDataProviderFactory</tt> (from D-Light Toolkit) that it
+   registers in the Global Lookup.
   </p>
  </answer>
 
@@ -750,7 +824,7 @@
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -763,7 +837,7 @@
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   No.
   </p>
  </answer>
 
@@ -777,7 +851,7 @@
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   No.
   </p>
  </answer>
 
@@ -804,7 +878,7 @@
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   No.
   </p>
  </answer>
 
@@ -818,7 +892,7 @@
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   Module by itself just provides an API that does'n consume any noteable memory.
   </p>
  </answer>
 
@@ -840,7 +914,7 @@
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   No.
   </p>
  </answer>
 
@@ -864,7 +938,7 @@
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   No.
   </p>
  </answer>
 
@@ -883,7 +957,7 @@
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   None.
   </p>
  </answer>
 
@@ -901,7 +975,7 @@
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   No means.
   </p>
  </answer>
 
@@ -914,7 +988,7 @@
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -928,7 +1002,7 @@
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -949,7 +1023,7 @@
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   No.
   </p>
  </answer>
 
@@ -972,7 +1046,7 @@
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   No.
   </p>
  </answer>
 
@@ -993,7 +1067,7 @@
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -1018,7 +1092,7 @@
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   No.
   </p>
  </answer>
 
@@ -1038,7 +1112,7 @@
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   No.
   </p>
  </answer>
 
@@ -1056,7 +1130,7 @@
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1073,7 +1147,7 @@
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 

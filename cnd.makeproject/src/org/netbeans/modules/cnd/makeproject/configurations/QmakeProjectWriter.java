@@ -68,7 +68,7 @@ public class QmakeProjectWriter {
     /*
      * Project file name is constructed as prefix + confName + suffix.
      */
-    private static final String PROJECT_PREFIX = "Qt-"; // NOI18N
+    private static final String PROJECT_PREFIX = "nbproject" + File.separator + "qt-"; // NOI18N
     private static final String PROJECT_SUFFIX = ".pro"; // NOI18N
 
     /**
@@ -89,6 +89,8 @@ public class QmakeProjectWriter {
         LIBS,
         QMAKE_CC,
         QMAKE_CXX,
+        MOC_DIR,
+        UI_DIR,
         OBJECTS_DIR
     }
 
@@ -171,6 +173,10 @@ public class QmakeProjectWriter {
 
         write(bw, Variable.OBJECTS_DIR, Operation.SET,
                 configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
+        write(bw, Variable.MOC_DIR, Operation.SET,
+                configuration.expandMacros(configuration.getQmakeConfiguration().getMocDir().getValue()));
+        write(bw, Variable.UI_DIR, Operation.SET,
+                configuration.expandMacros(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
@@ -271,7 +277,7 @@ public class QmakeProjectWriter {
         return buf.toString();
     }
 
-    private void append(StringBuilder buf, String val) {
+    private static void append(StringBuilder buf, String val) {
         if (0 < buf.length()) {
             buf.append(' '); // NOI18N
         }

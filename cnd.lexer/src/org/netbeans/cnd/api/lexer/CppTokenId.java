@@ -159,6 +159,7 @@ public enum CppTokenId implements TokenId {
     WCHAR_T("wchar_t", "keyword"), // C++ // NOI18N
     WHILE("while", "keyword-directive"), // NOI18N
     __ATTRIBUTE__("__attribute__", "keyword"), // gcc // NOI18N
+    __ATTRIBUTE("__attribute", "keyword"), // gcc // NOI18N
     _BOOL("_Bool", "keyword"), // C // NOI18N
     _CDECL("_cdecl", "keyword"), // g++ // NOI18N
     __CDECL("__cdecl", "keyword"), // g++ // NOI18N

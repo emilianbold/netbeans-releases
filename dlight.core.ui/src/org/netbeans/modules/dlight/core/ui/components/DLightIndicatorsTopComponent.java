@@ -48,12 +48,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
-import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
-import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponent;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -62,7 +58,7 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public final class DLightIndicatorsTopComponent extends TopComponent implements IndicatorComponent {
+final class DLightIndicatorsTopComponent extends TopComponent {
 
   private static DLightIndicatorsTopComponent instance;
   private DLightSession session;
@@ -71,8 +67,9 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
   private static final String PREFERRED_ID = "DLightIndicatorsTopComponent";
   private boolean isInitialized = false;
 
-  public DLightIndicatorsTopComponent() {
+  DLightIndicatorsTopComponent() {
     setSession(null);
+    init();
   }
 
   @Override
@@ -84,6 +81,9 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
   }
 
   private void init() {
+    if (isInitialized){
+        return;
+    }
     setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
     setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
     setIcon(ImageUtilities.loadImage(ICON_PATH, true));
@@ -91,21 +91,10 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
   }
 
   public void setSession(DLightSession session) {
-    DLightSession oldSession = this.session;
-
-    if (oldSession != null) {
-      oldSession.removeSessionStateListener(this);
-    }
-
     this.session = session;
-
     removeAll();
-
     setLayout(new BorderLayout());
-
     if (session != null) {
-      session.addSessionStateListener(this);
-      session.addSessionStateListener(this);
 //            JPanel indicatorsPane = new JPanel(new RowLayoutManager());
       JPanel indicatorsPane = new JPanel();
       indicatorsPane.setLayout(new GridBagLayout());
@@ -136,7 +125,6 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
   public static synchronized DLightIndicatorsTopComponent getDefault() {
     if (instance == null) {
       instance = new DLightIndicatorsTopComponent();
-      instance.init();
     }
     return instance;
   }
@@ -167,7 +155,7 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
 
   @Override
   public void componentOpened() {
-    DLightManager.getDefault().addDLightSessionListener(this);
+
   }
 
   @Override
@@ -184,32 +172,6 @@ public final class DLightIndicatorsTopComponent extends TopComponent implements 
   @Override
   protected String preferredID() {
     return PREFERRED_ID;
-  }
-
-  public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
-    if (oldSession == newSession) {
-      return;
-    }
-
-    setSession(newSession);
-  }
-
-  public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
-    if (newState == SessionState.STARTING) {
-      UIThread.invoke(new Runnable() {
-
-        public void run() {
-          open();
-          requestAttention(true);
-        }
-      });
-    }
-  }
-
-  public void sessionAdded(DLightSession newSession) {
-  }
-
-  public void sessionRemoved(DLightSession removedSession) {
   }
 
   static final class ResolvableHelper implements Serializable {

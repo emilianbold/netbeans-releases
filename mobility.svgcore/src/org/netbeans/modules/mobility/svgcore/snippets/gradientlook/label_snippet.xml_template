@@ -1,0 +1,8 @@
+            <g id="label_0" transform="translate(28.0,61.0)">
+                <text display="none">type=label</text>
+                <g>
+                    
+                    <text id="label_0_text" x="5" y="5"  font-size="16">       Label   </text>
+                    <text display="none">type=text</text>
+                </g>
+            </g>

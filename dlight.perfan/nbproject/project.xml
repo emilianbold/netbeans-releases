@@ -53,9 +53,12 @@
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.dlight.cpu</friend>
+                <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.sync</friend>
                 <package>org.netbeans.modules.dlight.perfan</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

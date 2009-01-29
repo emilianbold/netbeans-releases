@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.collector.stdout.api;
+package org.netbeans.modules.dlight.collector.stdout.impl;
 
-import org.netbeans.modules.dlight.api.storage.DataRow;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 
 /**
- * Command line tool output parser used by
- * {@link org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration}.
+ *
+ * @author masha
  */
-public interface CLIOParser {
+public abstract class CLIODCConfigurationAccessor {
 
-    /**
-     * Parses a single line of the command line tool output
-     * and transforms it to a data row
-     * @param line line to parse
-     * @return data row or null if the line does not contain data
-     */
-    public DataRow process(String line);
+    private static volatile CLIODCConfigurationAccessor DEFAULT;
+
+    public static CLIODCConfigurationAccessor getDefault() {
+        CLIODCConfigurationAccessor a = DEFAULT;
+
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(CLIODCConfiguration.class.getName(), true,
+                    CLIODCConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+        }
+
+        return DEFAULT;
+    }
+
+    public static void setDefault(CLIODCConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public CLIODCConfigurationAccessor() {
+    }
+
+    public abstract String getCommand(CLIODCConfiguration configuration);
+
+    public abstract String getArguments(CLIODCConfiguration configuration);
+
+    public abstract List<DataTableMetadata> getDataTablesMetadata(CLIODCConfiguration configuration);
+
+    public abstract CLIOParser getParser(CLIODCConfiguration configuration);
+
+    public abstract String getCLIODCConfigurationID();
+
+    public abstract boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
 }

@@ -45,7 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
-import org.netbeans.modules.cnd.apt.support.APTMacro.MacroType;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -68,7 +68,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap implements APTMacroMap {
         fill(sysMacros, true);
     }
     
-    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         return new APTMacroImpl(name, params, value, macroType);
     }
     
@@ -104,7 +104,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     @Override
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
     }
 

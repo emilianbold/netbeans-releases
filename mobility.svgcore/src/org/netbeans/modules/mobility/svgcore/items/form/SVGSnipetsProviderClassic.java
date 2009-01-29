@@ -37,16 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.ui.spi;
+package org.netbeans.modules.mobility.svgcore.items.form;
 
-import org.netbeans.modules.dlight.management.api.DLightSessionListener;
-import org.netbeans.modules.dlight.management.api.SessionStateListener;
-
+import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mt154047
+ * @author karol harezlak
  */
-public interface IndicatorComponent extends  DLightSessionListener, SessionStateListener {
-  public void open();
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider.class)
+public class SVGSnipetsProviderClassic implements SVGSnippetsProvider{
+
+    private static final String name = "Classic_snippet0"; //NOI18N
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(SVGSnipetsProviderClassic.class, "LBL_SNIPPET_DISPLAY_NAME"); //NOI18N
+    }
+
 }

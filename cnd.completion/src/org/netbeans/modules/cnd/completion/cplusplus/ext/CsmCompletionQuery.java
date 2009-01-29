@@ -163,10 +163,13 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort);
     }
 
-    public static boolean checkCondition(final Document doc, final int dot) {
+    public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
+        if (!takeLock) {
+            return _checkCondition(doc, dot);
+        }
         final AtomicBoolean res = new AtomicBoolean(false);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument)doc).runAtomic(new Runnable() {
+            ((BaseDocument)doc).render(new Runnable() {
                 public void run() {
                     res.set(_checkCondition(doc, dot));
                 }
@@ -211,7 +214,7 @@ abstract public class CsmCompletionQuery {
         CsmCompletionResult ret = null;
 
         CompletionSupport sup = CompletionSupport.get(doc);
-        if (sup == null || !checkCondition(doc, offset)) {
+        if (sup == null || !checkCondition(doc, offset, true)) {
             return null;
         }
 

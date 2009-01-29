@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +37,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.collector.stdout.api.impl;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
+package org.netbeans.modules.vmd.midp.codegen;
+
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
  *
- * @author masha
+ * @author ads
  */
-public abstract class CLIODCConfigurationAccessor {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
+public class InstanceNameRefactoringFactory implements RefactoringPluginFactory{
 
-    private static volatile CLIODCConfigurationAccessor DEFAULT;
-
-    public static CLIODCConfigurationAccessor getDefault() {
-        CLIODCConfigurationAccessor a = DEFAULT;
-
-        if (a != null) {
-            return a;
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        if ( refactoring instanceof InstaceRenameRefactoring ){
+            return new InstanceRenamePlugin( (InstaceRenameRefactoring)refactoring );
         }
-
-        try {
-            Class.forName(CLIODCConfiguration.class.getName(), true,
-                    CLIODCConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-
-        return DEFAULT;
+        return null;
     }
 
-    public static void setDefault(CLIODCConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-
-        DEFAULT = accessor;
-    }
-
-    public CLIODCConfigurationAccessor() {
-    }
-
-    public abstract String getCommand(CLIODCConfiguration configuration);
-
-    public abstract String getArguments(CLIODCConfiguration configuration);
-
-    public abstract List<DataTableMetadata> getDataTablesMetadata(CLIODCConfiguration configuration);
-
-    public abstract CLIOParser getParser(CLIODCConfiguration configuration);
-
-    public abstract String getCLIODCConfigurationID();
-
-    public abstract boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
 }
