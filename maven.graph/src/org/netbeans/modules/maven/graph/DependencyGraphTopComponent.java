@@ -40,6 +40,9 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -133,7 +136,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         pane.setWheelScrollingEnabled(true);
         sldDepth.setEnabled(false);
         add(pane, BorderLayout.CENTER);
-        JLabel lbl = new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
+        JLabel lbl = new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
         lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
         pane.setViewportView(lbl);
@@ -143,8 +146,8 @@ public class DependencyGraphTopComponent extends TopComponent {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
-                            sldDepth.setEnabled(true);
                             sldDepth.setMaximum(scene.getMaxNodeDepth());
+                            sldDepth.setEnabled(true);
                             JComponent sceneView = scene.getView ();
                             if (sceneView == null) {
                                 sceneView = scene.createView ();
@@ -270,13 +273,23 @@ public class DependencyGraphTopComponent extends TopComponent {
     }//GEN-LAST:event_btnBirdEyeActionPerformed
 
     private void sldDepthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldDepthStateChanged
+        if (!sldDepth.isEnabled() || sldDepth.getValueIsAdjusting()) {
+            return;
+        }
+
         HighlightVisitor visitor = new HighlightVisitor(scene);
         int value = sldDepth.getValue();
         visitor.setMaxDepth(value == 0 ? Integer.MAX_VALUE : value);
         DependencyNode node = scene.getRootGraphNode().getArtifact();
         node.accept(visitor);
+        Dimension dim = visitor.getVisibleRectangle().getSize ();
+        Dimension viewDim = pane.getViewportBorderBounds ().getSize ();
+        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
         scene.validate();
-        scene.repaint();
+        Rectangle viewpoint = scene.convertSceneToView(visitor.getVisibleRectangle());
+        viewpoint.grow(-5, -5);
+        scene.getView().scrollRectToVisible(viewpoint);
+
         revalidate();
         repaint();
 
