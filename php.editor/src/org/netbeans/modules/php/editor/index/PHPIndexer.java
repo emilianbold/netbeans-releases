@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -87,6 +89,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndexer extends EmbeddingIndexer {
+    private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     private static final FileSystem MEM_FS = FileUtil.createMemoryFileSystem();
     private static final Map<String,FileObject> EXT2FO = new HashMap<String,FileObject>();
@@ -741,7 +744,14 @@ public class PHPIndexer extends EmbeddingIndexer {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            //todo:
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
         }
 
         private boolean isPhpFile(FileObject file) {

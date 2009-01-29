@@ -1051,7 +1051,14 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            //todo:
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
         }
     } // End of Factory class
 }

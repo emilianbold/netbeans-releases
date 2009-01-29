@@ -63,6 +63,11 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     }
 
     @Override
+    public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        getFactory().filesDeleted(deleted, context);
+    }
+    
+    @Override
     public String getIndexerName() {
         return getFactory().getIndexerName();
     }
@@ -108,7 +113,7 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            //todo
+            // no-op
         }
     };
 
@@ -137,10 +142,5 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         }
 
         return realFactory;
-    }
-
-    @Override
-    public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-        //todo:
     }
 }
