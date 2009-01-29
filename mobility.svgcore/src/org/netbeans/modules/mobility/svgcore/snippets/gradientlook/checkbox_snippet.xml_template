@@ -1,4 +1,4 @@
-    <g id="checkbox_0" transform="translate(19.0,99.0)">       <!-- Metadata information. Please don't edit. -->
+ <g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">      <!-- Metadata information. Please don't edit. -->
         <text display="none">type=checkbox</text>
         <g>
             <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
@@ -21,17 +21,17 @@
             </image>
         </g>
         <rect x="0" y="0" rx="4" ry="4" width="200" height="30" fill="none" stroke="rgb(255,165,0)"                     stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="checkbox_0.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="checkbox_0.focusout" fill="freeze" to="hidden"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
         </rect>
         <rect x="7.4000015" id="_4" rx="4"  ry="4" y="3.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
 
         <g>               <!-- Metadata information. Please don't edit. -->
             <text display="none">type=mark</text>
-            <path id="checkbox_0_mark" transform="translate(11.5,12.5)"  d="M 0,0 5,5 19,-12" fill="none"                      stroke="black" stroke-width="2"/>
+            <path id="%%COMPONENT_ID%%_mark" transform="translate(11.5,12.5)"  d="M 0,0 5,5 19,-12" fill="none"                      stroke="black" stroke-width="2"/>
         </g>
         <g>
-            <text id="checkbox_0_title" x="33.8" y="21.6"  font-size="16">               Online</text>               <!-- Metadata information. Please don't edit. -->
+            <text id="%%COMPONENT_ID%%_title" x="33.8" y="21.6"  font-size="16">               Online</text>               <!-- Metadata information. Please don't edit. -->
             <text display="none">type=text</text>
         </g>
     </g>

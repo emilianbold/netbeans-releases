@@ -48,10 +48,10 @@ import org.openide.util.NbBundle;
  *
  * @author karol harezlak
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider.class)
 public class SVGSnipetsProviderGradient implements SVGSnippetsProvider{
 
-   private static final String name = "Gradient_snippet0";
+   private static final String name = "Gradient_snippet0"; //NOI18N
 
     public String getName() {
         return name;

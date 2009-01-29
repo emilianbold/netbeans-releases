@@ -1,16 +1,17 @@
-<g id="spinner_0"  transform="translate(56.0,65.0)">	<!-- Metadata information. Please don't edit. -->
+<g id="%%COMPONENT_ID%%"  transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+	<!-- Metadata information. Please don't edit. -->
         <text display="none">type=spinner</text>
         <rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)"                       stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="spinner_0.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="spinner_0.focusout" fill="freeze" to="hidden"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
         </rect>
         <rect id="_12" transform="matrix(1.2035432,0.0,0.0,1.0,-7.234642,0.0)"   x="5.0" y="0.0" rx="2" ry="2" width="33" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
-        <g id="spinner_0_editor" >		<!-- this editor is SVGTextField component -->		<!-- metadata definition-->
+        <g id="%%COMPONENT_ID%%_editor" >		<!-- this editor is SVGTextField component -->		<!-- metadata definition-->
             <text display="none">type=editor</text>
             <text display="none">editable=false</text>
             <text display="none">enabled=true</text>
             <g>
-                <text id="spinner_0_editor_text" x="0.75" y="16.0" font-size="16">                      0</text>                     <!-- Metadata information. Please don't edit. -->
+                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16">                      0</text>                     <!-- Metadata information. Please don't edit. -->
                 <text display="none">type=text</text>
             </g>
             <rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
@@ -35,9 +36,9 @@
             bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
             transform="matrix(0.0479265,0.0,0.0,0.077841274,22.5,0.12756675)" id="_21" >
             </image>
-            <rect   id="spinner_0_up_button" x="22.25" y="0.0" rx="2" ry="2" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
-                <animate id="spinner_0_up_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
-                <animate id="spinner_0_up_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+            <rect   id="%%COMPONENT_ID%%_up_button" x="22.25" y="0.0" rx="2" ry="2" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
+                <animate id="%%COMPONENT_ID%%_up_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
+                <animate id="%%COMPONENT_ID%%_up_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
             </rect>
         </g>
         <g>	    	<!-- Metadata information. Please don't edit. -->
@@ -60,9 +61,9 @@
             bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
             transform="matrix(0.0479265,0.0,0.0,0.07219512,22.337624,10.5)" id="_20" >
             </image>
-            <rect id="spinner_0_down_button" rx="2" ry="2" x="22.25" y="10.0" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
-                <animate id="spinner_0_down_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
-                <animate id="spinner_0_down_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+            <rect id="%%COMPONENT_ID%%_down_button" rx="2" ry="2" x="22.25" y="10.0" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
+                <animate id="%%COMPONENT_ID%%_down_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
+                <animate id="%%COMPONENT_ID%%_down_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
             </rect>
         </g>
         <polygon transform="translate(29.0,6.0)" id="_1"   points="0,0 2,0 1,-2" fill="blue" stroke="rgb(73,46,55)" stroke-width="2"/>

@@ -1,12 +1,12 @@
 
-<g id="radiobuttonframe_0" transform="translate(15.0,66.0)">
+<g id="%%FRAME_COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 
     <rect x="0" y="0" rx="5" ry="5" width="200" height="60" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
-    <g id="radiobutton_0" transform="translate(7,5)">	    <!-- Metadata information. Please don't edit. -->
+    <g id="%%COMPONENT_ID_1%%" transform="translate(7,5)">	    <!-- Metadata information. Please don't edit. -->
         <text display="none">type=radio</text>
         <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)"                         stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="radiobutton_0.focusin"                          fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="radiobutton_0.focusout"                          fill="freeze" to="hidden"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID_1%%.focusin"                          fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID_1%%.focusout"                          fill="freeze" to="hidden"/>
         </rect>
         <g>
             <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
@@ -31,10 +31,10 @@
         <circle cx="11" cy="12" r="8" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
         <g>
             <text display="none">type=dot</text>
-            <circle id="radiobutton_0_dot" cx="11" cy="12" r="4" fill="rgb(73,46,55)" visibility="hidden"/>
+            <circle id="%%COMPONENT_ID_1%%_dot" cx="11" cy="12" r="4" fill="rgb(73,46,55)" visibility="hidden"/>
         </g>
         <g>
-            <text id="radiobutton_0_text" x="23.666664" y="19.333336" font-size="16">                     Male</text>                    <!-- Metadata information. Please don't edit. -->
+            <text id="%%COMPONENT_ID_1%%_text" x="23.666664" y="19.333336" font-size="16">                     Male</text>                    <!-- Metadata information. Please don't edit. -->
             <text display="none">type=radio</text>
         </g>
     </g>
@@ -58,19 +58,19 @@
             transform="matrix(0.044791527,0.0,0.0,0.11548669,10.659607,38.0)" id="_9" >
         </image>
     </g>
-    <g id="radiobutton_1" transform="translate(7,33)">	    <!-- Metadata information. Please don't edit. -->
+    <g id="%%COMPONENT_ID_2%%" transform="translate(7,33)">	    <!-- Metadata information. Please don't edit. -->
         <text display="none">type=radio</text>
         <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)"                                stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="radiobutton_1.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="radiobutton_1.focusout" fill="freeze" to="hidden"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID_2%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID_2%%.focusout" fill="freeze" to="hidden"/>
         </rect>
         <circle transform="translate(11, 12)" cx="0" cy="0" r="8" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
         <g>	    	<!-- Metadata information. Please don't edit. -->
             <text display="none">type=dot</text>
-            <circle id="radiobutton_1_dot" cx="11" cy="12" r="4" fill="rgb(73,46,55)" visibility="hidden"/>
+            <circle id="%%COMPONENT_ID_2%%_dot" cx="11" cy="12" r="4" fill="rgb(73,46,55)" visibility="hidden"/>
         </g>
         <g>
-            <text id="radiobutton_1_text" x="23.333336" y="19.666672" font-size="16">                   Female</text>                <!-- Metadata information. Please don't edit. -->
+            <text id="%%COMPONENT_ID_2%%_text" x="23.333336" y="19.666672" font-size="16">                   Female</text>                <!-- Metadata information. Please don't edit. -->
             <text display="none">type=radio</text>
         </g>
     </g>
