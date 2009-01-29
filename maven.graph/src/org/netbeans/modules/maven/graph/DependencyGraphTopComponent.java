@@ -88,7 +88,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         setName("DependencyGraph" + info.getName()); //NOI18N
         setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class, 
                 "TIT_DepGraphTC", info.getDisplayName()));
-        timer.setDelay(1000);
+        timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent arg0) {
