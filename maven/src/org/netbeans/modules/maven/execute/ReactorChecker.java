@@ -41,12 +41,22 @@ package org.netbeans.modules.maven.execute;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -105,12 +115,43 @@ public class ReactorChecker implements PrerequisitesChecker {
                 String path = pnl.getRelativePath();
                 File selected = FileUtilities.resolveFilePath(FileUtil.toFile(config.getProject().getProjectDirectory()), path);
                 config.setExecutionDirectory(selected);
-                //TODO persist in nbactions.xml file
+                // persist in nbactions.xml file
+                UserActionGoalProvider usr = config.getProject().getLookup().lookup(UserActionGoalProvider.class);
+                NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
+                try {
+                    ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
+                    NetbeansActionMapping m = findAction(mapping.getActions(), config.getActionName());
+                    if (m == null) {
+                        //add from other locations..
+                        m = ActionToGoalUtils.getDefaultMapping(config.getActionName(), config.getProject());
+                        if (m == null) {
+                            //hmm how come?
+                            return true;
+                        }
+                        mapping.addAction(m);
+                    }
+                    m.setBasedir(path);
+                    CustomizerProviderImpl.writeNbActionsModel(config.getProject().getProjectDirectory(), mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (XmlPullParserException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
             } else {
                 return false;
             }
         }
         return true;
+    }
+
+    private NetbeansActionMapping findAction(List<NetbeansActionMapping> actions, String actionName) {
+        for (NetbeansActionMapping m : actions) {
+            if (actionName.equals(m.getActionName())) {
+                return m;
+            }
+        }
+        return null;
     }
     
 }
