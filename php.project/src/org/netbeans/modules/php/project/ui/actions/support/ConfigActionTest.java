@@ -51,7 +51,6 @@ import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.Pair;
@@ -104,7 +103,7 @@ public class ConfigActionTest extends ConfigAction {
         if (!phpUnit.supportedVersionFound()) {
             int[] version = phpUnit.getVersion();
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnitConstants.getPhpUnitVersions(version)),
+                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
@@ -229,8 +228,8 @@ public class ConfigActionTest extends ConfigAction {
                 externalProcessBuilder = externalProcessBuilder.addArgument(param);
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnitConstants.PARAM_XML_LOG)
-                    .addArgument(PhpUnitConstants.XML_LOG.getAbsolutePath())
+                    .addArgument(PhpUnit.PARAM_XML_LOG)
+                    .addArgument(PhpUnit.XML_LOG.getAbsolutePath())
                     .addArgument(pair.second);
             return externalProcessBuilder;
         }
@@ -363,7 +362,7 @@ public class ConfigActionTest extends ConfigAction {
                     defaultProcessor.reset();
                 }
                 public void close() throws IOException {
-                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnitConstants.getPhpUnitVersions(phpUnit.getVersion()));
+                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion()));
                     char[] separator = new char[msg.length()];
                     Arrays.fill(separator, '='); // NOI18N
                     defaultProcessor.processInput("\n".toCharArray()); // NOI18N

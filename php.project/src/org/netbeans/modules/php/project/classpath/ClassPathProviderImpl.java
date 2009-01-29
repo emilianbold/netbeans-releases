@@ -78,6 +78,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         PLATFORM,
         SOURCE,
         TEST,
+        SELENIUM,
     }
 
     private final AntProjectHelper helper;
@@ -85,17 +86,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final PropertyEvaluator evaluator;
     private final SourceRoots sources;
     private final SourceRoots tests;
+    private final SourceRoots selenium;
 
     // GuardedBy(dirCache)
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sources, SourceRoots tests) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sources, SourceRoots tests, SourceRoots selenium) {
         assert helper != null;
         assert evaluator != null;
         assert sources != null;
         assert tests != null;
+        assert selenium != null;
 
         this.helper = helper;
         projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
@@ -103,6 +106,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         this.evaluator = evaluator;
         this.sources = sources;
         this.tests = tests;
+        this.selenium = selenium;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
@@ -172,6 +176,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
             }
         }
 
+        // selenium
+        for (FileObject root : selenium.getRoots()) {
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                // for now, return TEST type as well (it's probably ok)
+                return FileType.TEST;
+            }
+        }
+
         for (FileObject root : sources.getRoots()) {
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
                 return FileType.SOURCE;
@@ -220,8 +232,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                     if (cp == null) {
                         // return both because people expect such behaviour (in CC e.g.)
                         ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(tests));
+                        ClassPath seleniumCp = ClassPathFactory.createClassPath(new SourcePathImplementation(selenium));
                         ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(sources));
-                        cp = ClassPathSupport.createProxyClassPath(testsCp, sourcesCp);
+                        cp = ClassPathSupport.createProxyClassPath(testsCp, seleniumCp, sourcesCp);
                         cache.put(ClassPathCache.TEST, cp);
                     }
                 }
@@ -244,7 +257,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                         internalFolders.toArray(new FileObject[internalFolders.size()]));
                 ClassPath includePath = ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
-                        new String[] {PhpProjectProperties.INCLUDE_PATH}));                
+                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
                 cp = ClassPathSupport.createProxyClassPath(internalClassPath, includePath);
                 cache.put(ClassPathCache.PLATFORM, cp);
             }
