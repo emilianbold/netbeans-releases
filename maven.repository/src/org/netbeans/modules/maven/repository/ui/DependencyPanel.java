@@ -43,10 +43,8 @@ package org.netbeans.modules.maven.repository.ui;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -57,18 +55,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
@@ -80,7 +73,7 @@ import org.openide.windows.TopComponent;
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
     private MultiViewElementCallback callback;
-    private Result<MavenProject> result;
+    private Lookup.Result<DependencyNode> result;
     private final static Icon dirIcon;
     private final static Icon trIcon;
 
@@ -190,7 +183,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     @Override
     public void componentOpened() {
         super.componentOpened();
-        result = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 populateFields();
@@ -236,11 +229,10 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
 
     private void populateFields() {
         boolean loading = true;
-        Iterator<? extends MavenProject> iter = result.allInstances().iterator();
+        Iterator<? extends DependencyNode> iter = result.allInstances().iterator();
         if (iter.hasNext()) {
             loading = false;
-            MavenProject prj = iter.next();
-            final DependencyNode root = DependencyTreeFactory.createDependencyTree(prj, EmbedderFactory.getOnlineEmbedder(), "test");
+            final DependencyNode root = iter.next();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     setDepModel(lstCompile, root, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));

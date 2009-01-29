@@ -48,10 +48,12 @@ import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -112,6 +114,8 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 }
                 MavenProject prj = readMavenProject(embedder, fArt, repos);
                 ic.add(prj);
+                DependencyNode root = DependencyTreeFactory.createDependencyTree(prj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                ic.add(root);
             }
         });
 
