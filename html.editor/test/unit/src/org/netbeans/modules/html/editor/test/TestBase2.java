@@ -38,93 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+package org.netbeans.modules.html.editor.test;
+
+import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.CommentHandler;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.gsf.HtmlFormatter;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
-public class HtmlLanguage extends DefaultLanguageConfig {
-    
-    public HtmlLanguage() {
+/**
+ * Common ancestor for all test classes.
+ */
+public class TestBase2 extends GsfTestBase {
+
+
+    public TestBase2(String name) {
+        super(name);
     }
 
     @Override
-    public CommentHandler getCommentHandler() {
-        return new HtmlCommentHandler();
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
     }
 
     @Override
-    public Language getLexerLanguage() {
-        return HTMLTokenId.language();
+    protected String getPreferredMimeType() {
+        return "text/html";
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isLetter(c);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "HTML";
-    }
-    
-    @Override
-    public String getPreferredExtension() {
-        return "html"; // NOI18N
-    }
-
-    // Service registrations
-    
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    @Override
-    public Parser getParser() {
-        return new HtmlGSFParser();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new HtmlStructureScanner();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new HtmlSemanticAnalyzer();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new HtmlGsfCompletionHandler();
-    }
-
-    public KeystrokeHandler getKeystrokeHandler() {
-        return new HtmlKeystrokeHandler();
-    }
-
-    @Override
-    public Formatter getFormatter() {
+    public Formatter getFormatter(IndentPrefs preferences) {
         return new HtmlFormatter();
     }
 
     @Override
-    public boolean hasFormatter() {
-        return true;
+    protected BaseKit getEditorKit(String mimeType) {
+        return new HTMLKit();
     }
 
 }

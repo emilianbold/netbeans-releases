@@ -39,49 +39,84 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.test;
+package org.netbeans.test.web.core.syntax;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.gsf.CSSFormatter2;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.css.gsf.CSSLanguage;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.gsf.JspFormatter;
+import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
+import org.netbeans.modules.web.jspparser.JspParserImpl;
 
 /**
  * Common ancestor for all test classes.
  */
-public class TestBase extends GsfTestBase {
+public class TestBase2 extends GsfTestBase {
 
-    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
-    public TestBase(String name) {
+    public TestBase2(String name) {
         super(name);
     }
 
-    protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
-        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
-        doc.putProperty(Language.class, CSSTokenId.language());
-        return doc;
-    }
+//    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+//
+//    protected BaseDocument createDocument() {
+//        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
+//        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
+//        doc.putProperty(Language.class, CSSTokenId.language());
+//        return doc;
+//    }
     
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
-        return new CSSLanguage();
+        return new JspLanguage();
     }
 
     @Override
     protected String getPreferredMimeType() {
-        return Css.CSS_MIME_TYPE;
+        return "text/x-jsp";
     }
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        return new CSSFormatter2();
+        if (preferences == null) {
+            preferences = new IndentPrefs(4,4);
+        }
+
+//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
+//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
+        // TODO: XXXX
+
+        Formatter formatter = new JspFormatter();
+
+        return formatter;
+    }
+
+    @Override
+    protected BaseKit getEditorKit(String mimeType) {
+        return new JSPKit(JSPKit.JSP_MIME_TYPE);
+    }
+
+    public final void initParserJARs() throws MalformedURLException {
+        String path = System.getProperty("jsp.parser.jars");
+        StringTokenizer st = new StringTokenizer(path, ":");
+        List<URL> list = new ArrayList();
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            File f = new File(token);
+            if (!f.exists()) {
+                fail("cannot find file "+token);
+            }
+            list.add(f.toURI().toURL());
+        }
+        JspParserImpl.setParserJARs(list.toArray(new URL[list.size()]));
     }
 }
