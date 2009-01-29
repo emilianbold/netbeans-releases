@@ -16,6 +16,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -71,6 +80,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.nativeexecution.api</package>
+                <package>org.netbeans.modules.nativeexecution.api.support</package>
                 <package>org.netbeans.modules.nativeexecution.util</package>
             </public-packages>
             <class-path-extension>
