@@ -46,9 +46,12 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -608,7 +611,16 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
                         painter.setForeground(PropUtils.getSelectedSetForegroundColor());
                     }
 
-                    painter.setOpaque(true);
+                    if( PropUtils.isAqua ) {
+                        painter.setOpaque(false);
+                        Graphics2D g2d = (Graphics2D) g;
+                        Paint oldPaint = g2d.getPaint();
+                        g2d.setPaint( new GradientPaint(r.x,r.y, Color.white, r.x, r.y+r.height/2, painter.getBackground()) );
+                        g2d.fillRect(r.x, r.y, r.width, r.height);
+                        g2d.setPaint(oldPaint);
+                    } else {
+                        painter.setOpaque(true);
+                    }
 
                     paintComponent(g, painter, r.x, r.y, r.width, r.height);
                 }
