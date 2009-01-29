@@ -205,14 +205,16 @@ public class CsmDisplayUtilities {
         } else if (CsmKindUtilities.isMacro(item)) {
             CsmMacro macro = (CsmMacro)item;
             switch (macro.getKind()){
-                case DEFINED: // macro defined in code (defined)
-                    tooltipText = getHtmlizedString("DSC_UsrMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                case DEFINED:
+                    tooltipText = getHtmlizedString("DSC_MacroTooltip", macro.getName(), macro.getText()); // NOI18N
                     break;
-                case SYSTEM: // predefined macro (defined by compiler, for example __STDC__) (system)
-                case PREDEFINED: // predefined macro (compile time macro, for example __FILE__) (system)
+                case COMPILER_PREDEFINED:
                     tooltipText = getHtmlizedString("DSC_SysMacroTooltip", macro.getName(), macro.getText()); // NOI18N
                     break;
-                case USER: // macro defined in project (-D compile option) (user)
+                case POSITION_PREDEFINED:
+                    tooltipText = getHtmlizedString("DSC_PosMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                    break;
+                case USER_SPECIFIED:
                 default:
                     tooltipText = getHtmlizedString("DSC_ProjectMacroTooltip", macro.getName(), macro.getText()); // NOI18N
                     break;
