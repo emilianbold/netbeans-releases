@@ -56,7 +56,7 @@
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
-        <pathconvert property="extra.modules.files" pathsep=",">
+        <pathconvert property="extra.module.files" pathsep=",">
             <path>
                 <fileset id="-disable-kits" dir="${build.release.dir}">
                     <include name="**/*"/>
@@ -69,7 +69,7 @@
         </pathconvert>
         <copy todir="${cluster}">
             <fileset dir="${build.release.dir}">
-                <include name="${extra.modules.files}"/>
+                <include name="${extra.module.files}"/>
             </fileset>
         </copy>
     </target>
