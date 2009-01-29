@@ -148,7 +148,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
-        jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
+        jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, true));
         jCheckAccess.setEnabled(false);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
