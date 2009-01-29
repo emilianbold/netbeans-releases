@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -74,13 +79,14 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.TopologicalSortException;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class RepositoryUpdater implements PathRegistryListener, FileChangeListener {
+public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener {
 
     private static RepositoryUpdater instance;
 
@@ -158,20 +164,21 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         assert event != null;
         if (LOGGER.isLoggable(Level.FINE)) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Paths changed:\n");
+            sb.append("Paths changed:\n"); //NOI18N
             for(PathRegistryEvent.Change c : event.getChanges()) {
-                sb.append(" event=").append(c.getEventKind());
-                sb.append(" pathKind=").append(c.getPathKind());
-                sb.append(" pathType=").append(c.getPathType());
-                sb.append(" affected paths:\n");
-                for(ClassPath cp : c.getAffectedPaths()) {
-                    sb.append("  ");
+                sb.append(" event=").append(c.getEventKind()); //NOI18N
+                sb.append(" pathKind=").append(c.getPathKind()); //NOI18N
+                sb.append(" pathType=").append(c.getPathType()); //NOI18N
+                sb.append(" affected paths:\n"); //NOI18N
+                Collection<? extends ClassPath> paths = c.getAffectedPaths();
+                for(ClassPath cp : paths) {
+                    sb.append("  \""); //NOI18N
                     sb.append(cp.toString(ClassPath.PathConversionMode.PRINT));
-                    sb.append("\n");
+                    sb.append("\"\n"); //NOI18N
                 }
-                sb.append("--");
+                sb.append("--\n"); //NOI18N
             }
-            sb.append("====");
+            sb.append("====\n"); //NOI18N
             LOGGER.fine(sb.toString());
         }
         final Work w = new RootsWork (WorkType.COMPILE_BATCH);
@@ -319,6 +326,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
         private final List<Work> todo = new LinkedList<Work>();
         private boolean active;
+        private ProgressHandle progressHandle;
         
         public synchronized void schedule (Work work) {
             assert work != null;
@@ -353,23 +361,30 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             do {
                 final Work work = getWork();
                 final WorkType type = work.getType();
-                switch (type) {
-                    case COMPILE_BATCH:
-                        LOGGER.fine("Batch compile: " + work);
-                        batchCompile();
-                        break;
-                    case COMPILE:
-                        LOGGER.fine("Compile: " + work);
-                        final FileListWork sfw = (FileListWork) work;
-                        compile (sfw.getFiles(),sfw.getRoot());
-                        break;
-                    case DELETE:
-                        LOGGER.fine("Delete: " + work);
-                        final FileListWork swf = (FileListWork) work;
-                        delete (swf.getFiles(),swf.getRoot());
-                        break;
-                    default:
-                        throw new IllegalArgumentException();
+                progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
+                progressHandle.start();
+                try {
+                    switch (type) {
+                        case COMPILE_BATCH:
+                            LOGGER.fine("Batch compile: " + work); //NOI18N
+                            batchCompile();
+                            break;
+                        case COMPILE:
+                            LOGGER.fine("Compile: " + work); //NOI18N
+                            final FileListWork sfw = (FileListWork) work;
+                            compile (sfw.getFiles(),sfw.getRoot());
+                            break;
+                        case DELETE:
+                            LOGGER.fine("Delete: " + work); //NOI18N
+                            final FileListWork swf = (FileListWork) work;
+                            delete (swf.getFiles(),swf.getRoot());
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unexpected WorkType: " + type); //NOI18N
+                    }
+                } finally {
+                    progressHandle.finish();
+                    progressHandle = null;
                 }
             } while (removeWork());
         }
@@ -388,6 +403,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void delete (final FileObject[] affected, final URL root) {
+            updateProgress(root);
             try {
                 final ArrayList<Indexable> indexables = new ArrayList<Indexable>(affected.length);
                 final FileObject rootFo = URLMapper.findFileObject(root);
@@ -402,6 +418,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void compile (final FileObject[] affected, final URL root) {
+            updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -417,6 +434,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
         private void batchCompile () {
             try {
+                progressHandle.progress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
                 final DependenciesContext ctx = new DependenciesContext(scannedRoots, scannedBinaries, true);
                 final List<URL> newRoots = new LinkedList<URL>();
                 newRoots.addAll(regs.getSources());
@@ -459,6 +477,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             assert ctx != null;
             TEST_LEGGER.log(Level.FINEST, "scanBinary", ctx.newBinaries);       //NOI18N
             for (URL binary : ctx.newBinaries) {
+                updateProgress(binary);
                 scanBinary (binary);
                 ctx.scannedBinaries.add(binary);
             }
@@ -472,6 +491,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             assert ctx != null;            
             for (URL source : ctx.newRoots) {
                 try {
+                    updateProgress(source);
                     scanSource (source);
                     ctx.scannedRoots.add(source);
                 } catch (IOException ioe) {
@@ -624,7 +644,30 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             
             depGraph.put(rootURL, deps);
         }
-    }
+
+        private void updateProgress (final URL url) {
+            assert url != null;
+            if (progressHandle == null) {
+                return;
+            }
+            URL tmp = FileUtil.getArchiveFile(url);
+            if (tmp == null) {
+                tmp = url;
+            }
+            try {
+                if ("file".equals(tmp.getProtocol())) { //NOI18N
+                    final File file = new File(new URI(tmp.toString()));
+                    progressHandle.progress(file.getAbsolutePath());
+                }
+                else {
+                    progressHandle.progress(tmp.toString());
+                }
+            } catch (URISyntaxException ex) {
+                progressHandle.progress(tmp.toString());
+            }
+        }
+
+    } // End of Task class
 
     private static class DependenciesContext {
         private final Set<URL> oldRoots;
