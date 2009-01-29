@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,29 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.css.gsf.api;
-
-/**
  *
- * @author marekfukala
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public class CssEmbeddingModelUtils {
 
-    private static final String GEN_CODE_IDENT = "GENERATED_CODE";
-    private static final String GEN_CODE_IDENT_WITH_POSTFIX = GEN_CODE_IDENT;
-    
-    public static final String getGeneratedCodeIdentifier() {
-        return GEN_CODE_IDENT_WITH_POSTFIX;
+package org.netbeans.modules.html.editor.gsf;
+
+import org.netbeans.modules.html.editor.indent.HtmlIndenter;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Formatter;
+
+public class HtmlFormatter implements Formatter {
+
+    public void reformat(Context context, CompilationInfo compilationInfo) {
+        new HtmlIndenter(context).reindent();
     }
-    
-    public static final boolean containsGeneratedCode(String text) {
-        return text == null ? false : text.contains(GEN_CODE_IDENT);
+
+    public void reindent(Context context) {
+        new HtmlIndenter(context).reindent();
     }
-    
+
+    public boolean needsParserResult() {
+        return false;
+    }
+
+    public int indentSize() {
+        return -1;
+    }
+
+    public int hangingIndentSize() {
+        return -1;
+    }
+
 }
