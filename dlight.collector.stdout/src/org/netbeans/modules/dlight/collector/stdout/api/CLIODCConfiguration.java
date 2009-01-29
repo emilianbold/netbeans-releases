@@ -50,7 +50,10 @@ import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfiguration
  * It invokes the given command, feds the given parser with its output line by
  * line and stores the data it returns in the tables described in the given
  * tables metadata.
- *
+ * <p>
+ * (see <a href="http://wiki.netbeans.org/DLightToolkitDesign">
+ * DLightToolkitDesign document</a> for more details.)
+ * </p>
  */
 public final class CLIODCConfiguration
         implements DataCollectorConfiguration,
@@ -70,11 +73,20 @@ public final class CLIODCConfiguration
     }
 
     /**
+     * Creates new CLIODCConfiguration instance for the specified command and
+     * it's arguments, with refference to an implementation of command's output
+     * parser and description of data it will provide.
      *
-     * @param command
-     * @param arguments
-     * @param parser
-     * @param dataTablesMetadata
+     * @param command a path to the executable that provides data to be
+     * collected (via standard output stream).
+     * @param arguments arguments that are passed to the executable. Arguments
+     * string may contain a special substring (<tt>@PID</tt>) that is
+     * substituted with the PID of <tt>DLightTarget</tt> that collector (
+     * constructed from this configuration) will be started with.
+     * @param parser CLIOParser that parses command's output and transform it to
+     * {@link org.netbeans.modules.dlight.api.storage.DataRow}s.
+     * @param dataTablesMetadata description of <tt>DataRow</tt>s provided by
+     * the <tt>DataCollector</tt>, constructed from this configuration.
      */
     public CLIODCConfiguration(final String command, final String arguments,
             final CLIOParser parser,
@@ -96,10 +108,8 @@ public final class CLIODCConfiguration
 
     /**
      * Gets this configuration unique ID (implements both
-     * {@link org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration}
-     * and
-     * {@link org.netbeans.modules.dlight.indicator.api.IndicatorDataProviderConfiguration}.
-     * method <code>getID()</code>).
+     * {@link DataCollectorConfiguration} and
+     * {@link IndicatorDataProviderConfiguration} method <code>getID()</code>).
      *
      * @return this configuration unique ID
      */
