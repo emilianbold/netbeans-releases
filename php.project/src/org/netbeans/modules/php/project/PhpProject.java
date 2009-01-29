@@ -102,11 +102,14 @@ public class PhpProject implements Project {
     private final Lookup lookup;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
+    private final SourceRoots seleniumRoots;
 
     // @GuardedBy(this)
     private FileObject sourcesDirectory;
     // @GuardedBy(this)
     private FileObject testsDirectory;
+    // @GuardedBy(this)
+    private FileObject seleniumDirectory;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -116,8 +119,9 @@ public class PhpProject implements Project {
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
-        sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, false);
-        testRoots = SourceRoots.create(updateHelper, eval, refHelper, true);
+        sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SOURCES);
+        testRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.TESTS);
+        seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
         lookup = createLookup(configuration);
     }
 
@@ -166,6 +170,10 @@ public class PhpProject implements Project {
         return testRoots;
     }
 
+    public SourceRoots getSeleniumRoots() {
+        return seleniumRoots;
+    }
+
     synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
@@ -175,10 +183,11 @@ public class PhpProject implements Project {
     }
 
     private FileObject resolveSourcesDirectory() {
-        // get the first source root
-        FileObject[] sourceObjects = Utils.getSourceObjects(this);
-        if (sourceObjects.length > 0) {
-            return sourceObjects[0];
+        String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
+        assert srcDirProperty != null : "Property for Sources must be defined";
+        FileObject srcDir = helper.resolveFileObject(srcDirProperty);
+        if (srcDir != null) {
+            return srcDir;
         }
         return restoreDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderRestored", "MSG_SourcesFolderTemporaryToProjectDirectory");
     }
@@ -200,18 +209,47 @@ public class PhpProject implements Project {
     }
 
     private FileObject resolveTestsDirectory() {
-        // get the second source root
-        FileObject[] sourceObjects = Utils.getSourceObjects(this);
-        if (sourceObjects.length > 1) {
-            return sourceObjects[1];
-        }
         // similar to source directory
         String testsProperty = eval.getProperty(PhpProjectProperties.TEST_SRC_DIR);
         if (testsProperty == null) {
             // test directory not set yet
             return null;
         }
+        FileObject testDir = helper.resolveFileObject(testsProperty);
+        if (testDir != null) {
+            return testDir;
+        }
         return restoreDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderRestored", "MSG_TestsFolderTemporaryToProjectDirectory");
+    }
+
+    /**
+     * @return selenium tests directory or <code>null</code>
+     */
+    synchronized FileObject getSeleniumDirectory() {
+        if (seleniumDirectory == null) {
+            seleniumDirectory = resolveSeleniumDirectory();
+        }
+        return seleniumDirectory;
+    }
+
+    synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
+        assert this.seleniumDirectory == null : "Project selenium directory already set to " + this.seleniumDirectory;
+        assert seleniumDirectory != null && seleniumDirectory.isValid();
+        this.seleniumDirectory = seleniumDirectory;
+    }
+
+    private FileObject resolveSeleniumDirectory() {
+        // similar to source directory
+        String testsProperty = eval.getProperty(PhpProjectProperties.SELENIUM_SRC_DIR);
+        if (testsProperty == null) {
+            // test directory not set yet
+            return null;
+        }
+        FileObject testDir = helper.resolveFileObject(testsProperty);
+        if (testDir != null) {
+            return testDir;
+        }
+        return restoreDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderRestored", "MSG_SeleniumFolderTemporaryToProjectDirectory");
     }
 
     private FileObject restoreDirectory(String propertyName, String infoMessageKey, String errorMessageKey) {
@@ -306,14 +344,14 @@ public class PhpProject implements Project {
                 new PhpConfigurationProvider(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots()),
+                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots()),
+                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
-                new PhpSources(getHelper(), getEvaluator(), sourceRoots, testRoots),
+                new PhpSources(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
                 getEvaluator()
                 // ?? getRefHelper()
@@ -389,6 +427,7 @@ public class PhpProject implements Project {
             synchronized (PhpProject.this) {
                 sourcesDirectory = null;
                 testsDirectory = null;
+                seleniumDirectory = null;
             }
 
             try {
@@ -425,8 +464,6 @@ public class PhpProject implements Project {
     }
 
     public final class PhpProjectXmlSavedHook extends ProjectXmlSavedHook {
-
-       public PhpProjectXmlSavedHook() {}
 
         protected void projectXmlSaved() throws IOException {
             Info info = getLookup().lookup(Info.class);
