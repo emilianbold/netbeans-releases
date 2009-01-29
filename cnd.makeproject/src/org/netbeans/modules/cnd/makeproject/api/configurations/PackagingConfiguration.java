@@ -263,8 +263,8 @@ public class PackagingConfiguration {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType(getType().clone());
         clone.setVerbose(getVerbose().clone());
-        clone.setInfo(getInfo().cloneConf());
-        clone.setFiles(getFiles().cloneConf());
+        clone.setInfo(getInfo().clone());
+        clone.setFiles(getFiles().clone());
         clone.setOutput(getOutput().clone());
         clone.setTool(getTool().clone());
         clone.setOptions(getOptions().clone());

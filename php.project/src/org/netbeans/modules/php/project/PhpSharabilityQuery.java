@@ -60,22 +60,26 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
     private final PropertyEvaluator evaluator;
     private final SourceRoots sources;
     private final SourceRoots tests;
+    private final SourceRoots selenium;
     private volatile SharabilityQueryImplementation delegate;
 
     PhpSharabilityQuery(final AntProjectHelper helper, final PropertyEvaluator evaluator,
-            final SourceRoots sources, final SourceRoots tests) {
+            final SourceRoots sources, final SourceRoots tests, final SourceRoots selenium) {
         assert helper != null;
         assert evaluator != null;
         assert sources != null;
         assert tests != null;
+        assert selenium != null;
 
         this.helper = helper;
         this.evaluator = evaluator;
         this.sources = sources;
         this.tests = tests;
+        this.selenium = selenium;
 
         this.sources.addPropertyChangeListener(this);
         this.tests.addPropertyChangeListener(this);
+        this.selenium.addPropertyChangeListener(this);
     }
 
     public int getSharability(final File file) {
@@ -101,9 +105,11 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
     private SharabilityQueryImplementation createDelegate() {
         String[] srcProps = sources.getRootProperties();
         String[] testProps = tests.getRootProperties();
+        String[] seleniumProps = tests.getRootProperties();
 
         int size = srcProps.length;
         size += testProps.length;
+        size += seleniumProps.length;
 
         List<String> props = new ArrayList<String>(size);
 
@@ -111,6 +117,9 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
             props.add("${" + src + "}"); // NOI18N
         }
         for (String test : testProps) {
+            props.add("${" + test + "}"); // NOI18N
+        }
+        for (String test : seleniumProps) {
             props.add("${" + test + "}"); // NOI18N
         }
 

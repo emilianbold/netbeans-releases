@@ -471,6 +471,7 @@ public final class CndLexerUtilities {
             CppTokenId.__ASM,
             CppTokenId.__ASM__,
             CppTokenId.__ATTRIBUTE__,
+            CppTokenId.__ATTRIBUTE,
             CppTokenId.__COMPLEX__,
             CppTokenId.__CONST,
             CppTokenId.__CONST__,

@@ -116,6 +116,7 @@ import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
+import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.spi.project.LookupMerger;
@@ -235,8 +236,10 @@ public final class NbMavenProjectImpl implements Project {
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
             Properties props = new Properties();
-            props.putAll(properties);
-            req.setUserProperties(props);
+            if (properties != null) {
+                props.putAll(properties);
+                req.setUserProperties(props);
+            }
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             // recursive == false is important to avoid checking all submodules for extensions
@@ -773,6 +776,7 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(),
                     CosChecker.createResultChecker(),
+                    new ReactorChecker(),
                     new PrereqCheckerMerger()
                 });
         return staticLookup;

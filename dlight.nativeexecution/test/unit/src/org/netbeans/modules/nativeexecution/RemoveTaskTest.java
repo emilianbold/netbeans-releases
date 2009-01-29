@@ -38,14 +38,15 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.util.RemoveTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,11 +79,26 @@ public class RemoveTaskTest {
     @Test
     public void testRemoveDirectory() {
         System.out.println("removeDirectory");
-        String dir = "/tmp/test";
-        boolean force = true;
-        boolean expResult = true;
-        boolean result = RemoveTask.removeDirectory(new ExecutionEnvironment(null, null, 22), dir, force);
-        assertEquals(expResult, result);
+
+        StringBuilder rmTaskError = new StringBuilder();
+        boolean forceRemoveReadOnlyFile = false;
+        String fileToRemove = "/path/to/the/file/to/remove";
+        ExecutionEnvironment env = new ExecutionEnvironment();
+
+        NativeTask rmTask = CommonTasksSupport.getRemoveFileTask(
+                env, fileToRemove, forceRemoveReadOnlyFile, rmTaskError);
+
+        try {
+            Integer result = rmTask.invoke(false);
+            System.out.println("RESULT: " + result);
+            if (result != 0) {
+                System.out.println("ERROR: " + rmTaskError);
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+//        assertEquals(expResult, result);
     }
 }
 

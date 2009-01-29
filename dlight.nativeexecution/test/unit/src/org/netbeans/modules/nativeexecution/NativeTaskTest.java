@@ -164,7 +164,7 @@ public class NativeTaskTest {
 
                 public void run() {
                     final NativeTask task = new NativeTask("/bin/ls");
-                    task.submit();
+                    task.submit(true, false);
                     System.out.println("PID is " + task.getPID());
 
                     try {
