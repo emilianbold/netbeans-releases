@@ -262,7 +262,9 @@ public class DependencyGraphTopComponent extends TopComponent {
         scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
         scene.validate();
         Rectangle viewpoint = scene.convertSceneToView(visitor.getVisibleRectangle());
-        viewpoint.grow(-5, -5);
+        int hgrow = ((viewDim.width - viewpoint.width) / 2) - 5;
+        int wgrow = ((viewDim.height - viewpoint.height) / 2) - 5;
+        viewpoint.grow(hgrow, wgrow);
         scene.getView().scrollRectToVisible(viewpoint);
 
         revalidate();
