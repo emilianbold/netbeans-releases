@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,7 +56,6 @@ import javax.swing.event.DocumentListener;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.visual.widget.BirdViewController;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -73,8 +71,6 @@ public class DependencyGraphTopComponent extends TopComponent {
     private Project project;
     private DependencyGraphScene scene;
     final JScrollPane pane = new JScrollPane();
-    private BirdViewController birdView;
-    private JComponent satelliteView;
     
     
     private Timer timer = new Timer(1000, new ActionListener() {
@@ -135,6 +131,8 @@ public class DependencyGraphTopComponent extends TopComponent {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
         sldDepth.setEnabled(false);
+        sldDepth.setVisible(false);
+        txtFind.setEnabled(false);
         add(pane, BorderLayout.CENTER);
         JLabel lbl = new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
         lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
@@ -146,17 +144,17 @@ public class DependencyGraphTopComponent extends TopComponent {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
-                            sldDepth.setMaximum(scene.getMaxNodeDepth());
-                            sldDepth.setEnabled(true);
                             JComponent sceneView = scene.getView ();
                             if (sceneView == null) {
                                 sceneView = scene.createView ();
                             }
                             pane.setViewportView(sceneView);
                             scene.cleanLayout(pane);
-                            birdView = scene.createBirdView();
-                            satelliteView = scene.createSatelliteView();
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+                            sldDepth.setMaximum(scene.getMaxNodeDepth());
+                            sldDepth.setEnabled(true);
+                            sldDepth.setVisible(true);
+                            txtFind.setEnabled(true);
                         }
                     });
                 } catch (Exception e) {
@@ -179,7 +177,6 @@ public class DependencyGraphTopComponent extends TopComponent {
         jPanel1 = new javax.swing.JPanel();
         btnBigger = new javax.swing.JButton();
         btnSmaller = new javax.swing.JButton();
-        btnBirdEye = new javax.swing.JToggleButton();
         lblFind = new javax.swing.JLabel();
         txtFind = new javax.swing.JTextField();
         sldDepth = new javax.swing.JSlider();
@@ -203,14 +200,6 @@ public class DependencyGraphTopComponent extends TopComponent {
             }
         });
         jPanel1.add(btnSmaller);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnBirdEye, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.btnBirdEye.text")); // NOI18N
-        btnBirdEye.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBirdEyeActionPerformed(evt);
-            }
-        });
-        jPanel1.add(btnBirdEye);
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblFind.text")); // NOI18N
         jPanel1.add(lblFind);
@@ -247,30 +236,16 @@ public class DependencyGraphTopComponent extends TopComponent {
     }//GEN-LAST:event_btnSmallerActionPerformed
     
     private void btnBiggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBiggerActionPerformed
-        if (btnBirdEye.isSelected()) {
-            birdView.hide();
-        }
         scene.setZoomFactor(scene.getZoomFactor() * 1.2);
         scene.validate();
         scene.repaint();
         if (pane.getHorizontalScrollBar().isVisible() || 
             pane.getVerticalScrollBar().isVisible()) {
-            satelliteView.setLocation(0,0);
             revalidate();
             repaint();
         }
         
     }//GEN-LAST:event_btnBiggerActionPerformed
-
-    private void btnBirdEyeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBirdEyeActionPerformed
-        if (btnBirdEye.isSelected()) {
-            birdView.setZoomFactor(1.1);
-            birdView.show();
-        } else {
-            birdView.hide();
-        }
-        
-    }//GEN-LAST:event_btnBirdEyeActionPerformed
 
     private void sldDepthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldDepthStateChanged
         if (!sldDepth.isEnabled() || sldDepth.getValueIsAdjusting()) {
@@ -299,7 +274,6 @@ public class DependencyGraphTopComponent extends TopComponent {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBigger;
-    private javax.swing.JToggleButton btnBirdEye;
     private javax.swing.JButton btnSmaller;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblFind;
