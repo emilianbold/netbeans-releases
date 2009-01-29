@@ -66,14 +66,13 @@ import javax.swing.text.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.NbCatalogManager;
 import org.apache.xml.resolver.helpers.Debug;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
-import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -88,7 +87,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -475,18 +473,18 @@ public class CatalogModelImpl implements CatalogModel {
     }
     
     
-    CatalogResolver catalogResolver;
+    NbCatalogResolver catalogResolver;
     Catalog apacheCatalogResolverObj;
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
         if((logger.getLevel() != null) && (logger.getLevel().intValue() <= Level.FINER.intValue())){
-            Debug debug = CatalogManager.getStaticManager().debug;
+            Debug debug = NbCatalogManager.getStaticManager().debug;
             debug.setDebug(logger.getLevel().intValue());
         }
         
-        CatalogManager manager = new CatalogManager(null);
+        NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
+        catalogResolver = new NbCatalogResolver(manager);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         for(File catFile : catalogFileList){
             apacheCatalogResolverObj.parseCatalog(catFile.toURL());
