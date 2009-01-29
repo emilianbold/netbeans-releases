@@ -55,6 +55,7 @@ public class PeopleConverter {
             items = new ArrayList<PersonConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (Person entity : entities) {
                 items.add(new PersonConverter(entity, uri, expandLevel, true));
             }
