@@ -37,19 +37,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.projects;
+package org.netbeans.modules.websvc.jaxrpc.project;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.project.api.WebService;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.modules.websvc.project.spi.WebServiceFactory;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,7 +65,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
     "org-netbeans-modules-j2ee-clientproject",
     "org-netbeans-modules-java-j2seproject"
 })
-public class AntJaxWsServicesProvider implements WebServiceDataProvider {
+public class AntJaxRpcServicesProvider implements WebServiceDataProvider {
     private Project prj;
 
     /** Constructor.
@@ -69,17 +73,24 @@ public class AntJaxWsServicesProvider implements WebServiceDataProvider {
      * @param prj project
      * @param jaxWsSupport JAXWSLightSupport
      */
-    public AntJaxWsServicesProvider(Project prj) {
+    public AntJaxRpcServicesProvider(Project prj) {
         this.prj = prj;
     }
 
     public List<WebService> getServiceProviders() {
         List<WebService> webServices = new ArrayList<WebService>();
-        JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel != null) {
-            Service[] services = jaxWsModel.getServices();
-            for (Service s : services) {
-                webServices.add(WebServiceFactory.createWebService(new AntJAXWSService(jaxWsModel, s, prj)));
+        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(prj.getProjectDirectory());
+        if (wsSupport != null) {
+            FileObject wsDD = wsSupport.getWebservicesDD();
+            try {
+                Webservices ws = DDProvider.getDefault().getDDRoot(wsDD);
+                if (ws != null) {
+                    for (WebserviceDescription wsDesc : ws.getWebserviceDescription()) {
+                        webServices.add(WebServiceFactory.createWebService(new AntJaxRpcService(ws, wsDesc, prj)));
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
         return webServices;
@@ -87,28 +98,24 @@ public class AntJaxWsServicesProvider implements WebServiceDataProvider {
 
     public List<WebService> getServiceConsumers() {
         List<WebService> webServices = new ArrayList<WebService>();
-        JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel != null) {
-            Client[] clients = jaxWsModel.getClients();
-            for (Client c : clients) {
-                webServices.add(WebServiceFactory.createWebService(new AntJAXWSClient(jaxWsModel, c, prj)));
+        WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(prj.getProjectDirectory());
+        if (wscs != null) {
+            FileObject wsdlFolder = wscs.getWsdlFolder();
+            if (wsdlFolder != null) {
+                FileObject[] wsdls = wsdlFolder.getChildren();
+                for (FileObject wsdl : wsdls) {
+                    if ("wsdl".equals(wsdl.getExt())) {
+                        webServices.add(WebServiceFactory.createWebService(new AntJaxRpcClient(prj, wscs, wsdl)));
+                    }
+                }
             }
         }
         return webServices;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel != null) {
-            jaxWsModel.addPropertyChangeListener(pcl);
-        }
     }
 
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel != null) {
-            jaxWsModel.removePropertyChangeListener(pcl);
-        }
     }
-
 }
