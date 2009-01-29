@@ -145,7 +145,7 @@ final class ToolbarContainer extends JPanel {
 
             toolbar.setBorder( new CompoundBorder( b, new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT) ) );
         } else if( "Aqua".equals(lAndF) ) { //NOI18N
-            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setBorder(BorderFactory.createEmptyBorder(0,0,2,0));
             toolbar.setOpaque(false);
         }
 
