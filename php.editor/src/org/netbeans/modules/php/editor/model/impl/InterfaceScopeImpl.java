@@ -82,26 +82,23 @@ final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        List<? extends InterfaceScopeImpl> implementedInterfaces = getInterfaces();
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaces();
         if (implementedInterfaces.size() > 0) {
             sb.append(" implements ");
-            for (InterfaceScopeImpl interfaceScope : implementedInterfaces) {
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
                 sb.append(interfaceScope.getName()).append(" ");
             }
         }
         return sb.toString();
     }
 
-    public List<? extends MethodScope> getAllInheritedMethods() {
+    public List<? extends MethodScope> getMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
-        allMethods.addAll(getAllMethods());
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl == null) {
-            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
-        }
-        PHPIndex index = indexScopeImpl.getIndex();
+        allMethods.addAll(getDeclaredMethods());
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        PHPIndex index = indexScope.getIndex();
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
-        interfaceScopes.addAll(getInterfaces());
+        interfaceScopes.addAll(getSuperInterfaces());
         for (InterfaceScope iface : interfaceScopes) {
             Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {

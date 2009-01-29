@@ -63,7 +63,7 @@ import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.ModelScope;
+import org.netbeans.modules.php.editor.model.PhpFileScope;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;

@@ -46,6 +46,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -103,7 +104,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     public List<? extends VarAssignmentImpl> getAssignments() {
         return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return true;
             }
         });

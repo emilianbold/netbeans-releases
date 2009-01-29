@@ -47,20 +47,24 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
-final class FileScope extends ModelScopeImpl implements ModelScope, VariableContainerImpl {
+final class FileScope extends ScopeImpl implements PhpFileScope, VariableContainerImpl {
 
-    private CachedModelSupport cachedModelSupport;
+    private CachingSupport cachedModelSupport;
     private IndexScopeImpl indexScope;
     private Map<ModelElement, List<Occurence>> occurences =
             new HashMap<ModelElement, List<Occurence>>();
@@ -85,9 +89,13 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     }
 
     FileScope(CompilationInfo info) {
-        super(info, "program", PhpKind.PROGRAM);//NOI18N
+        this(info, "program", PhpKind.PROGRAM);//NOI18N
         indexScope = (IndexScopeImpl) ModelVisitor.getIndexScope(info);
-        cachedModelSupport = new CachedModelSupport(this);
+        cachedModelSupport = new CachingSupport(this);
+    }
+
+    private FileScope(CompilationInfo info, String name, PhpKind kind) {
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {
@@ -135,15 +143,19 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
         return getAllOccurences(occurence.getDeclaration());
     }
 
-    public List<? extends ClassScopeImpl> getAllClasses() {
-        return getClasses();
+    public List<? extends ClassScopeImpl> getDeclaredClasses() {
+        return filter(getElements(), new ElementFilter<ModelElement>() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.CLASS);
+            }
+        });
     }
 
-    public List<? extends ClassScopeImpl> getClasses(final String... queryName) {
-        return getClasses(NameKind.EXACT_NAME, queryName);
+    /*public List<? extends ClassScopeImpl> findDeclaredClasses(final String... queryName) {
+        return findDeclaredClasses(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassScopeImpl> getClasses(final NameKind nameKind, final String... queryName) {
+    public List<? extends ClassScopeImpl> findDeclaredClasses(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -151,17 +163,21 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
+    }*/
+
+    public List<? extends InterfaceScope> getDeclaredInterfaces() {
+        return filter(getElements(), new ElementFilter() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.IFACE);
+            }
+        });
     }
 
-    public List<? extends InterfaceScopeImpl> getAllInterfaces() {
-        return getInterfaces();
+    /*public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final String... queryName) {
+        return findDeclaredInterfaces(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends InterfaceScopeImpl> getInterfaces(final String... queryName) {
-        return getInterfaces(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends InterfaceScopeImpl> getInterfaces(final NameKind nameKind, final String... queryName) {
+    public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -169,17 +185,21 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
+    }*/
+
+    public List<? extends ConstantElement> getDeclaredConstants() {
+        return filter(getElements(), new ElementFilter() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.CONSTANT);
+            }
+        });
     }
 
-    public List<? extends ConstantElementImpl> getAllConstants() {
-        return getConstants();
+    /*public List<? extends ConstantElementImpl> findDeclaredConstants(String... queryName) {
+        return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ConstantElementImpl> getConstants(final NameKind nameKind, final String... queryName) {
+    public List<? extends ConstantElementImpl> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -187,70 +207,42 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
-    }
+    }*/
 
-    public List<? extends FunctionScopeImpl> getAllFunctions() {
-        return getFunctions();
-    }
-
-    public List<? extends FunctionScopeImpl> getFunctions(final String... queryName) {
-        return getFunctions(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends FunctionScopeImpl> getFunctions(final NameKind nameKind, final String... queryName) {
+    public List<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return element.getPhpKind().equals(PhpKind.FUNCTION) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.FUNCTION);
             }
         });
     }
 
+
     @SuppressWarnings("unchecked")
-    public List<? extends TypeScopeImpl> getAllTypes() {
-        List<? extends ClassScopeImpl> classes = getAllClasses();
-        List<? extends InterfaceScopeImpl> interfaces = getAllInterfaces();
+    public List<? extends TypeScope> getDeclaredTypes() {
+        List<? extends ClassScope> classes = getDeclaredClasses();
+        List<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
         return ModelUtils.merge(classes, interfaces);
     }
 
-    public List<? extends TypeScopeImpl> getTypes(String... queryName) {
-        return getTypes(NameKind.EXACT_NAME, queryName);
-    }
 
-    public List<? extends TypeScopeImpl> getTypes(final NameKind nameKind, final String... queryName) {
-        return filter(getAllTypes(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
-            }
-        });
-    }
-
-    public List<? extends VariableName> getAllVariables() {
+    public List<? extends VariableName> getDeclaredVariables() {
         return getVariablesImpl();
     }
 
-    public List<? extends VariableName> getVariables(String... queryName) {
-        return getVariablesImpl(queryName);
-    }
 
-    public List<? extends VariableName> getVariables(final NameKind nameKind, final String... queryName) {
-        return getVariablesImpl(nameKind, queryName);
-    }
-
-    public List<? extends VariableNameImpl> getAllVariablesImpl() {
+    public List<? extends VariableName> getAllVariablesImpl() {
         return getVariablesImpl();
     }
 
-    public List<? extends VariableNameImpl> getVariablesImpl(String... queryName) {
+    public List<? extends VariableName> getVariablesImpl(String... queryName) {
         return getVariablesImpl(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableNameImpl> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public List<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.VARIABLE) &&
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
@@ -260,12 +252,12 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     /**
      * @return the indexScope
      */
-    IndexScopeImpl getIndexScope() {
+    public IndexScopeImpl getIndexScope() {
         return indexScope;
     }
 
-    @Override
-    CachedModelSupport getCachedModelSupport() {
+    @NonNull
+    public CachingSupport getCachingSupport() {
         return cachedModelSupport;
     }
 }

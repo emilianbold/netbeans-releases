@@ -56,8 +56,4 @@ class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
                 new OffsetRange(0, 0), info.getPhpKind(), PhpModifiers.EMPTY);
     }
 
-    @Override
-    StringBuilder golden(int indent) {
-        return new StringBuilder();
-    }
 }

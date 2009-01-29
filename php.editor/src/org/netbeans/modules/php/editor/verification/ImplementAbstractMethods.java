@@ -59,7 +59,7 @@ import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.ModelScope;
+import org.netbeans.modules.php.editor.model.PhpFileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -95,8 +95,8 @@ public class ImplementAbstractMethods extends ModelRule {
     }
 
     @Override
-    void check(ModelScope modelScope, RuleContext context, List<Hint> hints) {        
-        List<? extends TypeScope> allClasses = modelScope.getAllTypes();
+    void check(PhpFileScope modelScope, RuleContext context, List<Hint> hints) {
+        List<? extends TypeScope> allClasses = modelScope.getDeclaredTypes();
         long computedDigest = computeDigest(allClasses);
         if (computedDigest != diggest || !cahcedFixedInfo.isEmpty()) {            
             fillCachedFixedInfo(allClasses, computedDigest != diggest);
@@ -115,7 +115,7 @@ public class ImplementAbstractMethods extends ModelRule {
         for (TypeScope typeScope : allTypes) {
             crc32.update(String.valueOf(typeScope.hashCode()).getBytes());
             crc32.update(String.valueOf(typeScope.getPhpModifiers().hashCode()).getBytes());
-            List<? extends MethodScope> allMethods = typeScope.getAllMethods();
+            List<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
             for (MethodScope methodScope : allMethods) {
                 crc32.update(String.valueOf(methodScope.hashCode()).getBytes());
             }
@@ -136,11 +136,11 @@ public class ImplementAbstractMethods extends ModelRule {
             for (TypeScope typeScope : allTypes) {
                 LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
                 ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope)typeScope).getSuperClasses()) : null;
-                List<? extends InterfaceScope> interfaces = typeScope.getInterfaces();
+                List<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
                 if ((cls != null  || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
                     Set<String> methNames = new HashSet<String>();
-                    List<? extends MethodScope> allInheritedMethods = typeScope.getAllInheritedMethods();
-                    List<? extends MethodScope> allMethods = typeScope.getAllMethods();
+                    List<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
+                    List<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
                     Set<String> methodNames = new HashSet<String>();
                     for (MethodScope methodScope : allMethods) {
                         methodNames.add(methodScope.getName());

@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -59,7 +59,6 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     private OffsetRange blockRange = null;
     private List<ModelElementImpl> elements = new ArrayList<ModelElementImpl>();
-    private ModelScopeImpl mScope;
 
     //new contructors
     ScopeImpl(ScopeImpl inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
@@ -108,10 +107,10 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends ModelElementImpl> List<? extends T> filter(final List<? extends ModelElementImpl> original,
-            final ElementFilter filter) {
+    static <T extends ModelElement> List<? extends T> filter(final List<? extends ModelElement> original,
+            final ElementFilter<ModelElement> filter) {
         List<T> retval = new ArrayList<T>();
-        for (ModelElementImpl baseElement : original) {
+        for (ModelElement baseElement : original) {
             boolean accepted = filter.isAccepted(baseElement);
             if (accepted) {
                 retval.add((T) baseElement);
@@ -120,25 +119,10 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         return retval;
     }
 
-    static interface ElementFilter {
-
-        boolean isAccepted(ModelElementImpl element);
+    static interface ElementFilter<T extends ModelElement> {
+        boolean isAccepted(T element);
     }
 
-    @Override
-    final StringBuilder golden(int indent) {
-        String prefix = "";//NOI18N
-        for (int i = 0; i < indent; i++) {
-            prefix += "  ";
-        }//NOI18N
-        StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append(toString()).append("\n");//NOI18N
-        List<? extends ModelElementImpl> allElems = getElements();
-        for (ModelElementImpl modelElement : allElems) {
-            sb.append(modelElement.golden(indent + 1));
-        }
-        return sb;
-    }
 
     void setBlockRange(Block block) {
         if (block != null) {
@@ -152,12 +136,5 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     public OffsetRange getBlockRange() {
         //assert blockRange != null;
         return blockRange;
-    }
-
-    protected final IndexScopeImpl getTopIndexScopeImpl() {
-        if (mScope == null) {
-            mScope = (ModelScopeImpl) ModelUtils.getModelScope(this);
-        }
-        return (IndexScopeImpl) ((mScope instanceof IndexScopeImpl) ? mScope : null);
     }
 }

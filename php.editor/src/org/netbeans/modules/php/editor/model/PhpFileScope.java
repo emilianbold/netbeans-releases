@@ -40,25 +40,16 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * @author Radek Matous
  */
-public interface ModelScope extends VariableScope {
-    public List<? extends TypeScope> getAllTypes();
-    public List<? extends TypeScope> getTypes(final String... queryName);
-    public List<? extends TypeScope> getTypes(final NameKind nameKind, final String... queryName);
-    public List<? extends ConstantElement> getAllConstants();
-    public List<? extends ConstantElement> getConstants(final String... queryName);
-    public List<? extends ConstantElement> getConstants(final NameKind nameKind, final String... queryName);
-    public List<? extends ClassScope> getAllClasses();
-    public List<? extends ClassScope> getClasses(final String... queryName);
-    public List<? extends ClassScope> getClasses(final NameKind nameKind, final String... queryName);
-    public List<? extends InterfaceScope> getAllInterfaces();
-    public List<? extends InterfaceScope> getInterfaces(final String... queryName);
-    public List<? extends InterfaceScope> getInterfaces(final NameKind nameKind, final String... queryName);
-    public List<? extends FunctionScope> getAllFunctions();
-    public List<? extends FunctionScope> getFunctions(final String... queryName);
-    public List<? extends FunctionScope> getFunctions(final NameKind nameKind, final String... queryName);
+public interface PhpFileScope extends VariableScope {
+    public List<? extends TypeScope> getDeclaredTypes();
+    public List<? extends ClassScope> getDeclaredClasses();
+    public List<? extends InterfaceScope> getDeclaredInterfaces();
+    public List<? extends ConstantElement> getDeclaredConstants();
+    public List<? extends FunctionScope> getDeclaredFunctions();
+    public List<? extends VariableName> getDeclaredVariables();
+    public IndexScope getIndexScope();
 }

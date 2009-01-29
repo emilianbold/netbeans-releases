@@ -121,7 +121,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private CompilationInfo info;
 
     public ModelVisitor(CompilationInfo info) {
-        this(info, -1);        
+        this(info, -1);
     }
 
     public ModelVisitor(CompilationInfo info, int offset) {
@@ -369,14 +369,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             ScopeImpl scope = modelBuilder.getCurrentScope();
             if (scope instanceof VariableContainerImpl) {
                 VariableContainerImpl vc = (VariableContainerImpl) scope;
-                List<? extends VariableNameImpl> variablesImpl = vc.getVariablesImpl(varName);
-                VariableNameImpl varElem = ModelUtils.getFirst(variablesImpl);
+                List<? extends VariableName> variablesImpl = vc.getVariablesImpl(varName);
+                VariableNameImpl varElem = (VariableNameImpl) ModelUtils.getFirst(variablesImpl);
                 if (varElem != null) {
                     varElem.setGloballyVisible(true);
                 } else {
                     vc = (VariableContainerImpl) modelBuilder.getFileScope();
                     variablesImpl = vc.getVariablesImpl(varName);
-                    varElem = ModelUtils.getFirst(variablesImpl);
+                    varElem = (VariableNameImpl) ModelUtils.getFirst(variablesImpl);
                     if (varElem != null) {
                         varElem.setGloballyVisible(true);
                     }
@@ -441,7 +441,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (!fldName.startsWith("$")) {//NOI18N
                         fldName = "$" + fldName;//NOI18N
                     }
-                    FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.getFields(fldName, PHPIndex.ANY_ATTR));
+                    FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
                     if (field != null) {
                         //List<? extends FieldAssignmentImpl> assignments = field.getAssignments();
                         String typeName = VariousUtils.extractVariableTypeFromAssignment(node, 
@@ -530,9 +530,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare(node, fncScope);
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
             checkComments(node);
-        } else if (!(scope instanceof ModelScope)) {
+        } else if (!(scope instanceof PhpFileScope)) {
             ScopeImpl tmpScope = scope;
-            while (!(tmpScope instanceof ModelScope)) {
+            while (!(tmpScope instanceof PhpFileScope)) {
                 tmpScope = tmpScope.getInScope();
             }
             if (tmpScope instanceof FileScope) {
@@ -623,7 +623,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    public ModelScope getModelScope() {
+    public PhpFileScope getModelScope() {
         return fileScope;
     }
 
@@ -716,7 +716,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             } else if (modelElement instanceof ClassScope) {
                 ClassScope clsScope = (ClassScope) modelElement;
-                List<? extends MethodScope> allMethods = clsScope.getAllMethods();
+                List<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
                 for (MethodScope methodScope : allMethods) {
                     if (methodScope.getBlockRange().containsInclusive(offset)) {
                         if (retval == null ||
@@ -730,7 +730,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return retval;
     }
 
-    static List<Occurence> getAllOccurences(ModelScope modelScope, Occurence occurence) {
+    static List<Occurence> getAllOccurences(PhpFileScope modelScope, Occurence occurence) {
         ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
         if (declaration instanceof MethodScope) {
             MethodScope methodScope = (MethodScope) declaration;
@@ -765,7 +765,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (occurencesBuilder != null) {
             occurencesBuilder.build(fileScope);
             occurencesBuilder = null;
-            fileScope.getCachedModelSupport().clearCaches();
         }
     }
 
@@ -842,7 +841,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varComments != null) {
                 for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                     VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
-                    VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(varScope.getVariables(name));
+                    VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
                     if (varInstance == null) {
                         if (varScope instanceof ScopeImpl) {
                             ScopeImpl scp = (ScopeImpl) varScope;

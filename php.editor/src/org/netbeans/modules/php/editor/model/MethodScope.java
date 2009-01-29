@@ -42,7 +42,7 @@ package org.netbeans.modules.php.editor.model;
 /**
  * @author Radek Matous
  */
-public interface MethodScope extends FunctionScope, VariableScope {
+public interface MethodScope extends FunctionScope, VariableScope, ClassMemberElement {
     PhpModifiers getPhpModifiers();
     boolean isMagic();
     boolean isConstructor();

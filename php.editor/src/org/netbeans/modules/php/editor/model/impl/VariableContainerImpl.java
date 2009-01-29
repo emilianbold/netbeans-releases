@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.List;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
@@ -50,7 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 interface VariableContainerImpl  {
     VariableNameImpl createElement(Program program, Variable node);
-    public List<? extends VariableNameImpl> getAllVariablesImpl();
-    public List<? extends VariableNameImpl> getVariablesImpl(final String... queryName);
-    public List<? extends VariableNameImpl> getVariablesImpl(final NameKind nameKind, final String... queryName);
+    public List<? extends VariableName> getAllVariablesImpl();
+    public List<? extends VariableName> getVariablesImpl(final String... queryName);
+    public List<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName);
 }
