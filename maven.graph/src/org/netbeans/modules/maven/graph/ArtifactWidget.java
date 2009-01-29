@@ -89,12 +89,14 @@ class ArtifactWidget extends Widget {
 
     public void switchToHidden() {
         LayoutFactory.setActiveCard(this, hiddenCard);
+        bringToBack();
         setVisible(true);
         this.revalidate();
     }
 
     public void switchToDefault() {
         LayoutFactory.setActiveCard(this, defaultCard);
+        bringToFront();
         setVisible(true);
         this.revalidate();
     }
