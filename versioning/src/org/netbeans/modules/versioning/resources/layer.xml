@@ -96,6 +96,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="900"/>
             <file name="org-netbeans-modules-versioning-VersioningMainMenu.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.VersioningMainMenu"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>
         

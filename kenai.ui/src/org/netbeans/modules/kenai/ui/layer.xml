@@ -24,15 +24,17 @@
     <folder name="Menu">
         <folder name="Versioning">
             <folder name="Kenai">
-            <attr name="org-netbeans-modules-kenai-ui-LoginAction.shadow/org-netbeans-modules-versioning-VersioningMainMenu.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-kenai-ui-LoginAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-LoginAction.instance"/>
-            </file>
+                <attr name="position" intvalue="200"/>
+                <file name="org-netbeans-modules-kenai-ui-LoginAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-LoginAction.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
             </folder>
         </folder>
         <folder name="Window">
             <file name="KenaiAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
+                <attr name="position" intvalue="1059"/>
             </file>
         </folder>
     </folder>
@@ -42,7 +44,9 @@
         </folder>
         <folder name="Modes">
             <folder name="explorer">
-                <file name="KenaiTopComponent.wstcref" url="KenaiTopComponentWstcref.xml"/>
+                <file name="KenaiTopComponent.wstcref" url="KenaiTopComponentWstcref.xml">
+                    <attr name="position" intvalue="455"/>
+                </file>
             </folder>
         </folder>
     </folder>
