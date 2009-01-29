@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -92,7 +93,7 @@ public class PluginGenerator implements CodeGenerator {
         DialogDescriptor dd = new DialogDescriptor(pluginPanel,
                 NbBundle.getMessage(PluginGenerator.class, "TIT_Add_plugin"));
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-            NBVersionInfo vi = pluginPanel.getResult();
+            NBVersionInfo vi = pluginPanel.getPlugin();
             if (vi != null) {
                 //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
                 model.startTransaction();
@@ -100,6 +101,14 @@ public class PluginGenerator implements CodeGenerator {
                 plug.setGroupId(vi.getGroupId());
                 plug.setArtifactId(vi.getArtifactId());
                 plug.setVersion(vi.getVersion());
+
+                if (pluginPanel.isConfiguration()) {
+                    Configuration config = model.getFactory().createConfiguration();
+                    plug.setConfiguration(config);
+                }
+
+                // TODO - execution goals
+
                 Build buildSection = model.getProject().getBuild();
                 if (buildSection == null) {
                     buildSection = model.getFactory().createBuild();

@@ -41,16 +41,28 @@ package org.netbeans.modules.maven.codegen;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -61,6 +73,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
@@ -69,6 +82,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,7 +93,8 @@ import org.openide.util.TaskListener;
  *
  * @author Dafe Simonek
  */
-public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener, Comparator<String> {
+public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener,
+        Comparator<String> {
 
     private static final Object LOCK = new Object();
     private static Node noResultsRoot;
@@ -88,6 +103,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
     private Color defSearchC;
     private String lastQueryText, inProgressText;
     private QueryPanel queryPanel;
+    private DefaultListModel listModel;
 
     private NBVersionInfo selVi;
 
@@ -104,10 +120,33 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                 DelayedDocumentChangeListener.create(
                 tfQuery.getDocument(), this, 500));
 
+        listModel = new DefaultListModel();
+        goalsList.setModel(listModel);
+        GoalRenderer gr = new GoalRenderer(goalsList);
+        goalsList.setCellRenderer(gr);
+        goalsList.addMouseListener(gr);
+        goalsList.addKeyListener(gr);
     }
 
-    public NBVersionInfo getResult () {
+    public NBVersionInfo getPlugin () {
         return selVi;
+    }
+
+    public boolean isConfiguration () {
+        return chkConfig.isSelected();
+    }
+
+    public List<String> getGoals () {
+        List<String> goals = new ArrayList<String>();
+        Enumeration e  = listModel.elements();
+        GoalEntry ge = null;
+        while (e.hasMoreElements()) {
+            ge = (GoalEntry) e.nextElement();
+            if (ge.isSelected) {
+                goals.add(ge.name);
+            }
+        }
+        return goals;
     }
 
     /** delayed change of query text */
@@ -292,6 +331,80 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
         return b;
     }
 
+    private static class GoalRenderer extends JCheckBox
+            implements ListCellRenderer, MouseListener, KeyListener {
+
+        private JList parentList;
+
+        public GoalRenderer (JList list) {
+            this.parentList = list;
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            GoalEntry ge = (GoalEntry)value;
+
+            setText(ge.name);
+            setSelected(ge.isSelected);
+            setOpaque(isSelected);
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            int idx = parentList.locationToIndex(e.getPoint());
+            if (idx == -1) {
+                return;
+            }
+            Rectangle rect = parentList.getCellBounds(idx, idx);
+            if (rect.contains(e.getPoint())) {
+                doCheck();
+            }
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                doCheck();
+            }
+        }
+
+        private void doCheck() {
+            int index = parentList.getSelectedIndex();
+            if (index < 0) {
+                return;
+            }
+            GoalEntry ge = (GoalEntry) parentList.getModel().getElementAt(index);
+            ge.isSelected = !ge.isSelected;
+            parentList.repaint();
+        }
+
+        public void mousePressed(MouseEvent e) {
+        }
+
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        public void mouseExited(MouseEvent e) {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyReleased(KeyEvent e) {
+        }
+
+
+    }
+
     private static class QueryPanel extends JPanel implements ExplorerManager.Provider,
             PropertyChangeListener {
 
@@ -322,11 +435,18 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] selNodes = manager.getSelectedNodes();
-                if (selNodes.length == 1 && selNodes[0] instanceof MavenNodeFactory.VersionNode) {
-                    pluginPanel.selVi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
-                } else {
-                    pluginPanel.selVi = null;
+                pluginPanel.selVi = null;
+                if (selNodes.length == 1) {
+                    if (selNodes[0] instanceof MavenNodeFactory.VersionNode) {
+                        pluginPanel.selVi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
+                    } else if (selNodes[0] instanceof MavenNodeFactory.ArtifactNode) {
+                        List<NBVersionInfo> infos = ((MavenNodeFactory.ArtifactNode)selNodes[0]).getVersionInfos();
+                        if (infos.size() > 0) {
+                            pluginPanel.selVi = infos.get(0);
+                        }
+                    }
                 }
+                pluginPanel.updateGoals();
             }
         }
 
@@ -423,6 +543,36 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
 
     private void setSearchInProgressUI(boolean b) {
         // TODO
+    }
+
+    private void updateGoals() {
+        DefaultListModel m = (DefaultListModel) goalsList.getModel();
+        m.clear();
+
+        if (selVi != null) {
+            Set<String> goals = null;
+            try {
+                goals = PluginIndexManager.getPluginGoals(selVi.getGroupId(),
+                        selVi.getArtifactId(), selVi.getVersion());
+            } catch (Exception ex) {
+                // TODO - put err msg in dialog?
+                Exceptions.printStackTrace(ex);
+            }
+            if (goals != null) {
+                for (String goal : goals) {
+                    m.addElement(new GoalEntry(goal));
+                }
+            }
+        }
+    }
+
+    private static class GoalEntry {
+        boolean isSelected = false;
+        String name;
+
+        public GoalEntry(String name) {
+            this.name = name;
+        }
     }
 
     private void tfQueryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfQueryActionPerformed
