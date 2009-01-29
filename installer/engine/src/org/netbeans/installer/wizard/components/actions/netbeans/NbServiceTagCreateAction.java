@@ -51,7 +51,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -62,9 +61,9 @@ import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.modules.reglib.BrowserSupport;
 import org.netbeans.modules.reglib.NbServiceTagSupport;
 import org.netbeans.modules.reglib.StatusData;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
@@ -171,9 +170,10 @@ public class NbServiceTagCreateAction extends WizardAction {
         if (product.getUid().equals("nb-base")) {
             nbLocation = product.getInstallationLocation();
         } else if (product.getUid().startsWith("nb-")) {
-            nbLocation = Registry.getInstance().
-                    getProducts(product.getDependencyByUid("nb-base").get(0)).
-                    get(0).getInstallationLocation();
+            List <Dependency> deps = product.getDependencyByUid("nb-base");
+            if(deps.size() > 0) {
+                nbLocation = Registry.getInstance().getProducts(deps.get(0)).get(0).getInstallationLocation();
+            }
         }
         return nbLocation;
     }
@@ -181,6 +181,8 @@ public class NbServiceTagCreateAction extends WizardAction {
     private void createSTNetBeans(Product product) {
         try {
             File nbLocation = getNetBeansLocation(product);
+            LogManager.log("... netbeans location : " + nbLocation);
+
             if(nbLocation==null) {
                 return;
             }
@@ -189,10 +191,30 @@ public class NbServiceTagCreateAction extends WizardAction {
                     return pathname.getName().startsWith("platform");
                 }
             })[0];
-            
+
+            LogManager.log("... netbeans.home: " + nbPlatform);
             System.setProperty("netbeans.home", nbPlatform.getPath());
-            String javaVersion = JavaUtils.getVersion(new File(NetBeansUtils.getJavaHome(nbLocation))).toJdkStyle();
-            
+
+            Version javaV = null;
+            try {
+                String javaHome = NetBeansUtils.getJavaHome(nbLocation);
+                LogManager.log("... netbeans_jdkhome: " + javaHome);
+                if(javaHome!=null && !javaHome.equals("")) {
+                    javaV = JavaUtils.getVersion(new File(javaHome));
+                }
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+
+            if(javaV==null) {
+                LogManager.log("... can`t get java version that netbeans (" + nbLocation+ ") uses, fallback to the default one");
+                javaV = JavaUtils.getVersion(SystemUtils.getCurrentJavaHome());                
+            }
+
+            LogManager.log("... java.version: " + javaV);            
+            String javaVersion = javaV.toJdkStyle();            
+            LogManager.log("... java.version(f): " + javaVersion);
+
             if (product.getUid().equals("nb-base")) {
                 LogManager.log("... create ST for NetBeans");
                 NbServiceTagSupport.createNbServiceTag(source, javaVersion);
@@ -294,14 +316,20 @@ public class NbServiceTagCreateAction extends WizardAction {
                 LogManager.log("...... gfLocation : "  + location);
 
                 final File jreHome = new File(gfJavaHome, "jre");
-                final File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
+                File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
                 LogManager.log("...... javaHome : "    + javaHome);
 
 
                 final String gfVersion = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
                 LogManager.log("...... gfVersion : "   + gfVersion);
 
-                final Version javaVersion = JavaUtils.getVersion(gfJavaHome);
+                Version javaVersion = JavaUtils.getVersion(gfJavaHome);
+                if(javaVersion==null) {
+                    LogManager.log("...... can`t get java version from "   + gfJavaHome + ", using default one");
+                    javaHome = SystemUtils.getCurrentJavaHome();
+                    javaVersion = JavaUtils.getVersion(javaHome);
+                    LogManager.log("...... java.home : " + javaHome);
+                }
                 final String  jdkVersion = javaVersion.toJdkStyle();
                 LogManager.log("...... javaVersion : " + jdkVersion);
                 

@@ -44,9 +44,10 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionContext;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
 
@@ -113,7 +114,7 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<FieldSignature, String> getFields(DynamicCompletionContext context) {
+    public Map<FieldSignature, CompletionItem> getFields(CompletionContext context) {
         if (context.getSourceFile() == null) {
             return Collections.emptyMap();
         }
@@ -123,14 +124,19 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
                 &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(context.getSourceFile(), project)) {
-                return Collections.unmodifiableMap(FIELDS);
+                Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+                for (Map.Entry<FieldSignature, String> entry : FIELDS.entrySet()) {
+                    result.put(entry.getKey(), CompletionItem.forDynamicField(
+                            context.getAnchor(), entry.getKey().getName(), entry.getValue()));
+                }
+                return result;
             }
         }
         return Collections.emptyMap();
     }
 
     @Override
-    public Map<MethodSignature, String> getMethods(DynamicCompletionContext context) {
+    public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
         if (context.getSourceFile() == null) {
             return Collections.emptyMap();
         }
@@ -140,7 +146,11 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
                 &&*/ context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(context.getSourceFile(), project)) {
-                return Collections.unmodifiableMap(METHODS);
+                Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+                for (Map.Entry<MethodSignature, String> entry : METHODS.entrySet()) {
+                    result.put(entry.getKey(), CompletionItem.forDynamicMethod(
+                            context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
+                }
             }
         }
         return Collections.emptyMap();

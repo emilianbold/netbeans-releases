@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author Sergey Grinev
  */
-public class ToolsCacheManager {
+public final class ToolsCacheManager {
 
     private final ServerList serverList;
     private ServerUpdateCache serverUpdateCache;
@@ -139,6 +139,7 @@ public class ToolsCacheManager {
 
     public void clear() {
         serverUpdateCache = null;
+        copiedManagers.clear();
     }
 
     public boolean show() {
