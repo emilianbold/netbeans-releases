@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -336,6 +337,7 @@ public class PhpProject implements Project {
         return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
+                new SeleniumProvider(),
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
@@ -470,6 +472,16 @@ public class PhpProject implements Project {
             assert info != null;
             info.firePropertyChange(ProjectInformation.PROP_NAME);
             info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
+        }
+    }
+
+    private final class SeleniumProvider implements PhpSeleniumProvider {
+        public FileObject getTestDirectory(boolean showCustomizer) {
+            return ProjectPropertiesSupport.getSeleniumDirectory(PhpProject.this, showCustomizer);
+        }
+
+        public void runAllTests() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
