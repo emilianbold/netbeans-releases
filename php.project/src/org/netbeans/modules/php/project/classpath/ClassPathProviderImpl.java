@@ -77,8 +77,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private static enum ClassPathCache {
         PLATFORM,
         SOURCE,
-        TEST,
-        SELENIUM,
+        TEST
     }
 
     private final AntProjectHelper helper;
