@@ -85,7 +85,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * flag to distinguish system and other types of macros 
      * now we support only macros in file => all macros are not system
      */
-    private final boolean system;
+    private final Kind kind;
     
     /** 
      * immutable list of parameters, 
@@ -102,20 +102,20 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * constructor to create system macro impl
      */
     private MacroImpl(String macroName, String macroBody, CsmFile unresolved) {
-        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), true);
+        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), Kind.USER);
     }
     
-    public static SystemMacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved) {
-        return new SystemMacroImpl(macroName, macroBody, null, unresolved, false);
+    public static SystemMacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved, Kind kind) {
+        return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
     }
     
-    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, boolean system) {
+    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
         this.name = NameCache.getManager().getString(macroName);
-        this.system = system;
+        this.kind = kind;
         this.body = macroBody;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
@@ -125,7 +125,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
     
     public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
-        this(macroName, macroParams, macroBody, containingFile, macroPos, false);
+        this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
     }
     
     public List<? extends CharSequence> getParameters() {
@@ -137,8 +137,8 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return body;
     }
     
-    public boolean isSystem() {
-        return system;
+    public Kind getKind() {
+        return kind;
     }
     
     public CharSequence getName() {
@@ -200,7 +200,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         output.writeUTF(this.name.toString());
         assert this.body != null;
         output.writeUTF(this.body.toString());
-        output.writeBoolean(this.system);
+        output.writeByte((byte)this.kind.ordinal());
         String[] out = this.params == null?null:this.params.toArray(new String[params.size()]);
         PersistentUtils.writeStrings(out, output);
     }
@@ -211,7 +211,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert this.name != null;
         this.body = NameCache.getManager().getString(input.readUTF());
         assert this.body != null;
-        this.system = input.readBoolean();
+        this.kind = Kind.values()[input.readByte()];
         CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());
         this.params = out == null ? null : Collections.unmodifiableList(Arrays.asList(out));
     }

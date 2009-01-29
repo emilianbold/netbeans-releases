@@ -124,7 +124,7 @@ public final class APTMacroMapSnapshot {
             return "Macro undefined"; // NOI18N
         }
 
-        public boolean isSystem() {
+        public MacroType getKind() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
@@ -143,5 +143,6 @@ public final class APTMacroMapSnapshot {
         public TokenStream getBody() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
+
     }
 }

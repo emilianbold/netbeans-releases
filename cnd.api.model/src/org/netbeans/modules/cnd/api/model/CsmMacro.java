@@ -55,8 +55,14 @@ public interface CsmMacro extends CsmNamedElement, CsmOffsetable {
     CharSequence getBody();
     
     /**
-     * flag for system macros, such macro can't be undefined or changed
+     * kind of macro
      */
-    boolean isSystem();
-    
+    Kind getKind();
+
+    public enum Kind {
+        SYSTEM, // predefined macro (defined by compiler, for example __STDC__) (system)
+        PREDEFINED, // predefined macro (compile time macro, for example __FILE__) (system)
+        USER, // macro defined in project (-D compile option) (user)
+        DEFINED // macro defined in code (defined)
+    }
 }

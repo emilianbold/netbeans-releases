@@ -49,9 +49,16 @@ import java.util.Collection;
  * @author Vladimir Voskresensky
  */
 public interface APTMacro {
-    public boolean isSystem();
+    public MacroType getKind();
     public boolean isFunctionLike();
     public APTToken getName();
     public Collection<APTToken> getParams();
     public TokenStream getBody();
+
+    public enum MacroType{
+        SYSTEM, // predefined macro (defined by compiler, for example __STDC__) (system)
+        PREDEFINED, // predefined macro (compile time macro, for example __FILE__) (system)
+        USER, // macro defined in project (-D compile option) (user)
+        DEFINED // macro defined in code (defined)
+    }
 }

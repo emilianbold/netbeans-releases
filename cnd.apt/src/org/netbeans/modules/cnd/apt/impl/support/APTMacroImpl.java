@@ -61,9 +61,9 @@ public class APTMacroImpl implements APTMacro {
     private final APTToken name;
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
-    private final boolean system;
+    private final MacroType macroType;
 
-    public APTMacroImpl(APTToken name, Collection<APTToken> params, List<APTToken> body, boolean system) {
+    public APTMacroImpl(APTToken name, Collection<APTToken> params, List<APTToken> body, MacroType macroType) {
         assert (name != null);
         this.name = name;
         //this.params = params;
@@ -73,11 +73,11 @@ public class APTMacroImpl implements APTMacro {
             paramsArray = null;
         }
         this.body = body;
-        this.system = system;
+        this.macroType = macroType;
     }
 
-    public boolean isSystem() {
-        return system;
+    public MacroType getKind() {
+        return macroType;
     }
 
     public boolean isFunctionLike() {
@@ -130,7 +130,22 @@ public class APTMacroImpl implements APTMacro {
     @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
-        retValue.append(isSystem() ? "<S>":"<U>"); // NOI18N
+        // preserve macro signature for existing model tests
+        switch(getKind()){
+            case DEFINED: // macro defined in code (defined)
+                retValue.append("<U>"); // NOI18N
+                break;
+            case SYSTEM: // predefined macro (defined by compiler, for example __STDC__) (system)
+                retValue.append("<S>"); // NOI18N
+                break;
+            case PREDEFINED: // predefined macro (compile time macro, for example __FILE__) (system)
+                retValue.append("<S>"); // NOI18N
+                break;
+            case USER: // macro defined in project (-D compile option) (user)
+            default:
+                retValue.append("<S>"); // NOI18N
+                break;
+        }
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());
         if (paramsArray != null) {
@@ -160,4 +175,5 @@ public class APTMacroImpl implements APTMacro {
     public APTMacroImpl(DataInput input) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
+
 }

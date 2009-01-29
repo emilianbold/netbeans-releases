@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.APTMacro.MacroType;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -102,11 +103,11 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, List<APTToken> value) {
+    public void define(APTToken name, List<APTToken> value, MacroType macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value) {
+    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
@@ -114,10 +115,6 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
-    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value) {
-        return new APTMacroImpl(name, params, value, true);
-    }
-    
     public boolean pushExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
@@ -135,7 +132,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         return new APTMacroMapSnapshot(parent);
     }
-    
+
     
     private static class APTPredefinedMacroImpl implements APTMacro {   
         private APTToken macro;
@@ -144,8 +141,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             this.macro =  macro;           
         }
 
-        public boolean isSystem() {
-            return false;
+        public MacroType getKind() {
+            return MacroType.PREDEFINED;
         }
 
         public boolean isFunctionLike() {

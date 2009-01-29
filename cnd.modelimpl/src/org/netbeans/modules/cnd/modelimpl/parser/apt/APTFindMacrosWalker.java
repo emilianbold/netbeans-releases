@@ -151,22 +151,26 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         return null; // tokenstream set to EOF? it's no good
     }
 
+    @SuppressWarnings("fallthrough")
     private void analyzeToken(APTToken token) {
         APTToken apttoken = token;
         if (apttoken != null) {
             APTMacro m = getMacroMap().getMacro(apttoken);
             if (m != null) {
-                if (m.isSystem()) {
-                    addSysReference(apttoken, m);
-                } else {
-                    MacroInfo mi = macroRefMap.get(apttoken.getText());
-                    if (mi != null) {
-                        addReference(apttoken, mi);
-                    } else {
-                        // this is user-defined macro (iz132150)
-                        // XXX: update to API call then iz132308 will be fixed
+                switch(m.getKind()){
+                    case DEFINED: // macro defined in code (defined)
+                        MacroInfo mi = macroRefMap.get(apttoken.getText());
+                        if (mi != null) {
+                            addReference(apttoken, mi);
+                            break;
+                        }
+                        // nobreak
+                    case SYSTEM: // predefined macro (defined by compiler, for example __STDC__) (system)
+                    case PREDEFINED: // predefined macro (compile time macro, for example __FILE__) (system)
+                    case USER: // macro defined in project (-D compile option) (user)
+                    default:
                         addSysReference(apttoken, m);
-                    }
+                        break;
                 }
             }
 //            else if (apttoken.getType() == CPPTokenTypes.ID_DEFINED) {
@@ -212,7 +216,23 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
             super(file, token.getOffset(), token.getEndOffset());
-            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile());
+            CsmMacro.Kind kind;
+            switch(macro.getKind()) {
+                case SYSTEM:
+                    kind = CsmMacro.Kind.SYSTEM;
+                    break;
+                case PREDEFINED:
+                    kind = CsmMacro.Kind.PREDEFINED;
+                    break;
+                case DEFINED:
+                    kind = CsmMacro.Kind.DEFINED;
+                    break;
+                case USER:
+                default:
+                    kind = CsmMacro.Kind.USER;
+                    break;
+            }
+            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
         }
 
         public CsmObject getReferencedObject() {
@@ -265,9 +285,9 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
                         // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
                         if (target instanceof Unresolved.UnresolvedFile) {
-                            ref = MacroImpl.createSystemMacro(macroName, "", target);
+                            ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER);
                         } else {
-                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), false);
+                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), CsmMacro.Kind.DEFINED);
                         }
                     }
                 }
