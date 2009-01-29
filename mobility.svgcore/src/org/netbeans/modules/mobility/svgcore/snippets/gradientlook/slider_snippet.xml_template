@@ -1,14 +1,14 @@
-<g id="slider_0" transform="translate(19.0,157.0)">	    <!-- Metadata information. Please don't edit. -->
+<g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
                 <text display="none">type=slider</text>
                 <rect x="0.5" id="_6"  y="-12.75" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
-                    <set attributeName="visibility" attributeType="XML" begin="slider_0.focusin" fill="freeze" to="visible"/>
-                    <set attributeName="visibility" attributeType="XML" begin="slider_0.focusout" fill="freeze" to="hidden"/>
+                    <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+                    <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
                 </rect>
-                <g id="slider_0_rule" >
+                <g id="%%COMPONENT_ID%%_rule" >
                     <text display="none">type=rule</text>
                     <rect id="_2" transform="matrix(1.0145711,0.0,0.0,1.0,-0.14571011,0.0)"   x="10.0" y="1.0" rx="3" ry="3" width="180" height="4" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
                 </g>
-                <g id="slider_0_knob"  transform="translate(0,-5)">
+                <g id="%%COMPONENT_ID%%_knob"  transform="translate(0,-5)">
                     <text display="none">type=knob</text>
 
                     <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
