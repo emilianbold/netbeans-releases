@@ -65,10 +65,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
  */
 abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
-    private Map<String, List<? extends InterfaceScopeImpl>> ifaces = new HashMap<String, List<? extends InterfaceScopeImpl>>();
+    private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<String, List<? extends InterfaceScope>>();
 
-    ClzConstantElementImpl createElement(ClassConstantDeclarationInfo clsConst) {
-        ClzConstantElementImpl retval = ClzConstantElementImpl.createClzConstantElementImpl(this, clsConst);
+    ClassConstantElementImpl createElement(ClassConstantDeclarationInfo clsConst) {
+        ClassConstantElementImpl retval = ClassConstantElementImpl.createClzConstantElementImpl(this, clsConst);
         addElement(retval);
         return retval;
     }
@@ -113,26 +113,23 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         assert getInScope() instanceof FileScope;
     }
 
-    public List<? extends InterfaceScopeImpl> getInterfaces() {
-        Set<InterfaceScopeImpl> retval = new LinkedHashSet<InterfaceScopeImpl>();
+    public List<? extends InterfaceScope> getSuperInterfaces() {
+        Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
         Set<String> keySet = ifaces.keySet();
         for (String ifaceName : keySet) {
-            List<? extends InterfaceScopeImpl> iface = ifaces.get(ifaceName);
+            List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {
-                ModelScope top = (ModelScope) getInScope();
+                PhpFileScope top = (PhpFileScope) getInScope();
                 FileScope ps = (FileScope) top;
-                retval.addAll(iface = ps.getInterfaces(ifaceName));
+                retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
                 ifaces.put(ifaceName,iface);
                 /*for (InterfaceScopeImpl interfaceScope : iface) {
                     retval.addAll(interfaceScope.getInterfaces());
                 }*/
                 if (retval.isEmpty() && top instanceof FileScope) {
-                    IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-                    if (indexScopeImpl == null) {
-                        indexScopeImpl = ps.getIndexScope();
-                    }
-                    if (indexScopeImpl != null) {
-                        List<? extends InterfaceScope> cIfaces =CachedModelSupport.getInterfaces(ifaceName, this);
+                    IndexScope indexScope = ModelUtils.getIndexScope(ps);
+                    if (indexScope != null) {
+                        List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
                         ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
                         for (InterfaceScope interfaceScope : cIfaces) {
                             retval.add((InterfaceScopeImpl)interfaceScope);                            
@@ -150,21 +147,21 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
             assert iface != null;
         //duplicatesChecker.addAll(iface);
         }
-        return new ArrayList<InterfaceScopeImpl>(retval);
+        return new ArrayList<InterfaceScope>(retval);
     }
 
-    public List<? extends MethodScope> getAllMethods() {
-        return getMethods();
+    public List<? extends MethodScope> getDeclaredMethods() {
+        return findDeclaredMethods();
     }
 
-    public List<? extends MethodScopeImpl> getMethods(final int... modifiers) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
-            return indexScopeImpl.getMethods(this, modifiers);
+    public List<? extends MethodScope> findDeclaredMethods(final int... modifiers) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findMethods(this,"", modifiers);
         } 
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.METHOD) &&
                         (modifiers.length == 0 ||
                         (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
@@ -172,15 +169,15 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends MethodScopeImpl> getMethods(final String queryName, final int... modifiers) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
-            return indexScopeImpl.getMethods(this, queryName, modifiers);
+    public List<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findMethods(this, queryName, modifiers);
         }
 
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), NameKind.EXACT_NAME, queryName) &&
                         (modifiers.length == 0 ||
@@ -189,11 +186,11 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends MethodScopeImpl> getMethods(final NameKind nameKind, final String queryName,
+    public List<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName,
             final int... modifiers) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
-            return indexScopeImpl.getMethods(nameKind, this, queryName, modifiers);
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findMethods(this, nameKind, queryName, modifiers);
         }
 
         //TODO: example how to improve perf. for regexp lookup
@@ -201,7 +198,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
             final Pattern p = Pattern.compile(nameKind.equals(NameKind.CASE_INSENSITIVE_REGEXP) ? queryName.toLowerCase() : queryName);
             return filter(getElements(), new ElementFilter() {
 
-                public boolean isAccepted(ModelElementImpl element) {
+                public boolean isAccepted(ModelElement element) {
                     return element.getPhpKind().equals(PhpKind.METHOD) &&
                             ModelElementImpl.nameKindMatch(p, element.getName()) &&
                             (modifiers.length == 0 ||
@@ -212,7 +209,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
                         (modifiers.length == 0 ||
@@ -221,36 +218,35 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends ClzConstantElementImpl> getAllConstants() {
-        return getConstants();
+    public List<? extends ClassConstantElementImpl> getDeclaredConstants() {
+        return findDeclaredConstants();
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
+    public List<? extends ClassConstantElementImpl> findDeclaredConstants(String... queryName) {
+        return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, final String... queryName) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
+    public List<? extends ClassConstantElementImpl> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.getConstants(this, queryName);
         }
 
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
                         queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
             }
         });
     }
 
-    public List<? extends ClzConstantElementImpl> getInheritedConstants(String queryName) {
-        List<ClzConstantElementImpl> allConstants = new ArrayList<ClzConstantElementImpl>();
-        allConstants.addAll(getConstants(queryName));
+    public List<? extends ClassConstantElementImpl> findInheritedConstants(String queryName) {
+        List<ClassConstantElementImpl> allConstants = new ArrayList<ClassConstantElementImpl>();
+        allConstants.addAll(findDeclaredConstants(queryName));
         if (allConstants.isEmpty()) {
-            IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-            indexScopeImpl = ((indexScopeImpl != null) ? indexScopeImpl : ((FileScope) ModelUtils.getModelScope(this)).getIndexScope());
-            PHPIndex index = indexScopeImpl.getIndex();
+            IndexScope indexScope = ModelUtils.getIndexScope(this);
+            PHPIndex index = indexScope.getIndex();
             TypeScope type = this;
             if (type instanceof ClassScope) {
                 ClassScope clz = (ClassScope) type;
@@ -259,18 +255,18 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                     if (clz != null) {
                         Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), queryName, NameKind.PREFIX);
                         for (IndexedConstant indexedConstant : indexedConstants) {
-                            allConstants.add(new ClzConstantElementImpl((TypeScopeImpl) type, indexedConstant));
+                            allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) type, indexedConstant));
                         }
                     }
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getInterfaces();
+                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 for (int i = 0; allConstants.isEmpty() && i < interfaceScopes.size(); i++) {
                     InterfaceScope ifaceScope = interfaceScopes.get(i);
                     Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), queryName, NameKind.PREFIX);
                     for (IndexedConstant indexedConstant : indexedConstants) {
-                        allConstants.add(new ClzConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                        allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
                     }
                 }
             } else {
@@ -280,13 +276,12 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return allConstants;
     }
 
-    public List<? extends MethodScopeImpl> getInheritedMethods(String queryName) {
-        List<MethodScopeImpl> allMethods = new ArrayList<MethodScopeImpl>();
-        allMethods.addAll(getMethods(queryName));
+    public List<? extends MethodScope> findInheritedMethods(String queryName) {
+        List<MethodScope> allMethods = new ArrayList<MethodScope>();
+        allMethods.addAll(findDeclaredMethods(queryName));
         if (allMethods.isEmpty()) {
-            IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-            indexScopeImpl = ((indexScopeImpl != null) ? indexScopeImpl : ((FileScope) ModelUtils.getModelScope(this)).getIndexScope());
-            PHPIndex index = indexScopeImpl.getIndex();
+            IndexScope indexScope = ModelUtils.getIndexScope(this);
+            PHPIndex index = indexScope.getIndex();
             TypeScope type = this;
             if (type instanceof ClassScope) {
                 ClassScope clz = (ClassScope) type;
@@ -301,7 +296,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getInterfaces();
+                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 for (int i = 0; allMethods.isEmpty() && i < interfaceScopes.size(); i++) {
                     InterfaceScope ifaceScope = interfaceScopes.get(i);
                     Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), queryName, NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);

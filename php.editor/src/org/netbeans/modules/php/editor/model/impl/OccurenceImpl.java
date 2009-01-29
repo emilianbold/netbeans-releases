@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
@@ -97,23 +98,22 @@ class OccurenceImpl implements Occurence {
         }
         if (allDeclarations == null) {
             allDeclarations = Collections.<ModelElement>emptyList();
-            ModelScopeImpl modelScope = (ModelScopeImpl) ModelUtils.getModelScope(geModelElement());
-            IndexScopeImpl indexScope = modelScope.getIndexScope();
+            IndexScopeImpl indexScope = (IndexScopeImpl) ModelUtils.getIndexScope(geModelElement());
             switch (geModelElement().getPhpKind()) {
                 case CONSTANT:
-                    allDeclarations = indexScope.getConstants(geModelElement().getName());
+                    allDeclarations = indexScope.findConstants(geModelElement().getName());
                     break;
                 case FUNCTION:
-                    allDeclarations = indexScope.getFunctions(geModelElement().getName());
+                    allDeclarations = indexScope.findFunctions(geModelElement().getName());
                     break;
                 case CLASS:
-                    allDeclarations = indexScope.getClasses(geModelElement().getName());
+                    allDeclarations = indexScope.findClasses(geModelElement().getName());
                     break;
                 case IFACE:
-                    allDeclarations = indexScope.getInterfaces(geModelElement().getName());
+                    allDeclarations = indexScope.findInterfaces(geModelElement().getName());
                     break;
                 case METHOD:
-                    allDeclarations = indexScope.getMethods((ClassScopeImpl) geModelElement().getInScope(),
+                    allDeclarations = indexScope.findMethods((ClassScopeImpl) geModelElement().getInScope(),
                             geModelElement().getName());
                     break;
                 case FIELD:

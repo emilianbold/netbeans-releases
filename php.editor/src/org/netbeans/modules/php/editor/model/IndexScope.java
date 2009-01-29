@@ -39,8 +39,29 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.List;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+
 /**
  * @author Radek Matous
  */
-public interface IndexScope extends ModelScope {
+public interface IndexScope {
+    PHPIndex getIndex();
+    List<? extends MethodScope> findMethods(TypeScope type, final String queryName, final int... modifiers);
+    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String... queryName);
+    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String queryName, final int... modifiers);
+    List<? extends TypeScope> findTypes(final String... queryName);
+    List<? extends TypeScope> findTypes(final NameKind nameKind, final String... queryName);
+    List<? extends ConstantElement> findConstants(final String... queryName);
+    List<? extends ConstantElement> findConstants(final NameKind nameKind, final String... queryName);
+    List<? extends ClassScope> findClasses(final String... queryName);
+    List<? extends ClassScope> findClasses(final NameKind nameKind, final String... queryName);
+    List<? extends InterfaceScope> findInterfaces(final String... queryName);
+    List<? extends InterfaceScope> findInterfaces(final NameKind nameKind, final String... queryName);
+    List<? extends FunctionScope> findFunctions(final String... queryName);
+    List<? extends FunctionScope> findFunctions(final NameKind nameKind, final String... queryName);
+    List<? extends VariableName> findVariables(final String... queryName);
+    List<? extends VariableName> findVariables(final NameKind nameKind, final String... queryName);
+
 }

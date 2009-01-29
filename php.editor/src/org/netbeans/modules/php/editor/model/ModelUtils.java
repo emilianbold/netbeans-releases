@@ -40,6 +40,8 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
@@ -68,11 +70,28 @@ public class ModelUtils {
         return all.size() > 0 ? all.get(all.size()-1) : null;
     }
 
+
     @NonNull
-    public static <T extends ModelElement> List<? extends T> forFileOnly(List<? extends T> all, FileObject fo) {
+    public static <T extends ModelElement> List<? extends T> filter(List<T> instances,
+            final String... queryName) {
+        return filter(instances, NameKind.EXACT_NAME, queryName);
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(List<T> instances,
+            final NameKind nameKind, final String... queryName) {
+        return filter(instances, new ElementFilter<T>() {
+            public boolean isAccepted(T element) {
+                return (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
+            }
+        });
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(List<? extends T> instances, FileObject fileObject) {
         List<T> retval = new ArrayList<T>();
-        for (T element : all) {
-            if (element.getFileObject() == fo) {
+        for (T element : instances) {
+            if (element.getFileObject() == fileObject) {
                 retval.add(element);
             }
         }
@@ -89,14 +108,106 @@ public class ModelUtils {
         return retval;
     }
 
-    @NonNull
-    public static ModelScope getModelScope(ModelElement element) {
-        ModelScope tls = (element instanceof ModelScope) ? (ModelScope)element : null;
-        while (tls == null && element != null) {
+
+    //TODO: put it directly to ModelElement
+    @CheckForNull
+    public static PhpFileScope getFileScope(ModelElement element) {
+        PhpFileScope retval = (element instanceof PhpFileScope) ? (PhpFileScope)element : null;
+        while (retval == null && element != null) {
             element = element.getInScope();
-            tls = (ModelScope) ((element instanceof ModelScope) ? element : null);
+            retval = (PhpFileScope) ((element instanceof PhpFileScope) ? element : null);
         }
-        assert tls != null;
-        return tls;
+        return retval;
+    }
+
+    @NonNull
+    public static IndexScope getIndexScope(ModelElement element) {
+        IndexScope retval = (element instanceof IndexScope) ? (IndexScope)element : null;
+        ModelElement tmpElement = element;
+        while (retval == null && tmpElement != null) {
+            tmpElement = tmpElement.getInScope();
+            retval = (IndexScope) ((tmpElement instanceof IndexScope) ? tmpElement : null);
+        }
+        if (retval == null) {
+            PhpFileScope fileScope = getFileScope(element);
+            assert fileScope != null;
+            retval = fileScope.getIndexScope();
+        }
+        return retval;
+    }
+
+    public static <T extends ModelElement> List<? extends T> filter(final List<T> instances, final ElementFilter<T> filter) {
+        List<T> retval = new ArrayList<T>();
+        for (T baseElement : instances) {
+            boolean accepted = filter.isAccepted(baseElement);
+            if (accepted) {
+                retval.add(baseElement);
+            }
+        }
+        return retval;
+    }
+
+    public static interface ElementFilter<T extends ModelElement> {
+        boolean isAccepted(T element);
+    }
+
+    public static boolean nameKindMatch(String text, NameKind nameKind, String... queries) {
+        return nameKindMatch(true, text, nameKind, queries);
+    }
+
+    private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, NameKind nameKind, String... queries) {
+        for (String query : queries) {
+            switch (nameKind) {
+                case CAMEL_CASE:
+                    if (toCamelCase(text).startsWith(query)) {
+                        return true;
+                    }
+                    break;
+                case CASE_INSENSITIVE_PREFIX:
+                    if (text.toLowerCase().startsWith(query.toLowerCase())) {
+                        return true;
+                    }
+                    break;
+                case CASE_INSENSITIVE_REGEXP:
+                    text = text.toLowerCase();
+                case REGEXP:
+                    //TODO: might be perf. problem if called for large collections
+                    // and ever and ever again would be compiled still the same query
+                    Pattern p = Pattern.compile(query);
+                    if (nameKindMatch(p, text)) {
+                        return true;
+                    }
+                    break;
+                case EXACT_NAME:
+                    boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
+                    if (retval) {
+                        return true;
+                    }
+                    break;
+                case PREFIX:
+                    if (text.startsWith(query)) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+        return false;
+    }
+
+    private static String toCamelCase(String plainName) {
+        char[] retval = new char[plainName.length()];
+        int retvalSize = 0;
+        for (int i = 0; i < retval.length; i++) {
+            char c = plainName.charAt(i);
+            if (Character.isUpperCase(c)) {
+                retval[retvalSize] = c;
+                retvalSize++;
+            }
+        }
+        return String.valueOf(String.valueOf(retval, 0, retvalSize));
+    }
+
+    private static boolean nameKindMatch(Pattern p, String text) {
+        return p.matcher(text).matches();
     }
 }

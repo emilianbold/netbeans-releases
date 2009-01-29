@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -106,7 +107,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public List<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?
-            CachedModelSupport.getTypes(returnType.split("\\|")[0], this) :
+            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
 
     }
@@ -122,7 +123,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public List<? extends FieldAssignmentImpl> getAssignments() {
         return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return true;
             }
         });

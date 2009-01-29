@@ -47,18 +47,18 @@ import org.netbeans.modules.gsf.api.NameKind;
  */
 public interface TypeScope extends Scope {
     PhpModifiers getPhpModifiers();
-    List<? extends InterfaceScope> getInterfaces();
-    List<? extends MethodScope> getAllMethods();
-    List<? extends MethodScope> getMethods(final int... modifiers);
-    List<? extends MethodScope> getMethods(final String queryName, final int... modifiers);
-    List<? extends MethodScope> getMethods(final NameKind nameKind, final String queryName, final int... modifiers);
-    List<? extends MethodScope> getAllInheritedMethods();
-    List<? extends MethodScope> getInheritedMethods(final String queryName);
-    List<? extends ClassConstantElement> getAllConstants();
-    List<? extends ClassConstantElement> getConstants(final String... queryName);
-    List<? extends ClassConstantElement> getConstants(final NameKind nameKind, final String... queryName);
-    List<? extends ClassConstantElement> getInheritedConstants(String constName);
+    List<? extends MethodScope> getDeclaredMethods();
+    List<? extends ClassConstantElement> getDeclaredConstants();
+    List<? extends MethodScope> getMethods();
+    List<? extends InterfaceScope> getSuperInterfaces();
 
+    List<? extends MethodScope> findDeclaredMethods(final int... modifiers);
+    List<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
+    List<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName, final int... modifiers);
+    List<? extends MethodScope> findInheritedMethods(final String queryName);
+    List<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
+    List<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName);
+    List<? extends ClassConstantElement> findInheritedConstants(String constName);
     //List<? extends MethodScope> getTopInheritedMethods(final String queryName, final int... modifiers);
 
     //TODO: ...

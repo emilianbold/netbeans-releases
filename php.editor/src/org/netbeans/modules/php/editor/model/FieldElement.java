@@ -45,7 +45,7 @@ import java.util.List;
  *
  * @author Radek Matous
  */
-public interface FieldElement extends ModelElement {
+public interface FieldElement extends ClassMemberElement {
     PhpModifiers getPhpModifiers();
     List<? extends TypeScope> getTypes(int offset);    
 }

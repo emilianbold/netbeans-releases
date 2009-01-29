@@ -106,7 +106,7 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
             assert superClass.hasFirst();
             String superClasName = superClass.first();
             if (superClasName != null) {
-                retval = CachedModelSupport.getClasses(superClasName, this);
+                retval = CachingSupport.getClasses(superClasName, this);
                 assert retval != null;
             }
         }
@@ -122,24 +122,28 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         if (extClass != null) {
             sb.append(" extends ").append(extClass.getName());//NOI18N
         }
-        List<? extends InterfaceScopeImpl> implementedInterfaces = getInterfaces();
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaces();
         if (implementedInterfaces.size() > 0) {
             sb.append(" implements ");
-            for (InterfaceScopeImpl interfaceScope : implementedInterfaces) {
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
                 sb.append(interfaceScope.getName()).append(" ");
             }
         }
         return sb.toString();
     }
 
-    public List<? extends FieldElementImpl> getAllFields() {
-        return getFields();
+    public List<? extends FieldElementImpl> getDeclaredFields() {
+        return findDeclaredFields();
     }
 
-    public List<? extends FieldElementImpl> getFields(final int... modifiers) {
+    public List<? extends FieldElementImpl> findDeclaredFields(final int... modifiers) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
+            return indexScopeImpl.getFields(this, modifiers);
+        }
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.FIELD) &&
                         (modifiers.length == 0 ||
                         (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
@@ -147,14 +151,14 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-    public List<? extends FieldElementImpl> getFields(final String queryName, final int... modifiers) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
+    public List<? extends FieldElementImpl> findDeclaredFields(final String queryName, final int... modifiers) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.getFields(this, queryName, modifiers);
         }
         return filter(getElements(), new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.FIELD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), NameKind.EXACT_NAME, queryName) &&
                         (modifiers.length == 0 ||
@@ -163,14 +167,14 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-    public List<? extends FieldElementImpl> getFields(final NameKind nameKind, final String queryName, final int... modifiers) {
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl != null) {
+   public List<? extends FieldElementImpl> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers) {
+        if (ModelUtils.getFileScope(this) == null) {
+            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.getFields(nameKind, this, queryName, modifiers);
         }
         return filter(null, new ElementFilter() {
 
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.FIELD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
                         (modifiers.length == 0 ||
@@ -181,40 +185,54 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
 
     @Override
-    public List<? extends MethodScope> getAllInheritedMethods() {
+    public List<? extends MethodScope> getMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
-        allMethods.addAll(getAllMethods());
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl == null) {
-            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
-        }
+        allMethods.addAll(getDeclaredMethods());
+        IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScopeImpl.getIndex();
         ClassScope clz = ModelUtils.getFirst(getSuperClasses());
         List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
-        interfaces.addAll(getInterfaces());
+        interfaces.addAll(getSuperInterfaces());
         while(clz != null) {
             Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
-            interfaces.addAll(clz.getInterfaces());
+            interfaces.addAll(clz.getSuperInterfaces());
             clz = ModelUtils.getFirst(clz.getSuperClasses());
         }
         
         for (InterfaceScope ifaceScope : interfaces) {
-            allMethods.addAll(ifaceScope.getAllInheritedMethods());
+            allMethods.addAll(ifaceScope.getMethods());
         }
         return allMethods;
     }
 
-    public List<? extends FieldElementImpl> getInheritedFields(String queryName) {
+    @Override
+    public List<? extends FieldElement> getFields() {
+        List<FieldElement> allFlds = new ArrayList<FieldElement>();
+        allFlds.addAll(getDeclaredFields());
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        PHPIndex index = indexScope.getIndex();
+        ClassScope clz = ModelUtils.getFirst(getSuperClasses());
+        while(clz != null) {
+            Collection<IndexedConstant> indexedConsts = index.getFields(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            for (IndexedConstant indexedConstant : indexedConsts) {
+                allFlds.add(new FieldElementImpl((ClassScopeImpl) clz, indexedConstant));
+            }
+            clz = ModelUtils.getFirst(clz.getSuperClasses());
+        }
+
+        return allFlds;
+    }
+
+    public List<? extends FieldElementImpl> findInheritedFields(String queryName) {
         assert queryName.startsWith("$");
         List<FieldElementImpl> allFields = new ArrayList<FieldElementImpl>();
-        allFields.addAll(getFields(queryName));
+        allFields.addAll(findDeclaredFields(queryName));
         if (allFields.isEmpty()) {
-            IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-            indexScopeImpl = ((indexScopeImpl != null) ? indexScopeImpl : ((FileScope) ModelUtils.getModelScope(this)).getIndexScope());
-            PHPIndex index = indexScopeImpl.getIndex();
+            IndexScope indexScope = ModelUtils.getIndexScope(this);
+            PHPIndex index = indexScope.getIndex();
             ClassScope clz = this;
             while (clz != null && allFields.isEmpty()) {
                 clz = ModelUtils.getFirst(clz.getSuperClasses());

@@ -110,7 +110,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     public List<? extends TypeScope> getTypes() {
         String name = container.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
-        ModelScope topScope = ModelUtils.getModelScope(this);
+        PhpFileScope topScope = ModelUtils.getFileScope(this);
         //TODO: cache the value
         List<? extends TypeScope> types = typesFromUnion();
         if (types != null) {

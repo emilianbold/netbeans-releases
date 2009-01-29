@@ -47,7 +47,5 @@ import org.netbeans.modules.gsf.api.NameKind;
  * @author Radek Matous
  */
 public interface VariableScope extends Scope  {
-    public List<? extends VariableName> getAllVariables();
-    public List<? extends VariableName> getVariables(final String... queryName);
-    public List<? extends VariableName> getVariables(final NameKind nameKind, final String... queryName);
+    public List<? extends VariableName> getDeclaredVariables();
 }

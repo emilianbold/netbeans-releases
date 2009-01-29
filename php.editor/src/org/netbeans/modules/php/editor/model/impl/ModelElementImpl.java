@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,12 +48,10 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -290,11 +287,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         assert inScope != null;
     }
 
-    final StringBuilder golden() {
-        return golden(0);
-    }
-
-    abstract StringBuilder golden(int indent);
 
     @Override
     public String toString() {
@@ -313,20 +305,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public OffsetRange getNameRange() {
         return offsetRange;
     }
-
-    public ParserFile getParserFile() {
-        FileObject fobj = getFileObject();
-        boolean platform = false;
-
-        if (fobj != null) {
-            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fobj);
-            platform = fileType == PhpSourcePath.FileType.INTERNAL;
-        }
-        return new DefaultParserFile(fobj, null, platform);
-    }
-
- 
-    
+     
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

@@ -26,9 +26,4 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
     }
 
 
-    @Override
-    StringBuilder golden(int indent) {
-        //TODO: not yet
-        return new StringBuilder();
-    }
 }

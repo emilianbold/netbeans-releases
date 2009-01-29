@@ -117,7 +117,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
 
     public final List<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?
-            CachedModelSupport.getTypes(returnType.split("\\|")[0], this) :
+            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
     }
 
@@ -172,29 +172,29 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         return sb.toString();
     }
 
-    public List<? extends VariableName> getAllVariables() {
+    public List<? extends VariableName> getDeclaredVariables() {
         return getAllVariablesImpl();
     }
 
-    public List<? extends VariableName> getVariables(String... queryName) {
+    public List<? extends VariableName> findDeclaredVariables(String... queryName) {
         return getVariablesImpl(queryName);
     }
 
-    public List<? extends VariableName> getVariables(NameKind nameKind, String... queryName) {
-        return getVariables(nameKind, queryName);
+    public List<? extends VariableName> findDeclaredVariables(NameKind nameKind, String... queryName) {
+        return findDeclaredVariables(nameKind, queryName);
     }
 
-    public List<? extends VariableNameImpl> getAllVariablesImpl() {
+    public List<? extends VariableName> getAllVariablesImpl() {
         return getVariablesImpl();
     }
 
-    public List<? extends VariableNameImpl> getVariablesImpl(String... queryName) {
+    public List<? extends VariableName> getVariablesImpl(String... queryName) {
         return getVariablesImpl(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableNameImpl> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public List<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.VARIABLE)  &&
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
