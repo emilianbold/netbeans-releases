@@ -42,11 +42,9 @@ package org.netbeans.modules.dlight.management.ui.spi;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 
-
 /**
  *
  * @author mt154047
  */
-public interface IndicatorComponent extends  DLightSessionListener, SessionStateListener {
-  public void open();
+public interface IndicatorComponentDelegator  extends  DLightSessionListener, SessionStateListener{
 }
