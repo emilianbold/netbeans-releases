@@ -64,7 +64,6 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
@@ -76,7 +75,7 @@ import org.openide.windows.TopComponent;
  */
 public class ProjectInfoPanel extends TopComponent implements MultiViewElement, LookupListener {
     private MultiViewElementCallback callback;
-    private Result<MavenProject> result;
+    private Lookup.Result<MavenProject> result;
 
     /** Creates new form ProjectInfoPanel */
     public ProjectInfoPanel(Lookup lookup) {
