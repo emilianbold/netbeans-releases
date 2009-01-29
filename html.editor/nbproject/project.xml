@@ -289,6 +289,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
@@ -298,6 +299,40 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.el.lexer</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.gsf</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jsp.lexer</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.lexer</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.el.lexer</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
                 <test-type>

@@ -201,16 +201,18 @@ public final class TaskHandler {
                 }
             }
             
+            if (jspItem != null) {
+                newItems.add(jspItem);
+            }
+            
             if (htmlItem != null) {
                 newItems.add(0, htmlItem);
             }
-            
-            if (jspItem != null) {
-                newItems.add(0, jspItem);
-            }
-            
+
             items = newItems;
         }
+
+        items.get(0).setPrimaryFormatter(true);
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Collected items: "); //NOI18N
@@ -340,6 +342,8 @@ public final class TaskHandler {
         private ExtraLock extraLock;
         
         private Context context;
+
+        private boolean primaryFormatter;
         
         MimeItem(TaskHandler handler, MimePath mimePath, LanguagePath languagePath) {
             this.handler = handler;
@@ -354,7 +358,15 @@ public final class TaskHandler {
         public LanguagePath languagePath() {
             return languagePath;
         }
-        
+
+        void setPrimaryFormatter(boolean primaryFormatter) {
+            this.primaryFormatter = primaryFormatter;
+        }
+
+        public boolean isPrimaryFormatter() {
+            return primaryFormatter;
+        }
+
         public Context context() {
             if (context == null) {
                 context = IndentSpiPackageAccessor.get().createContext(this);
