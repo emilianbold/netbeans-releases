@@ -51,9 +51,9 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
-import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,10 +89,10 @@ public final class UnitTestRunner {
         }
         Reader reader;
         try {
-            reader = new BufferedReader(new FileReader(PhpUnitConstants.XML_LOG));
+            reader = new BufferedReader(new FileReader(PhpUnit.XML_LOG));
         } catch (FileNotFoundException ex) {
             LOGGER.warning(String.format("In order to show test results UI, file %s must exist."
-                    + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnitConstants.XML_LOG));
+                    + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.XML_LOG));
             return;
         }
         TestSessionVO session = new TestSessionVO();
