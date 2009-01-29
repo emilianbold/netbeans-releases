@@ -292,12 +292,15 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
-            bw.write("Qt-${CONF}.mk: Qt-${CONF}.pro FORCE\n"); // NOI18N
-            bw.write("\tqmake -o Qt-${CONF}.mk Qt-${CONF}.pro\n"); // NOI18N
+            bw.write("nbproject/qt-${CONF}.mk: nbproject/qt-${CONF}.pro FORCE\n"); // NOI18N
+            // It is important to generate makefile in current directory, and then move it to nbproject/.
+            // Otherwise qmake will complain that sources are not found.
+            bw.write("\tqmake VPATH=. -o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
+            bw.write("\tmv -f qttmp-${CONF}.mk nbproject/qt-${CONF}.mk\n"); // NOI18N
             if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                bw.write("\tsed -e 's:\\\\\\(.\\):/\\1:g' Qt-${CONF}.mk >Qt-${CONF}.tmp\n"); // NOI18N
-                bw.write("\tmv -f Qt-${CONF}.tmp Qt-${CONF}.mk\n"); // NOI18N
+                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CONF}.mk >nbproject/qt-${CONF}.tmp\n"); // NOI18N
+                bw.write("\t@mv -f nbproject/qt-${CONF}.tmp nbproject/qt-${CONF}.mk\n"); // NOI18N
             }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
@@ -334,8 +337,8 @@ public class ConfigurationMakefileWriter {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         } else if (conf.isQmakeConfiguration()) {
-            bw.write(".build-conf: ${BUILD_SUBPROJECTS} Qt-${CONF}.mk\n"); // NOI18N
-            bw.write("\t${MAKE} -f Qt-${CONF}.mk\n"); // NOI18N
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CONF}.mk\n"); // NOI18N
+            bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + getOutput(conf) + "\n"); // NOI18N
         }
         writeSubProjectBuildTargets(conf, bw);
         bw.write("\n"); // NOI18N
@@ -556,7 +559,7 @@ public class ConfigurationMakefileWriter {
             bw.write(".clean-conf:"); // NOI18N
         }
         if (conf.isQmakeConfiguration()) {
-            bw.write(" Qt-" + conf.getName() + ".mk"); // NOI18N
+            bw.write(" nbproject/qt-" + conf.getName() + ".mk"); // NOI18N
         }
         bw.write('\n'); // NOI18N
         if (conf.isCompileConfiguration()) {
@@ -590,7 +593,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t$(MAKE) -f Qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
+            bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(conf, bw);

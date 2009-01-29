@@ -60,6 +60,8 @@ public class QmakeConfiguration implements Cloneable {
     private BooleanConfiguration sqlEnabled;
     private BooleanConfiguration svgEnabled;
     private BooleanConfiguration xmlEnabled;
+    private StringConfiguration mocDir;
+    private StringConfiguration uiDir;
 
     public QmakeConfiguration() {
         config = new StringConfiguration(null, ""); // NOI18N
@@ -70,6 +72,8 @@ public class QmakeConfiguration implements Cloneable {
         sqlEnabled = new BooleanConfiguration(null, false);
         svgEnabled = new BooleanConfiguration(null, false);
         xmlEnabled = new BooleanConfiguration(null, false);
+        mocDir = new StringConfiguration(null, ""); // NOI18N
+        uiDir = new StringConfiguration(null, ""); // NOI18N
     }
 
     public Sheet getGeneralSheet() {
@@ -94,6 +98,14 @@ public class QmakeConfiguration implements Cloneable {
         modules.put(new BooleanNodeProp(svgEnabled, true, "QtSvg", getString("QtSvgTxt"), getString("QtSvgHint"))); // NOI18N
         modules.put(new BooleanNodeProp(xmlEnabled, true, "QtXml", getString("QtXmlTxt"), getString("QtXmlHint"))); // NOI18N
         sheet.put(modules);
+
+        Sheet.Set generatedFiles = new Sheet.Set();
+        generatedFiles.setName("QtGeneratedFiles"); // NOI18N
+        generatedFiles.setDisplayName(getString("QtGeneratedFilesTxt")); // NOI18N
+        generatedFiles.setShortDescription(getString("QtGeneratedFilesHint")); // NOI18N
+        generatedFiles.put(new StringNodeProp(mocDir, "QtMocDir", getString("QtMocDirTxt"), getString("QtMocDirHint"))); // NOI18N
+        generatedFiles.put(new StringNodeProp(uiDir, "QtUicDir", getString("QtUiDirTxt"), getString("QtUiDirHint"))); // NOI18N
+        sheet.put(generatedFiles);
 
         return sheet;
     }
@@ -162,6 +174,22 @@ public class QmakeConfiguration implements Cloneable {
         xmlEnabled = val;
     }
 
+    public StringConfiguration getMocDir() {
+        return mocDir;
+    }
+
+    public void setMocDir(StringConfiguration mocDir) {
+        this.mocDir = mocDir;
+    }
+
+    public StringConfiguration getUiDir() {
+        return uiDir;
+    }
+
+    public void setUiDir(StringConfiguration uicDir) {
+        this.uiDir = uicDir;
+    }
+
     public void assign(QmakeConfiguration other) {
         getConfig().assign(other.getConfig());
         isCoreEnabled().assign(other.isCoreEnabled());
@@ -171,6 +199,8 @@ public class QmakeConfiguration implements Cloneable {
         isSqlEnabled().assign(other.isSqlEnabled());
         isSvgEnabled().assign(other.isSvgEnabled());
         isXmlEnabled().assign(other.isXmlEnabled());
+        getMocDir().assign(other.getMocDir());
+        getUiDir().assign(other.getUiDir());
     }
 
     @Override
@@ -185,6 +215,8 @@ public class QmakeConfiguration implements Cloneable {
             clone.setSqlEnabled(isSqlEnabled().clone());
             clone.setSvgEnabled(isSvgEnabled().clone());
             clone.setXmlEnabled(isXmlEnabled().clone());
+            clone.setMocDir(getMocDir());
+            clone.setUiDir(getUiDir());
             return clone;
         } catch (CloneNotSupportedException ex) {
             // should not happen while this class implements Cloneable
