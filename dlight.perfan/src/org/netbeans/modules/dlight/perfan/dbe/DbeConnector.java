@@ -108,7 +108,7 @@ public class DbeConnector implements NativeTaskListener {
     
     idbeTask = new NativeTask(execEnv, idbeCmd, null);
     idbeTask.addListener(this);
-    idbeTask.submit();
+    idbeTask.submit(true, false);
 
     try {
       processOutput = new InputStreamReader(idbeTask.getInputStream());
@@ -132,7 +132,7 @@ public class DbeConnector implements NativeTaskListener {
   }
 
   public void disconnect() {
-    idbeTask.cancel();
+    idbeTask.cancel(true);
     idbeTask.removeListener(this);
     idbeTask = null;
     idbe = null;
@@ -605,7 +605,7 @@ public class DbeConnector implements NativeTaskListener {
   public void taskStarted(NativeTask task) {
   }
 
-  public void taskFinished(NativeTask task, Integer result) {
+  public void taskFinished(NativeTask task, int result) {
     System.out.println("XXXXXXXXXX Idbe finished!");
     reconnect();
   }

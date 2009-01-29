@@ -206,10 +206,31 @@ public abstract class NativeExecutor implements Cancellable {
 
             setState(TaskExecutionState.RUNNING);
 
-            setResult(get());
+            Integer result = get();
+
+            if (ot != null) {
+                try {
+                    ot.join(1000);
+                } catch (Exception e) {
+                }
+            }
+            if (et != null) {
+                try {
+                    et.join(1000);
+                } catch (Exception e) {
+                }
+            }
+            if (it != null) {
+                try {
+                    it.join(1000);
+                } catch (Exception e) {
+                }
+            }
+
+            setResult(result);
         } catch (CancellationException ex) {
             exception = ex;
-            setState(TaskExecutionState.CANCELED);
+            setState(TaskExecutionState.CANCELLED);
         } catch (Throwable ex) {
             if (ex instanceof ExecutionException) {
                 ex = ex.getCause();
@@ -313,6 +334,13 @@ public abstract class NativeExecutor implements Cancellable {
                 String err = "Task is not started yet"; // NOI18N
                 throw new IllegalStateException(err);
             }
+
+            while (state == TaskExecutionState.INITIAL) {
+                try {
+                    stateMonitor.wait();
+                } catch (InterruptedException ex) {
+                }
+            }
         }
 
         return pid;
@@ -372,7 +400,7 @@ public abstract class NativeExecutor implements Cancellable {
                         case ERROR:
                             l.taskError(task, exception);
                             break;
-                        case CANCELED:
+                        case CANCELLED:
                             l.taskCancelled(task,
                                     (CancellationException) exception);
                             break;
@@ -381,6 +409,7 @@ public abstract class NativeExecutor implements Cancellable {
                     log.severe(
                             "Exception during ExecutorTaskListener " // NOI18N
                             + l + " notification. " + e.toString()); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -397,7 +426,7 @@ public abstract class NativeExecutor implements Cancellable {
     }
 
     public final boolean isCancelled() {
-        return state.equals(TaskExecutionState.CANCELED);
+        return state.equals(TaskExecutionState.CANCELLED);
     }
 
     public final boolean isDone() {
@@ -469,7 +498,7 @@ public abstract class NativeExecutor implements Cancellable {
         }
 
         public void actionPerformed(ActionEvent e) {
-            task.submit();
+            task.submit(true, true);
             setEnabled(false);
         }
     }

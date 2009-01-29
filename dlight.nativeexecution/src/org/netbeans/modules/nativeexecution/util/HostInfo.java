@@ -1,6 +1,7 @@
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
+import java.io.CharArrayWriter;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import java.io.File;
@@ -109,7 +110,7 @@ public final class HostInfo {
 
             NativeTask task = new NativeTask(execEnv, "test", // NOI18N
                     new String[]{"-f", fname}); // NOI18N
-            task.submit();
+            task.submit(true, false);
 
             try {
                 fileExists = task.get() == 0;
@@ -145,10 +146,11 @@ public final class HostInfo {
             throw new HostNotConnectedException();
         }
 
-        StringBuffer taskOutput = new StringBuffer();
+        CharArrayWriter taskOutput = new CharArrayWriter();
         NativeTask task = new NativeTask(execEnv, cmd_uname,
-                new String[]{"-s"}, taskOutput); // NOI18N
-        task.submit();
+                new String[]{"-s"}); // NOI18N
+        task.redirectOutTo(taskOutput);
+        task.submit(true, false);
         int result = -1;
 
         String error = null;
@@ -199,13 +201,14 @@ public final class HostInfo {
             return platformPathsHash.get(key);
         }
 
-        StringBuffer taskOutput = new StringBuffer();
+        CharArrayWriter taskOutput = new CharArrayWriter();
         NativeTask task = new NativeTask(execEnv, cmd_sh, new String[]{
                     "-c", "\"" + // NOI18N
                     cmd_uname + " -s; " + // NOI18N
                     cmd_uname + " -p; " + // NOI18N
-                    cmd_uname + " -m\""}, taskOutput); // NOI18N
-        task.submit();
+                    cmd_uname + " -m\""}); // NOI18N
+        task.redirectOutTo(taskOutput);
+        task.submit(true, false);
 
         int result = -1;
 
@@ -245,11 +248,10 @@ public final class HostInfo {
     }
 
     /**
-    /**
      * Tests whether the OS, that is ran in this execution environment, is Unix
      * or not.
      * @param execEnv <tt>ExecutionEnvironment</tt> to test
-     * @return true if execEnv refers to a host that runs Solaris or Linux
+     * @return true if execEnv refers to a host that runs Solaris or Linux.
      * @throws HostNotConnectedException if host is not connected yet.
      */
     public static boolean isUnix(ExecutionEnvironment execEnv)

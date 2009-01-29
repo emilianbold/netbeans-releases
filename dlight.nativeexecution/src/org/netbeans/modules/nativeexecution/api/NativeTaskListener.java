@@ -63,7 +63,7 @@ public interface NativeTaskListener {
      * @param task task that finished
      * @param result exit code of the underlaying system process
      */
-    public void taskFinished(NativeTask task, Integer result);
+    public void taskFinished(NativeTask task, int result);
 
     /**
      * Invoked when <tt>NativeTask</tt> cancelled.

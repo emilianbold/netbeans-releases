@@ -82,7 +82,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private final List<DataCollector> dataCollectors;
   private final List<IndicatorDataProvider> indicatorDataProviders;
   private final List<Indicator> indicators;
-  private ValidationStatus validationStatus = ValidationStatus.initialStatus;
+  private ValidationStatus validationStatus = ValidationStatus.initialStatus();
   private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
   //register accessor which will be used ne friend packages of API/SPI accessor packages
   //to get access to tool creation, etc.
@@ -243,12 +243,12 @@ public final class DLightTool implements Validateable<DLightTarget> {
   }
 
   public final void invalidate() {
-    validationStatus = ValidationStatus.initialStatus;
+    validationStatus = ValidationStatus.initialStatus();
     notifyStatusChanged(null, validationStatus);
   }
 
   final synchronized ValidationStatus doValidation(DLightTarget target) {
-    ValidationStatus result = ValidationStatus.initialStatus;
+    ValidationStatus result = ValidationStatus.initialStatus();
 
     for (DataCollector dc : dataCollectors) {
       try {

@@ -37,30 +37,38 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.execution.api.support;
+package org.netbeans.modules.nativeexecution.support;
 
-import java.util.Collection;
-import org.openide.util.Lookup;
+import com.jcraft.jsch.Session;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 
-/**
- * This is factory class to get {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
- * instance.
- */
-public final class IOTabManagerFactory {
-  private static final IOTabManager DEFAULT_INSTANCE = new IOTabManagerImpl();
+public abstract class ConnectionManagerAccessor {
+    private static volatile ConnectionManagerAccessor DEFAULT;
 
-  /**
-   * Returns IOTabManager to work with input/,
-   * use global Lookup to look for {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
-   * implementation, if no implementation is registered use own default implementation
-   * @return
-   */
-  public static IOTabManager getIOTabManager(){
-    Collection<? extends IOTabManager> instances =  Lookup.getDefault().lookupAll(IOTabManager.class);
-    if(instances.isEmpty()){
-      return DEFAULT_INSTANCE;
+    public static void setDefault(ConnectionManagerAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
     }
-    return instances.iterator().next();
-  }
 
+    public static synchronized ConnectionManagerAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(ConnectionManager.class.getName(), true,
+                    ConnectionManager.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract Session getConnectionSession(
+            final ConnectionManager mgr, final ExecutionEnvironment env);
 }

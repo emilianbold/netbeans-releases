@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
@@ -46,6 +46,7 @@ import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import java.awt.event.ActionEvent;
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +65,7 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.nativeexecution.support.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.openide.DialogDisplayer;
@@ -75,29 +77,35 @@ import org.openide.util.NbBundle;
 /**
  * Supporting class to provide functionality of requesting additional
  * process privileges (see privileges(5) to an execution session.
- *
- * Execution session is either ssh connect to remote host or
+ * <br>
+ * Execution session is either an ssh connection to a remote host or the
  * Runtime.getRuntime() for a localhost.
- *
- * In case of localhost privileges will be granted to current JVM process;
- * In case of remote - to remote sshd process.
+ * <br>
+ * In case of localhost privileges will be granted to the current JVM process;
+ * In case of remote - to the remote sshd process.
+ * <br>
+ * So, once execution session got needed privileges, any submitted task whithin
+ * this session will inherit them.
+ * <br>
+ * To grant requested privileges a root password is needed. Password is prompted
+ * but is never stored. So the password is asked for every new execution session.
  *
  */
-public final class TaskPrivilegesSupport {
+public final class SolarisPrivilegesSupport {
 
     private Map<String, List<String>> privilegesHash =
             Collections.synchronizedMap(new HashMap<String, List<String>>());
-    private static TaskPrivilegesSupport instance = new TaskPrivilegesSupport();
+    private static SolarisPrivilegesSupport instance = new SolarisPrivilegesSupport();
     private WeakReference<GrantPrivilegesDialog> dialogRef = null;
 
-    private TaskPrivilegesSupport() {
+    private SolarisPrivilegesSupport() {
     }
 
     /**
-     * Returnes <tt>TaskPrivilegesSupport</tt> instance.
-     * @return <tt>TaskPrivilegesSupport</tt> instance.
+     * Returnes <tt>SolarisPrivilegesSupport</tt> instance.
+     * @return <tt>SolarisPrivilegesSupport</tt> instance.
      */
-    public static TaskPrivilegesSupport getInstance() {
+    public static SolarisPrivilegesSupport getInstance() {
         return instance;
     }
 
@@ -153,13 +161,13 @@ public final class TaskPrivilegesSupport {
          * privileges...
          */
 
-        StringBuffer taskOutput = new StringBuffer();
+        CharArrayWriter outWriter = new CharArrayWriter();
         NativeTask ppriv = new NativeTask(
                 execEnv,
                 "/bin/ppriv", // NOI18N
-                new String[]{"-v $$ | /bin/grep [IL]"}, taskOutput); // NOI18N
-
-        ppriv.submit(true);
+                new String[]{"-v $$ | /bin/grep [IL]"}); // NOI18N
+        ppriv.redirectOutTo(outWriter);
+        ppriv.submit(true, false);
         int result = -1;
 
         try {
@@ -179,7 +187,7 @@ public final class TaskPrivilegesSupport {
         List<String> iprivs = new ArrayList<String>();
         List<String> lprivs = new ArrayList<String>();
 
-        String[] outArray = taskOutput.toString().split("\n"); // NOI18N
+        String[] outArray = outWriter.toString().split("\n"); // NOI18N
         for (String str : outArray) {
 
             if (str.contains("I:")) { // NOI18N
@@ -270,7 +278,7 @@ public final class TaskPrivilegesSupport {
      * @return <tt>ObservableAction<Boolean></tt> that can be invoked in order
      * to request needed execution privileges
      */
-    public static ObservableAction<Boolean> getRequestPrivilegesAction(
+    public ObservableAction<Boolean> requestPrivilegesAction(
             final ExecutionEnvironment execEnv,
             final List<String> requestedPrivileges) {
 
@@ -297,13 +305,13 @@ public final class TaskPrivilegesSupport {
 
         @Override
         protected Boolean performAction(ActionEvent e) {
-            TaskPrivilegesSupport sup = TaskPrivilegesSupport.getInstance();
+            SolarisPrivilegesSupport sup = SolarisPrivilegesSupport.getInstance();
             return sup.requestExecutionPrivileges(execEnv, requestedPrivileges);
         }
     }
 
     private static String loc(String key, Object... params) {
-        return NbBundle.getMessage(TaskPrivilegesSupport.class, key, params);
+        return NbBundle.getMessage(SolarisPrivilegesSupport.class, key, params);
     }
 
     private static class PrivilegesRequestor {
@@ -443,8 +451,10 @@ public final class TaskPrivilegesSupport {
                 final String requestedPrivs,
                 final String user, final String passwd) {
 
-            ConnectionManager cm = ConnectionManager.getInstance();
-            Session session = cm.getConnectionSession(execEnv);
+            ConnectionManager mgr = ConnectionManager.getInstance();
+
+            final Session session = ConnectionManagerAccessor.getDefault().
+                    getConnectionSession(mgr, execEnv);
 
             if (session == null) {
                 return;

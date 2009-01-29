@@ -76,6 +76,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
@@ -99,7 +100,7 @@ public final class CLIODataCollector
     private NativeTask collectorTask;
     private CLIOParser parser;
     private List<DataTableMetadata> dataTablesMetadata;
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private List<ValidationListener> validationListeners =
             Collections.synchronizedList(new ArrayList<ValidationListener>());
 
@@ -208,7 +209,7 @@ public final class CLIODataCollector
             }
         }, "CLI Data Collector Output Redirector"); // NOI18N
 
-        collectorTask.submit();
+        collectorTask.submit(true, false);
         outProcessingThread.start();
     }
 
@@ -216,7 +217,7 @@ public final class CLIODataCollector
         log.fine("Stopping CLIODataCollector: " + // NOI18N
                 collectorTask.getCommand());
 
-        collectorTask.cancel();
+        collectorTask.cancel(true);
         outProcessingThread.interrupt();
     }
 
@@ -298,7 +299,7 @@ public final class CLIODataCollector
     }
 
     public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus;
+        validationStatus = ValidationStatus.initialStatus();
     }
 
     private ValidationStatus doValidation(final DLightTarget target) {
@@ -316,7 +317,7 @@ public final class CLIODataCollector
 
         if (connected) {
             if (fileExists) {
-                result = ValidationStatus.validStatus;
+                result = ValidationStatus.validStatus();
             } else {
                 result = ValidationStatus.invalidStatus(
                         loc("ValidationStatus.CommandNotFound", // NOI18N
@@ -324,7 +325,7 @@ public final class CLIODataCollector
             }
         } else {
             ObservableAction<Boolean> connectAction =
-                    target.getExecEnv().getConnectToAction();
+                    ConnectionManager.getInstance().getConnectToAction(target.getExecEnv());
 
             connectAction.addObservableActionListener(
                     new ObservableActionListener<Boolean>() {
