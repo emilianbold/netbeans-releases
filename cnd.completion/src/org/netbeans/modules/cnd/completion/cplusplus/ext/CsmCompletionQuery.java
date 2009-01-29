@@ -166,7 +166,7 @@ abstract public class CsmCompletionQuery {
     public static boolean checkCondition(final Document doc, final int dot) {
         final AtomicBoolean res = new AtomicBoolean(false);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument)doc).runAtomic(new Runnable() {
+            ((BaseDocument)doc).render(new Runnable() {
                 public void run() {
                     res.set(_checkCondition(doc, dot));
                 }
