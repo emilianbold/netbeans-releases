@@ -130,7 +130,7 @@ public abstract class SVGFormElement extends SVGComponentDrop{
     private static final Class getCurrentSnippetsProviderClass() {
         String providerName = SvgcoreSettings.getDefault().getCurrentSnippet();
         if (providerName == null) {
-            return SVGSnipetsProviderGradient.class;
+            return SVGSnipetsProviderClassic.class;
         }
         Collection<? extends SVGSnippetsProvider> snippetCollection = Lookup.getDefault().lookupAll(SVGSnippetsProvider.class);
 
