@@ -391,6 +391,7 @@ public final class CndLexerUtilities {
             CppTokenId.EXTERN,
             CppTokenId.FLOAT,
             CppTokenId.FOR,
+            CppTokenId.__FUNC__,
             CppTokenId.GOTO,
             CppTokenId.IF,
             CppTokenId.INT,
