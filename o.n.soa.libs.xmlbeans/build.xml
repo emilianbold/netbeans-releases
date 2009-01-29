@@ -22,7 +22,11 @@
     
     <target name="ext_init">
        <mkdir dir="external/xmlbeans-2.1.0"/>
-       <unzip src="external/xmlbeans-2.1.0.zip" dest="external/xmlbeans-2.1.0"/>
+       <unzip src="external/xmlbeans-2.1.0.zip" dest="external/xmlbeans-2.1.0">
+           <patternset>
+               <exclude name="**/resolver.jar"/>
+           </patternset>
+       </unzip>
     </target>
     
     <target name="netbeans-extra" depends="ext_init, init">
@@ -30,6 +34,7 @@
         <copy todir="${cluster}/modules/ext/xmlbeans-2.1.0">
             <fileset dir="external/xmlbeans-2.1.0">
                 <include name="*.jar"/>
+                <exclude name="resolver.jar"/>
             </fileset>
         </copy>
     </target>
