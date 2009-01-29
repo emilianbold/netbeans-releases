@@ -61,9 +61,9 @@ public class APTMacroImpl implements APTMacro {
     private final APTToken name;
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
-    private final MacroType macroType;
+    private final Kind macroType;
 
-    public APTMacroImpl(APTToken name, Collection<APTToken> params, List<APTToken> body, MacroType macroType) {
+    public APTMacroImpl(APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
         assert (name != null);
         this.name = name;
         //this.params = params;
@@ -76,7 +76,7 @@ public class APTMacroImpl implements APTMacro {
         this.macroType = macroType;
     }
 
-    public MacroType getKind() {
+    public Kind getKind() {
         return macroType;
     }
 
@@ -132,16 +132,16 @@ public class APTMacroImpl implements APTMacro {
         StringBuilder retValue = new StringBuilder();
         // preserve macro signature for existing model tests
         switch(getKind()){
-            case DEFINED: // macro defined in code (defined)
+            case DEFINED:
                 retValue.append("<U>"); // NOI18N
                 break;
-            case SYSTEM: // predefined macro (defined by compiler, for example __STDC__) (system)
+            case COMPILER_PREDEFINED:
                 retValue.append("<S>"); // NOI18N
                 break;
-            case PREDEFINED: // predefined macro (compile time macro, for example __FILE__) (system)
+            case POSITION_PREDEFINED:
                 retValue.append("<S>"); // NOI18N
                 break;
-            case USER: // macro defined in project (-D compile option) (user)
+            case USER_SPECIFIED:
             default:
                 retValue.append("<S>"); // NOI18N
                 break;
