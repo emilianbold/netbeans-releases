@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -55,6 +56,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -67,17 +71,18 @@ import org.openide.windows.TopComponent;
  * component showing graph of dependencies for project.
  * @author Milos Kleint 
  */
-public class DependencyGraphTopComponent extends TopComponent implements LookupListener {
+public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     
 //    private Project project;
     private Lookup.Result<DependencyNode> result;
     private Lookup.Result<MavenProject> result2;
     private DependencyGraphScene scene;
+    private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
     
     
-    private Timer timer = new Timer(1000, new ActionListener() {
+    private Timer timer = new Timer(500, new ActionListener() {
         public void actionPerformed(ActionEvent arg0) {
             checkFindValue();
         }
@@ -89,7 +94,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         associateLookup(lookup);
         initComponents();
 //        project = proj;
-        sldDepth.getLabelTable().put(new Integer(0), new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
+        sldDepth.getLabelTable().put(new Integer(0), new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
         timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
@@ -129,7 +134,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }
     
     @Override
-    protected void componentOpened() {
+    public void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
         sldDepth.setEnabled(false);
@@ -149,6 +154,30 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         createScene();
     }
     
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentClosed() {
+        super.componentClosed();
+    }
+
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }
     
     
     /** This method is called from within the constructor to
@@ -304,5 +333,21 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                 }
             });
         }
+    }
+
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    public JComponent getToolbarRepresentation() {
+        return new JPanel();
+    }
+
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+        this.callback = callback;
+    }
+
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
     }
 }

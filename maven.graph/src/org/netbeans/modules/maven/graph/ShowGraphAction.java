@@ -83,7 +83,6 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-                    DependencyGraphScene scene = new DependencyGraphScene(prj.getMavenProject());
                     DependencyNode root = DependencyTreeFactory.createDependencyTree(prj.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     ic.add(prj.getMavenProject());
                     ic.add(root);
