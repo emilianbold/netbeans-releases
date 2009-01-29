@@ -48,8 +48,10 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration.LibraryToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
@@ -108,12 +110,6 @@ public class QmakeProjectWriter {
             return op;
         }
     }
-
-    /**
-     * String to prepend to every include directory and preprocessor macro.
-     * It is empty, because qmake will prepend something later.
-     */
-    private static final String PREPEND = ""; // NOI18N
 
     /**
      * Project descriptor.
@@ -181,15 +177,17 @@ public class QmakeProjectWriter {
         write(bw, Variable.QMAKE_CXX, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
 
-        CompilerSet cs = configuration.getCompilerSet().getCompilerSet();
+        CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
+        OptionToString optionVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
-                configuration.getCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, PREPEND) +
-                configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().getOption(cs, PREPEND));
+                configuration.getCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor) +
+                configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor));
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
-                configuration.getCCompilerConfiguration().getIncludeDirectories().getOption(cs, PREPEND) +
-                configuration.getCCCompilerConfiguration().getIncludeDirectories().getOption(cs, PREPEND));
+                configuration.getCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor) +
+                configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor));
+        LibraryToString libVisitor = new LibraryToString(configuration);
         write(bw, Variable.LIBS, Operation.ADD,
-                configuration.getLinkerConfiguration().getLibrariesConfiguration().getOption(cs, PREPEND));
+                configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
     }
 
     private void write(BufferedWriter bw, Variable var, Operation op, String value) throws IOException {

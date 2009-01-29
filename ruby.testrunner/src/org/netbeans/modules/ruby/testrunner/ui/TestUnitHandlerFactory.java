@@ -214,7 +214,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_STARTED%\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -243,7 +243,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override

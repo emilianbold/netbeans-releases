@@ -364,8 +364,7 @@ public class ConfigurationMakefileWriter {
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
         }
-        LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
-        for (LibraryItem lib : libs) {
+        for (LibraryItem lib : linkerConfiguration.getLibrariesConfiguration().getValue()) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
                 bw.write(output + ": " + IpeUtils.escapeOddCharacters(cs.normalizeDriveLetter(libPath)) + "\n\n"); // NOI18N
@@ -495,10 +494,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
-            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-            for (int j = 0; j < libraryItems.length; j++) {
-                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+            for (LibraryItem item : librariesConfiguration.getValue()) {
+                if (item instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                     MakeArtifact makeArtifact = projectItem.getMakeArtifact();
                     String location = makeArtifact.getWorkingDirectory();
                     if (!makeArtifact.getBuild()) {
@@ -509,9 +507,8 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
-        for (int i = 0; i < projectItems.length; i++) {
-            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
+            MakeArtifact makeArtifact = item.getMakeArtifact();
             String location = makeArtifact.getWorkingDirectory();
             if (!makeArtifact.getBuild()) {
                 continue;
@@ -528,10 +525,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
-            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-            for (int j = 0; j < libraryItems.length; j++) {
-                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+            for (LibraryItem item : librariesConfiguration.getValue()) {
+                if (item instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                     MakeArtifact makeArtifact = projectItem.getMakeArtifact();
                     String location = makeArtifact.getWorkingDirectory();
                     if (!makeArtifact.getBuild()) {
@@ -542,9 +538,8 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
-        for (int i = 0; i < projectItems.length; i++) {
-            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
+            MakeArtifact makeArtifact = item.getMakeArtifact();
             String location = makeArtifact.getWorkingDirectory();
             if (!makeArtifact.getBuild()) {
                 continue;
@@ -661,9 +656,8 @@ public class ConfigurationMakefileWriter {
 
     private boolean hasSubprojects(MakeConfiguration conf) {
         LibrariesConfiguration librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+        for (LibraryItem item : librariesConfiguration.getValue()) {
+            if (item instanceof LibraryItem.ProjectItem) {
                 return true;
             }
         }

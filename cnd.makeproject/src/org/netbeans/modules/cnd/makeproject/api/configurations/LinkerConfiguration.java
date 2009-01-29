@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,7 +73,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private BooleanConfiguration nameassignOption;
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
-    private LibrariesConfiguration<LibraryItem> librariesConfiguration;
+    private LibrariesConfiguration librariesConfiguration;
     private StringConfiguration tool;
 
     // Constructors
@@ -88,7 +89,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
-        librariesConfiguration = new LibrariesConfiguration<LibraryItem>();
+        librariesConfiguration = new LibrariesConfiguration();
         tool = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -188,11 +189,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // LibrariesConfiguration
-    public LibrariesConfiguration<LibraryItem> getLibrariesConfiguration() {
+    public LibrariesConfiguration getLibrariesConfiguration() {
         return librariesConfiguration;
     }
 
-    public void setLibrariesConfiguration(LibrariesConfiguration<LibraryItem> librariesConfiguration) {
+    public void setLibrariesConfiguration(LibrariesConfiguration librariesConfiguration) {
         this.librariesConfiguration = librariesConfiguration;
     }
 
@@ -228,15 +229,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
         LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
         // LinkerConfiguration
         clone.setOutput(getOutput().clone());
-        clone.setAdditionalLibs(getAdditionalLibs().cloneConf());
-        clone.setDynamicSearch(getDynamicSearch().cloneConf());
+        clone.setAdditionalLibs(getAdditionalLibs().clone());
+        clone.setDynamicSearch(getDynamicSearch().clone());
         clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         clone.setAdditionalDependencies(getAdditionalDependencies().clone());
         clone.setStripOption(getStripOption().clone());
         clone.setPICOption(getPICOption().clone());
         clone.setNorunpathOption(getNorunpathOption().clone());
         clone.setNameassignOption(getNameassignOption().clone());
-        clone.setLibrariesConfiguration(getLibrariesConfiguration().cloneConf());
+        clone.setLibrariesConfiguration(getLibrariesConfiguration().clone());
         clone.setTool(getTool().clone());
         return clone;
     }
@@ -299,18 +300,13 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (linker == null) {
             return ""; // NOI18N
         }
-        String libPrefix = linker.getLibrarySearchFlag();
-        String dynSearchPrefix = linker.getDynamicLibrarySearchFlag();
-        if (libPrefix == null) {
-            libPrefix = ""; // NOI18N
-        }
-        if (dynSearchPrefix == null) {
-            dynSearchPrefix = ""; // NOI18N
-        }
         String options = ""; // NOI18N
-        options += getAdditionalLibs().getOption(cs, libPrefix) + " "; // NOI18N
-        options += getDynamicSearch().getOption(cs, dynSearchPrefix) + " "; // NOI18N
-        options += getLibrariesConfiguration().getOptions(getMakeConfiguration()) + " "; // NOI18N
+        OptionToString staticSearchVisitor = new OptionToString(cs, linker.getLibrarySearchFlag());
+        options += getAdditionalLibs().toString(staticSearchVisitor) + " "; // NOI18N
+        OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
+        options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
+        LibraryToString libVisitor = new LibraryToString(getMakeConfiguration());
+        options += getLibrariesConfiguration().toString(libVisitor) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
@@ -507,5 +503,18 @@ public class LinkerConfiguration implements AllOptionsProvider {
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(LinkerConfiguration.class, s);
+    }
+
+    public static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
+
+        private final MakeConfiguration conf;
+
+        public LibraryToString(MakeConfiguration conf) {
+            this.conf = conf;
+        }
+
+        public String toString(LibraryItem item) {
+            return item.getOption(conf);
+        }
     }
 }

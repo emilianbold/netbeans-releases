@@ -47,16 +47,9 @@ import org.netbeans.modules.nativeexecution.api.ObservableAction;
  */
 public final class ValidationStatus {
 
-    /**
-     * Object that represents VALID status. VALID status means that
-     * full validation was performed and passed.
-     */
-    public static ValidationStatus validStatus =
+    private static ValidationStatus validStatus =
             new ValidationStatus(true, true, "OK", null); // NOI18N
-    /**
-     * Object that represents initial status (before any validation)
-     */
-    public static ValidationStatus initialStatus =
+    private static ValidationStatus initialStatus =
             new ValidationStatus(false, false, "Initial", null); // NOI18N
     private boolean isDefined = false;
     private boolean isValid = false;
@@ -110,6 +103,26 @@ public final class ValidationStatus {
      */
     public static ValidationStatus invalidStatus(final String reason) {
         return new ValidationStatus(true, false, reason, null);
+    }
+
+    /**
+     * Returns object that represents KNOWN and VALID status. VALID status means
+     * that full validation was performed and passed.
+     *
+     * @return KNOWN and VALID status
+     */
+    public static ValidationStatus validStatus() {
+        return validStatus;
+    }
+
+    /**
+     * Returns object that represents INITIAL status. INITIAL status means
+     * that full validation was not performed yet.
+     *
+     * @return INITIAL status
+     */
+    public static ValidationStatus initialStatus() {
+        return initialStatus;
     }
 
     /**
