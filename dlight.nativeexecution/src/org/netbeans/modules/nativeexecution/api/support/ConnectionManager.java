@@ -36,8 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.support;
 
+import org.netbeans.modules.nativeexecution.support.*;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
@@ -61,8 +62,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Manages connections that needed for remote <tt>NativeTask</tt>s execution.
- * It is a singleton and should be accessed via static <tt>getInstance()</tt>
+ * Manages connections that needed for remote
+ * {@link org.netbeans.modules.nativeexecution.api.NativeTask} execution.
+ * It is a singleton and should be accessed via static {@link #getInstance()}
  * method.
  *
  * @see ExecutionEnvironment
@@ -80,6 +82,11 @@ public final class ConnectionManager {
 
     // Actual sessions pool
     private final JSch jsch;
+
+
+    static {
+        ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
+    }
 
     private ConnectionManager() {
         this.jsch = new JSch();
@@ -111,9 +118,8 @@ public final class ConnectionManager {
      *         New or already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
-    public synchronized Session getConnectionSession(
-            final ExecutionEnvironment execEnv) {
-        final String sessionKey = execEnv.toString();
+    synchronized Session getConnectionSession(final ExecutionEnvironment env) {
+        final String sessionKey = env.toString();
         Session session = null;
 
         if (sessions == null) {
@@ -128,9 +134,9 @@ public final class ConnectionManager {
             }
         }
 
-        final String user = execEnv.getUser();
-        final String host = execEnv.getHost();
-        final int sshPort = execEnv.getSSHPort();
+        final String user = env.getUser();
+        final String host = env.getHost();
+        final int sshPort = env.getSSHPort();
 
         final Callable<Session> connectionTask = new Callable<Session>() {
 
@@ -143,7 +149,7 @@ public final class ConnectionManager {
                         synchronized (jsch) {
                             result = jsch.getSession(user, host, sshPort);
                             result.setUserInfo(
-                                    RemoteUserInfo.getUserInfo(execEnv, true));
+                                    RemoteUserInfo.getUserInfo(env, true));
                         }
                     }
 
@@ -170,7 +176,7 @@ public final class ConnectionManager {
 
         ProgressHandle ph = ProgressHandleFactory.createHandle(
                 loc("ConnectionManager.Connecting", // NOI18N
-                execEnv.toString()), cancelConnection);
+                env.toString()), cancelConnection);
 
         ph.start();
 
@@ -191,7 +197,18 @@ public final class ConnectionManager {
         return session;
     }
 
+    /**
+     * Tests whether the connection with the <tt>execEnv</tt> is established or
+     * not.
+     * @param execEnv execution environment to test connection with.
+     * @return true if connection is established or if execEnv refers to the
+     * localhost environment. false otherwise.
+     */
     public boolean isConnectedTo(ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal()) {
+            return true;
+        }
+        
         if (sessions == null) {
             return false;
         }
@@ -205,15 +222,15 @@ public final class ConnectionManager {
 
     /**
      * Returns <tt>ObservableAction&lt;Boolean&gt;</tt> action that can be used
-     * to get connected to an <tt>ExecutionEnvironment</tt>.
+     * to get connected to the {@link ExecutionEnvironment}.
      * It is guaranteed that the same Action is returned for equal execution
      * environments.
      *
-     * @param execEnv - <tt>ExecutionEnvironment</tt> to connect to.
+     * @param execEnv - {@link ExecutionEnvironment} to connect to.
      * @return action to be used to connect to the <tt>execEnv</tt>.
-     * @see ObservableAction
+     * @see org.netbeans.modules.nativeexecution.api.ObservableAction
      */
-    public synchronized ObservableAction<Boolean> getConnectAction(
+    public synchronized ObservableAction<Boolean> getConnectToAction(
             final ExecutionEnvironment execEnv) {
         if (actionsProvider == null) {
             actionsProvider = new ActionsProvider();
@@ -286,5 +303,15 @@ public final class ConnectionManager {
 
     private static String loc(String key, Object... params) {
         return NbBundle.getMessage(ConnectionManager.class, key, params);
+    }
+
+    private static final class ConnectionManagerAccessorImpl
+            extends ConnectionManagerAccessor {
+
+        @Override
+        public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env) {
+            return mgr.getConnectionSession(env);
+        }
+
     }
 }

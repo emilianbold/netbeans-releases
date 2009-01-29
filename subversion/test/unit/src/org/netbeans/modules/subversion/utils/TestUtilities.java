@@ -37,30 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.execution.api.support;
+package org.netbeans.modules.subversion.utils;
 
-import java.util.Collection;
-import org.openide.util.Lookup;
+import java.io.File;
 
 /**
- * This is factory class to get {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
- * instance.
+ *
+ * @author ondra.vrabec
  */
-public final class IOTabManagerFactory {
-  private static final IOTabManager DEFAULT_INSTANCE = new IOTabManagerImpl();
+public final class TestUtilities {
+    private TestUtilities () {}
 
-  /**
-   * Returns IOTabManager to work with input/,
-   * use global Lookup to look for {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
-   * implementation, if no implementation is registered use own default implementation
-   * @return
-   */
-  public static IOTabManager getIOTabManager(){
-    Collection<? extends IOTabManager> instances =  Lookup.getDefault().lookupAll(IOTabManager.class);
-    if(instances.isEmpty()){
-      return DEFAULT_INSTANCE;
+    /**
+     * Formats file's location into SVNUrl format
+     * @param file
+     * @return file's location in a SVNUrl format
+     */
+    public static String formatFileURL (File file) {
+        String url;
+        url = "file:///" + file.getAbsolutePath().replaceAll("\\\\", "/");
+        return url;
     }
-    return instances.iterator().next();
-  }
-
 }

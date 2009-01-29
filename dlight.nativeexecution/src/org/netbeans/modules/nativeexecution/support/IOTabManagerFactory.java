@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,31 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.util.Collection;
+import org.openide.util.Lookup;
 
-public class StringBufferWriter extends Writer {
+/**
+ * This is factory class to get {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
+ * instance.
+ */
+public final class IOTabManagerFactory {
+  private static final IOTabManager DEFAULT_INSTANCE = new IOTabManagerImpl();
 
-    private StringBuffer outBuffer;
-
-    public StringBufferWriter(StringBuffer outBuffer) {
-        this.outBuffer = outBuffer;
+  /**
+   * Returns IOTabManager to work with input/,
+   * use global Lookup to look for {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
+   * implementation, if no implementation is registered use own default implementation
+   * @return
+   */
+  public static IOTabManager getIOTabManager(){
+    Collection<? extends IOTabManager> instances =  Lookup.getDefault().lookupAll(IOTabManager.class);
+    if(instances.isEmpty()){
+      return DEFAULT_INSTANCE;
     }
+    return instances.iterator().next();
+  }
 
-    @Override
-    public void write(char[] cbuf, int off, int len) throws IOException {
-        outBuffer.append(cbuf, off, len);
-    }
-
-    @Override
-    public void flush() throws IOException {
-    }
-
-    @Override
-    public void close() throws IOException {
-    }
 }

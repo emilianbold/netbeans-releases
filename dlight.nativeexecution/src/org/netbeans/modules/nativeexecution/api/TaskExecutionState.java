@@ -67,5 +67,5 @@ public enum TaskExecutionState {
     /**
      * Task cancelled
      */
-    CANCELED
+    CANCELLED
 }

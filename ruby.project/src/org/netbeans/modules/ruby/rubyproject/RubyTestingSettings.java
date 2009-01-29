@@ -36,23 +36,39 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.rubyproject;
 
-package org.netbeans.modules.dlight.execution.api.support;
-
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.openide.windows.InputOutput;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.openide.util.NbPreferences;
 
 /**
- * Input/Output tabs manager, register your own implementation
- * using global Lookup service. The result of {@link #getIO(org.netbeans.modules.nativeexecution.NativeTask, boolean) }
- * is used as input output for {@link org.netbeans.modules.nativeexecution.NativeTask#setInputOutput(org.openide.windows.InputOutput) }.
+ * Testing settings for Ruby IDE.
+ *
+ * @author Erno Mononen
  */
-public interface IOTabManager {
-  /**
-   *
-   * @param task task to get Input/Output
-   * @param reuse <code>true</code> if is is allowed to reuse tab, <code>false</code> otherwise
-   * @return Input/Ouput <param>task</param> task will redirect inout/output/error streams to
-   */
-  public InputOutput getIO(NativeTask task, boolean reuse);
+public final class RubyTestingSettings {
+
+    private static final RubyTestingSettings INSTANCE = new RubyTestingSettings();
+
+    private RubyTestingSettings() {
+    }
+
+    public static RubyTestingSettings getDefault() {
+        return INSTANCE;
+    }
+
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(RubyTestingSettings.class);
+    }
+
+    void setUseRunner(boolean useRunner, TestType type) {
+        getPreferences().putBoolean(type.name(), useRunner);
+    }
+
+    public boolean useRunner(TestType type) {
+        return getPreferences().getBoolean(type.name(), true);
+    }
+
+
 }

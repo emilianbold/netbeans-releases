@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import com.jcraft.jsch.ChannelExec;
@@ -60,7 +61,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
     public RemoteNativeExecutor(NativeTask task) {
         super(task);
-        this.execEnv = task.getExecEnv();
+        this.execEnv = task.getExecutionEnvironment();
     }
 
     @Override
@@ -68,7 +69,8 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         final ConnectionManager mgr = ConnectionManager.getInstance();
 
         synchronized (mgr) {
-            final Session session = mgr.getConnectionSession(execEnv);
+            final Session session = ConnectionManagerAccessor.getDefault().
+                    getConnectionSession(mgr, execEnv);
 
             if (session == null) {
                 return -1;
@@ -157,6 +159,10 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
     @Override
     protected final Integer doGet() {
+        if (channel == null) {
+            return -1;
+        }
+        
         while (channel.isConnected()) {
             try {
                 Thread.sleep(200);
