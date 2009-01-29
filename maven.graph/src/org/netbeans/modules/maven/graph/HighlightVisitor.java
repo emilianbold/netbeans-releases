@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.graph;
 
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Stack;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
@@ -53,6 +54,7 @@ class HighlightVisitor implements DependencyNodeVisitor {
     private DependencyNode root;
     private Stack<DependencyNode> path;
     private int max = Integer.MAX_VALUE;
+    Rectangle rectangle = new Rectangle (0, 0, 1, 1);
 
     HighlightVisitor(DependencyGraphScene scene) {
         this.scene = scene;
@@ -61,6 +63,10 @@ class HighlightVisitor implements DependencyNodeVisitor {
 
     void setMaxDepth(int max) {
         this.max = max;
+    }
+
+    Rectangle getVisibleRectangle() {
+        return rectangle;
     }
 
 
@@ -79,6 +85,7 @@ class HighlightVisitor implements DependencyNodeVisitor {
                     ew.switchToHidden();
                 }
             } else {
+                rectangle = rectangle.union (aw.convertLocalToScene (aw.getBounds ()));
                 aw.switchToDefault();
                 for (ArtifactGraphEdge e : edges) {
                     EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
