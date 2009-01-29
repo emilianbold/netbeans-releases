@@ -40,15 +40,21 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.UIQuery.Type;
 import org.netbeans.modules.kenai.ui.api.UIUtils;
+import sun.awt.HorizBagLayout;
 
 /**
  *
@@ -118,5 +124,44 @@ public class TestUIQueryImpl implements UIQueryImpl {
                 return null;
         }
         return null;
+    }
+
+    /**
+     *
+     * @param t
+     * @param k
+     * @return
+     */
+    public Collection<LinkNode> getNodes(Type t, KenaiProject k) {
+       ArrayList<LinkNode> result = new ArrayList<LinkNode>();
+       result.add(new LinkNodeImpl("<html><b>MyApp</b>: running</html>"));
+       result.add(new LinkNodeImpl("<html><b>OtherApp</b>: <a href=\"test\">failed</a></html>"));
+       result.add(new LinkNodeImpl("<html>Issues <a href=\"68\">68</a>,<a href=\"new\">new</a></html>"));
+       return result;
+    }
+
+    public class LinkNodeImpl implements LinkNode {
+        private String html;
+
+        public LinkNodeImpl(String text) {
+            this.html=text;
+        }
+
+        public String getString() {
+            return html;
+        }
+
+        public void handleLink(String link) {
+            JOptionPane.showMessageDialog(null, link);
+        }
+
+        public Action[] getActions() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String toString() {
+            return html;
+        }
     }
 }

@@ -39,57 +39,14 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.openide.util.Lookup;
+import javax.swing.Action;
 
 /**
  *
  * @author Jan Becicka
  */
-public final class UIQuery {
-    /**
-     * 
-     */
-    public enum Type {
-        BUILDS,
-        ISSUES,
-        REVIEWS,
-        SOURCES
-    }
-
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public static JComponent getComponent(Type t, KenaiProject k) {
-        JComponent result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getComponent(t, k);
-            if (result!=null) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public static Collection<LinkNode> getNodes(Type t, KenaiProject k) {
-        Collection<LinkNode> result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getNodes(t, k);
-            if (result!=null) {
-                break;
-            }
-        }
-        return result;
-    }
+public interface LinkNode {
+    String getString();
+    void handleLink(String link);
+    Action[] getActions();
 }

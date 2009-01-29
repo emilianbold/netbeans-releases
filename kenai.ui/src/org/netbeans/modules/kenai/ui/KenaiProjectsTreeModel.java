@@ -39,57 +39,23 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.openide.util.Lookup;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 /**
  *
  * @author Jan Becicka
  */
-public final class UIQuery {
-    /**
-     * 
-     */
-    public enum Type {
-        BUILDS,
-        ISSUES,
-        REVIEWS,
-        SOURCES
-    }
+public class KenaiProjectsTreeModel extends DefaultTreeModel {
 
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public static JComponent getComponent(Type t, KenaiProject k) {
-        JComponent result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getComponent(t, k);
-            if (result!=null) {
-                break;
-            }
+    public KenaiProjectsTreeModel() {
+        super(new DefaultMutableTreeNode("Root"));
+        DefaultMutableTreeNode project1 = new DefaultMutableTreeNode("My Kenai Project");
+        DefaultMutableTreeNode project1Builds = new DefaultMutableTreeNode("Builds");
+        project1.add(project1Builds);
+        for (LinkNode line :  UIQuery.getNodes(null, null)) {
+            project1Builds.add(new DefaultMutableTreeNode(line));
         }
-        return result;
-    }
-
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public static Collection<LinkNode> getNodes(Type t, KenaiProject k) {
-        Collection<LinkNode> result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getNodes(t, k);
-            if (result!=null) {
-                break;
-            }
-        }
-        return result;
+        ((DefaultMutableTreeNode) getRoot()).add(project1);
     }
 }
