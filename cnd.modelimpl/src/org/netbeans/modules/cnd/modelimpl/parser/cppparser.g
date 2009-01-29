@@ -971,38 +971,43 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		(template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
 		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
 		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
-	|   
-                // Function declaration
-		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification)? declaration_specifiers[false, false] function_declarator[false, false] (EOF|SEMICOLON))=> 
-                        {if (statementTrace>=1) 
-                                printf("external_declaration_7[%d]: Function prototype\n",
-                                        LT(1).getLine());
-                        }
-		(LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
-                        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
-        |
-                // Function declaration without ID in return type
-                // IZ 146150 : 'unexpected token: ;' message appears on 'extern int errno;' line
-		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification)? declaration_specifiers[false, true] function_declarator[false, true] (EOF|SEMICOLON))=> 
-                        {if (statementTrace>=1) 
-                                printf("external_declaration_7[%d]: Function prototype\n",
-                                        LT(1).getLine());
-                        }
-		(LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
-                        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
-        |
-		// Function definition with return value
-		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification!)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_8[%d]: Function definition\n",
-				LT(1).getLine());
-		}
-		(LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
-		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
-	|
-		// FIXUP: Function definition without return value
-                // till not correct hanlding in function_definition (external_declaration_7)
-                // functions without return type
+    |
+        // Function declaration
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification)?
+            declaration_specifiers[false, false]
+            (options {greedy=true;} :function_attribute_specification)?
+            function_declarator[false, false] (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
+        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
+        // Function declaration without ID in return type
+        // IZ 146150 : 'unexpected token: ;' message appears on 'extern int errno;' line
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification)?
+            declaration_specifiers[false, true]
+            (options {greedy=true;} :function_attribute_specification)?
+            function_declarator[false, true] (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
+        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
+        // Function definition with return value
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification!)?
+            declaration_specifiers[false, false]
+            (options {greedy=true;} :function_attribute_specification!)? 
+            function_declarator[true, false] LCURLY)=>
+        {if (statementTrace>=1) printf("external_declaration_8[%d]: Function definition\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
+        { #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
+    |
+        // FIXUP: Function definition without return value
+        // till not correct hanlding in function_definition (external_declaration_7)
+        // functions without return type
 		(function_declarator[true, false] (function_K_R_parameter_list)? LCURLY)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_8a[%d]: Function definition without ret value\n",
@@ -1487,31 +1492,34 @@ function_K_R_parameter
     ;
 
 function_definition
-	:	// don't want next action as an init-action due to (...)=> caller
-// IZ 132404 : Parser failed on code taken from boost
-//	//{ beginFunctionDefinition(); }
-//	(	// Next line is equivalent to guarded predicate in PCCTS
-//		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
-//              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
-                declaration_specifiers[false, false] function_declarator[true, false]
-		(	options{warnWhenFollowAmbig = false;}:
-			//(declaration)*	// Possible for K & R definition
-                        (function_K_R_parameter_list)?
-			{in_parameter_list = false;}
-		)?
-		compound_statement
-//	|	// Next line is equivalent to guarded predicate in PCCTS
-//		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
-//		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
-//		function_declarator[true]
-//		(	options{warnWhenFollowAmbig = false;}:
-//			(declaration)*	// Possible for K & R definition
-//			{in_parameter_list = false;}
-//		)?		    
-//                compound_statement             
-//	)
-//	//{endFunctionDefinition();}
-	;
+    :
+    // don't want next action as an init-action due to (...)=> caller
+    // IZ 132404 : Parser failed on code taken from boost
+    //	//{ beginFunctionDefinition(); }
+    //	(	// Next line is equivalent to guarded predicate in PCCTS
+    //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
+    //              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
+    declaration_specifiers[false, false]
+    (options {greedy=true;} :function_attribute_specification!)?
+    function_declarator[true, false]
+    (   options{warnWhenFollowAmbig = false;}:
+        //(declaration)*	// Possible for K & R definition
+        (function_K_R_parameter_list)?
+        {in_parameter_list = false;}
+    )?
+    compound_statement
+    //	|	// Next line is equivalent to guarded predicate in PCCTS
+    //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
+    //		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
+    //		function_declarator[true]
+    //		(	options{warnWhenFollowAmbig = false;}:
+    //			(declaration)*	// Possible for K & R definition
+    //			{in_parameter_list = false;}
+    //		)?
+    //                compound_statement
+    //	)
+    //	//{endFunctionDefinition();}
+    ;
 
 // rule for predicting "declaration"
 // must be updated together with declaration rule
@@ -2483,9 +2491,10 @@ attribute_specification_list
 	;
 
 attribute_specification
-        :       LITERAL___attribute__
-                LPAREN balanceParens RPAREN
-        ;
+    :
+    literal_attribute
+    LPAREN balanceParens RPAREN
+    ;
 
 protected
 balanceParens
@@ -3504,3 +3513,7 @@ literal_restrict : LITERAL_restrict | LITERAL___restrict;
 
 protected
 literal_complex : LITERAL__Complex | LITERAL___complex__;
+
+protected
+literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
