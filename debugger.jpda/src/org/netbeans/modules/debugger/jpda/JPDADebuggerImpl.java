@@ -304,7 +304,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     // Must not call this under currentThreadAndFrameLock, other lock acquired.
                     csf = t.getCallStack(0, 1)[0];
                     synchronized (currentThreadAndFrameLock) {
-                        currentCallStackFrame = csf;
+                        if (currentThread == t) { // Check if the current thread did not change
+                            currentCallStackFrame = csf;
+                        }
                     }
                 }
             } catch (Exception ex) {
