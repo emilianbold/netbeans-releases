@@ -45,7 +45,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
-import javax.swing.ImageIcon;
+import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -53,22 +53,26 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
  * component showing graph of dependencies for project.
  * @author Milos Kleint 
  */
-public class DependencyGraphTopComponent extends TopComponent {
+public class DependencyGraphTopComponent extends TopComponent implements LookupListener {
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     
-    private Project project;
+//    private Project project;
+    private Lookup.Result<DependencyNode> result;
+    private Lookup.Result<MavenProject> result2;
     private DependencyGraphScene scene;
     final JScrollPane pane = new JScrollPane();
     
@@ -80,14 +84,12 @@ public class DependencyGraphTopComponent extends TopComponent {
     });
     
     /** Creates new form ModulesGraphTopComponent */
-    public DependencyGraphTopComponent(Project proj) {
+    public DependencyGraphTopComponent(Lookup lookup) {
+        super();
+        associateLookup(lookup);
         initComponents();
-        project = proj;
-        sldDepth.getLabelTable().put(new Integer(0), new JLabel("All"));
-        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        setName("DependencyGraph" + info.getName()); //NOI18N
-        setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class, 
-                "TIT_DepGraphTC", info.getDisplayName()));
+//        project = proj;
+        sldDepth.getLabelTable().put(new Integer(0), new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
         timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
@@ -133,35 +135,18 @@ public class DependencyGraphTopComponent extends TopComponent {
         sldDepth.setEnabled(false);
         sldDepth.setVisible(false);
         txtFind.setEnabled(false);
+        btnBigger.setEnabled(false);
+        btnSmaller.setEnabled(false);
         add(pane, BorderLayout.CENTER);
         JLabel lbl = new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
-        lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-        lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+        lbl.setHorizontalAlignment(JLabel.CENTER);
+        lbl.setVerticalAlignment(JLabel.CENTER);
         pane.setViewportView(lbl);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                scene = GraphDocumentFactory.createDependencyDocument(project);
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            JComponent sceneView = scene.getView ();
-                            if (sceneView == null) {
-                                sceneView = scene.createView ();
-                            }
-                            pane.setViewportView(sceneView);
-                            scene.cleanLayout(pane);
-                            scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
-                            sldDepth.setMaximum(scene.getMaxNodeDepth());
-                            sldDepth.setEnabled(true);
-                            sldDepth.setVisible(true);
-                            txtFind.setEnabled(true);
-                        }
-                    });
-                } catch (Exception e) {
-                    
-                }
-            }
-        });
+        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
+        result.addLookupListener(this);
+        result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        result2.addLookupListener(this);
+        createScene();
     }
     
     
@@ -185,7 +170,7 @@ public class DependencyGraphTopComponent extends TopComponent {
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        btnBigger.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif")));
+        btnBigger.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif", true)));
         btnBigger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBiggerActionPerformed(evt);
@@ -193,7 +178,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         });
         jPanel1.add(btnBigger);
 
-        btnSmaller.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif")));
+        btnSmaller.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif", true)));
         btnSmaller.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSmallerActionPerformed(evt);
@@ -282,5 +267,42 @@ public class DependencyGraphTopComponent extends TopComponent {
     private javax.swing.JSlider sldDepth;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
-    
+
+    public void resultChanged(LookupEvent ev) {
+        createScene();
+    }
+
+
+    private void createScene() {
+        Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
+        Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+        if (it2.hasNext() && it1.hasNext()) {
+            final MavenProject prj = it2.next();
+            final DependencyNode root = it1.next();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    scene = new DependencyGraphScene(prj);
+                    GraphConstructor constr = new GraphConstructor(scene);
+                    root.accept(constr);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            JComponent sceneView = scene.getView();
+                            if (sceneView == null) {
+                                sceneView = scene.createView();
+                            }
+                            pane.setViewportView(sceneView);
+                            scene.cleanLayout(pane);
+                            scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+                            sldDepth.setMaximum(scene.getMaxNodeDepth());
+                            sldDepth.setEnabled(true);
+                            sldDepth.setVisible(true);
+                            txtFind.setEnabled(true);
+                            btnBigger.setEnabled(true);
+                            btnSmaller.setEnabled(true);
+                        }
+                    });
+                }
+            });
+        }
+    }
 }

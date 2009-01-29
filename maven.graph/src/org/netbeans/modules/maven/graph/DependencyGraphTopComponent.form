@@ -30,7 +30,7 @@
         <Component class="javax.swing.JButton" name="btnBigger">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new ImageIcon(Utilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomin.gif&quot;))" type="code"/>
+              <Connection code="ImageUtilities.image2Icon(ImageUtilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomin.gif&quot;, true))" type="code"/>
             </Property>
           </Properties>
           <Events>
@@ -40,7 +40,7 @@
         <Component class="javax.swing.JButton" name="btnSmaller">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new ImageIcon(Utilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomout.gif&quot;))" type="code"/>
+              <Connection code="ImageUtilities.image2Icon(ImageUtilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomout.gif&quot;, true))" type="code"/>
             </Property>
           </Properties>
           <Events>

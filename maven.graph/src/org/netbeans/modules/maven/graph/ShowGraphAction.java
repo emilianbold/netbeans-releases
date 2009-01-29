@@ -42,9 +42,19 @@ package org.netbeans.modules.maven.graph;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -65,9 +75,26 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
     }
     
     public void actionPerformed(ActionEvent e) {
-        Project project = (Project) getValue("prj"); //NOI18N
+        final Project project = (Project) getValue("prj"); //NOI18N
         if (project != null) {
-            TopComponent tc = new DependencyGraphTopComponent(project);
+            final InstanceContent ic = new InstanceContent();
+            ic.add(project);
+            Lookup lkp = new AbstractLookup(ic);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+                    DependencyGraphScene scene = new DependencyGraphScene(prj.getMavenProject());
+                    DependencyNode root = DependencyTreeFactory.createDependencyTree(prj.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                    ic.add(prj.getMavenProject());
+                    ic.add(root);
+                }
+            });
+            TopComponent tc = new DependencyGraphTopComponent(lkp);
+            ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
+            tc.setName("DependencyGraph" + info.getName()); //NOI18N
+            tc.setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class,
+                "TIT_DepGraphTC", info.getDisplayName()));
+
             WindowManager.getDefault().findMode("editor").dockInto(tc); //NOI18N
             tc.open();
             tc.requestActive();
