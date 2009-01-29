@@ -40,6 +40,7 @@
 package org.netbeans.modules.groovy.grailsproject.completion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -166,40 +167,50 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 prefix = "";
             }
 
-            Set<String> names = new HashSet<String>();
+            Map<String, Integer> names = new HashMap<String, Integer>();
+            Set<String> forbidden = new HashSet<String>();
+            int paramCount = getUsedComparators(context, forbidden);
+
             // comparator
             if (matcher.group(10) != null) {
                 // operator + property
-                names.addAll(getSuffixForOperator(name, context, prefix));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
             // property
             } else if (matcher.group(9) != null) {
                 // comparator or (operator + property)
-                names.addAll(getSuffixForComparator(name, context, prefix, matcher.group(9)));
-                names.addAll(getSuffixForOperator(name, context, prefix));
+                names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(9), forbidden, paramCount));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
             // operator
             } else if (matcher.group(7) != null) {
                 // property
-                names.addAll(getSuffixForProperty(name, context, prefix));
+                names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
             // comparator
             } else if (matcher.group(4) != null) {
                 // operator + property
-                names.addAll(getSuffixForOperator(name, context, prefix));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
             // property
             } else if (matcher.group(3) != null) {
                 // comparator or (operator + property)
-                names.addAll(getSuffixForComparator(name, context, prefix, matcher.group(3)));
-                names.addAll(getSuffixForOperator(name, context, prefix));
+                names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(3), forbidden, paramCount));
+                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
             }
 
-            for (String methodName : names) {
-                String[] parameters = new String[] {"java.lang.Object"};
+            for (Map.Entry<String, Integer> entry : names.entrySet()) {
 
-                result.put(new MethodSignature(methodName, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), methodName, parameters, "java.lang.Object", context.isNameOnly(), false));
+                String[] parameters = new String[entry.getValue().intValue()];
+                Arrays.fill(parameters, "java.lang.Object");
+                result.put(new MethodSignature(entry.getKey(), parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
+
+                parameters = new String[entry.getValue().intValue() + 1];
+                Arrays.fill(parameters, "java.lang.Object");
+                parameters[entry.getValue().intValue()] = "java.util.Map";
+                result.put(new MethodSignature(entry.getKey(), parameters),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
 
                 if (!context.isNameOnly()) {
-                    result.put(new MethodSignature(methodName + "_", new String[] {}),
-                            CompletionItem.forDynamicMethod(context.getAnchor(), methodName, new String[] {}, "java.lang.Object", true, true));
+                    result.put(new MethodSignature(entry.getKey() + "_", new String[] {}),
+                            CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), new String[] {}, "java.lang.Object", true, true));
                 }
             }
         } else {
@@ -247,38 +258,45 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return result;
     }
 
-    private Set<String> getSuffixForOperator(String prefix, CompletionContext context, String tail) {
-        Set<String> result = new HashSet<String>();
+    private Map<String, Integer> getSuffixForOperator(String prefix, CompletionContext context, String tail, int paramCount) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
         for (String property : context.getProperties()) {
             for (String operator : QUERY_OPERATOR) {
                 String suffix = operator + capitalise(property);
                 if (suffix.startsWith(tail)) {
-                    result.add(prefix + suffix);
+                    result.put(prefix + suffix, paramCount + 1);
                 }
             }
         }
         return result;
     }
 
-    private Set<String> getSuffixForComparator(String prefix, CompletionContext context, String tail, String property) {
-        Set<String> result = new HashSet<String>();
-        Set<String> forbidden = getUsedComparators(context);
+    private Map<String, Integer> getSuffixForComparator(String prefix, CompletionContext context, String tail,
+            String property, Set<String> forbidden, int paramCount) {
+
+        Map<String, Integer> result = new HashMap<String, Integer>();
 
         for (String operator : QUERY_COMPARATOR) {
+            int realCount = paramCount;
             String suffix = operator;
             if (suffix.startsWith(tail) && !forbidden.contains(property + suffix)) {
-                result.add(prefix + suffix);
+                if ("Between".equals(operator)) {
+                    realCount++;
+                } else if ("IsNotNull".equals(operator) || "IsNull".equals(operator)) {
+                    realCount--;
+                }
+                result.put(prefix + suffix, realCount);
             }
         }
         return result;
     }
 
-    private Set<String> getSuffixForProperty(String prefix, CompletionContext context, String tail) {
-        Set<String> result = new HashSet<String>();
+    private Map<String, Integer> getSuffixForProperty(String prefix, CompletionContext context, String tail, int paramCount) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
         for (String property : context.getProperties()) {
             String suffix = capitalise(property);
             if (suffix.startsWith(tail)) {
-                result.add(prefix + suffix);
+                result.put(prefix + suffix, paramCount + 1);
             }
         }
         return result;
@@ -311,27 +329,34 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return Pattern.compile(builder.toString());
     }
 
-    private Set<String> getUsedComparators(CompletionContext context) {
+    private int getUsedComparators(CompletionContext context, Set<String> result) {
         Matcher matcher = Pattern.compile("(findBy|findAllBy|countBy)(.*)").matcher(context.getPrefix());
         if (!matcher.matches()) {
-            return Collections.emptySet();
+            return 0;
         }
 
         String[] parts = matcher.group(2).split("(And|Or)");
 
-        Set<String> result = new HashSet<String>();
+        int paramCount = 0;
         Pattern pattern = Pattern.compile("(.*)(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?");
         for (String part : parts) {
             result.add(part);
+
             Matcher singleMatcher = pattern.matcher(part);
             if (singleMatcher.matches()) {
-                if (singleMatcher.group(2) == null) {
+                String comparator = singleMatcher.group(2);
+                if ("Between".equals(comparator)) {
+                    paramCount += 2;
+                } else if (!"IsNotNull".equals(comparator) && !"IsNull".equals(comparator)) {
+                    paramCount += 1;
+                } else if (comparator == null) {
+                    paramCount += 1;
                     result.add(part + "Equal");
                 }
             }
         }
 
-        return result;
+        return paramCount;
     }
 
     private boolean isDomain(FileObject source, Project project) {
