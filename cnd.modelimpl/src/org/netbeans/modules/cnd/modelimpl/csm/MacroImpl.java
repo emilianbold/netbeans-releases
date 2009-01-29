@@ -102,7 +102,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * constructor to create system macro impl
      */
     private MacroImpl(String macroName, String macroBody, CsmFile unresolved) {
-        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), Kind.USER);
+        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), Kind.USER_SPECIFIED);
     }
     
     public static SystemMacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved, Kind kind) {

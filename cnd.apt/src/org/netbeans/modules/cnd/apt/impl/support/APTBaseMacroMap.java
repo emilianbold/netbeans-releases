@@ -55,7 +55,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
-import org.netbeans.modules.cnd.apt.support.APTMacro.MacroType;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -122,9 +122,9 @@ public abstract class APTBaseMacroMap {
                 body = APTUtils.DEF_MACRO_BODY;
             }
             if (isSystem) {
-                defineImpl(defNode.getName(), defNode.getParams(), body, MacroType.SYSTEM);
+                defineImpl(defNode.getName(), defNode.getParams(), body, Kind.COMPILER_PREDEFINED);
             } else {
-                defineImpl(defNode.getName(), defNode.getParams(), body, MacroType.USER);
+                defineImpl(defNode.getName(), defNode.getParams(), body, Kind.USER_SPECIFIED);
             }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, 
@@ -133,19 +133,19 @@ public abstract class APTBaseMacroMap {
         }
     }
     
-    public final void define(APTToken name, List<APTToken> value, MacroType macroType) {
+    public final void define(APTToken name, List<APTToken> value, Kind macroType) {
         defineImpl(name, value, macroType);
     }
     
-    protected final void defineImpl(APTToken name, List<APTToken> value, MacroType macroType) {
+    protected final void defineImpl(APTToken name, List<APTToken> value, Kind macroType) {
         define(name, null, value, macroType);
     }
 
-    protected void define(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+    protected void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         defineImpl(name, params, value, macroType);
     }
     
-    protected void defineImpl(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+    protected void defineImpl(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         active.macros.put(name.getText(), createMacro(name, params, value, macroType));
     }
     
@@ -154,7 +154,7 @@ public abstract class APTBaseMacroMap {
     }
     
     /** method to implement in children */
-    protected abstract APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType);
+    protected abstract APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
     
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access
@@ -322,10 +322,10 @@ public abstract class APTBaseMacroMap {
             return null;
         }      
 
-        public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+        public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         }
 
-        public void define(APTToken name, List<APTToken> value, MacroType macroType) {
+        public void define(APTToken name, List<APTToken> value, Kind macroType) {
         }
 
         public void undef(APTToken name) {

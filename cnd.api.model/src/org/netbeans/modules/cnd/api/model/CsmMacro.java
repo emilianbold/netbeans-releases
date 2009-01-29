@@ -60,9 +60,9 @@ public interface CsmMacro extends CsmNamedElement, CsmOffsetable {
     Kind getKind();
 
     public enum Kind {
-        SYSTEM, // predefined macro (defined by compiler, for example __STDC__) (system)
-        PREDEFINED, // predefined macro (compile time macro, for example __FILE__) (system)
-        USER, // macro defined in project (-D compile option) (user)
-        DEFINED // macro defined in code (defined)
+        COMPILER_PREDEFINED, // compiler predefined macro, for example __STDC__
+        POSITION_PREDEFINED, // predefined macro names changing it's value based on position in file __FILE__, __LINE__, ...
+        USER_SPECIFIED, // macro defined in project properties or in command line with -D compile option
+        DEFINED // macro defined in code using #define directive
     }
 }

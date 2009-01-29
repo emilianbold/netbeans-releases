@@ -158,16 +158,16 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             APTMacro m = getMacroMap().getMacro(apttoken);
             if (m != null) {
                 switch(m.getKind()){
-                    case DEFINED: // macro defined in code (defined)
+                    case DEFINED:
                         MacroInfo mi = macroRefMap.get(apttoken.getText());
                         if (mi != null) {
                             addReference(apttoken, mi);
                             break;
                         }
                         // nobreak
-                    case SYSTEM: // predefined macro (defined by compiler, for example __STDC__) (system)
-                    case PREDEFINED: // predefined macro (compile time macro, for example __FILE__) (system)
-                    case USER: // macro defined in project (-D compile option) (user)
+                    case COMPILER_PREDEFINED:
+                    case POSITION_PREDEFINED:
+                    case USER_SPECIFIED:
                     default:
                         addSysReference(apttoken, m);
                         break;
@@ -218,18 +218,21 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             super(file, token.getOffset(), token.getEndOffset());
             CsmMacro.Kind kind;
             switch(macro.getKind()) {
-                case SYSTEM:
-                    kind = CsmMacro.Kind.SYSTEM;
+                case COMPILER_PREDEFINED:
+                    kind = CsmMacro.Kind.COMPILER_PREDEFINED;
                     break;
-                case PREDEFINED:
-                    kind = CsmMacro.Kind.PREDEFINED;
+                case POSITION_PREDEFINED:
+                    kind = CsmMacro.Kind.POSITION_PREDEFINED;
                     break;
                 case DEFINED:
                     kind = CsmMacro.Kind.DEFINED;
                     break;
-                case USER:
+                case USER_SPECIFIED:
+                    kind = CsmMacro.Kind.USER_SPECIFIED;
+                    break;
                 default:
-                    kind = CsmMacro.Kind.USER;
+                    System.err.println("unexpected kind in macro " + macro);
+                    kind = CsmMacro.Kind.USER_SPECIFIED;
                     break;
             }
             ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
@@ -285,7 +288,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
                         // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
                         if (target instanceof Unresolved.UnresolvedFile) {
-                            ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER);
+                            ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                         } else {
                             ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), CsmMacro.Kind.DEFINED);
                         }

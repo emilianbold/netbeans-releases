@@ -156,7 +156,7 @@ public class SystemMacroImpl implements CsmMacro {
             retValue.append("'='"); // NOI18N
             retValue.append(getBody());
         }
-        retValue.append("' [" + (macroKind == Kind.USER ? "user defined" : "system") + "]"); // NOI18N
+        retValue.append("' [" + (macroKind == Kind.USER_SPECIFIED ? "user defined" : "system") + "]"); // NOI18N
         return retValue.toString();
     }
 

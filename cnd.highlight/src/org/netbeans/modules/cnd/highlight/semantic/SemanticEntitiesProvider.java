@@ -124,12 +124,12 @@ public class SemanticEntitiesProvider {
                     return color;
                 }
                 switch(macro.getKind()){
-                    case USER: // macro specified in command line (-D)
+                    case USER_SPECIFIED:
                         return userMacroColors;
-                    case SYSTEM: // system compiler macro
-                    case PREDEFINED: // predefined compile time macro, for example __FILE__
+                    case COMPILER_PREDEFINED:
+                    case POSITION_PREDEFINED:
                         return sysMacroColors;
-                    case DEFINED: // defined macro in source code
+                    case DEFINED:
                     default:
                         return color;
                 }

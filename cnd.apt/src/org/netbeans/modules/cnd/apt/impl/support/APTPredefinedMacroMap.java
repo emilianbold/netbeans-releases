@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
-import org.netbeans.modules.cnd.apt.support.APTMacro.MacroType;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -103,11 +103,11 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, List<APTToken> value, MacroType macroType) {
+    public void define(APTToken name, List<APTToken> value, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, MacroType macroType) {
+    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
@@ -141,8 +141,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             this.macro =  macro;           
         }
 
-        public MacroType getKind() {
-            return MacroType.PREDEFINED;
+        public Kind getKind() {
+            return Kind.POSITION_PREDEFINED;
         }
 
         public boolean isFunctionLike() {
