@@ -46,11 +46,14 @@ import javax.swing.JScrollPane;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.graph.layout.GraphLayout;
+import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
@@ -69,9 +72,22 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
+    private static final MoveProvider MOVEPROVIDER = new MoveProvider () {
+        public void movementStarted (Widget widget) {
+            widget.bringToFront();
+        }
+        public void movementFinished (Widget widget) {
+        }
+        public Point getOriginalLocation (Widget widget) {
+            return widget.getPreferredLocation ();
+        }
+        public void setNewLocation (Widget widget, Point location) {
+            widget.setPreferredLocation (location);
+        }
+    };
     
 //    private GraphLayout layout;
-    private WidgetAction moveAction = ActionFactory.createMoveAction();
+    private WidgetAction moveAction = ActionFactory.createMoveAction(null, MOVEPROVIDER);
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
     private WidgetAction zoomAction = ActionFactory.createCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
@@ -176,9 +192,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         public void select(Widget wid, Point arg1, boolean arg2) {
-            ArtifactGraphNode node = (ArtifactGraphNode)findObject(wid);
-            if (node != null) {
-                setSelectedObjects(Collections.singleton(node));
+            Widget w = wid;
+            while (w != null) {
+                ArtifactGraphNode node = (ArtifactGraphNode)findObject(w);
+                if (node != null) {
+                    setSelectedObjects(Collections.singleton(node));
+                    return;
+                }
+                w = w.getParentWidget();
             }
         }
     }
@@ -201,8 +222,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         public void selectionChanged(ObjectSceneEvent state,
                                      Set<Object> oldSet,
                                      Set<Object> newSet) {
-
-
         }
 
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
