@@ -286,33 +286,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     // innerclasses ............................................................
 
-    private static class EmptyModel implements NodeModel {
-        public EmptyModel () {
-        }
-        
-        public String getDisplayName (Object node) throws UnknownTypeException {
-            if (node == TreeModel.ROOT) {
-                return "Name"; // TODO: Localized ???
-            }
-            throw new UnknownTypeException (node);
-        }
-        
-        public String getIconBase (Object node) throws UnknownTypeException {
-            if (node == TreeModel.ROOT) {
-                return "org/netbeans/modules/debugger/resources/DebuggerTab";
-            }
-            throw new UnknownTypeException (node);
-        }
-        
-        public String getShortDescription (Object node) 
-        throws UnknownTypeException {
-            throw new UnknownTypeException (node);
-        }
-        
-        public void addModelListener (ModelListener l) {}
-        public void removeModelListener (ModelListener l) {}
-    }
-    
     private class ModelsChangeRefresher implements PropertyChangeListener, Runnable {
         
         private RequestProcessor.Task task;
