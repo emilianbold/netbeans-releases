@@ -36,64 +36,39 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.rubyproject;
 
-package org.netbeans.modules.ruby.testrunner;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.openide.util.NbPreferences;
 
 /**
- * Utility methods for <code>TestRunner</code> implementations.
+ * Testing settings for Ruby IDE.
  *
  * @author Erno Mononen
  */
-final class TestRunnerUtilities {
-    
-    private TestRunnerUtilities() {
+public final class RubyTestingSettings {
+
+    private static final RubyTestingSettings INSTANCE = new RubyTestingSettings();
+
+    private RubyTestingSettings() {
     }
 
-    /**
-     * Checks whether the given task should be run using the UI test runner.
-     * 
-     * @param project
-     * @param property
-     * @param task
-     * @param taskEvaluator
-     * @return true if the given task should be run using the UI test runner;
-     * false otherwise.
-     */
-    static boolean useTestRunner(Project project, String property, RakeTask task, DefaultTaskEvaluator taskEvaluator) {
-        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
-        if (evaluator == null || evaluator.getProperty(property) == null) {
-            return taskEvaluator.isDefault(task);
-        }
-        String definedTasks = evaluator.getProperty(property);
-        if ("".equals(definedTasks.trim())) {
-            return false;
-        }
-        for (String each : definedTasks.split(",")) { //NOI18N
-            if (task.getTask().equals(each.trim())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-
-    static void addProperties(RubyExecutionDescriptor descriptor, Project project) {
-        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
-        if (evaluator != null) {
-            descriptor.addInitialArgs(evaluator.getProperty(SharedRubyProjectProperties.RUBY_OPTIONS));
-            descriptor.setEncoding(evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING));
-        }
+    public static RubyTestingSettings getDefault() {
+        return INSTANCE;
     }
 
-    interface DefaultTaskEvaluator {
-        
-        boolean isDefault(RakeTask task);
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(RubyTestingSettings.class);
     }
-    
+
+    void setUseRunner(boolean useRunner, TestType type) {
+        getPreferences().putBoolean(type.name(), useRunner);
+    }
+
+    public boolean useRunner(TestType type) {
+        return getPreferences().getBoolean(type.name(), true);
+    }
+
+
 }

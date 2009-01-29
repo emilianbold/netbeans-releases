@@ -217,8 +217,11 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="RubyOptionsDialog">
-        <file name="org-netbeans-modules-ruby-rubyproject-RubyLoggingOption.instance">
+        <file name="org-netbeans-modules-ruby-rubyproject-RubyTestingOption.instance">
             <attr name="position" intvalue="200"/>
+        </file>
+        <file name="org-netbeans-modules-ruby-rubyproject-RubyLoggingOption.instance">
+            <attr name="position" intvalue="300"/>
         </file>
     </folder>
     
