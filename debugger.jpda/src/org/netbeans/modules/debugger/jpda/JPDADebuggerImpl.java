@@ -280,6 +280,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current stack frame or null
      */
     public CallStackFrame getCurrentCallStackFrame () {
+        CallStackFrame csf = null;
+        JPDAThread t = null;
         synchronized (currentThreadAndFrameLock) {
             if (currentCallStackFrame != null) {
                 try {
@@ -289,14 +291,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (InvalidStackFrameException isfex) {
                     currentCallStackFrame = null;
                 }
+                csf = currentCallStackFrame;
             }
             if (currentCallStackFrame == null && currentThread != null) {
-                try {
-                    currentCallStackFrame = currentThread.getCallStack(0, 1)[0];
-                } catch (Exception ex) {}
+                t = currentThread;
             }
-            return currentCallStackFrame;
         }
+        if (csf == null && t != null) {
+            t.getReadAccessLock().lock();
+            try {
+                if (t.isSuspended()) {
+                    // Must not call this under currentThreadAndFrameLock, other lock acquired.
+                    csf = t.getCallStack(0, 1)[0];
+                    synchronized (currentThreadAndFrameLock) {
+                        currentCallStackFrame = csf;
+                    }
+                }
+            } catch (Exception ex) {
+            } finally {
+                t.getReadAccessLock().unlock();
+            }
+        }
+        return csf;
     }
 
     /**
