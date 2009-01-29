@@ -169,7 +169,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(cs, getUserIncludeFlag());
-        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor) + " ");
+        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
             options.append(master.getIncludeDirectories().toString(visitor));
