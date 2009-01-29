@@ -34,7 +34,7 @@ import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfi
  */
 public final class DLightCPUToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-  private static final boolean USE_DTRACE = Boolean.getBoolean("gizmo.cpu.dtrace");
+  private static final boolean USE_DTRACE = !Boolean.getBoolean("gizmo.cpu.sunstudio");
 
   public DLightToolConfiguration create() {
     final String toolName = "CPU Monitor";

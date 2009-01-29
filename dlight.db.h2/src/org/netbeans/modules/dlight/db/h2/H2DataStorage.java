@@ -87,14 +87,14 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     supportedStorageTypes.addAll(super.getStorageTypes());
   }
 
-  public H2DataStorage() {
+  H2DataStorage() {
     this(url +  (dbIndex++));
   }
 
 
 
   private H2DataStorage(String url) {
-    super(url );
+    super(url);
     try {
       initStorageTypes();
       initTables();

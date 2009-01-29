@@ -45,7 +45,7 @@ package org.netbeans.modules.dlight.api.execution;
 public interface DLightTargetListener {
 
   /**
-   * Invoked when target state is changed
+   * Invoked when target state is changed 
    * @param source target state is changed
    * @param oldState old state
    * @param newState new state
