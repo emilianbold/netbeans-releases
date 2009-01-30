@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.actions.scm.ui.CheckoutUI;
@@ -78,7 +79,8 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
         this.lookup = lkp;
         putValue(NAME, NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
         //TODO proper icon
-        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png", true)));
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/scm/update.png", true))); //NOI18N
+        putValue("iconBase", "org/netbeans/modules/maven/actions/scm/update.png"); //NOI18N
         result = lookup.lookupResult(MavenProject.class);
         setEnabled(getScm() != null);
         result.addLookupListener(this);
@@ -138,6 +140,10 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
     }
 
     public void resultChanged(LookupEvent ev) {
-        setEnabled(getScm() != null);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setEnabled(getScm() != null);
+            }
+        });
     }
 }

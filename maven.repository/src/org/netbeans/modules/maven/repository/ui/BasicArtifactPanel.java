@@ -50,12 +50,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
@@ -67,6 +70,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -80,6 +84,7 @@ import org.openide.windows.TopComponent;
 public class BasicArtifactPanel extends TopComponent implements MultiViewElement {
     
     private MultiViewElementCallback callback;
+    private JToolBar toolbar;
 
     /** Creates new form BasicArtifactPanel */
     public BasicArtifactPanel(Lookup lookup) {
@@ -420,7 +425,18 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     }
 
     public JComponent getToolbarRepresentation() {
-        return new JPanel();
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            Action[] a = new Action[1];
+            Action[] actions = getLookup().lookup(a.getClass());
+            for (Action act : actions) {
+                JButton btn = new JButton();
+                Actions.connect(btn, act);
+                toolbar.add(btn);
+            }
+        }
+        return toolbar;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {

@@ -62,6 +62,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
+import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -123,6 +124,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         });
 
         Action[] toolbarActions = new Action[] {
+            new AddAsDependencyAction(fArt),
             CommonArtifactActions.createScmCheckoutAction(lookup)
         };
         ic.add(toolbarActions);

@@ -181,7 +181,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             @Override
             public Image getIcon(int arg0) {
-                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.gif"); //NOI18N
             }
 
             @Override

@@ -47,9 +47,10 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.model.CiManagement;
@@ -61,6 +62,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -76,6 +78,7 @@ import org.openide.windows.TopComponent;
 public class ProjectInfoPanel extends TopComponent implements MultiViewElement, LookupListener {
     private MultiViewElementCallback callback;
     private Lookup.Result<MavenProject> result;
+    private JToolBar toolbar;
 
     /** Creates new form ProjectInfoPanel */
     public ProjectInfoPanel(Lookup lookup) {
@@ -393,7 +396,18 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     }
 
     public JComponent getToolbarRepresentation() {
-        return new JPanel();
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            Action[] a = new Action[1];
+            Action[] actions = getLookup().lookup(a.getClass());
+            for (Action act : actions) {
+                JButton btn = new JButton();
+                Actions.connect(btn, act);
+                toolbar.add(btn);
+            }
+        }
+        return toolbar;
     }
 
 

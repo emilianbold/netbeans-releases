@@ -41,15 +41,19 @@ package org.netbeans.modules.maven.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Iterator;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -59,6 +63,7 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.awt.Actions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -80,6 +85,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private DependencyGraphScene scene;
     private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
+    private boolean isMultiview = false;
     
     
     private Timer timer = new Timer(500, new ActionListener() {
@@ -87,6 +93,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             checkFindValue();
         }
     });
+    private JToolBar toolbar;
     
     /** Creates new form ModulesGraphTopComponent */
     public DependencyGraphTopComponent(Lookup lookup) {
@@ -189,6 +196,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
         btnBigger = new javax.swing.JButton();
         btnSmaller = new javax.swing.JButton();
         lblFind = new javax.swing.JLabel();
@@ -199,40 +207,53 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
         btnBigger.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif", true)));
+        btnBigger.setFocusable(false);
+        btnBigger.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnBigger.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnBigger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBiggerActionPerformed(evt);
             }
         });
-        jPanel1.add(btnBigger);
+        jToolBar1.add(btnBigger);
 
         btnSmaller.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif", true)));
+        btnSmaller.setFocusable(false);
+        btnSmaller.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSmaller.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnSmaller.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSmallerActionPerformed(evt);
             }
         });
-        jPanel1.add(btnSmaller);
+        jToolBar1.add(btnSmaller);
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblFind.text")); // NOI18N
-        jPanel1.add(lblFind);
+        jToolBar1.add(lblFind);
 
-        txtFind.setMinimumSize(new java.awt.Dimension(100, 19));
+        txtFind.setMaximumSize(new java.awt.Dimension(200, 19));
+        txtFind.setMinimumSize(new java.awt.Dimension(50, 19));
         txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
-        jPanel1.add(txtFind);
+        jToolBar1.add(txtFind);
 
         sldDepth.setMajorTickSpacing(1);
         sldDepth.setMaximum(5);
         sldDepth.setPaintLabels(true);
         sldDepth.setSnapToTicks(true);
         sldDepth.setValue(0);
+        sldDepth.setPreferredSize(new java.awt.Dimension(150, 25));
         sldDepth.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 sldDepthStateChanged(evt);
             }
         });
-        jPanel1.add(sldDepth);
+        jToolBar1.add(sldDepth);
+
+        jPanel1.add(jToolBar1);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -294,6 +315,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private javax.swing.JButton btnBigger;
     private javax.swing.JButton btnSmaller;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JLabel lblFind;
     private javax.swing.JSlider sldDepth;
     private javax.swing.JTextField txtFind;
@@ -340,11 +362,31 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }
 
     public JComponent getVisualRepresentation() {
+        isMultiview = true;
+        jPanel1.removeAll();
+        jToolBar1.removeAll();
         return this;
     }
 
     public JComponent getToolbarRepresentation() {
-        return new JPanel();
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            Action[] a = new Action[1];
+            Action[] actions = getLookup().lookup(a.getClass());
+            for (Action act : actions) {
+                JButton btn = new JButton();
+                Actions.connect(btn, act);
+                toolbar.add(btn);
+                toolbar.add(btnBigger);
+                toolbar.add(btnSmaller);
+                toolbar.add(lblFind);
+                toolbar.add(txtFind);
+                toolbar.add(sldDepth);
+            }
+        }
+        return toolbar;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {

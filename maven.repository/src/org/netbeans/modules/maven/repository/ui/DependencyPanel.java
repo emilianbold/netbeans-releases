@@ -46,13 +46,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
@@ -60,6 +63,7 @@ import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.awt.Actions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -81,6 +85,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         dirIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/DependencyIcon.png", true));
         trIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/TransitiveDependencyIcon.png", true));
     }
+    private JToolBar toolbar;
 
     DependencyPanel(Lookup lookup) {
         super(lookup);
@@ -176,7 +181,18 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     }
 
     public JComponent getToolbarRepresentation() {
-        return new JPanel();
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            Action[] a = new Action[1];
+            Action[] actions = getLookup().lookup(a.getClass());
+            for (Action act : actions) {
+                JButton btn = new JButton();
+                Actions.connect(btn, act);
+                toolbar.add(btn);
+            }
+        }
+        return toolbar;
     }
 
 
