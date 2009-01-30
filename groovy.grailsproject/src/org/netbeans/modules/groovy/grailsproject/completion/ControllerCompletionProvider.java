@@ -83,7 +83,7 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
         METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.Map", "java.lang.String"}), "void"); // NOI18N
         METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.lang.String"}), "void"); // NOI18N
 
-        METHODS.put(new MethodSignature("withFormat", new String[] {"groovy.lang.Closure"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("withFormat", new String[] {"groovy.lang.Closure"}), "java.lang.Object"); // NOI18N
 
         FIELDS.put(new FieldSignature("actionName"), "java.lang.String"); // NOI18N
         METHODS.put(new MethodSignature("getActionName", noParams), "java.lang.String"); // NOI18N

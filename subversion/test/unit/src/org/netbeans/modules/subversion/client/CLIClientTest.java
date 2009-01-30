@@ -61,10 +61,10 @@ public class CLIClientTest extends NbTestCase {
         SvnClientTestFactory.setClientType("commandline");
         SvnClientTestFactory.reset();
         
-        suite.addTestSuite(AddTest.class);                
+        suite.addTestSuite(AddTest.class);
         suite.addTestSuite(AvailabilityTest.class);
         suite.addTestSuite(BlameTest.class);
-        suite.addTestSuite(CancelTest.class);
+//        suite.addTestSuite(CancelTest.class);
         suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
         suite.addTestSuite(CommitTest.class);

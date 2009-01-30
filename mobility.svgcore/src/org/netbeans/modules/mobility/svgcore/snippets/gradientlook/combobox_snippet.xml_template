@@ -28,7 +28,7 @@
                     </g>
                     <!-- Metadata information. Please don't edit. -->
                     <text display="none">type=button</text>
-                    <rect id="%%COMPONENT_ID%%_button" transform="matrix(1.0,0.0,0.0,0.89200264,0.0,1.2104801)"    x="65.4" id="_4" rx="4"  ry="4" y="0.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">
+                    <rect id="%%COMPONENT_ID%%_button" transform="matrix(1.0,0.0,0.0,0.89200264,0.0,1.2104801)"    x="65.4"  rx="4"  ry="4" y="0.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">
                         <animate id="%%COMPONENT_ID%%_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
                         <animate id="%%COMPONENT_ID%%_button_released" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="black"/>
                         </rect>
