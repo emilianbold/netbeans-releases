@@ -66,6 +66,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -78,6 +79,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     // TODO: if needed these parameters can be configurable via constructor parameter:
     private static final String BUILD_DIR = "build.dir"; // NOI18N
+    private static final String BUILD_GENERATED_DIR = "build.generated.dir"; // NOI18N
 
     private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
@@ -89,6 +91,19 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private FileChangeListener fcl = null;      
     private PropertyEvaluator evaluator;
     private boolean canHaveWebServices;
+    private File buildGeneratedDir = null;
+    private final FileChangeListener buildGeneratedDirListener = new FileChangeAdapter() {
+        public @Override void fileFolderCreated(FileEvent fe) {
+            // XXX could do this asynch like SourceRootScannerTask, but would need to do synch during unit test
+            invalidate();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            invalidate();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            invalidate();
+        }
+    };
     
     /**
      * Construct the implementation.
@@ -245,6 +260,25 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                         // Listen for any new Source root creation.
                         createListener(buildDir,
                                 new String[] {DIR_GEN_BINDINGS});
+                    }
+                    String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
+                    if (buildGeneratedDirS != null) {
+                        File _buildGeneratedDir = projectHelper.resolveFile(buildGeneratedDirS);
+                        if (!_buildGeneratedDir.equals(buildGeneratedDir)) {
+                            if (buildGeneratedDir != null) {
+                                FileUtil.removeFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+                            }
+                            buildGeneratedDir = _buildGeneratedDir;
+                            FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+                        }
+                        if (buildGeneratedDir.isDirectory()) { // #105645
+                            for (File root : buildGeneratedDir.listFiles()) {
+                                if (!root.isDirectory()) {
+                                    continue;
+                                }
+                                result.add(ClassPathSupport.createResource(root.toURI().toURL()));
+                            }
+                        }
                     }
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
