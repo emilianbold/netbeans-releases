@@ -516,12 +516,36 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (tmpTargets == null || tmpTargets.size() < 1) {
             Target[] targs = null;
             StartServer startServer = getStartServer();
+            // TODO revert the Glassfish /w profiler related workaround 
+            // once profiling uses the same startup sequence as debugging eg.
             try {
                 if (! isRunning() && startServer != null && startServer.needsStartForTargetList()) {
-                    start();
+                    // GF workaround
+                    // the guard condition introduced
+                    // *** original line
+                    // start();
+                    // ***
+                    if (ProfilerSupport.getState() == ProfilerSupport.STATE_INACTIVE) {
+                        start();
+                    }
+                    // end of GF workaround
                 }
-                
-                targs = getDeploymentManager().getTargets();
+                // GF workaround
+                // a dealy loop introduced
+                // *** original line
+                // targs = getDeploymentManager().getTargets();
+                // ***
+                do {
+                    targs = getDeploymentManager().getTargets();
+                    if (targs == null && ProfilerSupport.getState() == ProfilerSupport.STATE_PROFILING) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                } while (targs == null && ProfilerSupport.getState() == ProfilerSupport.STATE_PROFILING);
+                // end of GF workaround
             } catch(IllegalStateException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1402,21 +1426,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
         synchronized (this) {
             profilerSettings = settings;
             managerStartedByIde = true;
-            coTarget = null;
-            targets = null;
-            /** the following loop is a workaround
-                GF startup can be screwed up really badly if we don't wait
-                till the server is known to be running before
-                attempting do anything with targets ...
-             */
-            while(!isRunning()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-            initCoTarget();
+//            coTarget = null;
+//            targets = null;
+//            initCoTarget();
         }
     }
     
