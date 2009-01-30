@@ -12,12 +12,27 @@
                     mode="project-wizard"
                 />
             </xsl:element>
+            <xsl:if test="//*/folder[@name='Services']/folder[@name='MIMEResolver']/*">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Services</xsl:attribute>
+                    <xsl:element name="folder">
+                        <xsl:attribute name="name">MIMEResolver</xsl:attribute>
+                        <xsl:apply-templates
+                            select="//*/folder[@name='Services']/folder[@name='MIMEResolver']/*"
+                            mode="project-wizard"
+                        />
+                    </xsl:element>
+                </xsl:element>
+            </xsl:if>
         </xsl:element>
     </xsl:template>
 
     <xsl:template match="file" mode="project-wizard">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:if test="@url">
+                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+            </xsl:if>
             <xsl:apply-templates mode="project-wizard"/>
         </xsl:element>
     </xsl:template>
