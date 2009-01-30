@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,26 +78,7 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
     public void actionPerformed(ActionEvent e) {
         final Project project = (Project) getValue("prj"); //NOI18N
         if (project != null) {
-            final InstanceContent ic = new InstanceContent();
-            ic.add(project);
-            Lookup lkp = new AbstractLookup(ic);
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-                    DependencyNode root = DependencyTreeFactory.createDependencyTree(prj.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
-                    ic.add(prj.getMavenProject());
-                    ic.add(root);
-                }
-            });
-            TopComponent tc = new DependencyGraphTopComponent(lkp);
-            ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-            tc.setName("DependencyGraph" + info.getName()); //NOI18N
-            tc.setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class,
-                "TIT_DepGraphTC", info.getDisplayName()));
-
-            WindowManager.getDefault().findMode("editor").dockInto(tc); //NOI18N
-            tc.open();
-            tc.requestActive();
+            ArtifactViewer.showArtifactViewer(project, ArtifactViewer.HINT_GRAPH);
         }
     }
     
