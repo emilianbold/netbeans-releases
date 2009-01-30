@@ -44,6 +44,7 @@ package org.netbeans.core.windows;
 import java.awt.Dimension;
 import javax.swing.JSplitPane;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.windows.TopComponent;
 
 /**
  * Constants in window system.
@@ -121,7 +122,7 @@ public abstract class Constants {
      * 
      * @since 6.22
      */
-    public static final String KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"; //NOI18N
+    public static final String KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN;
     
     /**
      * Name of TopComponent's Boolean client property which instructs the window system to activate
