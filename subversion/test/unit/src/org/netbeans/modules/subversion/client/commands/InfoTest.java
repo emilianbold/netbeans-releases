@@ -57,19 +57,21 @@ public class InfoTest extends AbstractCommandTest {
     }
 
     @Override
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         if(getName().equals("testInfoNullAuthor")) {
             setAnnonWriteAccess();
-            String[] cmd = new String[]{"svnserve", "-d"};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
-        }                        
-        super.setUp();
+            runSvnServer();
+        }
+        try {
+            super.setUp();
+        } catch (Exception e) {
+            stopSvnServer();
+        }
     }
     
     @Override
     protected void tearDown() throws Exception {
-        if(getName().startsWith("testInfoLocked")) { 
+        if(getName().startsWith("testInfoLocked")) {
             try {
                 unlock(createFile("lockfile"), "unlock", true);
             } catch (Exception e) {
@@ -89,33 +91,33 @@ public class InfoTest extends AbstractCommandTest {
         return super.getRepoURLProtocol();
     }    
         
-    public void testInfoWrongUrl() throws Exception {                                
+    public void testInfoWrongUrl() throws Exception {
         ISVNClientAdapter c = getNbClient();
-        
-        SVNClientException e1 = null;        
+
+        SVNClientException e1 = null;
         try {
             c.getInfo(getRepoUrl().appendPath("bancha"));
         } catch (SVNClientException ex) {
             e1 = ex;
         }
-        SVNClientException e2 = null;        
+        SVNClientException e2 = null;
         try {
             getInfo(getRepoUrl().appendPath("bancha"));
         } catch (SVNClientException ex) {
             e2 = ex;
         }
-                        
+
         assertNotNull(e1);
         assertNotNull(e2);
         assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
-    }    
+    }
 
-    public void testInfoNotManaged() throws Exception {                                
+    public void testInfoNotManaged() throws Exception {
         File folder = createFolder("folder");
-        File file = createFile(folder, "file");                
+        File file = createFile(folder, "file");
         notManaged(folder);
         notManaged(file);
-    }  
+    }
   
 //    XXX fails but we use the implemenation since ever, doesn't seem to be a problem    
 //    public void testInfoUnversioned() throws Exception {                                
@@ -146,7 +148,7 @@ public class InfoTest extends AbstractCommandTest {
         
         ISVNClientAdapter c = getNbClient();
 
-        ISVNInfo info1 = c.getInfo(getRepoUrl());        
+        ISVNInfo info1 = c.getInfo(getRepoUrl());
         ISVNInfo info2 = getInfo(getRepoUrl());
         
         assertInfos(info1, info2);
@@ -215,15 +217,15 @@ public class InfoTest extends AbstractCommandTest {
         assertInfos(info1, info2);
     }        
     
-    public void testInfoNullAuthor() throws Exception {                                        
+    public void testInfoNullAuthor() throws Exception {
         File file = createFile("file");
         add(file);
         commit(file);
-               
+
         ISVNClientAdapter c = getNbClient();
-       
-        ISVNInfo info = c.getInfo(getFileUrl(file));                
-        assertNull(info.getLastCommitAuthor());        
+
+        ISVNInfo info = c.getInfo(getFileUrl(file));
+        assertNull(info.getLastCommitAuthor());
     }
 
     private void notManaged(File file) throws Exception {

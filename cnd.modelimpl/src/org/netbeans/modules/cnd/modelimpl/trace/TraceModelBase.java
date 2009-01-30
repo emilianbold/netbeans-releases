@@ -229,7 +229,9 @@ public class TraceModelBase {
                 throw new IllegalArgumentException(ioe);
             }
         } else {
-            np = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
+            String projectRoot = files.isEmpty() ? File.separator
+                    : files.get(0).getParentFile().getAbsolutePath();
+            np = NativeProjectProvider.createProject(projectRoot, files,
                     getSystemIncludes(), quoteIncludePaths, getSysMacros(),
                     macros, pathsRelCurFile);
         }

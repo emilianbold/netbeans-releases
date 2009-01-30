@@ -161,9 +161,9 @@ public class StatusTest extends AbstractCommandTest {
         status(uptodate,            false,   false, false,          true            , 0);               
         status(deleted,             false,   true,  false,          true            , 1);               
         status(deleted,             false,   false, false,          true            , 1);               
-        status(ignoredFile,         false,   false, false,          true            , 1);               
-        status(ignoredFolder,       false,   false, false,          true            , 1);               
-        status(fileInIgnoredFolder, false,   false, false,          true            , 1);               
+        status(ignoredFile,         false,   false, false,          true            , 0);
+        status(ignoredFolder,       false,   false, false,          true            , 0);
+        status(fileInIgnoredFolder, false,   false, false,          true            , 0);
   
     }        
     
@@ -290,7 +290,7 @@ public class StatusTest extends AbstractCommandTest {
                 throw e;
             }
         }
-        setProperty(externals, "svn:externals", "e1/e2\t" + getRepo2Url().appendPath("e1").appendPath("e2").toString());               
+        setProperty(externals, "svn:externals", "e1/e2\t" + getRepo2Url().appendPath("e1").appendPath("e2").toString().replaceAll(" ", "%20"));
         
         commit(externals);
         update(externals);        

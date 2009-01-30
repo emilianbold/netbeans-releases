@@ -2280,6 +2280,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         public boolean isExcluded() {
             return false;
         }
+
+        @Override
+        public String toString() {
+            return absolutePath;
+        }
     }
 
     /**
