@@ -49,8 +49,11 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -74,12 +77,12 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                     (InstaceRenameRefactoring) refactoring );
         }*/
 
-        /*if ( refactoring instanceof RenameRefactoring &&
+        if ( refactoring instanceof RenameRefactoring &&
                 refactoring.getContext().lookup( 
                 InstaceRenameRefactoring.RefactoringInfo.class )!= null )
         {
             return new GuardedBlockHandlerImpl( refactoring );
-        }*/
+        }
         return null;
     }
 
@@ -98,16 +101,63 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                     TreePathHandle.class );
             boolean flag = ( handle!= null ) && handle.getFileObject()!=null
                     && handle.getFileObject().equals( changedFileObject );
-            if ( flag && proposedChange.getStatus() ==
-                    RefactoringElementImplementation.GUARDED)
+            if ( flag )
             {
-                proposedChange.setStatus(RefactoringElementImplementation.NORMAL);
-                proposedChange.setEnabled( false );
+                //proposedChange.setStatus(RefactoringElementImplementation.NORMAL);
+                //proposedChange.setEnabled( false );
+                proposedChange =
+                        new GuardedElementImplementation(proposedChange);
             }
             replacements.add(proposedChange);
             return null;
         }
 
         private AbstractRefactoring myRefactoring;
+    }
+
+    private static class GuardedElementImplementation
+            extends SimpleRefactoringElementImplementation
+    {
+
+        GuardedElementImplementation(RefactoringElementImplementation delegate){
+            myDelegate = delegate;
+        }
+
+        public String getText() {
+            return myDelegate.getText();
+        }
+
+        public String getDisplayText() {
+            return myDelegate.getDisplayText();
+        }
+
+        public void performChange() {
+            // do nothing
+        }
+
+        public Lookup getLookup() {
+            return myDelegate.getLookup();
+        }
+
+        public FileObject getParentFile() {
+            return myDelegate.getParentFile();
+        }
+
+        public PositionBounds getPosition() {
+            return myDelegate.getPosition();
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void undoChange() {
+            // do nothing
+        }
+
+        private RefactoringElementImplementation myDelegate;
+        
     }
 }
