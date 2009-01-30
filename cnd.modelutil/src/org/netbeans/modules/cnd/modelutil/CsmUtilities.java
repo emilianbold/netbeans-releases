@@ -158,14 +158,25 @@ public class CsmUtilities {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
         } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
             CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
-            if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember) fun.getDeclaration());
+            CsmFunction decl = fun.getDeclaration();
+            if (CsmKindUtilities.isClassMember(decl)) {
+                mod |= CsmUtilities.getMemberModifiers((CsmMember) decl);
+            } else {
+                if (decl == null) {
+                    decl = fun;
+                }
+                if (CsmKindUtilities.isGlobalFunction(obj)) {
+                    mod |= GLOBAL;
+                }
+                if (CsmKindUtilities.isFileLocalFunction(decl)){
+                    mod |= FILE_LOCAL;
+                }
             }
         } else {
-            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalVariable(obj)) {
+            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalFunction(obj)) {
                 mod |= GLOBAL;
             }
-            if (CsmKindUtilities.isFileLocalVariable(obj)) {
+            if (CsmKindUtilities.isFileLocalVariable(obj) || CsmKindUtilities.isFileLocalFunction(obj)) {
                 mod |= FILE_LOCAL;
             }
             if (CsmKindUtilities.isEnumerator(obj)) {

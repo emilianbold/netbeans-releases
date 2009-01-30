@@ -523,13 +523,12 @@ public class GeneratorUtils {
     };
     
     private static TypeKind getTypeKind(CsmType type) {
-        if (CsmKindUtilities.isBuiltIn(type)) {
-            String text = type.getClassifierText().toString();
-            if ("void".equals(text)) { // NOI18N
-                return TypeKind.VOID;
-            } else if ("bool".equals(text) || "boolean".equals(text)) { // NOI18N
-                return TypeKind.BOOLEAN;
-            }
+        CharSequence text = type.getClassifierText();
+        if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
+            return TypeKind.VOID;
+        } else if (CharSequenceKey.Comparator.compare("bool", text) == 0 || // NOI18N
+                CharSequenceKey.Comparator.compare("boolean", text) == 0) { // NOI18N
+            return TypeKind.BOOLEAN;
         }
         return TypeKind.UNKNOWN;
     }

@@ -36,53 +36,14 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.io.Reader;
-import java.io.Writer;
-import javax.swing.Action;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.openide.windows.InputOutput;
+package org.netbeans.modules.cnd.support;
 
-public abstract class NativeTaskAccessor {
-
-    private static volatile NativeTaskAccessor DEFAULT;
-
-    public static void setDefault(NativeTaskAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "NativeTaskInfoAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
-    }
-
-    public static synchronized NativeTaskAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(NativeTask.class.getName(), true,
-                    NativeTask.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
-    }
-
-    public abstract NativeExecutor getExecutor(NativeTask task);
-
-    public abstract Writer getRedirectionErrorWriter(NativeTask task);
-
-    public abstract InputOutput getRedirectionIO(NativeTask task);
-
-    public abstract Reader getRedirectionInputReader(NativeTask task);
-
-    public abstract Writer getRedirectionOutputWriter(NativeTask task);
-
-    public abstract Action[] getTaskControlActions(NativeTask task);
-    
-    public abstract void resetTask(NativeTask task);
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public interface ReadOnlySupport {
+    boolean isReadOnly();
+    void setReadOnly(boolean readOnly);
 }

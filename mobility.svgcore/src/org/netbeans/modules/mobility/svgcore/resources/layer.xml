@@ -221,10 +221,17 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="195"/>
                     </file>
                     
-                    <file name="ActionLandscapeMode.instance">
+                    <file name="ActionRotateLeft.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
-                        <attr name="actionId" stringvalue="svg_landscape_mode"/>
+                        <attr name="actionId" stringvalue="svg_rotate_l_mode"/>
+                        <attr name="position" intvalue="197"/>
+                    </file>
+
+                    <file name="ActionRotateRight.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
+                        <attr name="actionId" stringvalue="svg_rotate_r_mode"/>
                         <attr name="position" intvalue="198"/>
                     </file>
 
@@ -536,7 +543,7 @@ made subject to such option by the copyright holder.
             <file name="Image.svg" url="nbres:/org/netbeans/modules/mobility/svgcore/SVGFileTemplate.svg">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-		<attr name="position" intvalue="250"/>
+                <attr name="position" intvalue="250"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/svgcore/SVGTemplateHelp.html"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
