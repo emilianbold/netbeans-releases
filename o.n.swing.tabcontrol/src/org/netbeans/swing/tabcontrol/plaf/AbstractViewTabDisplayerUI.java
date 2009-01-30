@@ -158,14 +158,25 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     void showHidePinButton() {
         Component tabComponent = null;
+        boolean tcSlidingEnabled = true;
+        boolean tcClosingEnabled = true;
         int selIndex = Math.max( 0, displayer.getSelectionModel().getSelectedIndex() );
         if( selIndex >= 0 && selIndex < displayer.getModel().size() ) {
             TabData tab = displayer.getModel().getTab( selIndex );
             tabComponent = tab.getComponent();
+            if( tabComponent instanceof TopComponent ) {
+                tcSlidingEnabled = displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled( (TopComponent)tabComponent );
+                tcClosingEnabled = displayer.getContainerWinsysInfo().isTopComponentClosingEnabled( (TopComponent)tabComponent );
+            }
         }
         btnAutoHidePin.setVisible( tabComponent != null 
                 && !TabDisplayer.ORIENTATION_INVISIBLE.equals( displayer.getContainerWinsysInfo().getOrientation( tabComponent ) )
-                && displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled() );
+                && displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled()
+                && tcSlidingEnabled );
+
+        if( null != btnClose ) {
+            btnClose.setVisible(tabComponent != null && tcClosingEnabled);
+        }
     }
     
     protected void installControlButtons() {
@@ -608,6 +619,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
         public void stateChanged (ChangeEvent ce) {
             displayer.repaint();
+            showHidePinButton();
         }
 
         public void propertyChange (PropertyChangeEvent pce) {
