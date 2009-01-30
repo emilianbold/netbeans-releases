@@ -45,6 +45,7 @@ import java.util.Collection;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -60,16 +61,31 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
 
     
     public GuardedBlockHandler createInstance(AbstractRefactoring refactoring) {
-        if ( refactoring instanceof InstaceRenameRefactoring ){
+        /*
+         * It is unknown for me why custom refactoring InstaceRenameRefactoring
+         * is not passed here as argument ( never I mean ).
+         * Instead of InstaceRenameRefactoring refactoring engine
+         * passes here delegate refactoring instances . In my case
+         * this is two RenameRefactoring ( if accessor is also refactored ).
+         * So I changed code to support RenameRefactoring with special Context.
+         
+         if ( refactoring instanceof InstaceRenameRefactoring ){
             return new GuardedBlockHandlerImpl(
                     (InstaceRenameRefactoring) refactoring );
-        }
+        }*/
+
+        /*if ( refactoring instanceof RenameRefactoring &&
+                refactoring.getContext().lookup( 
+                InstaceRenameRefactoring.RefactoringInfo.class )!= null )
+        {
+            return new GuardedBlockHandlerImpl( refactoring );
+        }*/
         return null;
     }
 
     private static class GuardedBlockHandlerImpl implements GuardedBlockHandler {
 
-        GuardedBlockHandlerImpl(InstaceRenameRefactoring refactoring) {
+        GuardedBlockHandlerImpl(AbstractRefactoring refactoring) {
             myRefactoring = refactoring;
         }
 
@@ -78,7 +94,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                 Collection<Transaction> transaction)
         {
             FileObject changedFileObject = proposedChange.getParentFile();
-            TreePathHandle handle = myRefactoring.getContext().lookup( 
+            TreePathHandle handle = myRefactoring.getRefactoringSource().lookup(
                     TreePathHandle.class );
             boolean flag = ( handle!= null ) && handle.getFileObject()!=null
                     && handle.getFileObject().equals( changedFileObject );
@@ -86,12 +102,12 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                     RefactoringElementImplementation.GUARDED)
             {
                 proposedChange.setStatus(RefactoringElementImplementation.NORMAL);
-                
+                proposedChange.setEnabled( false );
             }
             replacements.add(proposedChange);
             return null;
         }
 
-        private InstaceRenameRefactoring myRefactoring;
+        private AbstractRefactoring myRefactoring;
     }
 }
