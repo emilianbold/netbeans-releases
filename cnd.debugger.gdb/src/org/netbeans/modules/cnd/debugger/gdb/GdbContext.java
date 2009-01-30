@@ -44,8 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 
 /**
@@ -62,6 +60,7 @@ public class GdbContext implements PropertyChangeListener {
     private static final int SYNC_UPDATE_TIMEOUT=30000;
     
     public static final String PROP_REGISTERS = "Registers"; // NOI18N
+    public static final String PROP_STEP = "Step"; // NOI18N
     
     private GdbContext() {
         requests.put(PROP_REGISTERS, new Request() {
@@ -94,6 +93,7 @@ public class GdbContext implements PropertyChangeListener {
                 entry.getValue().run(/*true*/);
             }
         }
+        pcs.firePropertyChange(PROP_STEP, 0, 1);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -139,7 +139,10 @@ public class GdbContext implements PropertyChangeListener {
         pcs.addPropertyChangeListener(propertyName, listener);
         //request property update if needed
         if (!cache.containsKey(propertyName)) {
-            requests.get(propertyName).run(/*true*/);
+            Request request = requests.get(propertyName);
+            if (request != null) {
+                requests.get(propertyName).run(/*true*/);
+            }
         }
     }
     
@@ -160,11 +163,7 @@ public class GdbContext implements PropertyChangeListener {
     }
     
     public static GdbProxy getCurrentGdb() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return null;
         }
