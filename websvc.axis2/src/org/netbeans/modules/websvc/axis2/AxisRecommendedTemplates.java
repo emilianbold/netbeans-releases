@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,63 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.websvc.axis2;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.websvc.axis2.config.model.Axis2Model;
-import org.netbeans.modules.websvc.axis2.services.model.ServicesModel;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  *
  * @author mkuchtiak
  */
-@ProjectServiceProvider(service=Axis2ModelProvider.class,
+@ProjectServiceProvider(service=RecommendedTemplates.class,
     projectType="org-netbeans-modules-java-j2seproject")
-public class Axis2ModelProvider {
-    
-    public static final String PROP_SERVICES = "services"; //NOI18N
-    public static final String PROP_AXIS2 = "axis2"; //NOI18N
-    private Axis2Model axis2Model;
-    private ServicesModel servicesModel;
-    private PropertyChangeSupport propertyChangeSupport;
-    
-    public Axis2ModelProvider() {
-        propertyChangeSupport = new PropertyChangeSupport(this);
-    }
-    
-    public Axis2Model getAxis2Model() {
-        return axis2Model;
-    }
-
-    public ServicesModel getServicesModel() {
-        return servicesModel;
-    }
-
-    public void setServicesModel(ServicesModel servicesModel) {
-        ServicesModel oldModel = this.servicesModel;      
-        this.servicesModel = servicesModel;
-        propertyChangeSupport.firePropertyChange(PROP_SERVICES, oldModel, servicesModel);
-    }
-    
-    void setAxis2Model(Axis2Model axis2Model) {
-        Axis2Model oldModel = this.axis2Model;      
-        this.axis2Model = axis2Model;
-        propertyChangeSupport.firePropertyChange(PROP_AXIS2, oldModel, axis2Model);
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.addPropertyChangeListener(pcl);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propertyChangeSupport.removePropertyChangeListener(pcl);
+public class AxisRecommendedTemplates implements RecommendedTemplates {
+    public String[] getRecommendedTypes() {
+        return new String[] {"axis"}; // NOI18N
     }
 }
