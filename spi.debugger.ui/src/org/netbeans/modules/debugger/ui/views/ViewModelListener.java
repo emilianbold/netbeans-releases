@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.debugger.ui.views;
 
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 
+import javax.swing.SwingConstants;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -82,6 +85,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private String          viewType;
     private JComponent      view;
+    private JComponent      buttonsPane;
     private List models = new ArrayList(11);
     
     private List treeModels;
@@ -96,6 +100,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List columnModels;
     private List mm;
     private RequestProcessor rp;
+
+    private List<? extends javax.swing.AbstractButton> buttons;
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -105,23 +111,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     ViewModelListener(
         String viewType,
         JComponent view,
+        JComponent buttonsPane,
         String propertiesHelpID
     ) {
         this.viewType = viewType;
         this.view = view;
+        this.buttonsPane = buttonsPane;
         this.propertiesHelpID = propertiesHelpID;
         setUp();
     }
     // </RAVE>
-    
-    ViewModelListener (
-        String viewType,
-        JComponent view
-    ) {
-        this.viewType = viewType;
-        this.view = view;
-        setUp();
-    }
     
     void setUp() {
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
@@ -176,6 +175,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels =          cp.lookup (viewType, ColumnModel.class);
         mm =                    cp.lookup (viewType, Model.class);
         rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
+
+        buttons = cp.lookup(viewType, javax.swing.AbstractButton.class);
         
         ModelsChangeRefresher mcr = new ModelsChangeRefresher();
         Customizer[] modelListCustomizers = new Customizer[] {
@@ -244,6 +245,25 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         if (rp != null) {
             models.add(rp);
+        }
+
+        synchronized (buttons) {
+            buttonsPane.removeAll();
+            if (buttons.size() == 0) {
+                buttonsPane.setVisible(false);
+            } else {
+                buttonsPane.setVisible(true);
+                int i = 0;
+                for (javax.swing.AbstractButton b : buttons) {
+                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                    buttonsPane.add(b, c);
+                    i++;
+                }
+                //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
+                //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
+                GridBagConstraints c = new GridBagConstraints(1, 0, 1, buttons.size() + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
+                buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
+            }
         }
         
         // <RAVE>

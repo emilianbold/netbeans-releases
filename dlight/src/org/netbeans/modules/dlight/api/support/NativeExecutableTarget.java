@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.api.support;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.*;
-import org.netbeans.modules.dlight.execution.api.support.IOTabManagerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,11 +55,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
- * 
+ *
  */
 public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, NativeTaskListener {
 
-    private static final Logger log = DLightLogger.getLogger(NativeExecutableTarget.class);
+    private static final Logger log =
+            DLightLogger.getLogger(NativeExecutableTarget.class);
     private final ExecutionEnvironment execEnv;
     private NativeTask task;
     private String cmd;
@@ -101,7 +101,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 return State.FAILED;
             case RUNNING:
                 return State.RUNNING;
-            case CANCELED:
+            case CANCELLED:
                 return State.TERMINATED;
             case FINISHED:
                 return State.DONE;
@@ -112,28 +112,29 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     @Override
     public String toString() {
-        return "Executable target: " + cmd;
+        return "Executable target: " + cmd; // NOI18N
     }
 
     public void taskStarted(NativeTask task) {
         notifyListeners(State.INIT, State.RUNNING);
     }
 
-    private void targetFinished(Integer result) {
+    private void targetFinished(int result) {
         notifyListeners(State.RUNNING, getState());
     }
 
-    public void taskFinished(NativeTask task, Integer result) {
+    public void taskFinished(NativeTask task, int result) {
         targetFinished(result);
     }
 
     public void taskCancelled(NativeTask task, CancellationException cex) {
-        log.info("NativeTask " + task.toString() + " cancelled!");
+        log.info("NativeTask " + task.toString() + " cancelled!"); // NOI18N
         targetFinished(-1);
     }
 
     public void taskError(NativeTask task, Throwable t) {
-        log.info("NativeTask " + task.toString() + " finished with error! " + t);
+        log.info("NativeTask " + task.toString() + // NOI18N
+                " finished with error! " + t); // NOI18N
         targetFinished(-1);
     }
 
@@ -165,20 +166,21 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     private void start() {
         task = new NativeTask(execEnv, cmd, args);
-        task.setInputOutput(IOTabManagerFactory.getIOTabManager().getIO(task, true));
+        task.setInputOutput(true);
         task.addListener(NativeExecutableTarget.this);
-        task.submit();
+        task.submit(true, false);
     }
 
     private void terminate() {
-        if (task == null || !task.isRunning()) {
+        if (task == null || task.isDone()) {
             return;
         }
 
-        task.cancel();
+        task.cancel(true);
     }
 
-    private static final class NativeExecutableTargetExecutionService implements DLightTargetExecutionService<NativeExecutableTarget> {
+    private static final class NativeExecutableTargetExecutionService
+            implements DLightTargetExecutionService<NativeExecutableTarget> {
 
         public void start(NativeExecutableTarget target) {
             target.start();
@@ -188,5 +190,4 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             target.terminate();
         }
     }
-
 }

@@ -42,16 +42,17 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import javax.swing.JComponent;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -100,11 +101,19 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             viewModelListener.setUp();
             return ;
         }
+        JComponent buttonsPane;
         if (tree == null) {
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
             tree.setName (NbBundle.getMessage (View.class, toolTipResource));
-            add (tree, "Center");  //NOI18N
+            add (tree, BorderLayout.CENTER);  //NOI18N
+            buttonsPane = new javax.swing.JPanel();
+            //buttonsPane.setLayout(new GridLayout(0, 1, 5, 5));
+            //buttonsPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+            buttonsPane.setLayout(new GridBagLayout());
+            add(buttonsPane, BorderLayout.WEST);
+        } else {
+            buttonsPane = (JComponent) ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.WEST);
         }
         // <RAVE> CR 6207738 - fix debugger help IDs
         // Use the modified constructor that stores the propertiesHelpID
@@ -117,6 +126,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         viewModelListener = new ViewModelListener (
             name,
             tree,
+            buttonsPane,
             propertiesHelpID
         );
         // </RAVE>

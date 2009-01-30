@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -94,6 +93,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
 /**
@@ -1442,7 +1442,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
 
-    public void onFileExternalCreate(FileImpl file) {
+    public void onFileExternalCreate(FileObject file) {
         APTIncludeUtils.clearFileExistenceCache();
         DeepReparsingUtils.reparseOnAdded(file, this);
     }

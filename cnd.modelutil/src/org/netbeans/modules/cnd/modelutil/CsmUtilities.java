@@ -328,6 +328,33 @@ public class CsmUtilities {
         return csmProject;
     }
 
+    /**
+     * Tries to find project that contains given file under its root directory.
+     * File doesn't have to be included into project or code model.
+     * This is somewhat similar to default FileOwnerQueryImplementation,
+     * but only for CsmProjects.
+     *
+     * @param fo  file to look up
+     * @return project that contains file under its root directory,
+     *      or <code>null</code> if there is no such project
+     */
+    public static CsmProject getCsmProject(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String path = file.getPath();
+            for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
+                Object platformProject = csmProject.getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject nativeProject = (NativeProject)platformProject;
+                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
+                        return csmProject;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public static boolean isAnyNativeProjectOpened() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {

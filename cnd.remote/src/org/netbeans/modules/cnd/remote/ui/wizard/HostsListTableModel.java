@@ -168,7 +168,7 @@ class HostsListTableModel extends AbstractTableModel {
                             HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), new Boolean(doPing(host, 22)));
                         }
                     } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 }
                 LOG.info("Finding " + count + " host(s) took " + ((System.currentTimeMillis() - n) / 1000) + "s");

@@ -89,6 +89,7 @@ final class ExecutionContext {
         validateTools(false);
     }
 
+//    static int count = 0;
     void validateTools(boolean performRequiredActions) {
         DLightLogger.assertNonUiThread();
         
@@ -99,30 +100,42 @@ final class ExecutionContext {
             validationInProgress = true;
         }
 
-        Map<DLightTool, Future<ValidationStatus>> hash = new HashMap<DLightTool, Future<ValidationStatus>>();
-        Map<DLightTool, ValidationStatus> shash = new HashMap<DLightTool, ValidationStatus>();
+        Map<DLightTool, Future<ValidationStatus>> tasks =
+                new HashMap<DLightTool, Future<ValidationStatus>>();
 
+        Map<DLightTool, ValidationStatus> states =
+                new HashMap<DLightTool, ValidationStatus>();
+
+//        count++;
+        
         for (DLightTool tool : tools.toArray(new DLightTool[0])) {
+//            System.out.printf("%d: VALIDATING TOOL: %s\n", count, tool.getName());
             ValidationStatus toolCurrentStatus = tool.getValidationStatus();
-            hash.put(tool, tool.validate(target));
-            shash.put(tool, toolCurrentStatus);
+
+            states.put(tool, toolCurrentStatus);
+//            System.out.printf("%d: CurrentStatus: %s\n", count, toolCurrentStatus.toString());
+            
+            tasks.put(tool, tool.validate(target));
+//            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
         }
 
         boolean changed = false;
         boolean willReiterate = true;
 
         while (willReiterate) {
-            DLightTool[] toolsToValidate = hash.keySet().toArray(new DLightTool[0]);
+            DLightTool[] toolsToValidate = tasks.keySet().toArray(new DLightTool[0]);
             willReiterate = false;
 
             for (DLightTool tool : toolsToValidate) {
-                Future<ValidationStatus> task = hash.get(tool);
+                Future<ValidationStatus> task = tasks.get(tool);
 
                 try {
                     //TODO: Could use timeouts. Should we?
                     ValidationStatus toolNewStatus = task.get();
 
-                    boolean thisToolStateChanged = !toolNewStatus.equals(shash.get(tool));
+//                    System.out.printf("%d: Status of validation task %s: %s\n", count, tasks.toString(), toolNewStatus.toString());
+
+                    boolean thisToolStateChanged = !toolNewStatus.equals(states.get(tool));
 
                     if (performRequiredActions) {
                         if (!toolNewStatus.isKnown()) {
@@ -132,7 +145,7 @@ final class ExecutionContext {
                             if (actions != null) {
                                 for (ObservableAction a : actions) {
                                     try {
-                                        a.call();
+                                        a.invoke();
                                     } catch (Exception ex) {
                                         Exceptions.printStackTrace(ex);
                                     }
@@ -141,16 +154,16 @@ final class ExecutionContext {
 
                             task = tool.validate(target);
                             toolNewStatus = task.get();
-                            thisToolStateChanged = !toolNewStatus.equals(shash.get(tool));
+                            thisToolStateChanged = !toolNewStatus.equals(states.get(tool));
                         }
 
                         if (!toolNewStatus.isKnown() && thisToolStateChanged) {
-                            shash.put(tool, toolNewStatus);
-                            hash.put(tool, task);
+                            states.put(tool, toolNewStatus);
+                            tasks.put(tool, task);
                             willReiterate = true;
                         } else {
-                            hash.remove(tool);
-                            shash.remove(tool);
+                            tasks.remove(tool);
+                            states.remove(tool);
                         }
                     }
 

@@ -52,6 +52,9 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-highlighting-macros-system" foreColor="2E92C7" default="default">
         <font style="plain"/>
     </fontcolor>
+    <fontcolor name="cc-highlighting-macros-user" foreColor="2E92C7" default="default">
+        <font style="plain"/>
+    </fontcolor>
     <fontcolor name="cc-highlighting-class-fields" foreColor="009900" default="default">
         <font style="plain"/>
     </fontcolor>
