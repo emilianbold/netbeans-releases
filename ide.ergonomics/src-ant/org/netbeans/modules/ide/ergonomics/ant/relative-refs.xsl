@@ -24,6 +24,15 @@
                     </xsl:element>
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='Loaders']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Loaders</xsl:attribute>
+                    <xsl:apply-templates
+                        select="//*/folder[@name='Loaders']/*"
+                        mode="project-wizard"
+                    />
+                </xsl:element>
+            </xsl:if>
         </xsl:element>
     </xsl:template>
 
