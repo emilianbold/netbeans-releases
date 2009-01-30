@@ -44,6 +44,7 @@ import java.awt.EventQueue;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +106,10 @@ public class AWTThreadFreeTest extends NbTestCase {
                 types[i] = long.class;
             }
         }
-        return obj.getClass().getMethod(name, types).invoke(obj, args);
+        Class<?> clazz = obj instanceof Class ? (Class)obj : obj.getClass();
+        Method m = clazz.getDeclaredMethod(name, types);
+        m.setAccessible(true);
+        return m.invoke(obj, args);
     }
 
     public static final class InitRun implements Runnable {
@@ -137,24 +141,31 @@ public class AWTThreadFreeTest extends NbTestCase {
                       .append('\n');
                 }
                 sb.append('\n');
+                if (sb.length() > 10000) {
+                    sb.delete(0, 5000);
+                }
             }
 
             try {
                 if (dump != null) {
                     Class<?> type = Class.forName("org.netbeans.lib.profiler.results.cpu.StackTraceSnapshotBuilder");
                     Object builder = type.newInstance();
-                    long time = 0L;
+                    long base = System.currentTimeMillis();
+                    long time = base;
                     for (StackTraceElement[] arr : traces) {
                         Map<Thread,StackTraceElement[]> map = Collections.singletonMap(awt, arr);
                         callMethod(builder, "addStacktrace", map, time);
                         time += 10L;
                     }
-                    Object snapshot = callMethod(builder, "createSnapshot", 0, time);
+                    Object snapshot = callMethod(builder, "createSnapshot", base, time);
+                    Class<?> loaded = Class.forName("org.netbeans.modules.profiler.LoadedSnapshot");
                     DataOutputStream dos = new DataOutputStream(new FileOutputStream(dump));
-                    callMethod(snapshot, "writeToStream", dos);
+                    callMethod(loaded, "writeToStream", snapshot, dos);
                     dos.close();
                     sb.append("\n\n\nProfiler snapshot available at ").append(dump);
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             } finally {
                 fail(sb.toString());
             }
