@@ -237,7 +237,7 @@ public final class MacroExpansionTopComponent extends TopComponent {
             Document doc = getExpandedContextDoc();
             if (doc != null) {
                 Document doc2 = (Document) doc.getProperty(Document.class);
-                if (doc2 instanceof Document) {
+                if (doc2 != null) {
                     doc2.putProperty(Document.class, null);
                 }
             }
