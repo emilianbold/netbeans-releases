@@ -89,7 +89,8 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         }
         Dimension dim = rectangle.getSize ();
         Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
-        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
+        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+        scene.setZoomFactor (Math.min(zoom, 1));
         scene.validate();
     }
     

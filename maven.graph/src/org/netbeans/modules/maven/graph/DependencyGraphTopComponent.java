@@ -273,7 +273,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         node.accept(visitor);
         Dimension dim = visitor.getVisibleRectangle().getSize ();
         Dimension viewDim = pane.getViewportBorderBounds ().getSize ();
-        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
+        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+        scene.setZoomFactor (Math.min(zoom, 1));
+
         scene.validate();
         Rectangle viewpoint = scene.convertSceneToView(visitor.getVisibleRectangle());
         int hgrow = ((viewDim.width - viewpoint.width) / 2) - 5;
@@ -322,9 +324,11 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             pane.setViewportView(sceneView);
                             scene.cleanLayout(pane);
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
-                            sldDepth.setMaximum(scene.getMaxNodeDepth());
-                            sldDepth.setEnabled(true);
-                            sldDepth.setVisible(true);
+                            if (scene.getMaxNodeDepth() > 1) {
+                                sldDepth.setMaximum(scene.getMaxNodeDepth());
+                                sldDepth.setEnabled(true);
+                                sldDepth.setVisible(true);
+                            }
                             txtFind.setEnabled(true);
                             btnBigger.setEnabled(true);
                             btnSmaller.setEnabled(true);
