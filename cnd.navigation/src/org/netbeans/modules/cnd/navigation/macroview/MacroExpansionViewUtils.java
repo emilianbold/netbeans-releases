@@ -205,8 +205,8 @@ public final class MacroExpansionViewUtils {
      * @param endOffset - new end offset
      */
     public static void setOffset(Document doc, int startOffset, int endOffset) {
-        doc.putProperty(MACRO_EXPANSION_START_OFFSET, new Integer(startOffset));
-        doc.putProperty(MACRO_EXPANSION_END_OFFSET, new Integer(endOffset));
+        doc.putProperty(MACRO_EXPANSION_START_OFFSET, Integer.valueOf(startOffset));
+        doc.putProperty(MACRO_EXPANSION_END_OFFSET, Integer.valueOf(endOffset));
     }
 
     /**
