@@ -156,11 +156,9 @@ public class QmakeProjectWriter {
 
     private void write(BufferedWriter bw) throws IOException {
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
-        write(bw, Variable.TARGET, Operation.SET,
-                configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
+        write(bw, Variable.TARGET, Operation.SET, getTarget());
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
-        write(bw, Variable.CONFIG, Operation.ADD,
-                configuration.getQmakeConfiguration().getBuildMode().getOption());
+        write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
         Item[] items = projectDescriptor.getProjectItems();
@@ -252,6 +250,32 @@ public class QmakeProjectWriter {
             default:
                 return ""; // NOI18N
         }
+    }
+
+    private String getTarget() {
+        switch (configuration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                return configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue());
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                return configuration.expandMacros(configuration.getArchiverConfiguration().getOutputValue());
+            default:
+                return ""; // NOI18N
+        }
+    }
+
+    private List<String> getConfig() {
+        List<String> list = new ArrayList<String>();
+        switch (configuration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                list.add("dll"); // NOI18N
+                break;
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                list.add("staticlib"); // NOI18N
+                break;
+        }
+        list.add(configuration.getQmakeConfiguration().getBuildMode().getOption());
+        return list;
     }
 
 }

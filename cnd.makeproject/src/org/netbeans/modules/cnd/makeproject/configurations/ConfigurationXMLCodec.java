@@ -734,11 +734,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.getMocDir().setValue(currentText);
+                currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
             }
         } else if (element.equals(QT_UI_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.getUiDir().setValue(currentText);
+                currentQmakeConfiguration.getUiDir().setValue(getString(currentText));
             }
         }
     }
