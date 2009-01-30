@@ -42,6 +42,14 @@
 ########### tokens #############################################################
 
 TOKEN:oql_keyword:( "select" | "from" | "where" | "instanceof")
+TOKEN:oql_method:( "objectid" | "classof" | "sizeof" | "identical" |
+                   "referrers" | "referees" | "reachables" | "root" |
+                   "forEachReferrer" | "toHtml" | "concat" | "contains" |
+                   "count" | "filter" | "length" | "map" | "min" | "max" |
+                   "sum" | "sort" | "toArray" | "unique" | "forEachClass" |
+                   "forEachObject" | "findClass" | "findObject" | "classes" |
+                   "objects" | "finalizables" | "livePaths" | "roots"
+                 )
 
 TOKEN:js_comment: ("/*" - "*/")
 TOKEN:js_comment: ("<!--" | "-->")
@@ -324,11 +332,11 @@ CallExpression = PrimaryExpression (MemberOperator | Arguments)*;
 CallExpressionInitial = PrimaryExpressionInitial (MemberOperator | Arguments)*;
 NewExpression = "new" NewSubExpression (MemberOperator | Arguments)*;
 NewSubExpression = PrimaryExpression (MemberOperator)* | NewExpression;
-MemberOperator = "[" Expression "]" | "." <js_identifier>;
+MemberOperator = "[" Expression "]" | "." (<js_identifier> | <oql_method>);
 Arguments = "(" [AssignmentExpression ("," AssignmentExpression)*] ")";
 PrimaryExpression = PrimaryExpressionInitial | ObjectLiteral;
 PrimaryExpressionInitial = "this" | "null" | "true" | "false" |
-    <js_number> | <js_string> | <js_identifier> | RegularExpression |
+    <js_number> | <js_string> | <js_identifier> | <oql_method> | RegularExpression |
     "(" Expression ")" | ArrayLiteral | FunctionDeclaration;
 ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)* (",")* "]";
 ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";

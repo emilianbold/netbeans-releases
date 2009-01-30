@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 
 /**
@@ -57,14 +58,22 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient String oldName;
     private final transient ChangeListener parent;
+    private final transient DesignComponent myComponent;
+    private boolean initialized = false;
     
     /** Creates new form RenamePanelName */
-    public RenamePanel(String oldName, ChangeListener parent, String name ) {
+    public RenamePanel(String oldName, ChangeListener parent, String name, 
+            DesignComponent component , boolean useAccessor )
+    {
         setName(name);
         this.oldName = oldName;
         this.parent = parent;
+        myComponent = component;
         initComponents();
         textCheckBox.setVisible( false );
+
+        getterLabel.setVisible( useAccessor);
+        myAccessor.setVisible( useAccessor );
         //textCheckBox.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.rename", Boolean.FALSE)).booleanValue());
 
         //nameField.setEnabled(editable);
@@ -72,18 +81,17 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent event) {
-                RenamePanel.this.parent.stateChanged(null);
+                nameChanged();
             }
             public void insertUpdate(DocumentEvent event) {
-                RenamePanel.this.parent.stateChanged(null);
+                nameChanged();
             }
             public void removeUpdate(DocumentEvent event) {
-                RenamePanel.this.parent.stateChanged(null);
+                nameChanged();
             }
         });
     }
     
-    private boolean initialized = false;
     public void initialize() {
         if (initialized)
             return ;
@@ -94,6 +102,37 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     @Override
     public void requestFocus() {
         nameField.requestFocus();
+    }
+
+        public String getNameValue() {
+        return nameField.getText();
+    }
+
+    public boolean searchJavadoc() {
+        return textCheckBox.isSelected();
+    }
+
+    public Component getComponent() {
+        return this;
+    }
+
+    String getGetter() {
+        return InstanceRenameAction.getGetterName( myComponent,
+                nameField.getText());
+    }
+
+    private void nameChanged(){
+        if ( myAccessor.isVisible()  ){
+            myAccessor.setText( getGetter() );
+        }
+        parent.stateChanged(null);
+    }
+
+    private String getAccessorText(){
+       if ( myAccessor.isVisible()  ){
+            return getGetter();
+       }
+       return "";
     }
     
     /** This method is called from within the constructor to
@@ -109,6 +148,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         nameField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         textCheckBox = new javax.swing.JCheckBox();
+        getterLabel = new javax.swing.JLabel();
+        myAccessor = new javax.swing.JTextField();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
@@ -133,7 +174,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -153,12 +194,32 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(textCheckBox, gridBagConstraints);
         textCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSN_RenameComments")); // NOI18N
         textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
+
+        org.openide.awt.Mnemonics.setLocalizedText(getterLabel, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_Accessor")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 7, 0);
+        add(getterLabel, gridBagConstraints);
+        getterLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSN_Accessor")); // NOI18N
+        getterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSD_Accessor")); // NOI18N
+
+        myAccessor.setEditable(false);
+        myAccessor.setText(getAccessorText());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 7, 0);
+        add(myAccessor, gridBagConstraints);
+        myAccessor.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSN_Accessor")); // NOI18N
+        myAccessor.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSD_Accessor")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void textCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_textCheckBoxItemStateChanged
@@ -172,21 +233,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }//GEN-LAST:event_textCheckBoxActionPerformed
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel getterLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel label;
+    private javax.swing.JTextField myAccessor;
     private javax.swing.JTextField nameField;
     private javax.swing.JCheckBox textCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    public String getNameValue() {
-        return nameField.getText();
-    }
-    
-    public boolean searchJavadoc() {
-        return textCheckBox.isSelected();
-    }
-
-    public Component getComponent() {
-        return this;
-    }
 }

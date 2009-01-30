@@ -99,6 +99,7 @@ public final class DeclarationGenerator {
         // add parameter
         out.append(field.getType().getText());
         out.append(" ").append(fldName);// NOI18N
+        out.append(")"); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {

@@ -184,4 +184,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#154349: wrongly flagged errors for destructor during template specialization
         performTest("iz154349.cc");
     }
+
+    public void testIZ157603() throws Exception {
+        // IZ#157603 : Code model does not understand __attribute, constructor, destructor keywords (GNU)
+        performTest("iz157603.cc");
+    }
 }
