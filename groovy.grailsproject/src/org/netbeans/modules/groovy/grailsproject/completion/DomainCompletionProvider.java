@@ -66,11 +66,17 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
     private static final Map<MethodSignature, String> BASIC_METHODS = new HashMap<MethodSignature, String>();
 
+    private static final Map<MethodSignature, String> STATIC_METHODS = new HashMap<MethodSignature, String>();
+
+    private static final String[] NO_PARAMETERS = new String[] {};
+
     private static final String FIND_BY_METHOD = "findBy"; // NOI18N
 
     private static final String FIND_ALL_BY_METHOD = "findAllBy"; // NOI18N
 
     private static final String COUNT_BY_METHOD = "countBy"; // NOI18N
+
+    private static final String LIST_ORDER_BY_METHOD = "listOrderBy"; // NOI18N
 
     private static final Set<String> QUERY_OPERATOR = new HashSet<String>();
 
@@ -84,36 +90,73 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 "GreaterThan", "GreaterThanEquals", "Like", "ILike",
                 "Equal", "NotEqual", "Between", "IsNotNull", "IsNull");
 
-        String[] noParams = new String[] {};
-
         BASIC_METHODS.put(new MethodSignature("save", new String[] {"java.lang.Boolean"}), "java.lang.Object"); // NOI18N
         BASIC_METHODS.put(new MethodSignature("save", new String[] {"java.util.Map"}), "java.lang.Object"); // NOI18N
-        BASIC_METHODS.put(new MethodSignature("save", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("save", NO_PARAMETERS), "java.lang.Object"); // NOI18N
 
         BASIC_METHODS.put(new MethodSignature("merge", new String[] {"java.lang.Object"}), "java.lang.Object"); // NOI18N
-        BASIC_METHODS.put(new MethodSignature("merge", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("merge", NO_PARAMETERS), "java.lang.Object"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("delete", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("delete", NO_PARAMETERS), "java.lang.Object"); // NOI18N
         BASIC_METHODS.put(new MethodSignature("delete", new String[] {"java.util.Map"}), "java.lang.Object"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("refresh", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("refresh", NO_PARAMETERS), "java.lang.Object"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("discard", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("discard", NO_PARAMETERS), "java.lang.Object"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("attach", noParams), "java.lang.Object"); // NOI18N
-        BASIC_METHODS.put(new MethodSignature("isAttached", noParams), "java.lang.Boolean"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("attach", NO_PARAMETERS), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("isAttached", NO_PARAMETERS), "java.lang.Boolean"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("getErrors", noParams), "org.springframework.validation.Errors"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("getErrors", NO_PARAMETERS), "org.springframework.validation.Errors"); // NOI18N
         BASIC_METHODS.put(new MethodSignature("setErrors", new String[] {"org.springframework.validation.Errors"}), "org.springframework.validation.Errors"); // NOI18N
-        BASIC_METHODS.put(new MethodSignature("clearErrors", noParams), "org.springframework.validation.Errors"); // NOI18N
-        BASIC_METHODS.put(new MethodSignature("hasErrors", noParams), "java.lang.Boolean"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("clearErrors", NO_PARAMETERS), "org.springframework.validation.Errors"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("hasErrors", NO_PARAMETERS), "java.lang.Boolean"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("validate", noParams), "java.lang.Boolean"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("validate", NO_PARAMETERS), "java.lang.Boolean"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("delete", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("delete", NO_PARAMETERS), "java.lang.Object"); // NOI18N
         BASIC_METHODS.put(new MethodSignature("delete", new String[] {"java.util.Map"}), "java.lang.Object"); // NOI18N
 
-        BASIC_METHODS.put(new MethodSignature("lock", noParams), "java.lang.Object"); // NOI18N
+        BASIC_METHODS.put(new MethodSignature("lock", NO_PARAMETERS), "java.lang.Object"); // NOI18N
+
+        BASIC_METHODS.put(new MethodSignature("ident", NO_PARAMETERS), "java.lang.Object");
+
+
+        // findBy - see #getQueryMethods()
+        // findAllBy - see #getQueryMethods()
+        // countBy - see #getQueryMethods()
+        // listOrderBy - see #getOrderMethods()
+        STATIC_METHODS.put(new MethodSignature("count", NO_PARAMETERS), "int");
+        STATIC_METHODS.put(new MethodSignature("createCriteria", NO_PARAMETERS), "grails.orm.HibernateCriteriaBuilder");
+        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeUpdate", new String[] {"java.lang.String"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("executeUpdate", new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("exists", NO_PARAMETERS), "java.lang.Boolean");
+        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String", "java.util.Map"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.Object"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("findAll", NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.Object"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findWhere", new String[] {"java.util.Map"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("findAllWhere", new String[] {"java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("get", new String[] {"java.lang.Object"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("getAll", NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("getAll", new String[] {"java.util.List"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("list", NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("list", new String[] {"java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("withCriteria", new String[] {"groovy.lang.Closure"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("withCriteria", new String[] {"java.util.Map", "groovy.lang.Closure"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("withTransaction", new String[] {"groovy.lang.Closure"}), "java.lang.Object");
     }
 
     @Override
@@ -133,14 +176,38 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
                 result.putAll(getQueryMethods(context));
-                for (Map.Entry<MethodSignature, String> entry : BASIC_METHODS.entrySet()) {
+                result.putAll(getOrderMethods(context));
+
+                for (Map.Entry<MethodSignature, String> entry : STATIC_METHODS.entrySet()) {
                     result.put(entry.getKey(), CompletionItem.forDynamicMethod(
                             context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
+                }
+
+                // instance methods
+                if (!context.isStaticContext()) {
+                    for (Map.Entry<MethodSignature, String> entry : BASIC_METHODS.entrySet()) {
+                        result.put(entry.getKey(), CompletionItem.forDynamicMethod(
+                                context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
+                    }
                 }
                 return result;
             }
         }
         return Collections.emptyMap();
+    }
+
+    private Map<MethodSignature, CompletionItem> getOrderMethods(CompletionContext context) {
+        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        if (LIST_ORDER_BY_METHOD.startsWith(context.getPrefix()) || context.getPrefix().startsWith(LIST_ORDER_BY_METHOD)) {
+            for (String property : context.getProperties()) {
+                String name = LIST_ORDER_BY_METHOD + capitalise(property);
+                result.put(new MethodSignature(name, NO_PARAMETERS),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, NO_PARAMETERS, "java.util.List", context.isNameOnly(), false));
+                result.put(new MethodSignature(name, new String[] {"java.util.Map"}),
+                        CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {"java.util.Map"}, "java.util.List", context.isNameOnly(), false));
+            }
+        }
+        return result;
     }
 
     private Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
@@ -190,6 +257,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                         entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue());
             }
         } else {
+            // FIXME optimize
             for (String property : context.getProperties()) {
                 String tail = capitalise(property);
 
