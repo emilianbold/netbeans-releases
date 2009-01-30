@@ -284,12 +284,14 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
     @Override
     public void componentOpened() {
         GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_EXIT, this);
         update();
     }
 
     @Override
     public void componentClosed() {
-        GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_EXIT, this);
     }
 
     @Override

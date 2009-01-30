@@ -657,7 +657,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             } else if (evt.getNewValue() == State.STOPPED) {
                 updateLocalVariables(0);
-                GdbContext.getInstance().update();
+                GdbContext.getInstance().gdbStep();
             } else if (evt.getNewValue() == State.SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == State.RUNNING &&
@@ -670,7 +670,7 @@ public class GdbDebugger implements PropertyChangeListener {
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
             updateCurrentCallStack();
             updateLocalVariables(0);
-            GdbContext.getInstance().update();
+            GdbContext.getInstance().gdbStep();
         }
     }
 
@@ -904,7 +904,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (iotab != null) {
                     iotab.getOut().close();
                 }
-                GdbContext.getInstance().invalidate(true);
+                GdbContext.getInstance().gdbExit();
                 GdbTimer.getTimer("Step").reset(); // NOI18N
             }
         }

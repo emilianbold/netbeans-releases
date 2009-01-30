@@ -61,6 +61,7 @@ public class GdbContext implements PropertyChangeListener {
     
     public static final String PROP_REGISTERS = "Registers"; // NOI18N
     public static final String PROP_STEP = "Step"; // NOI18N
+    public static final String PROP_EXIT = "Exit"; // NOI18N
     
     private GdbContext() {
         requests.put(PROP_REGISTERS, new Request() {
@@ -71,8 +72,13 @@ public class GdbContext implements PropertyChangeListener {
         });
         pcs.addPropertyChangeListener(this); // used to notify sync updates
     }
+
+    public void gdbExit() {
+        invalidate(true);
+        pcs.firePropertyChange(PROP_EXIT, 0, 1);
+    }
     
-    public void invalidate(boolean fireUpdates) {
+    private void invalidate(boolean fireUpdates) {
         cache.clear();
         
         // fire updates if requested
@@ -85,7 +91,7 @@ public class GdbContext implements PropertyChangeListener {
         }
     }
     
-    public void update() {
+    public void gdbStep() {
         invalidate(false);
         //request update of all properties that have listeners
         for (Map.Entry<String,Request> entry : requests.entrySet()) {
