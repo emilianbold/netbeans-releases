@@ -71,18 +71,17 @@ import org.openide.util.NbBundle;
 public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
 
-    @Override
-    public boolean isRunProjectEnabled(PhpProject project) {
-        return isRunProjectEnabled();
+    protected ConfigActionTest(PhpProject project) {
+        super(project);
     }
 
     @Override
-    public boolean isDebugProjectEnabled(PhpProject project) {
+    public boolean isDebugProjectEnabled() {
         throw new IllegalStateException("Debug project tests action is not supported");
     }
 
     @Override
-    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
+    public boolean isRunFileEnabled(Lookup context) {
         FileObject rootFolder = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
         FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
@@ -90,15 +89,15 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     @Override
-    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
+    public boolean isDebugFileEnabled(Lookup context) {
         if (XDebugStarterFactory.getInstance() == null) {
             return false;
         }
-        return isRunFileEnabled(project, context);
+        return isRunFileEnabled(context);
     }
 
     @Override
-    public void runProject(PhpProject project) {
+    public void runProject() {
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (!phpUnit.supportedVersionFound()) {
             int[] version = phpUnit.getVersion();
@@ -108,52 +107,56 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        run(project, null);
+        run();
     }
 
     @Override
-    public void debugProject(PhpProject project) {
+    public void debugProject() {
         throw new IllegalStateException("Debug project tests action is not supported");
     }
 
     @Override
-    public void runFile(PhpProject project, Lookup context) {
-        run(project, context);
+    public void runFile(Lookup context) {
+        run(context);
     }
 
     @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        debug(project, context);
+    public void debugFile(Lookup context) {
+        debug(context);
     }
 
-    private void run(PhpProject project, Lookup context) {
-        Pair<FileObject, String> pair = getValidPair(project, context);
+    private void run() {
+        run(null);
+    }
+
+    private void run(Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(context);
         if (pair == null) {
             return;
         }
 
-        new RunScript(new RunScriptProvider(project, pair, context)).run();
+        new RunScript(new RunScriptProvider(pair, context)).run();
     }
 
-    private void debug(PhpProject project, Lookup context) {
-        Pair<FileObject, String> pair = getValidPair(project, context);
+    private void debug(Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(context);
         if (pair == null) {
             return;
         }
 
-        new DebugScript(new DebugScriptProvider(project, pair, context)).run();
+        new DebugScript(new DebugScriptProvider(pair, context)).run();
     }
 
-    private Pair<FileObject, String> getValidPair(PhpProject project, Lookup context) {
+    private Pair<FileObject, String> getValidPair(Lookup context) {
         PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
         if (phpUnit == null) {
             return null;
         }
-        return getPair(project, context);
+        return getPair(context);
     }
 
     // <working directory, unit test name (script name without extension)>
-    private Pair<FileObject, String> getPair(PhpProject project, Lookup context) {
+    private Pair<FileObject, String> getPair(Lookup context) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
         if (testDirectory == null) {
             return null;
@@ -177,18 +180,15 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     private class RunScriptProvider implements RunScript.Provider {
-        protected final PhpProject project;
         protected final Lookup context;
         protected final Pair<FileObject, String> pair;
         protected final PhpUnit phpUnit;
         protected final UnitTestRunner testRunner;
         protected final RerunUnitTestHandler rerunUnitTestHandler;
 
-        public RunScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
-            assert project != null;
+        public RunScriptProvider(Pair<FileObject, String> pair, Lookup context) {
             assert pair != null;
 
-            this.project = project;
             this.pair = pair;
             this.context = context;
             rerunUnitTestHandler = getRerunUnitTestHandler();
@@ -249,7 +249,7 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
-            return new RerunUnitTestHandler(project, context);
+            return new RerunUnitTestHandler(context);
         }
 
         protected UnitTestRunner getTestRunner() {
@@ -260,8 +260,8 @@ public class ConfigActionTest extends ConfigAction {
     private final class DebugScriptProvider extends RunScriptProvider implements DebugScript.Provider {
         protected final File startFile;
 
-        public DebugScriptProvider(PhpProject project, Pair<FileObject, String> pair, Lookup context) {
-            super(project, pair, context);
+        public DebugScriptProvider(Pair<FileObject, String> pair, Lookup context) {
+            super(pair, context);
             startFile = getStartFile(context);
         }
 
@@ -279,7 +279,7 @@ public class ConfigActionTest extends ConfigAction {
 
         @Override
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
-            return new RedebugUnitTestHandler(project, context);
+            return new RedebugUnitTestHandler(context);
         }
 
         @Override
@@ -301,20 +301,16 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     private class RerunUnitTestHandler implements RerunHandler {
-        protected final PhpProject project;
         protected final Lookup context;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private volatile boolean enabled = false;
 
-        public RerunUnitTestHandler(PhpProject project, Lookup context) {
-            assert project != null;
-
-            this.project = project;
+        public RerunUnitTestHandler(Lookup context) {
             this.context = context;
         }
 
         public void rerun() {
-            run(project, context);
+            run(context);
         }
 
         public boolean enabled() {
@@ -336,13 +332,13 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     private class RedebugUnitTestHandler extends RerunUnitTestHandler {
-        public RedebugUnitTestHandler(PhpProject project, Lookup context) {
-            super(project, context);
+        public RedebugUnitTestHandler(Lookup context) {
+            super(context);
         }
 
         @Override
         public void rerun() {
-            debug(project, context);
+            debug(context);
         }
     }
 

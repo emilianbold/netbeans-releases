@@ -56,10 +56,13 @@ public abstract class ConfigAction {
         SCRIPT,
         TEST,
     }
-    private static final ConfigAction CONFIG_ACTION_LOCAL = new ConfigActionLocal();
-    private static final ConfigAction CONFIG_ACTION_REMOTE = new ConfigActionRemote();
-    private static final ConfigAction CONFIG_ACTION_SCRIPT = new ConfigActionScript();
-    private static final ConfigAction CONFIG_ACTION_TEST = new ConfigActionTest();
+
+    protected final PhpProject project;
+
+    protected ConfigAction(PhpProject project) {
+        assert project != null;
+        this.project = project;
+    }
 
     public static Type convert(PhpProjectProperties.RunAsType runAsType) {
         Type type = null;
@@ -80,21 +83,21 @@ public abstract class ConfigAction {
         return type;
     }
 
-    public static ConfigAction get(Type type) {
+    public static ConfigAction get(Type type, PhpProject project) {
         assert type != null;
         ConfigAction action = null;
         switch (type) {
             case LOCAL:
-                action = CONFIG_ACTION_LOCAL;
+                action = new ConfigActionLocal(project);
                 break;
             case REMOTE:
-                action = CONFIG_ACTION_REMOTE;
+                action = new ConfigActionRemote(project);
                 break;
             case SCRIPT:
-                action = CONFIG_ACTION_SCRIPT;
+                action = new ConfigActionScript(project);
                 break;
             case TEST:
-                action = CONFIG_ACTION_TEST;
+                action = new ConfigActionTest(project);
                 break;
             default:
                 assert false : "Unknown type: " + type;
@@ -104,29 +107,20 @@ public abstract class ConfigAction {
         return action;
     }
 
-    public abstract boolean isRunProjectEnabled(PhpProject project);
-    public abstract boolean isDebugProjectEnabled(PhpProject project);
-
-    public abstract boolean isRunFileEnabled(PhpProject project, Lookup context);
-    public abstract boolean isDebugFileEnabled(PhpProject project, Lookup context);
-
-    public abstract void runProject(PhpProject project);
-    public abstract void debugProject(PhpProject project);
-
-    public abstract void runFile(PhpProject project, Lookup context);
-    public abstract void debugFile(PhpProject project, Lookup context);
-
-    /**
-     * The default implementation.
-     */
-    protected boolean isRunProjectEnabled() {
+    public boolean isRunProjectEnabled() {
         return true;
     }
 
-    /**
-     * The default implementation.
-     */
-    protected boolean isDebugProjectEnabled() {
+    public boolean isDebugProjectEnabled() {
         return XDebugStarterFactory.getInstance() != null;
     }
+
+    public abstract boolean isRunFileEnabled(Lookup context);
+    public abstract boolean isDebugFileEnabled(Lookup context);
+
+    public abstract void runProject();
+    public abstract void debugProject();
+
+    public abstract void runFile(Lookup context);
+    public abstract void debugFile(Lookup context);
 }
