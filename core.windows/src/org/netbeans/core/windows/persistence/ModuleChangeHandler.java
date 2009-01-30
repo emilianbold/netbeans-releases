@@ -42,15 +42,23 @@
 package org.netbeans.core.windows.persistence;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
+
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.filesystems.*;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Handler of changes in module folder. Changes can be for example
@@ -70,6 +78,12 @@ class ModuleChangeHandler implements FileChangeListener {
     private FileObject modesModuleFolder;
     
     private FileObject groupsModuleFolder;
+
+    /** Keep FileObjects for folders in modes folder. */
+    private Set<FileObject> modesModuleChildren = new HashSet<FileObject>();
+
+    /** Keep FileObjects for folders in groups folder. */
+    private Set<FileObject> groupsModuleChildren = new HashSet<FileObject>();
     
     private FileObject componentsModuleFolder;
     
@@ -80,7 +94,29 @@ class ModuleChangeHandler implements FileChangeListener {
     /** Creates a new instance of ModuleChangeHandler */
     public ModuleChangeHandler() {
     }
-    
+
+    private void refreshModesFolder () {
+        FileObject [] arr = modesModuleFolder.getChildren();
+
+        modesModuleChildren.clear();
+        for (FileObject fo : arr) {
+            if (fo.isFolder()) {
+                modesModuleChildren.add(fo);
+            }
+        }
+    }
+
+    private void refreshGroupsFolder () {
+        FileObject [] arr = groupsModuleFolder.getChildren();
+
+        groupsModuleChildren.clear();
+        for (FileObject fo : arr) {
+            if (fo.isFolder()) {
+                groupsModuleChildren.add(fo);
+            }
+        }
+    }
+
     void startHandling () {
         if (started) {
             return;
@@ -89,7 +125,9 @@ class ModuleChangeHandler implements FileChangeListener {
         
         try {
             modesModuleFolder = pm.getModesModuleFolder();
+            refreshModesFolder();
             groupsModuleFolder = pm.getGroupsModuleFolder();
+            refreshGroupsFolder();
             componentsModuleFolder = pm.getComponentsModuleFolder();
         } catch (IOException exc) {
             PersistenceManager.LOG.log(Level.WARNING,
@@ -97,7 +135,7 @@ class ModuleChangeHandler implements FileChangeListener {
             + " Cannot get data folders.", exc); // NOI18N
             return;
         }
-            
+        
         try {
             fs = modesModuleFolder.getFileSystem();
         } catch (FileStateInvalidException exc) {
@@ -132,7 +170,7 @@ class ModuleChangeHandler implements FileChangeListener {
             if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ MODE ++");
             return true;
         }
-        //Change of mode config file or mode folder
+        //Change of group config file or group folder
         if (parent.getPath().equals(groupsModuleFolder.getPath())) {
             if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ GROUP ++");
             return true;
@@ -159,6 +197,40 @@ class ModuleChangeHandler implements FileChangeListener {
         }
         return false;
     }
+
+    /** 
+     * Used to detect if FileEvent event happens in module modes folder.
+     * @return true if event should be accepted
+     */
+    private boolean isInModesFolder (FileObject fo) {
+        FileObject parent = fo.getParent();
+        if (parent == null) {
+            return false;
+        }
+        //Change of mode config file or mode folder
+        if (parent.getPath().equals(modesModuleFolder.getPath())) {
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ MODE ++");
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Used to detect if FileEvent event happens in module groups folder.
+     * @return true if event should be accepted
+     */
+    private boolean isInGroupsFolder (FileObject fo) {
+        FileObject parent = fo.getParent();
+        if (parent == null) {
+            return false;
+        }
+        //Change of group config file or group folder
+        if (parent.getPath().equals(groupsModuleFolder.getPath())) {
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ GROUP ++");
+            return true;
+        }
+        return false;
+    }
     
     public void fileAttributeChanged (FileAttributeEvent fe) {
     }
@@ -180,7 +252,7 @@ class ModuleChangeHandler implements FileChangeListener {
             if (accepted && fo.isFolder()) {
                 FileObject [] files = fo.getChildren();
                 for (int i = 0; i < files.length; i++) {
-                    System.err.println("fo[" + i + "]: " + files[i]);
+                    Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
                 }
             }
         }
@@ -192,6 +264,12 @@ class ModuleChangeHandler implements FileChangeListener {
         boolean accepted = acceptEvent(fo);
         if (!accepted) {
             return;
+        }
+        if (isInModesFolder(fo)) {
+            refreshModesFolder();
+        }
+        if (isInGroupsFolder(fo)) {
+            refreshGroupsFolder();
         }
         if (DEBUG) {
             Debug.log(ModuleChangeHandler.class, "-- fileFolderCreated fo: " + fo
@@ -247,6 +325,12 @@ class ModuleChangeHandler implements FileChangeListener {
         boolean accepted = acceptEvent(fo);
         if (!accepted) {
             return;
+        }
+        if (isInModesFolder(fo)) {
+            refreshModesFolder();
+        }
+        if (isInGroupsFolder(fo)) {
+            refreshGroupsFolder();
         }
         
         if (DEBUG) Debug.log(ModuleChangeHandler.class, "-- fileDeleted fo: " + fo
