@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
@@ -56,7 +59,7 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class MemoryViewTopComponent extends TopComponent {
+final class MemoryViewTopComponent extends TopComponent implements PropertyChangeListener {
 
     private static MemoryViewTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -280,12 +283,26 @@ final class MemoryViewTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
+        update();
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_STEP, this);
+    }
+
+    @Override
+    protected void componentShowing() {
+        update();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                update();
+            }
+        });
     }
 
     /** replaces this in object stream */
