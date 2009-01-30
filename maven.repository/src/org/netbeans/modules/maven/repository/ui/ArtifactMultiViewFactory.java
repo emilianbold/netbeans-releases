@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.repository.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -51,9 +52,11 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -79,19 +82,29 @@ import org.openide.windows.TopComponent;
 public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
     public TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos) {
-        return createTopComponent(null, artifact, repos);
+        return createTopComponent(null, null, artifact, repos);
     }
-    public TopComponent createTopComponent(final NBVersionInfo info) {
-        return createTopComponent(info, null, null);
+    public TopComponent createTopComponent(NBVersionInfo info) {
+        return createTopComponent(null, info, null, null);
     }
 
-    private TopComponent createTopComponent(final NBVersionInfo info, Artifact artifact, final List<ArtifactRepository> fRepos) {
-        assert info != null || artifact != null;
+    public TopComponent createTopComponent(Project prj) {
+        return createTopComponent(prj, null, null, null);
+    }
+
+    private TopComponent createTopComponent(final Project prj, final NBVersionInfo info, Artifact artifact, final List<ArtifactRepository> fRepos) {
+        assert info != null || artifact != null || prj != null;
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
         if (artifact == null && info != null) {
             artifact = RepositoryUtil.createArtifact(info);
         }
+        if (artifact == null && prj != null) {
+            NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
+            MavenProject mvn = mvPrj.getMavenProject();
+            artifact = mvn.getArtifact();
+        }
+        assert artifact != null;
         ic.add(artifact);
         if (info != null) {
             ic.add(info);
@@ -100,25 +113,34 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
-                if (fRepos != null) {
-                    repos.addAll(fRepos);
-                }
-                if (repos.size() == 0) {
-                    //add central repo
-                    repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central"));
-                    //add repository form info
-                    if (info != null && !"central".equals(info.getRepoId())) {
-                        RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                        String url = rinfo.getRepositoryUrl();
-                        if (url != null) {
-                            repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                MavenProject mvnprj;
+                if (prj == null) {
+                    List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                    if (fRepos != null) {
+                        repos.addAll(fRepos);
+                    }
+                    if (repos.size() == 0) {
+                        //add central repo
+                        repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central"));
+                        //add repository form info
+                        if (info != null && !"central".equals(info.getRepoId())) {
+                            RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                            String url = rinfo.getRepositoryUrl();
+                            if (url != null) {
+                                repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                            }
                         }
                     }
+                    mvnprj = readMavenProject(embedder, fArt, repos);
+                } else {
+                    NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
+                    @SuppressWarnings("unchecked")
+                    List<String> profiles = im.getMavenProject().getActiveProfiles();
+                    mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
+                    //TODO add editable model to the lookup, to allow editing of dependencies..
                 }
-                MavenProject prj = readMavenProject(embedder, fArt, repos);
-                ic.add(prj);
-                DependencyNode root = DependencyTreeFactory.createDependencyTree(prj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                ic.add(mvnprj);
+                DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                 ic.add(root);
             }
         });

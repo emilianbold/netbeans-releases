@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -72,26 +73,7 @@ public final class ArtifactViewer {
      * @param info
      */
     public static void showArtifactViewer(NBVersionInfo info, String panelHint) {
-        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
-        if (fact == null) {
-            Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
-            return;
-        }
-        TopComponent tc = fact.createTopComponent(info);
-        tc.open();
-        tc.requestActive();
-        if (panelHint != null) {
-            MultiViewHandler hand = MultiViews.findMultiViewHandler(tc);
-            if (hand == null) {
-                return;
-            }
-            for (MultiViewPerspective pers : hand.getPerspectives()) {
-                if (panelHint.equals(pers.preferredID())) {
-                    hand.requestVisible(pers);
-                    return;
-                }
-            }
-        }
+        showArtifactViewer(null, info, null, null, panelHint);
 
     }
     /**
@@ -99,7 +81,7 @@ public final class ArtifactViewer {
      * @param info
      */
     public static void showArtifactViewer(NBVersionInfo info) {
-        showArtifactViewer(info, null);
+        showArtifactViewer(null, info, null, null, null);
     }
 
     /**
@@ -107,12 +89,40 @@ public final class ArtifactViewer {
      * @param info
      */
     public static void showArtifactViewer(Artifact artifact, List<ArtifactRepository> repos, String panelHint) {
+        showArtifactViewer(null, null, artifact, repos, panelHint);
+    }
+
+    /**
+     * Shows detailed view component with information about the given artifact.
+     * @param info
+     */
+    public static void showArtifactViewer(Artifact artifact, List<ArtifactRepository> repos) {
+        showArtifactViewer(null, null, artifact, repos, null);
+    }
+
+    /**
+     * Shows detailed view component with information about the given project.
+     * @param project
+     * @param panelHint
+     */
+    public static void showArtifactViewer(Project project, String panelHint) {
+        showArtifactViewer(project, null, null, null, panelHint);
+    }
+
+    private static void showArtifactViewer(Project project, NBVersionInfo info, Artifact artifact, List<ArtifactRepository> repos, String panelHint) {
         ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
         if (fact == null) {
             Logger.getLogger(ArtifactViewer.class.getName()).info("No implementation of ArtifactViewerFactory available.");
             return;
         }
-        TopComponent tc = fact.createTopComponent(artifact, repos);
+        TopComponent tc;
+        if (project != null) {
+            tc = fact.createTopComponent(project);
+        } else if (info != null) {
+            tc = fact.createTopComponent(info);
+        } else {
+            tc = fact.createTopComponent(artifact, repos);
+        }
         tc.open();
         tc.requestActive();
         if (panelHint != null) {
@@ -127,14 +137,6 @@ public final class ArtifactViewer {
                 }
             }
         }
-    }
-
-    /**
-     * Shows detailed view component with information about the given artifact.
-     * @param info
-     */
-    public static void showArtifactViewer(Artifact artifact, List<ArtifactRepository> repos) {
-        showArtifactViewer(artifact, repos, null);
     }
 }
 

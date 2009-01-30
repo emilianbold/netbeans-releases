@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.indexer.spi.ui;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.windows.TopComponent;
 
@@ -54,4 +55,6 @@ public interface ArtifactViewerFactory {
     TopComponent createTopComponent(NBVersionInfo info);
 
     TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos);
+
+    TopComponent createTopComponent(Project prj);
 }

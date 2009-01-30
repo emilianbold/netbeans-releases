@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
@@ -220,6 +221,17 @@ public final class NbMavenProject {
      */ 
     public MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
+    }
+
+    /**
+     *
+     * @param embedder
+     * @param activeProfiles
+     * @param properties
+     * @return
+     */
+    public MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+        return project.loadMavenProject(embedder, activeProfiles, properties);
     }
 
     /**
