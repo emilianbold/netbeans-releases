@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -60,7 +61,9 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.UniFileLoader;
+import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -113,6 +116,16 @@ public class FodDataObjectFactory implements DataObject.Factory {
             super(fo, loader);
             this.fo = fo;
         }
+
+        @Override
+        protected Node createNodeDelegate() {
+            DataNode dn = new DataNode(this, Children.LEAF);
+            dn.setIconBaseWithExtension("org/netbeans/modules/ide/ergonomics/fod/file.png");
+            return dn;
+        }
+
+
+
         public void open() {
             delegate(true);
         }
