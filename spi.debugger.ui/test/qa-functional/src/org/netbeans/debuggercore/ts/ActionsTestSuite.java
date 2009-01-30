@@ -69,10 +69,6 @@ public class ActionsTestSuite extends JellyTestCase {
                 .addTest(ActionsTest.class, 
                     "testCheckEnabledActions",
                     "testCheckEnabledActionsDebugging",
-                    "testToggleBreakpoints",
-                    "testStartDebugging",
-                    "testRemoveBreakpoint",
-                    "testContinue",
                     "testPause").enableModules(".*").clusters(".*"));
 //        }
     } 

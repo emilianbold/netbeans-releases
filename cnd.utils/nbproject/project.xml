@@ -61,6 +61,7 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
+                <package>org.netbeans.modules.cnd.support</package>
                 <package>org.netbeans.modules.cnd.utils</package>
                 <package>org.netbeans.modules.cnd.utils.cache</package>
                 <package>org.netbeans.modules.cnd.utils.ui</package>
