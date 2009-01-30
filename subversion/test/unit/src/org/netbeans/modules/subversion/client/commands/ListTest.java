@@ -57,19 +57,21 @@ public class ListTest extends AbstractCommandTest {
     }
 
     @Override
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         if(getName().equals("testListNullAuthor")) {
             setAnnonWriteAccess();
-            String[] cmd = new String[]{"svnserve", "-d"};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
-        }                        
-        super.setUp();
+            runSvnServer();
+        }
+        try {
+            super.setUp();
+        } catch (Exception e) {
+            stopSvnServer();
+        }
     }
     
     @Override
     protected void tearDown() throws Exception {
-        if(getName().equals("testListNullAuthor")) {        
+        if(getName().equals("testListNullAuthor")) {
             restoreAuthSettings();
         }
         super.tearDown();
@@ -143,17 +145,17 @@ public class ListTest extends AbstractCommandTest {
         assertEntryArrays(entries1, entries2);                
     }
    
-    public void testListNullAuthor() throws Exception {                                        
+    public void testListNullAuthor() throws Exception {
         File file = createFile("file");
-                
-        add(file);                               
+
+        add(file);
         commit(getWC());
-                        
-        ISVNClientAdapter c = getNbClient();        
+
+        ISVNClientAdapter c = getNbClient();
         ISVNDirEntry[] entries = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
-                
+
         assertNull(entries[0].getLastCommitAuthor());
-        
-    }      
+
+    }
     
 }
