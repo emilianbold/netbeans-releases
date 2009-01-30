@@ -40,7 +40,11 @@
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:if test="@url">
-                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+                <xsl:attribute name="url">
+                    <xsl:call-template name="filename">
+                        <xsl:with-param name="text" select="@url"/>
+                    </xsl:call-template>
+                </xsl:attribute>
             </xsl:if>
             <xsl:apply-templates mode="project-wizard"/>
         </xsl:element>

@@ -220,6 +220,30 @@ public class FilesAndAttributesCheck extends NbTestCase {
             fail("Expected some files for mimetype check");
         }
 
+        Enumeration<? extends FileObject> en2 = FileUtil.getConfigFile("Services/MIMEResolver").getChildren(true);
+        while (en2.hasMoreElements()) {
+            FileObject fo = en2.nextElement();
+            if (!fo.isData()) {
+                continue;
+            }
+
+            int read = -1;
+            InputStream is = null;
+            try {
+                is = fo.getInputStream();
+                read = is.read(new byte[4096]);
+            } catch (IOException ex) {
+                errors.append(ex.getMessage()).append('\n');
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+            if (read <= 0) {
+                errors.append("Content shall exist: " + fo + "\n");
+            }
+        }
+
         if (errors.length() > 0) {
             fail(errors.toString());
         }
