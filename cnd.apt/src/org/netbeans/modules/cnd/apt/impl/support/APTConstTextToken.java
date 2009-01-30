@@ -131,11 +131,13 @@ public class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes 
         constText[DEFINED]              ="defined"; // NOI18N
     }
     
+    @Override
     public String getText() {
         //assert(constText[getType()] != null) : "Not initialized ConstText for type " + getType(); // NOI18N
         return constText[getType()];
     }
     
+    @Override
     public void setText(String t) {
         //assert(true) : "setText should not be called for ConstText token"; // NOI18N
         /*String existingText = getText();
@@ -149,47 +151,58 @@ public class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes 
         }*/
     }
 
+    @Override
     public int getEndOffset() {
         return getOffset() + getText().length();
         //return endOffset;
     }
 
+    @Override
     public int getEndLine() {
         return getLine();
     }
 
+    @Override
     public int getEndColumn() {
         return getColumn() + getText().length();
     }
 
+    @Override
     public int getColumn() {
         return column;
     }
 
+    @Override
     public void setLine(int l) {
         line = l;
     }
 
+    @Override
     public void setOffset(int o) {
         offset = o;
     }
 
+    @Override
     public int getOffset() {
         return offset;
     }
 
+    @Override
     public void setType(int t) {
         type = t;
     }
 
+    @Override
     public int getType() {
         return type;
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public void setColumn(int c) {
         column = c;
     }
