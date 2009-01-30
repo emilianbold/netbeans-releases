@@ -182,7 +182,6 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     private transient AbstractButton          pauseAnimationButton;
     private transient AbstractButton          scaleToggleButton;
     private transient AbstractButton          showViewBoxToggleButton;
-    private transient AbstractButton          landscapeModeToggleButton;
     private transient ChangeListener          changeListener;
     private transient boolean                 doScale = false;
     //decoration
@@ -194,7 +193,8 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     private transient ZoomInAction            zoomInAction;
     private transient ZoomOutAction           zoomOutAction;
     private transient ToggleShowViewBoxAction showViewBoxAction;
-    private transient ToggleLandscapeModeAction landscapeModeAction;
+    private transient RotateLeftModeAction    rotateLeftModeAction;
+    private transient RotateRightModeAction   rotateRightModeAction;
 
     private final class UpdateThread extends Thread {
 
@@ -239,9 +239,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
                     startAnimationAction.actionPerformed(e);
                 }
                 insertGraphicsAction.setEnabled(true);
+                rotateLeftModeAction.setEnabled(true);
+                rotateRightModeAction.setEnabled(true);
                 smgr.setReadOnly(false);
             } else {
                 insertGraphicsAction.setEnabled(false);
+                rotateLeftModeAction.setEnabled(false);
+                rotateRightModeAction.setEnabled(false);
                 smgr.setReadOnly(true);
             }
 
@@ -366,7 +370,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     Action[] getImageContextActions(){
         return new Action[]{ 
             zoomToFitAction , 
-            scaleToggleButton.getAction(), 
+            scaleToggleButton.getAction(),
+            rotateLeftModeAction,
+            rotateRightModeAction,
             getToggleHighlightAction()};
     }
     
@@ -781,7 +787,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         toolbar.add(createToolBarSeparator(), constrains);
         initButton(toolbar, insertGraphicsAction, false);
 
-        landscapeModeToggleButton = initButton(toolbar, landscapeModeAction = new ToggleLandscapeModeAction(), true);
+        toolbar.add(createToolBarSeparator(), constrains);
+        initButton(toolbar, rotateLeftModeAction = new RotateLeftModeAction(), false);
+        initButton(toolbar, rotateRightModeAction = new RotateRightModeAction(), false);
         toolbar.add(createToolBarSeparator(), constrains);
 
         addButtonsForActions(toolbar, smgr.getToolbarActions(
@@ -1041,7 +1049,8 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             zoomOutAction,
             scaleAction,
             showViewBoxAction,
-            landscapeModeAction,
+            rotateLeftModeAction,
+            rotateRightModeAction,
             startAnimationAction,
             pauseAnimationAction,
             allowEditAction}, this, lookup);
@@ -1059,12 +1068,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         } else {
             showViewBoxAction.setEnabled(true);
         }
-        landscapeModeAction.setEnabled(true);
+        rotateLeftModeAction.setEnabled(true);
+        rotateRightModeAction.setEnabled(true);
         showViewBoxToggleButton.setSelected(scrMgr.getShowAllArea());
 
-        // TODO save info about orientation to refresh it correctly
+        // TODO save info about orientation. To use in designer for tab order calculation
         scrMgr.setLandscapeMode(getPerseusController().isImgHorizontallyOriented());
-        landscapeModeToggleButton.setSelected(scrMgr.isLandscapeMode());
 
                 
         topComponent.requestFocus();
@@ -1385,12 +1394,36 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
-    private class ToggleLandscapeModeAction extends AbstractSVGAction implements Presenter.Popup {
-        private static final long serialVersionUID = 5862679852552354L;
 
-     private final Logger LOG = Logger.getLogger(ToggleLandscapeModeAction.class.getName());
-        ToggleLandscapeModeAction() {
-            super("svg_landscape_mode"); //NOI18N
+    private class RotateLeftModeAction extends AbstractRotateModeAction {
+
+        public RotateLeftModeAction() {
+            super("svg_rotate_l_mode", false);//NOI18N
+        }
+
+    }
+
+    private class RotateRightModeAction extends AbstractRotateModeAction {
+
+        public RotateRightModeAction() {
+            super("svg_rotate_r_mode", true);//NOI18N
+        }
+
+    }
+
+    private abstract class AbstractRotateModeAction extends AbstractSVGAction implements Presenter.Popup {
+        private static final long serialVersionUID = 5862679852552354L;
+        private boolean rotateRight;
+
+        /**
+         *
+         * @param name action idintification name
+         * @param rotateRight true if it is "rotate right" action,
+         * false if it is "rotate left" action
+         */
+        AbstractRotateModeAction(String name, boolean rotateRight) {
+            super(name); 
+            this.rotateRight = rotateRight;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1398,11 +1431,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             boolean b = !smgr.isLandscapeMode();
             // collect attributes we should update to change orientation.
             Map<DocumentElement, String[]> attrsByElement = changeViewBox(b);
-            Map<String, String[]> attrsById = rotateElements(b);
+            Map<String, String[]> attrsById = rotateElements();
             // update attributes in a single transaction
             getModel().setAttributes(attrsById, attrsByElement);
             smgr.setLandscapeMode(b);
-            landscapeModeToggleButton.setSelected(b);
             //repaint();
             updateImage();
         }
@@ -1420,7 +1452,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
                 DocumentElement svgRoot = getModel().getSVGRoot(getModel().getModel());
                 String[] attributes = new String[]{
                     SVGConstants.SVG_VIEW_BOX_ATTRIBUTE,
-                    rect.getX() + " " + rect.getY() + " " + rect.getWidth() + " " + rect.getHeight(),
+                    rect.getX() + " " + rect.getY() + " " + rect.getWidth() + " " + rect.getHeight(),//NOI18N
                     SVGConstants.SVG_WIDTH_ATTRIBUTE, String.valueOf(rect.getWidth()),
                     SVGConstants.SVG_HEIGHT_ATTRIBUTE, String.valueOf(rect.getHeight())
                 };
@@ -1434,15 +1466,15 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         }
 
-        private Map<String, String[]> rotateElements(boolean isLandscape) {
+        private Map<String, String[]> rotateElements() {
             SceneManager m_sceneMgr = getSceneManager();
-            int angle = isLandscape ? 90 : -90;
+            int angle = rotateRight ? 90 : -90;
             SVGSVGElement svgRoot = m_sceneMgr.getPerseusController().getSVGRootElement();
 
             SVGRect viewBoxRect = svgRoot.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
             float translateH = viewBoxRect != null ? viewBoxRect.getHeight() : 0f;
             float translateW = viewBoxRect != null ? viewBoxRect.getWidth() : 0f;
-            float[] translate = isLandscape 
+            float[] translate = rotateRight
                     ? new float[]{ translateH, 0f}
                     : new float[]{ 0f, translateW};
 
@@ -1462,24 +1494,22 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
             return textChanges;
         }
-    }
 
-    private void rotateElement(SVGElement elem, int angle, float[] translate, 
-            Map<String, String[]> textChanges, Rectangle bBox)
-    {
-        SVGObject obj = getSceneManager().getPerseusController().getObjectForSVGElement(elem);
-        if (obj == null) {
-            return;
-        }
-        bBox.add(obj.getScreenBBox());
-        obj.setLandscape(angle, translate);
-        bBox.add(obj.getScreenBBox());
+        private void rotateElement(SVGElement elem, int angle, float[] translate,
+                Map<String, String[]> textChanges, Rectangle bBox) {
+            SVGObject obj = getSceneManager().getPerseusController().getObjectForSVGElement(elem);
+            if (obj == null) {
+                return;
+            }
+            bBox.add(obj.getScreenBBox());
+            obj.setLandscape(angle, translate);
+            bBox.add(obj.getScreenBBox());
 
-        if (!PerseusController.ID_VIEWBOX_MARKER.equals(obj.getElementId())) {
-            textChanges.put(obj.getElementId(), obj.prepareTextChanges());
-            //obj.applyTextChanges();
+            if (!PerseusController.ID_VIEWBOX_MARKER.equals(obj.getElementId())) {
+                textChanges.put(obj.getElementId(), obj.prepareTextChanges());
+            }
+            obj.commitChanges();
         }
-        obj.commitChanges();
     }
 
     private class ZoomToFitAction extends AbstractSVGAction {

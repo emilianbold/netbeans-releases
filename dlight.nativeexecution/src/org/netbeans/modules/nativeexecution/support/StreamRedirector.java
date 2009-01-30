@@ -99,6 +99,7 @@ public class StreamRedirector extends Thread {
             String line;
             while ((line = breader.readLine()) != null) {
                 if (!"".equals(line)) {
+//                    System.out.println(name + ": " + line);
                     writer.write(line);
                     writer.append('\n');
                     writer.flush();

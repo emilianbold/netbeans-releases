@@ -44,7 +44,6 @@ package org.netbeans.core.windows.view;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.core.windows.Constants;
@@ -198,6 +197,7 @@ public class SplitView extends ViewElement {
         return getSplitPane().getDividerSize();
     }
     
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append( super.toString() );

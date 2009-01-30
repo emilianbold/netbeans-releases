@@ -29,10 +29,12 @@
 -->
     <answer id="arch-overall">
         <p>
-   The module contains API that can be used by D-Light clients to create
+   The module provides implementation of <tt>DataCollectorConfiguration</tt>
+   (<tt>CLIODCConfiguration</tt>) that can be used by D-Light clients to create
    DataCollectors based on 'command-line utilities' that put information to the
    standard output stream. See use case section for more details.
-   This module provides <api name="StdoutAPI" group="java" type="export" category="devel"/>,
+   This module provides <api name="StdoutCollectorAPI" group="java" type="export"
+   category="devel" url="http://wiki.netbeans.org/DLightToolkitDesign"/>,
         </p>
     </answer>
 
@@ -53,7 +55,7 @@
 -->
     <answer id="arch-quality">
         <p>
-   No unit tests so far... Module is heavily used by C/C++ Observability tool
+   No unit tests so far... Module is intensively used by C/C++ Observability tool
    that (will) have assigned QE.
         </p>
     </answer>
@@ -148,6 +150,8 @@
                 with the PID of process that is tracked by D-Light. Also a
                 parser <b>PrstatOutputParser</b> is created to deal with prstat
                 output.
+                For more documentation about D-Light Toolkit Design refer to
+                <a href="http://wiki.netbeans.org/DLightToolkitDesign">http://wiki.netbeans.org/DLightToolkitDesign</a>.
             </usecase>
         </p>
     </answer>
@@ -169,7 +173,8 @@
             There are many tools available on the market that provide different
             information that one may want to visualize and that put all provided
             information in a simple, parseable format into the Standard Output
-            Stream. This module provides API that can be used to "integrate"
+            Stream. The example of such tools is prstat(1M), snoop(1M), etc..
+            This module provides API that can be used to "integrate"
             such tools to the D-Light Infrastructure. 
         </p>
     </answer>
@@ -461,7 +466,7 @@ Yes.
     <answer id="deploy-packages">
         <p>
    Yes. The module provides an API and
-   <tt>org.netbeans.modules.dlight.collector.stdout.api</tt> module is made
+   <tt>org.netbeans.modules.dlight.collector.stdout</tt> module is made
    public. Other packages are not public.
         </p>
     </answer>

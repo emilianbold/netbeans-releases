@@ -42,10 +42,14 @@ package org.netbeans.modules.subversion;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -54,6 +58,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -81,6 +86,9 @@ public class InteceptorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            SubversionVCS.class});
         dataRootDir = new File(System.getProperty("data.root.dir")); 
         FileUtil.refreshFor(dataRootDir);
         wc = new File(dataRootDir, getName() + "_wc");        
@@ -112,13 +120,13 @@ public class InteceptorTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(createSuite());
-        
+
         suite.addTest(deleteSuite());
-        
+
         suite.addTest(renameViaDataObjectSuite());
         suite.addTest(renameViaFileObjectSuite());
-        
-        suite.addTest(moveViaDataObjectSuite());        
+
+        suite.addTest(moveViaDataObjectSuite());
         suite.addTest(moveViaFileObjectSuite());
         
         return suite;
@@ -126,7 +134,9 @@ public class InteceptorTest extends NbTestCase {
     
     public static Test deleteSuite() {
 	TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("deleteCreateChangeCase_issue_157373"));
         suite.addTest(new InteceptorTest("deleteNotVersionedFile"));
+        suite.addTest(new InteceptorTest("deleteVersionedFileExternally"));
         suite.addTest(new InteceptorTest("deleteVersionedFile"));
         suite.addTest(new InteceptorTest("deleteVersionedFolder"));
         suite.addTest(new InteceptorTest("deleteNotVersionedFolder"));
@@ -205,7 +215,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("moveA2B2C2A_FO"));
         suite.addTest(new InteceptorTest("moveA2B_CreateA_FO"));
         suite.addTest(new InteceptorTest("moveVersionedFolder_FO"));
-        suite.addTest(new InteceptorTest("moveFileTree_FO"));                                
+        suite.addTest(new InteceptorTest("moveFileTree_FO"));
         
         return(suite);
     }
@@ -218,7 +228,7 @@ public class InteceptorTest extends NbTestCase {
 
         // delete
         delete(file);
-        
+
         // test
         assertFalse(file.exists());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
@@ -231,22 +241,46 @@ public class InteceptorTest extends NbTestCase {
     public void deleteVersionedFile() throws Exception {
         // init
         File file = new File(wc, "file");
-        file.createNewFile();        
-        commit(wc);        
+        file.createNewFile();
+        commit(wc);
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
 
         // delete
         delete(file);
-        
+
         // test
         assertFalse(file.exists());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
-        
+
         assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
-        
+
         commit(wc);
-        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
+
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
+    }
+
+    public void deleteVersionedFileExternally() throws Exception {
+        // init
+        File file = new File(wc, "file");
+        FileUtil.toFileObject(wc).createData(file.getName());
+        assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        commit(wc);
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(file));
+
+        // delete externally
+        file.delete();
+
+        // test
+        assertFalse(file.exists());
+        assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
+
+        // notify changes
+        FileUtil.refreshFor(file);
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+        commit(wc);
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
     }
 
     public void deleteVersionedFolder() throws Exception {
@@ -520,11 +554,11 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(fromFile.exists());
         assertTrue(toFile.exists());
         
-        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());        
-        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());        
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(toFile).getTextStatus());
         
-        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);                
-        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);   
+        assertCachedStatus(fromFile, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertCachedStatus(toFile, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
         
         commit(wc);
     }
@@ -664,10 +698,10 @@ public class InteceptorTest extends NbTestCase {
         assertFalse(fromFile.exists());
         assertTrue(toFile.exists());
         
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fromFile).getTextStatus());
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());        
-        
-        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));                
+
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fromFile));
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
         
         commit(wc);
@@ -1657,8 +1691,8 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(fileB.exists());
         assertTrue(fileA.exists());
         
-        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
-        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());
         
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
         assertCachedStatus(fileB, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);                
@@ -1891,7 +1925,54 @@ public class InteceptorTest extends NbTestCase {
         
         commit(wc);
         assertFalse(fromFolder.exists());
-    }    
+    }
+
+    public void deleteCreateChangeCase_issue_157373 () throws Exception {
+        // init
+        final File fileA = new File(wc, "file");
+        FileUtil.toFileObject(wc).createData(fileA.getName());
+        assertCachedStatus(fileA, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        commit(wc);
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));
+
+        // rename
+        fileA.delete();
+        Handler h = new SVNInterceptor();
+        Subversion.LOG.addHandler(h);
+        RequestProcessor.Task r = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                FileUtil.refreshFor(fileA);
+            }
+        });
+        r.run();
+        assertFalse(fileA.exists());
+        final File fileB = new File(wc, fileA.getName().toUpperCase());
+        fileB.createNewFile();
+        Thread.sleep(3000);
+        assertTrue(fileB.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileB));
+        Subversion.LOG.removeHandler(h);
+    }
+
+    class SVNInterceptor extends Handler {
+        public void publish(LogRecord rec) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public void flush() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
     
     protected void commit(File folder) throws SVNClientException {
         TestKit.commit(folder);
