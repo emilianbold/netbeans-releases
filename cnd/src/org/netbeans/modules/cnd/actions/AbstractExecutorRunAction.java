@@ -183,23 +183,9 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
-
         // Build directory
         String bdir = mes.getBuildDirectory();
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = makefile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(makefile.getParentFile(), bdir);
-        }
-        try {
-            buildDir = buildDir.getCanonicalFile();
-        }
-        catch (IOException ioe) {
-            // FIXUP
-        }
+        File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
     }
 
@@ -322,5 +308,28 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    protected static File getAbsoluteBuildDir(String bdir, File startFile) {
+        File buildDir;
+        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
+            buildDir = startFile.getParentFile();
+        } else if (IpeUtils.isPathAbsolute(bdir)) {
+            buildDir = new File(bdir);
+        } else {
+            buildDir = new File(startFile.getParentFile(), bdir);
+        }
+        try {
+            // TODO:
+            // canonical path is used but not appropriate here
+            // we must emulate command line behaviour and
+            // looks like absolute path is more appropriate
+            // better:
+            // buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile())
+            buildDir = buildDir.getCanonicalFile();
+        } catch (IOException ioe) {
+            // FIXUP
+        }
+        return buildDir;
     }
 }
