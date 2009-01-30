@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration.LibraryToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
@@ -161,8 +160,8 @@ public class QmakeProjectWriter {
                 configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue()));
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD,
-                configuration.getQmakeConfiguration().getConfig().getValue());
-        write(bw, Variable.QT, Operation.SET, getQtModules());
+                configuration.getQmakeConfiguration().getBuildMode().getOption());
+        write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
         Item[] items = projectDescriptor.getProjectItems();
         write(bw, Variable.SOURCES, Operation.ADD, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
@@ -194,6 +193,11 @@ public class QmakeProjectWriter {
         LibraryToString libVisitor = new LibraryToString(configuration);
         write(bw, Variable.LIBS, Operation.ADD,
                 configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
+
+        for (String line : configuration.getQmakeConfiguration().getCustomDefs().getValue()) {
+            bw.write(line);
+            bw.write('\n'); // NOI18N
+        }
     }
 
     private void write(BufferedWriter bw, Variable var, Operation op, String value) throws IOException {
@@ -248,40 +252,6 @@ public class QmakeProjectWriter {
             default:
                 return ""; // NOI18N
         }
-    }
-
-    private String getQtModules() {
-        QmakeConfiguration conf = configuration.getQmakeConfiguration();
-        StringBuilder buf = new StringBuilder();
-        if (conf.isCoreEnabled().getValue()) {
-            append(buf, "core"); // NOI18N
-        }
-        if (conf.isGuiEnabled().getValue()) {
-            append(buf, "gui"); // NOI18N
-        }
-        if (conf.isNetworkEnabled().getValue()) {
-            append(buf, "network"); // NOI18N
-        }
-        if (conf.isOpenglEnabled().getValue()) {
-            append(buf, "opengl"); // NOI18N
-        }
-        if (conf.isSqlEnabled().getValue()) {
-            append(buf, "sql"); // NOI18N
-        }
-        if (conf.isSvgEnabled().getValue()) {
-            append(buf, "svg"); // NOI18N
-        }
-        if (conf.isXmlEnabled().getValue()) {
-            append(buf, "xml"); // NOI18N
-        }
-        return buf.toString();
-    }
-
-    private static void append(StringBuilder buf, String val) {
-        if (0 < buf.length()) {
-            buf.append(' '); // NOI18N
-        }
-        buf.append(val);
     }
 
 }
