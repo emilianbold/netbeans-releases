@@ -55,6 +55,21 @@ public abstract class CodeReferencePresenter extends CodePresenter {
 
     protected abstract String generateTypeCode ();
 
+    protected String generateAccessCode( String newName ){
+        return null;
+    }
+
+    public static String generateAccessCode (DesignComponent component, 
+            String newName)
+    {
+        if (component == null)
+            return "null"; // NOI18N
+        CodeReferencePresenter presenter = component.getPresenter (CodeReferencePresenter.class);
+        if (presenter == null)
+            throw Debug.illegalArgument ("Missing CodeReferencePresenter for component", component); // NOI18N
+        return presenter.generateAccessCode ( newName );
+    }
+    
     public static String generateAccessCode (DesignComponent component) {
         if (component == null)
             return "null"; // NOI18N

@@ -40,10 +40,15 @@
 package org.netbeans.modules.mobility.svgcore.items.form;
 
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+import org.netbeans.modules.mobility.svgcore.options.SvgcoreSettings;
+import org.netbeans.modules.mobility.svgcore.snippets.gradientlook.SVGSnipetsProviderGradient;
+import org.openide.util.Lookup;
 
 /**
  * @author akorostelev
@@ -108,8 +113,9 @@ public abstract class SVGFormElement extends SVGComponentDrop{
      * @return snippet String
      * @throws java.io.IOException
      */
-    protected String loadSnippetString() throws IOException{
-        return loadSnippetString(SVGFormElement.class, mySnippetPath);
+    protected final String loadSnippetString() throws IOException{
+        Class curentSnippetsProviderClass = getCurrentSnippetsProviderClass();
+        return loadSnippetString(curentSnippetsProviderClass, mySnippetPath);
     }
 
     private String getSnippet(String id) throws IOException {
@@ -120,4 +126,20 @@ public abstract class SVGFormElement extends SVGComponentDrop{
     
     private String myIdPrefix;
     private String mySnippetPath;
+
+    private static final Class getCurrentSnippetsProviderClass() {
+        String providerName = SvgcoreSettings.getDefault().getCurrentSnippet();
+        if (providerName == null) {
+            return SVGSnipetsProviderClassic.class;
+        }
+        Collection<? extends SVGSnippetsProvider> snippetCollection = Lookup.getDefault().lookupAll(SVGSnippetsProvider.class);
+
+        for (SVGSnippetsProvider provider : snippetCollection) {
+            if (providerName.equals(provider.getName())) {
+                return provider.getClass();
+            }
+        }
+
+        throw new IllegalArgumentException();
+    }
 }

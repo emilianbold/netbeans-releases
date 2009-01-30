@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.navigation.callgraph;
 
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -69,7 +70,14 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (ref == null) {
             return null;
         }
-        project = ref.getContainingFile().getProject();
+        CsmFile file = ref.getContainingFile();
+        if (file == null){
+            return null;
+        }
+        project = file.getProject();
+        if (project == null){
+            return null;
+        }
         CsmObject obj = ref.getOwner();
         if (CsmKindUtilities.isFunction(obj)) {
             function = (CsmFunction) obj;

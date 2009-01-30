@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -98,7 +97,10 @@ public class GetterSetterGenerator implements CodeGenerator {
                         methods.put(method.getName().toString(), l);
                     }
                     l.add(method);
-                } else if (CsmKindUtilities.isField(member)) {
+                }
+            }
+            for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
+                if (CsmKindUtilities.isField(member)) {
                     CsmField variableElement = (CsmField)member;
                     ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset));
                     boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods);

@@ -52,6 +52,8 @@ public final class QueryField {
     public static final String FIELD_CLASSES = "classes";
     public static final String FIELD_NAME = "name";
     public static final String FIELD_DESCRIPTION = "description";
+    public static final String FIELD_PACKAGING = "packaging";
+
     
     public static final int MATCH_EXACT = 0;
     public static final int MATCH_ANY = 1;

@@ -59,7 +59,7 @@ public class NativeTaskSupport {
         Integer result = new Integer(-1);
 
         try {
-            result = task.invoke();
+            result = task.invoke(false);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

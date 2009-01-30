@@ -45,13 +45,17 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.client.SvnClientTestFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -77,6 +81,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
     private File repoDir;
     private String repoPath;
     private SVNUrl repo2Url;
+    private boolean ownClientFactory;
         
     public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
@@ -89,14 +94,19 @@ public abstract class AbstractSvnTest extends NbTestCase {
         }
         
         wc = new File(workDir, getName() + "_wc");        
-    }   
+    }
+
+    public void setOwnClientFactory (boolean own) {
+        this.ownClientFactory = own;
+    }
 
     @Override
     protected void setUp() throws Exception {          
         super.setUp();      
-        
-        repoUrl = new SVNUrl(getRepoURLProtocol() + repoPath);
-        
+        MockServices.setServices(new Class[] {
+            SubversionVCS.class});
+        repoUrl = new SVNUrl(TestUtilities.formatFileURL(new File(repoPath)));
+
         System.setProperty("netbeans.user", System.getProperty("work.dir") + "/cache");
         cache = Subversion.getInstance().getStatusCache();
         cache.cleanUp();
@@ -285,8 +295,12 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return false;
     }
     
-    private ISVNClientAdapter getClient() {
-        return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+    private ISVNClientAdapter getClient() throws SVNClientException {
+        if (ownClientFactory) {
+            return SvnClientTestFactory.getInstance().createSvnClient();
+        } else {
+            return SvnClientFactory.getInstance().createSvnClient();
+        }
     }   
     
     protected void assertCachedStatus(File file, int expectedStatus) throws Exception {
@@ -330,13 +344,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(!repo2Dir.exists()) {
             FileUtils.copyDirFiles(getRepoDir(), repo2Dir);    
         }        
-        repo2Url = new SVNUrl("file://" + repopath);        
+        repo2Url = new SVNUrl(TestUtilities.formatFileURL(new File(repopath)));
     }      
     
     protected void svnimportWC() throws SVNClientException {
         ISVNClientAdapter client = getClient();        
         SVNUrl url = getTestUrl().appendPath(wc.getName());
-        client.mkdir(url, true, "msg");        
+        try {
+            client.mkdir(url, true, "msg");
+        } catch (SVNClientException ex) {
+        }
         client.checkout(url, wc, SVNRevision.HEAD, true);        
         File[] files = wc.listFiles();
         if(files != null) {

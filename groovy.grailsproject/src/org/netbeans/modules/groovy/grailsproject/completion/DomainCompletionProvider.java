@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.groovy.grailsproject.completion;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -130,8 +128,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (/*context.getClassName().equals(context.getSourceClassName()) && project != null
-                && */context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
@@ -150,14 +147,6 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
 
         Matcher matcher = getQueryMethodPattern(context).matcher(context.getPrefix());
-//        System.out.println("MATCHES: " + matcher.matches());
-//        if (matcher.matches()) {
-//            System.out.println("GROUPS: " + matcher.groupCount());
-//            for (int i = 1; i <= matcher.groupCount(); i++) {
-//                System.out.println("GROUP(" + i + "): " + matcher.group(i));
-//            }
-//            System.out.println("PREFIX: " + matcher.group(9));
-//        }
 
         if (matcher.matches()) {
             String prefix = matcher.group(13);
@@ -197,62 +186,16 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
             for (Map.Entry<String, Integer> entry : names.entrySet()) {
 
-                String[] parameters = new String[entry.getValue().intValue()];
-                Arrays.fill(parameters, "java.lang.Object");
-                result.put(new MethodSignature(entry.getKey(), parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
-
-                parameters = new String[entry.getValue().intValue() + 1];
-                Arrays.fill(parameters, "java.lang.Object");
-                parameters[entry.getValue().intValue()] = "java.util.Map";
-                result.put(new MethodSignature(entry.getKey(), parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), parameters, "java.lang.Object", context.isNameOnly(), false));
-
-                if (!context.isNameOnly()) {
-                    result.put(new MethodSignature(entry.getKey() + "_", new String[] {}),
-                            CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey(), new String[] {}, "java.lang.Object", true, true));
-                }
+                addQueryEntries(result, context, matcher.group(1),
+                        entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue());
             }
         } else {
             for (String property : context.getProperties()) {
-                String name = FIND_BY_METHOD + capitalise(property);
-                String[] parameters = new String[] {"java.lang.Object"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.lang.Object", context.isNameOnly(), false));
-                parameters = new String[] {"java.lang.Object", "java.util.Map"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.lang.Object", context.isNameOnly(), false));
+                String tail = capitalise(property);
 
-                if (!context.isNameOnly()) {
-                    result.put(new MethodSignature(name + "_", new String[] {}),
-                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "java.lang.Object", true, true));
-                }
-
-                name = FIND_ALL_BY_METHOD + capitalise(property);
-                parameters = new String[] {"java.lang.Object"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.util.List", context.isNameOnly(), false));
-                parameters = new String[] {"java.lang.Object", "java.util.Map"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "java.util.List", context.isNameOnly(), false));
-
-                if (!context.isNameOnly()) {
-                    result.put(new MethodSignature(name + "_", new String[] {}),
-                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "java.util.List", true, true));
-                }
-
-                name = COUNT_BY_METHOD + capitalise(property);
-                parameters = new String[] {"java.lang.Object"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "int", context.isNameOnly(), false));
-                parameters = new String[] {"java.lang.Object", "java.util.Map"};
-                result.put(new MethodSignature(name, parameters),
-                        CompletionItem.forDynamicMethod(context.getAnchor(), name, parameters, "int", context.isNameOnly(), false));
-
-                if (!context.isNameOnly()) {
-                    result.put(new MethodSignature(name + "_", new String[] {}),
-                            CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, "int", true, true));
-                }
+                addQueryEntries(result, context, FIND_ALL_BY_METHOD, tail, 1);
+                addQueryEntries(result, context, FIND_BY_METHOD, tail, 1);
+                addQueryEntries(result, context, COUNT_BY_METHOD, tail, 1);
             }
         }
         return result;
@@ -340,7 +283,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         int paramCount = 0;
         Pattern pattern = Pattern.compile("(.*)(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?");
         for (String part : parts) {
-            result.add(part);
+            //result.add(part);
 
             Matcher singleMatcher = pattern.matcher(part);
             if (singleMatcher.matches()) {
@@ -351,12 +294,42 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                     paramCount += 1;
                 } else if (comparator == null) {
                     paramCount += 1;
-                    result.add(part + "Equal");
+                    //result.add(part + "Equal");
                 }
             }
         }
 
         return paramCount;
+    }
+
+    private void addQueryEntries(Map<MethodSignature, CompletionItem> result,
+            CompletionContext context, String prefix, String tail, int params) {
+
+        String returnType = "java.lang.Object";
+        if (FIND_ALL_BY_METHOD.equals(prefix)) {
+            returnType = "java.util.List";
+        } else if (COUNT_BY_METHOD.equals(prefix)) {
+            returnType = "int";
+        }
+        String name = prefix + tail;
+
+        String[] shortParams = new String[params];
+        Arrays.fill(shortParams, "java.lang.Object");
+        result.put(new MethodSignature(name, shortParams),
+                CompletionItem.forDynamicMethod(context.getAnchor(), name, shortParams,
+                        returnType, context.isNameOnly(), false));
+
+        String[] longParams = new String[params + 1];
+        Arrays.fill(longParams, "java.lang.Object");
+        longParams[params] = "java.util.Map";
+        result.put(new MethodSignature(name, longParams),
+                CompletionItem.forDynamicMethod(context.getAnchor(), name, longParams,
+                        returnType, context.isNameOnly(), false));
+
+        if (!context.isNameOnly()) {
+            result.put(new MethodSignature(name + "_", new String[] {}),
+                    CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
+        }
     }
 
     private boolean isDomain(FileObject source, Project project) {
