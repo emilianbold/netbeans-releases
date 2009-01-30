@@ -36,26 +36,28 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author mt154047
  */
-public final class MultipleDtraceDataCollectorFactory implements DataCollectorFactory<MultipleDTDCConfiguration>{
+@ServiceProviders({
+    @ServiceProvider(service = DataCollectorFactory.class)
+})
+public final class MultipleDtraceDataCollectorFactory
+        implements DataCollectorFactory<MultipleDTDCConfiguration> {
 
-  public MultipleDtraceDataCollector create(MultipleDTDCConfiguration configuration) {
-    return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
-  }
+    public MultipleDtraceDataCollector create(MultipleDTDCConfiguration configuration) {
+        return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
+    }
 
- public String getID() {
-    return MultipleDTDCConfigurationAccessor.getDefault().getID();
-  }
-
+    public String getID() {
+        return MultipleDTDCConfigurationAccessor.getDefault().getID();
+    }
 }

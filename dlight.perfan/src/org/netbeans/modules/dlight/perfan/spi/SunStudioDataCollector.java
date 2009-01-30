@@ -64,9 +64,11 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
-import org.netbeans.modules.nativeexecution.util.RemoveTask;
 
 /**
  * This class will represent SunStudio Performance Analyzer collect
@@ -76,7 +78,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
     private static final String ID = "PerfanDataStorage";
     private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
     public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
     private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
@@ -122,7 +124,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus;
+        validationStatus = ValidationStatus.initialStatus();
     }
 
     public ValidationStatus getValidationStatus() {
@@ -135,18 +137,21 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         try {
             os = HostInfo.getOS(targetToValidate.getExecEnv());
         } catch (HostNotConnectedException ex) {
-            return ValidationStatus.unknownStatus("Host is not connected...", 
-                    targetToValidate.getExecEnv().getConnectToAction());
+            ObservableAction<Boolean> connectAction = ConnectionManager.getInstance().
+                    getConnectToAction(targetToValidate.getExecEnv());
+
+            return ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
+                    connectAction);
         }
 
         if (!"SunOS".equals(os)) {
-            return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only.");
+            return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
         }
 
         ValidationStatus result = null;
 
         // TODO: files copying...????
-        result = ValidationStatus.validStatus;
+        result = ValidationStatus.validStatus();
 
         return result;
     }
@@ -204,7 +209,14 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
         log.fine("Initialize perfan collector and storage for target " + target.toString());
         log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
-        RemoveTask.removeDirectory(target.getExecEnv(), experimentDir, true);
+
+        NativeTask rmTask = CommonTasksSupport.getRemoveDirectoryTask(
+                target.getExecEnv(), experimentDir, true, null);
+        
+        try {
+            rmTask.invoke(true);
+        } catch (Exception ex) {
+        }
 
         storage = (PerfanDataStorage) dataStorage;
         storage.setCollector(this);
@@ -212,7 +224,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public ExecutionEnvironment getExecEnv() {
-        return isAttachable() ? collectorTask.getExecEnv() : target.getExecEnv();
+        return isAttachable() ? collectorTask.getExecutionEnvironment() : target.getExecEnv();
     }
 
     private void targetStarted(DLightTarget target) {
@@ -227,7 +239,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         // Start collector task
         // TODO: collector failures handle
         collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
-        collectorTask.submit();
+        collectorTask.submit(true, false);
     }
 
     private void targetFinished(DLightTarget target) {
@@ -235,7 +247,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         if (!isAttachable()) {
 //      this.target = null;
         } else {
-            collectorTask.cancel();
+            collectorTask.cancel(true);
         }
 
 //    if (indicatorsNotifyerTask != null) {

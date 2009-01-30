@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.NbCatalogManager;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -75,7 +75,7 @@ public class CatalogReader {
      * @throws Excepetion Exception during parsing the Catalog.xml file.
      */
     public CatalogReader(String catalogXML) throws SAXException, IOException {
-        final CatalogManager manager = new CatalogManager(null);
+        final NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
         

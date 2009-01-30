@@ -40,13 +40,8 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -56,9 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
@@ -68,7 +60,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -201,28 +192,6 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         }
         return out;
     }
-    
-    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
-        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
-        assert referencedObjects != null && referencedObjects.size() > 0 : "method must be called for resolved element";
-        FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
-            refs.addAll(curRefs);
-        }
-        if (refs.size() > 0) {
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
-            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
-                public int compare(CsmReference o1, CsmReference o2) {
-                    return o1.getStartOffset() - o2.getStartOffset();
-                }
-            });
-            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-            processRefactoredReferences(sortedRefs, fo, ces, mr);
-        }
-    }
 
-    protected abstract void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr);
-
+    protected abstract void processFile(CsmFile csmFile, ModificationResult mr);
 }

@@ -60,14 +60,14 @@ public class SystemMacroImpl implements CsmMacro {
     
     private final CharSequence macroName;
     private final CharSequence macroBody;
-    private final boolean isUserDefined;
+    private final Kind macroKind;
     private final List<? extends CharSequence> params;
     private CsmFile containingFile;
 
-    public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, boolean isUserDefined) {
+    public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, Kind macroKind) {
         this.macroName = QualifiedNameCache.getManager().getString(macroName);
         this.macroBody = QualifiedNameCache.getManager().getString(macroBody);
-        this.isUserDefined = isUserDefined;
+        this.macroKind = macroKind;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
         } else {
@@ -85,8 +85,8 @@ public class SystemMacroImpl implements CsmMacro {
         return macroBody;
     }
 
-    public boolean isSystem() {
-        return true;
+    public Kind getKind() {
+        return macroKind;
     }
 
     public CharSequence getName() {
@@ -156,7 +156,7 @@ public class SystemMacroImpl implements CsmMacro {
             retValue.append("'='"); // NOI18N
             retValue.append(getBody());
         }
-        retValue.append("' [" + (isUserDefined ? "user defined" : "system") + "]"); // NOI18N
+        retValue.append("' [" + (macroKind == Kind.USER_SPECIFIED ? "user defined" : "system") + "]"); // NOI18N
         return retValue.toString();
     }
 

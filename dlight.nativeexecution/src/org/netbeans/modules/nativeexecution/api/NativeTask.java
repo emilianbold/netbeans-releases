@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.api;
 
 import org.netbeans.modules.nativeexecution.support.NativeExecutor;
 import org.netbeans.modules.nativeexecution.support.LocalNativeExecutor;
-import org.netbeans.modules.nativeexecution.support.StringBufferWriter;
 import org.netbeans.modules.nativeexecution.support.RemoteNativeExecutor;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import java.awt.event.ActionEvent;
@@ -50,6 +49,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +58,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.nativeexecution.support.IOTabManagerFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -65,7 +66,7 @@ import org.openide.windows.InputOutput;
 /**
  * A cancellable asynchronous native task.
  */
-public class NativeTask implements Future<Integer> {
+public final class NativeTask implements Future<Integer> {
 
     private String command;
     private final ExecutionEnvironment execEnv;
@@ -94,13 +95,14 @@ public class NativeTask implements Future<Integer> {
      * @param execEnv <tt>ExecutionEnvironment</tt> to execute task in.
      * @param cmd command to execute
      * @param args command's arguments
-     * @param outBuffer if not <tt>null</tt>, command's output will be
-     *        redirected to provided <tt>StringBuffer</tt>
      */
-    public NativeTask(final ExecutionEnvironment execEnv, final String cmd,
-            final String[] args, final StringBuffer outBuffer) {
+    public NativeTask(final ExecutionEnvironment execEnv,
+            final String cmd, final String[] args) {
         this.execEnv = execEnv;
 
+        if (cmd == null) {
+            System.out.println(Arrays.toString(args));
+        }
         if (args != null) {
             StringBuilder sb = new StringBuilder(cmd);
 
@@ -124,22 +126,6 @@ public class NativeTask implements Future<Integer> {
         executor = execEnv.isRemote()
                 ? new RemoteNativeExecutor(this)
                 : new LocalNativeExecutor(this);
-
-        if (outBuffer != null) {
-            this.redirectionOutputWriter = new StringBufferWriter(outBuffer);
-        }
-    }
-
-    /**
-     * Creates <tt>NativeTask</tt> that can be executed in the specified
-     * <tt>ExecutionEnvironment</tt>.
-     *
-     * @param execEnv <tt>ExecutionEnvironment</tt> to execute task in.
-     * @param cmd command to execute
-     * @param args command's arguments
-     */
-    public NativeTask(ExecutionEnvironment execEnv, String cmd, String[] args) {
-        this(execEnv, cmd, args, null);
     }
 
     /**
@@ -152,38 +138,24 @@ public class NativeTask implements Future<Integer> {
     }
 
     /**
-     * Redefine command to be executed by this task.
-     * @param command new command to execute.
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    /**
-     * Submit task and wait for it's start.
-     * Task is considered to be started if and only if it has been submitted,
-     * native process has been created and PID of this process has been
-     * obtained.
-     */
-    final public void submit() {
-        submit(true);
-    }
-
-    /**
      * Starts execution of <tt>NativeTask</tt> and waits for its completion.
+     * @param showProgress
      * @return result (exit value) of underlaying native process
      * @throws java.lang.Exception when some exception occurs during execution.
      */
-    final public Integer invoke() throws Exception {
+    final public Integer invoke(boolean showProgress) throws Exception {
+        this.showProgress = showProgress;
         return executor.invokeAndWait();
     }
 
     /**
-     * Submit task and maybe wait for it's start.
-     * @param waitStart if set to <tt>true</tt> method will return only after
-     *        the task has been started.
+     * Asynchronously starts the task and, maybe, waits for PID.
+     * @param waitStart - defines wheteher wait for task's PID or not
+     * @param showProgress - if set to <tt>true</tt>, progress bar will be
+     * displayed.
      */
-    final public void submit(boolean waitStart) {
+    final public void submit(boolean waitStart, boolean showProgress) {
+        this.showProgress = showProgress;
         executor.invoke(waitStart);
     }
 
@@ -191,17 +163,8 @@ public class NativeTask implements Future<Integer> {
      * Returns <tt>ExecutionEnvironment</tt> that is used by this task.
      * @return <tt>ExecutionEnvironment</tt> that is used by this task.
      */
-    public ExecutionEnvironment getExecEnv() {
+    public ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
-    }
-
-    /**
-     * Defines whether to show execution progress in a progress bar or not.
-     * @param b defines whether to show execution progress in a progress bar or
-     *          not.
-     */
-    public void setShowProgress(boolean b) {
-        showProgress = b;
     }
 
     /**
@@ -221,14 +184,6 @@ public class NativeTask implements Future<Integer> {
     }
 
     /**
-     * Disables input stream redirection. Effect is the same as calling
-     * <tt>redirectInFrom(null)</tt>.
-     */
-    public void disableInRedirection() {
-        this.redirectionInputReader = null;
-    }
-
-    /**
      * Set <tt>Reader</tt> do be used for input stream redirection. It is
      * allowable to pass <tt>null</tt>. In this case no input stream redirection
      * will occur.
@@ -240,14 +195,6 @@ public class NativeTask implements Future<Integer> {
     }
 
     /**
-     * Disables error stream redirection. Effect is the same as calling
-     * <tt>redirectErrTo(null)</tt>.
-     */
-    public void disableErrRedirection() {
-        this.redirectionErrorWriter = null;
-    }
-
-    /**
      * Set <tt>Writer</tt> do be used for error stream redirection. It is
      * allowable to pass <tt>null</tt>. In this case no error stream redirection
      * will occur.
@@ -256,14 +203,6 @@ public class NativeTask implements Future<Integer> {
      */
     final public void redirectErrTo(Writer errWriter) {
         this.redirectionErrorWriter = errWriter;
-    }
-
-    /**
-     * Disables output stream redirection. Effect is the same as calling
-     * <tt>redirectOutTo(null)</tt>.
-     */
-    public void disableOutRedirection() {
-        this.redirectionOutputWriter = null;
     }
 
     /**
@@ -322,21 +261,27 @@ public class NativeTask implements Future<Integer> {
     }
 
     /**
-     * Set I/O redirection to provided <tt>InputOutput</tt>.
-     *
-     * @param io <tt>InputOutput</tt> to redirect streams to.
+     * Redirect all I/O streams to an {@link org.openide.windows.InputOutput}.
+     * @param reuseTab if set to <tt>true</tt> previous tab for this task will
+     * be reused.
      */
-    final public void setInputOutput(final InputOutput io) {
-        if (io == null) {
-            throw new NullPointerException();
-        }
+    final public void setInputOutput(final boolean reuseTab) {
+        this.redirectionIO =
+                IOTabManagerFactory.getIOTabManager().getIO(this, reuseTab);
 
-        this.redirectionIO = io;
-        redirectOutTo(io.getOut());
-        redirectErrTo(io.getErr());
-        redirectInFrom(io.getIn());
+        redirectOutTo(redirectionIO.getOut());
+        redirectErrTo(redirectionIO.getErr());
+        redirectInFrom(redirectionIO.getIn());
 
-        io.setInputVisible(true);
+        redirectionIO.setInputVisible(true);
+    }
+
+    /**
+     * Returns task's actions.
+     * @return task's actions (like 'Cancel' and 'Restart').
+     */
+    private Action[] getTaskControlActions() {
+        return executor.getActions();
     }
 
     /**
@@ -345,22 +290,6 @@ public class NativeTask implements Future<Integer> {
      */
     final public TaskExecutionState getState() {
         return executor.getState();
-    }
-
-    /**
-     * Terminates running task
-     * @return true if task has been terminated
-     */
-    final public boolean cancel() {
-        return executor.cancel();
-    }
-
-    /**
-     * Returns task's actions.
-     * @return task's actions (like 'Cancel' and 'Restart').
-     */
-    public Action[] getActions() {
-        return executor.getActions();
     }
 
     void reset() {
@@ -507,6 +436,11 @@ public class NativeTask implements Future<Integer> {
         @Override
         public void resetTask(NativeTask task) {
             task.reset();
+        }
+
+        @Override
+        public Action[] getTaskControlActions(NativeTask task) {
+            return task.getTaskControlActions();
         }
     }
 }

@@ -95,6 +95,7 @@ class CategoryDescriptor implements CategoryListener {
 
         wholePanel.setLayout (new GridBagLayout ());
         wholePanel.setBorder (new EmptyBorder (0, 0, 0, 0));
+        wholePanel.setOpaque(false);
 
         MouseListener listener = createMouseListener();
 
