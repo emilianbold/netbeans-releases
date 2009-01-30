@@ -319,17 +319,15 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         } else {
             buildDir = new File(startFile.getParentFile(), bdir);
         }
-        try {
-            // TODO:
-            // canonical path is used but not appropriate here
-            // we must emulate command line behaviour and
-            // looks like absolute path is more appropriate
-            // better:
-            // buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile())
-            buildDir = buildDir.getCanonicalFile();
-        } catch (IOException ioe) {
-            // FIXUP
-        }
+        // Canonical path not appropriate here.
+        // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
+        // See IZ#157677:LiteSQL is not configurable in case of symlinks.
+        //try {
+        //    buildDir = buildDir.getCanonicalFile();
+        //} catch (IOException ioe) {
+        //    // FIXUP
+        //}
+        buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile());
         return buildDir;
     }
 }
