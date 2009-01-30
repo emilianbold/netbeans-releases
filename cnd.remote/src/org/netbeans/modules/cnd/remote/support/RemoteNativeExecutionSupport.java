@@ -101,7 +101,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     }
 
     public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
-        this(key, 22, dirf, exe, args, envp, out, userInput);
+        this(key, PORT, dirf, exe, args, envp, out, userInput);
     }
 
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
