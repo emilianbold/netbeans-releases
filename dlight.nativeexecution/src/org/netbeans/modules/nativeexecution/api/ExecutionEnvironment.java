@@ -38,12 +38,13 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.support.ConnectionManager;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
- * Configuration of environment for <tt>NativeTask</tt> execution.
+ * Configuration of environment for
+ * {@link org.netbeans.modules.nativeexecution.api.NativeTask} execution.
  */
 final public class ExecutionEnvironment {
 
@@ -53,7 +54,7 @@ final public class ExecutionEnvironment {
     private final String toString;
 
     /**
-     * Creates new instance of <tt>ExecutionEnvironment</tt> for local
+     * Creates a new instance of <tt>ExecutionEnvironment</tt> for local
      * execution.
      */
     public ExecutionEnvironment() {
@@ -61,7 +62,7 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Creates new instance of <tt>ExecutionEnvironment</tt>.
+     * Creates a new instance of <tt>ExecutionEnvironment</tt>.
      * @param user user name to be used in this environment
      * @param host host identification string (either hostname or IP address)
      */
@@ -70,7 +71,7 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Creates new instance of <tt>ExecutionEnvironment</tt>.
+     * Creates a new instance of <tt>ExecutionEnvironment</tt>.
      * It is allowable to pass <tt>null</tt> values for <tt>user</tt> and/or
      * <tt>host</tt> params. In this case
      * <tt>System.getProperty("user.name")</tt> will be used as username and
@@ -82,8 +83,9 @@ final public class ExecutionEnvironment {
      * @param host host identification string. Either hostname or IP address
      * @param sshPort port to be used to establish ssh connection.
      */
-    public ExecutionEnvironment(final String user,
-            final String host,
+    public ExecutionEnvironment(
+            @NullAllowed final String user,
+            @NullAllowed final String host,
             final int sshPort) {
         if (user == null) {
             this.user = System.getProperty("user.name"); // NOI18N
@@ -97,7 +99,7 @@ final public class ExecutionEnvironment {
             this.host = host;
         }
 
-        if (!isLocalhost() && sshPort == 0) {
+        if (!HostInfo.isLocalhost(host) && sshPort == 0) {
             this.sshPort = 22;
         } else {
             this.sshPort = sshPort;
@@ -158,7 +160,7 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Opposite to <tt>isRemote()</tt>.
+     * Returns true if no ssh connection required for this environment.
      * @return true if no ssh connection required for this environment.
      * @see #isRemote()
      */
@@ -186,7 +188,7 @@ final public class ExecutionEnvironment {
             return false;
         }
 
-        boolean result = ((ee.isLocalhost() && isLocalhost()) ||
+        boolean result = ((HostInfo.isLocalhost(ee.host) && HostInfo.isLocalhost(host)) ||
                 ee.host.equals(host)) &&
                 ee.user.equals(user) &&
                 ee.sshPort == sshPort;
@@ -204,28 +206,6 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Tests whether the OS, that is ran in this execution environment, is Unix
-     * or not.
-     * @return true if and only if host, identified by this environment runs
-     * Linux or Solaris OS.
-     *
-     * @throws HostNotConnectedException if the host, reffered by this execution
-     * environment is not connected yet.
-     */
-    public final boolean isUnix() throws HostNotConnectedException {
-        return HostInfo.isUnix(this);
-    }
-
-    /**
-     * Returns true if and only if this environment reffers to a localhost.
-     *
-     * @return true if and only if this environment reffers to a localhost.
-     */
-    public final boolean isLocalhost() {
-        return HostInfo.isLocalhost(host);
-    }
-
-    /**
      * Returns OS name that is run on the host, reffered by this execution
      * environment.
      * @return String that represents OS name
@@ -235,27 +215,5 @@ final public class ExecutionEnvironment {
      */
     public String getOS() throws HostNotConnectedException {
         return HostInfo.getOS(this);
-    }
-
-    /**
-     * Returns a platform path (i.e. intel-S2, sparc-S2, intel-Linux).
-     * This is to be used in paths construction to system-dependent executables
-     *
-     * @return string, that represents a platform path <br>
-     *         <tt>UNKNOWN</tt> if platform is unknown.
-     */
-    public String getPlatformPath() {
-        return HostInfo.getPlatformPath(this);
-    }
-
-    /**
-     * Returns observable action that can be invoked to initiate connection to
-     * a host specified by this execution environment.
-     *
-     * @return action that can be invoked to initiate connection to a host
-     * specified by this execution environment.
-     */
-    public ObservableAction<Boolean> getConnectToAction() {
-        return ConnectionManager.getInstance().getConnectAction(this);
     }
 }

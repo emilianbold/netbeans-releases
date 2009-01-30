@@ -204,7 +204,21 @@ public class CsmDisplayUtilities {
             tooltipText = getHtmlizedString("DSC_NamespaceTooltip", nsName); // NOI18N
         } else if (CsmKindUtilities.isMacro(item)) {
             CsmMacro macro = (CsmMacro)item;
-            tooltipText = getHtmlizedString(macro.isSystem() ? "DSC_SysMacroTooltip" : "DSC_UsrMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+            switch (macro.getKind()){
+                case DEFINED:
+                    tooltipText = getHtmlizedString("DSC_MacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                    break;
+                case COMPILER_PREDEFINED:
+                    tooltipText = getHtmlizedString("DSC_SysMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                    break;
+                case POSITION_PREDEFINED:
+                    tooltipText = getHtmlizedString("DSC_PosMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                    break;
+                case USER_SPECIFIED:
+                default:
+                    tooltipText = getHtmlizedString("DSC_ProjectMacroTooltip", macro.getName(), macro.getText()); // NOI18N
+                    break;
+            }
         } else if (CsmKindUtilities.isInclude(item)) {
             CsmInclude incl = (CsmInclude)item;
             CsmFile target = incl.getIncludeFile();

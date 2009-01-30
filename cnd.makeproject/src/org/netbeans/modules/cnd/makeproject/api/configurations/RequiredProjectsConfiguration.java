@@ -40,36 +40,19 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.List;
 import java.util.ArrayList;
 
-public class RequiredProjectsConfiguration<E> extends VectorConfiguration<E> {
+public class RequiredProjectsConfiguration extends VectorConfiguration<LibraryItem.ProjectItem> {
 
     public RequiredProjectsConfiguration() {
         super(null);
     }
 
-    public LibraryItem.ProjectItem[] getRequiredProjectItemsAsArray() {
-        return getValue().toArray(new LibraryItem.ProjectItem[getValue().size()]);
-    }
-
-    // Clone and Assign
     @Override
-    public void assign(VectorConfiguration<E> conf) {
-        super.assign(conf);
-    }
-
-    public RequiredProjectsConfiguration<E> cloneConf() {
-        RequiredProjectsConfiguration<E> clone = new RequiredProjectsConfiguration<E>();
-        clone.setValue(new ArrayList<E>(getValue()));
+    public RequiredProjectsConfiguration clone() {
+        RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
+        clone.setValue(new ArrayList<LibraryItem.ProjectItem>(getValue()));
         return clone;
     }
 
-//    @Override
-//    @Deprecated
-//    public Object clone() {
-//        RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
-//        clone.setValue((List) ((ArrayList) getValue()).clone());
-//        return clone;
-//    }
 }

@@ -61,9 +61,9 @@ import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -76,6 +76,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
@@ -99,7 +100,7 @@ public final class CLIODataCollector
     private NativeTask collectorTask;
     private CLIOParser parser;
     private List<DataTableMetadata> dataTablesMetadata;
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private List<ValidationListener> validationListeners =
             Collections.synchronizedList(new ArrayList<ValidationListener>());
 
@@ -107,7 +108,7 @@ public final class CLIODataCollector
      *
      * @param command command to invoke (without arguments)
      * @param arguments command arguments
-     * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.api.CLIOParser}
+     * @param parser a {@link org.netbeans.modules.dlight.collector.stdout.CLIOParser}
      * to parse command output with
      * @param dataTablesMetadata describes the tables to store parsed data in
      */
@@ -208,7 +209,7 @@ public final class CLIODataCollector
             }
         }, "CLI Data Collector Output Redirector"); // NOI18N
 
-        collectorTask.submit();
+        collectorTask.submit(true, false);
         outProcessingThread.start();
     }
 
@@ -216,7 +217,7 @@ public final class CLIODataCollector
         log.fine("Stopping CLIODataCollector: " + // NOI18N
                 collectorTask.getCommand());
 
-        collectorTask.cancel();
+        collectorTask.cancel(true);
         outProcessingThread.interrupt();
     }
 
@@ -298,7 +299,7 @@ public final class CLIODataCollector
     }
 
     public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus;
+        validationStatus = ValidationStatus.initialStatus();
     }
 
     private ValidationStatus doValidation(final DLightTarget target) {
@@ -316,7 +317,7 @@ public final class CLIODataCollector
 
         if (connected) {
             if (fileExists) {
-                result = ValidationStatus.validStatus;
+                result = ValidationStatus.validStatus();
             } else {
                 result = ValidationStatus.invalidStatus(
                         loc("ValidationStatus.CommandNotFound", // NOI18N
@@ -324,7 +325,7 @@ public final class CLIODataCollector
             }
         } else {
             ObservableAction<Boolean> connectAction =
-                    target.getExecEnv().getConnectToAction();
+                    ConnectionManager.getInstance().getConnectToAction(target.getExecEnv());
 
             connectAction.addObservableActionListener(
                     new ObservableActionListener<Boolean>() {

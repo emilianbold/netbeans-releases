@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 /**
  * Test runner implmentation for running test/unit tests.
@@ -183,12 +184,9 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     public void customize(Project project, RakeTask task, final RubyExecutionDescriptor taskDescriptor, boolean debug) {
-        boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
-
-            public boolean isDefault(RakeTask task) {
-                return "test".equals(task.getTask()) || task.getTask().startsWith("test:"); //NOI18N
-            }
-        });
+        boolean useRunner =
+                RubyTestingSettings.getDefault().useRunner(TestType.TEST_UNIT)
+                && TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, TestUnitTaskEvaluator.INSTANCE);
 
         if (!useRunner) {
             return;
@@ -225,5 +223,16 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         TestExecutionManager.getInstance().init(taskDescriptor);
         session.setRerunHandler(TestExecutionManager.getInstance());
   }
+
+    private static class TestUnitTaskEvaluator implements DefaultTaskEvaluator {
+        static final TestUnitTaskEvaluator INSTANCE = new TestUnitTaskEvaluator();
+
+        private TestUnitTaskEvaluator() {
+        }
+
+        public boolean isDefault(RakeTask task) {
+            return "test".equals(task.getTask()) || task.getTask().startsWith("test:"); //NOI18N
+        }
+    }
 
 }

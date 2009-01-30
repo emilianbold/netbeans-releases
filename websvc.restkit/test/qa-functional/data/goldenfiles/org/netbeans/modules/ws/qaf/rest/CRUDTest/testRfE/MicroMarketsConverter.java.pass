@@ -55,6 +55,7 @@ public class MicroMarketsConverter {
             items = new ArrayList<MicroMarketConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (MicroMarket entity : entities) {
                 items.add(new MicroMarketConverter(entity, uri, expandLevel, true));
             }

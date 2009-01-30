@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -49,13 +53,26 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.openide.windows.InputOutput;
 
 /**
+ * PHP Unit 3.x support.
  * @author Tomas Mysik
  */
 public final class PhpUnit extends PhpProgram {
+    // minimum supported version
+    public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
+    // test files suffix
+    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
+    // cli options
+    public static final String PARAM_VERSION = "--version"; // NOI18N
+    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    // for older PHP Unit versions
+    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
+    // output files
+    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
+
     static int[] version = null;
 
     /**
@@ -77,8 +94,8 @@ public final class PhpUnit extends PhpProgram {
         }
         getVersion();
         return version != null
-                && version[0] >= PhpUnitConstants.MINIMAL_VERSION[0]
-                && version[1] >= PhpUnitConstants.MINIMAL_VERSION[1];
+                && version[0] >= MINIMAL_VERSION[0]
+                && version[1] >= MINIMAL_VERSION[1];
     }
 
     /**
@@ -94,7 +111,7 @@ public final class PhpUnit extends PhpProgram {
         }
 
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
-                .addArgument(PhpUnitConstants.PARAM_VERSION);
+                .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new OutputProcessorFactory());
@@ -106,12 +123,33 @@ public final class PhpUnit extends PhpProgram {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
             // ignored
+            LOGGER.log(Level.INFO, null, ex);
         }
         return version;
     }
 
     public static void resetVersion() {
         version = null;
+    }
+
+    /**
+     * Get an array with actual and minimal PHPUnit versions.
+     * <p>
+     * Return three times "?" if the actual version is not known.
+     */
+    public static String[] getVersions(int[] actualVersion) {
+        List<String> params = new ArrayList<String>(6);
+        if (actualVersion == null) {
+            params.add("?"); params.add("?"); params.add("?"); // NOI18N
+        } else {
+            for (Integer i : actualVersion) {
+                params.add(String.valueOf(i));
+            }
+        }
+        for (Integer i : MINIMAL_VERSION) {
+            params.add(String.valueOf(i));
+        }
+        return params.toArray(new String[params.size()]);
     }
 
     static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {

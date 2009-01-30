@@ -66,11 +66,11 @@ public final class DeploymentPlatformTarget extends DLightTarget {
     private void terminate() {
         //  throw new UnsupportedOperationException("Not supported yet.");
         isStarted = false;
-        notifyListeners(DLightTarget.State.RUNNING, DLightTarget.State.STOPPED);
+        notifyListeners(DLightTarget.State.RUNNING, DLightTarget.State.TERMINATED);
     }
 
     public State getState() {
-        return isStarted ? State.RUNNING : State.STOPPED;
+        return isStarted ? State.RUNNING : State.TERMINATED;
     }
 
     public ExecutionEnvironment getExecEnv() {

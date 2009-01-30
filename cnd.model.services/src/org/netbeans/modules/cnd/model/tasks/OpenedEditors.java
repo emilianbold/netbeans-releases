@@ -57,11 +57,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
 
 /**
@@ -69,12 +67,17 @@ import org.openide.util.Parameters;
  * @author Sergey Grinev
  * @author Vladimir Kvashin
  */
-class OpenedEditors implements PropertyChangeListener {
+public final class OpenedEditors {
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private static OpenedEditors DEFAULT;
+    private final PropertyChangeListener componentListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            OpenedEditors.this.propertyChange(evt);
+        }
+    };
 
     static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
     private static final boolean TRACE_FILES = Boolean.getBoolean("cnd.model.tasks.files");
@@ -127,11 +130,11 @@ class OpenedEditors implements PropertyChangeListener {
         return new ArrayList<FileObject>(visibleEditors2Files.values());
     }
 
-    public synchronized void stateChanged() {
+    private synchronized void stateChanged() {
         if (SHOW_TIME || TRACE_FILES) { System.err.println("OpenedEditors.stateChanged()"); }
 
         for (JTextComponent c : visibleEditors) {
-            c.removePropertyChangeListener(this);
+            c.removePropertyChangeListener(componentListener);
             visibleEditors2Files.remove(c);
         }
 
@@ -152,7 +155,7 @@ class OpenedEditors implements PropertyChangeListener {
         }
 
         for (JTextComponent c : visibleEditors) {
-            c.addPropertyChangeListener(this);
+            c.addPropertyChangeListener(componentListener);
             visibleEditors2Files.put(c, getFileObject(c));
         }
 
@@ -176,7 +179,7 @@ class OpenedEditors implements PropertyChangeListener {
 //        return false;
 //    }
 
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
+    private synchronized void propertyChange(PropertyChangeEvent evt) {
         if (SHOW_TIME) { System.err.println("OpenedEditors.propertyChange()"); }
 
         JTextComponent c = (JTextComponent) evt.getSource();
@@ -212,7 +215,7 @@ class OpenedEditors implements PropertyChangeListener {
     /**
      * Filter unsupported files from the <code>files</code> parameter.
      */
-    public static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
+    static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
         Parameters.notNull("files", files); //NOI18N
 
         List<FileObject> result = new LinkedList<FileObject>();

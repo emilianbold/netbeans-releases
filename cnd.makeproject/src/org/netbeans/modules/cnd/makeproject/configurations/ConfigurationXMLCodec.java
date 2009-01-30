@@ -103,8 +103,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private LinkerConfiguration currentLinkerConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
-    private LibrariesConfiguration<LibraryItem> currentLibrariesConfiguration = null;
-    private RequiredProjectsConfiguration<LibraryItem> currentRequiredProjectsConfiguration = null;
+    private LibrariesConfiguration currentLibrariesConfiguration = null;
+    private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = 0;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();

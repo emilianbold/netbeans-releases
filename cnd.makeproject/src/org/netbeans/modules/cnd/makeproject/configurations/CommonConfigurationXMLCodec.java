@@ -643,31 +643,31 @@ public abstract class CommonConfigurationXMLCodec
 
     public static void writeLibrariesConfiguration(XMLEncoderStream xes, LibrariesConfiguration librariesConfiguration) {
         xes.elementOpen(LINKER_LIB_ITEMS_ELEMENT);
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int i = 0; i < libraryItems.length; i++) {
-            if (libraryItems[i] instanceof LibraryItem.ProjectItem) {
+        List<LibraryItem> libraryItems = librariesConfiguration.getValue();
+        for (LibraryItem item : libraryItems) {
+            if (item instanceof LibraryItem.ProjectItem) {
                 xes.elementOpen(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-                writeMakeArtifact(xes, ((LibraryItem.ProjectItem) libraryItems[i]).getMakeArtifact());
+                writeMakeArtifact(xes, ((LibraryItem.ProjectItem) item).getMakeArtifact());
                 xes.elementClose(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-            } else if (libraryItems[i] instanceof LibraryItem.StdLibItem) {
-                xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem) libraryItems[i]).getName());
-            } else if (libraryItems[i] instanceof LibraryItem.LibItem) {
-                xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem) libraryItems[i]).getLibName());
-            } else if (libraryItems[i] instanceof LibraryItem.LibFileItem) {
-                xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem) libraryItems[i]).getPath());
-            } else if (libraryItems[i] instanceof LibraryItem.OptionItem) {
-                xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) libraryItems[i]).getLibraryOption());
+            } else if (item instanceof LibraryItem.StdLibItem) {
+                xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem) item).getName());
+            } else if (item instanceof LibraryItem.LibItem) {
+                xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem) item).getLibName());
+            } else if (item instanceof LibraryItem.LibFileItem) {
+                xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem) item).getPath());
+            } else if (item instanceof LibraryItem.OptionItem) {
+                xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) item).getLibraryOption());
             }
         }
         xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
     }
 
     public static void writeRequiredProjects(XMLEncoderStream xes, RequiredProjectsConfiguration requiredProjectsConfiguration) {
-        LibraryItem.ProjectItem[] projectItems = requiredProjectsConfiguration.getRequiredProjectItemsAsArray();
-        if (projectItems.length > 0) {
+        List<LibraryItem.ProjectItem> projectItems = requiredProjectsConfiguration.getValue();
+        if (!projectItems.isEmpty()) {
             xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
-            for (int i = 0; i < projectItems.length; i++) {
-                writeMakeArtifact(xes, projectItems[i].getMakeArtifact());
+            for (LibraryItem.ProjectItem item : projectItems) {
+                writeMakeArtifact(xes, item.getMakeArtifact());
             }
             xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
         }
