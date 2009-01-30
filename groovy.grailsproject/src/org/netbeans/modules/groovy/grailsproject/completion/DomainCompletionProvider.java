@@ -126,37 +126,68 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         // findAllBy - see #getQueryMethods()
         // countBy - see #getQueryMethods()
         // listOrderBy - see #getOrderMethods()
-        STATIC_METHODS.put(new MethodSignature("count", NO_PARAMETERS), "int");
-        STATIC_METHODS.put(new MethodSignature("createCriteria", NO_PARAMETERS), "grails.orm.HibernateCriteriaBuilder");
-        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("executeQuery", new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("executeUpdate", new String[] {"java.lang.String"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("executeUpdate", new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("exists", NO_PARAMETERS), "java.lang.Boolean");
-        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.String", "java.util.Map"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("find", new String[] {"java.lang.Object"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("findAll", NO_PARAMETERS), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findAll", new String[] {"java.lang.Object"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("findWhere", new String[] {"java.util.Map"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("findAllWhere", new String[] {"java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("get", new String[] {"java.lang.Object"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("getAll", NO_PARAMETERS), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("getAll", new String[] {"java.util.List"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("list", NO_PARAMETERS), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("list", new String[] {"java.util.Map"}), "java.util.List");
-        STATIC_METHODS.put(new MethodSignature("withCriteria", new String[] {"groovy.lang.Closure"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("withCriteria", new String[] {"java.util.Map", "groovy.lang.Closure"}), "java.lang.Object");
-        STATIC_METHODS.put(new MethodSignature("withTransaction", new String[] {"groovy.lang.Closure"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("count",
+                NO_PARAMETERS), "int");
+        STATIC_METHODS.put(new MethodSignature("createCriteria",
+                NO_PARAMETERS), "grails.orm.HibernateCriteriaBuilder");
+        STATIC_METHODS.put(new MethodSignature("executeQuery",
+                new String[] {"java.lang.String"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery",
+                new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery",
+                new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery",
+                new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeQuery",
+                new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("executeUpdate",
+                new String[] {"java.lang.String"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("executeUpdate",
+                new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("exists",
+                NO_PARAMETERS), "java.lang.Boolean");
+        STATIC_METHODS.put(new MethodSignature("find",
+                new String[] {"java.lang.String"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find",
+                new String[] {"java.lang.String", "java.util.Collection"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find",
+                new String[] {"java.lang.String", "java.util.Map"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("find",
+                new String[] {"java.lang.Object"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.String"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.String", "java.util.Collection"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.String", "java.util.Collection", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.String", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.String", "java.util.Map", "java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findAll",
+                new String[] {"java.lang.Object"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("findWhere",
+                new String[] {"java.util.Map"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("findAllWhere",
+                new String[] {"java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("get",
+                new String[] {"java.lang.Object"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("getAll",
+                NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("getAll",
+                new String[] {"java.util.List"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("list",
+                NO_PARAMETERS), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("list",
+                new String[] {"java.util.Map"}), "java.util.List");
+        STATIC_METHODS.put(new MethodSignature("withCriteria",
+                new String[] {"groovy.lang.Closure"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("withCriteria",
+                new String[] {"java.util.Map", "groovy.lang.Closure"}), "java.lang.Object");
+        STATIC_METHODS.put(new MethodSignature("withTransaction",
+                new String[] {"groovy.lang.Closure"}), "java.lang.Object");
     }
 
     @Override
@@ -217,11 +248,11 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
         if (matcher.matches()) {
             String prefix = matcher.group(13);
-            String name = context.getPrefix().substring(0, context.getPrefix().length() - prefix.length());
-
             if (prefix == null) {
                 prefix = "";
             }
+
+            String name = context.getPrefix().substring(0, context.getPrefix().length() - prefix.length());
 
             Map<String, Integer> names = new HashMap<String, Integer>();
             Set<String> forbidden = new HashSet<String>();
@@ -252,18 +283,21 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
             }
 
             for (Map.Entry<String, Integer> entry : names.entrySet()) {
-
                 addQueryEntries(result, context, matcher.group(1),
-                        entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue());
+                        entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue(), true);
+            }
+            if ("".equals(prefix) && !matcher.group(1).equals(context.getPrefix())) {
+                addQueryEntries(result, context, matcher.group(1),
+                        name.substring(matcher.group(1).length()), paramCount, false);
             }
         } else {
             // FIXME optimize
             for (String property : context.getProperties()) {
                 String tail = capitalise(property);
 
-                addQueryEntries(result, context, FIND_ALL_BY_METHOD, tail, 1);
-                addQueryEntries(result, context, FIND_BY_METHOD, tail, 1);
-                addQueryEntries(result, context, COUNT_BY_METHOD, tail, 1);
+                addQueryEntries(result, context, FIND_ALL_BY_METHOD, tail, 1, true);
+                addQueryEntries(result, context, FIND_BY_METHOD, tail, 1, true);
+                addQueryEntries(result, context, COUNT_BY_METHOD, tail, 1, true);
             }
         }
         return result;
@@ -371,7 +405,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     private void addQueryEntries(Map<MethodSignature, CompletionItem> result,
-            CompletionContext context, String prefix, String tail, int params) {
+            CompletionContext context, String prefix, String tail, int params, boolean prefixedMethod) {
 
         String returnType = "java.lang.Object";
         if (FIND_ALL_BY_METHOD.equals(prefix)) {
@@ -394,8 +428,10 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 CompletionItem.forDynamicMethod(context.getAnchor(), name, longParams,
                         returnType, context.isNameOnly(), false));
 
-        result.put(new MethodSignature(name + "_", new String[] {}),
-                CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
+        if (prefixedMethod) {
+            result.put(new MethodSignature(name + "_", new String[] {}),
+                    CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
+        }
     }
 
     private boolean isDomain(FileObject source, Project project) {
