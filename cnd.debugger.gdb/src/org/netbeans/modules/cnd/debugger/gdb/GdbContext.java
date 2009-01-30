@@ -44,8 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 
 /**
@@ -165,11 +163,7 @@ public class GdbContext implements PropertyChangeListener {
     }
     
     public static GdbProxy getCurrentGdb() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return null;
         }
