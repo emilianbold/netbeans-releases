@@ -158,9 +158,9 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         DataObject obj = DataObject.find(fo);
         OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
         assertNotNull("Open cookie found", oc);
-//        assertEquals("Cookie is OK too", oc, obj.getCookie(OpenCookie.class));
-//        assertEquals("Node is OK too", oc, obj.getNodeDelegate().getCookie(OpenCookie.class));
-//        assertEquals("Node lookup is OK too", oc, obj.getNodeDelegate().getLookup().lookup(OpenCookie.class));
+        assertEquals("Cookie is OK too", oc, obj.getCookie(OpenCookie.class));
+        assertEquals("Node is OK too", oc, obj.getNodeDelegate().getCookie(OpenCookie.class));
+        assertEquals("Node lookup is OK too", oc, obj.getNodeDelegate().getLookup().lookup(OpenCookie.class));
         assertTrue("It is our cookie: " + oc, oc.getClass().getName().contains("ergonomics"));
         EditCookie ec = obj.getLookup().lookup(EditCookie.class);
         assertEquals("Edit cookie is available and same as open one", oc, ec);
