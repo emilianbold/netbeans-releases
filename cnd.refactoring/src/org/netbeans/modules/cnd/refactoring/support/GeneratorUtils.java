@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +49,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -63,6 +67,8 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.DialogDescriptor;
@@ -70,6 +76,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -293,12 +300,14 @@ public class GeneratorUtils {
         final PositionRef start;
         final PositionRef end;
         final FileObject fo;
+        final int dot;
 
-        public InsertInfo(CloneableEditorSupport ces, PositionRef start, PositionRef end, FileObject fo) {
+        public InsertInfo(CloneableEditorSupport ces, int dot, PositionRef start, PositionRef end, FileObject fo) {
             this.ces = ces;
             this.start = start;
             this.end = end;
             this.fo = fo;
+            this.dot = dot;
         }
 
     }
@@ -316,73 +325,118 @@ public class GeneratorUtils {
         FileObject declFo = path.getFileObject();
         PositionRef startDeclPos = classDeclEditor.createPositionRef(position, Bias.Backward);
         PositionRef endDeclPos = classDeclEditor.createPositionRef(position, Bias.Forward);
-        out[0] = new InsertInfo(classDeclEditor, startDeclPos, endDeclPos, declFo);
-        out[1] = new InsertInfo(classDeclEditor, startDeclPos, endDeclPos, declFo);
-        InsertInfo[] ins = getInsertPositons(path);
-        InsertInfo decl = ins[0];
-        InsertInfo def = ins[1];
+        out[0] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos, declFo);
+        out[1] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos, declFo);
         return out;
     }
     
-    public static void generateGettersAndSetters(CsmContext path, Iterable<? extends CsmField> fields, boolean inlineMethods, GeneratorUtils.Kind type) {
+    public static void generateGettersAndSetters(CsmContext path, Collection<? extends CsmField> fields, boolean inlineMethods, GeneratorUtils.Kind type) {
         CsmClass enclosingClass = Utilities.extractEnclosingClass(path);
         if (enclosingClass == null) {
             System.err.println("why enclosing class is null? " + path); // NOI18N
+            Toolkit.getDefaultToolkit().beep();
             return;
         }
-        RefactoringSession session = RefactoringSession.create(getGetterSetterDisplayName(type));
-        EncapsulateFieldsRefactoring refactoring = new EncapsulateFieldsRefactoring(null, path);
-//        ModificationResult mr = new ModificationResult(path.getFile().getProject());
+        if (fields.isEmpty()) {
+            System.err.println("nothing to encapsulate"); // NOI18N
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        if (inlineMethods) {
+            InsertInfo[] ins = getInsertPositons(path);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            for (CsmField field : fields) {
+                if (type != GeneratorUtils.Kind.SETTERS_ONLY) {
+                    result.append("\n"); // NOI18N
+                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                }
+                if (type != GeneratorUtils.Kind.GETTERS_ONLY) {
+                    result.append("\n"); // NOI18N
+                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                }
+            }
+            final Document doc = path.getDocument();
+            Runnable update = new Runnable() {
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        } else {
+            RefactoringSession session = RefactoringSession.create(getGetterSetterDisplayName(type));
+            EncapsulateFieldsRefactoring refactoring = new EncapsulateFieldsRefactoring(null, path);
+    //        ModificationResult mr = new ModificationResult(path.getFile().getProject());
 
-        Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
-        for (CsmField field : fields) {
-            String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field) : null;
-            String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field) : null;
-            refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName));
-//            if (type != SETTERS_ONLY) {
-//                if (inlineMethods) {
-//                    String getter = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
-//                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
-//                    mr.addDifference(decl.fo, diff);
-//                } else {
-//                    String getterDecl = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.DECLARATION);
-//                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
-//                    mr.addDifference(decl.fo, diffDecl);
-//                    String getterDef = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
-//                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
-//                    mr.addDifference(def.fo, diffDef);
-//                }
-//            }
-//            if (type != GETTERS_ONLY) {
-//                if (inlineMethods) {
-//                    String getter = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
-//                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
-//                    mr.addDifference(decl.fo, diff);
-//                } else {
-//                    String getterDecl = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.DECLARATION);
-//                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
-//                    mr.addDifference(decl.fo, diffDecl);
-//                    String getterDef = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
-//                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
-//                    mr.addDifference(def.fo, diffDef);
-//                }
-//            }
+            Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
+            for (CsmField field : fields) {
+                String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field) : null;
+                String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field) : null;
+                refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName));
+    //            if (type != SETTERS_ONLY) {
+    //                if (inlineMethods) {
+    //                    String getter = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
+    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
+    //                    mr.addDifference(decl.fo, diff);
+    //                } else {
+    //                    String getterDecl = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.DECLARATION);
+    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
+    //                    mr.addDifference(decl.fo, diffDecl);
+    //                    String getterDef = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
+    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
+    //                    mr.addDifference(def.fo, diffDef);
+    //                }
+    //            }
+    //            if (type != GETTERS_ONLY) {
+    //                if (inlineMethods) {
+    //                    String getter = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
+    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
+    //                    mr.addDifference(decl.fo, diff);
+    //                } else {
+    //                    String getterDecl = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.DECLARATION);
+    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
+    //                    mr.addDifference(decl.fo, diffDecl);
+    //                    String getterDef = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
+    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
+    //                    mr.addDifference(def.fo, diffDef);
+    //                }
+    //            }
+            }
+            refactoring.setRefactorFields(refFields);
+            refactoring.setFieldModifiers(Collections.<CsmVisibility>emptySet());
+            refactoring.getContext().add(InsertPoint.DEFAULT);
+            refactoring.setMethodInline(inlineMethods);
+            Problem problem = refactoring.preCheck();
+            if (problem != null && problem.isFatal()) {
+                // fatal problem
+                System.err.println("preCheck failed: not possible to refactor " + problem); // NOI18N
+                return;
+            }
+            problem = refactoring.prepare(session);
+            if (problem != null && problem.isFatal()) {
+                // fatal problem
+                System.err.println("prepare failed: not possible to refactor " + problem); // NOI18N
+                return;
+            }
+            session.doRefactoring(false);
         }
-        refactoring.setFieldModifiers(Collections.<CsmVisibility>emptySet());
-        refactoring.getContext().add(InsertPoint.DEFAULT);
-        Problem problem = refactoring.preCheck();
-        if (problem != null && problem.isFatal()) {
-            // fatal problem
-            System.err.println("preCheck failed: not possible to refactor " + problem); // NOI18N
-            return;
-        }
-        problem = refactoring.prepare(session);
-        if (problem != null && problem.isFatal()) {
-            // fatal problem
-            System.err.println("prepare failed: not possible to refactor " + problem); // NOI18N
-            return;
-        }
-        session.doRefactoring(false);
     }
 
     public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
@@ -391,9 +445,8 @@ public class GeneratorUtils {
         if (candidates != null) {
             CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
-                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
-                if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
+                if (parameters.isEmpty() && isSameType(candidate.getReturnType(), type)) {
                     return true;
                 }
             }
@@ -470,19 +523,24 @@ public class GeneratorUtils {
     };
     
     private static TypeKind getTypeKind(CsmType type) {
-        if (CsmKindUtilities.isBuiltIn(type)) {
-            String text = type.getClassifierText().toString();
-            if ("void".equals(text)) { // NOI18N
-                return TypeKind.VOID;
-            } else if ("bool".equals(text) || "boolean".equals(text)) { // NOI18N
-                return TypeKind.BOOLEAN;
-            }
+        CharSequence text = type.getClassifierText();
+        if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
+            return TypeKind.VOID;
+        } else if (CharSequenceKey.Comparator.compare("bool", text) == 0 || // NOI18N
+                CharSequenceKey.Comparator.compare("boolean", text) == 0) { // NOI18N
+            return TypeKind.BOOLEAN;
         }
         return TypeKind.UNKNOWN;
     }
 
     private static boolean isSameType(CsmType type1, CsmType type2) {
-        return type1.equals(type2);
+        if (type1.equals(type2)) {
+            return true;
+        } else if (type2 != null) {
+            return CharSequenceKey.Comparator.compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
+        } else {
+            return false;
+        }
     }
 
     public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {

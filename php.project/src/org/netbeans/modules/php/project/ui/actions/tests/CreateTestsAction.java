@@ -258,7 +258,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnitConstants.PARAM_SKELETON : PhpUnitConstants.PARAM_SKELETON_OLD;
+        String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
         Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, paramSkeleton);
         try {
             if (result.get() != 0) {
@@ -290,7 +290,7 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + PhpUnitConstants.TEST_FILE_SUFFIX);
+        return new File(parent, source.getName() + PhpUnit.TEST_FILE_SUFFIX);
     }
 
     private File getTestDirectory(PhpProject phpProject) {

@@ -221,7 +221,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="200"/>
         </file>
         <file name="org-netbeans-modules-ruby-rubyproject-RubyLoggingOption.instance">
-            <attr name="position" intvalue="300"/>
+            <attr name="position" intvalue="400"/>
         </file>
     </folder>
     

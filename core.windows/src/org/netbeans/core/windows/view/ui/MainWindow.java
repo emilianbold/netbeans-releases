@@ -103,6 +103,7 @@ public final class MainWindow extends JFrame {
     }
     
     /** Overrides superclass method, adds help context to the new root pane. */
+    @Override
     protected void setRootPane(JRootPane root) {
         super.setRootPane(root);
         if(root != null) {
@@ -118,6 +119,7 @@ public final class MainWindow extends JFrame {
             // use glass pane that will not cause repaint/revalidate of parent when set visible
             // is called (when setting wait cursor in ModuleActions) #40689
             JComponent c = new JPanel() {
+                @Override
                 public void setVisible(boolean flag) {
                     if (flag != isVisible ()) {
                         super.setVisible(flag);
@@ -170,12 +172,18 @@ public final class MainWindow extends JFrame {
                     // on mac there is window resize component in the right most bottom area.
                     // it paints over our icons..
                     magicConstant = 12;
+
+                    if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                        statusLinePanel.setBorder( BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
+                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow") ) ) ); //NOI18N
+                    }
                 }
                 
                 // status line should add some pixels on the left side
                 statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder (0, 0, 0, magicConstant), 
-                        statusLinePanel.getBorder ()));
+                        statusLinePanel.getBorder(),
+                        BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
                 
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 statusLinePanel.add(status, BorderLayout.CENTER);
@@ -326,10 +334,12 @@ public final class MainWindow extends JFrame {
     
     private void initListeners() {
         addWindowListener (new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent evt) {
                     LifecycleManager.getDefault().exit();
                 }
 
+                @Override
                 public void windowActivated (WindowEvent evt) {
                    // #19685. Cancel foreigner popup when
                    // activated main window.
@@ -459,6 +469,7 @@ public final class MainWindow extends JFrame {
      * don't allow smaller bounds than the one constructed from preffered sizes, making sure everything is visible when
      * in SDI. #40063
      */
+    @Override
     public void setBounds(Rectangle rect) {
         Rectangle bounds = rect;
         if (bounds != null) {
@@ -548,6 +559,7 @@ public final class MainWindow extends JFrame {
     private Graphics waitingForPaintDummyGraphic;
     boolean isOlderJDK = System.getProperty("java.version").startsWith("1.5");
 
+    @Override
     public void setVisible (boolean flag) {
         // The setVisible will cause a PaintEvent to be queued up, as a LOW_PRIORITY one
         // As the painting of my child components occurs, they cause painting of their own
@@ -562,6 +574,7 @@ public final class MainWindow extends JFrame {
         super.setVisible(flag);
     }
 
+    @Override
     public void paint(Graphics g) {
         // As a safeguard, always release the dummy graphic when we get a paint
         if (waitingForPaintDummyGraphic != null) {
@@ -580,6 +593,7 @@ public final class MainWindow extends JFrame {
     /** Overrides parent version to return fake dummy graphic in certain time
      * during startup
      */
+    @Override
     public Graphics getGraphics () {
         // Return the dummy graphics that paint nowhere, until we receive a paint() 
         if (waitingForPaintDummyGraphic != null) {

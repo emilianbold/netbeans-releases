@@ -41,6 +41,7 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -97,6 +98,12 @@ public class MultiSplitPane extends JPanel
         setLayout( new MultiSplitLayout() );
         addMouseMotionListener( this );
         addMouseListener( this );
+
+        Color bkColor = UIManager.getColor("NbSplitPane.background");
+        if( null != bkColor ) {
+            setBackground(bkColor);
+            setOpaque(true);
+        }
     }
     
     /**

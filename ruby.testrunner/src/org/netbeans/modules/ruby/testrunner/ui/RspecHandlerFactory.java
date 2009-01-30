@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.RspecRunner;
+import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities;
 
 /**
  * An output recognizer for parsing output of the rspec runner script, 
@@ -110,7 +111,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
         private String[] filterStackTrace(String... stackTrace) {
             List<String> result = new ArrayList<String>();
             for (String location : stackTrace) {
-                if (!location.contains(RspecRunner.RSPEC_MEDIATOR_SCRIPT)) {
+                if (!TestRunnerUtilities.filterOutFromStacktrace(location)) {
                     result.add(location);
                 }
             }

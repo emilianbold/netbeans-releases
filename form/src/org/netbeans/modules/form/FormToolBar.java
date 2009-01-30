@@ -79,6 +79,7 @@ class FormToolBar extends JToolBar {
 
     // ctor
     public FormToolBar(FormDesigner designer) {
+        super( "editorToolbar" );
         formDesigner = designer;
 
         // the toolbar should have roll-over buttons and no handle for dragging
