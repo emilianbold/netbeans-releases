@@ -3,7 +3,7 @@
                 <text display="none">type=textfield</text>
                 <text display="none">editable=true</text>
                 <text display="none">enabled=true</text>
-                <rect x="0" y="0" rx="4" ry="4" width="200" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="2">
+                <rect x="0" y="0" rx="4" ry="4" width="200" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">
                     <animate attributeName="stroke" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" dur="0.25s"                        fill="freeze" to="rgb(255,165,0)"/>
                     <animate attributeName="stroke" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" dur="0.25s"                        fill="freeze" to="black"/>
                 </rect>
