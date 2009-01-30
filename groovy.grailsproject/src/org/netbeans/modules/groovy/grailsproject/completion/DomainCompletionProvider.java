@@ -326,10 +326,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 CompletionItem.forDynamicMethod(context.getAnchor(), name, longParams,
                         returnType, context.isNameOnly(), false));
 
-        if (!context.isNameOnly()) {
-            result.put(new MethodSignature(name + "_", new String[] {}),
-                    CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
-        }
+        result.put(new MethodSignature(name + "_", new String[] {}),
+                CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
     }
 
     private boolean isDomain(FileObject source, Project project) {
