@@ -290,7 +290,10 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 addQueryEntries(result, context, matcher.group(1),
                         name.substring(matcher.group(1).length()), paramCount, false);
             }
-        } else {
+        }
+
+        // initial prefix (no property in it)
+        if (!matcher.matches() || context.getPrefix().equals(matcher.group(1))){
             // FIXME optimize
             for (String property : context.getProperties()) {
                 String tail = capitalise(property);
