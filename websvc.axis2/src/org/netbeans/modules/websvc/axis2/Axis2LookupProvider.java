@@ -56,7 +56,6 @@ import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -228,8 +227,7 @@ public class Axis2LookupProvider implements LookupProvider {
 
         return Lookups.fixed(new Object[] {
             openhook,
-            axis2ModelProvider,
-            new AxisRecommendedTemplates()
+            axis2ModelProvider
         });
     }
     
@@ -284,13 +282,5 @@ public class Axis2LookupProvider implements LookupProvider {
             }
         }
 
-    }
-    
-    private static final class AxisRecommendedTemplates implements RecommendedTemplates {
-
-        public String[] getRecommendedTypes() {
-            return new String[]{"axis"}; // NOI18N
-        }
-        
     }
 }
