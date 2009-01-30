@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.graph;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.apache.maven.project.MavenProject;
@@ -60,6 +61,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 
 /**
  *
@@ -208,7 +210,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
             ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-            popupMenu.add(CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories()));
+            Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
+            a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
+            popupMenu.add(a);
             return popupMenu;
         }
         

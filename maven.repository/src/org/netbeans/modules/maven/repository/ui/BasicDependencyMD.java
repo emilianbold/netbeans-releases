@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -80,7 +81,7 @@ public class BasicDependencyMD implements MultiViewDescription, Serializable {
     }
 
     public String preferredID() {
-        return "dep"; //NOI18N
+        return ArtifactViewer.HINT_DEPENDENCIES;
     }
 
     public MultiViewElement createElement() {

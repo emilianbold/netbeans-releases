@@ -149,7 +149,8 @@ public class CommonArtifactActions {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ArtifactViewer.showArtifactViewer(artifact, repos);
+            String hint = (String) getValue("PANEL_HINT"); //NOI18N
+            ArtifactViewer.showArtifactViewer(artifact, repos, hint);
         }
     }
     
