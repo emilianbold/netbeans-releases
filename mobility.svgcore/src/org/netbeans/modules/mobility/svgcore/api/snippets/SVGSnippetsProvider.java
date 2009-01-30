@@ -47,7 +47,6 @@ package org.netbeans.modules.mobility.svgcore.api.snippets;
  */
 public interface SVGSnippetsProvider {
 
-
     /**
      * Name of SVG Snippet provider has to be unique. NOI18N!
      * @return Unique name
