@@ -673,7 +673,8 @@ public class PHPIndex {
 
         for (String indexField : fields) {
             final Collection<? extends IndexResult> indexResult = search(indexField, typeName.toLowerCase(), QuerySupport.Kind.PREFIX,
-                        forConstructor ? PHPIndexer.FIELD_CONSTRUCTOR : PHPIndexer.FIELD_BASE);
+                        forConstructor ? new String [] {indexField, fieldName, PHPIndexer.FIELD_CONSTRUCTOR} :
+                            new String [] {indexField, fieldName, PHPIndexer.FIELD_BASE});
 
             for (IndexResult typeMap : indexResult) {
                 String[] typeSignatures = typeMap.getValues(indexField);
