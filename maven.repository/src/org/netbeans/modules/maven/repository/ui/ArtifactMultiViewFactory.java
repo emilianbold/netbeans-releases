@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
@@ -60,7 +61,9 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -124,11 +127,14 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         };
         ic.add(toolbarActions);
 
-        MultiViewDescription artDesc = new BasicArtifactMD(lookup);
-        MultiViewDescription prjDesc = new BasicProjectMD(lookup);
-        MultiViewDescription depDesc = new BasicDependencyMD(lookup);
-        TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[]
-            { artDesc, prjDesc, depDesc }, artDesc);
+        Collection<? extends ArtifactViewerPanelProvider> provs = Lookup.getDefault().lookupAll(ArtifactViewerPanelProvider.class);
+        MultiViewDescription[] panels = new MultiViewDescription[provs.size()];
+        int i = 0;
+        for (ArtifactViewerPanelProvider prov : provs) {
+            panels[i] = prov.createPanel(lookup);
+            i = i + 1;
+        }
+        TopComponent tc = MultiViewFactory.createMultiView(panels, panels[0]);
         tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         return tc;

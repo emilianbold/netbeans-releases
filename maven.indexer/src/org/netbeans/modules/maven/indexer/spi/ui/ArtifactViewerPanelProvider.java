@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,64 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.repository.ui;
+package org.netbeans.modules.maven.indexer.spi.ui;
 
-import java.awt.Image;
-import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 /**
- *
+ * to be registered as service and provide panels for the ArtifactViewer
  * @author mkleint
  */
-public class BasicArtifactMD implements MultiViewDescription, Serializable {
-    private Lookup lookup;
-
-    BasicArtifactMD(Lookup lkp) {
-        lookup = lkp;
-    }
+public interface ArtifactViewerPanelProvider {
 
 
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(BasicArtifactMD.class, "TAB_Basic");
-    }
-
-    public Image getIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true); //NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public String preferredID() {
-        return "art"; //NOI18N
-    }
-
-    public MultiViewElement createElement() {
-        return new BasicArtifactPanel(lookup);
-    }
-
-    @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=100)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        public MultiViewDescription createPanel(Lookup content) {
-            return new BasicArtifactMD(content);
-        }
-    }
-
+    /***
+     *
+     * @param content lookup that will contain Artifact from start and
+     * eventually at some point in time later also DependencyNode and MavenProject instances..
+     * @return
+     */
+    MultiViewDescription createPanel(Lookup content);
 }

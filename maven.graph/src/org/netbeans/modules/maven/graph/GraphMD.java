@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.repository.ui;
+package org.netbeans.modules.maven.graph;
 
 import java.awt.Image;
 import java.io.Serializable;
@@ -47,17 +47,17 @@ import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mkleint
  */
-public class BasicArtifactMD implements MultiViewDescription, Serializable {
+public class GraphMD implements MultiViewDescription, Serializable {
+
     private Lookup lookup;
 
-    BasicArtifactMD(Lookup lkp) {
+    GraphMD(Lookup lkp) {
         lookup = lkp;
     }
 
@@ -67,7 +67,7 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(BasicArtifactMD.class, "TAB_Basic");
+        return org.openide.util.NbBundle.getMessage(GraphMD.class, "TAB_Graph");
     }
 
     public Image getIcon() {
@@ -79,18 +79,18 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
     }
 
     public String preferredID() {
-        return "art"; //NOI18N
+        return "grf"; //NOI18N
     }
 
     public MultiViewElement createElement() {
-        return new BasicArtifactPanel(lookup);
+        return new DependencyGraphTopComponent(lookup);
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=100)
+    @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
     public static class Factory implements ArtifactViewerPanelProvider {
 
         public MultiViewDescription createPanel(Lookup content) {
-            return new BasicArtifactMD(content);
+            return new GraphMD(content);
         }
     }
 

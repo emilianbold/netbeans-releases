@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -84,6 +85,14 @@ public class BasicDependencyMD implements MultiViewDescription, Serializable {
 
     public MultiViewElement createElement() {
         return new DependencyPanel(lookup);
+    }
+
+    @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=300)
+    public static class Factory implements ArtifactViewerPanelProvider {
+
+        public MultiViewDescription createPanel(Lookup content) {
+            return new BasicDependencyMD(content);
+        }
     }
 
 }
