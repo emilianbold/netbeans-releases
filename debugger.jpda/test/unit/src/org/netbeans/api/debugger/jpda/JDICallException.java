@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.api.debugger.jpda;
 
-package org.netbeans.debuggercore.ts;
-
-import junit.framework.Test;
-import org.netbeans.debuggercore.ActionsTest;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.Utils.BreakPositions;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author peter
+ * @author felipee
  */
-public class ActionsTestSuite extends JellyTestCase {
-    
-    public ActionsTestSuite(String name) {
-        super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+public class JDICallException extends NbTestCase {
+
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager();
+    private String sourceRoot = System.getProperty("test.dir.src");
+    private JPDASupport support;
+    private Object STEP_LOCK = new Object();
+    private boolean stepExecFired = false;
+
+    public JDICallException(String s) {
+        super(s);
     }
 
-    public static Test suite() {
-//        String os = System.getProperty("os.name");
-//        String jdk = System.getProperty("java.version");
-//        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
-//            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-//        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(ActionsTest.class, 
-                    "testCheckEnabledActions",
-                    "testCheckEnabledActionsDebugging",
-                    "testPause").enableModules(".*").clusters(".*"));
-//        }
-    } 
+    public void testInvokeException() throws Exception {
+
+
+        try {
+
+            JPDASupport.removeAllBreakpoints();
+            BreakPositions bp;
+
+            bp = Utils.getBreakPositions(sourceRoot + "org/netbeans/api/debugger/jpda/testapps/StepApp.java");
+
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            dm.addBreakpoint(lb);
+            lb.addJPDABreakpointListener(new JPDABreakpointListener() {
+
+                public void breakpointReached(JPDABreakpointEvent event) {
+                    System.err.println("Breakpoint Reached: " + event.getSource());
+                }
+            });
+
+            support = JPDASupport.attach("org.netbeans.api.debugger.jpda.testapps.StepApp2");
+            support.waitState(JPDADebugger.STATE_STOPPED);
+            dm.removeBreakpoint(lb);
+            JPDASupport.removeAllBreakpoints();
+        } finally {
+            support.doFinish();
+        }
+
+    }
 }
