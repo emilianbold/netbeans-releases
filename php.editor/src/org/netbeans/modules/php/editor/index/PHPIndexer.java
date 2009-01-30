@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -88,7 +89,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPIndexer extends EmbeddingIndexer {
+public final class PHPIndexer extends EmbeddingIndexer {
     private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     private static final FileSystem MEM_FS = FileUtil.createMemoryFileSystem();
@@ -177,477 +178,477 @@ public class PHPIndexer extends EmbeddingIndexer {
 
     }
 
-   
     private static class TreeAnalyzer {
-        private Indexable indexable;
-        private String url;
+        private final Indexable indexable;
         private final PHPParseResult result;
-        private Program root;
-        //private final BaseDocument doc;
-        private IndexingSupport support;
-        private List<IndexDocument> documents = new ArrayList<IndexDocument>();
+        private final IndexingSupport support;
 
-        private TreeAnalyzer(Indexable indexable, PHPParseResult result, IndexingSupport support) {
+        public TreeAnalyzer(Indexable indexable, PHPParseResult result, IndexingSupport support) {
             this.indexable = indexable;
             this.result = result;
             this.support = support;
-
-            /*FileObject fo = file.getFileObject();
-
-            if (fo != null) {
-                this.doc = NbUtilities.getBaseDocument(fo, true);
-            } else {
-                this.doc = null;
-            }
-            */
-            try {
-                url = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
-
-                // Make relative URLs for urls in the libraries
-                url = PHPIndex.getPreindexUrl(url);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-
-        List<IndexDocument> getDocuments() {
-            return documents;
-        }
-
-        private void indexFieldsDeclaration(FieldsDeclaration fieldsDeclaration, IndexDocument document) {
-            for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
-                if (field.getName().getName() instanceof Identifier) {
-                    Identifier identifier = (Identifier) field.getName().getName();
-                    String type = getFieldTypeFromPHPDoc(field);
-                    String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
-                    document.addPair(FIELD_FIELD, signature, false, true);
-                }
-            }
-        }
-
-        private String createFieldsDeclarationRecord(String name, String type, int modifier, int offset) {
-            StringBuilder fieldSignature = new StringBuilder();
-            fieldSignature.append(name + ";"); //NOI18N
-            fieldSignature.append(offset + ";"); //NOI18N
-            fieldSignature.append(modifier + ";"); //NOI18N
-            if (type != null){
-                fieldSignature.append(type);
-            }
-            fieldSignature.append(";"); //NOI18N
-            return fieldSignature.toString();
-        }
-
-        private class IndexerVisitor extends DefaultTreePathVisitor{
-            private List<IndexDocument> documents;
-            private IndexDocument defaultDocument;
-            private final IndexDocument identifierDocument = support.createDocument(indexable);
-            private Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
-
-            public IndexerVisitor(List<IndexDocument> documents, IndexDocument defaultDocument) {
-                this.documents = documents;
-                this.defaultDocument = defaultDocument;
-                documents.add(identifierDocument);
-            }
-            public void addIdentifierPairs() {
-                Collection<IdentifierSignature> values = identifiers.values();
-                for (IdentifierSignature idSign : values) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
-                }
-            }
-            @Override
-            public void visit(Identifier node) {
-                IdentifierSignature.add(node, identifiers);
-                super.visit(node);
-            }
-            @Override
-            public void visit(ClassDeclaration node) {
-                // create a new document for each class
-                IndexDocument classDocument = support.createDocument(indexable);
-                documents.add(classDocument);
-                indexClass((ClassDeclaration) node, classDocument);
-                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-                IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
-                for (IdentifierSignature idSign : idSignatures) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
-                }
-                super.visit(node);
-            }
-
-            @Override
-            public void visit(FunctionDeclaration node) {
-                if (getPath().get(0) instanceof MethodDeclaration){
-                    super.visit(node);
-                    return;
-                }
-
-                indexFunction((FunctionDeclaration)node, defaultDocument);
-                super.visit(node);
-            }
-
-            @Override
-            public void visit(ExpressionStatement node) {
-                indexConstant(node, defaultDocument);
-                super.visit(node);
-            }
-
-            @Override
-            public void visit(InterfaceDeclaration node) {
-                IndexDocument ifaceDocument = support.createDocument(indexable);
-                documents.add(ifaceDocument);
-                indexInterface((InterfaceDeclaration) node, ifaceDocument);
-                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-                IdentifierSignature.add(node, idSignatures);
-                for (IdentifierSignature idSign : idSignatures) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
-                }
-                super.visit(node);
-            }
         }
 
         public void analyze() throws IOException {
-
-            final IndexDocument defaultDocument = support.createDocument(indexable); // TODO - measure!
-            documents.add(defaultDocument);
-            support.addDocument(defaultDocument);
-
-            root = result.getProgram();
-            IndexerVisitor indexerVisitor = new IndexerVisitor(documents, defaultDocument);
+            Program root = result.getProgram();
+            IndexerVisitor indexerVisitor = new IndexerVisitor(support, indexable, root);
             root.accept(indexerVisitor);
             indexerVisitor.addIdentifierPairs();
 
-            String processedFileURL = null;
+            List<? extends IndexDocument> documents = indexerVisitor.getAllDocuments();
+            assert documents.size() > 0;
+            final IndexDocument defaultDocument = documents.get(0);
 
+            String processedFileURL = null;
             try {
                 processedFileURL = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
-
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
 
-            final String processedFileAbsPath = processedFileURL.substring("file:".length());
-            final StringBuilder includes = new StringBuilder();
-            for (Statement statement : root.getStatements()){
-                new DefaultTreePathVisitor() {
-                    @Override
-                    public void visit(Assignment node) {
-                        List<ASTNode> path = getPath();
-                        boolean indexVariableEnabled = true;
-                        for (ASTNode aSTNode : path) {
-                            if (aSTNode instanceof FunctionDeclaration) {
-                                indexVariableEnabled = false;
-                                break;
+            if (processedFileURL != null) {
+                final String processedFileAbsPath = processedFileURL.substring("file:".length());
+                final StringBuilder includes = new StringBuilder();
+                for (Statement statement : root.getStatements()){
+                    new DefaultTreePathVisitor() {
+                        @Override
+                        public void visit(Assignment node) {
+                            List<ASTNode> path = getPath();
+                            boolean indexVariableEnabled = true;
+                            for (ASTNode aSTNode : path) {
+                                if (aSTNode instanceof FunctionDeclaration) {
+                                    indexVariableEnabled = false;
+                                    break;
+                                }
                             }
-                        }
-                        if (indexVariableEnabled) {
-                            indexVarsInAssignment(node, defaultDocument);
-                        }
-                        super.visit(node);
-                    }
-
-                    @Override
-                    public void visit(Include node) {
-                        Include include = (Include) node;
-                        Expression argExpression = include.getExpression();
-
-                        if (argExpression instanceof ParenthesisExpression) {
-                            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
-                            argExpression = parenthesisExpression.getExpression();
-                        }
-
-                        if (argExpression instanceof Scalar) {
-                            Scalar scalar = (Scalar) argExpression;
-                            String rawInclude = scalar.getStringValue();
-
-                            // check if the string is really quoted
-                            if (isQuotedString(rawInclude)) {
-                                String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath, dequote(rawInclude));
-                                includes.append(incl + ";"); //NOI18N
+                            if (indexVariableEnabled) {
+                                indexVarsInAssignment(node, defaultDocument);
                             }
+                            super.visit(node);
                         }
 
-                        super.visit(node);
-                    }
-                }.scan(statement);
+                        @Override
+                        public void visit(Include node) {
+                            Include include = (Include) node;
+                            Expression argExpression = include.getExpression();
+
+                            if (argExpression instanceof ParenthesisExpression) {
+                                ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
+                                argExpression = parenthesisExpression.getExpression();
+                            }
+
+                            if (argExpression instanceof Scalar) {
+                                Scalar scalar = (Scalar) argExpression;
+                                String rawInclude = scalar.getStringValue();
+
+                                // check if the string is really quoted
+                                if (isQuotedString(rawInclude)) {
+                                    String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath, dequote(rawInclude));
+                                    includes.append(incl + ";"); //NOI18N
+                                }
+                            }
+
+                            super.visit(node);
+                        }
+                    }.scan(statement);
+                }
+
+                defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false, true);
             }
-            defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false, true);
+
+            // add all documents to the indexing support
+            for(IndexDocument d : documents) {
+                support.addDocument(d);
+            }
+        }
+    } // End of TreeAnalyzer class
+
+    private static class IndexerVisitor extends DefaultTreePathVisitor {
+        private final IndexingSupport support;
+        private final Indexable indexable;
+        private final Program root;
+
+        private final List<IndexDocument> documents = new LinkedList<IndexDocument>();
+        private final IndexDocument defaultDocument;
+        private final IndexDocument identifierDocument;
+
+        private final Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
+
+        public IndexerVisitor(IndexingSupport support, Indexable indexable, Program root) {
+            this.support = support;
+            this.indexable = indexable;
+            this.root = root;
+
+            this.defaultDocument = support.createDocument(indexable);
+            this.documents.add(defaultDocument);
+
+            this.identifierDocument = support.createDocument(indexable);
+            this.documents.add(identifierDocument);
         }
 
-        private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
-            StringBuilder classSignature = new StringBuilder();
-            String className = classDeclaration.getName().getName();
-            classSignature.append(className.toLowerCase() + ";"); //NOI18N
-            classSignature.append(className + ";"); //NOI18N
-            classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
+        public List<? extends IndexDocument> getAllDocuments() {
+            addIdentifierPairs();
+            return documents;
+        }
 
-            String superClass = ""; //NOI18N
+        private void addIdentifierPairs() {
+            for (IdentifierSignature idSign : identifiers.values()) {
+                identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
+            }
+            identifiers.clear();
+        }
 
-            if (classDeclaration.getSuperClass() instanceof Identifier) {
-                Identifier identifier = (Identifier) classDeclaration.getSuperClass();
-                superClass = identifier.getName();
+        @Override
+        public void visit(Identifier node) {
+            IdentifierSignature.add(node, identifiers);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(ClassDeclaration node) {
+            // create a new document for each class
+            IndexDocument classDocument = support.createDocument(indexable);
+            documents.add(classDocument);
+
+            indexClass((ClassDeclaration) node, classDocument, root);
+            List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+            IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
+            for (IdentifierSignature idSign : idSignatures) {
+                identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
+            }
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(FunctionDeclaration node) {
+            if (getPath().get(0) instanceof MethodDeclaration){
+                super.visit(node);
+                return;
             }
 
-            classSignature.append(superClass + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, classSignature.toString(), true, true);
-            document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true, true);
-            boolean isConstructor = false;
-            for (Statement statement : classDeclaration.getBody().getStatements()){
-                if (statement instanceof MethodDeclaration) {
-                    MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                    String methName = CodeUtils.extractMethodName(methodDeclaration);
-                    if (PredefinedSymbols.MAGIC_METHODS.keySet().contains(methName) &&
-                            "__construct".equalsIgnoreCase(methName)) {//NOI18N
-                        isConstructor = true;
-                        indexConstructor(classDeclaration, methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
-                    } 
-                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
-                    
-                } else if (statement instanceof FieldsDeclaration) {
-                    FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                    indexFieldsDeclaration(fieldsDeclaration, document);
-                } else if (statement instanceof ClassConstantDeclaration) {
-                    ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+            indexFunction((FunctionDeclaration)node, defaultDocument, root);
+            super.visit(node);
+        }
 
-                    for (Identifier id : constDeclaration.getNames()){
-                        StringBuilder signature = new StringBuilder();
-                        signature.append(id.getName() + ";");
-                        signature.append(constDeclaration.getStartOffset() + ";");
-                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
-                    }
+        @Override
+        public void visit(ExpressionStatement node) {
+            indexConstant(node, defaultDocument);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            IndexDocument ifaceDocument = support.createDocument(indexable);
+            documents.add(ifaceDocument);
+
+            indexInterface((InterfaceDeclaration) node, ifaceDocument, root);
+            List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+            IdentifierSignature.add(node, idSignatures);
+            for (IdentifierSignature idSign : idSignatures) {
+                identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
+            }
+            super.visit(node);
+        }
+    } // End of IndexerVisitor class
+
+    private static void indexClass(ClassDeclaration classDeclaration, IndexDocument document, Program root) {
+        StringBuilder classSignature = new StringBuilder();
+        String className = classDeclaration.getName().getName();
+        classSignature.append(className.toLowerCase() + ";"); //NOI18N
+        classSignature.append(className + ";"); //NOI18N
+        classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
+
+        String superClass = ""; //NOI18N
+
+        if (classDeclaration.getSuperClass() instanceof Identifier) {
+            Identifier identifier = (Identifier) classDeclaration.getSuperClass();
+            superClass = identifier.getName();
+        }
+
+        classSignature.append(superClass + ";"); //NOI18N
+        document.addPair(FIELD_CLASS, classSignature.toString(), true, true);
+        document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true, true);
+        boolean isConstructor = false;
+        for (Statement statement : classDeclaration.getBody().getStatements()){
+            if (statement instanceof MethodDeclaration) {
+                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                String methName = CodeUtils.extractMethodName(methodDeclaration);
+                if (PredefinedSymbols.MAGIC_METHODS.keySet().contains(methName) &&
+                        "__construct".equalsIgnoreCase(methName)) {//NOI18N
+                    isConstructor = true;
+                    indexConstructor(classDeclaration, methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
+                }
+                indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
+
+            } else if (statement instanceof FieldsDeclaration) {
+                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
+                indexFieldsDeclaration(fieldsDeclaration, document, root);
+            } else if (statement instanceof ClassConstantDeclaration) {
+                ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+
+                for (Identifier id : constDeclaration.getNames()){
+                    StringBuilder signature = new StringBuilder();
+                    signature.append(id.getName() + ";");
+                    signature.append(constDeclaration.getStartOffset() + ";");
+                    document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
                 }
             }
-            if (!isConstructor) {
-                isConstructor = true;
-                indexConstructor(classDeclaration, null, BodyDeclaration.Modifier.PUBLIC, document);
+        }
+        if (!isConstructor) {
+            isConstructor = true;
+            indexConstructor(classDeclaration, null, BodyDeclaration.Modifier.PUBLIC, document, root);
+        }
+        for (PHPDocVarTypeTag tag : Utils.getPropertyTags(root, classDeclaration)) {
+            String name = tag.getVariable().getValue();
+            if (name.charAt(0) == '$') {  //NOI18N
+                name = name.substring(1);
             }
-            for (PHPDocVarTypeTag tag : Utils.getPropertyTags(root, classDeclaration)) {
-                String name = tag.getVariable().getValue();
-                if (name.charAt(0) == '$') {  //NOI18N
-                    name = name.substring(1);
+            // TODO if the property has defined more types, then it should be reflected
+            String signature = createFieldsDeclarationRecord(name, tag.getTypes().get(0).getValue(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
+            document.addPair(FIELD_FIELD, signature, false, true);
+        }
+    }
+
+    private static void indexInterface(InterfaceDeclaration ifaceDecl, IndexDocument document, Program root) {
+        StringBuilder ifaceSign = new StringBuilder();
+        ifaceSign.append(ifaceDecl.getName().getName().toLowerCase() + ";"); //NOI18N
+        ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
+        ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
+
+        for (Iterator<Identifier> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
+            Identifier id = it.next();
+            ifaceSign.append(id.getName());
+
+            if (it.hasNext()){
+                ifaceSign.append(',');
+            }
+        }
+
+        ifaceSign.append(';');
+        document.addPair(FIELD_IFACE, ifaceSign.toString(), true, true);
+        document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true, true);
+
+        for (Statement statement : ifaceDecl.getBody().getStatements()){
+            if (statement instanceof MethodDeclaration) {
+                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
+            } else if (statement instanceof FieldsDeclaration) {
+                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
+                indexFieldsDeclaration(fieldsDeclaration, document, root);
+            } else if (statement instanceof ClassConstantDeclaration) {
+                ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+
+                for (Identifier id : constDeclaration.getNames()){
+                    StringBuilder signature = new StringBuilder();
+                    signature.append(id.getName() + ";");
+                    signature.append(constDeclaration.getStartOffset() + ";");
+                    document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
                 }
-                // TODO if the property has defined more types, then it should be reflected
-                String signature = createFieldsDeclarationRecord(name, tag.getTypes().get(0).getValue(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
+            }
+
+        }
+    }
+
+    private static void indexFieldsDeclaration(FieldsDeclaration fieldsDeclaration, IndexDocument document, Program root) {
+        for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
+            if (field.getName().getName() instanceof Identifier) {
+                Identifier identifier = (Identifier) field.getName().getName();
+                String type = getFieldTypeFromPHPDoc(field, root);
+                String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
                 document.addPair(FIELD_FIELD, signature, false, true);
             }
         }
+    }
 
-        private void indexInterface(InterfaceDeclaration ifaceDecl, IndexDocument document) {
-            StringBuilder ifaceSign = new StringBuilder();
-            ifaceSign.append(ifaceDecl.getName().getName().toLowerCase() + ";"); //NOI18N
-            ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
-            ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
+    private static String createFieldsDeclarationRecord(String name, String type, int modifier, int offset) {
+        StringBuilder fieldSignature = new StringBuilder();
+        fieldSignature.append(name + ";"); //NOI18N
+        fieldSignature.append(offset + ";"); //NOI18N
+        fieldSignature.append(modifier + ";"); //NOI18N
+        if (type != null){
+            fieldSignature.append(type);
+        }
+        fieldSignature.append(";"); //NOI18N
+        return fieldSignature.toString();
+    }
 
-            for (Iterator<Identifier> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
-                Identifier id = it.next();
-                ifaceSign.append(id.getName());
+    private static void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
+        if (assignment.getLeftHandSide() instanceof Variable) {
+            Variable var = (Variable) assignment.getLeftHandSide();
+            String varType = CodeUtils.extractVariableType(assignment);
+            String varName = CodeUtils.extractVariableName(var);
+            if (varName != null) {
+                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-                if (it.hasNext()){
-                    ifaceSign.append(',');
-                }
-            }
+                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                    StringBuilder signature = new StringBuilder();
+                    signature.append(varName.toLowerCase() + ";" + varName + ";");
 
-            ifaceSign.append(';');
-            document.addPair(FIELD_IFACE, ifaceSign.toString(), true, true);
-            document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true, true);
-
-            for (Statement statement : ifaceDecl.getBody().getStatements()){
-                if (statement instanceof MethodDeclaration) {
-                    MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
-                } else if (statement instanceof FieldsDeclaration) {
-                    FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                    indexFieldsDeclaration(fieldsDeclaration, document);
-                } else if (statement instanceof ClassConstantDeclaration) {
-                    ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
-
-                    for (Identifier id : constDeclaration.getNames()){
-                        StringBuilder signature = new StringBuilder();
-                        signature.append(id.getName() + ";");
-                        signature.append(constDeclaration.getStartOffset() + ";");
-                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
+                    if (varType != null) {
+                        signature.append(varType);
                     }
-                }
 
+                    signature.append(";"); //NOI18N
+                    signature.append(var.getStartOffset() + ";");
+                    document.addPair(FIELD_VAR, signature.toString(), true, true);
+                    document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true, true);
+                }
             }
         }
 
-        private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
-            if (assignment.getLeftHandSide() instanceof Variable) {
-                Variable var = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableType(assignment);
-                String varName = CodeUtils.extractVariableName(var);
-                if (varName != null) {
-                    String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-
-                    if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                        StringBuilder signature = new StringBuilder();
-                        signature.append(varName.toLowerCase() + ";" + varName + ";");
-
-                        if (varType != null) {
-                            signature.append(varType);
-                        }
-
-                        signature.append(";"); //NOI18N
-                        signature.append(var.getStartOffset() + ";");
-                        document.addPair(FIELD_VAR, signature.toString(), true, true);
-                        document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true, true);
-                    }
-                }
-            }
-
-            if (assignment.getRightHandSide() instanceof Assignment) {
-                Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
-                indexVarsInAssignment(embeddedAssignment, document);
-            }
+        if (assignment.getRightHandSide() instanceof Assignment) {
+            Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
+            indexVarsInAssignment(embeddedAssignment, document);
         }
+    }
 
-        private void indexConstant(Statement statement, IndexDocument document) {
-            ExpressionStatement exprStmt = (ExpressionStatement) statement;
-            Expression expr = exprStmt.getExpression();
+    private static void indexConstant(Statement statement, IndexDocument document) {
+        ExpressionStatement exprStmt = (ExpressionStatement) statement;
+        Expression expr = exprStmt.getExpression();
 
-            if (expr instanceof FunctionInvocation) {
-                FunctionInvocation invocation = (FunctionInvocation) expr;
+        if (expr instanceof FunctionInvocation) {
+            FunctionInvocation invocation = (FunctionInvocation) expr;
 
-                if (invocation.getFunctionName().getName() instanceof Identifier) {
-                    Identifier id = (Identifier) invocation.getFunctionName().getName();
+            if (invocation.getFunctionName().getName() instanceof Identifier) {
+                Identifier id = (Identifier) invocation.getFunctionName().getName();
 
-                    if ("define".equals(id.getName())) {
-                        if (invocation.getParameters().size() >= 2) {
-                            Expression paramExpr = invocation.getParameters().get(0);
+                if ("define".equals(id.getName())) {
+                    if (invocation.getParameters().size() >= 2) {
+                        Expression paramExpr = invocation.getParameters().get(0);
 
-                            if (paramExpr instanceof Scalar) {
-                                String constName = ((Scalar) paramExpr).getStringValue();
+                        if (paramExpr instanceof Scalar) {
+                            String constName = ((Scalar) paramExpr).getStringValue();
 
-                                // check if const name is really quoted
-                                if (isQuotedString(constName)) {
-                                    String defineVal = dequote(constName);
-                                    StringBuilder signature = new StringBuilder();
-                                    signature.append(defineVal.toLowerCase());
-                                    signature.append(';');
-                                    signature.append(defineVal);
-                                    signature.append(';');
-                                    signature.append(invocation.getStartOffset());
-                                    signature.append(';');
-                                    document.addPair(FIELD_CONST,  signature.toString(), true, true);
-                                    document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true, true);
-                                }
+                            // check if const name is really quoted
+                            if (isQuotedString(constName)) {
+                                String defineVal = dequote(constName);
+                                StringBuilder signature = new StringBuilder();
+                                signature.append(defineVal.toLowerCase());
+                                signature.append(';');
+                                signature.append(defineVal);
+                                signature.append(';');
+                                signature.append(invocation.getStartOffset());
+                                signature.append(';');
+                                document.addPair(FIELD_CONST,  signature.toString(), true, true);
+                                document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true, true);
                             }
                         }
                     }
                 }
             }
         }
+    }
 
-        private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
-            StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
-            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+    private static void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document, Program root) {
+        StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
+        signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration, root));
 
-            document.addPair(FIELD_BASE, signature.toString(), true, true);
-            document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true, true);
-        }
+        document.addPair(FIELD_BASE, signature.toString(), true, true);
+        document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true, true);
+    }
 
-        /**
-         * @param classDeclaration
-         * @param functionDeclaration maybe be null (actually for fake - if
-         * constructor doesn't exists then indexed as if existed with no parameters)
-         * @param modifiers
-         * @param document
-         */
-        private void indexConstructor(ClassDeclaration classDeclaration,FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
-            String className = CodeUtils.extractClassName(classDeclaration);
-            StringBuilder signature = new StringBuilder();
-            int paramCount = (functionDeclaration != null) ? functionDeclaration.getFormalParameters().size() : 0;
-            int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : classDeclaration.getStartOffset();
-            signature.append(getBaseSignatureForFunctionDeclaration(className,paramCount, offset, functionDeclaration));
-            signature.append(modifiers + ";"); //NOI18N
+    /**
+     * @param classDeclaration
+     * @param functionDeclaration maybe be null (actually for fake - if
+     * constructor doesn't exists then indexed as if existed with no parameters)
+     * @param modifiers
+     * @param document
+     */
+    private static void indexConstructor(ClassDeclaration classDeclaration,FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document, Program root) {
+        String className = CodeUtils.extractClassName(classDeclaration);
+        StringBuilder signature = new StringBuilder();
+        int paramCount = (functionDeclaration != null) ? functionDeclaration.getFormalParameters().size() : 0;
+        int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : classDeclaration.getStartOffset();
+        signature.append(getBaseSignatureForFunctionDeclaration(className,paramCount, offset, functionDeclaration, root));
+        signature.append(modifiers + ";"); //NOI18N
 
-            document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false, true);
-        }
+        document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false, true);
+    }
 
-        private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
-            StringBuilder signature = new StringBuilder();
-            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
-            signature.append(modifiers + ";"); //NOI18N
+    private static void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document, Program root) {
+        StringBuilder signature = new StringBuilder();
+        signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration, root));
+        signature.append(modifiers + ";"); //NOI18N
 
-            document.addPair(FIELD_METHOD, signature.toString(), false, true);
-        }
+        document.addPair(FIELD_METHOD, signature.toString(), false, true);
+    }
 
-        private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
-            String fncName = functionDeclaration.getFunctionName().getName();
-            int paramCount = functionDeclaration.getFormalParameters().size();
-            int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : 0;
-            return getBaseSignatureForFunctionDeclaration(fncName, paramCount, offset, functionDeclaration);
-        }
+    private static String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration, Program root) {
+        String fncName = functionDeclaration.getFunctionName().getName();
+        int paramCount = functionDeclaration.getFormalParameters().size();
+        int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : 0;
+        return getBaseSignatureForFunctionDeclaration(fncName, paramCount, offset, functionDeclaration, root);
+    }
 
-        /**
-         * @param fncName
-         * @param paramCount
-         * @param offset
-         * @param functionDeclaration maybe null just in case when paramCount == 0
-         * @return
-         */
-        private String getBaseSignatureForFunctionDeclaration(String fncName, int paramCount, int offset,
-                FunctionDeclaration functionDeclaration) {
-            assert functionDeclaration != null || paramCount == 0;
-            StringBuilder signature = new StringBuilder();
-            signature.append(fncName + ";");
-            StringBuilder defaultArgs = new StringBuilder();
-            for (int i = 0; i < paramCount; i++) {
-                assert functionDeclaration != null;
-                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
-                String paramName = CodeUtils.getParamDisplayName(param);
-                signature.append(paramName);
-                if (i < paramCount - 1) {
-                    signature.append(",");
+    /**
+     * @param fncName
+     * @param paramCount
+     * @param offset
+     * @param functionDeclaration maybe null just in case when paramCount == 0
+     * @return
+     */
+    private static String getBaseSignatureForFunctionDeclaration(String fncName, int paramCount, int offset,
+            FunctionDeclaration functionDeclaration, Program root) {
+        assert functionDeclaration != null || paramCount == 0;
+        StringBuilder signature = new StringBuilder();
+        signature.append(fncName + ";");
+        StringBuilder defaultArgs = new StringBuilder();
+        for (int i = 0; i < paramCount; i++) {
+            assert functionDeclaration != null;
+            FormalParameter param = functionDeclaration.getFormalParameters().get(i);
+            String paramName = CodeUtils.getParamDisplayName(param);
+            signature.append(paramName);
+            if (i < paramCount - 1) {
+                signature.append(",");
+            }
+            if (param.getDefaultValue() != null) {
+                if (defaultArgs.length() > 0) {
+                    defaultArgs.append(',');
                 }
-                if (param.getDefaultValue() != null) {
-                    if (defaultArgs.length() > 0) {
-                        defaultArgs.append(',');
+                defaultArgs.append(Integer.toString(i));
+            }
+        }
+        signature.append(';');
+        signature.append(offset + ";"); //NOI18N
+        signature.append(defaultArgs + ";");
+        String type = functionDeclaration != null ? getReturnTypeFromPHPDoc(functionDeclaration, root) : null;
+        if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
+            signature.append(type);
+        }
+        signature.append(";"); //NOI18N
+        return signature.toString();
+    }
+
+
+    private static String getReturnTypeFromPHPDoc(FunctionDeclaration functionDeclaration, Program root) {
+        return getTypeFromPHPDoc(functionDeclaration, PHPDocTag.Type.RETURN, root);
+    }
+
+    private static String getFieldTypeFromPHPDoc(SingleFieldDeclaration field, Program root) {
+        return getTypeFromPHPDoc(field, PHPDocTag.Type.VAR, root);
+    }
+
+    private static String getTypeFromPHPDoc(ASTNode node, PHPDocTag.Type tagType, Program root) {
+        Comment comment = Utils.getCommentForNode(root, node);
+
+        if (comment instanceof PHPDocBlock) {
+            PHPDocBlock phpDoc = (PHPDocBlock) comment;
+
+            for (PHPDocTag tag : phpDoc.getTags()) {
+                if (tag.getKind() == tagType) {
+                    String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
+
+                    if (parts.length > 0) {
+                        String type = parts[0].split("\\;", 2)[0];
+                        return type;
                     }
-                    defaultArgs.append(Integer.toString(i));
+
+                    break;
                 }
             }
-            signature.append(';');
-            signature.append(offset + ";"); //NOI18N
-            signature.append(defaultArgs + ";");
-            String type = functionDeclaration != null ? getReturnTypeFromPHPDoc(functionDeclaration) : null;
-            if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
-                signature.append(type);
-            }
-            signature.append(";"); //NOI18N
-            return signature.toString();
         }
 
-
-        private String getReturnTypeFromPHPDoc(FunctionDeclaration functionDeclaration) {
-            return getTypeFromPHPDoc(functionDeclaration, PHPDocTag.Type.RETURN);
-        }
-
-        private String getFieldTypeFromPHPDoc(SingleFieldDeclaration field){
-            return getTypeFromPHPDoc(field, PHPDocTag.Type.VAR);
-        }
-
-        private String getTypeFromPHPDoc(ASTNode node, PHPDocTag.Type tagType){
-            Comment comment = Utils.getCommentForNode(root, node);
-
-            if (comment instanceof PHPDocBlock) {
-                PHPDocBlock phpDoc = (PHPDocBlock) comment;
-
-                for (PHPDocTag tag : phpDoc.getTags()) {
-                    if (tag.getKind() == tagType) {
-                        String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
-
-                        if (parts.length > 0) {
-                            String type = parts[0].split("\\;", 2)[0];
-                            return type;
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            return null;
-        }
+        return null;
     }
 
     static boolean isQuotedString(String txt) {
