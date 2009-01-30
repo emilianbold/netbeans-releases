@@ -110,7 +110,7 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         Object o = null;
         if (ren.isSelected()) {
             if (ren.isActive()) {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter");
+                o = UIManager.get("TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter");
             } else {
                 o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
             }
@@ -145,12 +145,11 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
 
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
-            int x = ren.isLeftmost() ? 1 : 0;
-            int y = 1;
+            int x = ren.isLeftmost() ? 3 : 0;
+            int y = 0;
 
-            int width = ren.isLeftmost() ? c.getWidth() - 1 : c.getWidth();
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int width = ren.isLeftmost() ? c.getWidth() - 3 : c.getWidth();
+            int height = c.getHeight() - 4;
                     
             //Modified to return rectangle
             p.addPoint(x, y);
@@ -256,11 +255,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = -3;
-            int y = 1;
+            int y = 0;
 
             int width = c.getWidth() + 3;
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int height = c.getHeight() - 4;
 
             //Modified to return rectangle
             p.addPoint(x, y);
@@ -315,11 +313,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = 0;
-            int y = 1;
+            int y = 0;
 
             int width = c.getWidth() + 10;
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int height = c.getHeight() - 4;
 
             //Modified to return rectangle
             p.addPoint(x, y);
