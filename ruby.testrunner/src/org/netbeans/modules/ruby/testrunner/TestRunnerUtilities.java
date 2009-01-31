@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.ruby.testrunner;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -50,8 +52,12 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
  *
  * @author Erno Mononen
  */
-final class TestRunnerUtilities {
-    
+public final class TestRunnerUtilities {
+
+    private static final List<String> NB_RUNNER_FILES = Arrays.asList(TestUnitRunner.MEDIATOR_SCRIPT_NAME,
+            TestUnitRunner.TEST_RUNNER_SCRIPT_NAME, TestUnitRunner.SUITE_RUNNER_SCRIPT_NAME,
+            RspecRunner.RSPEC_MEDIATOR_SCRIPT, AutotestRunner.RSPEC_AUTOTEST_LOADER);
+
     private TestRunnerUtilities() {
     }
 
@@ -89,6 +95,19 @@ final class TestRunnerUtilities {
             descriptor.addInitialArgs(evaluator.getProperty(SharedRubyProjectProperties.RUBY_OPTIONS));
             descriptor.setEncoding(evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING));
         }
+    }
+
+    /**
+     * @return true if the given line should be filtered out from the stack trace
+     * printed to the output window.
+     */
+    public static boolean filterOutFromStacktrace(String line) {
+        for (String runnerFile : NB_RUNNER_FILES) {
+            if (line.contains(runnerFile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     interface DefaultTaskEvaluator {

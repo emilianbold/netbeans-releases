@@ -56,17 +56,16 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
 /**
  *
@@ -259,7 +258,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
                     if(!file.getName().equals("cache")) { // do not delete the cache
                         FileObject fo = FileUtil.toFileObject(file);
                         if (fo != null) {
-                            fo.delete();                    
+                            fo.delete();
+                            if (file.exists()) {
+                                Utils.deleteRecursively(file);
+                            }
                         }
                     }                    
                 }
@@ -345,7 +347,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
             FileUtils.copyDirFiles(getRepoDir(), repo2Dir);    
         }        
         repo2Url = new SVNUrl(TestUtilities.formatFileURL(new File(repopath)));
-    }      
+    }
     
     protected void svnimportWC() throws SVNClientException {
         ISVNClientAdapter client = getClient();        
@@ -375,8 +377,12 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(files != null) {
             for (File file : files) {
                 if(!isMetadata(file)) {
-                    client.addFile(file);
-                }                
+                    if (file.isDirectory()) {
+                        client.addDirectory(file, true);
+                    } else {
+                        client.addFile(file);
+                    }
+                }
             }
             client.commit(new File[] {folder}, "commit", true);                    
         }        

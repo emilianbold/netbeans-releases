@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -64,7 +65,7 @@ public class MkdirTest extends AbstractCommandTest {
 
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());        
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         assertNotifiedFiles(new File[] {});        
     }
     
@@ -88,7 +89,7 @@ public class MkdirTest extends AbstractCommandTest {
 
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());                
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         assertNotifiedFiles(new File[] {});        
     }            
     

@@ -196,7 +196,8 @@ public final class InstanceRenameAction extends SystemAction implements ActionCo
                                 }
                             });
                             RefactoringUI ui = new RenameRefactoringUI(refactoring,
-                                     visitor.getInfo(),  oldName, myComponent.get());
+                                     visitor.getInfo(),  oldName, myComponent.get(),
+                                     visitor.getMethod() != null && names[1]!=null);
                             UI.openRefactoringUI(ui, activetc);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -278,6 +279,9 @@ public final class InstanceRenameAction extends SystemAction implements ActionCo
     static String getGetterName(final DesignComponent component, 
             final String fieldName)
     {
+        if ( fieldName == null || fieldName.length() == 0 ){
+            return "";
+        }
         if (component.getDocument().getTransactionManager().isAccess()) {
             String accessCode = CodeReferencePresenter.generateAccessCode(component,
                     fieldName);

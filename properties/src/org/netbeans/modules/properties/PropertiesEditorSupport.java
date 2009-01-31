@@ -323,7 +323,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * Overrides superclass method.
      * @param document the document to write from
      * @param editorKit the associated editor kit
-     * @param ouputStream the open stream to write to
+     * @param outputStream the open stream to write to
      * @throws IOException if there was a problem writing the file
      * @throws BadLocationException should not normally be thrown
      * @see #loadFromStreamToKit

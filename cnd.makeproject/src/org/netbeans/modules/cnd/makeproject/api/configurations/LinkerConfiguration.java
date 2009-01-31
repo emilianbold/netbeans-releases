@@ -415,11 +415,14 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     private String getOutputDefault() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
-        if (getMakeConfiguration().isApplicationConfiguration() || getMakeConfiguration().isQmakeConfiguration()) {
-            outputName = outputName.toLowerCase();
-        } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-            Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
-            outputName = platform.getLibraryName(outputName);
+        switch (getMakeConfiguration().getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                outputName = outputName.toLowerCase();
+                break;
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                outputName = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue()).getLibraryName(outputName);
+                break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/" + outputName; // NOI18N
