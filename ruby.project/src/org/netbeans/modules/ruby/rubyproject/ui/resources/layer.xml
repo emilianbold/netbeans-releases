@@ -120,6 +120,16 @@ made subject to such option by the copyright holder.
                 <attr name="templateNamePrefix" stringvalue=""/>
                 <attr name="isTest" boolvalue="true"/>
             </file>
+            <file name="javascript.shadow">
+                <attr name="originalFile" stringvalue="Templates/Other/javascript.js"/>
+                <attr name="position" intvalue="703"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+            </file>
+            <file name="json.shadow">
+                <attr name="originalFile" stringvalue="Templates/Other/json.json"/>
+                <attr name="position" intvalue="750"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+            </file>
             <file name="rspec.rb" url="rspec.rb">
                 <attr name="position" intvalue="801"/>
                 <attr name="template" boolvalue="true"/>
@@ -129,6 +139,11 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyspec.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubySpecTemplateIterator"/>
                 <attr name="isTest" boolvalue="true"/>
+            </file>
+            <file name="EmptyYAML.shadow">
+                <attr name="originalFile" stringvalue="Templates/Other/EmptyYAML.yml"/>
+                <attr name="position" intvalue="900"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
             </file>
         </folder>
         
