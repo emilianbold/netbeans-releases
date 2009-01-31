@@ -795,7 +795,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.BUILD_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_GENERATED_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
         ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${"+WebProjectProperties.BUILD_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
-        ep.setProperty("build.generated.dir", "${build.dir}/generated-sources"); // NOI18N
+        ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_EXCLUDES, "${"+ WebProjectProperties.BUILD_CLASSES_EXCLUDES +"}"); //NOI18N
         ep.setProperty(WebProjectProperties.DIST_JAVADOC_DIR, "${"+WebProjectProperties.DIST_DIR+"}/javadoc"); // NOI18N

@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
 public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private String buildClassesDir = "build.classes.dir"; // NOI18N
-    private static final String buildGeneratedDir = "build.generated.dir"; // NOI18N
+    private static final String buildGeneratedDir = "build.generated.sources.dir"; // NOI18N
     private String distJar = "dist.jar"; // NOI18N
     private String buildTestClassesDir = "build.test.classes.dir"; // NOI18N
     private String[] javacClasspath = new String[]{"javac.classpath"};    //NOI18N
