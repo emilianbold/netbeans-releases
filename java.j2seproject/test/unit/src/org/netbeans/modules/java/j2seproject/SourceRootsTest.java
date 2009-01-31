@@ -54,6 +54,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -76,6 +77,7 @@ public class SourceRootsTest extends NbTestCase {
     private J2SEProject pp;
     private AntProjectHelper helper;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setInstances(
@@ -95,6 +97,7 @@ public class SourceRootsTest extends NbTestCase {
         pp = (J2SEProject) p;
     }
 
+    @Override
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
@@ -106,48 +109,49 @@ public class SourceRootsTest extends NbTestCase {
         super.tearDown();
     }
 
+    @RandomlyFails // #91992
     public void testSourceRoots () throws Exception {
-        SourceRoots sources = pp.getSourceRoots();
-        String[] srcProps = sources.getRootProperties();
+        SourceRoots srcs = pp.getSourceRoots();
+        String[] srcProps = srcs.getRootProperties();
         assertNotNull ("Source properties can not be null",srcProps);
         assertEquals ("Source properties length must be 1",1,srcProps.length);
         assertEquals("Source property should be src.dir","src.dir",srcProps[0]);
-        FileObject[] srcFos = sources.getRoots();
+        FileObject[] srcFos = srcs.getRoots();
         assertNotNull ("Roots can not be null",srcFos);
         assertEquals ("Roots length must be 1",1,srcFos.length);
         assertEquals("Root should be "+this.sources.getPath(),this.sources,srcFos[0]);
-        URL[] srcURLs = sources.getRootURLs();
+        URL[] srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 1",1,srcURLs.length);
         assertEquals("Root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
-        SourceRoots tests = pp.getTestSourceRoots();
-        srcProps = tests.getRootProperties();
+        SourceRoots tsts = pp.getTestSourceRoots();
+        srcProps = tsts.getRootProperties();
         assertNotNull ("Source properties can not be null",srcProps);
         assertEquals ("Source properties length must be 1",1,srcProps.length);
         assertEquals("Source property should be test.src.dir","test.src.dir",srcProps[0]);
-        srcFos = tests.getRoots();
+        srcFos = tsts.getRoots();
         assertNotNull ("Roots can not be null",srcFos);
         assertEquals ("Roots length must be 1",1,srcFos.length);
         assertEquals("Root should be "+this.tests.getPath(),this.tests,srcFos[0]);
-        srcURLs = tests.getRootURLs();
+        srcURLs = tsts.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 1",1,srcURLs.length);
         assertEquals("Root URLs should be "+this.tests.getURL(),this.tests.getURL(),srcURLs[0]);
         //Now add new source root
         TestListener tl = new TestListener();
-        sources.addPropertyChangeListener (tl);
+        srcs.addPropertyChangeListener (tl);
         FileObject newRoot = addSourceRoot (helper, projdir, "src.other.dir","other");
-        srcProps = sources.getRootProperties();
+        srcProps = srcs.getRootProperties();
         assertNotNull ("Source properties can not be null",srcProps);
         assertEquals ("Source properties length must be 2",2,srcProps.length);
         assertEquals("The first source property should be src.dir","src.dir",srcProps[0]);
         assertEquals("The second source property should be src.other.dir","src.other.dir",srcProps[1]);
-        srcFos = sources.getRoots();
+        srcFos = srcs.getRoots();
         assertNotNull ("Roots can not be null",srcFos);
         assertEquals ("Roots length must be 2",2,srcFos.length);
         assertEquals("The first root should be "+this.sources.getPath(),this.sources,srcFos[0]);
         assertEquals("The second root should be "+newRoot.getPath(),newRoot,srcFos[1]);
-        srcURLs = sources.getRootURLs();
+        srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 2",2,srcURLs.length);
         assertEquals("The first root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
@@ -157,24 +161,24 @@ public class SourceRootsTest extends NbTestCase {
         assertTrue ("PROP_ROOTS has to be fired",events.contains(SourceRoots.PROP_ROOTS));
         tl.reset();
         newRoot = changeSourceRoot (helper, projdir, "src.other.dir","other2");
-        srcProps = sources.getRootProperties();
+        srcProps = srcs.getRootProperties();
         assertNotNull ("Source properties can not be null",srcProps);
         assertEquals ("Source properties length must be 2",2,srcProps.length);
         assertEquals("The first source property should be src.dir","src.dir",srcProps[0]);
         assertEquals("The second source property should be src.other.dir","src.other.dir",srcProps[1]);
-        srcFos = sources.getRoots();
+        srcFos = srcs.getRoots();
         assertNotNull ("Roots can not be null",srcFos);
         assertEquals ("Roots length must be 2",2,srcFos.length);
         assertEquals("The first root should be "+this.sources.getPath(),this.sources,srcFos[0]);
         assertEquals("The second root should be "+newRoot.getPath(),newRoot,srcFos[1]);
-        srcURLs = sources.getRootURLs();
+        srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 2",2,srcURLs.length);
         assertEquals("The first root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
         assertEquals("The second root URLs should be "+newRoot.getURL(),newRoot.getURL(),srcURLs[1]);
         events = tl.getEvents();
         assertEquals(Collections.singleton(SourceRoots.PROP_ROOTS), events);
-        sources.removePropertyChangeListener(tl);
+        srcs.removePropertyChangeListener(tl);
     }
 
     public static FileObject addSourceRoot (AntProjectHelper helper, FileObject projdir,
