@@ -44,6 +44,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -83,6 +84,11 @@ public class FodDataObjectFactoryTest extends NbTestCase {
             addTest(FodDataObjectFactoryTest.class).
             gui(false)
         );
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override
