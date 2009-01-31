@@ -889,7 +889,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf<xsl:if test="/p:project/p:configuration/carproject:data/carproject:web-service-clients/carproject:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
-                <carproject:javac destdir="${{classes.dir}}" gensrcdir="${{build.generated.dir}}"/>
+                <carproject:javac destdir="${{classes.dir}}" gensrcdir="${{build.generated.sources.dir}}"/>
                 <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
@@ -916,7 +916,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/carproject:data/carproject:web-service-clients/carproject:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <carproject:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.dir}}"/>
+                <carproject:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.sources.dir}}"/>
             </target>
             
             <target name="-post-compile-single">
@@ -1341,7 +1341,7 @@ exists or setup the property manually. For example like this:
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                     <fileset>
-                        <xsl:attribute name="dir">${build.generated.dir}</xsl:attribute>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
                         <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
                         <include name="**/*.java"/>
                     </fileset>

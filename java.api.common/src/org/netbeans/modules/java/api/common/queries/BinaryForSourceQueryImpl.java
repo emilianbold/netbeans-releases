@@ -108,7 +108,7 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
                     return result;
                 }
             }
-            String buildGeneratedDirS = eval.getProperty("build.generated.dir");
+            String buildGeneratedDirS = eval.getProperty("build.generated.sources.dir");
             if (buildGeneratedDirS != null) { // #105645
                 String parent = helper.resolveFile(buildGeneratedDirS).toURI().toString();
                 if (sourceRoot.toString().startsWith(parent)) {

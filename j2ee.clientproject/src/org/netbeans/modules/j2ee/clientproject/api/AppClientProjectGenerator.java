@@ -545,7 +545,7 @@ public class AppClientProjectGenerator {
         ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
         //ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
         ep.setProperty("build.classes.dir", "${build.dir}/jar"); // NOI18N
-        ep.setProperty("build.generated.dir", "${build.dir}/generated-sources"); // NOI18N
+        ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N

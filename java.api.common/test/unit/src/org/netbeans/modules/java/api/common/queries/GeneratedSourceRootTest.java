@@ -201,7 +201,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
                 pp.setProperty("build.dir", "build");
                 pp.setProperty("build.classes.dir", "${build.dir}/classes");
                 pp.setProperty("build.test.classes.dir", "${build.dir}/test/classes");
-                pp.setProperty("build.generated.dir", "${build.dir}/generated-sources");
+                pp.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources");
                 pp.setProperty("javac.classpath", "lib.jar");
                 pp.setProperty("javac.test.classpath", "${javac.classpath}:junit.jar");
                 pp.setProperty("run.classpath", "${javac.classpath}:${build.classes.dir}:runlib.jar");
