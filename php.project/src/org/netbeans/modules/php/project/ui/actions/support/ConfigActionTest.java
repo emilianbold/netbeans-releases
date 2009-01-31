@@ -230,6 +230,8 @@ public class ConfigActionTest extends ConfigAction {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath())
+                    .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
+                    .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath())
                     .addArgument(pair.second);
             return externalProcessBuilder;
         }
