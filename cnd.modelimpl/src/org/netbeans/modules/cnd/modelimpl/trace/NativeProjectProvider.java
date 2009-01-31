@@ -184,7 +184,7 @@ public final class NativeProjectProvider {
         }
 
         public String getProjectDisplayName() {
-            return getProjectRoot();
+            return "DummyProject"; // NOI18N
         }
 
         public List<NativeFileItem> getAllFiles() {

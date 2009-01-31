@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -133,7 +134,7 @@ public final class MacroExpansionViewUtils {
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc);
         setOffset(newExpandedContextDoc, startOffset, endOffset);
-        saveDocument(newExpandedContextDoc);
+        saveDocumentAndMarkAsReadOnly(newExpandedContextDoc);
 
         // Init expanded macro field
         final Document expandedMacroDoc = createExpandedMacroDocument(mainDoc, csmFile);
@@ -148,7 +149,7 @@ public final class MacroExpansionViewUtils {
                 Exceptions.printStackTrace(ex);
             }
         }
-        saveDocument(expandedMacroDoc);
+        saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
 
         // Open view
         Runnable openView = new Runnable() {
@@ -367,10 +368,10 @@ public final class MacroExpansionViewUtils {
      *
      * @param doc - document
      */
-    public static void saveDocument(Document doc) {
+    public static void saveDocumentAndMarkAsReadOnly(Document doc) {
         FileObject fo = CsmUtilities.getFileObject(doc);
         if (fo != null) {
-            saveFile(fo);
+            saveFileAndMarkAsReadOnly(fo);
         }
     }
 
@@ -379,11 +380,15 @@ public final class MacroExpansionViewUtils {
      *
      * @param fo - file object
      */
-    public static void saveFile(FileObject fo) {
+    private static void saveFileAndMarkAsReadOnly(FileObject fo) {
         try {
             DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             ec.saveDocument();
+            ReadOnlySupport ro = dob.getLookup().lookup(ReadOnlySupport.class);
+            if (ro != null) {
+                ro.setReadOnly(true);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

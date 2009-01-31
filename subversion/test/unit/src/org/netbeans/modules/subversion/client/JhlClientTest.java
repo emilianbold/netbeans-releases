@@ -57,18 +57,14 @@ public class JhlClientTest extends NbTestCase {
     
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
-
         SvnClientTestFactory.setClientType("javahl");
-        SvnClientTestFactory.reset();
-        suite.addTestSuite(AddTest.class);                
-        suite.addTestSuite(AvailabilityTest.class);
+        suite.addTestSuite(AddTest.class);
         suite.addTestSuite(BlameTest.class);
         suite.addTestSuite(CancelTest.class);
         suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(DifferentWorkingDirsTest.class);
         suite.addTestSuite(ImportTest.class);
         suite.addTestSuite(InfoTest.class);
         suite.addTestSuite(ListTest.class);

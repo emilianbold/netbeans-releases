@@ -77,9 +77,11 @@ public class InstanceRenamePlugin implements RefactoringPlugin{
         }
         if ( methodLookup != null ){
             myMethodRenameRefactoring = new RenameRefactoring( methodLookup );
+            myMethodRenameRefactoring.getContext().add( InstaceRenameRefactoring.FLAG );
         }
         if ( fieldLookup != null ){
             myFieldRenameRefactoring = new RenameRefactoring( fieldLookup );
+            myFieldRenameRefactoring.getContext().add( InstaceRenameRefactoring.FLAG );
         }
     }
 

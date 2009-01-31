@@ -56,60 +56,60 @@ public class AddTest extends AbstractCommandTest {
     }
     
     public void testAddFile() throws Exception {
-        File file = createFile("file");        
+        File file = createFile("file");
         assertStatus(SVNStatusKind.UNVERSIONED, file);
 
         ISVNClientAdapter c = getNbClient();
-        c.addFile(file);        
-        
-        assertStatus(SVNStatusKind.ADDED, file);        
+        c.addFile(file);
+
+        assertStatus(SVNStatusKind.ADDED, file);
         assertNotifiedFiles(file);
     }
-    
+
     public void testAddAddedFile() throws Exception {
         File file = createFile("file");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
-        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+
         ISVNClientAdapter c = getNbClient();
-        
-        c.addFile(file);        
-        
+
+        c.addFile(file);
+
         assertStatus(SVNStatusKind.ADDED, file);
-        
+
         // XXX javahl throws exception
         c.addFile(file);
         assertStatus(SVNStatusKind.ADDED, file);
-        
+
         assertNotifiedFiles(file);
     }
-    
+
     public void testAddNoFile() throws Exception {
         File file = new File(getWC(), "fail");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
 
         ISVNClientAdapter c = getNbClient();
-        
-//        SVNClientException e = null;        
+
+//        SVNClientException e = null;
 //        try {
             c.addFile(file);
 //        } catch (SVNClientException ex) {
 //            e = ex;
 //        }
 //        assertNotNull(e);
-        
-//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
-            
-          assertNotifiedFiles(new File[]{});  
+
+//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
+
+          assertNotifiedFiles(new File[]{});
     }
 
-    public void testAddUnversionedFile() throws Exception {
+    public void testAddNotExistingFile() throws Exception {
         File folder = createFolder("folder");
         File file = new File(folder, "fail");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
 
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        
         ISVNClientAdapter c = getNbClient();
         SVNClientException e = null;        
         try {
@@ -121,7 +121,8 @@ public class AddTest extends AbstractCommandTest {
                         
         assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
         assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
-        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1);        
+        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
+                || e.getMessage().indexOf("cannot find the path specified") > -1);
         
         assertNotifiedFiles(new File[]{});  
     }
@@ -162,35 +163,35 @@ public class AddTest extends AbstractCommandTest {
     
     public void testAddDirectory() throws Exception {
         File folder = createFolder("folder");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
         ISVNClientAdapter c = getNbClient();
-        c.addDirectory(folder, false);        
+        c.addDirectory(folder, false);
         assertStatus(SVNStatusKind.ADDED, folder);
-        
+
         assertNotifiedFiles(folder);
     }
-    
+
     public void testAddAddedFolder() throws Exception {
         File folder = createFolder("folder");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
         ISVNClientAdapter c = getNbClient();
-        c.addDirectory(folder, false);        
+        c.addDirectory(folder, false);
         assertStatus(SVNStatusKind.ADDED, folder);
-        
-        c.addFile(folder);        
+
+        c.addFile(folder);
         assertStatus(SVNStatusKind.ADDED, folder);
-        
+
         assertNotifiedFiles(new File[] { folder });
     }
-    
+
     public void testAddNoDirectory() throws Exception {
         File file = new File(getWC(), "fail");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
-                
-//        SVNClientException e = null;        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+
+//        SVNClientException e = null;
 //        try {
             ISVNClientAdapter c = getNbClient();
             c.addDirectory(file, false);
@@ -198,9 +199,9 @@ public class AddTest extends AbstractCommandTest {
 //            e = ex;
 //        }
 //        assertNotNull(e);
-        
-//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
-            
+
+//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
+
          assertNotifiedFiles(new File[] {});
     }
 
@@ -221,7 +222,8 @@ public class AddTest extends AbstractCommandTest {
                         
         assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
         assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
-        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1);        
+        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
+                || e.getMessage().indexOf("cannot find the path specified") > -1);
         
         assertNotifiedFiles(new File[]{});  
     }
