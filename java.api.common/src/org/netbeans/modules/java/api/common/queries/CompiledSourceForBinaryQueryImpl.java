@@ -50,8 +50,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -116,7 +119,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         if (src == null) {
             return null;
         }
-        res = new Result(src);
+        res = new Result(src, src == sourceRoots);
         cache.put(binaryRoot, res);
         return res;
     }
@@ -146,13 +149,30 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private SourceRoots sourceRoots;
+        private final boolean gensrc;
 
-        public Result(SourceRoots sourceRoots) {
+        public Result(SourceRoots sourceRoots, boolean gensrc) {
             this.sourceRoots = sourceRoots;
             this.sourceRoots.addPropertyChangeListener(this);
+            this.gensrc = gensrc;
         }
 
         public FileObject[] getRoots() {
+            if (gensrc) { // #105645
+                String buildGeneratedDirS = evaluator.getProperty("build.generated.dir"); // NOI18N
+                if (buildGeneratedDirS != null) {
+                    FileObject buildGeneratedDir = helper.resolveFileObject(buildGeneratedDirS);
+                    if (buildGeneratedDir != null) {
+                        List<FileObject> roots = new ArrayList<FileObject>(Arrays.asList(sourceRoots.getRoots()));
+                        for (FileObject root : buildGeneratedDir.getChildren()) {
+                            if (root.isFolder()) {
+                                roots.add(root);
+                            }
+                        }
+                        return roots.toArray(new FileObject[roots.size()]);
+                    }
+                }
+            }
             return this.sourceRoots.getRoots(); // no need to cache it, SourceRoots does
         }
 

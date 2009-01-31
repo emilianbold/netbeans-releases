@@ -337,6 +337,10 @@ is divided into following sections:
                         <xsl:attribute name="name">sourcepath</xsl:attribute>
                         <xsl:attribute name="default">/does/not/exist</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -361,6 +365,11 @@ is divided into following sections:
                                 <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -775,12 +784,24 @@ is divided into following sections:
             </target>
             
             <target name="-compile-depend" if="do.depend.true">
-                <j2seproject3:depend/>
+                <pathconvert property="build.generated.subdirs">
+                    <dirset dir="${{build.generated.dir}}" erroronmissingdir="false">
+                        <include name="*"/>
+                    </dirset>
+                </pathconvert>
+                <j2seproject3:depend>
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        </xsl:call-template>
+                        <xsl:text>:${build.generated.subdirs}</xsl:text>
+                    </xsl:attribute>
+                </j2seproject3:depend>
             </target>
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if>,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
-                <j2seproject3:javac/>
+                <j2seproject3:javac gensrcdir="${{build.generated.dir}}"/>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
@@ -817,6 +838,7 @@ is divided into following sections:
                             <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
+                    <xsl:attribute name="gensrcdir">${build.generated.dir}</xsl:attribute>
                 </xsl:element>
             </target>
             
@@ -1089,6 +1111,11 @@ is divided into following sections:
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/*.java"/>
+                    </fileset>
                 </javadoc>
             </target>
             
