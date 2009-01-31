@@ -424,6 +424,21 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         public boolean isTopComponentMaximizationEnabled() {
             return Switches.isTopComponentMaximizationEnabled();
         }
+
+        @Override
+        public boolean isTopComponentClosingEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_CLOSING_DISABLED));
+        }
+
+        @Override
+        public boolean isTopComponentMaximizationEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED));
+        }
+
+        @Override
+        public boolean isTopComponentSlidingEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED));
+        }
     }
     
     /*************** non public stuff **************************/
