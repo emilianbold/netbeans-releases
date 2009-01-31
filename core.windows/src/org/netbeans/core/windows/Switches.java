@@ -43,6 +43,7 @@ package org.netbeans.core.windows;
 
 import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Window system switches
@@ -58,6 +59,14 @@ public final class Switches {
     public static boolean isTopComponentDragAndDropEnabled() {
         return getSwitchValue( "TopComponent.DragAndDrop.Enabled", true ); //NOI18N
     }
+
+    /**
+     * @param tc
+     * @return True if given TopComponent can be dragged and dropped to a different location.
+     */
+    public static boolean isDraggingEnabled( TopComponent tc ) {
+        return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_DRAGGING_DISABLED));
+    }
     
     /**
      * 
@@ -66,6 +75,14 @@ public final class Switches {
     public static boolean isTopComponentUndockingEnabled() {
         return getSwitchValue( "TopComponent.Undocking.Enabled", true ); //NOI18N
     }
+
+    /**
+     * @param tc
+     * @return True if given TopComponent can be undocked.
+     */
+    public static boolean isUndockingEnabled( TopComponent tc ) {
+        return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_UNDOCKING_DISABLED));
+    }
     
     /**
      * 
@@ -73,6 +90,14 @@ public final class Switches {
      */
     public static boolean isTopComponentSlidingEnabled() {
         return getSwitchValue( "TopComponent.Sliding.Enabled", true ); //NOI18N
+    }
+
+    /**
+     * @param tc
+     * @return True if given TopComponent can be slided out.
+     */
+    public static boolean isSlidingEnabled( TopComponent tc ) {
+        return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED));
     }
     
     /**
@@ -98,6 +123,14 @@ public final class Switches {
     public static boolean isEditorTopComponentClosingEnabled() {
         return getSwitchValue( "Editor.TopComponent.Closing.Enabled", true ); //NOI18N
     }
+
+    /**
+     * @param tc
+     * @return True if given TopComponent is closeable.
+     */
+    public static boolean isClosingEnabled( TopComponent tc ) {
+        return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_CLOSING_DISABLED));
+    }
     
     /**
      * 
@@ -105,6 +138,14 @@ public final class Switches {
      */
     public static boolean isTopComponentMaximizationEnabled() {
         return getSwitchValue( "TopComponent.Maximization.Enabled", true ); //NOI18N
+    }
+
+    /**
+     * @param tc
+     * @return True if given TopComponent can be maximized.
+     */
+    public static boolean isMaximizationEnabled( TopComponent tc ) {
+        return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED));
     }
     
     /**
