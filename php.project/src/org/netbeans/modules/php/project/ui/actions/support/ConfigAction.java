@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.util.Lookup;
@@ -57,6 +58,7 @@ public abstract class ConfigAction {
         TEST,
     }
 
+    protected static final Logger LOGGER = Logger.getLogger(ConfigAction.class.getName());
     protected final PhpProject project;
 
     protected ConfigAction(PhpProject project) {

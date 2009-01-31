@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.codecoverage;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.logging.Level;
@@ -47,6 +48,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -75,7 +77,7 @@ public class PhpUnitCoverageLogParser extends DefaultHandler {
         xmlReader.setContentHandler(this);
     }
 
-    static void parse(Reader reader, CoverageVO coverage) {
+    public static void parse(Reader reader, CoverageVO coverage) {
         try {
             PhpUnitCoverageLogParser parser = new PhpUnitCoverageLogParser(coverage);
             parser.xmlReader.parse(new InputSource(reader));
@@ -128,7 +130,7 @@ public class PhpUnitCoverageLogParser extends DefaultHandler {
         assert content.equals(Content.COVERAGE);
         assert file == null;
         content = Content.FILE;
-        file = new FileVO(getName(attributes));
+        file = new FileVO(getPath(attributes));
         coverage.addFile(file);
     }
 
@@ -219,6 +221,10 @@ public class PhpUnitCoverageLogParser extends DefaultHandler {
 
     private String getPhpUnit(Attributes attributes) {
         return attributes.getValue("phpunit"); // NOI18N
+    }
+
+    private String getPath(Attributes attributes) {
+        return FileUtil.normalizeFile(new File(attributes.getValue("name"))).getAbsolutePath(); // NOI18N
     }
 
     private String getName(Attributes attributes) {

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.codecoverage;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -49,22 +51,40 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
+// XXX coverage data could be fetch lazily but... not sure what is better
 /**
  * @author Tomas Mysik
  */
 public final class PhpCoverageProvider implements CoverageProvider {
     private static final Set<String> MIME_TYPES = Collections.singleton(PhpSourcePath.MIME_TYPE);
 
+    private final Object lock = new Object();
     private final PhpProject project;
+    // GuardedBy(this)
     private Boolean enabled = null;
+    // GuardedBy(lock)
+    private CoverageVO coverage = null;
 
     public PhpCoverageProvider(PhpProject project) {
         assert project != null;
 
         this.project = project;
+    }
+
+    public void setCoverage(CoverageVO coverage) {
+        assert coverage != null;
+        synchronized (this) {
+            if (enabled == null || !enabled) {
+                return;
+            }
+        }
+        synchronized (lock) {
+            this.coverage = coverage;
+        }
     }
 
     public boolean supportsHitCounts() {
@@ -108,15 +128,51 @@ public final class PhpCoverageProvider implements CoverageProvider {
     }
 
     public void clear() {
-        PhpUnit.COVERAGE_LOG.delete();
+        synchronized (lock) {
+            coverage = null;
+        }
     }
 
     public FileCoverageDetails getDetails(FileObject fo, Document doc) {
-        return new PhpFileCoverageDetails(fo);
+        assert fo != null;
+        CoverageVO cov = getCoverage();
+        if (cov == null) {
+            return null;
+        }
+        String path = FileUtil.toFile(fo).getAbsolutePath();
+        // XXX optimize - hold files in a linked hash map
+        for (FileVO file : cov.getFiles()) {
+            if (path.equals(file.getPath())) {
+                return new PhpFileCoverageDetails(fo, file, coverage.getGenerated());
+            }
+        }
+        return null;
     }
 
     public List<FileCoverageSummary> getResults() {
-        //new FileCoverageSummary(null, null, lineCount, executedLineCount, inferredCount, partialCount)
-        return null;
+        CoverageVO cov = getCoverage();
+        if (cov == null) {
+            return null;
+        }
+        List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
+        for (FileVO file : cov.getFiles()) {
+            FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
+            result.add(new FileCoverageSummary(
+                    fo,
+                    fo.getNameExt(),
+                    file.getMetrics().loc,
+                    file.getMetrics().ncloc,
+                    0,
+                    0));
+        }
+        return result;
+    }
+
+    private CoverageVO getCoverage() {
+        CoverageVO cov = null;
+        synchronized (lock) {
+            cov = coverage;
+        }
+        return cov;
     }
 }

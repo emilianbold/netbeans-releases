@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.event.ChangeListener;
@@ -51,6 +54,9 @@ import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.Pair;
@@ -70,9 +76,11 @@ import org.openide.util.NbBundle;
  */
 public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
+    final PhpCoverageProvider coverageProvider;
 
     protected ConfigActionTest(PhpProject project) {
         super(project);
+        coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
     }
 
     @Override
@@ -212,6 +220,7 @@ public class ConfigActionTest extends ConfigAction {
                             public void run() {
                                 rerunUnitTestHandler.enable();
                                 testRunner.showResults();
+                                handleCodeCoverage();
                             }
                         });
             } else {
@@ -256,6 +265,24 @@ public class ConfigActionTest extends ConfigAction {
 
         protected UnitTestRunner getTestRunner() {
             return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler);
+        }
+
+        void handleCodeCoverage() {
+            if (coverageProvider == null
+                    || pair.second != CWD) {
+                // XXX no provider or just one test case (could be handled later)
+                return;
+            }
+
+            CoverageVO coverage = new CoverageVO();
+            try {
+                PhpUnitCoverageLogParser.parse(new BufferedReader(new FileReader(PhpUnit.COVERAGE_LOG)), coverage);
+            } catch (FileNotFoundException ex) {
+                LOGGER.warning(String.format("In order to show code coverage, file %s must exist."
+                        + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.COVERAGE_LOG));
+                return;
+            }
+            coverageProvider.setCoverage(coverage);
         }
     }
 
