@@ -63,21 +63,27 @@ import org.openide.util.NbPreferences;
  * @author Peter Williams
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel implements Retriever.Updater {
+    private String nameOfBits;
 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
     
-    private static final String V3_LOCATION_REFERENCE_URL = 
-            "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
+    //private String indirect;
+//            "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
     private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
-    private static final String V3_DEFAULT_DOWNLOAD_URL = 
-            "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
+    //private String direct;
+//            "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
     
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;
     private volatile DownloadState downloadState;
     private volatile String statusText;
+    private ServerWizardIterator wizardIterator;
 
-    public AddServerLocationVisualPanel() {
+    public AddServerLocationVisualPanel(ServerWizardIterator swi) {
+        this.wizardIterator = swi;
+        //this.indirect = swi.getIndirect(); // indirect;
+        //this.direct = swi.getDirect();
+        //this.nameOfBits = swi.getNameOfBits()nameOfBits;
         initComponents();
         initUserComponents();
     }
@@ -104,18 +110,18 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     }
     
     private String getPreviousValue() {
-        Preferences prefs = NbPreferences.forModule(ServerWizardIterator.class);
+        Preferences prefs = NbPreferences.forModule(wizardIterator.getClass());
         String prevValue = null;
         if (null != prefs) {
-            prevValue = prefs.get(ServerWizardIterator.INSTALL_ROOT_PREF_KEY, null);
+            prevValue = prefs.get(wizardIterator.getInstallRootKey(), null);
         }
         if (null == prevValue) {
-            String installDir = System.getProperty("org.glassfish.v3.installRoot");
+            String installDir = System.getProperty(wizardIterator.getInstallRootProperty()); // System.getProperty("org.glassfish.v3.installRoot");
             if (null != installDir && !(installDir.trim().length() == 0)) {
                  return installDir;
             } else {
                 return System.getProperty("user.home") + File.separatorChar + 
-                        "GlassFish_v3_Prelude";
+                        wizardIterator.getDefaultInstallDirectoryName(); //"GlassFish_v3_Prelude";
             }
         } else {
             return prevValue;            
@@ -165,9 +171,9 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         }
     }
     
-    private String browseHomeLocation() {
+    private String browseHomeLocation(String nameOfBits) {
         String hk2Location = null;
-        JFileChooser chooser = getJFileChooser();
+        JFileChooser chooser = getJFileChooser(nameOfBits);
         int returnValue = chooser.showDialog(this, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooseButton")); //NOI18N
         if(returnValue == JFileChooser.APPROVE_OPTION) {
             hk2Location = chooser.getSelectedFile().getAbsolutePath();
@@ -175,18 +181,19 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         return hk2Location;
     }
     
-    private JFileChooser getJFileChooser() {
+    private JFileChooser getJFileChooser(String nameOfBits) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        String t = NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName", nameOfBits);
+        chooser.setDialogTitle(t); //NOI18N
         chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(false);
-        chooser.addChoosableFileFilter(new DirFilter());
+        chooser.addChoosableFileFilter(new DirFilter(nameOfBits));
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        chooser.setApproveButtonToolTipText(t); //NOI18N
+        chooser.getAccessibleContext().setAccessibleName(t); //NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(t); //NOI18N
 
         // set the current directory
         File currentLocation = new File(hk2HomeTextField.getText());
@@ -264,6 +271,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     }
        
     private static class DirFilter extends javax.swing.filechooser.FileFilter {
+        private String nameOfBits;
+
+        DirFilter(String nameOfBits) {
+            this.nameOfBits = nameOfBits;
+        }
         
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory()) {
@@ -274,7 +286,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         }
         
         public String getDescription() {
-            return NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_DirType");
+            return NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_DirType", nameOfBits);
         }
         
     }
@@ -340,7 +352,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+            .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
         );
         statusPanelLayout.setVerticalGroup(
             statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -360,12 +372,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(agreeCheckBox)
                         .add(2, 2, 2)
-                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
+                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                        .add(browseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -397,9 +408,11 @@ private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 
 private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if(retriever == null) {
-            updateStatusText("");
+            updateStatusText("");  // NOI18N
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
-                    V3_LOCATION_REFERENCE_URL, V3_DOWNLOAD_PREFIX, V3_DEFAULT_DOWNLOAD_URL, this);
+                    wizardIterator.getIndirect(), V3_DOWNLOAD_PREFIX,
+                    wizardIterator.getDirect(),
+                    this, "glassfishv3"); // NOI18N
             new Thread(retriever).start();
             setDownloadState(DownloadState.DOWNLOADING);
         } else {
@@ -409,7 +422,7 @@ private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_downloadButtonActionPerformed
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLoc = browseHomeLocation();
+        String newLoc = browseHomeLocation(wizardIterator.getNameOfBits());
         if(newLoc != null && newLoc.length() > 0) {
             hk2HomeTextField.setText(newLoc);
         }

@@ -106,11 +106,11 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     return false;
                 }
                 int dex = domainField.indexOf(File.separator);
-                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
+                if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
                     AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
-                    String uri = CommonServerSupport.formatUri(gfRoot,
+                    String uri = wizardIterator.formatUri(gfRoot,
                             GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getHttpPort());
-                    if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
+                    if(wizardIterator.hasServer(uri)) {
                         wizard.putProperty(PROP_ERROR_MESSAGE,
                                 NbBundle.getMessage(this.getClass(), "ERR_DomainAlreadyRegistered", domainField)); // NOI18N
                         return false;
@@ -131,7 +131,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 }
                 domainDirCandidate = new File(domainField);
                 String domainLoc = domainDirCandidate.getAbsolutePath();
-                if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
+                if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
                     // the entry resolves to a domain name that we can register
                     //String domainLoc = domainDirCandidate.getAbsolutePath();
                     wizardIterator.setDomainLocation(domainLoc);

@@ -324,11 +324,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static class ConnectionPool {
         
-        private final String poolName;
+        //private final String poolName;
         private final Map<String, String> properties;
         
         public ConnectionPool(String poolName) {
-            this.poolName = poolName;
+            //this.poolName = poolName;
             this.properties = new HashMap<String, String>();
         }
         

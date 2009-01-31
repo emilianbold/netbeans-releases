@@ -83,7 +83,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     private List<ProgressListener> listeners =
             new CopyOnWriteArrayList<ProgressListener>();
     private InstanceProperties ip;
-    private String url;
+    //private String url;
     
     public Hk2StartServer(DeploymentManager jdm) {
         if (!(jdm instanceof Hk2DeploymentManager)) {
@@ -92,7 +92,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         this.dm = (Hk2DeploymentManager) jdm;
         this.ip = dm.getProperties().getInstanceProperties();
         this.serverName = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
-        this.url = ip.getProperty(InstanceProperties.URL_ATTR);
+        //this.url = ip.getProperty(InstanceProperties.URL_ATTR);
     }
     
     @Override

@@ -60,12 +60,12 @@ import org.openide.windows.OutputListener;
  */
 public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, RecognizerCookie {
 
-    private final Lookup lookup;
+    //private final Lookup lookup;
     private final InstanceProperties instanceProperties;
     private final LogHyperLinkSupport.AppServerLogSupport logSupport;
     
     JavaEEServerModule(Lookup instanceLookup, InstanceProperties ip) {
-        lookup = instanceLookup;
+        //lookup = instanceLookup;
         instanceProperties = ip;
         logSupport = new LogHyperLinkSupport.AppServerLogSupport("", "/");
     }

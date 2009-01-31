@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import java.io.File;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -53,21 +52,44 @@ import org.openide.util.NbBundle;
  */
 public class Hk2DeploymentFactory implements DeploymentFactory {
 
-    public static final String URI_PREFIX = "deployer:gfv3"; // NOI18N
+    private static DeploymentFactory preludeInstance;
+    private static DeploymentFactory ee6Instance;
+    private String uriFragment;
+    private String version;
+    private String displayName;
 
-    private static DeploymentFactory instance;
+    private Hk2DeploymentFactory(String uriFragment, String version, String displayName) {
+        this.uriFragment = uriFragment;
+        this.version = version;
+        this.displayName = displayName;
+    }
 
 
     /**
      * 
      * @return 
      */
-    public static synchronized DeploymentFactory create() {
-        if (instance == null) {
-            instance = new Hk2DeploymentFactory();
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
+    public static synchronized DeploymentFactory createPrelude() {
+        if (preludeInstance == null) {
+            // TODO - find way to get uri fragment from GlassfishInstanceProvider
+            preludeInstance = new Hk2DeploymentFactory("deployer:gfv3:", "0.1",
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
         }
-        return instance;
+        return preludeInstance;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static synchronized DeploymentFactory createEe6() {
+        if (ee6Instance == null) {
+            ee6Instance = new Hk2DeploymentFactory("deployer:gfv3ee6:", "0.2",
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName")); // NOI18N
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
+        }
+        return ee6Instance;
     }
 
     /**
@@ -81,7 +103,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         }
         
         if(uri.startsWith("[")) {//NOI18N
-            if (uri.indexOf(URI_PREFIX)!=-1) {
+            if (uri.indexOf(uriFragment)!=-1) {
                 return true;
             }
         }
@@ -122,7 +144,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return 
      */
     public String getProductVersion() {
-        return "0.1"; // NOI18N
+        return version;
     }
 
     /**
@@ -130,6 +152,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return 
      */
     public String getDisplayName() {
-        return NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"); // NOI18N
+        return displayName;
     }
 }

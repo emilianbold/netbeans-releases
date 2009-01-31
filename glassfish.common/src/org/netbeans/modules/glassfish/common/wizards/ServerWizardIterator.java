@@ -62,9 +62,11 @@ import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -75,7 +77,7 @@ import org.openide.util.Utilities;
  */
 public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
-    public static final String INSTALL_ROOT_PREF_KEY = "last-install-root";
+    //public static final String INSTALL_ROOT_PREF_KEY = "last-install-root";
     
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddDomainLocationPanel locationPanel2 = null;
@@ -87,6 +89,11 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String domainsDir;
     private String domainName;
+    private GlassfishInstanceProvider gip;
+
+    public ServerWizardIterator(GlassfishInstanceProvider gip) {
+        this.gip = gip;
+    }
     
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
@@ -113,7 +120,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
     
     public String name() {
-        return "GlassFish v3 Prelude Server AddInstanceIterator";  // NOI18N
+        return gip.getDisplayName() + " AddInstanceIterator";  // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title){
@@ -139,17 +146,19 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip);
+            //ip.put(GlassfishModule.URL_ATTR, formatUri(glassfishRoot,))
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip,gip);
             cd.start();
-            result.add(GlassfishInstanceProvider.getDefault().getInstance(domainsDir));
+            result.add(gip.getInstance(domainsDir));
         } else {
             GlassfishInstance instance = GlassfishInstance.create(
                     (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-                    installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort);
-            GlassfishInstanceProvider.getDefault().addServerInstance(instance);
+                    installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,
+                    formatUri(glassfishRoot,"localhost",adminPort),gip.getUriFragment(),gip);
+            gip.addServerInstance(instance);
             result.add(instance.getCommonInstance());
         }
-        NbPreferences.forModule(ServerWizardIterator.class).put(INSTALL_ROOT_PREF_KEY, installRoot);
+        NbPreferences.forModule(this.getClass()).put(gip.getInstallRootKey(), installRoot);
         return result;
     }
     
@@ -232,7 +241,15 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 //    private String password;
     private String installRoot;
     private String glassfishRoot;
-    
+
+    public String formatUri(String glassfishRoot, String host, int port) {
+        return "[" + glassfishRoot + "]"+gip.getUriFragment()+":" + host + ":" + port;
+    }
+
+    String getDefaultInstallDirectoryName() {
+        return gip.getDefaultInstallName(); // "GlassFish_v3_Prelude"; // NOI18N
+    }
+
     int getHttpPort() {
         return httpPort;
     }
@@ -267,6 +284,35 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public void setGlassfishRoot(String glassfishRoot) {
         this.glassfishRoot = glassfishRoot;
+    }
+
+    String getInstallRootProperty() {
+        return gip.getInstallRootProperty(); // "org.glassfish.v3.installRoot"; // NOI18N throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    String getNameOfBits() {
+        return gip.getDisplayName(); // NbBundle.getMessage(ServerWizardIterator.class, "V3_PRELUDE_NAME"); // NOI18N
+    }
+
+    boolean hasServer(String uri) {
+        return gip.hasServer(uri);
+    }
+
+    boolean isValidInstall(File installDir, File glassfishDir, WizardDescriptor wizard) {
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                            AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",
+                            FileUtil.normalizeFile(installDir).getPath())); // getSanitizedPath(installDir)));
+        File jar = ServerUtilities.getJarName(glassfishDir.getAbsolutePath(), ServerUtilities.GFV3_JAR_MATCHER);
+        if(jar == null || !jar.exists()) {
+            return false;
+        }
+
+        File containerRef = new File(glassfishDir, "config" + File.separator + "glassfish.container");
+        if(!containerRef.exists()) {
+            return false;
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
+        return true;
     }
     
     void setDomainLocation(String absolutePath) {
@@ -348,5 +394,21 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     builder.toString(), NotifyDescriptor.WARNING_MESSAGE));
         }
     }
+
+    String getIndirect() {
+        return gip.getIndirectDownloadUrl(); //"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
+    }
+
+    String getDirect() {
+        return gip.getDirectDownloadUrl(); //"http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
+    }
+
+    String getInstallRootKey() {
+        return gip.getInstallRootKey(); // "last-install-root"; // NOI18N
+    }
+
+//    private String getUriFragment() {
+//        return gip.getUriFragment(); // "deployer:gfv3";
+//    }
     
 }

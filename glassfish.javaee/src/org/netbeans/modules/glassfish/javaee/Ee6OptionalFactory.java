@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,56 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.common.wizards;
+package org.netbeans.modules.glassfish.javaee;
 
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 
 /**
  *
- * @author Peter Williams
- * @author vince kraemer
+ * @author vkraemer
  */
-public class GlassfishWizardProvider implements ServerWizardProvider {
+public class Ee6OptionalFactory extends Hk2OptionalFactory {
 
-    private GlassfishInstanceProvider gip;
-
-    public static ServerWizardProvider createPrelude() {
-        return get(GlassfishInstanceProvider.getPrelude());
+    public Ee6OptionalFactory() {
+        super(Hk2DeploymentFactory.createEe6(), ServerUtilities.getEe6Utilities());
     }
-    
-    public static ServerWizardProvider createEe6() {
-        return get(GlassfishInstanceProvider.getEe6());
-    }
-
-    private static ServerWizardProvider get(GlassfishInstanceProvider gip) {
-        ServerWizardProvider retVal = null;
-        if (null != gip)
-            retVal = new GlassfishWizardProvider(gip);
-        return retVal;
-    }
-
-    private GlassfishWizardProvider(GlassfishInstanceProvider gip) {
-        this.gip = gip;
-    }
-
-    // ------------------------------------------------------------------------
-    // ServerWizardProvider interface implementation
-    // ------------------------------------------------------------------------
-    public String getDisplayName() {
-        return gip.getDisplayName();
-    }
-
-    public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator(gip);
-    }
-    
-    
 }

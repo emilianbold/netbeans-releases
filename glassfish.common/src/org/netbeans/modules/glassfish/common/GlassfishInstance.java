@@ -87,7 +87,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
 
     // !PW FIXME Can we extract the server name from the install?  That way,
     // perhaps we can distinguish between GF V3 and Sun AS 10.0
-    public static final String GLASSFISH_SERVER_NAME = "GlassFish v3 Prelude";
+    private static final String GLASSFISH_PRELUDE_SERVER_NAME = "GlassFish v3 Prelude"; // NOI18N
+    private static final String GLASSFISH_SERVER_NAME = "GlassFish v3"; // NOI18N
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -111,13 +112,15 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     
     // api instance
     private ServerInstance commonInstance;
+    private GlassfishInstanceProvider instanceProvider;
     
-    private GlassfishInstance(Map<String, String> ip) {
+    private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
+        this.instanceProvider = instanceProvider;
         ic.add(this); // Server instance in lookup (to find instance from node lookup)
 
-        commonSupport = new CommonServerSupport(lookup, ip);
+        commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
         ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
         updateModuleSupport();
@@ -169,7 +172,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
      * @return GlassfishInstance object for this server instance.
      */
     public static GlassfishInstance create(String displayName, String installRoot, 
-            String glassfishRoot, String domainsDir, String domainName, int httpPort, int adminPort) {
+            String glassfishRoot, String domainsDir, String domainName, int httpPort, 
+            int adminPort,String url, String uriFragment, GlassfishInstanceProvider gip) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
@@ -178,13 +182,14 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        GlassfishInstance result = new GlassfishInstance(ip);
+        ip.put(GlassfishModule.URL_ATTR, url);
+        GlassfishInstance result = new GlassfishInstance(ip, gip);
         result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }
     
-    public static GlassfishInstance create(Map<String, String> ip) {
-        GlassfishInstance result = new GlassfishInstance(ip);
+    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
+        GlassfishInstance result = new GlassfishInstance(ip, gip);
         result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }
@@ -255,7 +260,13 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     }
 
     public String getServerDisplayName() {
-        return GLASSFISH_SERVER_NAME;
+        File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+
+                "schemas"+File.separator+"web-app_3_0.xsd");
+        if (f.exists()) {
+            return GLASSFISH_SERVER_NAME;
+        } else {
+            return GLASSFISH_PRELUDE_SERVER_NAME;
+        }
     }
 
     public Node getFullNode() {
@@ -317,7 +328,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
             cookie.removeInstance(getDeployerUri());
         }
 
-        GlassfishInstanceProvider.getDefault().removeServerInstance(this);
+        instanceProvider.removeServerInstance(this);
     }
 
 }
