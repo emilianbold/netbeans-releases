@@ -169,6 +169,10 @@ public class SvnClientTestFactory {
         SvnClientTestFactory.clientType = clientType;
     }
 
+    public static String getClientType () {
+        return clientType;
+    }
+
     /**
      * A SVNClientAdapterFactory will be setup, according to the svnClientAdapterFactory property.<br>
      * The CommandlineClientAdapterFactory is default as long no value is set for svnClientAdapterFactory.
@@ -233,9 +237,8 @@ public class SvnClientTestFactory {
 
         presetJavahl();
         try {
-            if(!JhlClientAdapterFactory.isAvailable() && !SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
-               LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
-               return false;
+            if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
+               LOG.log(Level.INFO, "Could not setup subversion java bindings. Trying default factory.");
             }
         } catch (SVNClientException e) {
             LOG.log(Level.WARNING, null, e); // should not happen

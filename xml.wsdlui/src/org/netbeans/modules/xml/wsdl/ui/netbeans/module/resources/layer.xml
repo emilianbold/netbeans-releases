@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         </folder>
         <!-- Recognize text/x-wsdl+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-resources-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-resources-mime-resolver.xml" url="wsdl-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png"/>
                 <attr name="position" intvalue="430"/>

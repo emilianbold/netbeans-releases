@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -122,13 +123,13 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(createSuite());
 
         suite.addTest(deleteSuite());
-
+        
         suite.addTest(renameViaDataObjectSuite());
         suite.addTest(renameViaFileObjectSuite());
 
         suite.addTest(moveViaDataObjectSuite());
         suite.addTest(moveViaFileObjectSuite());
-        
+
         return suite;
     }
     
@@ -273,7 +274,9 @@ public class InteceptorTest extends NbTestCase {
 
         // test
         assertFalse(file.exists());
-        assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
+        if (SvnClientFactory.isJavaHl()) {
+            assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
+        }
 
         // notify changes
         FileUtil.refreshFor(file);

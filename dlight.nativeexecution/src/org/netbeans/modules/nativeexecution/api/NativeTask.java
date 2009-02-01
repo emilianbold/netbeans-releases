@@ -42,7 +42,6 @@ import org.netbeans.modules.nativeexecution.support.NativeExecutor;
 import org.netbeans.modules.nativeexecution.support.LocalNativeExecutor;
 import org.netbeans.modules.nativeexecution.support.RemoteNativeExecutor;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,10 +53,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.support.IOTabManagerFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
 import org.openide.util.Exceptions;
@@ -75,8 +71,6 @@ public final class NativeTask implements Future<Integer> {
     private Writer redirectionErrorWriter;
     private Reader redirectionInputReader;
     private InputOutput redirectionIO = null;
-    private boolean showProgress;
-
 
     static {
         NativeTaskAccessor.setDefault(new NativeTaskAccessorImpl());
@@ -141,11 +135,12 @@ public final class NativeTask implements Future<Integer> {
      * Starts execution of <tt>NativeTask</tt> and waits for its completion.
      * @param showProgress
      * @return result (exit value) of underlaying native process
-     * @throws java.lang.Exception when some exception occurs during execution.
+     * @throws InterruptedException if task was interrupted
+     * @throws ExecutionException if some exception occured during execution
      */
-    final public Integer invoke(boolean showProgress) throws Exception {
-        this.showProgress = showProgress;
-        return executor.invokeAndWait();
+    public final Integer invoke(boolean showProgress)
+            throws InterruptedException, ExecutionException {
+        return executor.invoke(showProgress);
     }
 
     /**
@@ -154,9 +149,10 @@ public final class NativeTask implements Future<Integer> {
      * @param showProgress - if set to <tt>true</tt>, progress bar will be
      * displayed.
      */
-    final public void submit(boolean waitStart, boolean showProgress) {
-        this.showProgress = showProgress;
-        executor.invoke(waitStart);
+    final public Future<Integer> submit(
+            final boolean waitStart,
+            final boolean showProgress) {
+        return executor.submit(waitStart, showProgress);
     }
 
     /**
@@ -406,19 +402,6 @@ public final class NativeTask implements Future<Integer> {
         }
 
         @Override
-        public ProgressHandle getProgressHandler(final NativeTask task) {
-            return (task.showProgress
-                    ? ProgressHandleFactory.createHandle(task.toString(),
-                    task.executor,
-                    task.redirectionIO == null ? null : new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    task.redirectionIO.select();
-                }
-            }) : null);
-        }
-
-        @Override
         public Writer getRedirectionErrorWriter(NativeTask task) {
             return task.redirectionErrorWriter;
         }
@@ -441,6 +424,11 @@ public final class NativeTask implements Future<Integer> {
         @Override
         public Action[] getTaskControlActions(NativeTask task) {
             return task.getTaskControlActions();
+        }
+
+        @Override
+        public InputOutput getRedirectionIO(NativeTask task) {
+            return task.redirectionIO;
         }
     }
 }

@@ -118,7 +118,7 @@ public class MergeTest extends AbstractCommandTest {
         assertFalse(file1.exists());
         assertFalse(folder1.exists());
         
-        assertNotifiedFiles(new File[] {file});        
+        assertNotifiedFiles(new File[] {file, folder1});
     }
     
     public void testMergeFolderFrom2Urls() throws Exception {                                        

@@ -63,8 +63,6 @@ public class ProjectTemplatesCheck extends NbTestCase {
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();
             if (Boolean.TRUE.equals(fo.getAttribute("template"))) {
-                boolean ok;
-
                 sb.append(fo);
                 Object value = EnableStep.readWizard(fo);
 
