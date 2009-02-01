@@ -60,6 +60,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Tests for New REST web services from Entity Classes wizard
@@ -233,7 +234,17 @@ public class CRUDTest extends RestTestBase {
      */
     protected WizardOperator prepareEntityClasses(WizardOperator wo, boolean createPU) {
         //Add all >>
-        new JButtonOperator(wo, 4).pushNoBlock();
+        String lbl = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
+        JButtonOperator allLbl = new JButtonOperator(wo, lbl);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+        }
+        allLbl.pushNoBlock();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+        }
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
