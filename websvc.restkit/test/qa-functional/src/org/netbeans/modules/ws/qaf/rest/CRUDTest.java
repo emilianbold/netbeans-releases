@@ -64,6 +64,8 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests for New REST web services from Entity Classes wizard
  *
+ * Duration of this test suite: aprox. 3min
+ * 
  * @author lukas
  */
 public class CRUDTest extends RestTestBase {
@@ -146,6 +148,10 @@ public class CRUDTest extends RestTestBase {
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
         FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
         fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+        }
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
@@ -188,6 +194,10 @@ public class CRUDTest extends RestTestBase {
         wo.next();
         wo.finish();
         waitGorGenerationProgress();
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+        }
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
