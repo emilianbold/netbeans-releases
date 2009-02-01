@@ -89,9 +89,6 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="277"/>
                 </file>
             </folder>
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.axis2.Axis2LookupProvider.instance"/>
-            </folder>
         </folder>
     </folder>
     <folder name="OptionsDialog">

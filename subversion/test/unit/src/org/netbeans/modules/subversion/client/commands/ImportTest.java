@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -71,7 +72,7 @@ public class ImportTest extends AbstractCommandTest {
 
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         assertNotifiedFiles(new File[] {file});    // XXX empty also in svnCA - why?! - no output from cli    
     }            
     
@@ -92,7 +93,7 @@ public class ImportTest extends AbstractCommandTest {
         
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         assertNotifiedFiles(new File[] {});        // XXX empty also in svnCA - why?! - no output from cli
     }
     
@@ -121,7 +122,7 @@ public class ImportTest extends AbstractCommandTest {
         
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         
         SVNClientException ex = null;
         try {
@@ -157,17 +158,17 @@ public class ImportTest extends AbstractCommandTest {
         
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         
         url = url.appendPath(folder1.getName());
         info = getInfo(url);
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         
         url = url.appendPath(file.getName());
         info = getInfo(url);        
         assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());
+        assertEquals(url.toString(), TestUtilities.decode(info.getUrl()).toString());
         assertNotifiedFiles(new File[] {folder1, file}); 
     }
     

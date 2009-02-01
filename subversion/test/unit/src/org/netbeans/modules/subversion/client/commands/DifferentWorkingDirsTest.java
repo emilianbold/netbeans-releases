@@ -57,60 +57,60 @@ public class DifferentWorkingDirsTest extends AbstractCommandTest {
     }
     
     public void testDifferentWorkingDirs1() throws Exception {
-        File folder1 = createFolder("folder1");        
+        File folder1 = createFolder("folder1");
         File folder11 = createFolder(folder1, "folder11");
-        File folder12 = createFolder(folder1, "folder12");                
-        
+        File folder12 = createFolder(folder1, "folder12");
+
         File folder2 = createFolder("folder2");
         File folder21 = createFolder(folder2,"folder2");
         File folder211 = createFolder(folder21,"folder2");
-        File folder2111 = createFolder(folder211,"folder2");                                
-        
+        File folder2111 = createFolder(folder211,"folder2");
+
         ISVNClientAdapter c = getNbClient();
         for(File f : new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}) {
             c.addFile(f);
         }
-                
-        c.commit(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}, "msg", false);                
-        
-        assertNotifiedFiles(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111});            
+
+        c.commit(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}, "msg", false);
+
+        assertNotifiedFiles(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111});
     }
     
     public void testDifferentWorkingDirs2() throws Exception {
-        
+
         // 1. wc
-        File folder1 = createFolder("folder1");        
+        File folder1 = createFolder("folder1");
         File folder11 = createFolder(folder1, "folder11");
-        File folder12 = createFolder(folder1, "folder12");                
-        File file1_12 = createFile(folder12, "file1_12");        
-        
+        File folder12 = createFolder(folder1, "folder12");
+        File file1_12 = createFile(folder12, "file1_12");
+
         // 2. wc
-        File file2_12 = createFile(folder12, "file2_12");        
+        File file2_12 = createFile(folder12, "file2_12");
         File tmpFolder = File.createTempFile("testDifferentWorkingDirs", null);
         tmpFolder = new File(tmpFolder.getParentFile(), "tmpFolder");
         Utils.deleteRecursively(tmpFolder);
         tmpFolder.mkdirs();
-                
+
         cleanUpRepo(new String[] {tmpFolder.getName()});
         try {
             importFile(tmpFolder);
         } catch (SVNClientException sVNClientException) {
             // ignore
         }
-        
+
         File tmpFile = new File(tmpFolder, "file");
         tmpFile.createNewFile();
-        
+
         // client
         ISVNClientAdapter c = getNbClient();
-        
+
         for(File f : new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}) {
             c.addFile(f);
         }
-        
+
         // commit
-        c.commit(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}, "msg", false);        
-        
+        c.commit(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}, "msg", false);
+
         assertNotifiedFiles(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile});
     }
     

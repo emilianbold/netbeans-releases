@@ -84,7 +84,7 @@ final class SvgcorePanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
 
-        editorPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("External Editor"));
+        editorPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_EditorFrame"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_AnimatorPath")); // NOI18N
 
@@ -119,9 +119,9 @@ final class SvgcorePanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        snippetsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("SVG Rich Components Snippets "));
+        snippetsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_SVGFrame"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Snippets Them:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_SnippetsName")); // NOI18N
         jLabel2.setPreferredSize(new java.awt.Dimension(136, 16));
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));

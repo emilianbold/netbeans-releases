@@ -167,7 +167,6 @@ implements PropertyChangeListener, LookupListener {
             InstanceContent ic = new InstanceContent();
             AbstractLookup l = new AbstractLookup(ic);
             String[] paths = clusters.split(File.pathSeparator);
-            Collections.reverse(Arrays.asList(paths));
             for (String c : paths) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1).replaceFirst("[0-9\\.]*$", "");

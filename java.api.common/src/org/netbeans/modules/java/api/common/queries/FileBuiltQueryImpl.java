@@ -126,7 +126,7 @@ final class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Property
             from.add("${" + r + "}/*.java"); // NOI18N
             to.add("${build.test.classes.dir}/*.class"); // NOI18N
         }
-        String buildGeneratedDirS = evaluator.getProperty("build.generated.dir"); // NOI18N
+        String buildGeneratedDirS = evaluator.getProperty("build.generated.sources.dir"); // NOI18N
         if (buildGeneratedDirS != null) { // #105645
             File _buildGeneratedDir = helper.resolveFile(buildGeneratedDirS);
             if (!_buildGeneratedDir.equals(buildGeneratedDir)) {

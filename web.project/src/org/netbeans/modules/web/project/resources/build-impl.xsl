@@ -895,7 +895,7 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
-                <webproject2:javac destdir="${{build.classes.dir}}" gensrcdir="${{build.generated.dir}}"/>
+                <webproject2:javac destdir="${{build.classes.dir}}" gensrcdir="${{build.generated.sources.dir}}"/>
                 
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -956,7 +956,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <webproject2:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.dir}}"/>
+                <webproject2:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.sources.dir}}"/>
                 
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -1455,7 +1455,7 @@ exists or setup the property manually. For example like this:
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                     <fileset>
-                        <xsl:attribute name="dir">${build.generated.dir}</xsl:attribute>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
                         <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
                         <include name="**/*.java"/>
                     </fileset>
