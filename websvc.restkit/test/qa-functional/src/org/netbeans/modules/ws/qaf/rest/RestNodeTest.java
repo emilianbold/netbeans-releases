@@ -134,7 +134,7 @@ public class RestNodeTest extends RestTestBase {
         eo.insert(addMethod);
         eo.save();
         // let's wait for a while here...
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(2000);
         assertEquals("New method not shown for " + services[0], 4, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
     }
@@ -151,7 +151,7 @@ public class RestNodeTest extends RestTestBase {
         eo.deleteLine(60);
         eo.save();
         // let's wait for a while here...
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(2000);
         assertEquals("New method still shown for " + services[0], 3, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
     }
