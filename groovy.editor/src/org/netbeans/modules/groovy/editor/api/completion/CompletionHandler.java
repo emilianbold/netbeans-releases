@@ -153,6 +153,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
         GroovySettings groovySettings = GroovySettings.getInstance();
+        // FIXME register listener
         String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
 
         groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
@@ -2768,7 +2769,7 @@ public class CompletionHandler implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>" + NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
+        String error = NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound");
         String doctext = null;
 
         if (element instanceof AstMethodElement) {
@@ -2782,7 +2783,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 base = groovyJavaDocBase;
             } else {
                 LOG.log(Level.FINEST, "Neither JDK nor GDK or error locating: {0}", ame.isGDK());
-                return ERROR;
+                return error;
             }
 
             MetaMethod mm = ame.getMethod();
@@ -2838,10 +2839,10 @@ public class CompletionHandler implements CodeCompletionHandler {
                     testFile = new File(url.toURI());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.FINEST, "MalformedURLException: {0}", ex);
-                    return ERROR;
+                    return error;
                 } catch (URISyntaxException uriEx) {
                     LOG.log(Level.FINEST, "URISyntaxException: {0}", uriEx);
-                    return ERROR;
+                    return error;
                 }
 
                 if (testFile != null && testFile.exists()) {
@@ -2863,12 +2864,12 @@ public class CompletionHandler implements CodeCompletionHandler {
                     ame.isGDK());
             } catch (MalformedURLException ex) {
                 LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex); // NOI18N
-                return ERROR;
+                return error;
             }
 
             // If we could not find a suitable JavaDoc for the method - say so.
             if (doctext == null) {
-                return ERROR;
+                return error;
             }
 
             doctext = "<h3>" + className + "." + printSig + "</h3><BR>" + doctext;
