@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -148,12 +149,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels = null;
         mm = null;
         rp = null;
-        Models.setModelsToView (
-            view, 
-            Models.EMPTY_MODEL
-        );
+        view.removeAll();
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent e) {
         updateModel ();
     }
@@ -274,12 +273,37 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         //    Models.createCompoundModel (models)
         // );
         // ====
-        Models.CompoundModel newModel = Models.createCompoundModel (models, propertiesHelpID);
 
-        Models.setModelsToView (
-            view,
-            newModel
-        );
+        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0;
+        final Models.CompoundModel newModel;
+        if (haveModels) {
+            newModel = Models.createCompoundModel (models, propertiesHelpID);
+        } else {
+            newModel = null;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (view.getComponentCount() == 0) {
+                    if (haveModels) {
+                        view.add(Models.createView(newModel));
+                        view.revalidate();
+                        view.repaint();
+                    }
+                } else {
+                    if (!haveModels) {
+                        view.removeAll();
+                        view.revalidate();
+                        view.repaint();
+                    } else {
+                        JComponent tree = (JComponent) view.getComponent(0);
+                        Models.setModelsToView (
+                            tree,
+                            newModel
+                        );
+                    }
+                }
+            }
+        });
         // </RAVE>
     }
 

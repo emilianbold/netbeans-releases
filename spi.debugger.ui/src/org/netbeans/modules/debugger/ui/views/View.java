@@ -71,7 +71,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     public static final String WATCHES_VIEW_NAME = "WatchesView";
     public static final String SOURCES_VIEW_NAME = "SourcesView";
     
-    private transient JComponent tree;
+    private transient JComponent contentComponent;
     private transient ViewModelListener viewModelListener;
     private String name; // Store just the name persistently, we'll create the component from that
     private transient String helpID;
@@ -102,14 +102,14 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             return ;
         }
         JComponent buttonsPane;
-        if (tree == null) {
+        if (contentComponent == null) {
             setLayout (new BorderLayout ());
-            tree = Models.createView (Models.EMPTY_MODEL);
-            tree.setName (NbBundle.getMessage (View.class, toolTipResource));
-            add (tree, BorderLayout.CENTER);  //NOI18N
+            contentComponent = new javax.swing.JPanel(new BorderLayout ());
+            
+            //tree = Models.createView (Models.EMPTY_MODEL);
+            contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
+            add (contentComponent, BorderLayout.CENTER);  //NOI18N
             buttonsPane = new javax.swing.JPanel();
-            //buttonsPane.setLayout(new GridLayout(0, 1, 5, 5));
-            //buttonsPane.setBorder(new EmptyBorder(5, 5, 5, 5));
             buttonsPane.setLayout(new GridBagLayout());
             add(buttonsPane, BorderLayout.WEST);
         } else {
@@ -125,7 +125,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         // ====
         viewModelListener = new ViewModelListener (
             name,
-            tree,
+            contentComponent,
             buttonsPane,
             propertiesHelpID
         );
@@ -134,6 +134,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     protected void componentHidden () {
         super.componentHidden ();
+        contentComponent.removeAll();
         if (viewModelListener != null) {
             viewModelListener.destroy ();
         }
@@ -152,14 +153,14 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-        if (tree == null) return false;
-        return tree.requestFocusInWindow ();
+        if (contentComponent == null) return false;
+        return contentComponent.requestFocusInWindow ();
     }
 
     public void requestActive() {
         super.requestActive();
-        if (tree != null) {
-            tree.requestFocusInWindow ();
+        if (contentComponent != null) {
+            contentComponent.requestFocusInWindow ();
         }
     }
     
