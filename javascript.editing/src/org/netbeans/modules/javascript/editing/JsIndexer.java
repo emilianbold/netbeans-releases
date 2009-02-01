@@ -218,69 +218,65 @@ public class JsIndexer extends EmbeddingIndexer {
                 doc.readLock(); // For Utilities.getRowStart() access
             }
             try {
-            try {
-                url = file.getURL().toExternalForm();
+                try {
+                    url = file.getURL().toExternalForm();
 
-                // Make relative URLs for urls in the libraries
-                url = getPreindexUrl(url);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+                    // Make relative URLs for urls in the libraries
+                    url = getPreindexUrl(url);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
 
-            if (file.getExt().equals("sdoc")) { // NOI18N
-                indexScriptDoc(doc, null);
-                return;
-            }
-            
-            AnalysisResult ar = result.getStructure();
-            List<?extends AstElement> children = ar.getElements();
-
-            if ((children == null) || (children.size() == 0)) {
-                return;
-            }
-            
-            if (url.endsWith(".js")) {
-                boolean done = indexRelatedScriptDocs();
-                if (done) {
+                if (file.getExt().equals("sdoc")) { // NOI18N
+                    indexScriptDoc(doc, null);
                     return;
                 }
-            }
 
-            IndexDocument document = indexingSupport.createDocument(indexable);
-            documents.add(document);
-            
-            // Add the fields, etc.. Recursively add the children classes or modules if any
-            for (AstElement child : children) {
-                ElementKind childKind = child.getKind();
-                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
-                    String signature = computeSignature(child);
-                    indexFuncOrProperty(child, document, signature);
-                    String name = child.getName();
-                    if (Character.isUpperCase(name.charAt(0))) {
-                        indexClass(child, document, signature);
+                if (url.endsWith(".js")) { //NOI18N
+                    boolean done = indexRelatedScriptDocs();
+                    if (done) {
+                        return;
                     }
-                } else if (childKind == ElementKind.GLOBAL || 
-                        childKind == ElementKind.PROPERTY || 
-                        childKind == ElementKind.CLASS) {
-                    indexFuncOrProperty(child, document, computeSignature(child));
-                } else {
-                    assert false : childKind;
                 }
-                // XXX what about fields, constants, attributes?
-                
-                assert child.getChildren().size() == 0;
-            }
 
-            Map<String,String> classExtends = ar.getExtendsMap();
-            if (classExtends != null && classExtends.size() > 0) {
-                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
-                    String clz = entry.getKey();
-                    String superClz = entry.getValue();
-                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true, true); // NOI18N
+                IndexDocument document = indexingSupport.createDocument(indexable);
+                documents.add(document);
+
+                AnalysisResult ar = result.getStructure();
+                List<?extends AstElement> children = ar.getElements();
+
+                // Add the fields, etc.. Recursively add the children classes or modules if any
+                for (AstElement child : children) {
+                    ElementKind childKind = child.getKind();
+                    if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
+                        String signature = computeSignature(child);
+                        indexFuncOrProperty(child, document, signature);
+                        String name = child.getName();
+                        if (Character.isUpperCase(name.charAt(0))) {
+                            indexClass(child, document, signature);
+                        }
+                    } else if (childKind == ElementKind.GLOBAL ||
+                            childKind == ElementKind.PROPERTY ||
+                            childKind == ElementKind.CLASS) {
+                        indexFuncOrProperty(child, document, computeSignature(child));
+                    } else {
+                        assert false : childKind;
+                    }
+                    // XXX what about fields, constants, attributes?
+
+                    assert child.getChildren().size() == 0;
                 }
-                
-                ClassCache.INSTANCE.refresh();
-            }
+
+                Map<String,String> classExtends = ar.getExtendsMap();
+                if (classExtends != null && classExtends.size() > 0) {
+                    for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                        String clz = entry.getKey();
+                        String superClz = entry.getValue();
+                        document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true, true); // NOI18N
+                    }
+
+                    ClassCache.INSTANCE.refresh();
+                }
             } finally {
                 if (doc != null) {
                     doc.readUnlock();
