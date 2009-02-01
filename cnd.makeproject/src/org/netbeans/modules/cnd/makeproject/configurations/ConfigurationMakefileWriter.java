@@ -610,23 +610,37 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getOutput(MakeConfiguration conf) {
-        if (conf.isLinkerConfiguration()) {
-            String output = conf.getLinkerConfiguration().getOutputValue();
-            if (conf.isApplicationConfiguration() &&
-                    conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
-                    !output.endsWith(".exe")) { // NOI18N
-                output += ".exe"; // NOI18N
-            }
-            return output;
-        } else if (conf.isArchiverConfiguration()) {
-            return conf.getArchiverConfiguration().getOutputValue();
-        } else if (conf.isMakefileConfiguration()) {
-            return conf.getMakefileConfiguration().getOutput().getValue();
-        } else if (conf.isQmakeConfiguration()) {
-            return conf.getLinkerConfiguration().getOutputValue();
+        String output = null;
+        switch (conf.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                output = conf.getLinkerConfiguration().getOutputValue();
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
+                        !output.endsWith(".exe")) { // NOI18N
+                    output += ".exe"; // NOI18N
+                }
+                break;
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                output = conf.getLinkerConfiguration().getOutputValue();
+                break;
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                output = conf.getLinkerConfiguration().getOutputValue();
+                // TODO: platform-dependent transformation + version
+                break;
+            case MakeConfiguration.TYPE_STATIC_LIB:
+                output = conf.getArchiverConfiguration().getOutputValue();
+                break;
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                output = conf.getArchiverConfiguration().getOutputValue();
+                // TODO: platform-dependent fransformation + version
+                break;
+            case MakeConfiguration.TYPE_MAKEFILE:
+                output = conf.getMakefileConfiguration().getOutput().getValue();
+                break;
+            default:
+                assert false;
         }
-        assert false;
-        return null;
+        return output;
     }
 
     public static String getObjectDir(MakeConfiguration conf) {

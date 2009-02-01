@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,47 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package gui.ruby.debugger;
+package o.n.m.ruby.qaf.debugger;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
+import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Basic ruby debugger test.
  *
- * @author Tomas Musil, Jiri Skrivanek
+ * @author Tomas Musil, Jiri Skrivanek, Lukas Jungmann
  */
-public class BasicTests extends JellyTestCase {
+public class BasicTest extends JellyTestCase {
     
     /** Need to be defined because of JUnit */
-    public BasicTests(String name) {
+    public BasicTest(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BasicTests("testCreateRubyProject"));
-        suite.addTest(new BasicTests("testDebuggerStart"));
-        suite.addTest(new BasicTests("testStepInOutOver"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(BasicTest.class)
+                .enableModules(".*").clusters(".*")); //NOI18N
     }
     
     /** Use for execution inside IDE */
@@ -86,7 +83,7 @@ public class BasicTests extends JellyTestCase {
         // run whole suite
         TestRunner.run(suite());
         // run only selected test case
-        //junit.textui.TestRunner.run(new BasicTests("testCreateRubyProject"));
+        //junit.textui.TestRunner.run(new BasicTest("testCreateRubyProject"));
     }
     
     public @Override void setUp() {
@@ -162,22 +159,20 @@ public class BasicTests extends JellyTestCase {
         assertTrue("Debugger not at \"date2 = Date.today\"", eo.getText(lineNumber).indexOf("date2 =") > -1);
  
         TopComponentOperator localVariablesTCO = new TopComponentOperator("Local Variables");//NOI18N
-        new Node(new TreeTableOperator(localVariablesTCO).tree(), "date1");
+        assertEquals( "date1", new JTableOperator(localVariablesTCO).getModel().getValueAt(1, 0).toString());
 
-        TopComponentOperator callStackTCO = new TopComponentOperator("Call Stack");//NOI18N
-        assertEquals("Call Stack row count wrong.", 2, new JTableOperator(callStackTCO).getRowCount());
-        
         new StepIntoAction().perform();
         // wait for date.rb opened in editor
         EditorOperator eoDate = new EditorOperator("date.rb");
         lineNumber = Util.waitStopped(eoDate);
         assertTrue("Debugger not at \"today in date.rb\"", eoDate.getText(lineNumber).indexOf("today") > -1);
         
+        TopComponentOperator callStackTCO = new TopComponentOperator("Call Stack");//NOI18N
+        assertEquals("Call Stack row count wrong.", 2, new JTableOperator(callStackTCO).getRowCount());
+
         new StepOutAction().perform();
-        
-        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
-        ContainerOperator debugToolbarOper = MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
-         // wait until Debug toolbar dismiss
-        debugToolbarOper.waitComponentVisible(false);
+        lineNumber = Util.waitStopped(eo);
+        assertTrue("Debugger not at \"puts in main.rb\"", eo.getText(lineNumber).indexOf("puts") > -1);
+        new FinishDebuggerAction().perform();
     }
 }

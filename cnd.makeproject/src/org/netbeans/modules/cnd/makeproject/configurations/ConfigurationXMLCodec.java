@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -105,6 +106,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
+    private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = 0;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();
@@ -340,6 +342,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getInfo().add(infoElement);
             }
+        } else if (element.equals(QT_ELEMENT)) {
+            currentQmakeConfiguration = ((MakeConfiguration) currentConf).getQmakeConfiguration();
+        } else if (element.equals(QT_DEFS_LIST_ELEMENT)) {
+            currentList = currentQmakeConfiguration.getCustomDefs().getValue();
         }
     }
 
@@ -717,6 +723,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getPlatform().getValue()).getStandardLibrarie(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
+            }
+        } else if (element.equals(QT_MODULES_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.setEnabledModules(currentText);
+            }
+        } else if (element.equals(QT_BUILD_MODE_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getBuildMode().setValue(Integer.parseInt(currentText));
+            }
+        } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_UI_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getUiDir().setValue(getString(currentText));
             }
         }
     }

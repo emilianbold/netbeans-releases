@@ -52,6 +52,8 @@ import org.openide.util.Lookup;
  */
 public class InstaceRenameRefactoring extends AbstractRefactoring {
 
+    public static final RefactoringInfo FLAG = new RefactoringInfo();
+
     public InstaceRenameRefactoring( Lookup lookup ){
         super( lookup );
     }
@@ -96,6 +98,9 @@ public class InstaceRenameRefactoring extends AbstractRefactoring {
 
     private InstanceRenamePlugin getPlugin(){
         return myPlugin;
+    }
+
+    public static class RefactoringInfo {
     }
 
     private ProgressListener myListener;

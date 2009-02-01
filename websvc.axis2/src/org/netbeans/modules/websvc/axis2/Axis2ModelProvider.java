@@ -43,11 +43,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.websvc.axis2.config.model.Axis2Model;
 import org.netbeans.modules.websvc.axis2.services.model.ServicesModel;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=Axis2ModelProvider.class,
+    projectType="org-netbeans-modules-java-j2seproject")
 public class Axis2ModelProvider {
     
     public static final String PROP_SERVICES = "services"; //NOI18N
@@ -56,7 +59,7 @@ public class Axis2ModelProvider {
     private ServicesModel servicesModel;
     private PropertyChangeSupport propertyChangeSupport;
     
-    Axis2ModelProvider() {
+    public Axis2ModelProvider() {
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
     

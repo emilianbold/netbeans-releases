@@ -59,7 +59,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
@@ -354,11 +353,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     public static Disassembly getCurrent() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return null;
         }

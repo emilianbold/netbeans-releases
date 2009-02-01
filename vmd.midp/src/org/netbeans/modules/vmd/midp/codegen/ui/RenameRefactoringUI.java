@@ -61,14 +61,17 @@ public class RenameRefactoringUI implements RefactoringUI{
     private String newName;
     private RenamePanel panel;
     private InstaceRenameRefactoring myRefactoring;
+    private boolean isAccessor;
     
     public RenameRefactoringUI(InstaceRenameRefactoring refactoring, 
-            CompilationInfo info, String oldName , DesignComponent component )
+            CompilationInfo info, String oldName , DesignComponent component, 
+            boolean useAccessor )
     {
         myRefactoring = refactoring;
         //oldName = element.getSimpleName().toString();
         myOldName = oldName;
         myComponent = component;
+        isAccessor = useAccessor;
         
         //refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(true, true, RetoucheUtils.getFileObject(handle)));
     }
@@ -81,7 +84,8 @@ public class RenameRefactoringUI implements RefactoringUI{
         if (panel == null) {
             String name = myOldName;
             panel = new RenamePanel(name, parent, NbBundle.getMessage(
-                    RenamePanel.class, "LBL_Rename") + " " + name );
+                    RenamePanel.class, "LBL_Rename") + " " + name ,
+                    myComponent, isAccessor);
         }
         return panel;
     }
@@ -89,10 +93,8 @@ public class RenameRefactoringUI implements RefactoringUI{
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         newName = panel.getNameValue();
         myRefactoring.setNewFieldName(newName);
-        String getterName = InstanceRenameAction.getGetterName( myComponent,
-                newName);
-        if ( getterName!= null ){
-            myRefactoring.setNewGetterName(getterName);
+        if ( isAccessor ){
+            myRefactoring.setNewGetterName( panel.getGetter() );
         }
         return myRefactoring.checkParameters();
     }
