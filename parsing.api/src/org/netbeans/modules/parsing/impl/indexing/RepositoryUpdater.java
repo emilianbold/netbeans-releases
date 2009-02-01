@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -57,11 +59,14 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -86,7 +91,7 @@ import org.openide.util.TopologicalSortException;
  *
  * @author Tomas Zezula
  */
-public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener {
+public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener, PropertyChangeListener {
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -102,8 +107,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     public synchronized void close () {
         state = State.CLOSED;
         LOGGER.fine("Closing..."); //NOI18N
+
         PathRegistry.getDefault().removePathRegistryListener(this);
-        unregisterFileSystemListener();
+        FileUtil.removeFileChangeListener(this);
+        EditorRegistry.removePropertyChangeListener(this);
     }
 
     // -----------------------------------------------------------------------
@@ -207,6 +214,60 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     // -----------------------------------------------------------------------
+    // PropertyChangeListener implementation
+    // -----------------------------------------------------------------------
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        List<? extends JTextComponent> components = Collections.<JTextComponent>emptyList();
+
+        if (evt.getPropertyName() == null) {
+            components = EditorRegistry.componentList();
+
+        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_LOST_PROPERTY)) {
+            if (evt.getOldValue() instanceof JTextComponent) {
+                components = Collections.singletonList((JTextComponent) evt.getOldValue());
+            }
+            
+        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
+            if (evt.getNewValue() instanceof JTextComponent) {
+                components = Collections.singletonList((JTextComponent) evt.getNewValue());
+            }
+
+        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
+            JTextComponent jtc = EditorRegistry.focusedComponent();
+            if (jtc == null) {
+                jtc = EditorRegistry.lastFocusedComponent();
+            }
+            if (jtc != null) {
+                components = Collections.singletonList(jtc);
+            }
+        }
+
+        if (components.size() > 0) {
+            Map<URL, FileListWork> jobs = new HashMap<URL, FileListWork>();
+            for(JTextComponent jtc : components) {
+                FileObject f = NbEditorUtilities.getFileObject(jtc.getDocument());
+                if (f != null) {
+                    URL root = getOwningSourceRoot(f);
+                    if (root != null) {
+                        FileListWork job = jobs.get(root);
+                        if (job == null) {
+                            job = new FileListWork(root, f);
+                            jobs.put(root, job);
+                        } else {
+                            job.addFile(f);
+                        }
+                    }
+                }
+            }
+
+            for(FileListWork job : jobs.values()) {
+                submit(job);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
 
@@ -230,7 +291,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (state == State.CREATED) {
             LOGGER.fine("Initializing..."); //NOI18N
             PathRegistry.getDefault().addPathRegistryListener(this);
-            registerFileSystemListener();
+            FileUtil.addFileChangeListener(this);
+            EditorRegistry.addPropertyChangeListener(this);
 
             state = State.INITIALIZED;
             submit(new RootsWork(scannedRoots, scannedBinaries) {
@@ -249,15 +311,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             });
         }
-    }
-    //where
-    private void registerFileSystemListener  () {
-        FileUtil.addFileChangeListener(this);
-    }
-
-    //where
-    private void unregisterFileSystemListener () {
-        FileUtil.removeFileChangeListener(this);
     }
 
     private void submit (final Work  work) {
@@ -395,16 +448,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final class FileListWork extends Work {
 
         private final URL root;
-        private final FileObject[] files;
+        private final Collection<FileObject> files;
 
         public FileListWork (URL root, FileObject file) {
             assert root != null;
             assert file != null;
             this.root = root;
-            this.files = new FileObject[] { file };
+            this.files = new HashSet<FileObject>();
+            this.files.add(file);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("FileListWork: root=" + root + ", file=" + file); //NOI18N
             }
+        }
+
+        public void addFile(FileObject f) {
+            assert f != null;
+            assert FileUtil.isParentOf(URLMapper.findFileObject(root), f) : "File " + f + " does not belong under the root: " + root; //NOI18N
+            files.add(f);
         }
 
         public void getDone() {
@@ -414,7 +474,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 return;
             }
             try {
-                final Crawler crawler = new FileObjectCrawler(rootFo, files);
+                final Crawler crawler = new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]));
                 final Map<String,Collection<Indexable>> resources = crawler.getResources();
                 index (resources, Collections.<Indexable>emptyList(), root);
             } catch (IOException ioe) {
