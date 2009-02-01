@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics;
+package org.netbeans.modules.performance;
 
-import java.util.Enumeration;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.ergonomics.newproject.EnableStep;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInstall;
 
-/**
+/** Installer to initialize registered test code that needs to run during
+ * startup of other modules.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectTemplatesCheck extends NbTestCase {
-    public ProjectTemplatesCheck(String n) {
-        super(n);
-    }
-    
-    public void testCanGetWizardIteratorsForAllProjects() {
-        FileObject root = FileUtil.getConfigFile("Templates/Project");
-        assertNotNull("project is available (need to run in NbModuleTest mode)", root);
-        Enumeration<? extends FileObject> en = root.getChildren(true);
-        StringBuilder sb = new StringBuilder();
-        int error = 0;
-        while (en.hasMoreElements()) {
-            FileObject fo = en.nextElement();
-            if (Boolean.TRUE.equals(fo.getAttribute("template"))) {
-                sb.append(fo);
-                Object value = EnableStep.readWizard(fo);
-
-                if (value == null) {
-                    error++;
-                    sb.append(" - failure\n");
-                    Enumeration<String> names = fo.getAttributes();
-                    while (names.hasMoreElements()) {
-                        String n = names.nextElement();
-                        sb.append("  name: " + n + " value: " + fo.getAttribute(n) + "\n");
-                    }
-                } else {
-                    sb.append(" - OK\n");
-                }
+public final class Inst extends ModuleInstall {
+    @Override
+    public void restored() {
+        String value = System.getProperty("initTestClass");
+        if (value != null) {
+            try {
+                Class<?> c = Thread.currentThread().getContextClassLoader().loadClass(value);
+                Object run = c.newInstance();
+                ((Runnable)run).run();
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
             }
-        }
-        if (error > 0) {
-            fail(sb.toString());
         }
     }
 }
