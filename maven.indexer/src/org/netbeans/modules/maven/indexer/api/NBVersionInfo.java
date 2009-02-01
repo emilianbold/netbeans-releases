@@ -51,16 +51,19 @@ public class NBVersionInfo {
     private String packaging;
     private String projectName;
     private String classifier;
-    private String ProjectDescription;
+    private String projectDescription;
     private String repoId;
-    
+//    private String sha;
+    private long lastModified;
+    private long size;
+
     //-----
     private boolean sourcesExists;
     private boolean javadocExists;
     private boolean signatureExists;
 
     public NBVersionInfo(String repoId,String groupId, String artifactId, String version,
-            String type, String packaging, String projectName,String ProjectDescription,String classifier) {
+            String type, String packaging, String projectName,String desc,String classifier) {
         this.repoId = repoId;
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -68,7 +71,7 @@ public class NBVersionInfo {
         this.type = type;
         this.packaging = packaging;
         this.projectName = projectName;
-        this.ProjectDescription = ProjectDescription;
+        this.projectDescription = desc;
         this.classifier = classifier;
     }
 
@@ -128,13 +131,37 @@ public class NBVersionInfo {
     }
 
     public String getProjectDescription() {
-        return ProjectDescription;
+        return projectDescription;
     }
 
     public String getClassifier() {
         return classifier;
     }
- 
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+//    public String getSha() {
+//        return sha;
+//    }
+//
+//    public void setSha(String sha) {
+//        this.sha = sha;
+//    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
     @Override
     public String toString() {
         return groupId + ":" + artifactId + ":" + version + ":" + repoId;

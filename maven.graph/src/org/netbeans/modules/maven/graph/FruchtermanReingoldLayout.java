@@ -89,7 +89,8 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         }
         Dimension dim = rectangle.getSize ();
         Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
-        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
+        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+        scene.setZoomFactor (Math.min(zoom, 1));
         scene.validate();
     }
     
@@ -153,7 +154,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         temp = bounds.getWidth() / 10;
         forceConstant = 0.75 * Math.sqrt(bounds.getHeight() * bounds.getWidth() / nds);
         
-        ArtifactGraphNode r = scene.getRootArtifact();
+        ArtifactGraphNode r = scene.getRootGraphNode();
         r.locX = bounds.getCenterX();
         r.locY = bounds.getCenterY();
         r.setFixed(true);
@@ -319,7 +320,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         for (ArtifactGraphNode nd : scene.getNodes()) {
             nd.setFixed(false);
         }
-        scene.getRootArtifact().setFixed(true);
+        scene.getRootGraphNode().setFixed(true);
     }
     
     private boolean isThereFreeSpaceNonFixedSpace(ArtifactGraphNode node) {

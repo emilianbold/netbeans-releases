@@ -43,6 +43,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.Stack;
 import java.util.regex.Pattern;
+import org.apache.maven.artifact.Artifact;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -89,6 +91,18 @@ public final class FileUtilities {
             return fil.toURI();
         }
         return null;
+    }
+
+    /**
+     * take any (even unresolved) Maven Arfifact instance and construct a local
+     * repository based File instance for it. The file does not have to exist though.
+     * @param artifact
+     * @return
+     */
+    public static File convertArtifactToLocalRepositoryFile(Artifact artifact) {
+        String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(artifact);
+        File base = convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        return resolveFilePath(base, path);
     }
 
     private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = 
