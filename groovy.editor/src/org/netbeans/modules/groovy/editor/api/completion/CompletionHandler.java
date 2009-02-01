@@ -115,8 +115,6 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -141,6 +139,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
     private String gapiDocBase = null;
 
+    // FIXME this should be local variable
     private Set<GroovyKeyword> keywords;
 
     public CompletionHandler() {
@@ -153,7 +152,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             jdkJavaDocBase = url.toString();
         }
 
-        GroovySettings groovySettings = new GroovySettings();
+        GroovySettings groovySettings = GroovySettings.getInstance();
         String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
 
         groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
@@ -162,12 +161,8 @@ public class CompletionHandler implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
 
-        dfltImports.add("java.io"); // NOI18N
-        dfltImports.add("java.lang"); // NOI18N
-        dfltImports.add("java.net"); // NOI18N
-        dfltImports.add("java.util"); // NOI18N
-        dfltImports.add("groovy.util"); // NOI18N
-        dfltImports.add("groovy.lang"); // NOI18N
+        Collections.addAll(dfltImports, "java.io", "java.lang", "java.net", // NOI18N
+                "java.util", "groovy.util", "groovy.lang"); // NOI18N
     }
 
     private static String directoryNameToUrl(String dirname) {
