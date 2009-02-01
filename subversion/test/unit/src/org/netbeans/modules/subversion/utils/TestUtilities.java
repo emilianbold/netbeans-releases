@@ -40,6 +40,9 @@
 package org.netbeans.modules.subversion.utils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -57,5 +60,63 @@ public final class TestUtilities {
         String url;
         url = "file:///" + file.getAbsolutePath().replaceAll("\\\\", "/");
         return url;
+    }
+
+    private static boolean isEncodedByte(char c, String s, int i) {
+        return c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2));
+    }
+
+    private static boolean isHexDigit(char c) {
+        return c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f';
+    }
+
+    /**
+     * Decodes svn URI by decoding %XX escape sequences.
+     *
+     * @param url url to decode
+     * @return decoded url
+     */
+    public static SVNUrl decode(SVNUrl url) {
+        if (url == null) return null;
+        String s = url.toString();
+        StringBuffer sb = new StringBuffer(s.length());
+
+        boolean inQuery = false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '?') {
+                inQuery = true;
+            } else if (c == '+' && inQuery) {
+                sb.append(' ');
+            } else if (isEncodedByte(c, s, i)) {
+                List<Byte> byteList = new ArrayList<Byte>();
+                do  {
+                    byteList.add((byte) Integer.parseInt(s.substring(i + 1, i + 3), 16));
+                    i += 3;
+                    if (i >= s.length()) break;
+                    c = s.charAt(i);
+                } while(isEncodedByte(c, s, i));
+
+                if(byteList.size() > 0) {
+                    byte[] bytes = new byte[byteList.size()];
+                    for(int ib = 0; ib < byteList.size(); ib++) {
+                        bytes[ib] = byteList.get(ib);
+                    }
+                    try {
+                        sb.append(new String(bytes, "UTF8"));
+                    } catch (Exception e) {
+                        
+                    }
+                    i--;
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        try {
+            return new SVNUrl(sb.toString());
+        } catch (java.net.MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

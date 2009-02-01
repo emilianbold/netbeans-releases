@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.commands;
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
 import java.io.InputStream;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
@@ -81,7 +82,7 @@ public class MoveTest extends AbstractCommandTest {
         
         info = getInfo(getFileUrl(filemove));
         assertNotNull(info);
-        assertEquals(getFileUrl(filemove), info.getUrl());
+        assertEquals(getFileUrl(filemove), TestUtilities.decode(info.getUrl()));
         
         assertNotifiedFiles(new File[] {});        
     }        

@@ -65,19 +65,21 @@ public class LogTest extends AbstractCommandTest {
     }
 
     @Override
-    protected void setUp() throws Exception {                   
+    protected void setUp() throws Exception {
         if(getName().equals("testLogNullAuthor")) {            
             setAnnonWriteAccess();            
-            String[] cmd = new String[]{"svnserve", "-d"};
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
-        }                        
-        super.setUp();
+            runSvnServer();
+        }
+        try {
+            super.setUp();
+        } catch (Exception e) {
+            stopSvnServer();
+        }
     }
     
     @Override
     protected void tearDown() throws Exception {
-        if(getName().equals("testLogNullAuthor")) {        
+        if(getName().equals("testLogNullAuthor")) {
             restoreAuthSettings();
         }        
         super.tearDown();        

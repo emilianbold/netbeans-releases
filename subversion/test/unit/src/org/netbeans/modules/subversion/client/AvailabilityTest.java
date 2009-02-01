@@ -88,7 +88,7 @@ public class AvailabilityTest extends AbstractSvnTest {
     
     public void testCorrectPath() throws Exception {
         String executablePath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
-        if(Utilities.isUnix() && (executablePath == null || executablePath.trim().equals(""))) {
+        if((Utilities.isUnix() || Utilities.isMac()) && (executablePath == null || executablePath.trim().equals(""))) {
             // lets guess
             executablePath = "/usr/bin";
             SvnModuleConfig.getDefault().setExecutableBinaryPath(executablePath);

@@ -114,7 +114,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc);
         MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
-        MacroExpansionViewUtils.saveDocument(expandedContextDoc);
+        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 
         // Init expanded macro field
         final Document expandedMacroDoc = MacroExpansionViewUtils.createExpandedMacroDocument(mainDoc, csmFile);
@@ -129,7 +129,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                 Exceptions.printStackTrace(ex);
             }
         }
-        MacroExpansionViewUtils.saveDocument(expandedMacroDoc);
+        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
 
         // Open view
         Runnable openView = new Runnable() {

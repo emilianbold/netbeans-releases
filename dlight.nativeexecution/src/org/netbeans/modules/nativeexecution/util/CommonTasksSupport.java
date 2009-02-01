@@ -66,7 +66,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
  *               env, fileToRemove, forceRemoveReadOnlyFile, rmTaskError);
  *
  *       try {
- *           Integer result = rmTask.invoke(false);
+ *           Integer result = rmTask.submit(false);
  *           System.out.println("RESULT: " + result);
  *           if (result != 0) {
  *               System.out.println("ERROR: " + rmTaskError);
@@ -79,7 +79,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
  * <pre>
  *       try {
  *           CommonTasksSupport.getRemoveFileTask(new ExecutionEnvironment(),
- *               "/path/to/the/file/to/remove", true, null).invoke(false);
+ *               "/path/to/the/file/to/remove", true, null).submit(false);
  *       } catch (Exception ex) {
  *           Exceptions.printStackTrace(ex);
  *       }

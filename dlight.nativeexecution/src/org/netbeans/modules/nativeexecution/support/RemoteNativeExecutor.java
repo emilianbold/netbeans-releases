@@ -112,25 +112,18 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
         return pid;
     }
+    private static final Object cancelLock = new Object();
 
-    public synchronized boolean cancel() {
-        if (channel == null || !channel.isConnected()) {
-            return true;
+    public boolean cancel() {
+        boolean result = true;
+        synchronized (cancelLock) {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+                NativeTaskSupport.kill(execEnv, 9, getPID());
+                result = !channel.isConnected();
+            }
         }
-
-        channel.disconnect();
-        NativeTaskSupport.kill(execEnv, 9, getPID());
-//            System.out.println("Will kill " + getPID());
-//            result = NativeTaskSupport.kill(execEnv, 9, getPID());
-
-//            try {
-//                channel.sendSignal("KILL"); // NOI18N
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-
-        //TODO: Processes are still not killed ;(
-        return !channel.isConnected();
+        return result;
 
     // TODO: When to cancel session?
 //    if (session != null) {
@@ -162,7 +155,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         if (channel == null) {
             return -1;
         }
-        
+
         while (channel.isConnected()) {
             try {
                 Thread.sleep(200);
@@ -171,7 +164,6 @@ public final class RemoteNativeExecutor extends NativeExecutor {
             }
         }
 
-        channel.disconnect();
         return channel.getExitStatus();
     }
 }
