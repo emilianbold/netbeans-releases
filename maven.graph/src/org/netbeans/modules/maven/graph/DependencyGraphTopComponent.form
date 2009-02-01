@@ -81,6 +81,15 @@
                 </Property>
               </Properties>
             </Component>
+            <Component class="javax.swing.JLabel" name="lblScopes">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/maven/graph/Bundle.properties" key="DependencyGraphTopComponent.lblScopes.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="comScopes">
+            </Component>
             <Component class="javax.swing.JSlider" name="sldDepth">
               <Properties>
                 <Property name="majorTickSpacing" type="int" value="1"/>

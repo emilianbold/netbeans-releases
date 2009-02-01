@@ -41,6 +41,8 @@ package org.netbeans.modules.maven.graph;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -56,18 +58,24 @@ import org.openide.util.NbBundle;
  */
 class ArtifactWidget extends Widget {
     final Color ROOT = new Color(71, 215, 217);
-    final Color DIRECTS = new Color(154, 215, 217);
+    final Color DIRECTS = new Color(50, 217, 217);
     final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
     final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
     final Color HIGHTLIGHT = new Color(255, 255, 129);
     final Color DISABLE_CONFLICT = new Color(255, 168, 168);
     final Color CONFLICT = new Color(255, 103, 103);
 
+    final Color PROVIDED = new Color(191, 255, 255);
+    final Color COMPILE = new Color(191, 191, 255);
+    final Color RUNTIME = new Color(191, 255, 191);
+    final Color TEST = new Color(202, 151, 151);
+
     private Widget defaultCard;
     private Widget hiddenCard;
     Widget label1;
     private ArtifactGraphNode node;
     private String currentSearchTerm;
+    private List<String> scopes;
 
     ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
         super(scene);
@@ -104,28 +112,37 @@ class ArtifactWidget extends Widget {
 
     public void checkBackground(ArtifactGraphNode node, Widget widget, boolean shown) {
         if (node.isRoot()) {
-            widget.setBackground(new GradientPaint(0, 0, ROOT, 100, 50, Color.WHITE));
+            widget.setBackground(ROOT);
         } else {
+            Color primaryBackground = Color.WHITE;
+            if (scopes != null && scopes.size() > 0 && scopes.contains(node.getArtifact().getArtifact().getScope())) {
+                primaryBackground = colorForScope(node.getArtifact().getArtifact().getScope());
+            }
             boolean conflict = false;
             for (DependencyNode src : node.getDuplicatesOrConflicts()) {
                 if (src.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                     conflict = true;
                 }
             }
+            Rectangle bnds = widget.getBounds();
+            int h;
+            int w;
+                h = 25;
+                w = 25;
             if (conflict) {
                 if (node.getPrimaryLevel() == 1) {
-                    widget.setBackground(new GradientPaint(0, 0, DIRECTS_CONFLICT, 15, 15, Color.WHITE));
+                    widget.setBackground(new GradientPaint(0, 0, DIRECTS_CONFLICT, w, h, primaryBackground));
                 }
                 else if (shown) {
-                        widget.setBackground(new GradientPaint(0, 0, CONFLICT, 15, 15, Color.WHITE));
+                    widget.setBackground(new GradientPaint(0, 0, CONFLICT, w, h, primaryBackground));
                 } else {
-                        widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, 15, 15, Color.WHITE));
+                    widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, w, h, primaryBackground));
                 }
             } else {
                 if (node.getPrimaryLevel() == 1) {
-                    widget.setBackground(new GradientPaint(0, 0, DIRECTS, 15, 15, Color.WHITE));
+                    widget.setBackground(new GradientPaint(0, 0, DIRECTS, w, h, primaryBackground));
                 } else {
-                    widget.setBackground(Color.WHITE);
+                    widget.setBackground(primaryBackground);
                 }
             }
         }
@@ -171,6 +188,31 @@ class ArtifactWidget extends Widget {
         }
     }
 
+    void hightlightScopes(List<String> scopes) {
+        this.scopes = scopes;
+        checkBackground(node, defaultCard, true);
+        checkBackground(node, hiddenCard, false);
+    }
+
+
+
+    private Color colorForScope(String scope) {
+        if (Artifact.SCOPE_COMPILE.equals(scope)) {
+            return COMPILE;
+        }
+        if (Artifact.SCOPE_PROVIDED.equals(scope)) {
+            return PROVIDED;
+        }
+        if (Artifact.SCOPE_RUNTIME.equals(scope)) {
+            return RUNTIME;
+        }
+        if (Artifact.SCOPE_TEST.equals(scope)) {
+            return TEST;
+        }
+        return Color.BLACK;
+    }
+
+
     private Widget createCardContent(DependencyGraphScene scene, Artifact artifact, boolean shown) {
         Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         if (shown) {
@@ -178,7 +220,6 @@ class ArtifactWidget extends Widget {
         } else {
             root.setBorder(BorderFactory.createLineBorder(10,Color.lightGray));
         }
-        checkBackground(node, root, shown);
         root.setOpaque(true);
         root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
         LabelWidget lbl = new LabelWidget(scene);
@@ -198,6 +239,7 @@ class ArtifactWidget extends Widget {
             lbl2.setForeground(Color.lightGray);
         }
         details1.addChild(lbl2);
+        checkBackground(node, root, shown);
         return root;
     }
 }

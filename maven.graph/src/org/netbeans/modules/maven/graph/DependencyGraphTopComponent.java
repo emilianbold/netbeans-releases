@@ -40,24 +40,34 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -117,6 +127,52 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                 timer.restart();
             }
         });
+        comScopes.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                @SuppressWarnings("unchecked")
+                List<String> scopes = (List<String>) value;
+                String text;
+                if (scopes.size() == 0) {
+                    text = "Ignore";
+                } else {
+                    text = scopes.get(scopes.size() -1);
+                }
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
+        DefaultComboBoxModel mdl = new DefaultComboBoxModel();
+        mdl.addElement(Arrays.asList(new String[0]));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE
+        }));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE,
+            Artifact.SCOPE_RUNTIME
+        }));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE,
+            Artifact.SCOPE_RUNTIME,
+            Artifact.SCOPE_TEST
+        }));
+        comScopes.setModel(mdl);
+        comScopes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (scene != null) {
+                    @SuppressWarnings("unchecked")
+                    List<String> selected = (List<String>) comScopes.getSelectedItem();
+                    ScopesVisitor vis = new ScopesVisitor(scene, selected);
+                    scene.getRootGraphNode().getArtifact().accept(vis);
+                    scene.validate();
+                    scene.repaint();
+                    revalidate();
+                    repaint();
+                }
+            }
+        });
     }
     
     private void checkFindValue() {
@@ -149,6 +205,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         txtFind.setEnabled(false);
         btnBigger.setEnabled(false);
         btnSmaller.setEnabled(false);
+        comScopes.setEnabled(false);
         add(pane, BorderLayout.CENTER);
         JLabel lbl = new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
         lbl.setHorizontalAlignment(JLabel.CENTER);
@@ -201,6 +258,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         btnSmaller = new javax.swing.JButton();
         lblFind = new javax.swing.JLabel();
         txtFind = new javax.swing.JTextField();
+        lblScopes = new javax.swing.JLabel();
+        comScopes = new javax.swing.JComboBox();
         sldDepth = new javax.swing.JSlider();
 
         setLayout(new java.awt.BorderLayout());
@@ -239,6 +298,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         txtFind.setMinimumSize(new java.awt.Dimension(50, 19));
         txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
         jToolBar1.add(txtFind);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblScopes, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblScopes.text")); // NOI18N
+        jToolBar1.add(lblScopes);
+        jToolBar1.add(comScopes);
 
         sldDepth.setMajorTickSpacing(1);
         sldDepth.setMaximum(5);
@@ -314,9 +377,11 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBigger;
     private javax.swing.JButton btnSmaller;
+    private javax.swing.JComboBox comScopes;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JLabel lblFind;
+    private javax.swing.JLabel lblScopes;
     private javax.swing.JSlider sldDepth;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
@@ -346,14 +411,15 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             pane.setViewportView(sceneView);
                             scene.cleanLayout(pane);
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+                            txtFind.setEnabled(true);
+                            btnBigger.setEnabled(true);
+                            btnSmaller.setEnabled(true);
+                            comScopes.setEnabled(true);
                             if (scene.getMaxNodeDepth() > 1) {
                                 sldDepth.setMaximum(scene.getMaxNodeDepth());
                                 sldDepth.setEnabled(true);
                                 sldDepth.setVisible(true);
                             }
-                            txtFind.setEnabled(true);
-                            btnBigger.setEnabled(true);
-                            btnSmaller.setEnabled(true);
                         }
                     });
                 }
@@ -379,12 +445,14 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                 JButton btn = new JButton();
                 Actions.connect(btn, act);
                 toolbar.add(btn);
-                toolbar.add(btnBigger);
-                toolbar.add(btnSmaller);
-                toolbar.add(lblFind);
-                toolbar.add(txtFind);
-                toolbar.add(sldDepth);
             }
+            toolbar.add(btnBigger);
+            toolbar.add(btnSmaller);
+            toolbar.add(lblFind);
+            toolbar.add(txtFind);
+            toolbar.add(lblScopes);
+            toolbar.add(comScopes);
+            toolbar.add(sldDepth);
         }
         return toolbar;
     }
