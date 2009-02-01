@@ -301,7 +301,7 @@ public class WsValidation extends WebServicesTestBase {
         assertServerRunning();
         Node wsNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME + "|" + getWsName()); //NOI18N
         String wrapperLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_ConvertToRestAction");
-        wsNode.performPopupAction(wrapperLabel);
+        wsNode.performPopupActionNoBlock(wrapperLabel);
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.saas.Bundle", "MSG_GENERATING_REST_RESOURCE");
         try {
             // wait at most 60 second until progress dialog dismiss
