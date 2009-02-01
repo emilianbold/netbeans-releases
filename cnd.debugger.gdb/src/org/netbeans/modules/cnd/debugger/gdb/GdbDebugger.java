@@ -305,13 +305,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     } else {
                         msg = NbBundle.getMessage(GdbDebugger.class, "ERR_CantAttach"); // NOI18N
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                            finish(false);
-                        }
-                    });
+                    warnAndFinish(false, msg);
                     return; // since we've failed, a return here keeps us from sending more gdb commands
                 } else {
                     if (isSharedLibrary) {
@@ -337,14 +331,7 @@ public class GdbDebugger implements PropertyChangeListener {
                                 gdb.addSymbolFile(path, addr);
                                 setLoading();
                             } else {
-                                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                                        finish(false);
-                                    }
-                                });
+                                warnAndFinish(false, NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure")); // NOI18N
                                 return; // since we've failed, a return here keeps us from sending more gdb commands
                             }
                         } else {
@@ -353,14 +340,7 @@ public class GdbDebugger implements PropertyChangeListener {
                             if (symbolsReadFromInfoFiles(gdb.info_files().getResponse(), path)) {
                                 setLoading();
                             } else {
-                                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                                        finish(false);
-                                    }
-                                });
+                                warnAndFinish(false, NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure")); // NOI18N
                                 return; // since we've failed, a return here keeps us from sending more gdb commands
                             }
                         }
@@ -451,15 +431,17 @@ public class GdbDebugger implements PropertyChangeListener {
             if (msg == null || msg.length() == 0) {
                 msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnSpecifiedStartError");
             }
-            final String fmsg = msg;
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(fmsg));
-                    finish(false);
-                }
-            });
+            warnAndFinish(false, msg);
         }
+    }
+
+    private void warnAndFinish(final boolean killTerm, final String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                finish(killTerm);
+            }
+        });
     }
 
     private final void initGdbVersion() {
@@ -675,7 +657,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             } else if (evt.getNewValue() == State.STOPPED) {
                 updateLocalVariables(0);
-                GdbContext.getInstance().update();
+                GdbContext.getInstance().gdbStep();
             } else if (evt.getNewValue() == State.SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == State.RUNNING &&
@@ -688,7 +670,7 @@ public class GdbDebugger implements PropertyChangeListener {
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
             updateCurrentCallStack();
             updateLocalVariables(0);
-            GdbContext.getInstance().update();
+            GdbContext.getInstance().gdbStep();
         }
     }
 
@@ -922,7 +904,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (iotab != null) {
                     iotab.getOut().close();
                 }
-                GdbContext.getInstance().invalidate(true);
+                GdbContext.getInstance().gdbExit();
                 GdbTimer.getTimer("Step").reset(); // NOI18N
             }
         }

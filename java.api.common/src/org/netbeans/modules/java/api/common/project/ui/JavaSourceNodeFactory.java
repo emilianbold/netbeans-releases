@@ -114,7 +114,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
                 }
             };
             File d = FileUtil.toFile(proj.getProjectDirectory());
-            // XXX hardcodes the value of ${build.generated.dir}, since we have no access to evaluator
+            // XXX hardcodes the value of ${build.generated.sources.dir}, since we have no access to evaluator
             genSrcDir = d != null ? new File(d, "build/generated-sources") : null;
         }
         

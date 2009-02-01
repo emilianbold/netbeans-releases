@@ -67,14 +67,23 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
  */
 /**
  * Change History:
+ * V54 - NB 7.0
+ *   Qt settings are persisted:
+ *   QT_ELEMENT
+ *   QT_BUILD_MODE_ELEMENT
+ *   QT_MODULES_ELEMENT
+ *   QT_MOC_DIR_ELEMENT
+ *   QT_UI_DIR_ELEMENT
+ *   QT_DEFS_LIST_ELEMENT
  * V53 - NB 7.0
- *   New configuration types: 4 (QT_APPLICATION), 5 (QT_LIBRARY)
+ *   New configuration types: 4 (QT_APPLICATION), 5 (QT_DYNAMIC_LIBRARY), 6 (QT_STATIC_LIBRARY)
  * V52 - NB 7.0
  *   ASSEMBLER_REQUIRED_ELEMENT
  * V51 - NB 6.5
@@ -146,7 +155,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 53;
+    public final static int CURRENT_VERSION = 54;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -282,6 +291,14 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_INFOS_LIST_ELEMENT = "packInfoList"; // NOI18NP
     protected final static String PACK_INFO_LIST_ELEMENT = "packInfoListElem"; // NOI18NP
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
+    // Qt-related
+    protected final static String QT_ELEMENT = "qt"; // NOI18N
+    protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
+    protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
+    protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
+    protected final static String QT_UI_DIR_ELEMENT = "uiDir"; // NOI18N
+    protected final static String QT_DEFS_LIST_ELEMENT = "defs"; // NOI18N
+
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
 
@@ -324,6 +341,9 @@ public abstract class CommonConfigurationXMLCodec
 
             if (publicLocation) {
                 writeToolsSetBlock(xes, makeConfiguration);
+                if (makeConfiguration.isQmakeConfiguration()) {
+                    writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
+                }
                 if (makeConfiguration.isCompileConfiguration() || makeConfiguration.isQmakeConfiguration()) {
                     writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
@@ -391,6 +411,28 @@ public abstract class CommonConfigurationXMLCodec
         }
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(COMPILE_TYPE_ELEMENT);
+    }
+
+    private void writeQmakeConfiguration(XMLEncoderStream xes, QmakeConfiguration qmake) {
+        xes.elementOpen(QT_ELEMENT);
+        if (qmake.getBuildMode().getModified()) {
+            xes.element(QT_BUILD_MODE_ELEMENT, String.valueOf(qmake.getBuildMode().getValue()));
+        }
+        xes.element(QT_MODULES_ELEMENT, qmake.getEnabledModules());
+        if (qmake.getMocDir().getModified()) {
+            xes.element(QT_MOC_DIR_ELEMENT, qmake.getMocDir().getValue());
+        }
+        if (qmake.getUiDir().getModified()) {
+            xes.element(QT_UI_DIR_ELEMENT, qmake.getUiDir().getValue());
+        }
+        if (qmake.getCustomDefs().getModified()) {
+            xes.elementOpen(QT_DEFS_LIST_ELEMENT);
+            for (String line : qmake.getCustomDefs().getValue()) {
+                xes.element(LIST_ELEMENT, line);
+            }
+            xes.elementClose(QT_DEFS_LIST_ELEMENT);
+        }
+        xes.elementClose(QT_ELEMENT);
     }
 
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,

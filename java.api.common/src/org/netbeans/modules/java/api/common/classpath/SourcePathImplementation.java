@@ -79,7 +79,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     // TODO: if needed these parameters can be configurable via constructor parameter:
     private static final String BUILD_DIR = "build.dir"; // NOI18N
-    private static final String BUILD_GENERATED_DIR = "build.generated.dir"; // NOI18N
+    private static final String BUILD_GENERATED_DIR = "build.generated.sources.dir"; // NOI18N
 
     private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N

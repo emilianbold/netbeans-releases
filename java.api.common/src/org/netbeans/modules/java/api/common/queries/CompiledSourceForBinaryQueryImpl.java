@@ -159,7 +159,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
 
         public FileObject[] getRoots() {
             if (gensrc) { // #105645
-                String buildGeneratedDirS = evaluator.getProperty("build.generated.dir"); // NOI18N
+                String buildGeneratedDirS = evaluator.getProperty("build.generated.sources.dir"); // NOI18N
                 if (buildGeneratedDirS != null) {
                     FileObject buildGeneratedDir = helper.resolveFileObject(buildGeneratedDirS);
                     if (buildGeneratedDir != null) {

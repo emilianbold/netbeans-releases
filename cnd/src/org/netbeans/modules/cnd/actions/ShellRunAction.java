@@ -105,20 +105,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = shellFile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(shellFile.getParentFile(), bdir);
-        }
-        try {
-            buildDir = buildDir.getCanonicalFile();
-        }
-        catch (IOException ioe) {
-            // FIXUP
-        }
+        File buildDir = getAbsoluteBuildDir(bdir, shellFile);
         // Tab Name
         String tabName = getString("RUN_LABEL", node.getName());
         

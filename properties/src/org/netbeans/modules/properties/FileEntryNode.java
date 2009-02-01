@@ -128,14 +128,14 @@ public class FileEntryNode extends AbstractNode {
     }
 
     /** 
-     * @returns true if this node allows copying.
+     * @return true if this node allows copying.
      */
     public final boolean canCopy () {
         return entry.isCopyAllowed ();
     }
 
     /**
-     * @returns true if this node allows cutting.
+     * @return true if this node allows cutting.
      */
     public final boolean canCut () {
         return entry.isMoveAllowed ();
