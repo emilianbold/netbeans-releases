@@ -79,7 +79,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -528,7 +527,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public static class TestHandler extends Handler {
 
-        static enum Type {BATCH, DELETE};
+        public static enum Type {BATCH, DELETE};
 
             private CountDownLatch latch;
             private List<URL> sources;
