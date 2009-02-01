@@ -319,8 +319,6 @@ public class WsValidation extends WebServicesTestBase {
         String restName = getWsName() + "Port"; //NOI18N
         Node restWsNode = new Node(restNode, restName);
         restWsNode.expand();
-        System.out.println("lookup  : " + getWsClientLookupCall());
-        System.out.println("expected: " + getWsClientLookupCall().replace(".ws.", ".ws_client."));
         EditorOperator eo = new EditorOperator(restName + ".java"); //NOI18N
         assertTrue("myIntMethod missing", eo.contains("myIntMethod")); //NOI18N
         workaroundIZ152542(eo);
