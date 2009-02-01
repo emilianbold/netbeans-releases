@@ -442,7 +442,7 @@ public class PatternsTest extends RestTestBase {
 
         public CClsName() {
             //Container Class Name:
-            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerClass"));
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerClass"));
         }
     }
 
@@ -450,7 +450,7 @@ public class PatternsTest extends RestTestBase {
 
         public CPath() {
             //Container Path:
-            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerUriTemplate"));
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerUriTemplate"));
         }
     }
 
@@ -458,7 +458,7 @@ public class PatternsTest extends RestTestBase {
 
         public CRCls() {
             //Container Representation Class:
-            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerRepresentationClass"));
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerRepresentationClass"));
         }
     }
 
@@ -466,7 +466,7 @@ public class PatternsTest extends RestTestBase {
 
         public Loc() {
             //Location:
-            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_SrcLocation"));
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_SrcLocation"));
         }
     }
 }
