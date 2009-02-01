@@ -85,131 +85,6 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the package combo box in the new RESTful
-         * web service from patterns wizard for given type of the resource
-         *
-         * @return index of the package combo box
-         */
-        public int getResourcePackageJComboIndex() {
-            switch (this) {
-                case Singleton:
-                    return 2;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 0;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the resource class name txt field
-         * in the new RESTful web service from patterns wizard for given type
-         * of the resource
-         *
-         * @return index of the resource class name txt field
-         */
-        public int getResourceClassNameTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return 0;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 2;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the resource Path txt field
-         * in the new RESTful web service from patterns wizard for given type
-         * of the resource
-         *
-         * @return index of the resource Path txt field
-         */
-        public int getResourcePathTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return 2;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 5;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the container resource class name txt field
-         * in the new RESTful web service from patterns wizard for given type
-         * of the resource
-         *
-         * @return index of the container resource class name txt field
-         */
-        public int getContainerResourceClassNameTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return -1;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 4;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the container resource Path txt field
-         * in the new RESTful web service from patterns wizard for given type
-         * of the resource
-         *
-         * @return index of the container resource Path txt field
-         */
-        public int getContainerResourcePathTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return -1;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 8;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the Mime-Type combo box
-         * in the new RESTful web service from patterns wizard for given type
-         * of the resource
-         *
-         * @return index of the Mime-Type combo box
-         */
-        public int getResourceMimeTypeJComboIndex() {
-            switch (this) {
-                case Singleton:
-                    return 0;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 2;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the resource representation class
-         * name txt field in the new RESTful web service from patterns wizard
-         * for given type of the resource
-         *
-         * @return index of the resource representation class name txt field
-         */
-        public int getRepresentationClassTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return 1;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 6;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
          * Method for getting correct index of the container resource class select
          * button in the new RESTful web service from patterns wizard for given type
          * of the resource
@@ -223,24 +98,6 @@ public class PatternsTest extends RestTestBase {
                 case ContainerItem:
                 case CcContainerItem:
                     return 3;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the container resource
-         * representation class name txt field in the new RESTful web service
-         * from patterns wizard for given type of the resource
-         *
-         * @return index of the container resource representation class name txt field
-         */
-        public int getContainerRepresentationClassTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return -1;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 7;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -395,24 +252,24 @@ public class PatternsTest extends RestTestBase {
         wo.next();
         wo = new WizardOperator(patternsTypeName);
         //set resource package
-        JComboBoxOperator jcbo = new JComboBoxOperator(wo, pattern.getResourcePackageJComboIndex());
+        JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
         if (name != null) {
             //we're not using Defs when name != null !!!
             //set resource class name
-            JTextFieldOperator jtfo = new JTextFieldOperator(wo, pattern.getResourceClassNameTxtIndex());
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
             if (mimeType != null) {
-                jcbo = new JComboBoxOperator(wo, pattern.getResourceMimeTypeJComboIndex());
+                jcbo = new JComboBoxOperator(wo, new Mime());
                 jcbo.selectItem(mimeType.toString());
             }
             //set resource representation class
             if (MimeType.APPLICATION_JSON.equals(mimeType)) {
-                jtfo = new JTextFieldOperator(wo, pattern.getRepresentationClassTxtIndex());
+                jtfo = new JTextFieldOperator(wo, new RCls());
                 jtfo.clearText();
                 jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
             } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -425,25 +282,25 @@ public class PatternsTest extends RestTestBase {
             }
             if (Pattern.Singleton.equals(pattern)) {
                 //set resource Path
-                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
+                jtfo = new JTextFieldOperator(wo, new Path());
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
                 //set resource Path
-                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
+                jtfo = new JTextFieldOperator(wo, new Path());
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
-                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceClassNameTxtIndex());
+                jtfo = new JTextFieldOperator(wo, new CClsName());
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
                 //set container resource Path
-                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourcePathTxtIndex());
+                jtfo = new JTextFieldOperator(wo, new CPath());
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
                 if (MimeType.APPLICATION_JSON.equals(mimeType)) {
-                    jtfo = new JTextFieldOperator(wo, pattern.getContainerRepresentationClassTxtIndex());
+                    jtfo = new JTextFieldOperator(wo, new CRCls());
                     jtfo.clearText();
                     jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
                 } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -528,5 +385,77 @@ public class PatternsTest extends RestTestBase {
                 "testDeploy", //NOI18N
                 "testUndeploy" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
+    }
+
+    static class Pkg extends JComponentByLabelFinder {
+
+        public Pkg() {
+            //Resource Package:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Package"));
+        }
+    }
+
+    static class ClsName extends JComponentByLabelFinder {
+
+        public ClsName() {
+            //Class Name:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClassName"));
+        }
+    }
+
+    static class Mime extends JComponentByLabelFinder {
+
+        public Mime() {
+            //MIME Type:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_MimeType"));
+        }
+    }
+
+    static class RCls extends JComponentByLabelFinder {
+
+        public RCls() {
+            //Representation Class:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RepresentationClass"));
+        }
+    }
+
+    static class Path extends JComponentByLabelFinder {
+
+        public Path() {
+            //Path:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_UriTemplate"));
+        }
+    }
+
+    static class CClsName extends JComponentByLabelFinder {
+
+        public CClsName() {
+            //Container Class Name:
+            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerClass"));
+        }
+    }
+
+    static class CPath extends JComponentByLabelFinder {
+
+        public CPath() {
+            //Container Path:
+            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerUriTemplate"));
+        }
+    }
+
+    static class CRCls extends JComponentByLabelFinder {
+
+        public CRCls() {
+            //Container Representation Class:
+            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerRepresentationClass"));
+        }
+    }
+
+    static class Loc extends JComponentByLabelFinder {
+
+        public Loc() {
+            //Location:
+            super(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_SrcLocation"));
+        }
     }
 }
