@@ -40,22 +40,27 @@
  */
 package o.n.m.ruby.qaf.debugger;
 
+import java.awt.Component;
+import javax.swing.JButton;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
-import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -66,7 +71,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author Tomas Musil, Jiri Skrivanek, Lukas Jungmann
  */
 public class BasicTest extends JellyTestCase {
-    
+
     /** Need to be defined because of JUnit */
     public BasicTest(String name) {
         super(name);
@@ -74,10 +79,9 @@ public class BasicTest extends JellyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(BasicTest.class)
-                .enableModules(".*").clusters(".*")); //NOI18N
+                NbModuleSuite.createConfiguration(BasicTest.class).enableModules(".*").clusters(".*")); //NOI18N
     }
-    
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -85,15 +89,15 @@ public class BasicTest extends JellyTestCase {
         // run only selected test case
         //junit.textui.TestRunner.run(new BasicTest("testCreateRubyProject"));
     }
-    
-    public @Override void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+
+    @Override
+    public void setUp() {
+        System.out.println("########  " + getName() + "  #######");
     }
-    
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
-    
-    
+
+
     /** Test Ruby Application
      * - open new project wizard
      * - choose Ruby|Ruby Application
@@ -151,28 +155,52 @@ public class BasicTest extends JellyTestCase {
      * - wait date.rb is opened and debugger stopped in it
      * - perform step out and check debugger is finished
      */
-    public void testStepInOutOver() throws Exception{
+    public void testStepInOutOver() throws Exception {
         EditorOperator eo = new EditorOperator("main.rb");
         int lineNumber = eo.getLineNumber();
         new StepOverAction().perform();
-        lineNumber = Util.waitStopped(eo, lineNumber+1);
+        lineNumber = Util.waitStopped(eo, lineNumber + 1);
         assertTrue("Debugger not at \"date2 = Date.today\"", eo.getText(lineNumber).indexOf("date2 =") > -1);
- 
+
         TopComponentOperator localVariablesTCO = new TopComponentOperator("Local Variables");//NOI18N
-        assertEquals( "date1", new JTableOperator(localVariablesTCO).getModel().getValueAt(1, 0).toString());
+        assertEquals("date1", new JTableOperator(localVariablesTCO).getModel().getValueAt(1, 0).toString());
 
         new StepIntoAction().perform();
         // wait for date.rb opened in editor
         EditorOperator eoDate = new EditorOperator("date.rb");
         lineNumber = Util.waitStopped(eoDate);
         assertTrue("Debugger not at \"today in date.rb\"", eoDate.getText(lineNumber).indexOf("today") > -1);
-        
+
         TopComponentOperator callStackTCO = new TopComponentOperator("Call Stack");//NOI18N
         assertEquals("Call Stack row count wrong.", 2, new JTableOperator(callStackTCO).getRowCount());
 
         new StepOutAction().perform();
         lineNumber = Util.waitStopped(eo);
         assertTrue("Debugger not at \"puts in main.rb\"", eo.getText(lineNumber).indexOf("puts") > -1);
-        new FinishDebuggerAction().perform();
+        new StepOverAction().perform();
+
+        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
+        ContainerOperator debugToolbarOper = MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
+        // wait until Finish Debugger Session button in Debug toolbar dismiss
+        JButtonOperator finishDebugSessionButton = new JButtonOperator(debugToolbarOper, new ComponentChooser() {
+
+            //Finish Debugger Session
+            private String finishTTip = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
+
+            public boolean checkComponent(Component c) {
+                if (c instanceof JButton) {
+                    JButton jb = (JButton) c;
+                    return jb.getToolTipText().contains(finishTTip);
+                }
+                return false;
+            }
+
+            public String getDescription() {
+                return "Finish Debugger Session debug toolbar button"; //NOI18N
+            }
+        });
+        if (finishDebugSessionButton.isShowing()) {
+            finishDebugSessionButton.waitComponentShowing(false);
+        }
     }
 }
