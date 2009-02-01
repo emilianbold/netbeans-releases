@@ -426,7 +426,7 @@ public final class SuiteUtils {
         pxm.setModuleType(type);
     }
     
-    private static String[] getAntProperty(final Collection<String> pieces) {
+    public static String[] getAntProperty(final Collection<String> pieces) {
         List<String> l = new ArrayList<String>();
         for (Iterator<String> it = pieces.iterator(); it.hasNext();) {
             String piece = it.next() + (it.hasNext() ? ":" : ""); // NOI18N

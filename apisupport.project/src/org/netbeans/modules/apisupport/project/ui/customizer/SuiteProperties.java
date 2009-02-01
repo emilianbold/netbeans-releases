@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -68,6 +70,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -88,6 +91,8 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String ACTIVE_NB_PLATFORM_PROPERTY = "nbplatform.active";    // NOI18N
     public static final String ACTIVE_NB_PLATFORM_DIR_PROPERTY = "nbplatform.active.dir";    // NOI18N
     public static final String CLUSTER_PATH_PROPERTY = "cluster.path";    // NOI18N
+    public static final String CLUSTER_PATH_WDC_PROPERTY = "cluster.path.with.disabled.clusters";    // NOI18N
+
     private NbPlatform activePlatform;
     private JavaPlatform activeJavaPlatform;
     
@@ -109,6 +114,7 @@ public final class SuiteProperties extends ModuleProperties {
     private String[] enabledClusters;
     /** boolean variable to remember whether there were some changes */
     private boolean changedDisabledModules, changedEnabledClusters;
+    private boolean clusterPathChanged;
     
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
@@ -217,37 +223,6 @@ public final class SuiteProperties extends ModuleProperties {
         return arr == null ? new String[0] : arr;
     }
     
-    public static String[] getPathProperty(PropertyEvaluator evaluator, String prop) {
-        // XXX share code with nbbuild, copied from ShorterPaths
-        String val = evaluator.getProperty(prop);
-        if (val == null)
-            return new String[0];
-        StringTokenizer tokenizer = new StringTokenizer(val, ":;");
-        String nextToken = null;
-        ArrayList<String> entries = new ArrayList<String>();
-
-        while (nextToken != null || tokenizer.hasMoreTokens()) {
-            String token = nextToken;
-            nextToken = null;
-            if (token == null) {
-                token = tokenizer.nextToken();
-            }
-            if (tokenizer.hasMoreTokens()) {
-                nextToken = tokenizer.nextToken();
-            }
-            // check if <disk drive>:\path is property"
-            String path = token + ":" + nextToken;
-            if (new File(path).exists()) {
-                nextToken = null;
-            } else {
-                path = token;
-            }
-
-            entries.add(path);
-        }
-        return entries.toArray(new String[entries.size()]);
-    }
-
     public void storeProperties() throws IOException {
         NbPlatform plaf = getActivePlatform();
         ModuleProperties.storePlatform(getHelper(), plaf);
@@ -260,7 +235,7 @@ public final class SuiteProperties extends ModuleProperties {
             SuiteUtils.replaceSubModules(this);
         }
         
-        if (changedDisabledModules || changedEnabledClusters) {
+        if (changedDisabledModules || changedEnabledClusters || clusterPathChanged) {
             EditableProperties ep = getHelper().getProperties("nbproject/platform.properties"); // NOI18N
             if (changedDisabledModules) {
                 String[] separated = disabledModules.clone();
@@ -297,7 +272,39 @@ public final class SuiteProperties extends ModuleProperties {
                     ep.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
                 }
             }
+            if (clusterPathChanged) {
+                ArrayList<String> cp = new ArrayList<String>();
+                ArrayList<String> cpwdc = new ArrayList<String>();
+                boolean anyDisabled = false;
+
+                for (ClusterInfo ci : clusterPath) {
+                    if (ci.isPlatformCluster()) {
+                        String cluster = ci.getClusterDir().getName();
+                        String entry = "${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}/" + SingleModuleProperties.clusterBaseName(cluster);
+                        cp.add(entry);
+                        cpwdc.add(entry);
+                    } else {
+                        String entry = PropertyUtils.relativizeFile(getProjectDirectoryFile(), ci.getClusterDir());
+                        if (ci.isEnabled()) {
+                            cp.add(entry);
+                        } else {
+                            anyDisabled = true;
+                        }
+                        cpwdc.add(entry);
+                    }
+                }
+                if (anyDisabled) {
+                    ep.setProperty(CLUSTER_PATH_WDC_PROPERTY, SuiteUtils.getAntProperty(cpwdc));
+                } else {
+                    ep.remove(CLUSTER_PATH_WDC_PROPERTY);
+                }
+                ep.setProperty(CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(cp));
+                ep.remove(ENABLED_CLUSTERS_PROPERTY);
+            }
             getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
+            changedDisabledModules = false;
+            changedEnabledClusters = false;
+            clusterPathChanged = false;
         }
         
         super.storeProperties();
@@ -311,12 +318,26 @@ public final class SuiteProperties extends ModuleProperties {
     }
 
     // TODO C.P tests once SuiteProjectGenerator.createSuiteProject generates new
+    /**
+     * Returns set of clusters.
+     * Content is read from cluster.path and cluster.path.with.disabled.clusters
+     * properties.
+     * @return Set of clusters. Set is iterable in the same order as read from properties.
+     */
     Set<ClusterInfo> getClusterPath() {
         if (clusterPath == null) {
-            clusterPath = new HashSet<ClusterInfo>();
-            String[] paths = getPathProperty(getEvaluator(), CLUSTER_PATH_PROPERTY);
-            for (String path : paths) {
-                // TODO C.P sources/javadoc, disabled ext. clusters
+            clusterPath = new LinkedHashSet<ClusterInfo>();
+            String cpp = getEvaluator().getProperty(CLUSTER_PATH_PROPERTY);
+            String[] paths = PropertyUtils.tokenizePath(cpp != null ? cpp : "");
+            String cpwdcp = getEvaluator().getProperty(CLUSTER_PATH_WDC_PROPERTY);
+            String[] pathsWDC = cpwdcp != null ? PropertyUtils.tokenizePath(cpwdcp) : null;
+            String[] wp = (pathsWDC != null) ? pathsWDC : paths;
+            Set<String> enabledPaths = new HashSet<String>();
+            if (pathsWDC != null)
+                enabledPaths.addAll(Arrays.asList(paths));
+
+            for (String path : wp) {
+                // TODO C.P sources/javadoc
                 boolean isPlaf = path.contains("${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
                 File cd = evaluateCPEntry(path);
                 FileObject fo = FileUtil.toFileObject(cd);
@@ -325,11 +346,21 @@ public final class SuiteProperties extends ModuleProperties {
                         && prj.getLookup().lookup(SuiteProvider.class) == null)
                     // probably found nbbuild above the platform, use only regular NB module projects
                     prj = null;
-                clusterPath.add(ClusterInfo.createFromCP(path, cd, prj, isPlaf));
+                boolean enabled = (pathsWDC == null) || enabledPaths.contains(path);
+                clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, enabled));
             }
         }
         return clusterPath;
     }   // TODO C.P test non-existent project clusters
+
+    void setClusterPath(ClusterInfo[] clusterPathList) {
+        Set<ClusterInfo> newClusterPath = new LinkedHashSet<ClusterInfo>(Arrays.asList(clusterPathList));
+        if (newClusterPath.equals(clusterPath))
+            return;
+        clusterPath = newClusterPath;
+        clusterPathChanged = true;
+        // TODO C.P change notifications
+    }
 
     /**
      * Converts "raw" cluster.path entry (possibly with nbplatform.active.dir,
@@ -395,6 +426,6 @@ public final class SuiteProperties extends ModuleProperties {
     public BasicBrandingModel getBrandingModel() {
         return brandingModel;
     }
-    
+
 }
 

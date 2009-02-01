@@ -52,9 +52,10 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
  */
 public final class ClusterInfo {
     private File clusterDir;
-    private String rawPath;
     private boolean isPlatformCluster;
     private Project project;
+
+    private boolean enabled;
 
     @Override
     public boolean equals(Object obj) {
@@ -74,24 +75,33 @@ public final class ClusterInfo {
         if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
             return false;
         }
+        if (this.enabled != other.enabled) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 59 * hash + (this.clusterDir != null ? this.clusterDir.hashCode() : 0);
-        hash = 59 * hash + (this.isPlatformCluster ? 1 : 0);
-        hash = 59 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 37 * hash + (this.clusterDir != null ? this.clusterDir.hashCode() : 0);
+        hash = 37 * hash + (this.isPlatformCluster ? 1 : 0);
+        hash = 37 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 37 * hash + (this.enabled ? 1 : 0);
         return hash;
+    }
+
+    /**
+     * True if cluster is enabled in Libraries customizer.
+     * Meaningful only for external clusters.
+     * @return
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public boolean isPlatformCluster() {
         return isPlatformCluster;
-    }
-
-    public String getRawPath() {
-        return rawPath;
     }
 
     public File getClusterDir() {
@@ -103,23 +113,25 @@ public final class ClusterInfo {
         this.clusterDir = clusterDir;
     }
 
-    public static ClusterInfo createFromCP(String rawPath, File evaluatedPath, Project prj, boolean isPlatformCluster) {
+    public static ClusterInfo createFromCP(File evaluatedPath, Project prj, 
+            boolean isPlatformCluster, boolean enabled) {
         ClusterInfo ret = new ClusterInfo(evaluatedPath);
-        ret.rawPath = rawPath;
         ret.isPlatformCluster = isPlatformCluster;
         ret.project = prj;
+        ret.enabled = enabled;
         return ret;
     }
 
-    public static ClusterInfo create(File clusterDir, boolean isPlatformCluster) {
+    public static ClusterInfo create(File clusterDir, boolean isPlatformCluster, boolean enabled) {
         ClusterInfo ret = new ClusterInfo(clusterDir);
         ret.isPlatformCluster = isPlatformCluster;
+        ret.enabled = enabled;
         return ret;
     }
 
     private static final String NO_NBORG_PROJECTS = "Only standalone module or suite projects allowed";
     
-    public static ClusterInfo create(Project project) {
+    public static ClusterInfo create(Project project, boolean enabled) {
         NbModuleProvider nbmp = project.getLookup().lookup(NbModuleProvider.class);
         SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
         File clusterDir;
@@ -135,6 +147,7 @@ public final class ClusterInfo {
         }
         ClusterInfo ret = new ClusterInfo(clusterDir);
         ret.project = project;
+        ret.enabled = enabled;
         return ret;
     }
 

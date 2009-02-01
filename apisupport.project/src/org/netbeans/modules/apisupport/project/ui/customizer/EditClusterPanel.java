@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerJavadoc;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerSources;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -98,7 +99,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.setVisible(true);
         ClusterInfo retVal = null;
         if (descriptor.getValue() == panel.okButton) {
-            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false);
+            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false, true);
 
         }
         dlg.dispose();
@@ -131,7 +132,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.setVisible(true);
         ClusterInfo retVal = null;
         if (descriptor.getValue() == panel.okButton) {
-            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false); // TODO C.P src & javadoc
+            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false, true); // TODO C.P src & javadoc
         }
         dlg.dispose();
         return retVal;
@@ -231,27 +232,11 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                         org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_NotValidCluster")));
             } else {
                 ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
-                String relPath = tryRelativizePath(file, FileUtil.toFile(prjDir));
+                String relPath = PropertyUtils.relativizeFile(FileUtil.toFile(prjDir), file);
                 clusterDirText.setText(relPath);
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
-
-    /**
-     * Tries to find shortest relative path from <tt>relativeTo</tt> dir
-     * that points to the same file as <tt>path</tt>. Returns
-     * <tt>path</tt> if does not succeed, e.g. when on different
-     * filesystems. Tries to climb up dirs to common root dir and descend
-     * to the other file, so the resulting path may look like:
-     *
-     * @param path Path to be relativized.
-     * @param relativeTo root dir of resulting relative path.
-     * @return
-     */
-    public static String tryRelativizePath(File path, File relativeTo) {
-        // TODO C.P path relative to prj. dir (or "Absolute path" checkbox?)
-        return path.toString();
-    }
 
     private boolean isValidCluster(File f) {
         return (new File(f, "config/Modules")).exists();

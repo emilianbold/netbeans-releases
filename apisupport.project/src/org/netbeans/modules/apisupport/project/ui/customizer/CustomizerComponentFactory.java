@@ -459,7 +459,7 @@ public final class CustomizerComponentFactory {
     
     static final class SuiteSubModulesListModel extends AbstractListModel {
         
-        private final Set<NbModuleProject> subModules;
+        private final SortedSet<NbModuleProject> subModules;
         
         private boolean changed;
         
@@ -496,7 +496,7 @@ public final class CustomizerComponentFactory {
         }
         
         public Set<NbModuleProject> getSubModules() {
-            return subModules;
+            return Collections.unmodifiableSortedSet(subModules);
         }
         
         public boolean isChanged() {

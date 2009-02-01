@@ -49,6 +49,7 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
  * @author Richard Michalsky
  */
 public final class ClusterUtils {
+
     private ClusterUtils() {
     }
 
