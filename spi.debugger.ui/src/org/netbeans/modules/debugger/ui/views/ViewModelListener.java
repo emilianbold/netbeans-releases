@@ -42,20 +42,27 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.GridBagConstraints;
+import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
+import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -88,7 +95,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private JComponent      view;
     private JComponent      buttonsPane;
     private List models = new ArrayList(11);
-    
+
+    private List<? extends SessionProvider> sessionProviders;
+    private Session currentSession;
     private List treeModels;
     private List treeModelFilters;
     private List treeExpansionModels;
@@ -103,6 +112,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private RequestProcessor rp;
 
     private List<? extends javax.swing.AbstractButton> buttons;
+    private javax.swing.JTabbedPane tabbedPane;
+    private Image viewIcon;
+    private SessionProvider providerToDisplay;
+    private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -113,12 +126,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         String viewType,
         JComponent view,
         JComponent buttonsPane,
-        String propertiesHelpID
+        String propertiesHelpID,
+        Image viewIcon
     ) {
         this.viewType = viewType;
         this.view = view;
         this.buttonsPane = buttonsPane;
         this.propertiesHelpID = propertiesHelpID;
+        this.viewIcon = viewIcon;
         setUp();
     }
     // </RAVE>
@@ -149,7 +164,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels = null;
         mm = null;
         rp = null;
+        sessionProviders = null;
+        currentSession = null;
+        providerToDisplay = null;
+        buttonsPane.removeAll();
+        buttons = null;
         view.removeAll();
+        for (ViewModelListener l : subListeners) {
+            l.destroy();
+        }
+        subListeners.clear();
     }
     
     @Override
@@ -159,23 +183,40 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-        DebuggerEngine e = dm.getCurrentEngine ();
-        ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
+        sessionProviders =      dm.lookup (viewType, SessionProvider.class);
+        if (!sessionProviders.contains(providerToDisplay)) {
+            providerToDisplay = null;
+        }
+        DebuggerEngine e;
+        ContextProvider cp;
+        String viewPath;
+        if (providerToDisplay != null) {
+            e = null;
+            cp = dm;
+            viewPath = viewType + "/" + providerToDisplay.getTypeID();
+        } else {
+            e = dm.getCurrentEngine ();
+            cp = e != null ? DebuggerManager.join(e, dm) : dm;
+            viewPath = viewType;
+        }
+
+        currentSession =        dm.getCurrentSession();
         
-        treeModels =            cp.lookup (viewType, TreeModel.class);
-        treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
-        treeExpansionModels =   cp.lookup (viewType, TreeExpansionModel.class);
-        nodeModels =            cp.lookup (viewType, NodeModel.class);
-        nodeModelFilters =      cp.lookup (viewType, NodeModelFilter.class);
-        tableModels =           cp.lookup (viewType, TableModel.class);
-        tableModelFilters =     cp.lookup (viewType, TableModelFilter.class);
-        nodeActionsProviders =  cp.lookup (viewType, NodeActionsProvider.class);
-        nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
-        columnModels =          cp.lookup (viewType, ColumnModel.class);
-        mm =                    cp.lookup (viewType, Model.class);
+        treeModels =            cp.lookup (viewPath, TreeModel.class);
+        treeModelFilters =      cp.lookup (viewPath, TreeModelFilter.class);
+        treeExpansionModels =   cp.lookup (viewPath, TreeExpansionModel.class);
+        nodeModels =            cp.lookup (viewPath, NodeModel.class);
+        nodeModelFilters =      cp.lookup (viewPath, NodeModelFilter.class);
+        tableModels =           cp.lookup (viewPath, TableModel.class);
+        tableModelFilters =     cp.lookup (viewPath, TableModelFilter.class);
+        nodeActionsProviders =  cp.lookup (viewPath, NodeActionsProvider.class);
+        nodeActionsProviderFilters = cp.lookup (viewPath, NodeActionsProviderFilter.class);
+        columnModels =          cp.lookup (viewPath, ColumnModel.class);
+        mm =                    cp.lookup (viewPath, Model.class);
         rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
 
-        buttons = cp.lookup(viewType, javax.swing.AbstractButton.class);
+        buttons = cp.lookup(viewPath, javax.swing.AbstractButton.class);
+        tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
         
         ModelsChangeRefresher mcr = new ModelsChangeRefresher();
         Customizer[] modelListCustomizers = new Customizer[] {
@@ -248,11 +289,21 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         synchronized (buttons) {
             buttonsPane.removeAll();
-            if (buttons.size() == 0) {
+            if (buttons.size() == 0 && sessionProviders.size() == 0) {
                 buttonsPane.setVisible(false);
             } else {
                 buttonsPane.setVisible(true);
                 int i = 0;
+                if (sessionProviders.size() > 0) {
+                    javax.swing.AbstractButton b = createSessionsSwitchButton();
+                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                    buttonsPane.add(b, c);
+                    i++;
+                    javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
+                    c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 0, 5, 0), 0, 0);
+                    buttonsPane.add(b, c);
+                    i++;
+                }
                 for (javax.swing.AbstractButton b : buttons) {
                     GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
                     buttonsPane.add(b, c);
@@ -260,7 +311,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 }
                 //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
                 //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
-                GridBagConstraints c = new GridBagConstraints(1, 0, 1, buttons.size() + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
+                GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
                 buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
             }
         }
@@ -283,13 +334,40 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (view.getComponentCount() > 0) {
+                    if (tabbedPane == null && view.getComponent(0) instanceof javax.swing.JTabbedPane) {
+                        view.removeAll();
+                    } else if (tabbedPane != null) {
+                        view.removeAll();
+                    }
+                }
                 if (view.getComponentCount() == 0) {
                     if (haveModels) {
                         view.add(Models.createView(newModel));
                         view.revalidate();
                         view.repaint();
+                    } else if (tabbedPane != null) {
+                        int n = tabbedPane.getTabCount();
+                        for (int i = 0; i < n; i++) {
+                            java.awt.Component c = tabbedPane.getComponentAt(i);
+                            if (c instanceof javax.swing.JLabel) {
+                                String id = ((javax.swing.JLabel) c).getText();
+                                javax.swing.JPanel contentComponent = new javax.swing.JPanel(new java.awt.BorderLayout ());
+                                subListeners.add(new ViewModelListener (
+                                    viewType + "/" + id,
+                                    contentComponent,
+                                    buttonsPane,
+                                    propertiesHelpID,
+                                    viewIcon
+                                ));
+                                tabbedPane.setComponentAt(i, contentComponent);
+                            }
+                        }
+                        view.add(tabbedPane);
+                        view.revalidate();
+                        view.repaint();
                     }
-                } else {
+                } else if (tabbedPane == null) {
                     if (!haveModels) {
                         view.removeAll();
                         view.revalidate();
@@ -307,6 +385,40 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         // </RAVE>
     }
 
+    private javax.swing.JButton createSessionsSwitchButton() {
+        final javax.swing.JButton b = new javax.swing.JButton(new ImageIcon(viewIcon));
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == b) {
+                    javax.swing.JPopupMenu m = new javax.swing.JPopupMenu();
+                    if (currentSession != null) {
+                        JMenuItem mi = new JMenuItem(currentSession.getName());
+                        mi.putClientProperty("SESSION", currentSession);
+                        mi.addActionListener(this);
+                        m.add(mi);
+                    }
+                    for (SessionProvider sp : sessionProviders) {
+                        JMenuItem mi = new JMenuItem(sp.getSessionName());
+                        mi.putClientProperty("SESSION", sp);
+                        mi.addActionListener(this);
+                        m.add(mi);
+                    }
+                    m.setVisible(true);
+                } else {
+                    JMenuItem mi = (JMenuItem) e.getSource();
+                    Object s = mi.getClientProperty("SESSION");
+                    synchronized (ViewModelListener.this) {
+                        if (s instanceof Session) {
+                            providerToDisplay = null;
+                        } else {
+                            providerToDisplay = (SessionProvider) s;
+                        }
+                    }
+                }
+            }
+        });
+        return b;
+    }
     
     // innerclasses ............................................................
 

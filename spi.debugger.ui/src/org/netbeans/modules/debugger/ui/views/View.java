@@ -127,7 +127,8 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             name,
             contentComponent,
             buttonsPane,
-            propertiesHelpID
+            propertiesHelpID,
+            getIcon()
         );
         // </RAVE>
     }
