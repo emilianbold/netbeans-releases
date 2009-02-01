@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,12 +34,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import junit.framework.Test;
@@ -53,8 +52,10 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Tests for New REST from Patterns wizard
@@ -328,8 +329,9 @@ public class PatternsTest extends RestTestBase {
                     try {
                         FileObject x = getProject().getProjectDirectory();
                         FileObject y = FileUtil.createFolder(x.getFileObject("src/java"), getRestPackage().replace('.', '/'));
-                        FileUtil.moveFile(x.getFileObject("web/GenericResource.java"), y, "GenericResource");
-                    } catch (IOException ioe) {
+                        FileObject r = FileUtil.moveFile(x.getFileObject("web/GenericResource.java"), y, "GenericResource");
+                        DataObject.find(r).getCookie(EditCookie.class).edit();
+                    } catch (Exception e) {
                         throw new AssertionError("Is IZ#155125 fixed?");
                     }
 
