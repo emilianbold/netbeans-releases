@@ -44,11 +44,13 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.Report;
+import org.netbeans.modules.gsf.testrunner.api.Locator;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -56,13 +58,15 @@ import org.openide.util.NbBundle;
  */
 public final class RubyTestsuiteNode extends TestsuiteNode {
 
-    public RubyTestsuiteNode(Report report, boolean filtered) {
-        super(report, filtered);
+    public RubyTestsuiteNode(String suiteName, boolean filtered) {
+        super(null, suiteName, filtered, Lookups.singleton(new Locator() {
+
+            public void jumpToSource(Node node) {
+                node.getPreferredAction().actionPerformed(null);
+            }
+        }));
     }
 
-    public RubyTestsuiteNode(String suiteName, boolean filtered) {
-        super(suiteName, filtered);
-    }
 
     private Testcase getFirstTestCase() {
         return report.getTests().isEmpty() ? null : report.getTests().iterator().next();

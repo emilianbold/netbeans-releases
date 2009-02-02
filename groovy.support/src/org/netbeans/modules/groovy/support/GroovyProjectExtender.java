@@ -62,6 +62,7 @@ import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -77,6 +78,8 @@ import org.openide.util.MutexException;
  * 
  * @author Martin Adamek
  */
+@ProjectServiceProvider(service={GroovyFeature.class, GroovyProjectExtender.class},
+projectType="org-netbeans-modules-java-j2seproject")
 public class GroovyProjectExtender implements GroovyFeature {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
@@ -91,7 +94,7 @@ public class GroovyProjectExtender implements GroovyFeature {
     private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
     private GroovyCustomizerPanel panel;
     
-    GroovyProjectExtender(Project project) {
+    public GroovyProjectExtender(Project project) {
         this.project = project;
     }
 

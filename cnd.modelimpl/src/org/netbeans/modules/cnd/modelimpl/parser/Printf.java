@@ -49,7 +49,7 @@ public class Printf {
 
     // TODO: it may be easier to use System.out.printf
     public static void printf(String pattern, Object[] args) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int from = 0;
         int pos = pattern.indexOf('%');
         int argNumber = 0;

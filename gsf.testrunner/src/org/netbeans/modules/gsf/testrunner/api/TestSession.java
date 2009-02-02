@@ -46,14 +46,14 @@ import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
 import org.openide.util.Parameters;
 
 /**
- * Represents a test session, i.e. a single run of a test suite.
+ * Represents a test session, i.e. a single run of tests (e.g. all the tests
+ * in the project, a single suite, a single test case etc).
  *
  * @author Erno Mononen
  */
 public class TestSession {
 
     public enum SessionType {
-
         TEST,
         DEBUG
     }
@@ -64,8 +64,15 @@ public class TestSession {
     
     private final FileLocator fileLocator;
     private final SessionType sessionType;
+    /**
+     * The name of this session. Will be used as the display 
+     * name for the output tab.
+     */
     private final String name;
     private final SessionResult result;
+    /**
+     * The project where this session is invoked.
+     */
     private final Project project;
     /**
      * The suites that were executed.
@@ -88,11 +95,27 @@ public class TestSession {
      */
     private RerunHandler rerunHandler;
 
+    /**
+     * Constructs a new session.
+     * 
+     * @param name the name for the session.
+     * @param project the project where the session is invoked.
+     * @param sessionType the type of the session.
+     */
     public TestSession(String name, Project project, SessionType sessionType) {
         this(name, project, sessionType, new DefaultTestRunnerNodeFactory());
     }
 
+    /**
+     * Constructs a new session.
+     *
+     * @param name the name for the session.
+     * @param project the project where the session is invoked.
+     * @param sessionType the type of the session.
+     * @param nodeFactory the node factory for this session.
+     */
     public TestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
+        Parameters.notNull("name", name);
         Parameters.notNull("project", project);
         Parameters.notNull("nodeFactory", nodeFactory);
         this.name = name;
@@ -107,11 +130,19 @@ public class TestSession {
         return nodeFactory;
     }
 
+    /**
+     * @return the handler for this session or <code>null</code>.
+     */
     public RerunHandler getRerunHandler() {
         return rerunHandler;
     }
 
+    /**
+     * Sets the rerun handler for this session.
+     * @param rerunHandler
+     */
     public void setRerunHandler(RerunHandler rerunHandler) {
+        Parameters.notNull("rerunHandler", rerunHandler);
         this.rerunHandler = rerunHandler;
     }
 
@@ -129,10 +160,17 @@ public class TestSession {
         return startingMsg;
     }
 
+    /**
+     * @return the project where this session for invoked.
+     */
     public Project getProject() {
         return project;
     }
 
+    /**
+     * @return the currently running test case or <code>null</code>
+     * if there is no test case running.
+     */
     public Testcase getCurrentTestCase() {
         if (getCurrentSuite() == null) {
             return null;
@@ -149,7 +187,14 @@ public class TestSession {
         return all;
     }
 
+    /**
+     * Adds the given suite to this session. The lastly added
+     * suite is considered as the currently running one (see {@link #getCurrentSuite() }.
+     * 
+     * @param suite the suite to add.
+     */
     public void addSuite(TestSuite suite) {
+        Parameters.notNull("suite", suite);
         if (!output.isEmpty() && getCurrentSuite() != null) {
             Testcase testcase = getCurrentSuite().getLastTestCase();
             if (testcase != null) {
@@ -190,6 +235,10 @@ public class TestSession {
         getCurrentSuite().addTestcase(testCase);
     }
 
+    /**
+     * @return the suite that is currently running or <code>null</code> if 
+     * no suite is running.
+     */
     public TestSuite getCurrentSuite() {
         return testSuites.isEmpty() ? null : testSuites.get(testSuites.size() -1);
     }
@@ -225,6 +274,9 @@ public class TestSession {
         result.errors(report.getErrors());
     }
 
+    /**
+     * @return the type of this session.
+     */
     public SessionType getSessionType() {
         return sessionType;
     }
@@ -237,14 +289,20 @@ public class TestSession {
         return fileLocator;
     }
 
+    /**
+     * @return the name of this session.
+     * @see #name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the complete results for this session.
+     */
     public SessionResult getSessionResult() {
         return result;
     }
-
 
     /**
      * The results for the whole session, i.e. the cumulative result 

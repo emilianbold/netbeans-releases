@@ -55,6 +55,7 @@ public class ProductsConverter {
             items = new ArrayList<ProductConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (Product entity : entities) {
                 items.add(new ProductConverter(entity, uri, expandLevel, true));
             }

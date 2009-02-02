@@ -64,10 +64,10 @@ public class MeasureJ2SEDialogsTest {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AboutDialogTest.class)
         .addTest(AddJDBCDriverDialogTest.class)
         .addTest(AddProfilingPointWizardTest.class)
-        .addTest(AddServerInstanceDialogTest.class)
+        // tb moved to j2ee .addTest(AddServerInstanceDialogTest.class)
         .addTest(AttachDialogTest.class)
         .addTest(CompareMemorySnapshotsDialogTest.class)
-        .addTest(CreateTestsDialogTest.class)
+        // needs to be fixed .addTest(CreateTestsDialogTest.class)
         .addTest(DeleteFileDialogTest.class)
         .addTest(DocumentsDialogTest.class)
         .addTest(FavoritesWindowTest.class)
@@ -75,7 +75,7 @@ public class MeasureJ2SEDialogsTest {
         .addTest(FindInProjectsTest.class)
         .addTest(GotoLineDialogTest.class)
         .addTest(HelpContentsWindowTest.class)
-        .addTest(HttpMonitorWindowTest.class)
+        // tb moved to j2ee .addTest(HttpMonitorWindowTest.class)
         .addTest(InternationalizeDialogTest.class)
         .addTest(JavaPlatformManagerTest.class)
         .addTest(JavadocIndexSearchTest.class)
@@ -100,11 +100,11 @@ public class MeasureJ2SEDialogsTest {
         .addTest(RefactorRenameDialogTest.class)
         .addTest(RuntimeWindowTest.class)
         .addTest(SelectProfilingTaskDialogTest.class)
-        .addTest(ServerManagerTest.class)
+        // tb moved to j2ee .addTest(ServerManagerTest.class)
         .addTest(TemplateManagerTest.class)
         // needs to be fixed .addTest(ToDoWindowTest.class)
         .addTest(VersioningWindowTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]").reuseUserDir(true)));
   
         return suite;
     }

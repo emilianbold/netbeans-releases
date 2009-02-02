@@ -44,6 +44,7 @@ package org.netbeans.modules.xml.text.dom;
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.AbstractNode;
 import org.netbeans.modules.xml.spi.dom.NodeListImpl;
 import org.w3c.dom.Element;
@@ -63,13 +64,13 @@ import org.w3c.dom.Text;
  */
 public class Attr extends AbstractNode implements org.w3c.dom.Attr {
     
-    private Token first;
+    private Token<XMLTokenId> first;
     
     private Element parent;
     
     private XMLSyntaxSupport syntax;  // that produced us
     
-    Attr(XMLSyntaxSupport syntax, Token first, Element parent) {
+    Attr(XMLSyntaxSupport syntax, Token<XMLTokenId> first, Element parent) {
         this.parent = parent;
         this.first = first;
         this.syntax = syntax;

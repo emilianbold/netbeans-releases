@@ -130,7 +130,9 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         if (!isValidToken(jumpToken)) {
             return false;
         }
-        String name = jumpToken.text().toString();
+        //String name = jumpToken.text().toString();
+        StringBuilder buf = new StringBuilder(jumpToken.text());
+        String name = buf.toString();
         String msg = NbBundle.getBundle(CsmCompletionUtils.class).getString(msgKey); //NOI18N
         msg = MessageFormat.format(msg, new Object[]{name});
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);//NOI18N
@@ -153,7 +155,8 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
                 name = itemDesc;
             } else {
                 key = "cannot-open-csm-element";// NOI18N
-                name = jumpToken.text().toString();
+                StringBuilder buf = new StringBuilder(jumpToken.text());
+                name = buf.toString();
             }
 
             String msg = NbBundle.getBundle(CsmCompletionUtils.class).getString(key);

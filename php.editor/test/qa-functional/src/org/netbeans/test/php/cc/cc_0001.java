@@ -307,10 +307,30 @@ public class cc_0001 extends cc
 
     EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
     eoPHP.setCaretPosition( "*/", false );
+    //TypeCode( eoPHP, "$" );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    Sleep( 5000 );
     CompletionInfo jCompl = GetCompletion( );
-    jCompl.listItself.clickOnItem( "$GLOBALS" );
+    Sleep( 5000 );
+
+    Timeouts t =  jCompl.listItself.getTimeouts( );
+    //t.print( System.out );
+    long lBack1 = t.getTimeout( "JScrollBarOperator.OneScrollClickTimeout" );
+    long lBack2 = t.getTimeout( "JScrollBarOperator.WholeScrollTimeout" );
+    t.setTimeout( "JScrollBarOperator.OneScrollClickTimeout", 6000000 );
+    t.setTimeout( "JScrollBarOperator.WholeScrollTimeout", 6000000 );
+    jCompl.listItself.setTimeouts( t );
+
+    System.out.println( "==== go to click on item ====" );
+    jCompl.listItself.clickOnItem( "$GLOBALS", new CFulltextStringComparator( ) );
+    //jCompl.listItself.pressKey( KeyEvent.VK_DOWN );
+    System.out.println( "=== check done ===" );
+
+    t.setTimeout( "JScrollBarOperator.OneScrollClickTimeout", lBack1 );
+    t.setTimeout( "JScrollBarOperator.WholeScrollTimeout", lBack2 );
+    jCompl.listItself.setTimeouts( t );
+
+
     //try{ Dumper.dumpAll( "c:\\dump.txt" ); } catch( IOException ex ) { }
     WindowOperator jdDoc = new WindowOperator( 1 );
     JEditorPaneOperator jeEdit = new JEditorPaneOperator( jdDoc );
@@ -335,6 +355,7 @@ public class cc_0001 extends cc
       }
     }
     //jCompl.hideAll( );
+    //Backit( eoPHP, 1 );
 
     endTest( );
   }
@@ -342,6 +363,15 @@ public class cc_0001 extends cc
   public void Verify_documentation_hints_for_keywords( )
   {
     startTest( );
+
+    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
+    //eoPHP.setCaretPosition( "*/", false );
+    //TypeCode( eoPHP, "ext" );
+    //eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
+    //Sleep( 5000 );
+    //CompletionInfo jCompl = GetCompletion( );
+    //System.out.println( "==== go to click on item ====" );
+    //Sleep( 5000 );
 
     CompletionInfo jCompl = GetCompletion( );
 
@@ -377,6 +407,7 @@ public class cc_0001 extends cc
       }
     }
     jCompl.hideAll( );
+    //Backit( eoPHP, 3 );
 
     endTest( );
   }
@@ -536,6 +567,41 @@ public class cc_0001 extends cc
     eoPHP_2.typeKey( ' ', InputEvent.CTRL_MASK );
     Sleep( 1000 );
 
+
+    // Check code completion list
+    try
+    {
+      CompletionInfo completionInfo = GetCompletion( );
+      if( null == completionInfo )
+        fail( "NPE instead of competion info." );
+      // Magic CC number for complete list
+      if(
+          SLASHSTAR_COMPLETION_LIST != completionInfo.listItems.size( )
+        )
+      {
+        fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
+      }
+
+      // Check some completions
+      String[] asCompletions =
+      {
+        "AppendIterator",
+        "Countable",
+        "DOMAttr",
+        "PDORow",
+        "ZipArchive",
+        "tidy"
+      };
+      CheckCompletionItems( completionInfo.listItself, asCompletions );
+      completionInfo.listItself.hideAll( );
+    }
+    catch( Exception ex )
+    {
+      ex.printStackTrace( System.out );
+      fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
+    }
+
+    /*
     CompletionJListOperator jList = new CompletionJListOperator( );
     List lm = null;
     try
@@ -549,9 +615,10 @@ public class cc_0001 extends cc
     Object o = lm.get( 0 );
     if( !o.toString( ).contains( "No suggestions" ) )
       fail( "Completion should not work for /* comments." );
+    */
 
     // Cleanup
-    jList.hideAll( );
+    //jList.hideAll( );
 
     endTest( );
   }

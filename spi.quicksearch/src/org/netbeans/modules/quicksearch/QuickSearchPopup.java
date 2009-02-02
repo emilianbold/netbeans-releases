@@ -68,7 +68,7 @@ import org.openide.util.TaskListener;
 public class QuickSearchPopup extends javax.swing.JPanel 
         implements ListDataListener, ActionListener, TaskListener, Runnable {
 
-    private QuickSearchComboBar comboBar;
+    private AbstractQuickSearchComboBar comboBar;
 
     private ResultsModel rModel;
 
@@ -93,7 +93,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private Task evalTask;
 
     /** Creates new form SilverPopup */
-    public QuickSearchPopup (QuickSearchComboBar comboBar) {
+    public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
         rModel = ResultsModel.getInstance();

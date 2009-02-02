@@ -157,12 +157,11 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
         replace.push();
         Utilities.takeANap(100);
         
-        // this section was added due to bug, when fixed,should be deleted
-//        NbDialogOperator omyl = new NbDialogOperator("Question");
-//        JButtonOperator rescan = new JButtonOperator(omyl,"rescan");
-//        rescan.push();
-//        Utilities.takeANap(100);
-//        replace.push();
+        NbDialogOperator omyl = new NbDialogOperator("Question");
+        JButtonOperator rescan = new JButtonOperator(omyl,"rescan");
+        rescan.push();
+        Utilities.takeANap(100);
+        replace.push();
         
         // Close Find/Replace dialog
         Utilities.takeANap(100);

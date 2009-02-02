@@ -53,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -104,9 +105,9 @@ public class CatalogNodeProvider extends NodeProvider {
                                 if (catalog.getName() != null || oneCatalog) {
 
                                     boolean use = true;
-                                    if (defaultCatalog != null) {
-                                        use = defaultCatalog.equals(catalog.getName());
-                                    }
+                                    //if (defaultCatalog != null) {
+                                    //    use = defaultCatalog.equals(catalog.getName());
+                                    //}
 
                                     if (use) {
                                         MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
@@ -132,6 +133,7 @@ public class CatalogNodeProvider extends NodeProvider {
                     }
                 );
             } catch (MetadataModelException e) {
+                Exceptions.printStackTrace(e);
             }
         } else if (!isConnected) {
            setNodes(newList);

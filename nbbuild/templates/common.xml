@@ -340,7 +340,10 @@ made subject to such option by the copyright holder.
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>
-                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="modules/ext/updater.jar"/>
+                </pathfileset>
             </updaterjar>
         </makenbm>
     </target>
@@ -486,7 +489,7 @@ made subject to such option by the copyright holder.
                           extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/> <!-- for pre-7.0 and NB.org projects -->
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
                 <!-- XXX this will not be right on Macs: -->
                 <replacement dir="${nbjdk.home}/jre" name="java.home"/>
@@ -804,6 +807,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
+	<delete file="${netbeans.dest.dir}/${module.cluster.name}.built" failonerror="false"/>
     </target>
     <target name="test-clean" depends="basic-init,files-init">
         <macrodef name="test-clean">

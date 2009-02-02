@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -52,6 +53,8 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -95,38 +98,97 @@ public class CreateCopyAction extends ContextAction {
         
         Context ctx = getContext(nodes);
 
-        File root = SvnUtils.getActionRoot(ctx);
-        if(root == null) return;
+        final File[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) return;
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
-        final boolean hasChanges = files.length > 0; 
+        File interestingFile;
+        if(roots.length == 1) {
+            interestingFile = roots[0];
+        } else {
+            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+        }
+
         final SVNUrl repositoryUrl; 
         final SVNUrl fileUrl;        
         try {            
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root); 
-            fileUrl = SvnUtils.getRepositoryUrl(root);        
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(interestingFile); // XXX
+            fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
-        
-        final CreateCopy createCopy = new CreateCopy(repositoryFile, root, hasChanges);
-        
-        if(createCopy.showDialog()) {
-            // XXX don't close dialog if error occures!
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
-                public void perform() {
-                    performCopy(createCopy, this);
-                }
-            };
-            support.start(createRequestProcessor(nodes));
-        }
+
+        final RequestProcessor rp = createRequestProcessor(nodes);
+        final boolean hasChanges = files.length > 0;
+        final CreateCopy createCopy = new CreateCopy(repositoryFile, interestingFile, hasChanges);
+
+        performCopy(createCopy, rp, nodes, roots);
     }
 
-    private void performCopy(CreateCopy createCopy, SvnProgressSupport support) {
+    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+        rp.post(new Runnable() {
+            public void run() {
+                if (createCopy.showDialog()) {
+                    String errorText = validateTargetPath(createCopy);
+                    if (errorText == null) {
+                        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                            public void perform() {
+                                performCopy(createCopy, this, roots);
+                            }
+                        };
+                        support.start(createRequestProcessor(nodes));
+                    } else {
+                        SvnClientExceptionHandler.annotate(errorText);
+                        createCopy.setErrorText(errorText);
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                performCopy(createCopy, rp, nodes, roots);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    private String validateTargetPath(CreateCopy createCopy) {
+        String errorText = null;
+        try {
+            RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();
+            SvnClient client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            ISVNInfo info = null;
+            try {
+                info = client.getInfo(toRepositoryFile.getFileUrl());
+            } catch (SVNClientException e) {
+                if (!SvnClientExceptionHandler.isWrongUrl(e.getMessage())) {
+                    throw e;
+                }
+            }
+            if (info != null) {
+                errorText = NbBundle.getMessage(CreateCopyAction.class, "MSG_CreateCopy_Target_Exists");     // NOI18N
+            }
+        } catch (SVNClientException ex) {
+            errorText = null;
+        }
+        return errorText;
+    }
+
+    /**
+     * Performs a copy given by the CreateCopy controller. If a local file has to copied
+     * and there is more then one file in roots then a copy is created for each one of them.
+     *
+     * @param createCopy
+     * @param support
+     * @param roots
+     */
+    private void performCopy(CreateCopy createCopy, SvnProgressSupport support, File[] roots) {
+        if (roots == null) {
+            return;
+        }
         RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
-        
+
         try {                
             SvnClient client;
             try {
@@ -138,50 +200,44 @@ public class CreateCopyAction extends ContextAction {
 
             if(!toRepositoryFile.isRepositoryRoot()) {
                 SVNUrl folderToCreate = toRepositoryFile.removeLastSegment().getFileUrl();
-                ISVNInfo info = null;
                 try{
-                    info = client.getInfo(folderToCreate);                                                                
+                    client.getInfo(folderToCreate);                                                                
                 } catch (SVNClientException ex) {                                
                     if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) { 
                         throw ex;
                     }
-                }            
-
-                if(support.isCanceled()) {
-                    return;
                 }
-
-                if(info == null) {
-                    client.mkdir(folderToCreate,
-                                 true, 
-                                 "[Netbeans SVN client generated message: create a new folder for the copy]: '\n" + createCopy.getMessage() + "\n'"); // NOI18N
-                } else {
-                    if(createCopy.getLocalFile().isFile()) {
-                        // we are copying a file to a destination which already exists. Even if it's a folder - we don't use the exactly same
-                        // as the commandline svn client:
-                        // - the remote file specified in the GUI has to be exactly the file which has to be created at the repository.
-                        // - if the destination is an existent folder the file won't be copied into it, as the svn client would do.
-                        throw new SVNClientException("File allready exists");                                                             
-                    } else {
-                        // XXX warnig: do you realy want to? could be already a project folder!
-                    }
-                }                           
-            }                        
+            }
 
             if(support.isCanceled()) {
                 return;
             }
 
             if(createCopy.isLocal()) {
-                client.copy(createCopy.getLocalFile(), 
-                            toRepositoryFile.getFileUrl(), 
-                            createCopy.getMessage());            
-            } else {               
-                RepositoryFile fromRepositoryFile = createCopy.getFromRepositoryFile();                
-                client.copy(fromRepositoryFile.getFileUrl(), 
-                            toRepositoryFile.getFileUrl(), 
-                            createCopy.getMessage(), 
-                            fromRepositoryFile.getRevision());
+                if(roots.length == 1) {
+                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
+                } else {
+                    // more roots => copying a multifile dataobject - see getActionRoots(ctx)
+                    for (File root : roots) {
+                        SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
+                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
+                    }
+                }
+            } else {
+                if(roots.length == 1) {
+                    RepositoryFile fromRepositoryFile = createCopy.getFromRepositoryFile();
+                    client.copy(fromRepositoryFile.getFileUrl(),
+                            toRepositoryFile.getFileUrl(),
+                            createCopy.getMessage(),
+                            fromRepositoryFile.getRevision(), true);
+                } else {
+                    // more roots => copying a multifile dataobject - see getActionRoots(ctx)
+                    for (File root : roots) {
+                        SVNUrl fromUrl = SvnUtils.getRepositoryRootUrl(root).appendPath(SvnUtils.getRepositoryPath(root));
+                        SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
+                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, true);
+                    }
+                }
             }                            
             
             if(support.isCanceled()) {
@@ -189,11 +245,23 @@ public class CreateCopyAction extends ContextAction {
             }
 
             if(createCopy.switchTo()) {
-                SwitchToAction.performSwitch(toRepositoryFile, createCopy.getLocalFile(), support);
+                if(roots != null && roots.length > 1) {
+                    // more roots menas we copyied a multifile dataobject - see getActionRoots(ctx)
+                    // lets also switch all of them
+                    for (File file : roots) {
+                        SwitchToAction.performSwitch(getToRepositoryFile(toRepositoryFile, file), file, support);
+                    }
+                } else {
+                    SwitchToAction.performSwitch(toRepositoryFile, createCopy.getLocalFile(), support);
+                }
             }            
-
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }
     }
+
+    private RepositoryFile getToRepositoryFile(RepositoryFile toRepositoryFile, File file) {
+        return toRepositoryFile.replaceLastSegment(file.getName(), 0);
+    }
+
 }

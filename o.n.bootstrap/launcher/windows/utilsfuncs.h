@@ -52,7 +52,7 @@ bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueN
 bool getDwordFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, DWORD &value);
 bool dirExists(const char *path);
 bool fileExists(const char *path);
-bool normalizePath(char *path);
+bool normalizePath(char *path, int len);
 bool createPath(const char *path);
 char * getCurrentModulePath(char *path, int pathLen);
 char * skipWhitespaces(char *str);
@@ -60,7 +60,8 @@ char * trimWhitespaces(char *str);
 void logMsg(const char *format, ...);
 void logErr(bool appendSysError, bool showMsgBox, const char *format, ...);
 bool checkLoggingArg(int argc, char *argv[], bool delFile);
-bool setUpProcess(int &argc, char *argv[]);
+bool setUpProcess(int &argc, char *argv[], const char *attachMsg = 0);
+bool printToConsole(const char *msg);
 
 #endif	/* _UTILSFUNCS_H */
 

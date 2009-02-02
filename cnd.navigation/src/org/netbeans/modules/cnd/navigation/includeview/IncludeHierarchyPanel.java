@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.awt.Mnemonics;
@@ -350,7 +351,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
         
     public void setFile(CsmFile file){
-        object = file.getUID();
+        object = UIDs.get(file);
         if (file.isHeaderFile()) {
             recursive = false;
             plain = true;

@@ -47,8 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,6 +72,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -255,44 +255,37 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
     }
 
     private static void writeLibraryDefinition (final FileObject definitionFile, final LibraryImplementation library, final LibraryTypeProvider libraryTypeProvider) throws IOException {
-        FileLock lock = null;
-        PrintWriter out = null;
-        try {
-            lock = definitionFile.lock();
-            out = new PrintWriter(new OutputStreamWriter(definitionFile.getOutputStream (lock),"UTF-8"));
-            // XXX use DOM and XMLUtil.write instead
-            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
-            out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
-            out.println("<library version=\"1.0\">");       			//NOI18N
-            out.println("\t<name>"+library.getName()+"</name>");        //NOI18N
-            out.println("\t<type>"+library.getType()+"</type>");            
-            String description = library.getDescription();
-            if (description != null && description.length() > 0) {
-                out.println("\t<description>"+description+"</description>");   //NOI18N
-            }
-            String localizingBundle = library.getLocalizingBundle();
-            if (localizingBundle != null && localizingBundle.length() > 0) {
-                out.println("\t<localizing-bundle>"+XMLUtil.toElementContent(localizingBundle)+"</localizing-bundle>");   //NOI18N
-            }
-            String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
-            for (String vtype : volumeTypes) {
-                out.println("\t<volume>");      //NOI18N
-                out.println ("\t\t<type>" + vtype + "</type>");   //NOI18N
-                List<URL> volume = library.getContent(vtype);
-                if (volume != null) {
-                    //If null -> broken library, repair it.
-                    for (URL url : volume) {
-                        out.println("\t\t<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
-                    }
+        Document doc = XMLUtil.createDocument("library", null,
+                "-//NetBeans//DTD Library Declaration 1.0//EN",
+                "http://www.netbeans.org/dtds/library-declaration-1_0.dtd"); // NOI18N
+        Element libraryE = doc.getDocumentElement();
+        libraryE.setAttribute("version", "1.0"); // NOI18N
+        libraryE.appendChild(doc.createElement("name")).appendChild(doc.createTextNode(library.getName())); // NOI18N
+        libraryE.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(library.getType())); // NOI18N
+        String description = library.getDescription();
+        if (description != null && description.length() > 0) {
+            libraryE.appendChild(doc.createElement("description")).appendChild(doc.createTextNode(description)); // NOI18N
+        }
+        String localizingBundle = library.getLocalizingBundle();
+        if (localizingBundle != null && localizingBundle.length() > 0) {
+            libraryE.appendChild(doc.createElement("localizing-bundle")).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
+        }
+        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
+            Element volumeE = (Element) libraryE.appendChild(doc.createElement("volume")); // NOI18N
+            volumeE.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(vtype)); // NOI18N
+            List<URL> volume = library.getContent(vtype);
+            if (volume != null) {
+                //If null -> broken library, repair it.
+                for (URL url : volume) {
+                    volumeE.appendChild(doc.createElement("resource")).appendChild(doc.createTextNode(url.toString())); // NOI18N
                 }
-                out.println("\t</volume>");     //NOI18N
             }
-            out.println("</library>");  //NOI18N
+        }
+        OutputStream os = definitionFile.getOutputStream();
+        try {
+            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
         } finally {
-            if (out !=  null)
-                out.close();
-            if (lock != null)
-                lock.releaseLock();
+            os.close();
         }
     }
 

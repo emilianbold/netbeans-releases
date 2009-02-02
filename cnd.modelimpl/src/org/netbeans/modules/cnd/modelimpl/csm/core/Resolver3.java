@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
@@ -219,11 +220,11 @@ public class Resolver3 implements Resolver {
         CsmNamespace ns = CsmBaseUtilities.getClassNamespace(out);
         CsmClassifier cls = null;
         if (ns != null) {
-            CsmUID uid = out.getUID();
+            CsmUID uid = UIDs.get(out);
             CharSequence fqn = out.getQualifiedName();
             for (CsmDeclaration decl : ns.getDeclarations()) {
                 if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
-                    if (!decl.getUID().equals(uid)) {
+                    if (!UIDs.get(decl).equals(uid)) {
                         cls = (CsmClassifier)decl;
                         if (!isForwardClass(cls)) {
                             break;

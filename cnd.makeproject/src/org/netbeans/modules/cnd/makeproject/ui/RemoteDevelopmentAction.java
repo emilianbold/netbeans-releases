@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -124,7 +125,10 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         managePlatformsItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                Lookup.getDefault().lookup(ServerList.class).show(null, true);
+                ToolsCacheManager cacheManager = new ToolsCacheManager();
+                if (Lookup.getDefault().lookup(ServerList.class).show(cacheManager)) {
+                    cacheManager.applyChanges();
+                }
             }
         });
     }
@@ -136,7 +140,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 JMenuItem jmi = (JMenuItem) e.getSource();
                 String hkey = (String) jmi.getClientProperty(HOST_KEY);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
-                if (mconf != null && hkey!=null) {
+                if (mconf != null && hkey != null) {
                     DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(hkey);
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));

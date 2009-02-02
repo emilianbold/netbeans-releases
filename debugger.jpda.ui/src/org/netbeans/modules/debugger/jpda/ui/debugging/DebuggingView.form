@@ -91,6 +91,7 @@
         </Component>
         <Container class="javax.swing.JPanel" name="leftPanel1">
           <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[8, 0]"/>
             </Property>
@@ -109,6 +110,7 @@
         </Container>
         <Container class="javax.swing.JPanel" name="rightPanel1">
           <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[24, 0]"/>
             </Property>

@@ -62,6 +62,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -87,6 +88,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Martin Adamek
  */
+@ProjectServiceProvider(service=ActionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
 public class GroovyActionProvider implements ActionProvider {
 
     // from J2SEProjectProperties

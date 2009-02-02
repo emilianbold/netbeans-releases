@@ -289,7 +289,9 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     protected int getWidth(String s, Font font) {
-        if (font == null) return getWidth(s);
+        if (font == null) {
+            return getWidth(s);
+        }
         return getFontMetrics(font).stringWidth(s);
     }
     
@@ -331,8 +333,9 @@ public abstract class CsmPaintComponent extends JPanel {
         if (i != null) {
             drawState.drawX += i.right;
         }
-        if (drawState.drawX > getMaximumSize().width)
+        if (drawState.drawX > getMaximumSize().width) {
             drawState.drawX = getMaximumSize().width;
+        }
         return new Dimension(drawState.drawX, drawState.drawHeight);
     }
     
@@ -745,7 +748,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class MacroPaintComponent extends CsmPaintComponent{
-        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.USER_MACRO);//Color.green.darker().darker();
+        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.DEFINED_MACRO);//Color.green.darker().darker();
         private Color MACRO_PARAMETER_NAME_COLOR = new Color(163, 102, 10);//Color.magenta.darker();
         private List params = null;
         private String name;
@@ -1224,13 +1227,15 @@ public abstract class CsmPaintComponent extends JPanel {
         @Override
         public void setFont(Font font) {
             super.setFont(font);
-            if (comp != null)
-                 comp.setFont(font);
+            if (comp != null) {
+                comp.setFont(font);
+            }
         }
         
         public String toString() {
-            if (comp != null)
+            if (comp != null) {
                 return comp.toString();
+            }
             return "";
         }    
     } 

@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
  * @author gordonp
  * @author Alexey Vladykin
  */
-public class VersionCommand {
+/*package-local*/ final class VersionCommand {
 
     private final Tool tool;
     private final String path;

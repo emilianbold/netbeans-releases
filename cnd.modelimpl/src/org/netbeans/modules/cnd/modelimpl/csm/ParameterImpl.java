@@ -47,29 +47,20 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements CsmParameter
  * @author Vladimir Kvashin
  */
-public final class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
-    private final boolean varArg;
+public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
     public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope) {
         super(ast, file, type, name, scope, false);
-        varArg = ast.getType() == CPPTokenTypes.ELLIPSIS;
     }
 
     public boolean isVarArgs() {
-        return varArg;
+        return false;
     }
-    
-    @Override
-    public CharSequence getDisplayText() {
-	return isVarArgs() ? "..." : super.getDisplayText(); //NOI18N
-    }
-    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
@@ -77,7 +68,6 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);      
-        output.writeBoolean(this.varArg);
         // write UID for unnamed parameter
         if (getName().length() == 0) {
             super.writeUID(output);
@@ -86,7 +76,6 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
     
     public ParameterImpl(DataInput input) throws IOException {
         super(input);
-        this.varArg = input.readBoolean();
         // restore UID for unnamed parameter
         if (getName().length() == 0) {
             super.readUID(input);

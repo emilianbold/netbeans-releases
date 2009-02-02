@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -56,13 +56,10 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -285,7 +282,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             for (CsmMember elm : c.getMembers()) {
                 if (CsmKindUtilities.isMethod(elm)) {
                     @SuppressWarnings("unchecked")
-                    CsmMethod<CsmMethod> m = (CsmMethod<CsmMethod>) elm;
+                    CsmMethod m = (CsmMethod) elm;
                     if (name.contentEquals(m.getName())
                             && compareParams(params, m.getParameters())
                             /*&& isAccessible(clazz, m)*/) {
@@ -333,51 +330,6 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         }
         return false;
     }
-    
-    /**
-     * Removes the class field prefix from  the identifer of a field.
-     * For example, if the class field prefix is "_", the identifier "_name" 
-     * is stripped to become "name".
-     * @param identifierString The identifer to strip.
-     * @return The stripped identifier.
-     */
-    private static String stripPrefix(String identifierString){
-        String stripped;
-        if(identifierString.startsWith(CLASS_FIELD_PREFIX) && identifierString.length() > 1){
-            stripped = identifierString.substring(CLASS_FIELD_PREFIX.length());
-        }
-        else{
-             stripped = identifierString;
-        }
-        return stripped;
-    }
-    
-    private static StringBuilder getCapitalizedName(CsmField field) {
-        StringBuilder name = new StringBuilder(stripPrefix(field.getName().toString()));
-        
-        name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
-        return name;
-    }
-    
-    
-    public static String computeSetterName(CsmField field) {
-        StringBuilder name = getCapitalizedName(field);
-        
-        name.insert(0, "set"); //NOI18N
-        return name.toString();
-    }
-    
-    public static String computeGetterName(CsmField field) {
-        StringBuilder name = getCapitalizedName(field);
-        
-//        if (TypeKind.BOOLEAN == field.asType().getKind()) { // XXX check autoboxing???
-//            name.insert(0, "is"); //NOI18N
-//        } else {
-//            name.insert(0, "get"); //NOI18N
-//        }
-        name.insert(0, "get"); //NOI18N
-        return name.toString();
-    }
 
     @Override
     protected Collection<CsmObject> getRefactoredObjects() {
@@ -385,10 +337,9 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     }
 
     @Override
-    protected void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
-        // not yet implemented
+    protected void processFile(CsmFile csmFile, ModificationResult mr) {
+
     }
-    
 //    @Override
 //    public Problem prepare(RefactoringElementsBag bag) {
 //

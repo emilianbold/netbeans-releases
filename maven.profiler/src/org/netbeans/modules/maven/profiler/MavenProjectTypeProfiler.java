@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.maven.profiler;
 
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -61,6 +65,14 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     private ProfilingSettings lastProfilingSettings;
     private SessionSettings lastSessionSettings;
     private Properties lastSessionProperties;
+
+    final private Set<String> supportedPTypes = new HashSet<String>() {
+        {
+            add(NbMavenProject.TYPE_JAR);
+            add(NbMavenProject.TYPE_WAR);
+            add(NbMavenProject.TYPE_EJB);
+        }
+    };
     
     
     ProfilingSettings getLastProfilingSettings() {
@@ -76,9 +88,14 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
     
     
+    @Override
     public boolean isFileObjectSupported(Project project, FileObject fo) {
         // Profile File, Profile Test not supported in this version
-        return false;
+        if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
+            return false; // NOI18N
+        }
+
+        return SourceUtils.isRunnable(fo);
     }
 
     public String getProfilerTargetName(Project project, FileObject buildScript, int type, FileObject profiledClassFile) {
@@ -91,8 +108,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     public boolean isProfilingSupported(Project project) {
         NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
-        return mproject == null ? false :
-            NbMavenProject.TYPE_JAR.equals(mproject.getPackagingType());
+        return mproject == null ? false : supportedPTypes.contains(mproject.getPackagingType());
     }
 
     public boolean checkProjectCanBeProfiled(Project project, FileObject profiledClassFile) {
@@ -121,8 +137,27 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         
         NetBeansProfiler.getDefaultNB().setProfiledProject(project, profiledClassFile);
         
-        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, "profile-single"); //NOI18N
+        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, isTest ? "profile-tests":"profile-single"); //NOI18N
         else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
     }
+
+    @Override
+    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter, String[][] projectPackagesDescr) {
+//        FIX THIS
+        return super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
+    }
+
+    @Override
+    public void computeProjectPackages(Project project, boolean subprojects, String[][] storage) {
+//        FIX THIS
+        super.computeProjectPackages(project, subprojects, storage);
+    }
+
+//    @Override
+//    public SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile, boolean profileUnderlyingFramework, String[][] projectPackagesDescr) {
+//        return super.getDefaultRootMethods(project, profiledClassFile, profileUnderlyingFramework, projectPackagesDescr);
+//    }
+
+
 
 }

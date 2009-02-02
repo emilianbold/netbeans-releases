@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -71,6 +72,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private JScrollPane customPanel;
     private JPanel bodyPanel = null;
     private JComponent progressPanel = null;
+    private JComponent progress;
     private boolean isWaiting = false;
     
     /** Creates new form InstallPanelContainer */
@@ -151,12 +153,13 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private void addProgressLine (final long estimatedTime) {
         handle = ProgressHandleFactory.createHandle ("PanelBodyContainer_ProgressLine"); // NOI18N
         JLabel title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait")); // NOI18N
-        JComponent progress = ProgressHandleFactory.createProgressComponent (handle);
+        progress = ProgressHandleFactory.createProgressComponent (handle);        
         progressPanel = new JPanel (new GridBagLayout ());
         
         GridBagConstraints gridBagConstraints = new GridBagConstraints ();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets (7, 12, 0, 12);
+        gridBagConstraints.weighty = 1.0;
         progressPanel.add (progress, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints ();
@@ -168,6 +171,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         delay = new Timer(900, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 delay.stop();
+                adjustProgressWidth();
                 progressPanel.setVisible(true);
                 initBodyPanel();
             }
@@ -206,7 +210,18 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             });
         }
     }
-    
+
+    private void adjustProgressWidth() {
+        //Issue #155752
+        Dimension min = progress.getMinimumSize();
+        Dimension preferred = progress.getPreferredSize();
+        if (min != null && preferred != null && (min.width * 2) < preferred.width) {
+            int width = preferred.width / 2 ;
+            int height = min.height;
+            progress.setMinimumSize(new Dimension(width, height));
+        }        
+    }
+
     private void initBodyPanel () {
         pBodyPanel.removeAll ();
         customPanel = new JScrollPane ();

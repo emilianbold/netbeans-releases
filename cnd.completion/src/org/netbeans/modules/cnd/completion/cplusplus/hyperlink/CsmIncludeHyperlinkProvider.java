@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -254,11 +255,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         private final CsmUID<? extends CsmObject> uid;
 
         public RefLink(CsmInclude incl) {
-            uid = incl.getUID();
+            uid = UIDs.get(incl);
         }
 
         public RefLink(CsmFile file) {
-            uid = file.getUID();
+            uid = UIDs.get(file);
         }
 
         public void outputLineSelected(OutputEvent ev) {

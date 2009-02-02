@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
@@ -167,7 +168,7 @@ public class OperationPanel extends SectionInnerPanel {
 
     private void enableDisable() {
     
-        boolean isTomcat = Util.isTomcat(project);
+        boolean isTomcat = ServerUtils.isTomcat(project);
 //        boolean isWebProject = Util.isWebProject(project);
         
         boolean txConfigEnabled = !isTomcat;// && isWebProject;

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
@@ -77,7 +78,7 @@ public final class MetaElementHandler {
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor) {
+            String prefix, int anchor, boolean nameOnly) {
 
         Class clz;
 
@@ -98,7 +99,7 @@ public final class MetaElementHandler {
             for (Object method : metaClz.getMetaMethods()) {
                 LOG.log(Level.FINEST, method.toString());
                 //System.out.println("Method " + method.toString());
-                populateProposal(clz, method, prefix, anchor, result);
+                populateProposal(clz, method, prefix, anchor, result, nameOnly);
             }
 
             return result;
@@ -139,7 +140,7 @@ public final class MetaElementHandler {
     }
 
     private void populateProposal(Class clz, Object method, String prefix, int anchor,
-            Map<MethodSignature, CompletionItem.MetaMethodItem> methodList) {
+            Map<MethodSignature, CompletionItem.MetaMethodItem> methodList, boolean nameOnly) {
 
         if (method != null && (method instanceof MetaMethod)) {
             MetaMethod mm = (MetaMethod) method;
@@ -148,7 +149,7 @@ public final class MetaElementHandler {
                 LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
 
                 CompletionItem.MetaMethodItem item =
-                        new CompletionItem.MetaMethodItem(clz, mm, anchor, true);
+                        new CompletionItem.MetaMethodItem(clz, mm, anchor, true, nameOnly);
                 addOrReplaceItem(methodList, item);
             }
 
@@ -156,7 +157,8 @@ public final class MetaElementHandler {
     }
 
     // FIXME cleanup
-    private void addOrReplaceItem(Map<MethodSignature, CompletionItem.MetaMethodItem> methodItemList, CompletionItem.MetaMethodItem itemToStore) {
+    private void addOrReplaceItem(Map<MethodSignature, CompletionItem.MetaMethodItem> methodItemList,
+            CompletionItem.MetaMethodItem itemToStore) {
 
         // if we have a method in-store which has the same name and same signature
         // then replace it if we have a method with a higher distance to the super-class.

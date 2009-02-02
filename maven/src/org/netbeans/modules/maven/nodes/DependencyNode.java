@@ -646,7 +646,7 @@ public class DependencyNode extends AbstractNode {
                         model.getProject().addDependency(dep);
                         //mkleint: TODO why is the dependency being added? i forgot already..
                     }
-                    Exclusion ex = dep.findExclusionById(groupId, artifactId);
+                    Exclusion ex = dep.findExclusionById(art.getGroupId(), art.getArtifactId());
                     if (ex == null) {
                         Exclusion exclude = model.getFactory().createExclusion();
                         exclude.setArtifactId(art.getArtifactId());

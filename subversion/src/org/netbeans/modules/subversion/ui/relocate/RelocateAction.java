@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -117,7 +118,18 @@ public class RelocateAction extends ContextAction {
         }
         
         final RelocatePanel panel = new RelocatePanel();
-        File root = SvnUtils.getActionRoot(ctx);
+
+        roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) {
+            return;
+        }
+
+        // grab the first file:
+        // 1.) it can be only a folder - see isEnabled
+        // 2.) even if its a dataobject with more files, we just don't care,
+        // the action will affect the whole working copy
+        File root = roots[0];
+
         SVNUrl repositoryUrl = null;
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);

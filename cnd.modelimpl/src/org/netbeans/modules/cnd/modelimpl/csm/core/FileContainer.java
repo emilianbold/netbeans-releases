@@ -137,8 +137,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
         String path = getFileKey(file, true);
         MyFile newEntry;
-        @SuppressWarnings("unchecked")
-        CsmUID<CsmFile> uid = RepositoryUtils.put(impl);
+        CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
         newEntry = new MyFile(uid, state, path);
         MyFile old;
 
@@ -580,7 +579,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
         private volatile boolean pendingReparse = false; // "transient"
-        
+
         @SuppressWarnings("unchecked")
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);

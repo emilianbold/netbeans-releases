@@ -65,6 +65,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -162,11 +163,26 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort);
     }
 
-    public static boolean checkCondition(final Document doc, final int dot) {
-        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot)
-                && CompletionSupport.isCompletionEnabled(doc, dot);
+    public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
+        if (!takeLock) {
+            return _checkCondition(doc, dot);
+        }
+        final AtomicBoolean res = new AtomicBoolean(false);
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument)doc).render(new Runnable() {
+                public void run() {
+                    res.set(_checkCondition(doc, dot));
+                }
+            });
+        } else {
+            res.set(_checkCondition(doc, dot));
+        }
+        return res.get();
     }
 
+    private static boolean _checkCondition(Document doc, int dot) {
+        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot) && CompletionSupport.isCompletionEnabled(doc, dot);
+    }
 
 //    private boolean parseExpression(CsmCompletionTokenProcessor tp, TokenSequence<?> cppTokenSequence, int startOffset, int lastOffset) {
 //        boolean processedToken = false;
@@ -198,7 +214,7 @@ abstract public class CsmCompletionQuery {
         CsmCompletionResult ret = null;
 
         CompletionSupport sup = CompletionSupport.get(doc);
-        if (sup == null || !checkCondition(doc, offset)) {
+        if (sup == null || !checkCondition(doc, offset, true)) {
             return null;
         }
 
@@ -1195,13 +1211,13 @@ abstract public class CsmCompletionQuery {
                                             cont = false;
                                         } else {
                                             List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, skipConstructors, sort);
-                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
+                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
                                             if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
-                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, false, sort);
+                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
                                                 res.addAll(baseClasses);
                                             }
                                             result = new CsmCompletionResult(

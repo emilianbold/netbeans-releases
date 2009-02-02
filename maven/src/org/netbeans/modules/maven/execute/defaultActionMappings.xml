@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
         </goals>
     </action>
     <action>
+        <actionName>build-with-dependencies</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>reactor:make</goal>
+        </goals>
+        <basedir>../</basedir>
+        <properties>
+            <make.artifacts>${groupId}:${artifactId}</make.artifacts>
+        </properties>
+    </action>
+    <action>
         <actionName>clean</actionName>
         <packagings>
             <packaging>*</packaging>
@@ -109,7 +122,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
@@ -123,7 +136,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
@@ -138,7 +151,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
@@ -154,7 +167,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
