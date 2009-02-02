@@ -91,8 +91,7 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
      */
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(LineBreakpointsHitCountTest.class).addTest(
-                   
+                NbModuleSuite.createConfiguration(LineBreakpointsHitCountTest.class).addTest(           
                     "testLineBreakpointsHitCount" 
                 )
             .enableModules(".*").clusters(".*"));
