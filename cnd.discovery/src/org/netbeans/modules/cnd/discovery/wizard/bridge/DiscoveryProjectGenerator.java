@@ -100,7 +100,7 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
-        if ("file".equals(level)) {
+        if ("file".equals(level)) {// NOI18N
             // move common file configuration to parent
             upConfiguration(sourceRoot, true);
             upConfiguration(sourceRoot, false);
