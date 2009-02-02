@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -72,6 +73,7 @@ public class Folder {
     private Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>();
     private final boolean projectFiles;
     private String id = null;
+    private String root;
     
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -81,6 +83,14 @@ public class Folder {
         this.projectFiles = projectFiles;
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    public String getRoot() {
+        return root;
     }
     
     public int size() {
@@ -104,28 +114,33 @@ public class Folder {
     }
     
     public String getPath() {
-//        StringBuilder builder = new StringBuilder(getName());
-//        Folder parent = getParent();
-//        while (parent != null) {
-//            if (parent.getParent() != null) {
-//                builder.insert(0, '/'); // NOI18N
-//                builder.insert(0, parent.getName());
-//            }
-//            parent = parent.getParent();
-//        };
-//        return builder.toString();
         StringBuilder builder2 = new StringBuilder(32);
-        reversePath(this, builder2);
+        reversePath(this, builder2, false);
         return builder2.toString();
     }
+
+    public String getRootPath() {
+        StringBuilder builder2 = new StringBuilder(32);
+        reversePath(this, builder2, true);
+        String path =  builder2.toString();
+        if (path.startsWith("./")) {
+            path = path.substring(2);
+        }
+        return path;
+    }
     
-    private void reversePath(Folder folder, StringBuilder builder){
+    private void reversePath(Folder folder, StringBuilder builder, boolean fromRoot){
         Folder parent = folder.getParent();
         if (parent != null && parent.getParent() != null) {
-            reversePath(parent, builder);
+            reversePath(parent, builder, fromRoot);
             builder.append('/'); // NOI18N
         }
-        builder.append(folder.getName());
+        if (fromRoot && folder.getRoot() != null) {
+            builder.append(folder.getRoot());
+        }
+        else {
+            builder.append(folder.getName());
+        }
     }
     
     public String getDisplayName() {
@@ -150,7 +165,21 @@ public class Folder {
     public boolean isProjectFiles() {
         return projectFiles;
     }
-    
+
+    public boolean isDiskFolder() {
+        Folder f = this;
+        while (true) {
+            if (f.getRoot() != null) {
+                return true;
+            }
+            f = f.getParent();
+            if (f == null) {
+                break;
+            }
+        }
+        return false;
+    }
+
     public Collection<Object> getElements() {
         return items;
     }
@@ -299,7 +328,7 @@ public class Folder {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
-    }
+        }
     
     /**
      * Returns an unique id (String) used to retrive this object from the

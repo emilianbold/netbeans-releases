@@ -721,7 +721,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        //if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
             synchronized (sourceRoots) {
                 if (canonicalPath != null) {
                     int canonicalPathLength = canonicalPath.length();
@@ -772,7 +772,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     setModified();
                 }
             }
-        }
+        //}
     }
 
     /*
@@ -894,6 +894,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 Folder top = folder.findFolderByName(folderEntry.getFile().getName());
                 if (top == null) {
                     top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                    String relativeRoot = IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath());
+                    top.setRoot(relativeRoot);
                     folder.addFolder(top);
                 }
                 addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded, notify);

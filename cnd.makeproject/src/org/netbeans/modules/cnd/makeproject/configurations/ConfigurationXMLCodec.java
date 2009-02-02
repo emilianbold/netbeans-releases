@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -201,6 +202,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 if (!projectFiles) {
                     ((MakeConfigurationDescriptor) projectDescriptor).setExternalFileItems(currentFolder);
                 }
+            }
+        } else if (element.equals(DISK_FOLDER_ELEMENT)) {
+            if (currentFolderStack.size() == 0) {
+                currentFolder = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
+                currentFolderStack.push(currentFolder);
+            } else {
+                String name = getString(atts.getValue(NAME_ATTR));
+                String root = getString(atts.getValue(ROOT_ATTR));
+                currentFolder = currentFolder.addNewFolder(name, name, true);
+                currentFolder.setRoot(root);
+                currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
@@ -438,7 +450,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
-        } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
+        } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
             currentFolderStack.pop();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
@@ -451,6 +463,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
+            path = getString(adjustOffset(path));
+            currentFolder.addItem(new Item(path));
+        } else if (element.equals(ITEM_NAME_ELEMENT)) {
+            String path = currentFolder.getRootPath() + '/' + currentText;
             path = getString(adjustOffset(path));
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {

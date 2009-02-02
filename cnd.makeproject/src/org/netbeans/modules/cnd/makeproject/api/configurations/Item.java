@@ -158,6 +158,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return sortName;
     }
 
+    public String getName() {
+        return IpeUtils.getBaseName(path);
+    }
+
     public String getPath(boolean norm) {
         String pat = "./"; // UNIX path  // NOI18N
         if (norm && getPath().startsWith(pat)) {
