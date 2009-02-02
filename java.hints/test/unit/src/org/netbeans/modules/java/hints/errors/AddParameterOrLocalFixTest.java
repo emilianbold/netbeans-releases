@@ -60,7 +60,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test(String[] a) {bbb = 0;}}",
                        90 - 25,
                        "AddParameterOrLocalFix:bbb:int:true",
-                       "package test; public class Test {public void test(String[] a,int bbb) {bbb = 0;}}");
+                       "package test; public class Test {public void test(String[] a, int bbb) {bbb = 0;}}");
     }
     
     public void testAddToTheEmptyParamsList() throws Exception {
