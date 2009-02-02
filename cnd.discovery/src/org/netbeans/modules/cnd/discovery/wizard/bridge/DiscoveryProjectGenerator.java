@@ -58,6 +58,9 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.openide.filesystems.FileUtil;
@@ -97,9 +100,159 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
+        if ("file".equals(level)) {
+            // move common file configuration to parent
+            upConfiguration(sourceRoot, true);
+            upConfiguration(sourceRoot, false);
+            downConfiguration(sourceRoot, true);
+            downConfiguration(sourceRoot, false);
+        }
         projectBridge.save();
     }
-    
+
+    private void downConfiguration(Folder folder, boolean isCPP) {
+        CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, folder);
+        if (cccc != null) {
+            List<String> commonFoldersIncludes = cccc.getIncludeDirectories().getValue();
+            List<String> commonFoldersMacros = cccc.getPreprocessorConfiguration().getValue();
+            projectBridge.setupProject(commonFoldersIncludes, commonFoldersMacros, isCPP);
+            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, isCPP, folder);
+            downConfiguration(folder, isCPP, commonFoldersIncludes, commonFoldersMacros);
+        }
+    }
+
+    private void downConfiguration(Folder folder, boolean isCPP, List<String> commonFoldersIncludes, List<String> commonFoldersMacros) {
+        for(Folder subFolder : folder.getFoldersAsArray()){
+            CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, subFolder);
+            if (cccc == null) {
+                continue;
+            }
+            List<String> aCommonFoldersIncludes = new ArrayList<String>(commonFoldersIncludes);
+            List<String> cCommonFoldersMacros = new ArrayList<String>(commonFoldersMacros);
+            List<String> foldersIncludes = new ArrayList<String>();
+            List<String> foldersMacros = new ArrayList<String>();
+            for(String s : cccc.getIncludeDirectories().getValue()){
+                if (!aCommonFoldersIncludes.contains(s)) {
+                    foldersIncludes.add(s);
+                    aCommonFoldersIncludes.add(s);
+                }
+            }
+            for(String s : cccc.getPreprocessorConfiguration().getValue()){
+                if (!cCommonFoldersMacros.contains(s)) {
+                    foldersMacros.add(s);
+                    cCommonFoldersMacros.add(s);
+                }
+            }
+            projectBridge.setupFolder(foldersIncludes, true, foldersMacros, true, isCPP, subFolder);
+            downConfiguration(subFolder, isCPP, aCommonFoldersIncludes, cCommonFoldersMacros);
+        }
+    }
+
+    private boolean upConfiguration(Folder folder, boolean isCPP) {
+        Set<String> commonFoldersIncludes = new HashSet<String>();
+        Set<String> commonFoldersMacros = new HashSet<String>();
+        boolean haveSubFolders = false;
+        for (Folder subFolder : folder.getFolders()) {
+            if (!upConfiguration(subFolder, isCPP)){
+                continue;
+            }
+            if (!haveSubFolders) {
+                CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, subFolder);
+                if (cccc != null) {
+                    commonFoldersIncludes.addAll(cccc.getIncludeDirectories().getValue());
+                    commonFoldersMacros.addAll(cccc.getPreprocessorConfiguration().getValue());
+                    haveSubFolders = true;
+                }
+            } else {
+                if (commonFoldersIncludes.size() > 0) {
+                    CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, subFolder);
+                    if (cccc != null) {
+                        commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                    }
+                }
+                if (commonFoldersMacros.size() > 0) {
+                    CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, subFolder);
+                    if (cccc != null) {
+                        commonFoldersMacros.retainAll(cccc.getPreprocessorConfiguration().getValue());
+                    }
+                }
+            }
+        }
+        Set<String> commonFilesIncludes = new HashSet<String>();
+        Set<String> commonFilesMacros = new HashSet<String>();
+        boolean first = true;
+        if (haveSubFolders) {
+            commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
+            commonFilesMacros = new HashSet<String>(commonFoldersMacros);
+            first = false;
+        }
+        for (Item item : folder.getItemsAsArray()) {
+            if (item.isExcluded()){
+                continue;
+            }
+            CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);
+            if (isCPP) {
+                if (!(cccc instanceof CCCompilerConfiguration)) {
+                    continue;
+                }
+            } else {
+                if (!(cccc instanceof CCompilerConfiguration)) {
+                    continue;
+                }
+            }
+            if (first) {
+                commonFilesIncludes.addAll(cccc.getIncludeDirectories().getValue());
+                commonFilesMacros.addAll(cccc.getPreprocessorConfiguration().getValue());
+                first = false;
+            } else {
+                if (commonFilesIncludes.size() > 0) {
+                    commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                }
+                if (commonFilesMacros.size() > 0) {
+                    commonFilesMacros.retainAll(cccc.getPreprocessorConfiguration().getValue());
+                }
+            }
+        }
+        if (commonFilesIncludes.size() > 0 || commonFilesMacros.size() > 0) {
+            for (Item item : folder.getItemsAsArray()) {
+                CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);
+                if (isCPP) {
+                    if (!(cccc instanceof CCCompilerConfiguration)) {
+                        continue;
+                    }
+                } else {
+                    if (!(cccc instanceof CCompilerConfiguration)) {
+                        continue;
+                    }
+                }
+                if (commonFilesIncludes.size() > 0) {
+                    List<String> list = new ArrayList<String>(cccc.getIncludeDirectories().getValue());
+                    list.removeAll(commonFilesIncludes);
+                    cccc.getIncludeDirectories().setValue(list);
+                }
+                if (commonFilesMacros.size() > 0) {
+                    List<String> list = new ArrayList<String>(cccc.getPreprocessorConfiguration().getValue());
+                    list.removeAll(commonFilesMacros);
+                    cccc.getPreprocessorConfiguration().setValue(list);
+                }
+            }
+        }
+        if (commonFilesIncludes.size() > 0) {
+            CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, folder);
+            if (cccc != null) {
+                cccc.getIncludeDirectories().setValue(new ArrayList<String>(commonFilesIncludes));
+            }
+        }
+        if (commonFilesMacros.size() > 0) {
+            CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(isCPP, folder);
+            if (cccc != null) {
+                cccc.getPreprocessorConfiguration().setValue(new ArrayList<String>(commonFilesMacros));
+            }
+        }
+        return !first;
+    }
+
+
     public Set makeProject(){
         process();
         return projectBridge.getResult();
@@ -186,7 +339,7 @@ public class DiscoveryProjectGenerator {
                 }
             } else {
                 if (!usedItems.contains(item)) {
-                    projectBridge.setExclude(item,false);
+                    ProjectBridge.setExclude(item,false);
                     projectBridge.setHeaderTool(item);
                 }
             }
@@ -221,7 +374,7 @@ public class DiscoveryProjectGenerator {
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
                 if (DEBUG) {System.out.println("Exclude Item "+path);} // NOI18N
-                projectBridge.setExclude(item,true);
+                ProjectBridge.setExclude(item,true);
             }
         }
     }
@@ -250,12 +403,12 @@ public class DiscoveryProjectGenerator {
                             projectBridge.setAuxObject(item, old);
                         }
                     }
-                    projectBridge.setExclude(item,false);
+                    ProjectBridge.setExclude(item,false);
                     projectBridge.setHeaderTool(item);
                 } else {
                     item = projectBridge.createItem(file);
                     item = added.addItem(item);
-                    projectBridge.setExclude(item,false);
+                    ProjectBridge.setExclude(item,false);
                     projectBridge.setHeaderTool(item);
                 }
             }
