@@ -194,15 +194,7 @@ public final class ContextAwareSupport {
     }
 
     private static String[] splitClasses(String classes) {
-        ArrayList<String> list = new ArrayList<String>();
-        int i1 = 0;
-        int i2;
-        while ((i2 = classes.indexOf(',', i1)) > 0) {
-            list.add(classes.substring(i1, i2).trim());
-            i1 = i2 + 1;
-        }
-        list.add(classes.substring(i1).trim());
-        return list.toArray(new String[] {});
+        return classes.split("[, ]+");
     }
 
 }

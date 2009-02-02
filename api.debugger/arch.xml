@@ -109,10 +109,10 @@ The Debugger Core API module defines common structures for integration of debugg
 Registrations in standard Lookup:
 <ul>
 <li><api name="org.netbeans.spi.debugger.ContextAwareService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all registered context-aware services from given folder.</li>
-<li><api name="org.netbeans.spi.debugger.SessionProvider$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all session providers for specific DebuggerInfo.</li>
-<li><api name="org.netbeans.spi.debugger.DebuggerEngineProvider$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all debugger engine providers for specific DebuggerInfo or Session.</li>
-<li><api name="org.netbeans.api.debugger.LazyDebuggerManagerListener$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all debbugger manager listeners and adds them to DebuggerManager.getDebuggerManager () instance.</li>
-<li><api name="org.netbeans.spi.debugger.ActionsProvider$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all action providers for context determined by it's path.</li>
+<li><api name="org.netbeans.spi.debugger.SessionProvider.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all session providers for specific DebuggerInfo.</li>
+<li><api name="org.netbeans.spi.debugger.DebuggerEngineProvider.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all debugger engine providers for specific DebuggerInfo or Session.</li>
+<li><api name="org.netbeans.api.debugger.LazyDebuggerManagerListener.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all debbugger manager listeners and adds them to DebuggerManager.getDebuggerManager () instance.</li>
+<li><api name="org.netbeans.spi.debugger.ActionsProvider.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all action providers for context determined by it's path.</li>
 
 <li><api name="netbeans.debugger.registration" group="property" type="import" category="private"/> Writes registration log to console.</li>
 </ul>

@@ -55,16 +55,16 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  * This {@link ActionsManagerListener} modification is designed to be
- * registerred in "META-INF/debugger/", or preferrably via the
+ * registered in {@code "META-INF/debugger/"}, or preferably via the
  * {@link Registration} annotation.
- * LazyActionsManagerListener should be registerred for some concrete
- * {@link DebuggerEngine} - use "<DebuggerEngine-id>" as a path of the
+ * LazyActionsManagerListener should be registered for some concrete
+ * {@link DebuggerEngine} - use {@code "<DebuggerEngine-id>"} as a path of the
  * annotation, or create
- * "META-INF/debugger/<DebuggerEngine-id>/LazyActionsManagerListener" file.
+ * {@code "META-INF/debugger/<DebuggerEngine-id>/LazyActionsManagerListener"} file.
  * For global {@link ActionsManager} (do not use the path parameter, or use
- * "META-INF/debugger/LazyActionsManagerListener" file.
+ * {@code "META-INF/debugger/LazyActionsManagerListener"} file.
  * New instance of LazyActionsManagerListener implementation is loaded
- * when the new instance of {@link ActionsManager} is created, and its registerred
+ * when the new instance of {@link ActionsManager} is created, and its registered
  * automatically to all properties returned by {@link #getProperties}. 
  *
  * @author   Jan Jancura
@@ -97,7 +97,7 @@ public abstract class LazyActionsManagerListener extends ActionsManagerAdapter {
     public @interface Registration {
         /**
          * An optional path to register this implementation in.
-         * Usually the "<DebuggerEngine-id>".
+         * Usually the {@code "<DebuggerEngine-id>"}.
          */
         String path() default "";
 

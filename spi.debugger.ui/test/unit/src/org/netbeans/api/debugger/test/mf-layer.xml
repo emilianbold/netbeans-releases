@@ -52,9 +52,9 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.api.debugger.test.TestNodeModel"/>
             </file>
             <file name="TestNodeModelContext.instance">
-               <attr name="instanceCreate" methodvalue="org.netbeans.debugger.registry.ContextAwareServiceHandler.createService"/>
+               <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ContextAwareSupport.createService"/>
                <attr name="serviceName" stringvalue="org.netbeans.api.debugger.test.TestNodeModelContext"/>
-               <attr name="serviceClass" stringvalue="org.netbeans.spi.viewmodel.NodeModel"/>
+               <attr name="serviceClasses" stringvalue="org.netbeans.spi.viewmodel.NodeModel"/>
             </file>
         </folder>
     </folder>

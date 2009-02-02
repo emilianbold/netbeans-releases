@@ -127,8 +127,8 @@ List of APIs:
 </ul>
 Registrations in standard Lookup:
 <ul>
-<li><api name="org.netbeans.spi.debugger.ui.AttachType$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all attach type providers.</li>
-<li><api name="org.netbeans.spi.debugger.ui.BreakpointType$ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all breakpoint type providers.</li>
+<li><api name="org.netbeans.spi.debugger.ui.AttachType.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all attach type providers.</li>
+<li><api name="org.netbeans.spi.debugger.ui.BreakpointType.ContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all breakpoint type providers.</li>
 <li><api name="org.netbeans.modules.debugger.ui.registry.ColumnModelContextAware.createService" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/> Loads all column models registered for specific view (according to the path).</li>
 </ul>
 

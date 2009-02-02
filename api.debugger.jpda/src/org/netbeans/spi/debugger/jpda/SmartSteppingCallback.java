@@ -117,12 +117,13 @@ public abstract class SmartSteppingCallback {
 
         @Override
         public void initFilter(SmartSteppingFilter f) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            assert false;
         }
 
         @Override
         public boolean stopHere(ContextProvider lookupProvider, JPDAThread thread, SmartSteppingFilter f) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            assert false;
+            throw new UnsupportedOperationException("Not supported.");
         }
         
         /**

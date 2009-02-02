@@ -41,6 +41,9 @@
 
 package org.netbeans.debugger.registry;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Processor;
@@ -51,6 +54,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -143,13 +147,16 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                     //System.err.println("am:\n elementValues = "+elementValues);
                     for (ExecutableElement ee : elementValues.keySet()) {
                         if (ee.getSimpleName().contentEquals("types")) { // NOI18N
-                            classNames = elementValues.get(ee).toString();
+                            classNames = elementValues.get(ee).getValue().toString();
                         }
                     }
                 }
             }
             //System.err.println("classNames before translation = "+classNames);
             classNames = translateClassNames(classNames);
+            if (!implementsInterfaces(e, classNames)) {
+                throw new IllegalArgumentException("Annotated element "+e+" does not implement all interfaces " + classNames);
+            }
             //System.err.println("classNames after  translation = "+classNames);
             /*
             Class[] classes;
@@ -174,18 +181,6 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         return cnt == annotations.size();
     }
 
-    private void handleProviderRegistration(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
-        String className = instantiableClassOrMethod(e);
-        if (!isClassOf(e, providerClass)) {
-            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
-        }
-        layer(e).instanceFile("Debugger/"+path, null, providerClass).
-                stringvalue("serviceName", className).
-                stringvalue("serviceClass", providerClass.getName()).
-                methodvalue("instanceCreate", "org.netbeans.debugger.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
-                write();
-    }
-
     private void handleProviderRegistrationInner(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
@@ -199,34 +194,73 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
     }
 
     private boolean isClassOf(Element e, Class providerClass) {
-        TypeElement te = (TypeElement) e;
-        TypeMirror superType = te.getSuperclass();
-        if (superType.getKind().equals(TypeKind.NONE)) {
-            return false;
-        } else {
-            e = ((DeclaredType) superType).asElement();
-            String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-            if (clazz.equals(providerClass.getName())) {
-                return true;
-            } else {
-                return isClassOf(e, providerClass);
+        switch (e.getKind()) {
+            case CLASS: {
+                TypeElement te = (TypeElement) e;
+                TypeMirror superType = te.getSuperclass();
+                if (superType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) superType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
             }
+            case METHOD: {
+                TypeMirror retType = ((ExecutableElement) e).getReturnType();
+                if (retType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) retType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
     }
 
-    private static File commaSeparated(File f, String[] arr) {
-        if (arr.length == 0) {
-            return f;
+    private boolean implementsInterfaces(Element e, String classNames) {
+        Set<String> interfaces = new HashSet(Arrays.asList(classNames.split("[, ]+")));
+        switch (e.getKind()) {
+            case CLASS: {
+                TypeElement te = (TypeElement) e;
+                List<? extends TypeMirror> interfs = te.getInterfaces();
+                for (TypeMirror tm : interfs) {
+                    e = ((DeclaredType) tm).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    interfaces.remove(clazz);
+                }
+                break;
+            }
+            case METHOD: {
+                TypeMirror retType = ((ExecutableElement) e).getReturnType();
+                if (retType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    TypeElement te = (TypeElement) ((DeclaredType) retType).asElement();
+                    List<? extends TypeMirror> interfs = te.getInterfaces();
+                    for (TypeMirror tm : interfs) {
+                        e = ((DeclaredType) tm).asElement();
+                        String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        interfaces.remove(clazz);
+                    }
+                }
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
-
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (String s : arr) {
-            sb.append(sep);
-            sb.append(s);
-            sep = ",";
-        }
-        return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
+        return interfaces.isEmpty();
     }
 
     private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {
@@ -261,19 +295,30 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                  * */
                 return clazz;
             }
+            case METHOD: {
+                ExecutableElement ee = (ExecutableElement) e;
+                String methodName = ee.getSimpleName().toString();
+                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) ee.getEnclosingElement()).toString();
+                if (!e.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException(ee + " must be static", e);
+                }
+                if (ee.getParameters().size() > 0) {
+                    throw new LayerGenerationException(ee + " must not have any parameters", e);
+                }
+                return clazz+"."+methodName+"()";
+            }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
     }
 
     /**
-     * Translates "{org.MyClass1.class, org.MyClass2.class, ... }" to
+     * Translates "org.MyClass1.class, org.MyClass2.class, ... " to
      * "org.MyClass1, org.MyClass2, ..."
      * @param classNames
      * @return comma-separated class names
      */
     private String translateClassNames(String classNames) {
-        classNames = classNames.substring(1, classNames.length() - 1).trim();
         StringBuilder builder = new StringBuilder();
         int i1 = 0;
         int i2;

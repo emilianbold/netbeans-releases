@@ -73,7 +73,10 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes({"org.netbeans.api.debugger.jpda.JPDADebugger.Registration",  // NOI18N
-                           "org.netbeans.spi.debugger.ui.BreakpointType.Registration"}) //NOI18N
+                           "org.netbeans.spi.debugger.jpda.SmartSteppingCallback.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.jpda.SourcePathProvider.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.jpda.EditorContext.Registration", //NOI18N
+                           "org.netbeans.spi.debugger.jpda.VariablesFilter.Registration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
@@ -158,26 +161,22 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
             }
             case METHOD: {
-                return true;
+                TypeMirror retType = ((ExecutableElement) e).getReturnType();
+                if (retType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) retType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
             }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
-    }
-
-    private static File commaSeparated(File f, String[] arr) {
-        if (arr.length == 0) {
-            return f;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (String s : arr) {
-            sb.append(sep);
-            sb.append(s);
-            sep = ",";
-        }
-        return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
     }
 
     private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {

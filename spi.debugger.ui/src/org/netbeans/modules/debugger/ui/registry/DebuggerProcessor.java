@@ -131,7 +131,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 stringvalue("serviceClass", providerClass.getName()).
                 //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
-                intvalue("position", position).
+                position(position).
                 write();
     }
 
@@ -171,26 +171,22 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
             }
             case METHOD: {
-                return true;
+                TypeMirror retType = ((ExecutableElement) e).getReturnType();
+                if (retType.getKind().equals(TypeKind.NONE)) {
+                    return false;
+                } else {
+                    e = ((DeclaredType) retType).asElement();
+                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+                    if (clazz.equals(providerClass.getName())) {
+                        return true;
+                    } else {
+                        return isClassOf(e, providerClass);
+                    }
+                }
             }
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
-    }
-
-    private static File commaSeparated(File f, String[] arr) {
-        if (arr.length == 0) {
-            return f;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (String s : arr) {
-            sb.append(sep);
-            sb.append(s);
-            sep = ",";
-        }
-        return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
     }
 
     private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {

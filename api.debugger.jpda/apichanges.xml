@@ -714,31 +714,16 @@ These are mainly class and thread filters and hit counts.
         <api name="JPDADebuggerAPI"/>
         <summary>Annotations for debugger service registration.</summary>
         <version major="2" minor="19"/>
-        <date day="30" month="1" year="2009"/>
+        <date day="2" month="2" year="2009"/>
         <author login="mentlicher"/>
         <compatibility addition="yes" source="compatible" binary="compatible"/>
         <description>
              <p>
-             In order to be able to register debugger services on System FileSystem,
-             which brings more flexibility and better performance (see also
-             <a href="http://www.netbeans.org/issues/show_bug.cgi?id=153093#desc7"/>),
-             we add non-recursive content of <code>org.openide.util.Lookups.forPath()</code>
-             into debugger lookup.
-             Since debugger needs retrieve context-aware services from the lookup,
-             <code>ContextAwareService</code> interface is introduced.
-             </p>
-             <p>
              Annotations are added for easy registration on module layers.
-             <code>DebuggerServiceRegistration</code> to register implementations
-             of interfaces, <code>*Provider.Registration</code> to register
+             <code>*Provider.Registration</code> annotations are introduced to register
              implementations of appropriate providers.
              </p>
         </description>
-        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger$Registration" />
-        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext$Registration" />
-        <class package="org.netbeans.spi.debugger.jpda" name="SmartSteppingCallback$Registration" />
-        <class package="org.netbeans.spi.debugger.jpda" name="SourcePathProvider$Registration" />
-        <class package="org.netbeans.spi.debugger.jpda" name="VariablesFilter$Registration" />
         <issue number="153093"/>
         <issue number="156687"/>
     </change>

@@ -282,7 +282,7 @@ made subject to such option by the copyright holder.
         <api name="DebuggerCoreAPI"/>
         <summary>Lookup improvements and service annotation registration.</summary>
         <version major="1" minor="16"/>
-        <date day="30" month="1" year="2009"/>
+        <date day="2" month="2" year="2009"/>
         <author login="mentlicher"/>
         <compatibility binary="compatible" source="compatible" addition="yes"/>
         <description>
@@ -302,10 +302,6 @@ made subject to such option by the copyright holder.
              implementations of appropriate providers.
              </p>
         </description>
-        <class package="org.netbeans.api.debugger" name="LazyActionsManagerListener$Registration" />
-        <class package="org.netbeans.spi.debugger" name="ActionsProvider$Registration" />
-        <class package="org.netbeans.spi.debugger" name="DebuggerEngineProvider$Registration" />
-        <class package="org.netbeans.spi.debugger" name="SessionProvider$Registration" />
         <class package="org.netbeans.spi.debugger" name="DebuggerServiceRegistration" />
         <class package="org.netbeans.spi.debugger" name="ContextAwareService" />
         <class package="org.netbeans.spi.debugger" name="ContextAwareSupport" />
