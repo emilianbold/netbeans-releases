@@ -109,7 +109,7 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     static {
         String limit = System.getProperty("cnd.semantic.line.limit"); // NOI18N
-        int userInput = 4000;
+        int userInput = 5000;
         if (limit != null) {
             try {
                 userInput = Integer.parseInt(limit);
