@@ -123,9 +123,6 @@ public class Folder {
         StringBuilder builder2 = new StringBuilder(32);
         reversePath(this, builder2, true);
         String path =  builder2.toString();
-        if (path.startsWith("./")) {
-            path = path.substring(2);
-        }
         return path;
     }
     

@@ -467,6 +467,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ITEM_NAME_ELEMENT)) {
             String path = currentFolder.getRootPath() + '/' + currentText;
+            if (path.startsWith("./")) {
+                path = path.substring(2);
+            }
             path = getString(adjustOffset(path));
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
