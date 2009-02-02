@@ -89,11 +89,11 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         if (groups.length == 0) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             return new WizardDescriptor.Panel[] {  
-                new ValidatingPanel(Templates.createSimpleTargetChooser(project, groups))
+                Templates.createSimpleTargetChooser(project, groups)
             };
         } else {
             return new WizardDescriptor.Panel[] {
-                new ValidatingPanel(JavaTemplates.createPackageChooser(project, groups))
+                JavaTemplates.createPackageChooser(project, groups)
             };
         }
     }
@@ -250,27 +250,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
             packageName = packageName.replaceAll("/", "."); // NOI18N
         }
         return packageName;
-    }
-    
-    private class ValidatingPanel extends DelegatingWizardDescriptorPanel {
-        
-        
-        public ValidatingPanel(WizardDescriptor.Panel delegate) {
-            super(delegate);
-        }
-        
-        public boolean isValid() {
-//            if (super.isValid()) {
-//                initExtender();
-//                if (extender != null && !extender.isGroovyEnabled()) {
-//                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-//                            NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
-//                }
-//                return true;
-//            }
-//            return false;
-            return true;
-        }
     }
 
 }
