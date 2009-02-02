@@ -1742,6 +1742,9 @@ public class Installer extends ModuleInstall implements Runnable {
     } // end of Submit
 
     protected static String createMessage(Throwable thr){
+        while (thr.getCause() != null){
+            thr = thr.getCause();
+        }
         String message = thr.toString();
         if (message.startsWith("java.lang.")){
             message = message.substring(10);
