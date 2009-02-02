@@ -79,16 +79,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return retval;
     }
 
-    @Override
-    void checkModifiersAssert() {
-        assert getPhpModifiers() != null;
-    }
 
-    @Override
-    void checkScopeAssert() {
-        assert getInScope() != null;
-        assert getInScope() instanceof TypeScopeImpl;
-    }
 
     @Override
     public String toString() {

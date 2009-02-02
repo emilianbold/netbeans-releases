@@ -45,11 +45,11 @@ import java.util.List;
  * @author Radek Matous
  */
 public interface PhpFileScope extends VariableScope {
-    public List<? extends TypeScope> getDeclaredTypes();
-    public List<? extends ClassScope> getDeclaredClasses();
-    public List<? extends InterfaceScope> getDeclaredInterfaces();
-    public List<? extends ConstantElement> getDeclaredConstants();
-    public List<? extends FunctionScope> getDeclaredFunctions();
-    public List<? extends VariableName> getDeclaredVariables();
-    public IndexScope getIndexScope();
+    List<? extends TypeScope> getDeclaredTypes();
+    List<? extends ClassScope> getDeclaredClasses();
+    List<? extends InterfaceScope> getDeclaredInterfaces();
+    List<? extends ConstantElement> getDeclaredConstants();
+    List<? extends FunctionScope> getDeclaredFunctions();
+    List<? extends VariableName> getDeclaredVariables();
+    IndexScope getIndexScope();
 }

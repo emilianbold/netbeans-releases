@@ -100,7 +100,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.kind = kind;
         this.file = file;
         this.modifiers = modifiers;
-        //checkModifiersAssert();
     }
 
 
@@ -278,15 +277,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public final boolean isScope() {
         return this instanceof ScopeImpl;
     }
-
-    void checkModifiersAssert() {
-        assert modifiers != null;
-    }
-
-    void checkScopeAssert() {
-        assert inScope != null;
-    }
-
 
     @Override
     public String toString() {

@@ -137,19 +137,6 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     }
 
     @Override
-    void checkModifiersAssert() {
-        assert getPhpModifiers() != null;
-        assert getPhpModifiers().isPublic();
-    }
-
-    @Override
-    void checkScopeAssert() {
-        assert getInScope() != null;
-        assert getInScope() instanceof FileScope;
-    }
-
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         List<? extends TypeScope> returnTypes = getReturnTypes();

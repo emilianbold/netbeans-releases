@@ -100,19 +100,6 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
 
-    @Override
-    void checkModifiersAssert() {
-        assert getPhpModifiers() != null;
-        assert getPhpModifiers().isPublic();
-        assert !getPhpModifiers().isFinal();
-    }
-
-    @Override
-    void checkScopeAssert() {
-        assert getInScope() != null;
-        assert getInScope() instanceof FileScope;
-    }
-
     public List<? extends InterfaceScope> getSuperInterfaces() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
         Set<String> keySet = ifaces.keySet();

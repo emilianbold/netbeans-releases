@@ -85,19 +85,6 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
     }
     //old contructors
 
-    @Override
-    void checkModifiersAssert() {
-        assert getPhpModifiers() != null;
-        assert getPhpModifiers().isPublic();
-        assert !getPhpModifiers().isFinal();
-    }
-
-    @Override
-    void checkScopeAssert() {
-        assert getInScope() != null;
-        assert getInScope() instanceof FileScope;
-    }
-
     @NonNull
     public List<? extends ClassScope> getSuperClasses() {
         List<? extends ClassScope> retval = null;
