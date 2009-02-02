@@ -61,7 +61,6 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
-//import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.DummyProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
@@ -84,11 +83,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
     private volatile ServerInstance serverInstance;
     private volatile InstanceProperties instanceProperties;
     private Hk2PluginProperties pluginProperties;
-    //private String uname;
-    //private String passwd;
     private String uri;
-//    private GlassfishInstanceProvider gip;
-
+    private ServerUtilities su;
     
     /**
      * 
@@ -96,11 +92,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param uname 
      * @param passwd 
      */
-    public Hk2DeploymentManager(String uri, String uname, String passwd) { //, GlassfishInstanceProvider gip) {
+    public Hk2DeploymentManager(String uri, String uname, String passwd, ServerUtilities su) {
         this.uri = uri;
-        //this.uname = uname;
-        //this.passwd = passwd;
-//        this.gip = gip;
+        this.su = su;
         pluginProperties = new Hk2PluginProperties(this);
     }
         
@@ -424,7 +418,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     public ServerInstance getServerInstance() {
         // !PW FIXME synchronization - using volatile for now, could do a little better
         if(serverInstance == null) {
-            serverInstance = ServerUtilities.getPreludeUtilities().getServerInstance(uri);
+            serverInstance = su.getServerInstance(uri);
             if(serverInstance == null) {
                 String warning = "Common server instance not found for " + uri;
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, warning);

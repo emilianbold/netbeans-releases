@@ -40,8 +40,10 @@ package org.netbeans.modules.nativeexecution.support;
 
 import java.io.Reader;
 import java.io.Writer;
+import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.openide.windows.InputOutput;
 
 public abstract class NativeTaskAccessor {
 
@@ -72,13 +74,15 @@ public abstract class NativeTaskAccessor {
 
     public abstract NativeExecutor getExecutor(NativeTask task);
 
-    public abstract ProgressHandle getProgressHandler(NativeTask task);
-
     public abstract Writer getRedirectionErrorWriter(NativeTask task);
+
+    public abstract InputOutput getRedirectionIO(NativeTask task);
 
     public abstract Reader getRedirectionInputReader(NativeTask task);
 
     public abstract Writer getRedirectionOutputWriter(NativeTask task);
 
+    public abstract Action[] getTaskControlActions(NativeTask task);
+    
     public abstract void resetTask(NativeTask task);
 }

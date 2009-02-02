@@ -67,11 +67,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
     
-    //private String indirect;
-//            "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
     private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
-    //private String direct;
-//            "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
     
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;
@@ -81,9 +77,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
 
     public AddServerLocationVisualPanel(ServerWizardIterator swi) {
         this.wizardIterator = swi;
-        //this.indirect = swi.getIndirect(); // indirect;
-        //this.direct = swi.getDirect();
-        //this.nameOfBits = swi.getNameOfBits()nameOfBits;
         initComponents();
         initUserComponents();
     }

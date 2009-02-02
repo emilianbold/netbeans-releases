@@ -110,8 +110,7 @@ public class GdbProxyEngine {
                     String cspath) throws IOException {
         
         if (debugger.getPlatform() != PlatformTypes.PLATFORM_WINDOWS && termpath != null) {
-            ExternalTerminal eterm = new ExternalTerminal(debugger, termpath, debuggerEnvironment);
-            String tty = eterm.getTty();
+            String tty = ExternalTerminal.create(debugger, termpath, debuggerEnvironment);
             if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);

@@ -59,8 +59,17 @@ import org.openide.util.NbBundle;
  */
 public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
 
+    // This had been a public static method that looked like createEe6(),
+    // but the way the layer.xml entry is interpreted would not let that
+    // work... so I had to conver it into this form.
+    /**
+     * @deprecated this is meant to be used by the layer.xml and NO ONE ELSE
+     */
     public Hk2JavaEEPlatformFactory() {
-        this(
+    }
+
+    public static Hk2JavaEEPlatformFactory createPrelude() {
+        return new Hk2JavaEEPlatformFactory(
             NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyPreludeServerPlatform"),
             JavaPlatformManager.getDefault().getDefaultPlatform(),
             NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
@@ -143,5 +152,5 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         Set retVal = new HashSet();
         retVal.addAll(supportedSpecs);
         return retVal;
-    }    
+    }
 }

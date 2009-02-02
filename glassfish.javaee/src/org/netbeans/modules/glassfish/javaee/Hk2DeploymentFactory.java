@@ -43,25 +43,32 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author Ludo
+ * @author vince
  */
 public class Hk2DeploymentFactory implements DeploymentFactory {
 
-    private static DeploymentFactory preludeInstance;
-    private static DeploymentFactory ee6Instance;
+    private static Hk2DeploymentFactory preludeInstance;
+    private static Hk2DeploymentFactory ee6Instance;
     private String uriFragment;
     private String version;
     private String displayName;
+    private ServerUtilities su;
 
     private Hk2DeploymentFactory(String uriFragment, String version, String displayName) {
         this.uriFragment = uriFragment;
         this.version = version;
         this.displayName = displayName;
+    }
+
+    private void setServerUtilities(ServerUtilities su) {
+        this.su = su;
     }
 
 
@@ -73,7 +80,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (preludeInstance == null) {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
             preludeInstance = new Hk2DeploymentFactory("deployer:gfv3:", "0.1",
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName"));
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
         }
         return preludeInstance;
@@ -86,7 +93,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createEe6() {
         if (ee6Instance == null) {
             ee6Instance = new Hk2DeploymentFactory("deployer:gfv3ee6:", "0.2",
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName")); // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
         }
         return ee6Instance;
@@ -123,7 +130,8 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        return new Hk2DeploymentManager(uri, uname, passwd);
+        finishInit();
+        return new Hk2DeploymentManager(uri, uname, passwd, su);
     }
 
     /**
@@ -136,7 +144,8 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        return new Hk2DeploymentManager(uri, null, null);
+        finishInit();
+        return new Hk2DeploymentManager(uri, null, null, su);
     }
 
     /**
@@ -153,5 +162,16 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      */
     public String getDisplayName() {
         return displayName;
+    }
+
+    /**
+     * Creating the server utility instance in the constructor triggered an
+     * exception, since some infrastucture wasn't initialized completely.
+     */
+    private void finishInit() {
+        if (null != preludeInstance)
+            preludeInstance.setServerUtilities(ServerUtilities.getPreludeUtilities());
+        if (null != ee6Instance)
+            ee6Instance.setServerUtilities(ServerUtilities.getPreludeUtilities());
     }
 }

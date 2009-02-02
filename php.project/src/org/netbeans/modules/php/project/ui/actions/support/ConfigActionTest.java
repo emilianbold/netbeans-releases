@@ -41,19 +41,22 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.tests.PhpUnitConstants;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -96,6 +99,15 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject(PhpProject project) {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (!phpUnit.supportedVersionFound()) {
+            int[] version = phpUnit.getVersion();
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+
         run(project, null);
     }
 
@@ -168,7 +180,7 @@ public class ConfigActionTest extends ConfigAction {
         protected final PhpProject project;
         protected final Lookup context;
         protected final Pair<FileObject, String> pair;
-        protected final PhpUnit program;
+        protected final PhpUnit phpUnit;
         protected final UnitTestRunner testRunner;
         protected final RerunUnitTestHandler rerunUnitTestHandler;
 
@@ -181,36 +193,43 @@ public class ConfigActionTest extends ConfigAction {
             this.context = context;
             rerunUnitTestHandler = getRerunUnitTestHandler();
             testRunner = getTestRunner();
-            program = CommandUtils.getPhpUnit(false);
+            phpUnit = CommandUtils.getPhpUnit(false);
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
-            return new ExecutionDescriptor()
+            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                     .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
-                    .frontWindow(false)
-                    .showProgress(true)
-                    .preExecution(new Runnable() {
-                        public void run() {
-                            testRunner.start();
-                        }
-                    })
-                    .postExecution(new Runnable() {
-                        public void run() {
-                            rerunUnitTestHandler.enable();
-                            testRunner.showResults();
-                        }
-                    });
+                    .frontWindow(!phpUnit.supportedVersionFound())
+                    .showProgress(true);
+            if (phpUnit.supportedVersionFound()) {
+                executionDescriptor = executionDescriptor
+                        .preExecution(new Runnable() {
+                            public void run() {
+                                testRunner.start();
+                            }
+                        })
+                        .postExecution(new Runnable() {
+                            public void run() {
+                                rerunUnitTestHandler.enable();
+                                testRunner.showResults();
+                            }
+                        });
+            } else {
+                executionDescriptor = executionDescriptor
+                        .outProcessorFactory(new OutputProcessorFactory(phpUnit));
+            }
+            return executionDescriptor;
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
-            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(program.getProgram())
+            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                     .workingDirectory(FileUtil.toFile(pair.first));
-            for (String param : program.getParameters()) {
+            for (String param : phpUnit.getParameters()) {
                 externalProcessBuilder = externalProcessBuilder.addArgument(param);
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnitConstants.PARAM_XML_LOG)
-                    .addArgument(PhpUnitConstants.XML_LOG.getAbsolutePath())
+                    .addArgument(PhpUnit.PARAM_XML_LOG)
+                    .addArgument(PhpUnit.XML_LOG.getAbsolutePath())
                     .addArgument(pair.second);
             return externalProcessBuilder;
         }
@@ -222,11 +241,11 @@ public class ConfigActionTest extends ConfigAction {
             } else {
                 title = pair.second;
             }
-            return String.format("%s - %s", program.getProgram(), title);
+            return String.format("%s - %s", phpUnit.getProgram(), title);
         }
 
         public boolean isValid() {
-            return program.isValid() && pair.first != null && pair.second != null;
+            return phpUnit.isValid() && pair.first != null && pair.second != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
@@ -324,6 +343,38 @@ public class ConfigActionTest extends ConfigAction {
         @Override
         public void rerun() {
             debug(project, context);
+        }
+    }
+
+    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        private final PhpUnit phpUnit;
+
+        public OutputProcessorFactory(PhpUnit phpUnit) {
+            this.phpUnit = phpUnit;
+        }
+
+        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
+            return new InputProcessor() {
+                public void processInput(char[] chars) throws IOException {
+                    defaultProcessor.processInput(chars);
+                }
+                public void reset() throws IOException {
+                    defaultProcessor.reset();
+                }
+                public void close() throws IOException {
+                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion()));
+                    char[] separator = new char[msg.length()];
+                    Arrays.fill(separator, '='); // NOI18N
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(separator);
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(msg.toCharArray());
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(separator);
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.close();
+                }
+            };
         }
     }
 }

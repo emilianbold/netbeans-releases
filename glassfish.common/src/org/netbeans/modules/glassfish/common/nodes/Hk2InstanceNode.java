@@ -142,7 +142,6 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         if(shortDesc == null) {
             shortDesc = NbBundle.getMessage(Hk2InstanceNode.class, "LBL_ServerInstanceNodeDesc",
                     serverInstance.getServerDisplayName(),
-                    //GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME,
                     getAdminUrl());
         }
         return shortDesc;

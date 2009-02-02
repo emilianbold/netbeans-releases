@@ -346,9 +346,6 @@ public final class CheckoutAction extends SystemAction {
         private void openProject(Project p) {
             Project[] projects = new Project[] {p};
             OpenProjects.getDefault().open(projects, false);
-
-            // set as main project and expand
-            OpenProjects.getDefault().setMainProject(p);
             ProjectUtilities.selectAndExpandProject(p);
         }
     }

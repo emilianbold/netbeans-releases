@@ -65,6 +65,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -162,11 +163,26 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort);
     }
 
-    public static boolean checkCondition(final Document doc, final int dot) {
-        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot)
-                && CompletionSupport.isCompletionEnabled(doc, dot);
+    public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
+        if (!takeLock) {
+            return _checkCondition(doc, dot);
+        }
+        final AtomicBoolean res = new AtomicBoolean(false);
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument)doc).render(new Runnable() {
+                public void run() {
+                    res.set(_checkCondition(doc, dot));
+                }
+            });
+        } else {
+            res.set(_checkCondition(doc, dot));
+        }
+        return res.get();
     }
 
+    private static boolean _checkCondition(Document doc, int dot) {
+        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot) && CompletionSupport.isCompletionEnabled(doc, dot);
+    }
 
 //    private boolean parseExpression(CsmCompletionTokenProcessor tp, TokenSequence<?> cppTokenSequence, int startOffset, int lastOffset) {
 //        boolean processedToken = false;
@@ -198,7 +214,7 @@ abstract public class CsmCompletionQuery {
         CsmCompletionResult ret = null;
 
         CompletionSupport sup = CompletionSupport.get(doc);
-        if (sup == null || !checkCondition(doc, offset)) {
+        if (sup == null || !checkCondition(doc, offset, true)) {
             return null;
         }
 

@@ -43,10 +43,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import org.openide.util.Exceptions;
 
 /**
  * Extension of the <tt>AbstractAction</tt> implementation that allows to attach
@@ -54,14 +56,12 @@ import javax.swing.AbstractAction;
  *
  * @param <T> result type of the action
  */
-public abstract class ObservableAction<T>
-        extends AbstractAction implements Callable<T> {
+public abstract class ObservableAction<T> extends AbstractAction {
 
     private static ExecutorService executorService =
             Executors.newCachedThreadPool();
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
-    private volatile T result = null;
     private volatile Future<T> task = null;
     private ActionEvent event;
 
@@ -135,22 +135,35 @@ public abstract class ObservableAction<T>
 
         // Will execute task unsynchronously ... Post the task
         event = e;
-        task = executorService.submit(this);
+        task = executorService.submit(new Callable<T>() {
+
+            public T call() throws Exception {
+                fireStarted();
+                T result = performAction(event);
+                task = null;
+                fireCompleted(result);
+
+                return result;
+            }
+        });
     }
 
     /**
-     * Performs an action, or throws an exception if unable to do so.
-     *
-     * @return result of performed action
-     * @throws Exception if unable to compute a result
+     * Performs synchronous execution of the action.
+     * @return result ofaction execution.
      */
-    public T call() throws Exception {
-        fireStarted();
-        result = performAction(event);
-        task = null;
-        fireCompleted();
+    public final T invoke() {
+        actionPerformed(null);
 
-        return result;
+        try {
+            return task.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
     }
 
     private void fireStarted() {
@@ -162,7 +175,7 @@ public abstract class ObservableAction<T>
         }
     }
 
-    private void fireCompleted() {
+    private void fireCompleted(T result) {
         List<ObservableActionListener<T>> ll =
                 new ArrayList<ObservableActionListener<T>>(listeners);
 
@@ -171,15 +184,15 @@ public abstract class ObservableAction<T>
         }
     }
 
-    /**
-     * Returns result of most recent finished invokation.
-     * It is allowed to start action multiply times (though request to start
-     * action will be disregarded in case action execution is in progress). The
-     * object stores a value of the result from the last finished invokation.
-     *
-     * @return result of most recent finished invokation.
-     */
-    public T getLastResult() {
-        return result;
-    }
+//    /**
+//     * Returns result of most recent finished invokation.
+//     * It is allowed to start action multiply times (though request to start
+//     * action will be disregarded in case action execution is in progress). The
+//     * object stores a value of the result from the last finished invokation.
+//     *
+//     * @return result of most recent finished invokation.
+//     */
+//    public T getLastResult() {
+//        return result;
+//    }
 }

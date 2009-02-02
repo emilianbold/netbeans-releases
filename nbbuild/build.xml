@@ -160,6 +160,8 @@ made subject to such option by the copyright holder.
     <resolve name="modules" value="config.modules.${moduleconfig}"/>
     <resolve name="fixedmodules" value="config.fixedmodules.${moduleconfig}"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
+    <checkmoduleconfigs nbroot=".."/>
   </target>
 
   <target name="set-buildnumber" unless="buildnumber">
@@ -1828,98 +1830,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
     <deps>
-      <!-- XXX this is ridiculous; task ought to figure out clusters from project properties! -->
-      <input name="platform" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.platform.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="ide" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.ide.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="gsf" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.gsf.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="java" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.java.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="websvccommon" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.websvccommon.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="apisupport" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.apisupport.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="enterprise" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.enterprise.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="nb" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.nb.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="harness" >
-        <jars dir="${netbeans.dest.dir}" >
-          <include name="${nb.cluster.harness.dir}/**/*.jar" />
-        </jars>
-      </input>
-      <input name="mobility">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.mobility.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="profiler">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.profiler.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="ruby">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.ruby.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="soa">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.soa.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="identity">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.identity.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="uml">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.uml.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="visualweb">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.visualweb.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="xml">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.xml.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      <input name="cnd">
-        <jars dir="${netbeans.dest.dir}">
-          <include name="${nb.cluster.cnd.dir}/**/*.jar"/>
-        </jars>
-      </input>
-      
+      <inputpattern dir="${netbeans.dest.dir}"/>
       <output type="group-dependencies" file="${generated.files.dir}/cluster-deps.txt" />
       <output type="group-implementation-dependencies" file="${generated.files.dir}/cluster-impl-deps.txt" />
       <output type="modules" file="${generated.files.dir}/modules.txt" />
@@ -1970,12 +1881,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="${check-file-layout}${line.separator}" file="${check.files.layout.generated}" />
     <replace file="${check.files.layout.generated}" token="," value="${line.separator}" />
     <replace file="${check.files.layout.generated}" token="\" value="/" />
-  </target>
-  
-
-  <target name="check-module-configs" depends="bootstrap" description="Sanity-check build.properties and cluster.properties.">
-    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
-    <checkmoduleconfigs nbroot=".."/>
   </target>
 
   <target name="index-layer-paths" depends="generate-golden-files-init" description="Create index of layer paths.">

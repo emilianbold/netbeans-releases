@@ -58,8 +58,6 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -69,6 +67,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Ludo
+ * @author vince
  */
 public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
@@ -112,8 +111,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      */
     public Component getComponent() {
         if (component == null) {
-            component = new AddServerLocationVisualPanel(wizardIterator); // .getIndirect(),
-                    //wizardIterator.getDirect(), wizardIterator.getNameOfBits());
+            component = new AddServerLocationVisualPanel(wizardIterator);
             component.addChangeListener(this);
         }
         return component;
@@ -283,19 +281,6 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     public boolean isFinishPanel() {
         return wizardIterator.getHttpPort() != -1;
     }
-
-//    private boolean isValidV3PreludeInstall(File installRoot, File glassfishRoot) {
-//        File jar = ServerUtilities.getJarName(glassfishRoot.getAbsolutePath(), ServerUtilities.GFV3_JAR_MATCHER);
-  //      if(jar == null || !jar.exists()) {
-    //        return false;
-      //  }
-        
-//        File containerRef = new File(glassfishRoot, "config" + File.separator + "glassfish.container");
-  //      if(!containerRef.exists()) {
-    //        return false;
-      //  }
-//        return true;
-  //  }
     
     static boolean isRegisterableDomain(File domainDir) {
         File testFile = new File(domainDir, "logs"); // NOI18N

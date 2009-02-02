@@ -77,8 +77,6 @@ import org.openide.util.Utilities;
  */
 public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
-    //public static final String INSTALL_ROOT_PREF_KEY = "last-install-root";
-    
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddDomainLocationPanel locationPanel2 = null;
     
@@ -146,7 +144,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            //ip.put(GlassfishModule.URL_ATTR, formatUri(glassfishRoot,))
             CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip,gip);
             cd.start();
             result.add(gip.getInstance(domainsDir));
@@ -243,7 +240,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private String glassfishRoot;
 
     public String formatUri(String glassfishRoot, String host, int port) {
-        return "[" + glassfishRoot + "]"+gip.getUriFragment()+":" + host + ":" + port;
+        return gip.formatUri(glassfishRoot, host, port);
     }
 
     String getDefaultInstallDirectoryName() {
@@ -311,6 +308,19 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         if(!containerRef.exists()) {
             return false;
         }
+        for (String s : gip.getRequiredFiles()) {
+            containerRef = new File(glassfishDir, s);
+            if (!containerRef.exists()) {
+                return false;
+            }
+        }
+        for (String s : gip.getExcludedFiles()) {
+            containerRef = new File(glassfishDir, s);
+            if (containerRef.exists()) {
+                return false;
+            }
+        }
+
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
         return true;
     }
@@ -406,9 +416,4 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     String getInstallRootKey() {
         return gip.getInstallRootKey(); // "last-install-root"; // NOI18N
     }
-
-//    private String getUriFragment() {
-//        return gip.getUriFragment(); // "deployer:gfv3";
-//    }
-    
 }

@@ -55,7 +55,7 @@ package org.netbeans.modules.cnd.spi.model.services;
 import javax.swing.text.Document;
 
 /**
- * Service that provides UI for macro expansion
+ * Service that provides UI for macro expansion.
  *
  * @author Nick Krasilnikov
  */
@@ -67,15 +67,5 @@ public interface CsmMacroExpansionViewProvider {
      * @param doc - document
      * @param offset - offset in document
      */
-    public abstract void showMacroExpansionView(Document doc, int offset);
-
-    /**
-     * Updates position for Macro Expansion View panel.
-     *
-     * @param doc - document
-     * @param offset - offset in document
-     * @return - changes found
-     */
-    public abstract boolean updateMacroExpansionView(int newOffset);
-
+    public void showMacroExpansionView(Document doc, int offset);
 }

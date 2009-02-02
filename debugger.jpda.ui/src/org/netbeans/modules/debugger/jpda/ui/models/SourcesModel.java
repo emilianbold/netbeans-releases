@@ -90,7 +90,7 @@ NodeActionsProvider {
     private JPDADebugger            debugger;
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
-    private Set<String>             filters = new HashSet<String>();
+    private Set<String>             filters = new LinkedHashSet<String>();
     private Set<String>             enabledFilters = new HashSet<String>();
     private Set<String>             enabledSourceRoots = new HashSet<String>();
     private Set<String>             disabledSourceRoots = new HashSet<String>();

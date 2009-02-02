@@ -65,16 +65,13 @@ public final class DeclarationGenerator {
         if (field.isStatic()) {
             out.append("static "); //NOI18N
         }
-        out.append(field.getType().getClassifierText()).append(" "); //NOI18N
+        out.append(field.getType().getText()).append(" "); //NOI18N
         // add name
         if (kind == Kind.EXTERNAL_DEFINITION) {
             // external definition needs class prefix
             out.append(field.getContainingClass().getName()).append("::"); // NOI18N
         }
-        out.append(gName).append("()"); // NOI18N
-        if (field.getType().isConst()) {
-            out.append(" const "); // NOI18N
-        }
+        out.append(gName).append("() const "); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
@@ -100,8 +97,9 @@ public final class DeclarationGenerator {
         }
         out.append(sName).append("("); // NOI18N
         // add parameter
-        out.append(field.getType().getClassifierText());
+        out.append(field.getType().getText());
         out.append(" ").append(fldName);// NOI18N
+        out.append(")"); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {

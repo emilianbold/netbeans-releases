@@ -142,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
 
      How to use D-Light Toolkit to implement Gizmo:
         <ul>
-          <li>Create MyFavoriteConfiguration configuration: list tools to be used in Gizmo:
+          <li>Create "Gizmo" configuration: list tools to be used in Gizmo:
             <pre>
  &lt;filesystem&gt;
   &lt;folder name="DLight"&gt;
@@ -303,7 +303,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   
   </p>
  </answer>
 

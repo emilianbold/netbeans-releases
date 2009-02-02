@@ -85,7 +85,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      *
      */
     public DLightManager() {
-        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponent());
+        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
     }
 
     public static DLightManager getDefault() {
@@ -194,6 +194,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void addDLightSessionListener(DLightSessionListener listener) {
+        if (listener == null){
+            return;
+        }
         if (!sessionListeners.contains(listener)) {
             sessionListeners.add(listener);
 
@@ -209,7 +212,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    public DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
+    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
         DLightSession session = new DLightSession();
         session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
         sessions.add(session);
@@ -218,6 +221,10 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
+        //should add existinhg listeners
+        for (DLightSessionListener sessionListener : sessionListeners){
+            sessionListener.sessionAdded(session);
+        }
         return session;
     }
 

@@ -284,6 +284,14 @@ public class PropertiesTableModel extends AbstractTableModel {
         fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, columnModelIndex));
     }
 
+    /**
+     * Get FileEntry  according to column in Table View
+     * @param column
+     * @return
+     */
+    PropertiesFileEntry getFileEntry(int column) {
+        return structure.getNthEntry(column-1);
+    }
     /** Overrides superclass method. */
     @Override
     public String toString() {
@@ -364,8 +372,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                 // Note: Normal way would be use the next commented out rows, which should do in effect
                 // the same thing like reseting the model, but it doesn't, therefore we reset the model directly.
                 
-                //cancelEditingInTables(getDefaultCancelSelector());
-                //fireTableStructureChanged(); 
+                cancelEditingInTables(getDefaultCancelSelector());
+                fireTableStructureChanged(); 
 
                 Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
                 for(int i = 0; i < list.length; i++) {
@@ -396,9 +404,11 @@ public class PropertiesTableModel extends AbstractTableModel {
             } else if(changeType == PropertyBundleEvent.CHANGE_FILE) {
                 // File changed.
                 final int index = structure.getEntryIndexByFileName(evt.getEntryName());
+                //This mean file deleted
                 if (index == -1) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
+                    fireTableStructureChanged();
+//                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+//                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
                     return;
                 }
                 
@@ -409,8 +419,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                         return (column == index + 1);
                     }
                 });
-                
-                fireTableColumnChanged(index + 1);
+//                fireTableColumnChanged(index + 1);
+                  fireTableStructureChanged();
             } else if(changeType == PropertyBundleEvent.CHANGE_ITEM) {
                 // one item changed
                 final int index2 = structure.getEntryIndexByFileName(evt.getEntryName());

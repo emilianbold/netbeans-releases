@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.CharArrayWriter;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
@@ -138,7 +139,7 @@ public class HostInfoTest {
 
         ExecutionEnvironment ee = new ExecutionEnvironment("ak119685", "129.159.127.252");
         try {
-            System.out.println(new NativeTask(ee, "/bin/ls", null).invoke());
+            System.out.println(new NativeTask(ee, "/bin/ls", null).invoke(false));
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -171,9 +172,10 @@ public class HostInfoTest {
             System.out.println("Expected exception");
         }
 
-        StringBuffer taskOutput = new StringBuffer();
-        NativeTask nt = new NativeTask(new ExecutionEnvironment("ak119685", "localhost"), "/bin/ls", null, taskOutput);
-        nt.submit();
+        CharArrayWriter taskOutput = new CharArrayWriter();
+        NativeTask nt = new NativeTask(new ExecutionEnvironment("ak119685", "localhost"), "/bin/ls", null);
+        nt.redirectOutTo(taskOutput);
+        nt.submit(true, false);
 
         Integer taskResult = -1;
         

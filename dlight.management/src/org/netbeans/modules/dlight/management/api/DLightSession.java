@@ -104,6 +104,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             case DONE:
                 targetFinished(source);
                 break;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 
@@ -195,10 +198,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
     synchronized void stop() {
-        // TODO: review later....
+        if (state == SessionState.ANALYZE){
+            return;
+        }
+        setState(SessionState.ANALYZE);
         for (ExecutionContext c : contexts) {
             final DLightTarget target = c.getTarget();
-            DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
+            target.removeTargetListener(this);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
+                }
+            });            
         }
     }
 

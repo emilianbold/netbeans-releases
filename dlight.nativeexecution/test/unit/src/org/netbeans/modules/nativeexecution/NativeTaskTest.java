@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.CharArrayWriter;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.junit.After;
@@ -156,6 +157,7 @@ public class NativeTaskTest {
 //        instance.run();
         // TODO review the generated test code and remove the default call to fail.
 
+        final CharArrayWriter errWriter = new CharArrayWriter();
 
         int tcount = 1;
         Thread[] threads = new Thread[tcount];
@@ -163,8 +165,9 @@ public class NativeTaskTest {
             threads[i] = new Thread(new Runnable() {
 
                 public void run() {
-                    final NativeTask task = new NativeTask("/bin/ls");
-                    task.submit();
+                    final NativeTask task = new NativeTask("/bin/lsss /");
+                    task.redirectErrTo(errWriter);
+                    task.submit(true, false);
                     System.out.println("PID is " + task.getPID());
 
                     try {
@@ -174,6 +177,15 @@ public class NativeTaskTest {
                     } catch (ExecutionException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                    
+                    System.out.println("ERROR: '" + errWriter.toString() + "'");
+
+                    try {
+                        System.out.println(task.invoke(false));
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
                 }
             });
         }
@@ -190,6 +202,7 @@ public class NativeTaskTest {
             }
         }
 
+        System.out.println("Here we are!");
 
 //        fail("The test case is a prototype.");
     }

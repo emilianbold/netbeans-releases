@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.RequestProcessor;
 
 /**
  * D-Light Target.Target to be d-lighted, it can be anything: starting from shell script to
@@ -56,138 +57,144 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public abstract class DLightTarget {
 
-  private static final Logger log = DLightLogger.getLogger(DLightTarget.class);
-  private List<DLightTargetListener> listeners = Collections.synchronizedList(new ArrayList<DLightTargetListener>());
-  private final DLightTargetExecutionService executionService;
-  
+    private static final Logger log = DLightLogger.getLogger(DLightTarget.class);
+    private List<DLightTargetListener> listeners = Collections.synchronizedList(new ArrayList<DLightTargetListener>());
+    private final DLightTargetExecutionService executionService;
 
-  static {
-    DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
-  }
 
-  /**
-   * Create new target to be d-lighted, as a parameter service which
-   * can start and terminated target should be passed
-   * @param executionService service to start and terminate target
-   */
-  protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
-    this.executionService = executionService;
-  }
-
-  private final DLightTargetExecutionService getExecutionService() {
-    return executionService;
-  }
-
-  /**
-   * Adds target listener, all listeners will be notofied about
-   * target state change.
-   * @param listener add listener
-   */
-  public final void addTargetListener(DLightTargetListener listener) {
-    if (listener != null && !listeners.contains(listener)) {
-      listeners.add(listener);
+    static {
+        DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
     }
-  }
 
-  /**
-   * Remove target listener
-   * @param listener listener to remove from the list
-   */
-  public final void removeTargetListener(DLightTargetListener listener) {
-    if (listeners.contains(listener)) {
-      listeners.remove(listener);
+    /**
+     * Create new target to be d-lighted, as a parameter service which
+     * can start and terminated target should be passed
+     * @param executionService service to start and terminate target
+     */
+    protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
+        this.executionService = executionService;
     }
-  }
 
-  /**
-   * Notifyes listeners target state changed
-   * @param oldState state target was
-   * @param newState state  target is
-   */
-  protected final void notifyListeners(DLightTarget.State oldState, DLightTarget.State newState) {
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);    
-    for (DLightTargetListener l : ls) {
-      if (oldState == State.INIT && newState == State.RUNNING &&  getState() != State.RUNNING){
-          break;
-      }      
-      l.targetStateChanged(this, oldState, newState);
-      
+    private final DLightTargetExecutionService getExecutionService() {
+        return executionService;
     }
-  }
-
-  /**
-   * Returns {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} this
-   * target will be run at
-   * @return {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} to run this target at
-   */
-  public abstract ExecutionEnvironment getExecEnv();
-
-  /**
-   * Returns current target state as {@link org.netbeans.modules.dlight.api.execution.DLightTarget.State}
-   * @return target current state
-   */
-  public abstract DLightTarget.State getState();
-
-  /**
-   * States target can be at
-   */
-  public enum State {
 
     /**
-     * Initial state
+     * Adds target listener, all listeners will be notofied about
+     * target state change.
+     * @param listener add listener
      */
-    INIT,
-    /**
-     * Starting state
-     */
-    STARTING,
-    /**
-     * Running state
-     */
-    RUNNING,
-    /**
-     * Target is done
-     */
-    DONE,
-    /**
-     * Target is failed
-     */
-    FAILED,
-    /**
-     * Target is Stopped
-     */
-    STOPPED,
-    /**
-     * Target is terminated
-     */
-    TERMINATED,
-  }
-
-  /**
-   * This service should be implemented to run target along
-   * with DLightTarget implementation
-   * @param <T> target to execute
-   */
-  public interface DLightTargetExecutionService<T extends DLightTarget> {
-
-    /**
-     * Start target
-     * @param target targeto start
-     */
-    public void start(T target);
-
-    /**
-     * Terminate target
-     * @param target target to terminate
-     */
-    public void terminate(T target);
-  }
-
-  private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
-
-    @Override
-    public DLightTargetExecutionService getDLightTargetExecution(DLightTarget target) {
-      return target.getExecutionService();
+    public final void addTargetListener(DLightTargetListener listener) {
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
+        }
     }
-  }
+
+    /**
+     * Remove target listener
+     * @param listener listener to remove from the list
+     */
+    public final void removeTargetListener(DLightTargetListener listener) {
+        if (listeners.contains(listener)) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifyes listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final DLightTarget.State oldState,
+        final DLightTarget.State newState) {
+        DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
+        for (DLightTargetListener l : ls) {
+            final DLightTargetListener listener = l;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    listener.targetStateChanged(DLightTarget.this, oldState, newState);
+                }
+            });
+
+
+
+        }
+    }
+
+    /**
+     * Returns {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} this
+     * target will be run at
+     * @return {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} to run this target at
+     */
+    public abstract ExecutionEnvironment getExecEnv();
+
+    /**
+     * Returns current target state as {@link org.netbeans.modules.dlight.api.execution.DLightTarget.State}
+     * @return target current state
+     */
+    public abstract DLightTarget.State getState();
+
+    /**
+     * States target can be at
+     */
+    public enum State {
+
+        /**
+         * Initial state
+         */
+        INIT,
+        /**
+         * Starting state
+         */
+        STARTING,
+        /**
+         * Running state
+         */
+        RUNNING,
+        /**
+         * Target is done
+         */
+        DONE,
+        /**
+         * Target is failed
+         */
+        FAILED,
+        /**
+         * Target is Stopped
+         */
+        STOPPED,
+        /**
+         * Target is terminated
+         */
+        TERMINATED,
+    }
+
+    /**
+     * This service should be implemented to run target along
+     * with DLightTarget implementation
+     * @param <T> target to execute
+     */
+    public interface DLightTargetExecutionService<T extends DLightTarget> {
+
+        /**
+         * Start target
+         * @param target targeto start
+         */
+        public void start(T target);
+
+        /**
+         * Terminate target
+         * @param target target to terminate
+         */
+        public void terminate(T target);
+    }
+
+    private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
+
+        @Override
+        public DLightTargetExecutionService getDLightTargetExecution(DLightTarget target) {
+            return target.getExecutionService();
+        }
+    }
+
 }

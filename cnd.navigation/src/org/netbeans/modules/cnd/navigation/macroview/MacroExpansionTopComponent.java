@@ -43,13 +43,8 @@ package org.netbeans.modules.cnd.navigation.macroview;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmListeners;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelListener;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -60,7 +55,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Nick Krasilnikov
  */
-public final class MacroExpansionTopComponent extends TopComponent implements CsmModelListener {
+public final class MacroExpansionTopComponent extends TopComponent {
 
     private static final Logger LOGGER = Logger.getLogger(MacroExpansionTopComponent.class.getName());
     private static MacroExpansionTopComponent instance;
@@ -102,12 +97,13 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
         panel.setLocalContext(lastLocalContext);
         panel.setSyncCaret(lastSyncCaret);
         panel.setSyncContext(lastSyncContext);
-        if(panel.isSyncCaret()) {
+        if (panel.isSyncCaret()) {
             panel.updateCaretPosition();
         }
         removeAll();
         add(panel, BorderLayout.CENTER);
         validate();
+        OpenedEditors.getDefault().fireStateChanged();
     }
 
     /**
@@ -125,7 +121,7 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
      * @return is macro expansion local
      */
     public boolean isLocalContext() {
-        if(panel != null) {
+        if (panel != null) {
             lastLocalContext = panel.isLocalContext();
         }
         return lastLocalContext;
@@ -137,7 +133,7 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
      * @return is caret synchronization enabled
      */
     public boolean isSyncCaret() {
-        if(panel != null) {
+        if (panel != null) {
             lastSyncCaret = panel.isSyncCaret();
         }
         return lastSyncCaret;
@@ -160,14 +156,6 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
     public void setStatusBarText(String s) {
         if (panel != null) {
             panel.setStatusBarText(s);
-        }
-    }
-
-    @Override
-    public void requestActive() {
-        super.requestActive();
-        if (panel != null) {
-            panel.requestFocusInWindow();
         }
     }
 
@@ -208,7 +196,6 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
      * Obtain the MacroExpansionTopComponent instance. Never call {@link #getDefault} directly!
      */
     public static synchronized MacroExpansionTopComponent findInstance() {
-        //TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         TopComponent win = CsmUtilities.getTopComponentInEQ(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(MacroExpansionTopComponent.class.getName()).warning(
@@ -224,19 +211,21 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
         return getDefault();
     }
 
-    public 
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        if (panel != null) {
+            panel.requestFocusInWindow();
+        }
+    }
+
+    public
     @Override
     int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
-    public 
-    @Override
-    void componentOpened() {
-        CsmListeners.getDefault().addModelListener(this);
-    }
-
-    public 
+    public
     @Override
     void componentClosed() {
         removeAll();
@@ -246,19 +235,26 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
             lastLocalContext = panel.isLocalContext();
             lastSyncCaret = panel.isSyncCaret();
             lastSyncContext = panel.isSyncContext();
+
+            Document doc = getExpandedContextDoc();
+            if (doc != null) {
+                Document doc2 = (Document) doc.getProperty(Document.class);
+                if (doc2 != null) {
+                    doc2.putProperty(Document.class, null);
+                }
+            }
             panel = null;
         }
-        CsmListeners.getDefault().removeModelListener(this);
     }
 
     /** replaces this in object stream */
-    public 
+    public
     @Override
     Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected 
+    protected
     @Override
     String preferredID() {
         return PREFERRED_ID;
@@ -271,25 +267,5 @@ public final class MacroExpansionTopComponent extends TopComponent implements Cs
         public Object readResolve() {
             return MacroExpansionTopComponent.getDefault();
         }
-    }
-
-    public void projectOpened(CsmProject project) {
-    }
-
-    public void projectClosed(CsmProject project) {
-        if (CsmModelAccessor.getModel().projects().isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    MacroExpansionTopComponent tc = MacroExpansionTopComponent.findInstance();
-                    if (tc.isOpened()) {
-                        tc.close();
-                    }
-                }
-            });
-        }
-    }
-
-    public void modelChanged(CsmChangeEvent e) {
     }
 }

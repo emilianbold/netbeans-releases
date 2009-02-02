@@ -129,6 +129,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             } catch(InstanceCreationException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex);
             }
+        } else {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonModule is NULL");
         }
 
         return (ip != null) ? new JavaEEServerModule(instanceLookup, ip) : null;

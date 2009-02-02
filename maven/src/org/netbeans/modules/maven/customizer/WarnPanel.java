@@ -53,7 +53,7 @@ public class WarnPanel extends javax.swing.JPanel {
         cbNextTime.setSelected(true);
     }
 
-    boolean disabledWarning() {
+    public boolean disabledWarning() {
         return !cbNextTime.isSelected();
     }
 

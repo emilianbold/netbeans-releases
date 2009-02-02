@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import com.jcraft.jsch.ChannelExec;
@@ -60,7 +61,7 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
     public RemoteNativeExecutor(NativeTask task) {
         super(task);
-        this.execEnv = task.getExecEnv();
+        this.execEnv = task.getExecutionEnvironment();
     }
 
     @Override
@@ -68,7 +69,8 @@ public final class RemoteNativeExecutor extends NativeExecutor {
         final ConnectionManager mgr = ConnectionManager.getInstance();
 
         synchronized (mgr) {
-            final Session session = mgr.getConnectionSession(execEnv);
+            final Session session = ConnectionManagerAccessor.getDefault().
+                    getConnectionSession(mgr, execEnv);
 
             if (session == null) {
                 return -1;
@@ -110,25 +112,18 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
         return pid;
     }
+    private static final Object cancelLock = new Object();
 
-    public synchronized boolean cancel() {
-        if (channel == null || !channel.isConnected()) {
-            return true;
+    public boolean cancel() {
+        boolean result = true;
+        synchronized (cancelLock) {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+                NativeTaskSupport.kill(execEnv, 9, getPID());
+                result = !channel.isConnected();
+            }
         }
-
-        channel.disconnect();
-        NativeTaskSupport.kill(execEnv, 9, getPID());
-//            System.out.println("Will kill " + getPID());
-//            result = NativeTaskSupport.kill(execEnv, 9, getPID());
-
-//            try {
-//                channel.sendSignal("KILL"); // NOI18N
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-
-        //TODO: Processes are still not killed ;(
-        return !channel.isConnected();
+        return result;
 
     // TODO: When to cancel session?
 //    if (session != null) {
@@ -157,6 +152,10 @@ public final class RemoteNativeExecutor extends NativeExecutor {
 
     @Override
     protected final Integer doGet() {
+        if (channel == null) {
+            return -1;
+        }
+
         while (channel.isConnected()) {
             try {
                 Thread.sleep(200);
@@ -165,7 +164,6 @@ public final class RemoteNativeExecutor extends NativeExecutor {
             }
         }
 
-        channel.disconnect();
         return channel.getExitStatus();
     }
 }

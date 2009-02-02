@@ -80,9 +80,6 @@ import org.openide.util.RequestProcessor;
  */
 public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
 
-//    public static final String PRELUDE_URI_PREFIX = "deployer:gfv3";
-//    public static final String URI_PREFIX = "deployer:gfv3ee6";
-
     private final transient Lookup lookup;
     private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
@@ -132,10 +129,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
     
-    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
-        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
-    }
-
+//<<<<<<< local
+//    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
+//        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
+//    }
+//
+//=======
+//>>>>>>> other
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {

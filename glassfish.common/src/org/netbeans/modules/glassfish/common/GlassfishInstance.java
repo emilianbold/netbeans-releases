@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,6 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -155,7 +153,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         for (GlassfishModuleFactory moduleFactory : 
                 Lookups.forPath("Servers/GlassFish").lookupAll(GlassfishModuleFactory.class)) {
             if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
-                ic.add(moduleFactory.createModule(lookup));
+                Object t = moduleFactory.createModule(lookup);
+                if (null == t) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module");
+                } else {
+                    ic.add(t);
+                }
             }
         }
     }
@@ -259,6 +262,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         return commonSupport.getDisplayName();
     }
 
+    // TODO -- this should be done differently
     public String getServerDisplayName() {
         File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+
                 "schemas"+File.separator+"web-app_3_0.xsd");

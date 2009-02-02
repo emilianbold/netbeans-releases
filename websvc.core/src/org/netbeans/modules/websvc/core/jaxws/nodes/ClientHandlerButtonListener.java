@@ -406,15 +406,6 @@ public class ClientHandlerButtonListener implements ActionListener {
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }
-            // refresh client artifacts directory due to code completion
-            String packageName = client.getPackageName();
-            if (packageName != null) {
-                packageName = packageName.replace(".", "/"); //NOI18N
-                FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/" + packageName); //NOI18N
-                if (clientArtifactsFolder != null) {
-                    clientArtifactsFolder.refresh();
-                }
-            }
         }
     }
 

@@ -89,7 +89,6 @@ public class Hk2PluginProperties {
     public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
 
     private InstanceProperties ip;
-    //private Hk2DeploymentManager dm;
     private static final int DEBUGPORT = 8787;
 
     /**
@@ -97,7 +96,6 @@ public class Hk2PluginProperties {
      * @param dm
      */
     public Hk2PluginProperties(Hk2DeploymentManager dm) {
-        //this.dm = dm;
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
     }
 

@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -228,6 +229,7 @@ public class ElementJavadoc {
         this.cpInfo = compilationInfo.getClasspathInfo();
         Doc doc = eu.javaDocFor(element);
         boolean localized = false;
+        StringBuilder content = new StringBuilder();
         if (element != null) {
             docURL = SourceUtils.getJavadoc(element, cpInfo);
             localized = isLocalized(docURL, element);
@@ -240,13 +242,20 @@ public class ElementJavadoc {
                             ElementOpen.open(fo, handle);
                         }
                     };
+                    if (docURL == null) {
+                        try {
+                            content.append("<base href=\"").append(fo.getURL()).append("\"></base>"); //NOI18N
+                        } catch (FileStateInvalidException ex) {
+                            content = new StringBuilder();
+                        }
+                    }
                 }
                 if (url != null) {
                     docURL = url;
                 }
             }
         }
-        this.content = prepareContent(doc, localized);
+        this.content = content.append(prepareContent(doc, localized)).toString();
     }
     
     private ElementJavadoc(URL url) {
@@ -298,7 +307,7 @@ public class ElementJavadoc {
      * @param useJavadoc preffer javadoc to sources
      * @return Javadoc content
      */
-    private String prepareContent(Doc doc, final boolean useJavadoc) {
+    private StringBuilder prepareContent(Doc doc, final boolean useJavadoc) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
@@ -506,7 +515,7 @@ public class ElementJavadoc {
                         sb.append(getMethodTags(mdoc, returnTags, paramTags,
                                 throwsTags, throwsInlineTags));
                         sb.append("</p>"); //NOI18N
-                        return sb.toString();
+                        return sb;
                     }
                 } else {
                     if (inlineTags.length > 0 || doc.tags().length > 0) {
@@ -515,7 +524,7 @@ public class ElementJavadoc {
                         sb.append("</p><p>"); //NOI18N
                         sb.append(getTags(doc));
                         sb.append("</p>"); //NOI18N
-                        return sb.toString();
+                        return sb;
                     }
                 }
             }
@@ -525,10 +534,10 @@ public class ElementJavadoc {
             else
                 sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
             sb.append("</p>"); //NOI18N
-            return sb.toString();
+            return sb;
         }
         sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
-        return sb.toString();
+        return sb;
     }
     
     private CharSequence getContainingClassOrPackageHeader(ProgramElementDoc peDoc) {

@@ -82,10 +82,21 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     private DeploymentFactory df;
     private ServerUtilities su;
 
-    public Hk2OptionalFactory() {
-        this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
-    }
-    
+//<<<<<<< local
+//=======
+//    // Could not use createPrelude and createEe6 in the layer.xml file
+//    /**
+//     * @deprecated for use from the layer.xml file ONLY
+//     */
+//>>>>>>> other
+//    public Hk2OptionalFactory() {
+//<<<<<<< local
+//        this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
+//=======
+//        //this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
+//>>>>>>> other
+//    }
+//
     protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su) {
         this.df = df;
         this.su = su;

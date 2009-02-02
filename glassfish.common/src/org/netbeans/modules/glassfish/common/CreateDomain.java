@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-// </editor-fold>
+
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
@@ -73,7 +72,6 @@ public class CreateDomain extends Thread {
     final private File platformLocation;
     final private Map<String, String> map;
     final private Map<String, String> ip;
-    //final private String uriFragment;
     private GlassfishInstanceProvider gip;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
@@ -86,7 +84,6 @@ public class CreateDomain extends Thread {
         this.gip = gip;
         map.putAll(ip);
         computePorts(ip,map);
-        //this.uriFragment = uriFragment;
     }
 
     static private void computePorts(Map<String, String> ip, Map<String, String> createProps) {

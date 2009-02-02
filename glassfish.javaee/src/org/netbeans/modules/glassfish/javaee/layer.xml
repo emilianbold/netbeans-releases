@@ -36,12 +36,12 @@
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createPrelude"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createPrelude"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                 </file>
@@ -65,12 +65,12 @@
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Ee6JavaEEPlatformFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createEe6"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Ee6OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createEe6"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                 </file>

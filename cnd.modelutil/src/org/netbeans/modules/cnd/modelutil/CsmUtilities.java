@@ -158,14 +158,25 @@ public class CsmUtilities {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
         } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
             CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
-            if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember) fun.getDeclaration());
+            CsmFunction decl = fun.getDeclaration();
+            if (CsmKindUtilities.isClassMember(decl)) {
+                mod |= CsmUtilities.getMemberModifiers((CsmMember) decl);
+            } else {
+                if (decl == null) {
+                    decl = fun;
+                }
+                if (CsmKindUtilities.isGlobalFunction(obj)) {
+                    mod |= GLOBAL;
+                }
+                if (CsmKindUtilities.isFileLocalFunction(decl)){
+                    mod |= FILE_LOCAL;
+                }
             }
         } else {
-            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalVariable(obj)) {
+            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalFunction(obj)) {
                 mod |= GLOBAL;
             }
-            if (CsmKindUtilities.isFileLocalVariable(obj)) {
+            if (CsmKindUtilities.isFileLocalVariable(obj) || CsmKindUtilities.isFileLocalFunction(obj)) {
                 mod |= FILE_LOCAL;
             }
             if (CsmKindUtilities.isEnumerator(obj)) {
@@ -326,6 +337,33 @@ public class CsmUtilities {
             exc.printStackTrace();
         }
         return csmProject;
+    }
+
+    /**
+     * Tries to find project that contains given file under its root directory.
+     * File doesn't have to be included into project or code model.
+     * This is somewhat similar to default FileOwnerQueryImplementation,
+     * but only for CsmProjects.
+     *
+     * @param fo  file to look up
+     * @return project that contains file under its root directory,
+     *      or <code>null</code> if there is no such project
+     */
+    public static CsmProject getCsmProject(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String path = file.getPath();
+            for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
+                Object platformProject = csmProject.getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject nativeProject = (NativeProject)platformProject;
+                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
+                        return csmProject;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static boolean isAnyNativeProjectOpened() {

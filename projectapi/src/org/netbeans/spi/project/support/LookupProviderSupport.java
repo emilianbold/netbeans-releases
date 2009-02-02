@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -141,15 +140,14 @@ public final class LookupProviderSupport {
         
         //just for assertion evaluation.
         private boolean isAllJustLookupProviders(Lookup lkp) {
-            Lookup.Result<Object> res = lkp.lookupResult(Object.class);
-            Set<Class<?>> set = res.allClasses();
-            for (Class clzz : set) {
+            for (Lookup.Item<?> item : lkp.lookupResult(Object.class).allItems()) {
+                Class clzz = item.getType();
                 if (!LookupProvider.class.isAssignableFrom(clzz) && !MetaLookupMerger.class.isAssignableFrom(clzz)) {
-                    Logger.getLogger(LookupProviderSupport.class.getName()).warning("" + clzz.getName() + " is not instance of LookupProvider."); //NOI18N
-                    return false;
+                    Logger.getLogger(LookupProviderSupport.class.getName()).warning(
+                            clzz.getName() + " from " + item.getId() + " is not a LookupProvider"); //NOI18N
                 }
             }
-            return true;
+            return true; // always just print warnings
         }
         
         

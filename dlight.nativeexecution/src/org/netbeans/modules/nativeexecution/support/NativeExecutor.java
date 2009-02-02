@@ -54,11 +54,13 @@ import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
 import org.netbeans.modules.nativeexecution.api.TaskExecutionState;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 public abstract class NativeExecutor implements Cancellable {
 
@@ -98,12 +100,13 @@ public abstract class NativeExecutor implements Cancellable {
 
     abstract public OutputStream getTaskOutputStream() throws IOException;
 
-    public final synchronized Integer get() throws ExecutionException {
+    public final Integer get() throws InterruptedException, ExecutionException {
         if (exception != null) {
             throw new ExecutionException(exception);
         }
 
-        return doGet();
+        Integer result = doGet();
+        return result;
     }
 
     public final Action[] getActions() {
@@ -132,9 +135,9 @@ public abstract class NativeExecutor implements Cancellable {
 
         return null;
     }
-    static int step = 1;
 
-    public final Integer invokeAndWait() throws Exception {
+    public final Integer invoke(boolean showProgress)
+            throws InterruptedException, ExecutionException {
         synchronized (stateMonitor) {
             // if we are in progress, just wait for this task completion...
 
@@ -152,10 +155,20 @@ public abstract class NativeExecutor implements Cancellable {
             reset();
         }
 
-        NativeTaskAccessor taskInfo = NativeTaskAccessor.getDefault();
-        ph = taskInfo.getProgressHandler(task);
+        final NativeTaskAccessor taskInfo = NativeTaskAccessor.getDefault();
+        final InputOutput ioTab = taskInfo.getRedirectionIO(task);
 
-        if (ph != null) {
+        if (showProgress) {
+            ph = ProgressHandleFactory.createHandle(
+                    task.toString(), this, 
+                    ioTab == null ? null :
+                        new AbstractAction("Cancel " + task.toString()) { // NOI18N
+
+                public void actionPerformed(ActionEvent e) {
+                    ioTab.select();
+                }
+            });
+
             ph.start();
         }
 
@@ -206,10 +219,31 @@ public abstract class NativeExecutor implements Cancellable {
 
             setState(TaskExecutionState.RUNNING);
 
-            setResult(get());
+            Integer result = get();
+
+            if (ot != null) {
+                try {
+                    ot.join(1000);
+                } catch (Exception e) {
+                }
+            }
+            if (et != null) {
+                try {
+                    et.join(1000);
+                } catch (Exception e) {
+                }
+            }
+            if (it != null) {
+                try {
+                    it.join(1000);
+                } catch (Exception e) {
+                }
+            }
+
+            setResult(result);
         } catch (CancellationException ex) {
             exception = ex;
-            setState(TaskExecutionState.CANCELED);
+            setState(TaskExecutionState.CANCELLED);
         } catch (Throwable ex) {
             if (ex instanceof ExecutionException) {
                 ex = ex.getCause();
@@ -236,7 +270,10 @@ public abstract class NativeExecutor implements Cancellable {
         return exitValue;
     }
 
-    public Future<Integer> invoke(boolean waitStart) {
+    final public Future<Integer> submit(
+            final boolean waitStart,
+            final boolean showProgress) {
+        
         synchronized (submisionLock) {
             if (submitted) {
                 return task;
@@ -246,29 +283,18 @@ public abstract class NativeExecutor implements Cancellable {
         NativeTaskExecutorService.submit(new Callable<Integer>() {
 
             public Integer call() {
-                submitted = true;
-
-                if (state != TaskExecutionState.INITIAL) {
-                    reset();
-                }
-
                 synchronized (submisionLock) {
+                    submitted = true;
                     submisionLock.notifyAll();
                 }
 
                 Integer result = -1;
+                
                 try {
-                    result = invokeAndWait();
+                    result = invoke(showProgress);
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 } finally {
-                    // No matter what was the reason for task competion,
-                    // notify on submisionLock.
                     submitted = false;
-
-                    synchronized (submisionLock) {
-                        submisionLock.notifyAll();
-                    }
                 }
 
                 return result;
@@ -313,6 +339,13 @@ public abstract class NativeExecutor implements Cancellable {
                     state == TaskExecutionState.STARTING) {
                 String err = "Task is not started yet"; // NOI18N
                 throw new IllegalStateException(err);
+            }
+
+            while (state == TaskExecutionState.INITIAL) {
+                try {
+                    stateMonitor.wait();
+                } catch (InterruptedException ex) {
+                }
             }
         }
 
@@ -373,7 +406,7 @@ public abstract class NativeExecutor implements Cancellable {
                         case ERROR:
                             l.taskError(task, exception);
                             break;
-                        case CANCELED:
+                        case CANCELLED:
                             l.taskCancelled(task,
                                     (CancellationException) exception);
                             break;
@@ -382,6 +415,7 @@ public abstract class NativeExecutor implements Cancellable {
                     log.severe(
                             "Exception during ExecutorTaskListener " // NOI18N
                             + l + " notification. " + e.toString()); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -398,7 +432,7 @@ public abstract class NativeExecutor implements Cancellable {
     }
 
     public final boolean isCancelled() {
-        return state.equals(TaskExecutionState.CANCELED);
+        return state.equals(TaskExecutionState.CANCELLED);
     }
 
     public final boolean isDone() {
@@ -470,7 +504,7 @@ public abstract class NativeExecutor implements Cancellable {
         }
 
         public void actionPerformed(ActionEvent e) {
-            task.submit();
+            task.submit(true, true);
             setEnabled(false);
         }
     }

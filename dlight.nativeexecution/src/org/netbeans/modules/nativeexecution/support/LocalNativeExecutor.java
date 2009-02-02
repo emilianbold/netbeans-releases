@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.openide.util.Exceptions;
 
 public final class LocalNativeExecutor extends NativeExecutor {
@@ -129,7 +130,7 @@ public final class LocalNativeExecutor extends NativeExecutor {
         boolean isUnix = false;
 
         try {
-            isUnix = task.getExecEnv().isUnix();
+            isUnix = HostInfo.isUnix(task.getExecutionEnvironment());
         } catch (HostNotConnectedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -178,12 +179,8 @@ public final class LocalNativeExecutor extends NativeExecutor {
                         ")- have to kill it"); // NOI18N
 
                 // So... Do one more attempt using 'kill -9'...
-                NativeTask killTask = new NativeTask(task.getExecEnv(),
-                        "/bin/kill", // NOI18N
-                        new String[]{"-9", // NOI18N
-                            Integer.toString(task.getPID())});
-
-                killTask.submit();
+                NativeTaskSupport.kill(
+                        task.getExecutionEnvironment(), 9, task.getPID());
             }
         }
         return true;
