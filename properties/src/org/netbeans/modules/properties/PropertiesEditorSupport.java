@@ -1111,6 +1111,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
     } // End of nested class Environment.
 
+
     
     /** Weak listener on file object that notifies the <code>Environment</code> object
      * that a file has been modified. */
@@ -1124,6 +1125,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         public EnvironmentListener(Environment environment) {
             LOG.finer("new EnvironmentListener(<Environment>)");        //NOI18N
             reference = new WeakReference<Environment>(environment);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            Environment myEnv = this.reference.get();
+            if (myEnv != null) {
+                myEnv.updateDocumentProperty();
+                myEnv.fileRemoved();
+            }
+//            super.fileDeleted(fe);
         }
         
         /** Fired when a file is changed.
@@ -1171,7 +1182,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             }
         }
     } // End of nested class EnvironmentListener.
-
     
     /** Inner class for opening editor view at a given key. */
     public class PropertiesEditAt implements EditCookie {

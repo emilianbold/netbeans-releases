@@ -69,17 +69,17 @@ import org.openide.util.lookup.Lookups;
  */
 public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     
-    private Hk2PluginProperties properties;
     private Hk2DeploymentManager dm;
     private LibraryImplementation[] libraries;
+    private Hk2JavaEEPlatformFactory pf;
 
     /**
      * 
      * @param dm 
      */
-    public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm) {
+    public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
-        this.properties = dm.getProperties();
+        this.pf = pf;
         initLibraries();
     }
     
@@ -100,8 +100,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static final String TOOL_JAXWSTESTER = "jaxws-tester";
     private static final String TOOL_APPCLIENTRUNTIME = "appClientRuntime";
     private static final String KEYSTORE_LOCATION = "config/keystore.jks";
-    private static final String TRUSTSTORE_LOCATION = "config/cacerts.jks";    
-    
+    private static final String TRUSTSTORE_LOCATION = "config/cacerts.jks";
+
     /**
      * 
      * @param toolName 
@@ -130,7 +130,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File wsLib = null;
         File jsr109lib = null;
         
-        String gfRootStr = properties.getGlassfishRoot();
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (gfRootStr != null) {
             wsLib = ServerUtilities.getJarName(gfRootStr, "webservices" + ServerUtilities.GFV3_VERSION_MATCHER);
             jsr109lib = new File(gfRootStr, "jsr109-impl");
@@ -186,7 +186,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public File[] getToolClasspathEntries(String toolName) {
-        String gfRootStr = properties.getGlassfishRoot();
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
             String[] entries = new String[] {"webservices", //NOI18N
                                              "javax.activation", //NOI18N
@@ -216,7 +216,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            String domainDirName = properties.getDomainDir();
+            String domainDirName = dm.getProperties().getDomainDir();
             domainDir = new File(domainDirName);
         }
         
@@ -240,10 +240,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public Set getSupportedSpecVersions() {
-        Set<String> result = new HashSet<String>();
-        result.add(J2eeModule.J2EE_14);
-        result.add(J2eeModule.JAVA_EE_5);
-        return result;
+        return pf.getSupportedSpecVersions();
     }
     
     /**
@@ -251,13 +248,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public Set getSupportedModuleTypes() {
-        Set<Object> result = new HashSet<Object>();
-        result.add(J2eeModule.WAR);
-        if("true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"))) {
-            result.add(J2eeModule.EJB);
-        }
-        return result;
+        return pf.getSupportedModuleTypes();
     }
+//        Set<Object> result = new HashSet<Object>();
+//        result.add(J2eeModule.WAR);
+//        if("true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"))) {
+//            result.add(J2eeModule.EJB);
+//        }
+//        return result;
+//    }
     
     /**
      * 
@@ -288,7 +287,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public String getDisplayName() {
-        return NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "MSG_MyServerPlatform");
+        return pf.getDisplayName(); // NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "MSG_MyPreludeServerPlatform");
     }
     
     /**
@@ -296,10 +295,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public Set getSupportedJavaPlatformVersions() {
-        Set<String> versions = new HashSet<String>();
-        versions.add("1.4"); // NOI18N
-        versions.add("1.5"); // NOI18N
-        return versions;
+        return pf.getSupportedJavaPlatforms();
     }
     
     /**
@@ -307,7 +303,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public JavaPlatform getJavaPlatform() {
-        return JavaPlatformManager.getDefault().getDefaultPlatform();
+        return pf.getJavaPlatform();
     }
     
     /**
@@ -320,16 +316,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     
     private void initLibraries() {
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
-        lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
+        lib.setName(pf.getLibraryName()); 
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
         libraries = new LibraryImplementation[] {lib};
     }
     
     @Override
     public Lookup getLookup() {
-        String gfRootStr = properties.getGlassfishRoot();
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
         Lookup baseLookup = Lookups.fixed(gfRootStr);
-        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/gfv3/Lookup"); //NOI18N
+        return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); // "J2EE/DeploymentPlugins/gfv3/Lookup"); //NOI18N
 //
 //        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
 //        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));

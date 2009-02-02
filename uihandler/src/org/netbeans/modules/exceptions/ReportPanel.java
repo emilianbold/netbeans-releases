@@ -43,7 +43,6 @@ package org.netbeans.modules.exceptions;
 
 import java.awt.Cursor;
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.openide.awt.HtmlBrowser;
 

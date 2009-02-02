@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.websvc.jaxwsmodel.project;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -64,6 +66,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -141,6 +144,9 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
                                 removeJaxWsExtension(jaxws_build, ext);
                                 ProjectManager.getDefault().saveProject(prj);
                                 buildScriptGenerated = true;
+                            } else {
+                                // remove compile dependencies, and re-generate build-script if needed
+                                removeCompileDependencies(prj, jaxws_build, ext);
                             }
                         } catch (IOException ex) {
                             ex.printStackTrace();
@@ -294,13 +300,9 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
             //adding dependencies
             if (clientsLength > 0) {
                 extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-                extension.addDependency("-do-compile", "wsimport-client-compile"); //NOI18N
-                extension.addDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             }
             if (fromWsdlServicesLength > 0) {
-                extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
-                extension.addDependency("-do-compile", "wsimport-service-compile"); //NOI18N
-                extension.addDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N                
+                extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N              
             }
         }
     }
@@ -330,24 +332,16 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
         // adding/removing dependencies
         if (clientsLength > 0) {
             extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-            extension.addDependency("-do-compile", "wsimport-client-compile"); //NOI18N
-            extension.addDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             needToSave = true;
         } else if (!extensionCreated && clientsLength == 0) {
             extension.removeDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-            extension.removeDependency("-do-compile", "wsimport-client-compile"); //NOI18N
-            extension.removeDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             needToSave = true;
         }
         if (fromWsdlServicesLength > 0) {
             extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
-            extension.addDependency("-do-compile", "wsimport-service-compile"); //NOI18N
-            extension.addDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N  
             needToSave = true;
         } else if (!extensionCreated && fromWsdlServicesLength == 0) {
             extension.removeDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
-            extension.removeDependency("-do-compile", "wsimport-service-compile"); //NOI18N
-            extension.removeDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N
             needToSave = true;
         }
         return needToSave;
@@ -374,5 +368,37 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
                 }
             }
         }
+    }
+
+    /** make old project backward compatible with new projects
+     *
+     */
+    private void removeCompileDependencies (
+                        Project prj,
+                        FileObject jaxws_build,
+                        final AntBuildExtender ext) throws IOException {
+
+        BufferedReader br = new BufferedReader(new FileReader(FileUtil.toFile(jaxws_build)));
+        String line = null;
+        boolean isOldVersion = false;
+        while ((line = br.readLine()) != null) {
+            if (line.contains("wsimport-client-compile") || line.contains("wsimport-service-compile")) { //NOI18N
+                isOldVersion = true;
+                break;
+            }
+        }
+        br.close();
+        if (isOldVersion) {
+            TransformerUtils.transformClients(prj.getProjectDirectory(), JAX_WS_STYLESHEET_RESOURCE);
+            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+            if (extension!=null) {
+                extension.removeDependency("-do-compile", "wsimport-client-compile"); //NOI18N
+                extension.removeDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
+                extension.removeDependency("-do-compile", "wsimport-service-compile"); //NOI18N
+                extension.removeDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N
+                ProjectManager.getDefault().saveProject(prj);
+            }
+        }
+
     }
 }
