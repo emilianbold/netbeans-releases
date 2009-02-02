@@ -203,9 +203,8 @@ class CachingSupport {
             clsScope.findInheritedConstants(constName);
             fields = (clsScope != null ? clsScope.findInheritedConstants(constName) : Collections.<ClassConstantElementImpl>emptyList());
             if (fields.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
-                indexScope.getInheritedConstants(clsScope,constName);
-                fields = (clsScope != null ? indexScope.getInheritedConstants(clsScope,constName) : Collections.<ClassConstantElementImpl>emptyList());
+                IndexScope indexScope = fileScope.getIndexScope();
+                fields = (clsScope != null ? indexScope.findInheritedClassConstants(clsScope,constName) : Collections.<ClassConstantElementImpl>emptyList());
             }
             if (!fields.isEmpty()) {
                 List<ClassConstantElement> methList = clzConstantElems.get(clsScope);
@@ -224,8 +223,8 @@ class CachingSupport {
         if (fields.isEmpty()) {
             fields = (clsScope != null ? clsScope.findInheritedFields(fieldName) : Collections.<FieldElementImpl>emptyList());
             if (fields.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
-                fields = (clsScope != null ? indexScope.getInheritedFields(clsScope,fieldName) : Collections.<FieldElementImpl>emptyList());
+                IndexScope indexScope = fileScope.getIndexScope();
+                fields = (clsScope != null ? indexScope.findInheritedFields(clsScope,fieldName) : Collections.<FieldElementImpl>emptyList());
             }
             if (!fields.isEmpty()) {
                 List<FieldElement> methList = fldElems.get(clsScope);
@@ -243,8 +242,8 @@ class CachingSupport {
         if (methods.isEmpty()) {
             methods = (typeScope != null ? typeScope.findInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
             if (methods.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
-                methods = (typeScope != null ? indexScope.getInheritedMethods(typeScope,methodName) : Collections.<MethodScopeImpl>emptyList());
+                IndexScope indexScope = fileScope.getIndexScope();
+                methods = (typeScope != null ? indexScope.findInheritedMethods(typeScope,methodName) : Collections.<MethodScopeImpl>emptyList());
             }
             if (!methods.isEmpty()) {
                 List<MethodScope> methList = methodScopes.get(typeScope);
@@ -263,7 +262,7 @@ class CachingSupport {
         if (methods.isEmpty()) {
             methods = (clsScope != null ? clsScope.findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
             if (methods.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                IndexScope indexScope = fileScope.getIndexScope();
                 methods = (clsScope != null ? indexScope.findMethods(clsScope,methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
             }
             if (!methods.isEmpty()) {
@@ -281,7 +280,7 @@ class CachingSupport {
         if (ifaces.isEmpty()) {
             ifaces = (ifaceName != null ? ModelUtils.filter(fileScope.getDeclaredInterfaces(), ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
             if (ifaces.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                IndexScope indexScope = fileScope.getIndexScope();
                 ifaces = (ifaceName != null ? indexScope.findInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
                 //TODO: ModelUtils.getFirst
                 InterfaceScope ifce = ModelUtils.getFirst(ifaces);
@@ -301,7 +300,7 @@ class CachingSupport {
         if (classes.isEmpty()) {            
             classes = (clzName != null ? ModelUtils.filter(fileScope.getDeclaredClasses(), clzName) : Collections.<ClassScopeImpl>emptyList());
             if (classes.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                IndexScope indexScope = fileScope.getIndexScope();
                 classes = (clzName != null ? indexScope.findClasses(clzName) : Collections.<ClassScopeImpl>emptyList());
                 //TODO: ModelUtils.getFirst
                 ClassScope clz = ModelUtils.getFirst(classes);
@@ -321,7 +320,7 @@ class CachingSupport {
         if (types.isEmpty()) {
             types = (typeName != null ? ModelUtils.filter(fileScope.getDeclaredTypes(), typeName) : Collections.<TypeScope>emptyList());
             if (types.isEmpty()) {
-                IndexScopeImpl indexScope = fileScope.getIndexScope();
+                IndexScope indexScope = fileScope.getIndexScope();
                 types =  (typeName != null) ? indexScope.findTypes(typeName) : Collections.<TypeScopeImpl>emptyList();
                 for (TypeScope tp : types) {
                     if (tp instanceof ClassScopeImpl) {

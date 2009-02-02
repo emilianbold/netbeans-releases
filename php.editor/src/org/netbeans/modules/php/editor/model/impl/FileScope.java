@@ -65,20 +65,19 @@ import org.openide.util.Union2;
 final class FileScope extends ScopeImpl implements PhpFileScope, VariableContainerImpl {
 
     private CachingSupport cachedModelSupport;
-    private IndexScopeImpl indexScope;
+    private CompilationInfo info;
     private Map<ModelElement, List<Occurence>> occurences =
             new HashMap<ModelElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
 
+
     public VariableNameImpl createElement(Program program, Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, program, node, true);
-        addElement(retval);
         return retval;
     }
 
     ConstantElementImpl createElement(ASTNodeInfo<Scalar> node) {
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
-        addElement(retval);
         return retval;
     }
 
@@ -90,12 +89,12 @@ final class FileScope extends ScopeImpl implements PhpFileScope, VariableContain
 
     FileScope(CompilationInfo info) {
         this(info, "program", PhpKind.PROGRAM);//NOI18N
-        indexScope = (IndexScopeImpl) ModelVisitor.getIndexScope(info);
         cachedModelSupport = new CachingSupport(this);
     }
 
     private FileScope(CompilationInfo info, String name, PhpKind kind) {
         super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+        this.info = info;
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {
@@ -252,8 +251,8 @@ final class FileScope extends ScopeImpl implements PhpFileScope, VariableContain
     /**
      * @return the indexScope
      */
-    public IndexScopeImpl getIndexScope() {
-        return indexScope;
+    public IndexScope getIndexScope() {
+        return ModelVisitor.getIndexScope(info);
     }
 
     @NonNull

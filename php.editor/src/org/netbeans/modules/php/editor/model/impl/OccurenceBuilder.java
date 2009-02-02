@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IncludeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -152,7 +153,7 @@ class OccurenceBuilder {
         this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
     }
 
-    void prepare(FieldAccess fieldAccess, ScopeImpl scope) {
+    void prepare(FieldAccess fieldAccess, Scope scope) {
         if (canBePrepared(fieldAccess, scope)) {
             ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
             fieldInvocations.put(node, scope);
@@ -401,7 +402,7 @@ class OccurenceBuilder {
     }
 
     private void buildMethodInvocations(String queryName, FileScope fileScope) {
-        Map<String, List<MethodScopeImpl>> unknownMethodNameCache = new HashMap<String, List<MethodScopeImpl>>();
+        Map<String, List<MethodScope>> unknownMethodNameCache = new HashMap<String, List<MethodScope>>();
         for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -416,7 +417,7 @@ class OccurenceBuilder {
                         allMethods.addAll(methods);
                     }
                 } else {
-                    List<MethodScopeImpl> name2Methods = unknownMethodNameCache.get(queryName);
+                    List<MethodScope> name2Methods = unknownMethodNameCache.get(queryName);
                     if (name2Methods == null) {
                         name2Methods = name2Methods(fileScope, queryName, nodeInfo);
                         if (!name2Methods.isEmpty()) {
@@ -823,8 +824,8 @@ class OccurenceBuilder {
     }
 
     private static List<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
-        if (inScope instanceof MethodScopeImpl) {
-            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+        if (inScope instanceof MethodScope) {
+            MethodScope msi = (MethodScope) inScope;
             ClassScope csi = (ClassScope) msi.getInScope();
             if ("self".equals(staticClzName)) {
                 return Collections.singletonList(csi);
@@ -836,8 +837,8 @@ class OccurenceBuilder {
         return CachingSupport.getClasses(staticClzName, inScope);
     }
     private static List<? extends TypeScope> getStaticTypeName(Scope inScope, String staticClzName) {
-        if (inScope instanceof MethodScopeImpl) {
-            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+        if (inScope instanceof MethodScope) {
+            MethodScope msi = (MethodScope) inScope;
             ClassScope csi = (ClassScope) msi.getInScope();
             if ("self".equals(staticClzName)) {
                 return Collections.singletonList(csi);
@@ -850,18 +851,18 @@ class OccurenceBuilder {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<MethodScopeImpl> methods4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+    private static List<MethodScope> methods4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
         for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
             String type = it.next();
             classes.addAll(CachingSupport.getClasses(type, fileScope));
         }
-        final Set<MethodScopeImpl> methodSet = new HashSet<MethodScopeImpl>();
+        final Set<MethodScope> methodSet = new HashSet<MethodScope>();
         for (ClassScope classScope : classes) {
-            methodSet.addAll((List<MethodScopeImpl>) CachingSupport.getInheritedMethods(classScope, name, fileScope));
+            methodSet.addAll((List<MethodScope>) CachingSupport.getInheritedMethods(classScope, name, fileScope));
         }
 
-        final List<MethodScopeImpl> methods = new ArrayList<MethodScopeImpl>(methodSet);
+        final List<MethodScope> methods = new ArrayList<MethodScope>(methodSet);
         return methods;
     }
 
@@ -882,22 +883,22 @@ class OccurenceBuilder {
         return fields;
     }
 
-    private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
-        IndexScopeImpl indexScope = fileScope.getIndexScope();
+    private static List<MethodScope> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
+        IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
-        List<MethodScopeImpl> methods = Collections.emptyList();
+        List<MethodScope> methods = Collections.emptyList();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
 
         if (typeNamesForIdentifier.size() > 0) {
-            List<MethodScopeImpl> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
-            methods = new ArrayList<MethodScopeImpl>();
-            for (MethodScopeImpl methodScopeImpl : methodsSuggestions) {
-                List<? extends Parameter> parameters = methodScopeImpl.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScopeImpl.getName())
+            List<MethodScope> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
+            methods = new ArrayList<MethodScope>();
+            for (MethodScope methodScope : methodsSuggestions) {
+                List<? extends Parameter> parameters = methodScope.getParameters();
+                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScope.getName())
                         && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
-                    methods.add(methodScopeImpl);
+                    methods.add(methodScope);
                 }
             }
         }
@@ -906,7 +907,7 @@ class OccurenceBuilder {
     }
 
     private static List<FieldElementImpl> name2Fields(FileScope fileScope, String name) {
-        IndexScopeImpl indexScope = fileScope.getIndexScope();
+        IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
                 null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));

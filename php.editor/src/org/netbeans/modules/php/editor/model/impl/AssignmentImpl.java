@@ -58,12 +58,12 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Union2<String,List<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
 
-    AssignmentImpl(Container container, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
     }
 
-    AssignmentImpl(Container container, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpKind());
         this.container = container;
         this.typeName = Union2.<String,List<? extends TypeScope>>createFirst(typeName);

@@ -61,22 +61,22 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     private String returnType;
 
     //new contructors
-    FunctionScopeImpl(ScopeImpl inScope, FunctionDeclarationInfo info, String returnType) {
+    FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
         super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
-    protected FunctionScopeImpl(ScopeImpl inScope, MethodDeclarationInfo info, String returnType) {
+    protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType) {
         super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
 
-    FunctionScopeImpl(ScopeImpl inScope, IndexedFunction indexedFunction) {
+    FunctionScopeImpl(Scope inScope, IndexedFunction indexedFunction) {
         this(inScope, indexedFunction, PhpKind.FUNCTION);
     }
 
-    protected FunctionScopeImpl(ScopeImpl inScope, final IndexedFunction element, PhpKind kind) {
+    protected FunctionScopeImpl(Scope inScope, final IndexedFunction element, PhpKind kind) {
         super(inScope, element, kind);
         List<Parameter> parameters = new ArrayList<Parameter>();
 
@@ -107,12 +107,6 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     }
 
     //old contructors
-
-    public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
-        addElement(retval);
-        return retval;
-    }
     
 
     public final List<? extends TypeScope> getReturnTypes() {
@@ -186,5 +180,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
+    }
+  public VariableNameImpl createElement(Program program, Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
+        addElement(retval);
+        return retval;
     }
 }

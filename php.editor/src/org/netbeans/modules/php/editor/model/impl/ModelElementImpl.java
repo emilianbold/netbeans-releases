@@ -65,28 +65,26 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     private OffsetRange offsetRange;
     private Union2<String/*url*/, FileObject> file;
     private PhpModifiers modifiers;
-    private ScopeImpl inScope;
+    private Scope inScope;
 
     //new contructors
-    ModelElementImpl(ScopeImpl inScope, ASTNodeInfo info, PhpModifiers modifiers) {
+    ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
         this(inScope, info.getName(),inScope.getFile(),info.getRange(),info.getPhpKind(),modifiers);
-        inScope.addElement(this);
     }
 
-    ModelElementImpl(ScopeImpl inScope, IndexedElement element, PhpKind kind) {
+    ModelElementImpl(Scope inScope, IndexedElement element, PhpKind kind) {
         this(inScope, element.getName(),Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
                 new OffsetRange(element.getOffset(), element.getOffset()+element.getName().length()),
                 kind, new PhpModifiers(element.getFlags()));
-        inScope.addElement(this);
     }
 
     //old contructors
-    ModelElementImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file,
+    ModelElementImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind) {
         this(inScope, name, file, offsetRange, kind, PhpModifiers.EMPTY);
     }
 
-    ModelElementImpl(ScopeImpl inScope, String name,
+    ModelElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, PhpKind kind,
             PhpModifiers modifiers) {
         if (name == null || file == null || kind == null || modifiers == null) {
@@ -100,16 +98,26 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.kind = kind;
         this.file = file;
         this.modifiers = modifiers;
+        if (inScope instanceof ScopeImpl) {
+            //TODO: not nice
+            if (this instanceof AssignmentImpl) {
+                if (inScope instanceof  VariableName) {
+                    ((ScopeImpl)inScope).addElement(this);
+                }
+            } else {
+                ((ScopeImpl)inScope).addElement(this);
+            }            
+        }
     }
 
 
     @Override
     public final String getIn() {
-        ScopeImpl retval = getInScope();
+        Scope retval = getInScope();
         return (retval != null) ? retval.getName() : null;
     }
 
-    public final ScopeImpl getInScope() {
+    public final Scope getInScope() {
         return inScope;
     }
 
@@ -228,8 +236,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return getNameRange().getStart();
     }
 
-    @NonNull
-    protected Union2<String, FileObject> getFile() {
+    public Union2<String, FileObject> getFile() {
         return file;
     }
 

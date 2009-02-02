@@ -61,22 +61,22 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     private List<ModelElementImpl> elements = new ArrayList<ModelElementImpl>();
 
     //new contructors
-    ScopeImpl(ScopeImpl inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
+    ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
         super(inScope, info, modifiers);
         setBlockRange(block);
     }
 
-    ScopeImpl(ScopeImpl inScope, IndexedElement element, PhpKind kind) {
+    ScopeImpl(Scope inScope, IndexedElement element, PhpKind kind) {
         super(inScope, element, kind);
     }
     //old contructors
-    ScopeImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file,
+    ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind) {
         super(inScope, name, file, offsetRange, kind);
         assert isScopeKind(kind);
     }
 
-    ScopeImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file,
+    ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind,
             PhpModifiers modifier) {
         super(inScope, name, file, offsetRange, kind, modifier);

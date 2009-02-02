@@ -51,6 +51,8 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
@@ -104,12 +106,12 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends ClassScopeImpl> findClasses(String... queryName) {
+    public List<? extends ClassScope> findClasses(String... queryName) {
         return findClasses(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassScopeImpl> findClasses(NameKind nameKind, String... queryName) {
-        List<ClassScopeImpl> retval = new ArrayList<ClassScopeImpl>();
+    public List<? extends ClassScope> findClasses(NameKind nameKind, String... queryName) {
+        List<ClassScope> retval = new ArrayList<ClassScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
             Collection<IndexedClass> classes = getIndex().getClasses(null, name, nameKind);
@@ -203,49 +205,8 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return index;
     }
 
-    public List<? extends ClassConstantElementImpl>getInheritedConstants(ClassScopeImpl cls, String queryName) {
-        List<ClassConstantElementImpl> retval = new ArrayList<ClassConstantElementImpl>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, cls.getName(), queryName, NameKind.EXACT_NAME);
-        for (IndexedConstant idxConst : flds) {
-            //assert cls.getName().equals(idxConst.getIn());
-            ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(cls, idxConst);
-            retval.add(elementImpl);
-        }
-        return retval;
-    }
 
-    public List<? extends FieldElement>getInheritedFields(ClassScopeImpl cls, String queryName) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getFields(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
-        for (IndexedConstant idxConst : flds) {
-            FieldElement fei = new FieldElementImpl(cls, idxConst);
-            retval.add(fei);
-        }
-        return retval;
-    }
-
-    public List<? extends MethodScopeImpl> getInheritedMethods(final TypeScopeImpl cls, final String queryName) {
-        List<MethodScopeImpl> retval = new ArrayList<MethodScopeImpl>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
-        for (IndexedFunction idxFunc : methods) {
-            MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
-            retval.add(msi);
-        }
-        return retval;
-    }
-
-
-
-    public List<? extends ClassConstantElementImpl> getConstants(final NameKind nameKind, TypeScopeImpl cls, final String... queryName) {
+    public List<? extends ClassConstantElementImpl> getConstants(final NameKind nameKind, TypeScope cls, final String... queryName) {
         List<ClassConstantElementImpl> retval = new ArrayList<ClassConstantElementImpl>();
         for (String name : queryName) {
             Collection<IndexedConstant> constants = getIndex().getClassConstants(null, cls.getName(), name, nameKind);
@@ -258,9 +219,6 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends ClassConstantElementImpl> getConstants(TypeScopeImpl aThis, final String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, aThis, queryName);
-    }
 
     public List<? extends FieldElementImpl> getFields(final NameKind nameKind, ClassScopeImpl cls, final String queryName, final int... modifiers) {
         List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
@@ -319,4 +277,48 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     public List<? extends MethodScope> findMethods(TypeScope cls, final int... modifiers) {
         return findMethods( cls,NameKind.PREFIX, "", modifiers);
     }
+
+    public List<? extends MethodScope> findInheritedMethods(final TypeScope cls, final String queryName) {
+        List<MethodScopeImpl> retval = new ArrayList<MethodScopeImpl>();
+        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
+        //if (cls == null) return Collections.emptyList();
+        //assert cls.getName().equals(className);
+        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        for (IndexedFunction idxFunc : methods) {
+            MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
+            retval.add(msi);
+        }
+        return retval;
+    }
+
+
+    public List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName) {
+        List<ClassConstantElementImpl> retval = new ArrayList<ClassConstantElementImpl>();
+        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, clsScope.getName(), constName, NameKind.EXACT_NAME);
+        for (IndexedConstant idxConst : flds) {
+            ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(clsScope, idxConst);
+            retval.add(elementImpl);
+        }
+        return retval;
+    }
+
+    public List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName) {
+        List<FieldElement> retval = new ArrayList<FieldElement>();
+        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
+        //if (cls == null) return Collections.emptyList();
+        //assert cls.getName().equals(className);
+        Collection<IndexedConstant> flds = getIndex().getFields(null, clsScope.getName(), fieldName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        for (IndexedConstant idxConst : flds) {
+            FieldElement fei = new FieldElementImpl(clsScope, idxConst);
+            retval.add(fei);
+        }
+        return retval;
+    }
+
+    public List<? extends ClassConstantElement> findClassConstants(TypeScope aThis, final String... queryName) {
+        return getConstants(NameKind.EXACT_NAME, aThis, queryName);
+    }
+
+
+
 }

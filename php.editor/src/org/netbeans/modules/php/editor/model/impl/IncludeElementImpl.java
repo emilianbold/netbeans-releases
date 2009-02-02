@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -51,7 +52,7 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
-    IncludeElementImpl(ScopeImpl inScope, FileObject fo, IncludeInfo info) {
+    IncludeElementImpl(Scope inScope, FileObject fo, IncludeInfo info) {
         super(inScope, "include", Union2.<String, FileObject>createSecond(fo),
                 new OffsetRange(0, 0), info.getPhpKind(), PhpModifiers.EMPTY);
     }

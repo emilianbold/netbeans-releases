@@ -46,6 +46,7 @@ import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
@@ -62,21 +63,21 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     private String returnType;
     private String className;
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, IndexedConstant indexedConstant) {
+    FieldElementImpl(Scope inScope, IndexedConstant indexedConstant) {
         super(inScope, indexedConstant, PhpKind.FIELD);
         String in = indexedConstant.getIn();
         if (in != null) {
@@ -86,7 +87,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         }
     }
 
-    private FieldElementImpl(ScopeImpl inScope, String name,
+    private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
             PhpModifiers modifiers, String returnType) {
         super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);

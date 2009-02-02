@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Union2;
 
 /**
  * @author Radek Matous
@@ -49,7 +50,8 @@ import org.openide.filesystems.FileObject;
 public interface ModelElement {
     String getName();
     String getCamelCaseName();
-    PhpKind getPhpKind();    
+    PhpKind getPhpKind();
+    public Union2<String, FileObject> getFile();
     FileObject getFileObject();
     int getOffset();
     Scope getInScope();

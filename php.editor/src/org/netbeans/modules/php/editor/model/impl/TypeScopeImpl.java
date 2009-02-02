@@ -67,13 +67,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<String, List<? extends InterfaceScope>>();
 
-    ClassConstantElementImpl createElement(ClassConstantDeclarationInfo clsConst) {
-        ClassConstantElementImpl retval = ClassConstantElementImpl.createClzConstantElementImpl(this, clsConst);
-        addElement(retval);
-        return retval;
-    }
-
-    TypeScopeImpl(ScopeImpl inScope, ClassDeclarationInfo nodeInfo) {
+    TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
         List<? extends Identifier> interfaces = nodeInfo.getInterfaces();
         for (Identifier identifier : interfaces) {
@@ -81,7 +75,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
     }
 
-    TypeScopeImpl(ScopeImpl inScope, InterfaceDeclarationInfo nodeInfo) {
+    TypeScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, new PhpModifiers(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
         List<? extends Identifier> interfaces = nodeInfo.getInterfaces();
         for (Identifier identifier : interfaces) {
@@ -89,12 +83,12 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
     }
 
-    protected TypeScopeImpl(ScopeImpl inScope, IndexedClass element) {
+    protected TypeScopeImpl(Scope inScope, IndexedClass element) {
         //TODO: in idx is no info about ifaces
         super(inScope, element, PhpKind.CLASS);
     }
 
-    protected TypeScopeImpl(ScopeImpl inScope, IndexedInterface element) {
+    protected TypeScopeImpl(Scope inScope, IndexedInterface element) {
         //TODO: in idx is no info about ifaces
         super(inScope, element, PhpKind.IFACE);
     }
@@ -205,18 +199,18 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends ClassConstantElementImpl> getDeclaredConstants() {
+    public List<? extends ClassConstantElement> getDeclaredConstants() {
         return findDeclaredConstants();
     }
 
-    public List<? extends ClassConstantElementImpl> findDeclaredConstants(String... queryName) {
+    public List<? extends ClassConstantElement> findDeclaredConstants(String... queryName) {
         return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassConstantElementImpl> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
+    public List<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.getConstants(this, queryName);
+            return indexScopeImpl.findClassConstants(this, queryName);
         }
 
         return filter(getElements(), new ElementFilter() {
@@ -228,8 +222,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends ClassConstantElementImpl> findInheritedConstants(String queryName) {
-        List<ClassConstantElementImpl> allConstants = new ArrayList<ClassConstantElementImpl>();
+    public List<? extends ClassConstantElement> findInheritedConstants(String queryName) {
+        List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
         allConstants.addAll(findDeclaredConstants(queryName));
         if (allConstants.isEmpty()) {
             IndexScope indexScope = ModelUtils.getIndexScope(this);

@@ -56,11 +56,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
  * @author Radek Matous
  */
 final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
-    InterfaceScopeImpl(ScopeImpl inScope, InterfaceDeclarationInfo nodeInfo) {
+    InterfaceScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
     }
 
-    InterfaceScopeImpl(IndexScopeImpl inScope, IndexedInterface indexedIface) {
+    InterfaceScopeImpl(IndexScope inScope, IndexedInterface indexedIface) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedIface);
     }

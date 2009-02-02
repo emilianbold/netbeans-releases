@@ -45,9 +45,11 @@ import java.util.Map;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
+import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -63,21 +65,21 @@ import org.openide.util.Union2;
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
     private boolean globallyVisible;
-    VariableNameImpl(IndexScopeImpl inScope, IndexedVariable indexedVariable) {
+    VariableNameImpl(IndexScope inScope, IndexedVariable indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
-    VarAssignmentImpl createElement(ScopeImpl scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
+    VarAssignmentImpl createElement(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
         addElement(retval);
         return retval;
     }
 
-    VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible) {
+    VariableNameImpl(Scope inScope, Program program, Variable variable, boolean globallyVisible) {
         this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
-    VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
+    VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
         this.globallyVisible = globallyVisible;
     }
@@ -131,7 +133,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     @Override
     public String getNormalizedName() {
-        ScopeImpl inScope = getInScope();
+        Scope inScope = getInScope();
         if (inScope instanceof MethodScope ) {
             String methodName = representsThis() ? "" : inScope.getName();//NOI18N
             inScope = inScope.getInScope();
@@ -162,7 +164,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public boolean representsThis() {
-        ScopeImpl inScope = getInScope();
+        Scope inScope = getInScope();
         if (inScope instanceof MethodScope && getName().equals("$this")) {//NOI18N
             return true;
         }

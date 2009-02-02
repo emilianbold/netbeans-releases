@@ -72,7 +72,7 @@ class CodeMarkerBuilder {
         this.fncDeclarations = new HashMap<FunctionDeclarationInfo, Scope>();
     }
 
-    void prepare(FunctionDeclaration node, ScopeImpl scope) {
+    void prepare(FunctionDeclaration node, Scope scope) {
         FunctionDeclarationInfo nodeInfo = FunctionDeclarationInfo.create(node);
         if (canBePrepared(node, scope)) {
             fncDeclarations.put(nodeInfo, scope);
@@ -80,7 +80,7 @@ class CodeMarkerBuilder {
         }
     }
 
-    void prepare(MethodDeclaration node, ScopeImpl scope) {
+    void prepare(MethodDeclaration node, Scope scope) {
         MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node);
         if (canBePrepared(node, scope)) {
             methodDeclarations.put(nodeInfo, scope);

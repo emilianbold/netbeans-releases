@@ -71,14 +71,14 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
     }
 
     //new contructors
-    ClassScopeImpl(ScopeImpl inScope, ClassDeclarationInfo nodeInfo) {
+    ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Identifier superId = nodeInfo.getSuperClass();
         String superName = (superId != null) ? superId.getName() : null;
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superName);
     }
 
-    ClassScopeImpl(IndexScopeImpl inScope, IndexedClass indexedClass) {
+    ClassScopeImpl(IndexScope inScope, IndexedClass indexedClass) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedClass);
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(indexedClass.getSuperClass());

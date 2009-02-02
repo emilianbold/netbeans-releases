@@ -44,6 +44,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -55,13 +56,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableContainerImpl {
     private String classNormName;
     //new contructors
-    MethodScopeImpl(ScopeImpl inScope, String returnType, MethodDeclarationInfo nodeInfo) {
+    MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, returnType);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
     }
 
-    MethodScopeImpl(ScopeImpl inScope, IndexedFunction element, PhpKind kind) {
+    MethodScopeImpl(Scope inScope, IndexedFunction element, PhpKind kind) {
         super(inScope, element, kind);
         assert inScope instanceof TypeScope;
         String in = element.getIn();

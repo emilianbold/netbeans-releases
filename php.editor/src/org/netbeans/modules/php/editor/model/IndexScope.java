@@ -46,8 +46,10 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 /**
  * @author Radek Matous
  */
-public interface IndexScope {
+public interface IndexScope extends Scope {
+
     PHPIndex getIndex();
+    List<? extends MethodScope>  findInheritedMethods(TypeScope typeScope, String methodName);
     List<? extends MethodScope> findMethods(TypeScope type, final String queryName, final int... modifiers);
     List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String... queryName);
     List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String queryName, final int... modifiers);
@@ -55,6 +57,9 @@ public interface IndexScope {
     List<? extends TypeScope> findTypes(final NameKind nameKind, final String... queryName);
     List<? extends ConstantElement> findConstants(final String... queryName);
     List<? extends ConstantElement> findConstants(final NameKind nameKind, final String... queryName);
+    List<? extends ClassConstantElement> findClassConstants(TypeScope aThis, String... queryName);
+    List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName);
+    List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName);
     List<? extends ClassScope> findClasses(final String... queryName);
     List<? extends ClassScope> findClasses(final NameKind nameKind, final String... queryName);
     List<? extends InterfaceScope> findInterfaces(final String... queryName);

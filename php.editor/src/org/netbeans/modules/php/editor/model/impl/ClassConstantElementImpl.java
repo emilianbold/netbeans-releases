@@ -4,17 +4,14 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 
 class ClassConstantElementImpl extends ModelElementImpl implements ClassConstantElement {
     private String typeName;
-    static ClassConstantElementImpl createClzConstantElementImpl(TypeScopeImpl inScope,
-            ClassConstantDeclarationInfo clsConst) {
-        return new ClassConstantElementImpl(inScope, clsConst);
-    }
 
-    ClassConstantElementImpl(TypeScopeImpl inScope, IndexedConstant indexedConstant) {
+    ClassConstantElementImpl(Scope inScope, IndexedConstant indexedConstant) {
         super(inScope, indexedConstant, PhpKind.CLASS_CONSTANT);
         assert inScope instanceof TypeScope;
         String in = indexedConstant.getIn();
@@ -25,7 +22,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         }
     }
 
-    ClassConstantElementImpl(TypeScopeImpl inScope, ClassConstantDeclarationInfo clsConst) {
+    ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst) {
         super(inScope, clsConst, PhpModifiers.EMPTY);
         typeName = inScope.getName();
     }
