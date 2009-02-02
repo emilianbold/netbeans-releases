@@ -51,6 +51,42 @@ import org.openide.util.Lookup;
  * Like {@link LookupProvider} but registers a single object into a project's lookup.
  * An annotated class must have one public constructor, which may take {@link Project} and/or {@link Lookup} parameters.
  * An annotated factory method must have similar parameters.
+ * <pre class="nonnormative">
+public final class TestAction implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+        System.err.println("===> running action");
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            Service s = p.getLookup().lookup(Service.class);
+            if (s != null) {
+                System.err.println("===> got a service: " + s.m());
+            } else {
+                System.err.println("===> nothing for " + p);
+            }
+        }
+    }
+    public static abstract class Service {
+        static {
+            System.err.println("===> loading Service");
+        }
+        public abstract String m();
+    }
+    &#64;ProjectServiceProvider(service=Service.class,
+                            projectType="org-netbeans-modules-java-j2seproject")
+    public static class ServiceImpl extends Service {
+        static {
+            System.err.println("===> loading ServiceImpl");
+        }
+        private final Project p;
+        public ServiceImpl(Project p) {
+            this.p = p;
+            System.err.println("===> new ServiceImpl on " + p);
+        }
+        public String m() {
+            return ProjectUtils.getInformation(p).getDisplayName();
+        }
+    }
+}
+ * </pre>
  * @since org.netbeans.modules.projectapi/1 1.23
  */
 @Retention(RetentionPolicy.SOURCE)
