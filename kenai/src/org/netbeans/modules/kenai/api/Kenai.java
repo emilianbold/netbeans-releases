@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;

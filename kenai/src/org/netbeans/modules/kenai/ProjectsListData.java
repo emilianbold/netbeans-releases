@@ -41,15 +41,21 @@ package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Maros Sandor
+ * @author Jan Becicka
  */
-public class JsonLiveLookup {
+public class ProjectsListData {
 
-    public String t;
+    public String prev;
+    public String next;
+    public int total;
+    public ProjectListItem projects[];
 
-    public String name;
+    public static class ProjectListItem {
 
-    public String url;
-
-    public String image_url;
+        public String href;
+        public String name;
+        public String display_name;
+        public String image;
+        public String web_url;
+    }
 }

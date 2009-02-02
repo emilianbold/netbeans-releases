@@ -41,9 +41,7 @@ package org.netbeans.modules.kenai;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -53,6 +51,7 @@ import org.netbeans.modules.kenai.api.KenaiErrorMessage;
  * Talks to remote Kenai server via Web services API.
  *
  * @author Maros Sandor
+ * @author Jan Becicka
  */
 public class KenaiREST extends KenaiImpl {
 
@@ -100,36 +99,53 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Iterator<ProjectData> searchProjects(String pattern) throws KenaiException {
-        RestConnection conn = new RestConnection(baseURL.toString() + "/home/live_lookup?val=" + pattern);
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects.json?q=" + pattern);
         RestResponse resp = null;
         try {
             resp = conn.get(null);
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
         }
-        String sss = resp.getDataAsString();
+        String responseString = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
-        JsonLiveLookup [] objs = pload.load(sss, JsonLiveLookup[].class);
+        ProjectsListData pld = pload.load(responseString, ProjectsListData.class);
 
-        Set<ProjectData> projects = new HashSet<ProjectData>();
-        for (JsonLiveLookup obj : objs) {
-            if ("project".equals(obj.t)) {
-                // TODO: FAKE name is the last part of the URL MAYBE!
-                String name = obj.url;
-                int idx = name.lastIndexOf('/');
-                if (idx >= 0) {
-                    name = name.substring(idx + 1);
-                }
-                ProjectData prj = new ProjectData();
-                prj.name = name;
-                prj.href = baseURL + obj.url;
-                prj.display_name = obj.name;
-                projects.add(prj);
+        return new ProjectIterator(pld);
+
+    }
+
+
+    private class ProjectIterator implements Iterator<ProjectData> {
+
+        private ProjectsListData pld;
+        private int currentIndex = 0;
+
+        public ProjectIterator(ProjectsListData pld) {
+            this.pld = pld;
+        }
+
+        public boolean hasNext() {
+            if (pld.projects.length>currentIndex) {
+                return true;
+            }
+            return false;
+        }
+
+        public ProjectData next() {
+            try {
+                return getProject(pld.projects[currentIndex++].name);
+            } catch (KenaiException ex) {
+                throw new RuntimeException(ex);
             }
         }
-        return projects.iterator();
+
+        public void remove() {
+            throw new UnsupportedOperationException("Cannot remove items");
+        }
+
     }
+
 
     @Override
     public ProjectData createProject(
