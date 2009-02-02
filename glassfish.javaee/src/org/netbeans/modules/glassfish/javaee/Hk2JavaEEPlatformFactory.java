@@ -39,19 +39,118 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author Ludo
+ * @author vince
  */
 public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
-    
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        return new Hk2JavaEEPlatformImpl((Hk2DeploymentManager) dm);
+
+    // This had been a public static method that looked like createEe6(),
+    // but the way the layer.xml entry is interpreted would not let that
+    // work... so I had to conver it into this form.
+    /**
+     * @deprecated this is meant to be used by the layer.xml and NO ONE ELSE
+     */
+    public Hk2JavaEEPlatformFactory() {
+    }
+
+    public static Hk2JavaEEPlatformFactory createPrelude() {
+        return new Hk2JavaEEPlatformFactory(
+            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyPreludeServerPlatform"),
+            JavaPlatformManager.getDefault().getDefaultPlatform(),
+            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
+            "J2EE/DeploymentPlugins/gfv3/Lookup",
+            new HashSet(Arrays.asList(new String[] {"1.6","1.5"})),
+            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR })),
+            new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
+            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
+        //this(dn,jp,ln,lk,sjp,smt,ss);
+    }
+
+    public static Hk2JavaEEPlatformFactory createEe6() {
+        String dn = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyServerPlatform");
+        JavaPlatform jp = null; // JavaPlatformManager.getDefault().getDefaultPlatform();
+        String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY");
+        String lk = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
+        Set sjp = new HashSet(Arrays.asList(new String[] {"1.6"}));
+        Set smt = new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
+            ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR }));
+        Set ss = new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
+            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5}));
+        return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,ss);
+    }
+
+    private String displayName;
+    private JavaPlatform javaPlatform;
+    private String libraryName;
+    private String lookupKey;
+    private Set supportedJavaPlatforms;
+    private Set supportedModuleTypes;
+    private Set supportedSpecs;
+
+    protected Hk2JavaEEPlatformFactory(String displayName,
+            JavaPlatform jp, String libraryName, String lookupKey, 
+            Set supportedJavaPlatforms,
+            Set supportedModuleTypes,
+            Set supportedSpecs) {
+        this.displayName = displayName;
+        this.javaPlatform = jp;
+        this.libraryName = libraryName;
+        this.lookupKey = lookupKey;
+        this.supportedJavaPlatforms = supportedJavaPlatforms;
+        this.supportedModuleTypes = supportedModuleTypes;
+        this.supportedSpecs = supportedSpecs;
     }
     
+    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+        return new Hk2JavaEEPlatformImpl((Hk2DeploymentManager) dm, this);
+    }
+
+    String getDisplayName() {
+        return displayName;
+    }
+
+    JavaPlatform getJavaPlatform() {
+        return javaPlatform;
+    }
+
+    String getLibraryName() {
+        return libraryName;
+    }
+
+    String getLookupKey() {
+        return lookupKey;
+    }
+
+    Set getSupportedJavaPlatforms() {
+        Set retVal = new HashSet();
+        retVal.addAll(supportedJavaPlatforms);
+        return retVal;
+    }
+
+    Set getSupportedModuleTypes() {
+        Set retVal = new HashSet();
+        retVal.addAll(supportedModuleTypes);
+        return retVal;
+    }
+
+    Set getSupportedSpecVersions() {
+        Set retVal = new HashSet();
+        retVal.addAll(supportedSpecs);
+        return retVal;
+    }    
 }

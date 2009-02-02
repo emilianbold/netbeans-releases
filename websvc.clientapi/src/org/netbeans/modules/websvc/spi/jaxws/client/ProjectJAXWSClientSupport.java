@@ -134,18 +134,6 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         boolean clientAdded=false;
         if (jaxWsModel!=null) {
             
-            // HACK to enable filesystems to fire events when new folder will be created
-            // need to ask for children
-            FileObject projectDir = project.getProjectDirectory();
-            clientArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/client"); //NOI18N
-            if (clientArtifactsFolder!=null) {
-                clientArtifactsFolder.getChildren(true);
-            } else {
-                try {
-                    FileUtil.createFolder(projectDir, "build/generated/wsimport/client");
-                } catch (IOException ex) {}
-            }
-            
             if(!isJsr109){
                 try{
                     addJaxWs20Library();

@@ -263,7 +263,7 @@ public class CKit extends CCKit {
         private boolean allComments(final JTextComponent target) {
             final BaseDocument doc = (BaseDocument) target.getDocument();
             final AtomicBoolean res = new AtomicBoolean(false);
-            doc.runAtomicAsUser(new Runnable() {
+            doc.render(new Runnable() {
 
                 public void run() {
                     Caret caret = target.getCaret();

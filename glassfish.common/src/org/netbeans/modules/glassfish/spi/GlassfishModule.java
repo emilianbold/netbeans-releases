@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.openide.filesystems.FileObject;
 
 
@@ -117,6 +118,8 @@ public interface GlassfishModule {
      * @return read-only map containing all current instance properties
      */
     public Map<String, String> getInstanceProperties();
+
+    public GlassfishInstanceProvider getInstanceProvider();
     
     /**
      * Sets a property in the instance properties map, if that property has not
