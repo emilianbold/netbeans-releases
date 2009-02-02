@@ -1163,7 +1163,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                 l = weakListeners.get(dataObject);
                 if (l!=null) {
                     dataObject.removePropertyChangeListener(l);
-                    weakListeners.remove(l);
+                    weakListeners.remove(dataObject);
                 }
             }
             return true;
